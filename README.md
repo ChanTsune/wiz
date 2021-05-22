@@ -1,0 +1,2 @@
+# wiz
+Wiz programming language
