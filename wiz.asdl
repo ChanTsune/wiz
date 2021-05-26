@@ -1,0 +1,24 @@
+-- ASDL's 4 builtin types are:
+-- identifier, int, string, constant
+
+module wiz
+{
+    module = Module(string name, file* files)
+    file = File(decl* body)
+
+    decl = Var(var var)
+         | Fun(fun fun)
+         | Struct()
+
+    stmt = DeclStmt(decl decl)
+         | ExprDecl(expr expr)
+
+    var = Value()
+        | Variable()
+    
+    fun = Function()
+
+    expr = Name(string name)
+         | Constant(string value, string kind)
+         | BinOp(expr left, string kind, expr right)
+}
