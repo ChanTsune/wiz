@@ -8,17 +8,49 @@ module wiz
 
     decl = Var(var var)
          | Fun(fun fun)
-         | Struct()
+         | Struct(struct struct)
+         | Protocol(protocol protocol)
+         | Extension(extension extension)
 
     stmt = DeclStmt(decl decl)
          | ExprDecl(expr expr)
+         | Return(expr value)
 
-    var = Value()
-        | Variable()
-    
-    fun = Function()
+    var = Value(string name, expr value)
+        | Variable(string name, expr value)
+
+    fun = Function(string name, arg_def* args, block body, string return_type)
+
+    arg_def = ArgDef(stirng label, string name, string type)
+
+    struct = Struct(stirng name, decl* members)
+        | Class(string name, decl* members)
+
+    protocol = Protocol(fun* fun)
+     
+    extension = Extension(string target, string* protocol_names, fun* functions)
 
     expr = Name(string name)
          | Constant(string value, string kind)
          | BinOp(expr left, string kind, expr right)
+         | Subscript(expr ratget, expr idx)
+         | UnaryOp(expr target, string kind)
+         | List(expr* exprs)
+         | Tuple(expr* exprs)
+         | Dict(key_value_pair* pairs)
+         | StringBuilder(expr* exprs)
+         | Call(expr target, expr* args, lambda? tailing_lambda)
+         | If(if if)
+         | When(when when)
+         | Lambda(lambda lambda)
+     block = Block(stmt* stmts)
+     key_value_pair = KeyValuePair(expr key, expr value)
+     if = If(expr condition, block body, else? else)
+     when = ConditionWhen(condition_block_pair* pairs)
+          | TypeWhen(expr value, type_block_pair* pairs)
+          | CaseWhen(expr value, case_block_pair* pairs)
+     type_block_pair = TypeBodyPair(stirng type_name, block body)
+     case_block_pair = CaseBlockPair(expr value, block body)
+     condition_block_pair = ConditionBodyPair(expr condition, block body)
+     lambda = Lambda(block body)
 }
