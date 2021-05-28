@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::{Read, Error};
+use std::io::Read;
 use std::io;
 
 fn parse_from_string(string: String) -> crate::ast::file::File {
