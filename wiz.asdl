@@ -16,19 +16,19 @@ module wiz
          | ExprDecl(expr expr)
          | Return(expr value)
 
-    var = Value(string name, expr value)
-        | Variable(string name, expr value)
+    var = Value(string name, type_name? type_name, expr value)
+        | Variable(string name, type_name? type_name, expr value)
 
-    fun = Function(string name, arg_def* args, block body, string return_type)
+    fun = Function(string name, arg_def* args, block body, type_name? return_type)
 
-    arg_def = ArgDef(stirng label, string name, string type)
+    arg_def = ArgDef(stirng label, string name, type_name type)
 
-    struct = Struct(stirng name, decl* members)
-        | Class(string name, decl* members)
+    struct = Struct(type_name name, decl* members)
+        | Class(type_name name, decl* members)
 
-    protocol = Protocol(fun* fun)
-     
-    extension = Extension(string target, string* protocol_names, fun* functions)
+    protocol = Protocol(type_name name, decl* fun)
+
+    extension = Extension(type_name target, type_name* protocol_names, fun* functions)
 
     expr = Name(string name)
          | Constant(string value, string kind)
@@ -49,8 +49,11 @@ module wiz
      when = ConditionWhen(condition_block_pair* pairs)
           | TypeWhen(expr value, type_block_pair* pairs)
           | CaseWhen(expr value, case_block_pair* pairs)
-     type_block_pair = TypeBodyPair(stirng type_name, block body)
+     type_block_pair = TypeBodyPair(type_name type_name, block body)
      case_block_pair = CaseBlockPair(expr value, block body)
      condition_block_pair = ConditionBodyPair(expr condition, block body)
      lambda = Lambda(block body)
+
+     type_name = TypeName(string name, type_name type_params)
+     type_param = TypeParam(string param_name, type_name* type_constraint)
 }
