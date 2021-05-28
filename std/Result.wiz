@@ -1,0 +1,5 @@
+shield class Result<S, T: Error> {
+    class Success(val value: S): Result<S, T>
+    class Failre(val value: T): Result<S, T>
+}
+

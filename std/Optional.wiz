@@ -1,0 +1,4 @@
+shield class Optional<T> {
+    class Some(val value: T):Optional<T>
+    class None(): Optional<T>
+}
