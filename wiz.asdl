@@ -8,13 +8,13 @@ module wiz
 
     decl = Var(var var)
          | Fun(fun fun)
-         | Struct(struct struct)
+         | Struct(type_name name, decl* members)
+         | Class(type_name name, decl* members)
          | Protocol(protocol protocol)
          | Extension(extension extension)
 
     stmt = DeclStmt(decl decl)
-         | ExprDecl(expr expr)
-         | Return(expr value)
+         | ExprStmt(expr expr)
 
     var = Value(string name, type_name? type_name, expr value)
         | Variable(string name, type_name? type_name, expr value)
@@ -22,9 +22,6 @@ module wiz
     fun = Function(string name, arg_def* args, block body, type_name? return_type)
 
     arg_def = ArgDef(stirng label, string name, type_name type)
-
-    struct = Struct(type_name name, decl* members)
-        | Class(type_name name, decl* members)
 
     protocol = Protocol(type_name name, decl* fun)
 
@@ -43,6 +40,7 @@ module wiz
          | If(if if)
          | When(when when)
          | Lambda(lambda lambda)
+         | Return(expr value)
      block = Block(stmt* stmts)
      key_value_pair = KeyValuePair(expr key, expr value)
      arg = Arg(stirng? name, expr value)
