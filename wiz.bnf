@@ -1,0 +1,96 @@
+<syntax> ::= <decl> <syntax>
+           | <decl>
+
+<decl> ::= <var_decl>
+         | <fun_decl>
+        #  | <struct_decl>
+        #  | <class_decl>
+        #  | <enum_decl>
+        #  | <protocol_decl>
+        #  | <extension_decl>
+
+<var_decl> ::= <value>
+        # | <variable>
+
+<value> ::= "val" <white_space> <identifire> ":" <white_space> <type_name> <white_space> "=" <white_space> <expr>
+          | "val" <white_space> <identifire> "=" <white_space> <expr>
+# <variable> ::= 
+
+<fun_decl> ::= "fun" <white_spaces> <identifire> "(" <arg_defs> ")" <block>
+             | "fun" <white_spaces> <identifire> "(" <arg_defs> ")" <white_spaces> "->" <white_spaces> <type_name> <block>
+
+<arg_defs> ::= <arg_def> "," <arg_defs>
+             | <arg_def> ","
+             | <arg_def>
+
+<arg_def> ::= <arg_label> <white_spaces> <arg_name> ":" <type_name>
+
+<arg_label> ::= <identifire>
+<arg_name> ::= <identifire> 
+
+<block> ::= "{" <stmts> "}"
+
+<stmts> ::= <stmt> | <stmt> <stmts>
+
+<stmt> ::= <decl_stmt>
+         | <expr_stmt>
+
+<decl_stmt> ::= <decl> <eol>
+
+<expr_stmt> ::= <expr> <eol>
+
+<type_name> ::= <identifire>
+
+<type_params> ::= <type_param> "," <type_params>
+                | <type_param> ","
+                | <type_param>
+
+<type_param> ::= <identifire> ":" <type_names>
+               | <identifire>
+<type_names> ::= <type_name> "," <type_names>
+               | <type_name> ","
+               | <type_name>
+
+<expr> ::= <name>
+        | <literal>
+        # | <binop>
+        # | <unaryop>
+        # | <subscript>
+        # | <list>
+        # | <tuple>
+        # | <dict>
+        # | <string_builder>
+        # | <call>
+        # | <if>
+        # | <when>
+        # | <lambda>
+        # | <return>
+
+<name> ::= <identifire>
+
+<literal> ::= <integer_literal>
+            # | <floating_point_literal>
+            # | <string_literal>
+            # | <boolean_literal>
+            # | <null_literal>
+
+<integer_literal> ::= <digits>
+# <floating_point_literal> ::=
+# <string_literal> ::= 
+# <boolean_literal> ::=
+# <null_literal> ::=
+
+<digits> ::= <digit> <digits>
+           | <digit>
+<digit> ::= "0-9"
+
+<identifire> ::= <identifire_head> | <identifire_head> <identifire_items>
+<identifire_items> ::= <identifire_item> | <identifire_item> <identifire_items>
+<identifire_head> ::= "a-zA-Z" | "_"
+<identifire_item> ::= <identifire_head> | "_" | <digit>
+
+<white_spaces> ::= <white_space> <white_spaces>
+                 | <white_space>
+<white_space> ::= " " | <eol>
+
+<eol> = "\n"

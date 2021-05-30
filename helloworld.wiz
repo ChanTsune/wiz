@@ -1,20 +1,4 @@
-import std.system
-import std.argpars
 
 fun main() {
-    val parser = argparse.ArgumentsAprser()
-    parser.option("n", "name", help="help")
-    when parser.parse(system.args()) {
-        .failre -> {
-            println("\(it.)")
-        }
-    }
-    
-        .onFailre {
-        }
-        .onSucsess {
-
-        }
-    println("Hello World")
-    system.exit(0)
+    println("hello world!")
 }

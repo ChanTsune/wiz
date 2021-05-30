@@ -1,5 +1,4 @@
-shield class Result<S, T: Error> {
-    class Success(val value: S): Result<S, T>
-    class Failre(val value: T): Result<S, T>
+enum Result<S, T: Error> {
+    Success(val value: S)
+    Failre(val value: T)
 }
-
