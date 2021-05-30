@@ -27,8 +27,10 @@ module wiz
 
     extension = Extension(type_name target, type_name* protocol_names, fun* functions)
 
+    block = Block(stmt* stmts)
+
     expr = Name(string name)
-         | Constant(string value, string kind)
+         | Literal(literal value)
          | BinOp(expr left, string kind, expr right)
          | Subscript(expr ratget, expr idx)
          | UnaryOp(expr target, string kind)
@@ -41,7 +43,11 @@ module wiz
          | When(when when)
          | Lambda(lambda lambda)
          | Return(expr value)
-     block = Block(stmt* stmts)
+     literal = IntegerLiteral(string value)
+             | FloatingPointLiteral(string value)
+             | StringLiteral(string value)
+             | BooleanLitelal(string value)
+             | NullLiteral()
      key_value_pair = KeyValuePair(expr key, expr value)
      arg = Arg(stirng? name, expr value)
      if = If(expr condition, block body, else? else)
