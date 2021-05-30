@@ -4,7 +4,7 @@ use std::fmt;
 
 #[derive(fmt::Debug)]
 pub struct File {
-    pub(crate) body: Vec<Box<dyn Decl>>
+    pub(crate) body: Vec<Decl>
 }
 
 impl Node for File {

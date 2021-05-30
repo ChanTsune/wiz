@@ -1,5 +1,31 @@
 use super::node::Node;
+use std::fmt;
 
-pub trait Decl: Node {
-    
+#[derive(fmt::Debug)]
+pub enum Decl {
+    Var {
+        // TODO
+    },
+    Fun {
+        // TODO
+    },
+    Struct {
+        // TODO
+    },
+    Class {
+        // TODO
+    },
+    Enum {
+        // TODO
+    },
+    Protocol {
+        // TODO
+    },
+    Extension {
+        // TODO
+    }
+}
+
+impl Node for Decl {
+
 }

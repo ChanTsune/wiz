@@ -1,9 +1,21 @@
+use crate::parser::parser::parse_from_string;
+use crate::parser::nom::expr;
+
 mod ast;
 mod parser;
 
 
 fn main() {
     println!("Hello, world!");
-    let file_node = ast::file::File{body: Vec::new()};
-    println!("{:?}", file_node);
+    // let file_node = parse_from_string("1".to_string());
+    // println!("{:?}", file_node);
+    let expr = expr("1+1");
+    match expr {
+        Ok((s, e)) => {
+            println!("unused => {}", s);
+            println!("AST => {:?}", e);
+        }
+        Err(e) => {
+        }
+    }
 }

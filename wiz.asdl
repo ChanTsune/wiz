@@ -10,6 +10,7 @@ module wiz
          | Fun(fun fun)
          | Struct(type_name name, decl* members)
          | Class(type_name name, decl* members)
+         | Enum(enum enum)
          | Protocol(protocol protocol)
          | Extension(extension extension)
 
@@ -32,8 +33,8 @@ module wiz
     expr = Name(string name)
          | Literal(literal value)
          | BinOp(expr left, string kind, expr right)
-         | Subscript(expr ratget, expr idx)
-         | UnaryOp(expr target, string kind)
+         | Subscript(expr ratget, expr idx_or_key)
+         | UnaryOp(expr target, bool prefix, string kind)
          | List(expr* exprs)
          | Tuple(expr* exprs)
          | Dict(key_value_pair* pairs)
