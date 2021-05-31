@@ -10,11 +10,12 @@
         #  | <extension_decl>
 
 <var_decl> ::= <value>
-        # | <variable>
+        | <variable>
 
 <value> ::= "val" <white_space> <identifire> ":" <white_space> <type_name> <white_space> "=" <white_space> <expr>
           | "val" <white_space> <identifire> "=" <white_space> <expr>
-# <variable> ::= 
+<variable> ::= "var" <white_space> <identifire> ":" <white_space> <type_name> <white_space> "=" <white_space> <expr>
+          | "var" <white_space> <identifire> "=" <white_space> <expr>
 
 <fun_decl> ::= "fun" <white_spaces> <identifire> "(" <arg_defs> ")" <block>
              | "fun" <white_spaces> <identifire> "(" <arg_defs> ")" <white_spaces> "->" <white_spaces> <type_name> <block>
@@ -53,7 +54,7 @@
 
 <expr> ::= <name>
         | <literal>
-        # | <binop>
+        | <binop>
         # | <unaryop>
         # | <subscript>
         # | <list>
@@ -65,6 +66,11 @@
         # | <when>
         # | <lambda>
         # | <return>
+        # | <member>
+        # | <for>
+        # | <while>
+        # | <break>
+        # | <continue>
 
 <name> ::= <identifire>
 
@@ -79,6 +85,10 @@
 # <string_literal> ::= 
 # <boolean_literal> ::=
 # <null_literal> ::=
+
+<binop> ::= <expr> <white_spaces> <operator> <white_space> <expr>
+
+<binary_operator> ::= "+" | "-" | "*" | "/" | "%" | "&&" | "||"
 
 <digits> ::= <digit> <digits>
            | <digit>

@@ -10,6 +10,11 @@ pub enum Expr {
     Literal {
         literal: Literal
     },
+    BinOp {
+        left: Box<Expr>,
+        kind: String,
+        right: Box<Expr>
+    },
     UnaryOp {
         target: Box<Expr>,
         prefix: bool,
