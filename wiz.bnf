@@ -52,11 +52,27 @@
                | <type_name> ","
                | <type_name>
 
-<expr> ::= <name>
-        | <literal>
-        | <binop>
-        # | <unaryop>
-        # | <subscript>
+<expr> ::= <prefix_expr> <binary_expr>
+         | <prefix_expr>
+
+<prefix_expr> ::= <prefix_operator> <postfix_expr>
+                | <postfix_expr>
+
+<postfix_expr> ::= <primary_expr>
+                | <postfix_expr> <postfix_operator>
+                # | function_call_expression
+                # | initializer_expression
+                # | explicit_member_expression
+                # | postfix_self_expression
+                # | subscript_expression
+                # | forced_value_expression
+                # | optional_chaining_expression
+
+<binary_expr> ::= <white_space> <operator> <white_space> <expr>
+
+<primary_expr> ::= <name_expr>
+                 | <literal_expr>
+                 | <parenthesized_expr>
         # | <list>
         # | <tuple>
         # | <dict>
@@ -71,10 +87,15 @@
         # | <while>
         # | <break>
         # | <continue>
+        # | <unaryop>
+        # | <subscript>
 
-<name> ::= <identifire>
+<parenthesized_expr> ::= "(" <white_spaces> <expr> <white_spaces> ")"
 
-<literal> ::= <integer_literal>
+
+<name_expr> ::= <identifire>
+
+<literal_expr> ::= <integer_literal>
             # | <floating_point_literal>
             # | <string_literal>
             # | <boolean_literal>
@@ -86,9 +107,8 @@
 # <boolean_literal> ::=
 # <null_literal> ::=
 
-<binop> ::= <expr> <white_spaces> <operator> <white_space> <expr>
-
 <binary_operator> ::= "+" | "-" | "*" | "/" | "%" | "&&" | "||"
+<postfix_operator> ::= "!"
 
 <digits> ::= <digit> <digits>
            | <digit>

@@ -1,5 +1,5 @@
 use crate::parser::parser::parse_from_string;
-use crate::parser::nom::expr;
+use crate::parser::nom::expression::expr;
 
 mod ast;
 mod parser;
