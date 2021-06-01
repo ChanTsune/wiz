@@ -1,15 +1,16 @@
-use nom::IResult;
+use nom::{IResult, Parser};
 use crate::ast::literal::Literal;
 use nom::character::complete::{digit1, one_of, char, anychar};
 use crate::ast::expr::Expr;
-use nom::combinator::{map, opt};
+use nom::combinator::{map, opt, iterator};
 use nom::sequence::tuple;
 use nom::branch::alt;
 use crate::parser::nom::lexical_structure::{identifier, whitespace0};
 use crate::ast::expr::Expr::BinOp;
+use nom::multi::many0;
 
 pub fn integer_literal(s: &str) -> IResult<&str, Literal> {
-    map(digit1, |n:&str| {
+    map(digit1, |n: &str| {
         Literal::IntegerLiteral { value: n.to_string() }
     })(s)
 }
@@ -38,11 +39,11 @@ pub fn prefix_operator(s: &str) -> IResult<&str, String> {
 
 pub fn literal_expr(s: &str) -> IResult<&str, Expr> {
     map(alt((
-            integer_literal,
-            string_literal,
-        )), |l| {
-            Expr::Literal { literal: l }
-        })(s)
+        integer_literal,
+        string_literal,
+    )), |l| {
+        Expr::Literal { literal: l }
+    })(s)
 }
 
 pub fn name_expr(s: &str) -> IResult<&str, Expr> {
@@ -103,6 +104,27 @@ pub fn binary_expr(s: &str) -> IResult<&str, (String, Expr)> {
     )), |(_, op_kind, _, expr)| {
         (op_kind, expr)
     })(s)
+}
+
+pub fn disjunction_expr(s: &str) -> IResult<&str, Expr> {
+    map(
+        tuple((
+            literal_expr,
+            many0(tuple((
+                char('+'),
+                literal_expr,
+            )))
+        )), |(e, v)| {
+            let mut bin_op = e;
+            for (op, ex) in v {
+                bin_op = Expr::BinOp {
+                    left: Box::new(bin_op),
+                    kind: op.to_string(),
+                    right: Box::new(ex),
+                }
+            }
+            bin_op
+        })(s)
 }
 
 pub fn expr(s: &str) -> IResult<&str, Expr> {
