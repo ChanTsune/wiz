@@ -1,52 +1,124 @@
 use nom::IResult;
 use crate::ast::literal::Literal;
-use nom::character::complete::{digit1, one_of};
+use nom::character::complete::{digit1, one_of, char, anychar};
 use crate::ast::expr::Expr;
-use nom::combinator::map;
+use nom::combinator::{map, opt};
 use nom::sequence::tuple;
 use nom::branch::alt;
+use crate::parser::nom::lexical_structure::{identifier, whitespace0};
+use crate::ast::expr::Expr::BinOp;
 
 pub fn integer_literal(s: &str) -> IResult<&str, Literal> {
-    digit1(s).map(|(s, n)| {
-        (s, Literal::IntegerLiteral { value: n.to_string() })
-    })
+    map(digit1, |n:&str| {
+        Literal::IntegerLiteral { value: n.to_string() }
+    })(s)
+}
+
+pub fn string_literal(s: &str) -> IResult<&str, Literal> {
+    map(tuple((
+        char('"'),
+        anychar,
+        char('"'),
+    )), |(a, b, c)| {
+        Literal::StringLiteral { value: "".to_string() }
+    })(s)
 }
 
 pub fn binary_operator(s: &str) -> IResult<&str, String> {
-    one_of("+")(s).map(|(s, c)| {
-        (s, c.to_string())
-    })
+    map(one_of("+-*/%"), |c| {
+        c.to_string()
+    })(s)
+}
+
+pub fn prefix_operator(s: &str) -> IResult<&str, String> {
+    map(one_of("+-!"), |c| {
+        c.to_string()
+    })(s)
 }
 
 pub fn literal_expr(s: &str) -> IResult<&str, Expr> {
-    integer_literal(s).map(|(s, l)| {
-        (s, Expr::Literal { literal: l })
-    })
+    map(alt((
+            integer_literal,
+            string_literal,
+        )), |l| {
+            Expr::Literal { literal: l }
+        })(s)
 }
 
-pub fn single_expr(s: &str) -> IResult<&str, Expr> {
-    literal_expr(s)
+pub fn name_expr(s: &str) -> IResult<&str, Expr> {
+    map(identifier, |name| {
+        Expr::Name { name }
+    })(s)
 }
 
-pub fn binop_expr(s: &str) -> IResult<&str, Expr> {
+pub fn parenthesized_expr(s: &str) -> IResult<&str, Expr> {
     map(tuple((
-        single_expr,
-        binary_operator,
-        single_expr,
-    )), |(left, op_kind, right)| {
-        Expr::BinOp {
-            left: Box::from(left),
-            kind: op_kind,
-            right: Box::from(right),
+        char('('),
+        whitespace0,
+        expr,
+        whitespace0,
+        char(')'),
+    )), |(_, _, expr, _, _)| {
+        expr
+    })(s)
+}
+
+pub fn primary_expr(s: &str) -> IResult<&str, Expr> {
+    alt((
+        name_expr,
+        literal_expr,
+        parenthesized_expr,
+    ))(s)
+}
+
+pub fn postfix_expr(s: &str) -> IResult<&str, Expr> {
+    alt((
+        primary_expr,
+        primary_expr,
+    ))(s)
+}
+
+pub fn prefix_expr(s: &str) -> IResult<&str, Expr> {
+    map(tuple((
+        opt(prefix_operator),
+        postfix_expr,
+    )), |(op, postfix)| {
+        match op {
+            Some(op) => Expr::UnaryOp {
+                target: Box::new(postfix),
+                prefix: true,
+                kind: op,
+            },
+            None => postfix
         }
     })(s)
 }
 
+pub fn binary_expr(s: &str) -> IResult<&str, (String, Expr)> {
+    map(tuple((
+        whitespace0,
+        binary_operator,
+        whitespace0,
+        expr,
+    )), |(_, op_kind, _, expr)| {
+        (op_kind, expr)
+    })(s)
+}
+
 pub fn expr(s: &str) -> IResult<&str, Expr> {
-    alt((
-        binop_expr,
-        literal_expr,
-    ))(s)
+    map(tuple((
+        prefix_expr,
+        opt(binary_expr)
+    )), |(prefix, binary)| {
+        match binary {
+            Some((op, bin)) => Expr::BinOp {
+                left: Box::new(prefix),
+                kind: op,
+                right: Box::new(bin),
+            },
+            None => prefix
+        }
+    })(s)
 }
 
 #[cfg(test)]

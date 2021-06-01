@@ -9,7 +9,8 @@ fn main() {
     println!("Hello, world!");
     // let file_node = parse_from_string("1".to_string());
     // println!("{:?}", file_node);
-    let expr = expr("1+1");
+    // 1 + (1 * (12 + 2))
+    let expr = expr("1 + (1 * 12) + 2");
     match expr {
         Ok((s, e)) => {
             println!("unused => {}", s);

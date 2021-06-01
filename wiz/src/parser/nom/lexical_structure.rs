@@ -59,3 +59,20 @@ pub fn identifier(s: &str) -> IResult<&str, String> {
         )
     ))(s)
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::parser::nom::lexical_structure::identifier;
+    use nom::error::ErrorKind;
+    use nom::error;
+    use nom::Err;
+
+    #[test]
+    fn test_identifier() {
+        assert_eq!(identifier("hello"), Ok(("", "hello".to_string())));
+        assert_eq!(identifier("`hello`"), Ok(("", "`hello`".to_string())));
+        assert_eq!(identifier("1"), Err(Err::Error(error::Error { input: "1", code: ErrorKind::Char })));
+        assert_eq!(identifier("1ab"), Err(Err::Error(error::Error { input: "1ab", code: ErrorKind::Char })));
+        assert_eq!(identifier("`1ab`"), Err(Err::Error(error::Error { input: "`1ab`", code: ErrorKind::Char })));
+    }
+}
