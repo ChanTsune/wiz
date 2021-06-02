@@ -107,7 +107,7 @@ pub fn binary_expr(s: &str) -> IResult<&str, (String, Expr)> {
 }
 
 pub fn or_operator(s: &str) -> IResult<&str, String> {
-    map(tuple((char('|'), char('|'))), |(a,b)| { a.to_string() + &*b.to_string() })(s)
+    map(tuple((char('|'), char('|'))), |(a, b)| { a.to_string() + &*b.to_string() })(s)
 }
 
 pub fn disjunction_expr(s: &str) -> IResult<&str, Expr> {
@@ -122,7 +122,7 @@ pub fn disjunction_expr(s: &str) -> IResult<&str, Expr> {
             )))
         )), |(e, v)| {
             let mut bin_op = e;
-            for (_,op, _, ex) in v {
+            for (_, op, _, ex) in v {
                 bin_op = Expr::BinOp {
                     left: Box::new(bin_op),
                     kind: op,
@@ -141,12 +141,17 @@ pub fn expr(s: &str) -> IResult<&str, Expr> {
 mod tests {
     use nom::error::ErrorKind;
     use nom::Err::Error;
-    use crate::parser::nom::expression::integer_literal;
+    use crate::parser::nom::expression::{integer_literal, disjunction_expr};
     use crate::ast::literal::Literal::IntegerLiteral;
+    use crate::ast::expr::Expr::{BinOp, Literal};
 
     #[test]
     fn test_numeric() {
-        assert_eq!(integer_literal("1"), Ok(("", IntegerLiteral { value: "1".to_string() } )));
+        assert_eq!(integer_literal("1"), Ok(("", IntegerLiteral { value: "1".to_string() })));
         assert_eq!(integer_literal("12"), Ok(("", IntegerLiteral { value: "12".to_string() })));
+    }
+
+    fn test_disjunction_expr() {
+        assert_eq!(disjunction_expr("1||2 || 3"), Ok(("", BinOp { left: Box::from(BinOp { left: Box::from(Literal { literal: IntegerLiteral { value: "1".parse().unwrap() } }), kind: "||".parse().unwrap(), right: Box::from(Literal { literal: IntegerLiteral { value: "2".parse().unwrap() } }) }), kind: "||".parse().unwrap(), right: Box::from(Literal { literal: IntegerLiteral { value: "3".parse().unwrap() } }) })))
     }
 }
