@@ -106,20 +106,26 @@ pub fn binary_expr(s: &str) -> IResult<&str, (String, Expr)> {
     })(s)
 }
 
+pub fn or_operator(s: &str) -> IResult<&str, String> {
+    map(tuple((char('|'), char('|'))), |(a,b)| { a.to_string() + &*b.to_string() })(s)
+}
+
 pub fn disjunction_expr(s: &str) -> IResult<&str, Expr> {
     map(
         tuple((
             literal_expr,
             many0(tuple((
-                char('+'),
+                whitespace0,
+                or_operator,
+                whitespace0,
                 literal_expr,
             )))
         )), |(e, v)| {
             let mut bin_op = e;
-            for (op, ex) in v {
+            for (_,op, _, ex) in v {
                 bin_op = Expr::BinOp {
                     left: Box::new(bin_op),
-                    kind: op.to_string(),
+                    kind: op,
                     right: Box::new(ex),
                 }
             }
@@ -128,19 +134,7 @@ pub fn disjunction_expr(s: &str) -> IResult<&str, Expr> {
 }
 
 pub fn expr(s: &str) -> IResult<&str, Expr> {
-    map(tuple((
-        prefix_expr,
-        opt(binary_expr)
-    )), |(prefix, binary)| {
-        match binary {
-            Some((op, bin)) => Expr::BinOp {
-                left: Box::new(prefix),
-                kind: op,
-                right: Box::new(bin),
-            },
-            None => prefix
-        }
-    })(s)
+    disjunction_expr(s)
 }
 
 #[cfg(test)]
