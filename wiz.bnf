@@ -52,8 +52,51 @@
                | <type_name> ","
                | <type_name>
 
-<expr> ::= <prefix_expr> <binary_expr>
-         | <prefix_expr>
+<expr> ::= <disjunction_expr>
+
+<disjunction_expr> ::= <conjunction_expr> ("||" <conjunction_expr>)*
+
+<conjunction_expr> ::= <equality_expr> ("&&" <equality_expr>)*
+
+<equality_expr> ::= <comparison_expr> (<equality_oprator> <comparison_expr>)*
+
+<equality_oprator> ::= "==" | "!="
+
+<comparison_expr> ::= <generic_call_like_comparison_expr> (<comparison_operator> <generic_call_like_comparison_expr>)*
+
+<comparison_operator> ::= "<"  | ">"  | "<="  | ">="
+
+<generic_call_like_comparison_expr> ::= <infix_operation_expr> <call_suffix_expr>*
+
+<infix_operation_expr> ::= <elvis_expr> ((<in_operator> <elvis_expr>) | (<is_operator> <type>))*
+
+<elvis_expr> ::= <infix_function_call> (":?" <infix_function_call>)*
+
+<infix_function_call> ::=  <range_expr> (<identifier> <range_expr>)*
+
+<range_expr> ::= <additive_expr> (<range_operator> <additive_expr>)*
+
+<range_operator> ::= "..." || "..<"
+
+<additive_expr> ::= <multiplicative_expr> (<additive_operator> <multiplicative_expr>)*
+
+<additive_operator> ::= "+" | "-"
+
+<multiplicative_expr> ::= <as_expr> (<multiplicative_operator> <as_expr>)*
+
+<multiplicative_operator> ::= "*" | "/" | "%"
+
+<as_expr> ::= <prefix_expr> (<as_operator> <type>)*
+
+<as_operator> ::= "as" | "as?"
+
+<in_operator> ::= "in" | "!in"
+
+<is_operator> ::= "is" | "!is"
+
+<type> ::=
+
+<call_suffix_expr> ::= 
 
 <prefix_expr> ::= <prefix_operator> <postfix_expr>
                 | <postfix_expr>
