@@ -3,7 +3,7 @@ use std::fmt;
 use crate::ast::decl::Decl;
 use crate::ast::expr::Expr;
 
-#[derive(fmt::Debug)]
+#[derive(fmt::Debug, Eq, PartialEq)]
 pub enum Stmt {
     Decl {
         decl: Decl

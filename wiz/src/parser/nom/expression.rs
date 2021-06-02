@@ -152,7 +152,7 @@ mod tests {
 
     #[test]
     fn test_numeric() {
-        // assert_eq!(integer_literal("1"), Ok(("", IntegerLiteral { value: "1".to_string() } )));
-        // assert_eq!(integer_literal("12"), Ok(("", IntegerLiteral { value: "12".to_string() })));
+        assert_eq!(integer_literal("1"), Ok(("", IntegerLiteral { value: "1".to_string() } )));
+        assert_eq!(integer_literal("12"), Ok(("", IntegerLiteral { value: "12".to_string() })));
     }
 }

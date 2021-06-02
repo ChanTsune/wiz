@@ -2,7 +2,7 @@ use crate::ast::expr::Expr;
 use crate::ast::node::Node;
 use std::fmt;
 
-#[derive(fmt::Debug)]
+#[derive(fmt::Debug, Eq, PartialEq)]
 pub enum Literal {
     IntegerLiteral {
         value: String

@@ -2,7 +2,7 @@ use crate::ast::node::Node;
 use crate::ast::literal::Literal;
 use std::fmt;
 
-#[derive(fmt::Debug)]
+#[derive(fmt::Debug, Eq, PartialEq)]
 pub enum Expr {
     Name {
         name: String

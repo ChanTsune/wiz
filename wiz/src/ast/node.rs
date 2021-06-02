@@ -1,4 +1,4 @@
 use std::fmt;
 
-pub trait Node : fmt::Debug {
+pub trait Node : fmt::Debug + Eq {
 }

@@ -4,7 +4,7 @@ use crate::ast::fun::arg_def::ArgDef;
 use crate::ast::type_name::TypeName;
 use crate::ast::block::Block;
 
-#[derive(fmt::Debug)]
+#[derive(fmt::Debug, Eq, PartialEq)]
 pub enum Decl {
     Var {
         // TODO
