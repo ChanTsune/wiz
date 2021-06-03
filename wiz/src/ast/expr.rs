@@ -51,6 +51,11 @@ pub enum Expr {
     },
     Return {
         // TODO
+    },
+    TypeCast {
+        target: Box<Expr>,
+        is_safe: bool,
+        type_: String // TODO:
     }
 }
 

@@ -5,7 +5,7 @@ use crate::ast::expr::Expr;
 use nom::combinator::{map, opt, iterator};
 use nom::sequence::tuple;
 use nom::branch::alt;
-use crate::parser::nom::lexical_structure::{identifier, whitespace0};
+use crate::parser::nom::lexical_structure::{identifier, whitespace0, whitespace1};
 use crate::ast::expr::Expr::BinOp;
 use nom::multi::many0;
 use nom::error::ParseError;
@@ -96,23 +96,224 @@ pub fn prefix_expr(s: &str) -> IResult<&str, Expr> {
     })(s)
 }
 
-pub fn binary_expr(s: &str) -> IResult<&str, (String, Expr)> {
-    map(tuple((
-        whitespace0,
-        binary_operator,
-        whitespace0,
-        expr,
-    )), |(_, op_kind, _, expr)| {
-        (op_kind, expr)
-    })(s)
+fn _binop(e:Expr, v: Vec<(&str, String, &str, Expr)>) -> Expr {
+    let mut bin_op = e;
+    for (_, op, _, ex) in v {
+        bin_op = Expr::BinOp {
+            left: Box::new(bin_op),
+            kind: op,
+            right: Box::new(ex),
+        }
+    }
+    bin_op
 }
 
-pub fn wrap<I: Clone, O, E: ParseError<I>>(
-    left: impl FnMut(I) -> IResult<I, Expr, E>,
-    op: impl FnMut(I) -> IResult<I, String, E>,
-    right: impl FnMut(I) -> IResult<I, Expr, E>,
-) -> impl FnMut(I) -> IResult<I, (Expr, String, Expr), E> {
-    tuple((left, op, right))
+/*
+<conjunction_expr> ::= <equality_expr> ("&&" <equality_expr>)*
+
+<equality_expr> ::= <comparison_expr> (<equality_operator> <comparison_expr>)*
+
+<equality_operator> ::= "==" | "!="
+
+<comparison_expr> ::= <generic_call_like_comparison_expr> (<comparison_operator> <generic_call_like_comparison_expr>)*
+
+<comparison_operator> ::= "<"  | ">"  | "<="  | ">="
+
+<generic_call_like_comparison_expr> ::= <infix_operation_expr> <call_suffix_expr>*
+
+<infix_operation_expr> ::= <elvis_expr> ((<in_operator> <elvis_expr>) | (<is_operator> <type>))*
+
+*/
+
+
+
+/*
+<elvis_expr> ::= <infix_function_call> (":?" <infix_function_call_expr>)*
+*/
+pub fn elvis_expr(s: &str) -> IResult<&str, Expr> {
+    map(
+        tuple((
+            infix_function_call_expr,
+            many0(tuple((
+                whitespace0,
+                elvis_operator,
+                whitespace0,
+                infix_function_call_expr,
+            )))
+        )),
+        |(op, v)| {
+            _binop(op, v)
+        }
+    )(s)
+}
+
+pub fn elvis_operator(s: &str) -> IResult<&str, String> {
+    map(tuple((char(':'), char('?'))), |(a, b)| { a.to_string() + &*b.to_string() })(s)
+}
+
+/*
+<infix_function_call_expr> ::= <range_expr> (<identifier> <range_expr>)*
+*/
+pub fn infix_function_call_expr(s: &str) -> IResult<&str, Expr> {
+    map(
+        tuple((
+            range_expr,
+            many0(tuple((
+                whitespace0,
+                identifier,
+                whitespace0,
+                range_expr,
+            )))
+        )),
+        |(op, v)| {
+            _binop(op, v)
+        }
+    )(s)
+}
+
+/*
+<range_expr> ::= <additive_expr> (<range_operator> <additive_expr>)*
+*/
+pub fn range_expr(s: &str) -> IResult<&str, Expr> {
+    map(
+        tuple((
+            additive_expr,
+            many0(tuple((
+                whitespace0,
+                range_operator,
+                whitespace0,
+                additive_expr,
+            )))
+        )),
+        |(op, v)| {
+            _binop(op, v)
+        }
+    )(s)
+}
+
+/*
+<range_operator> ::= "..." || "..<"
+*/
+pub fn range_operator(s: &str) -> IResult<&str, String> {
+    alt((
+        map(tuple((char('.'), char('.'), char('.'))), |(a, b, c)| { a.to_string() + &*b.to_string() + &*c.to_string() }),
+        map(tuple((char('.'), char('.'), char('<'))), |(a, b, c)| { a.to_string() + &*b.to_string() + &*c.to_string() })
+    ))(s)
+}
+
+/*
+<additive_expr> ::= <multiplicative_expr> (<additive_operator> <multiplicative_expr>)*
+*/
+pub fn additive_expr(s: &str) -> IResult<&str, Expr> {
+    map(
+        tuple((
+            multiplicative_expr,
+            many0(tuple((
+                whitespace0,
+                additive_operator,
+                whitespace0,
+                multiplicative_expr,
+            )))
+        )),
+        |(op, v)| {
+            _binop(op, v)
+        }
+    )(s)
+}
+
+/*
+<additive_operator> ::= "+" | "-"
+*/
+pub fn additive_operator(s: &str) -> IResult<&str, String> {
+    map(alt((
+        char('+'),
+        char('-'),
+        )), |c| c.to_string())(s)
+}
+
+/*
+<multiplicative_expr> ::= <as_expr> (<multiplicative_operator> <as_expr>)*
+*/
+pub fn multiplicative_expr(s: &str) -> IResult<&str, Expr> {
+    map(
+        tuple((
+            as_expr,
+            many0(tuple((
+                whitespace0,
+                multiplicative_operator,
+                whitespace0,
+                as_expr,
+                )))
+            )),
+        |(op, v)| {
+            _binop(op, v)
+        }
+    )(s)
+}
+
+/*
+<multiplicative_operator> ::= "*" | "/" | "%"
+*/
+pub fn multiplicative_operator(s: &str) -> IResult<&str, String> {
+    map(alt((
+        char('*'),
+        char('/'),
+        char('%'),
+    )), |c|{c.to_string()})(s)
+}
+
+/*
+<as_expr> ::= <prefix_expr> (<as_operator> <type>)*
+*/
+pub fn as_expr(s: &str) -> IResult<&str, Expr> {
+    map(
+        tuple((
+            prefix_expr,
+            many0(tuple((
+                whitespace1,
+                as_operator,
+                whitespace1,
+                type_,
+            )))
+        )),
+        |(e, v), | {
+            let mut bin_op = e;
+            for (_, op, _, typ) in v {
+                bin_op = Expr::TypeCast {
+                    target: Box::new(bin_op),
+                    is_safe: op.ends_with("?"),
+                    type_: typ,
+                }
+            }
+            bin_op
+        }
+    )(s)
+}
+
+pub fn type_(s: &str) -> IResult<&str, String> {
+    // TODO:
+    identifier(s)
+}
+
+pub fn as_operator(s: &str) -> IResult<&str, String> {
+    alt((
+        map(tuple((char('a'), char('s'), char('?'))), |(a, b, c)| { a.to_string() + &*b.to_string() + &*c.to_string() }),
+        map(tuple((char('a'), char('s'))), |(a, b)| { a.to_string() + &*b.to_string() })
+    ))(s)
+}
+
+pub fn in_operator(s: &str) -> IResult<&str, String> {
+    alt((
+        map(tuple((char('i'), char('n'), char('!'))), |(a, b, c)| { a.to_string() + &*b.to_string() + &*c.to_string() }),
+        map(tuple((char('i'), char('n'))), |(a, b)| { a.to_string() + &*b.to_string() })
+    ))(s)
+}
+
+pub fn is_operator(s: &str) -> IResult<&str, String> {
+    alt((
+        map(tuple((char('i'), char('s'), char('!'))), |(a, b, c)| { a.to_string() + &*b.to_string() + &*c.to_string() }),
+        map(tuple((char('i'), char('s'))), |(a, b)| { a.to_string() + &*b.to_string() })
+    ))(s)
 }
 
 pub fn or_operator(s: &str) -> IResult<&str, String> {
@@ -122,23 +323,15 @@ pub fn or_operator(s: &str) -> IResult<&str, String> {
 pub fn disjunction_expr(s: &str) -> IResult<&str, Expr> {
     map(
         tuple((
-            literal_expr,
+            literal_expr, // conjection
             many0(tuple((
                 whitespace0,
                 or_operator,
                 whitespace0,
-                literal_expr,
+                literal_expr,// conjuction
             )))
         )), |(e, v)| {
-            let mut bin_op = e;
-            for (_, op, _, ex) in v {
-                bin_op = Expr::BinOp {
-                    left: Box::new(bin_op),
-                    kind: op,
-                    right: Box::new(ex),
-                }
-            }
-            bin_op
+            _binop(e, v)
         })(s)
 }
 

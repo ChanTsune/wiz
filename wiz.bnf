@@ -58,9 +58,9 @@
 
 <conjunction_expr> ::= <equality_expr> ("&&" <equality_expr>)*
 
-<equality_expr> ::= <comparison_expr> (<equality_oprator> <comparison_expr>)*
+<equality_expr> ::= <comparison_expr> (<equality_operator> <comparison_expr>)*
 
-<equality_oprator> ::= "==" | "!="
+<equality_operator> ::= "==" | "!="
 
 <comparison_expr> ::= <generic_call_like_comparison_expr> (<comparison_operator> <generic_call_like_comparison_expr>)*
 
@@ -70,9 +70,9 @@
 
 <infix_operation_expr> ::= <elvis_expr> ((<in_operator> <elvis_expr>) | (<is_operator> <type>))*
 
-<elvis_expr> ::= <infix_function_call> (":?" <infix_function_call>)*
+<elvis_expr> ::= <infix_function_call> (":?" <infix_function_call_expr>)*
 
-<infix_function_call> ::=  <range_expr> (<identifier> <range_expr>)*
+<infix_function_call_expr> ::=  <range_expr> (<identifier> <range_expr>)*
 
 <range_expr> ::= <additive_expr> (<range_operator> <additive_expr>)*
 
