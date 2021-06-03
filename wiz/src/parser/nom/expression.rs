@@ -8,6 +8,7 @@ use nom::branch::alt;
 use crate::parser::nom::lexical_structure::{identifier, whitespace0};
 use crate::ast::expr::Expr::BinOp;
 use nom::multi::many0;
+use nom::error::ParseError;
 
 pub fn integer_literal(s: &str) -> IResult<&str, Literal> {
     map(digit1, |n: &str| {
@@ -104,6 +105,14 @@ pub fn binary_expr(s: &str) -> IResult<&str, (String, Expr)> {
     )), |(_, op_kind, _, expr)| {
         (op_kind, expr)
     })(s)
+}
+
+pub fn wrap<I: Clone, O, E: ParseError<I>>(
+    left: impl FnMut(I) -> IResult<I, Expr, E>,
+    op: impl FnMut(I) -> IResult<I, String, E>,
+    right: impl FnMut(I) -> IResult<I, Expr, E>,
+) -> impl FnMut(I) -> IResult<I, (Expr, String, Expr), E> {
+    tuple((left, op, right))
 }
 
 pub fn or_operator(s: &str) -> IResult<&str, String> {
