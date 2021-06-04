@@ -94,7 +94,17 @@
 
 <is_operator> ::= "is" | "!is"
 
-<type> ::=
+<type> ::= <parenthesized_type> | <nullable_type> | <type_reference> | <function_type>
+
+<parenthesized_type> ::= "(" <type> ")"
+<nullable_type> ::= (<type_reference> | <parenthesized_type>) "?"
+<type_reference> ::= <user_type>
+<user_type> ::= <simple_user_type> ("." <simple_user_type>)*
+<function_type> ::= (<receiver_type> ".")? <function_type_parameters> "->" <type>
+<receiver_type> ::= <parenthesized_type> | <nullable_type> | <type_reference>
+<function_type_parameters> ::= '(' (<parameter> | <type>)? (',' (<parameter> | <type>))* ','? ')'
+
+<parameter> ::= <identifier> ":" <type>
 
 <call_suffix> ::= <type_arguments>? ((<value_arguments>? <annotated_lambda>) | <value_arguments>)
 

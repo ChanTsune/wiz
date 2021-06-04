@@ -9,6 +9,7 @@ use crate::parser::nom::lexical_structure::{identifier, whitespace0, whitespace1
 use crate::ast::expr::Expr::BinOp;
 use nom::multi::many0;
 use nom::error::ParseError;
+use crate::parser::nom::type_::type_;
 
 pub fn integer_literal(s: &str) -> IResult<&str, Literal> {
     map(digit1, |n: &str| {
@@ -432,11 +433,6 @@ pub fn as_expr(s: &str) -> IResult<&str, Expr> {
             bin_op
         }
     )(s)
-}
-
-pub fn type_(s: &str) -> IResult<&str, String> {
-    // TODO:
-    identifier(s)
 }
 
 pub fn as_operator(s: &str) -> IResult<&str, String> {
