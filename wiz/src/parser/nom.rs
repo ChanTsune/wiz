@@ -2,6 +2,7 @@ pub mod lexical_structure;
 pub mod expression;
 pub mod character;
 pub mod combinator;
+pub mod type_;
 
 use nom::{Err, IResult};
 use nom::character::complete::{digit1, space0, space1, one_of};
