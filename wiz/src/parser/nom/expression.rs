@@ -107,25 +107,169 @@ fn _binop(e:Expr, v: Vec<(&str, String, &str, Expr)>) -> Expr {
     }
     bin_op
 }
+// &&
+pub fn conjunction_operator(s: &str) -> IResult<&str, String> {
+    map(tuple((char('&'), char('&'))), |(a, b)| { a.to_string() + &*b.to_string() })(s)
+}
 
 /*
 <conjunction_expr> ::= <equality_expr> ("&&" <equality_expr>)*
-
-<equality_expr> ::= <comparison_expr> (<equality_operator> <comparison_expr>)*
-
-<equality_operator> ::= "==" | "!="
-
-<comparison_expr> ::= <generic_call_like_comparison_expr> (<comparison_operator> <generic_call_like_comparison_expr>)*
-
-<comparison_operator> ::= "<"  | ">"  | "<="  | ">="
-
-<generic_call_like_comparison_expr> ::= <infix_operation_expr> <call_suffix_expr>*
-
-<infix_operation_expr> ::= <elvis_expr> ((<in_operator> <elvis_expr>) | (<is_operator> <type>))*
-
 */
+pub fn conjunction_expr(s: &str) -> IResult<&str, Expr> {
+    map(
+        tuple((
+            equality_expr,
+            many0(tuple((
+                whitespace0,
+                conjunction_operator,
+                whitespace0,
+                equality_expr,
+            )))
+        )),
+        |(op, v)| {
+            _binop(op, v)
+        }
+    )(s)
+}
+/*
+<equality_expr> ::= <comparison_expr> (<equality_operator> <comparison_expr>)*
+*/
+pub fn equality_expr(s: &str) -> IResult<&str, Expr> {
+    map(
+        tuple((
+            comparison_expr,
+            many0(tuple((
+                whitespace0,
+                equality_operator,
+                whitespace0,
+                comparison_expr,
+            )))
+        )),
+        |(op, v)| {
+            _binop(op, v)
+        }
+    )(s)
+}
 
+/*
+<equality_operator> ::= "==" | "!="
+*/
+pub fn equality_operator(s: &str) -> IResult<&str, String> {
+    alt((
+        map(tuple((char('='), char('='))), |(a, b)| {a.to_string() + &*b.to_string() }),
+        map(tuple((char('!'), char('='))), |(a, b)| {a.to_string() + &*b.to_string() }),
+        ))(s)
+}
 
+/*
+<comparison_expr> ::= <generic_call_like_comparison_expr> (<comparison_operator> <generic_call_like_comparison_expr>)*
+*/
+pub fn comparison_expr(s: &str) -> IResult<&str, Expr> {
+    map(
+        tuple((
+            generic_call_like_comparison_expr,
+            many0(tuple((
+                whitespace0,
+                comparison_operator,
+                whitespace0,
+                generic_call_like_comparison_expr,
+            )))
+        )),
+        |(op, v)| {
+            _binop(op, v)
+        }
+    )(s)
+}
+
+/*
+<comparison_operator> ::= "<"  | ">"  | "<="  | ">="
+*/
+pub fn comparison_operator(s: &str) -> IResult<&str, String> {
+    alt((
+        map(tuple((char('<'), char('='))), |(a, b)| {a.to_string() + &*b.to_string() }),
+        map(tuple((char('>'), char('='))), |(a, b)| {a.to_string() + &*b.to_string() }),
+        map(char('='), |a| {a.to_string() }),
+        map(char('='), |a| {a.to_string() }),
+        ))(s)
+}
+
+pub fn call_suffix(s: &str) -> IResult<&str, String> {
+    // TODO: impl
+    map(char(' '), |c|{c.to_string()})(s)
+}
+/*
+<generic_call_like_comparison_expr> ::= <infix_operation_expr> <call_suffix>*
+*/
+pub fn generic_call_like_comparison_expr(s: &str) -> IResult<&str, Expr> {
+    map(tuple((
+        infix_operation_expr,
+        many0(call_suffix)
+        )), |(e, calls)| {
+        // TODO: use calls
+        e
+    })(s)
+}
+
+/*
+<infix_operation_expr> ::= <elvis_expr> ((<in_operator> <elvis_expr>) | (<is_operator> <type>))*
+*/
+pub fn infix_operation_expr(s: &str) -> IResult<&str, Expr> {
+    enum P {
+        IN {
+            op: String,
+            expr: Expr
+        },
+        IS {
+            op: String,
+            type_: String,
+        },
+    }
+    map(
+        tuple((
+            elvis_expr,
+            many0(alt((
+                map(tuple((
+                    whitespace1,
+                    in_operator,
+                    whitespace1,
+                    elvis_expr,
+                )), |(_, op, _, expr)| {
+                    P::IN { op, expr }
+                }),
+                map(tuple((
+                    whitespace1,
+                    is_operator,
+                    whitespace1,
+                    type_,
+                )), |(_, op, _, type_)| {
+                    P::IS {op, type_}
+                })
+                )))
+        )),
+        |(op, v)| {
+            let mut bin_op = op;
+            for p in v {
+                match p {
+                    P::IS{ op, type_ } => {
+                        bin_op = Expr::TypeCast {
+                            target: Box::new(bin_op),
+                            is_safe: op.ends_with("?"),
+                            type_
+                        }
+                    },
+                    P::IN{op, expr} => {
+                        bin_op = Expr::BinOp {
+                            left: Box::new(bin_op),
+                            kind: op,
+                            right: Box::new(expr)
+                        }
+                    }
+                }
+            }
+            bin_op
+        }
+    )(s)
+}
 
 /*
 <elvis_expr> ::= <infix_function_call> (":?" <infix_function_call_expr>)*
@@ -316,19 +460,19 @@ pub fn is_operator(s: &str) -> IResult<&str, String> {
     ))(s)
 }
 
-pub fn or_operator(s: &str) -> IResult<&str, String> {
+pub fn disjunction_operator(s: &str) -> IResult<&str, String> {
     map(tuple((char('|'), char('|'))), |(a, b)| { a.to_string() + &*b.to_string() })(s)
 }
 
 pub fn disjunction_expr(s: &str) -> IResult<&str, Expr> {
     map(
         tuple((
-            literal_expr, // conjection
+            conjunction_expr,
             many0(tuple((
                 whitespace0,
-                or_operator,
+                disjunction_operator,
                 whitespace0,
-                literal_expr,// conjuction
+                conjunction_expr,
             )))
         )), |(e, v)| {
             _binop(e, v)
@@ -352,7 +496,7 @@ mod tests {
         assert_eq!(integer_literal("1"), Ok(("", IntegerLiteral { value: "1".to_string() })));
         assert_eq!(integer_literal("12"), Ok(("", IntegerLiteral { value: "12".to_string() })));
     }
-
+    #[test]
     fn test_disjunction_expr() {
         assert_eq!(disjunction_expr("1||2 || 3"), Ok(("", BinOp { left: Box::from(BinOp { left: Box::from(Literal { literal: IntegerLiteral { value: "1".parse().unwrap() } }), kind: "||".parse().unwrap(), right: Box::from(Literal { literal: IntegerLiteral { value: "2".parse().unwrap() } }) }), kind: "||".parse().unwrap(), right: Box::from(Literal { literal: IntegerLiteral { value: "3".parse().unwrap() } }) })))
     }

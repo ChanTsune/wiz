@@ -66,7 +66,7 @@
 
 <comparison_operator> ::= "<"  | ">"  | "<="  | ">="
 
-<generic_call_like_comparison_expr> ::= <infix_operation_expr> <call_suffix_expr>*
+<generic_call_like_comparison_expr> ::= <infix_operation_expr> <call_suffix>*
 
 <infix_operation_expr> ::= <elvis_expr> ((<in_operator> <elvis_expr>) | (<is_operator> <type>))*
 
@@ -96,7 +96,13 @@
 
 <type> ::=
 
-<call_suffix_expr> ::= 
+<call_suffix> ::= <type_arguments>? ((<value_arguments>? <annotated_lambda>) | <value_arguments>)
+
+<type_arguments> ::= 
+
+<value_arguments> ::=
+
+<annotated_lambda> ::=
 
 <prefix_expr> ::= <prefix_operator> <postfix_expr>
                 | <postfix_expr>

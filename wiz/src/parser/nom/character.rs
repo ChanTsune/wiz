@@ -21,10 +21,20 @@ pub fn under_score<I>(s: I) -> IResult<I, char>
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::nom::character::alphabet;
+    use crate::parser::nom::character::{alphabet, digit, under_score};
 
     #[test]
     fn test_alphabet() {
         assert_eq!(alphabet("abc"), Ok(("bc", 'a')));
+    }
+
+    #[test]
+    fn test_digit() {
+        assert_eq!(digit("12"), Ok(("2", '1')))
+    }
+
+    #[test]
+    fn test_under_score() {
+        assert_eq!(under_score("_"), Ok(("", '_')))
     }
 }
