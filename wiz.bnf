@@ -17,8 +17,23 @@
 <variable> ::= "var" <white_space> <identifire> ":" <white_space> <type_name> <white_space> "=" <white_space> <expr>
           | "var" <white_space> <identifire> "=" <white_space> <expr>
 
-<fun_decl> ::= "fun" <white_spaces> <identifire> "(" <arg_defs> ")" <block>
-             | "fun" <white_spaces> <identifire> "(" <arg_defs> ")" <white_spaces> "->" <white_spaces> <type_name> <block>
+<modifiers> ::= <modifier>+
+
+<modifier> ::= <function_modifier>
+        #      | <visibility_modifier>
+
+<function_modifier> ::= 'operator'
+                      | 'infix'
+                      | 'inline'
+
+<fun_decl> ::= <modifiers>? "fun" <identifire> <type_parameters>? <function_value_parameters> (":" <type>)? <type_constraints>? <function_body>?
+
+<type_constraints> ::= "where" <type_constraint> ("," <type_constraint>)*
+
+<type_constraint> ::= <identifier> ":" <type>
+
+<function_body> ::= <block>
+                | "=" <expr>
 
 <arg_defs> ::= <arg_def> "," <arg_defs>
              | <arg_def> ","
@@ -42,15 +57,9 @@
 
 <type_name> ::= <identifire>
 
-<type_params> ::= <type_param> "," <type_params>
-                | <type_param> ","
-                | <type_param>
+<type_parameters> ::= "<" <type_parameter> ("," <type_parameter>)* ","? ">"
 
-<type_param> ::= <identifire> ":" <type_names>
-               | <identifire>
-<type_names> ::= <type_name> "," <type_names>
-               | <type_name> ","
-               | <type_name>
+<type_parameter> ::= <identifier> (":", <type>)?
 
 <expr> ::= <disjunction_expr>
 
@@ -100,8 +109,8 @@
 <nullable_type> ::= (<type_reference> | <parenthesized_type>) "?"
 <type_reference> ::= <user_type>
 <user_type> ::= <simple_user_type> ("." <simple_user_type>)*
-<function_type> ::= (<receiver_type> ".")? <function_type_parameters> "->" <type>
-<receiver_type> ::= <parenthesized_type> | <nullable_type> | <type_reference>
+<simple_user_type> ::= <identifier> <type_arguments>?
+<function_type> ::= <function_type_parameters> "->" <type>
 <function_type_parameters> ::= '(' (<parameter> | <type>)? (',' (<parameter> | <type>))* ','? ')'
 
 <parameter> ::= <identifier> ":" <type>
