@@ -98,11 +98,15 @@
 
 <call_suffix> ::= <type_arguments>? ((<value_arguments>? <annotated_lambda>) | <value_arguments>)
 
-<type_arguments> ::= 
+<type_arguments> ::= "<" <type> ("," <type>)* "," ">"
 
-<value_arguments> ::=
+<value_arguments> ::= "(" <value_argument> ("," <value_argument>)* "," ")"
 
-<annotated_lambda> ::=
+<value_argument> ::= (<identifier> "=")? "*"? <expr>
+
+<annotated_lambda> ::= <label>? <lambda_literal>
+
+<label> ::= 
 
 <prefix_expr> ::= <prefix_operator> <postfix_expr>
                 | <postfix_expr>
@@ -129,7 +133,7 @@
         # | <call>
         # | <if>
         # | <when>
-        # | <lambda>
+                | <function_literal>
         # | <return>
         # | <member>
         # | <for>
@@ -156,7 +160,10 @@
 # <boolean_literal> ::=
 # <null_literal> ::=
 
-<binary_operator> ::= "+" | "-" | "*" | "/" | "%" | "&&" | "||"
+<function_literal> ::= <lambda_literal>
+
+<lambda_literal> ::= "{" <stmts> "}"
+
 <postfix_operator> ::= "!"
 
 <digits> ::= <digit> <digits>
