@@ -8,4 +8,9 @@ edition = "2018"
 
 [dependencies]
 nom = "6.1.2"
-# inkwell = ""
+inkwell = "0.0.0"
+rustc-llvm-proxy = "0.2.0"
+
+[dependencies.llvm-sys]
+features = ["no-llvm-linking"]
+
