@@ -10,6 +10,7 @@ use crate::ast::expr::Expr::BinOp;
 use nom::multi::many0;
 use nom::error::ParseError;
 use crate::parser::nom::type_::type_;
+use crate::ast::type_name::TypeName;
 
 pub fn integer_literal(s: &str) -> IResult<&str, Literal> {
     map(digit1, |n: &str| {
@@ -222,7 +223,7 @@ pub fn infix_operation_expr(s: &str) -> IResult<&str, Expr> {
         },
         IS {
             op: String,
-            type_: String,
+            type_: TypeName,
         },
     }
     map(

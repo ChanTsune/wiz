@@ -4,9 +4,9 @@ use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq)]
 pub struct ArgDef {
-    label: String,
-    name: String,
-    type_name: TypeName
+    pub(crate) label: String,
+    pub(crate) name: String,
+    pub(crate) type_name: TypeName
 }
 
 impl Node for ArgDef {

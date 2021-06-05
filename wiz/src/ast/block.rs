@@ -4,7 +4,7 @@ use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq)]
 pub struct Block {
-    body: Vec<Stmt>
+    pub(crate) body: Vec<Stmt>
 }
 
 impl Node for Block {

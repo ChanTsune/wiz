@@ -3,6 +3,8 @@ pub mod expression;
 pub mod character;
 pub mod combinator;
 pub mod type_;
+pub mod declaration;
+pub mod keywords;
 
 use nom::{Err, IResult};
 use nom::character::complete::{digit1, space0, space1, one_of};
@@ -15,22 +17,29 @@ use nom::sequence::tuple;
 use nom::combinator::map;
 use nom::branch::alt;
 use crate::parser::nom::expression::expr;
+use nom::multi::many0;
+use crate::parser::nom::declaration::decl;
 
 
-pub fn stmt(s: &str) -> IResult<&str, Stmt> {
-    expr(s).map(|(s, e)| {
-        (s, Stmt::Expr { expr: e })
-    })
+pub fn decl_stmt(s: &str) -> IResult<&str, Stmt> {
+    map(decl, |d| {
+        Stmt::Decl { decl: d }
+    })(s)
 }
 
-// pub fn var_decl(s: &str) -> IResult<&str, Decl> {
-//
-// }
-//
-// pub fn decl(s: &str) -> IResult<&str, Decl> {
-//
-// }
-//
-// pub fn parse(s: &str) -> IResult<&str, File> {
-//     integer_literal(s).map(|(s, )|)
-// }
+pub fn expr_stmt(s: &str) -> IResult<&str, Stmt> {
+    map(expr, |e| {
+        Stmt::Expr { expr: e }
+    })(s)
+}
+
+pub fn stmt(s: &str) -> IResult<&str, Stmt> {
+    alt((
+        expr_stmt,
+        decl_stmt,
+    ))(s)
+}
+
+pub fn stmts(s: &str) -> IResult<&str, Vec<Stmt>> {
+    many0(stmt)(s)
+}

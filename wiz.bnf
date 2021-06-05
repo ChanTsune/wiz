@@ -28,6 +28,13 @@
 
 <fun_decl> ::= <modifiers>? "fun" <identifire> <type_parameters>? <function_value_parameters> (":" <type>)? <type_constraints>? <function_body>?
 
+<function_value_parameters> ::= "(" (<function_value_parameter> ("," <function_value_parameter>)* ","?)? ")"
+
+<function_value_parameter> ::= <function_value_label> <function_value_name> ":" <type> ("=" <expr>)?
+
+<function_value_label> ::= <identifier>
+<function_value_name> ::= <identifier>
+
 <type_constraints> ::= "where" <type_constraint> ("," <type_constraint>)*
 
 <type_constraint> ::= <identifier> ":" <type>
@@ -121,7 +128,7 @@
 
 <value_arguments> ::= "(" <value_argument> ("," <value_argument>)* "," ")"
 
-<value_argument> ::= (<identifier> "=")? "*"? <expr>
+<value_argument> ::= (<identifier> ":")? "*"? <expr>
 
 <annotated_lambda> ::= <label>? <lambda_literal>
 

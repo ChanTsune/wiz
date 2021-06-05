@@ -1,6 +1,7 @@
 use crate::ast::node::Node;
 use crate::ast::literal::Literal;
 use std::fmt;
+use crate::ast::type_name::TypeName;
 
 #[derive(fmt::Debug, Eq, PartialEq)]
 pub enum Expr {
@@ -55,7 +56,7 @@ pub enum Expr {
     TypeCast {
         target: Box<Expr>,
         is_safe: bool,
-        type_: String // TODO:
+        type_: TypeName
     }
 }
 
