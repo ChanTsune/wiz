@@ -16,7 +16,10 @@ use nom::multi::many0;
 use crate::parser::nom::stmts;
 
 pub fn decl(s: &str) -> IResult<&str, Decl> {
-    alt((function_decl, function_decl))(s)
+    alt((
+        function_decl,
+        function_decl)
+    )(s)
 }
 
 pub fn function_decl(s: &str) -> IResult<&str, Decl> {
@@ -142,4 +145,34 @@ pub fn block(s: &str) -> IResult<&str, Block> {
         )), |(_, stmts, _)|{
         Block{ body: stmts }
     })(s)
+}
+
+#[cfg(test)]
+mod test {
+    use crate::parser::nom::declaration::block;
+    use crate::ast::block::Block;
+    use crate::ast::stmt::Stmt;
+    use crate::ast::literal::Literal;
+    use crate::ast::expr::Expr;
+
+    #[test]
+    fn test_empty_block() {
+        assert_eq!(block("{}"), Ok(("", Block{ body: vec![] })))
+    }
+
+    #[test]
+    fn test_block_with_int_literal() {
+        assert_eq!(block("{1}"), Ok(("", Block{ body: vec![Stmt::Expr { expr: Expr::Literal { literal: Literal::IntegerLiteral { value: "1".to_string() } } }] })))
+    }
+
+    #[test]
+    fn test_block_with_binop_literal() {
+        assert_eq!(block("{1+1}"), Ok(("", Block{ body: vec![
+            Stmt::Expr { expr: Expr::BinOp {
+                left: Box::new(Expr::Literal { literal: Literal::IntegerLiteral { value: "1".to_string() } }),
+                kind: "+".to_string(),
+                right: Box::new(Expr::Literal { literal: Literal::IntegerLiteral { value: "1".to_string() } })
+            } }
+        ] })))
+    }
 }
