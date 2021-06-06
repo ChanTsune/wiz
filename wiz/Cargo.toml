@@ -8,7 +8,7 @@ edition = "2018"
 
 [dependencies]
 nom = "6.1.2"
-inkwell = "0.0.0"
+inkwell = { git = "https://github.com/TheDan64/inkwell", branch = "master", features = ["llvm11-0"] }
 rustc-llvm-proxy = "0.2.0"
 
 [dependencies.llvm-sys]
