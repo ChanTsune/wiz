@@ -13,3 +13,18 @@ pub fn where_keyword(s: &str) -> IResult<&str, String> {
         a.to_string()
     })(s)
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::parser::nom::keywords::{fun_keyword, where_keyword};
+
+    #[test]
+    fn test_fun_keyword() {
+        assert_eq!(fun_keyword("fun"), Ok(("", "fun".to_string())))
+    }
+
+    #[test]
+    fn test_where_keyword() {
+        assert_eq!(where_keyword("where"), Ok(("", "where".to_string())))
+    }
+}

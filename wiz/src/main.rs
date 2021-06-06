@@ -8,6 +8,9 @@ use inkwell::execution_engine::{ExecutionEngine, JitFunction};
 use inkwell::module::Module;
 use inkwell::targets::{InitializationConfig, Target};
 use std::error::Error;
+use std::path::Path;
+use std::env::args;
+use inkwell::support::LLVMString;
 
 mod ast;
 mod parser;
@@ -28,6 +31,18 @@ struct CodeGen<'ctx> {
 }
 
 impl<'ctx> CodeGen<'ctx> {
+    /**
+    * Generate main function as entry point.
+    */
+    fn initialize(&self) {
+        let void_type = self.context.void_type();
+        let fn_type = void_type.fn_type(&[], false);
+        let function = self.module.add_function("main", fn_type, None);
+        let basic_block = self.context.append_basic_block(function, "entry");
+        self.builder.position_at_end(basic_block);
+        self.builder.build_return(None);
+    }
+
     fn jit_compile_sum(&self) -> Option<JitFunction<SumFunc>> {
         let i64_type = self.context.i64_type();
         let fn_type = i64_type.fn_type(&[i64_type.into(), i64_type.into(), i64_type.into()], false);
@@ -46,6 +61,12 @@ impl<'ctx> CodeGen<'ctx> {
         self.builder.build_return(Some(&sum));
 
         unsafe { self.execution_engine.get_function("sum").ok() }
+    }
+    /**
+    * Write the LLVM IR to a file in the path.
+    */
+    fn print_to_file<P: AsRef<Path>>(&self, path: P) -> Result<(), LLVMString> {
+        self.module.print_to_file(path)
     }
 }
 
