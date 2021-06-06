@@ -43,3 +43,9 @@ pub fn stmt(s: &str) -> IResult<&str, Stmt> {
 pub fn stmts(s: &str) -> IResult<&str, Vec<Stmt>> {
     many0(stmt)(s)
 }
+
+pub fn file(s: &str) -> IResult<&str, File> {
+    map(many0(decl), |decls| {
+        File{ body: decls }
+    })(s)
+}

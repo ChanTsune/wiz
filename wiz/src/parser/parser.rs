@@ -1,9 +1,14 @@
 use std::fs::File;
 use std::io::Read;
 use std::io;
+use crate::parser::nom::file;
+use std::process::exit;
 
 pub fn parse_from_string(string: String) -> crate::ast::file::File {
-    return crate::ast::file::File{ body: vec![] }
+    return match file(&*string) {
+        Ok((s, f)) => {f}
+        Err(..) => {exit(-1)}
+    }
 }
 
 pub fn parse_from_file(mut file: File) -> io::Result<crate::ast::file::File> {
