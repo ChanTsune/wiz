@@ -1,2 +1,2 @@
-mod ast2ir;
+pub mod codegen;
 
