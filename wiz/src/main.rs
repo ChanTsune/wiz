@@ -1,11 +1,11 @@
 use crate::parser::parser::parse_from_string;
 use crate::parser::nom::expression::{expr};
 
-use inkwell::OptimizationLevel;
+use inkwell::{OptimizationLevel, AddressSpace};
 use inkwell::builder::Builder;
 use inkwell::context::Context;
 use inkwell::execution_engine::{ExecutionEngine, JitFunction};
-use inkwell::module::Module;
+use inkwell::module::{Module, Linkage};
 use inkwell::targets::{InitializationConfig, Target};
 use std::error::Error;
 use std::path::Path;
@@ -40,7 +40,29 @@ impl<'ctx> CodeGen<'ctx> {
         let function = self.module.add_function("main", fn_type, None);
         let basic_block = self.context.append_basic_block(function, "entry");
         self.builder.position_at_end(basic_block);
+        let sum_function = self.module.get_function("sum").unwrap();
+        let x = self.context.i64_type().const_int(1, false);
+        let y = self.context.i64_type().const_int(2, false);
+
+        let sum = self.builder.build_call(sum_function, &[x.into(), y.into()], "sum");
+
+
+        let put_function = self.module.get_function("puts").unwrap();
+
+        self.builder.build_call(put_function, &[sum.try_as_basic_value().left().unwrap().into()], "_");
+
         self.builder.build_return(None);
+    }
+
+    fn puts(&self) {
+        let i32_type = self.context.i32_type();
+        let i8p_type = self.context.i8_type().ptr_type(AddressSpace::Generic);
+        let fn_type = i32_type.fn_type(&[i8p_type.into()], false);
+        let function = self.module.add_function("puts", fn_type, Some(Linkage::External));
+    }
+
+    fn builtin_print(&self) {
+
     }
 
     fn jit_compile_sum(&self) -> Option<JitFunction<SumFunc>> {
@@ -72,8 +94,12 @@ impl<'ctx> CodeGen<'ctx> {
 
 
 fn main() -> Result<(), Box<dyn Error>> {
+    let mut module_name = "main";
+    for arg in args() {
+        println!("{}", arg);
+    }
     let context = Context::create();
-    let module = context.create_module("sum");
+    let module = context.create_module(module_name);
     let execution_engine = module.create_jit_execution_engine(OptimizationLevel::None)?;
     let codegen = CodeGen {
         context: &context,
@@ -92,6 +118,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         println!("{} + {} + {} = {}", x, y, z, sum.call(x, y, z));
         assert_eq!(sum.call(x, y, z), x + y + z);
     }
+    codegen.puts();
+    codegen.initialize();
+    codegen.print_to_file(Path::new("./sample.ll"));
 
     Ok(())
 }
