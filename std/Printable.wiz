@@ -1,3 +1,0 @@
-protocol Printable {
-    fun toString() -> String
-}

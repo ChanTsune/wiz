@@ -1,0 +1,3 @@
+protocol Printable {
+    fun description() -> String
+}

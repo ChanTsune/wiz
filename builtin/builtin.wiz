@@ -1,0 +1,9 @@
+
+fun print(_ item: Printable) {
+    print(item.description)
+}
+
+fun print(_ item: Printable) {
+    print(item.description)
+    print("\n")
+}
