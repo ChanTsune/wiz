@@ -93,7 +93,7 @@ impl<'ctx> CodeGen<'ctx> {
                 let lft = self.expr(*left);
                 let rit = self.expr(*right);
                 let v = self.builder.build_int_add(lft.into_int_value(), rit.into_int_value(), "sum");
-                
+
                 AnyValueEnum::from(v)
             }
             Expr::UnaryOp { .. } => {
