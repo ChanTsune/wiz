@@ -3,7 +3,7 @@ use crate::ast::literal::Literal;
 use std::fmt;
 use crate::ast::type_name::TypeName;
 
-#[derive(fmt::Debug, Eq, PartialEq)]
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum Expr {
     Name {
         name: String
@@ -39,7 +39,8 @@ pub enum Expr {
     },
     Call {
         target: Box<Expr>,
-        // TODO
+        args: Vec<CallArg>,
+        tailing_lambda: Option<Lambda>
     },
     If {
         // TODO
@@ -48,7 +49,7 @@ pub enum Expr {
         // TODO
     },
     Lambda {
-        // TODO
+        lambda: Lambda
     },
     Return {
         // TODO
@@ -62,4 +63,26 @@ pub enum Expr {
 
 impl Node for Expr {
 
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct CallArg {
+    label: String,
+    arg: Box<Expr>
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct Lambda {
+
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub enum PostfixSuffix {
+    Operator {
+        kind: String
+    },
+    CallSuffix,
+    TypeArgumentSuffix,
+    IndexingSuffix,
+    NavigationSuffix,
 }

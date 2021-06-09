@@ -1,7 +1,7 @@
 use nom::{IResult, Parser};
 use crate::ast::literal::Literal;
 use nom::character::complete::{digit1, one_of, char, anychar};
-use crate::ast::expr::Expr;
+use crate::ast::expr::{Expr, PostfixSuffix};
 use nom::combinator::{map, opt, iterator};
 use nom::sequence::tuple;
 use nom::branch::alt;
@@ -74,13 +74,52 @@ pub fn primary_expr(s: &str) -> IResult<&str, Expr> {
         parenthesized_expr,
     ))(s)
 }
-
+/*
+<postfix_expr> ::= <primary_expr> <postfix_suffix>*
+*/
 pub fn postfix_expr(s: &str) -> IResult<&str, Expr> {
-    alt((
+    map(tuple((
         primary_expr,
-        primary_expr,
-    ))(s)
+        many0(postfix_suffix)
+    )), |(e, suffixes)|{
+        // TODO:
+        e
+    })(s)
 }
+/*
+<postfix_suffix> ::= <postfix_operator>
+                   | <type_arguments>
+                   | <call_suffix>
+                   | <indexing_suffix>
+                   | <navigation_suffix>
+*/
+pub fn postfix_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
+    alt((
+            map(postfix_operator, |s|{
+                PostfixSuffix::Operator { kind: s }
+            }),
+            // TODO:
+            map(postfix_operator, |s|{
+                PostfixSuffix::Operator { kind: s }
+            }),
+            // type_arguments,
+            // map(call_suffix, || {
+            //
+            // }),
+        ))(s)
+}
+
+pub fn postfix_operator(s: &str) -> IResult<&str, String> {
+    map(char('!'), |c|{c.to_string()})(s)
+}
+
+// pub fn indexing_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
+//
+// }
+//
+// pub fn navigation_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
+//
+// }
 
 pub fn prefix_expr(s: &str) -> IResult<&str, Expr> {
     map(tuple((

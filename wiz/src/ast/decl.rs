@@ -5,7 +5,7 @@ use crate::ast::type_name::TypeName;
 use crate::ast::block::Block;
 use crate::ast::fun::body_def::FunBody;
 
-#[derive(fmt::Debug, Eq, PartialEq)]
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum Decl {
     Var {
         // TODO

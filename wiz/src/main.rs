@@ -46,8 +46,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
     codegen.builtin_print();
     // codegen.initialize();
-    // println!("{:?}", ast_file.unwrap());
-    codegen.file(ast_file.unwrap());
+    println!("{:?}", ast_file.unwrap());
+    // codegen.file(ast_file.unwrap());
     codegen.print_to_file(Path::new("./sample.ll"));
 
     Ok(())

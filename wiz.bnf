@@ -137,15 +137,17 @@
 <prefix_expr> ::= <prefix_operator> <postfix_expr>
                 | <postfix_expr>
 
-<postfix_expr> ::= <primary_expr>
-                | <postfix_expr> <postfix_operator>
-                # | function_call_expression
-                # | initializer_expression
-                # | explicit_member_expression
-                # | postfix_self_expression
-                # | subscript_expression
-                # | forced_value_expression
-                # | optional_chaining_expression
+<postfix_expr> ::= <primary_expr> <postfix_suffix>*
+
+<postfix_suffix> ::= <postfix_operator>
+                   | <type_arguments>
+                   | <call_suffix>
+                   | <indexing_suffix>
+                   | <navigation_suffix>
+
+<indexing_suffix> ::=
+<navigation_suffix> ::=
+
 
 <binary_expr> ::= <white_space> <operator> <white_space> <expr>
 
