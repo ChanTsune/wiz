@@ -126,7 +126,7 @@
 
 <type_arguments> ::= "<" <type> ("," <type>)* ","? ">"
 
-<value_arguments> ::= "(" <value_argument> ("," <value_argument>)* "," ")"
+<value_arguments> ::= "(" <value_argument> ("," <value_argument>)* ","? ")"
 
 <value_argument> ::= (<identifier> ":")? "*"? <expr>
 

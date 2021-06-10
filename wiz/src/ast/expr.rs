@@ -2,6 +2,7 @@ use crate::ast::node::Node;
 use crate::ast::literal::Literal;
 use std::fmt;
 use crate::ast::type_name::TypeName;
+use crate::ast::stmt::Stmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum Expr {
@@ -67,13 +68,14 @@ impl Node for Expr {
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct CallArg {
-    label: String,
-    arg: Box<Expr>
+    pub(crate) label: Option<String>,
+    pub(crate) arg: Box<Expr>,
+    pub(crate) is_vararg: bool
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct Lambda {
-
+    pub(crate) stmts: Vec<Stmt>
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -84,7 +86,10 @@ pub enum PostfixSuffix {
     TypeArgumentSuffix {
         types: Vec<TypeName>
     },
-    CallSuffix,
+    CallSuffix {
+        args: Vec<CallArg>,
+        tailing_lambda: Option<Lambda>
+    },
     IndexingSuffix,
     NavigationSuffix,
 }

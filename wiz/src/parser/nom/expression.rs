@@ -1,7 +1,7 @@
 use nom::{IResult, Parser};
 use crate::ast::literal::Literal;
 use nom::character::complete::{digit1, one_of, char, anychar};
-use crate::ast::expr::{Expr, PostfixSuffix};
+use crate::ast::expr::{Expr, PostfixSuffix, CallArg, Lambda};
 use nom::combinator::{map, opt, iterator};
 use nom::sequence::tuple;
 use nom::branch::alt;
@@ -11,6 +11,7 @@ use nom::multi::many0;
 use nom::error::ParseError;
 use crate::parser::nom::type_::{type_, type_arguments};
 use crate::ast::type_name::TypeName;
+use crate::parser::nom::stmts;
 
 pub fn integer_literal(s: &str) -> IResult<&str, Literal> {
     map(digit1, |n: &str| {
@@ -98,12 +99,10 @@ pub fn postfix_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
             map(postfix_operator, |s|{
                 PostfixSuffix::Operator { kind: s }
             }),
-            map(type_arguments,|typeNames| {
-                PostfixSuffix::TypeArgumentSuffix { types: typeNames }
+            map(type_arguments,|type_names| {
+                PostfixSuffix::TypeArgumentSuffix { types: type_names }
             }),
-            // map(call_suffix, || {
-            //
-            // }),
+            call_suffix,
             // map(index_suffix, || {
             //
             // }),
@@ -116,6 +115,8 @@ pub fn postfix_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
 pub fn postfix_operator(s: &str) -> IResult<&str, String> {
     map(char('!'), |c|{c.to_string()})(s)
 }
+
+
 
 // pub fn indexing_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
 //
@@ -237,11 +238,98 @@ pub fn comparison_operator(s: &str) -> IResult<&str, String> {
         map(char('='), |a| {a.to_string() }),
         ))(s)
 }
-
-pub fn call_suffix(s: &str) -> IResult<&str, String> {
-    // TODO: impl
-    map(char(' '), |c|{c.to_string()})(s)
+/*
+<call_suffix> ::= <type_arguments>? ((<value_arguments>? <annotated_lambda>) | <value_arguments>)
+*/
+pub fn call_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
+    map(tuple((
+        opt(type_arguments),
+        alt((
+            map(tuple((
+                opt(value_arguments),
+                annotated_lambda,
+            )),|(args, l)|{
+                (args, Option::Some(l))
+            }),
+            map(value_arguments, |v|{
+                (Option::Some(v), Option::None)
+            })
+            ))
+        )), |(ta, (args,tl))|{
+        PostfixSuffix::CallSuffix { args: args.unwrap_or(vec![]), tailing_lambda: tl }
+    })(s)
 }
+/*
+<value_arguments> ::= "(" <value_argument> ("," <value_argument>)* ","? ")"
+*/
+pub fn value_arguments(s: &str) -> IResult<&str, Vec<CallArg>> {
+    map(tuple((
+            char('('),
+            value_argument,
+            many0(tuple((
+                char(','),
+                value_argument
+                ))),
+            opt(char(',')),
+            char(')'),
+        )), |(_, a, ags,_, _)| {
+            let mut args = vec![a];
+            for (_, ar) in ags {
+                args.insert(args.len(), ar);
+            }
+            args
+    })(s)
+}
+/*
+<value_argument> ::= (<identifier> ":")? "*"? <expr>
+*/
+pub fn value_argument(s: &str) -> IResult<&str, CallArg> {
+    map(tuple((
+        opt(tuple((
+            identifier,
+            char(':')
+            ))),
+        opt(char('*')),
+        expr,
+        )), |(arg_label, is_vararg, arg)|{
+            CallArg{
+                label: arg_label.map(|(label, _)|{label}),
+                arg: Box::new(arg),
+                is_vararg: match is_vararg {
+                    None => false,
+                    Some(_) => true,
+            } }
+    })(s)
+}
+/*
+<annotated_lambda> ::= <label>? <lambda_literal>
+*/
+pub fn annotated_lambda(s: &str) -> IResult<&str, Lambda> {
+    map(tuple((
+            opt(label), // TODO: label
+            lambda_literal
+        )), |(l, lmd)| {
+        lmd
+    })(s)
+}
+
+pub fn lambda_literal(s: &str) -> IResult<&str, Lambda> {
+    map(tuple((
+        char('{'),
+        stmts,
+        char('}'),
+        )), |(_, stms,_)|{
+            Lambda{ stmts: stms}
+    })(s)
+}
+
+pub fn label(s: &str) -> IResult<&str, char> {
+    // TODO: Impl
+    char(' ')(s)
+}
+
+
+
 /*
 <generic_call_like_comparison_expr> ::= <infix_operation_expr> <call_suffix>*
 */
