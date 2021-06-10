@@ -9,7 +9,7 @@ use crate::parser::nom::lexical_structure::{identifier, whitespace0, whitespace1
 use crate::ast::expr::Expr::BinOp;
 use nom::multi::many0;
 use nom::error::ParseError;
-use crate::parser::nom::type_::type_;
+use crate::parser::nom::type_::{type_, type_arguments};
 use crate::ast::type_name::TypeName;
 
 pub fn integer_literal(s: &str) -> IResult<&str, Literal> {
@@ -98,12 +98,16 @@ pub fn postfix_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
             map(postfix_operator, |s|{
                 PostfixSuffix::Operator { kind: s }
             }),
-            // TODO:
-            map(postfix_operator, |s|{
-                PostfixSuffix::Operator { kind: s }
+            map(type_arguments,|typeNames| {
+                PostfixSuffix::TypeArgumentSuffix { types: typeNames }
             }),
-            // type_arguments,
             // map(call_suffix, || {
+            //
+            // }),
+            // map(index_suffix, || {
+            //
+            // }),
+            // map(navigation_suffix, || {
             //
             // }),
         ))(s)

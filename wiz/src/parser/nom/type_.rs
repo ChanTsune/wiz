@@ -1,4 +1,4 @@
-use nom::IResult;
+use nom::{IResult, Parser};
 use crate::parser::nom::lexical_structure::identifier;
 use crate::ast::type_name::TypeName;
 use nom::combinator::{map, opt};
@@ -58,7 +58,7 @@ pub fn user_type(s: &str) -> IResult<&str, TypeName> {
 pub fn simple_user_type(s: &str) -> IResult<&str, TypeName> {
     map(tuple((
         identifier,
-        opt(anychar) // TODO: replace to `type_arguments`
+        opt(type_arguments)
         )), |(name, args)| {
         // TODO: use args
         TypeName{ name, type_params: vec![] }
@@ -68,3 +68,22 @@ pub fn simple_user_type(s: &str) -> IResult<&str, TypeName> {
 // pub fn function_type(s: &str) -> IResult<&str, TypeName> {
 //
 // }
+
+pub fn type_arguments(s: &str) -> IResult<&str, Vec<TypeName>> {
+    map(tuple((
+        char('<'),
+        type_,
+        many0(tuple((
+            char(','),
+            type_
+            ))),
+        opt(char(',')),
+        char('>'),
+        )), |(_, t, ts, _, _)| {
+        let mut t = vec![t];
+        for (_, b) in ts {
+            t.insert(t.len(), b)
+        }
+        t
+    })(s)
+}

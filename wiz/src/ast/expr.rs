@@ -81,8 +81,10 @@ pub enum PostfixSuffix {
     Operator {
         kind: String
     },
+    TypeArgumentSuffix {
+        types: Vec<TypeName>
+    },
     CallSuffix,
-    TypeArgumentSuffix,
     IndexingSuffix,
     NavigationSuffix,
 }

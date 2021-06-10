@@ -124,7 +124,7 @@
 
 <call_suffix> ::= <type_arguments>? ((<value_arguments>? <annotated_lambda>) | <value_arguments>)
 
-<type_arguments> ::= "<" <type> ("," <type>)* "," ">"
+<type_arguments> ::= "<" <type> ("," <type>)* ","? ">"
 
 <value_arguments> ::= "(" <value_argument> ("," <value_argument>)* "," ")"
 
