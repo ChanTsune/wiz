@@ -3,7 +3,7 @@ use inkwell::module::{Module, Linkage};
 use inkwell::builder::Builder;
 use inkwell::execution_engine::{ExecutionEngine, JitFunction};
 use inkwell::AddressSpace;
-use inkwell::support::{LLVMString, LLVMStringOrRaw};
+use inkwell::support::{LLVMString};
 use std::path::Path;
 use either::Either;
 use crate::ast::expr::{Expr, CallArg};
