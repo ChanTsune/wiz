@@ -3,18 +3,23 @@ use inkwell::module::{Module, Linkage};
 use inkwell::builder::Builder;
 use inkwell::execution_engine::{ExecutionEngine, JitFunction};
 use inkwell::AddressSpace;
-use inkwell::support::LLVMString;
+use inkwell::support::{LLVMString, LLVMStringOrRaw};
 use std::path::Path;
-use crate::ast::expr::Expr;
+use either::Either;
+use crate::ast::expr::{Expr, CallArg};
 use crate::ast::literal::Literal;
 use inkwell::types::{StringRadix, AnyTypeEnum};
 use std::process::exit;
-use inkwell::values::AnyValueEnum;
+use inkwell::values::{AnyValueEnum, BasicValueEnum, CallSiteValue, InstructionValue, PointerValue};
 use crate::ast::decl::Decl;
 use crate::ast::type_name::TypeName;
 use crate::ast::fun::body_def::FunBody;
 use crate::ast::stmt::Stmt;
 use crate::ast::file::File;
+use nom::Parser;
+use std::iter::Map;
+use nom::lib::std::convert::TryFrom;
+use std::ffi::CString;
 
 /// Convenience type alias for the `sum` function.
 ///
@@ -63,9 +68,16 @@ impl<'ctx> CodeGen<'ctx> {
     pub fn expr(&self, e: Expr) -> AnyValueEnum {
         println!("{:?}", e);
         match e {
-            Expr::Name { .. } => {
-                println!("Expr::Name");
-                exit(-1)
+            Expr::Name { name } => {
+                match self.module.get_function(&*name) {
+                    Some(f) => {
+                        AnyValueEnum::from(f)
+                    }
+                    None => {
+                        println!("Expr::Name");
+                        exit(-1)
+                    }
+                }
             }
             Expr::Literal { literal } => {
                 match literal {
@@ -79,7 +91,10 @@ impl<'ctx> CodeGen<'ctx> {
                         println!("Literal::FloatingPoint");
                         exit(-1)
                     }
-                    Literal::StringLiteral { .. } => {
+                    Literal::StringLiteral { value } => unsafe {
+                        // TODO: String
+                        let v = CString::new(value).unwrap();
+                        PointerValue;
                         println!("Literal::String");
                         exit(-1)
                     }
@@ -120,9 +135,30 @@ impl<'ctx> CodeGen<'ctx> {
                 println!("{:?}", e);
                 exit(-1)
             }
-            Expr::Call { .. } => {
-                println!("{:?}", e);
-                exit(-1)
+            Expr::Call { target, args, tailing_lambda } => {
+                let target = self.expr(*target);
+                println!("{:?}", &args);
+                let args = args.into_iter().map(|arg|{ self.expr(*arg.arg) });
+                let args: Vec<BasicValueEnum> = args.filter_map(|arg|{
+                    BasicValueEnum::try_from(arg).ok()
+                }).collect();
+                match target {
+                    AnyValueEnum::FunctionValue(function) => {
+                        let bv = self.builder.build_call(function, &args, "f_call").try_as_basic_value();
+                        match bv {
+                            Either::Left(vb) => {
+                                AnyValueEnum::from(vb)
+                            }
+                            Either::Right(iv) => {
+                                AnyValueEnum::from(iv)
+                            }
+                        }
+                    }
+                    _ => {
+                        // println!("{:?}", e);
+                        exit(-1)
+                    }
+                }
             }
             Expr::If { .. } => {
                 println!("{:?}", e);
@@ -165,6 +201,7 @@ impl<'ctx> CodeGen<'ctx> {
                         match body {
                             None => {}
                             Some(FunBody::Expr { expr }) => {
+
                                 self.expr(expr);
                             }
                             Some(FunBody::Block { block }) => {

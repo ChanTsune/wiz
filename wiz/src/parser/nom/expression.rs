@@ -1,12 +1,12 @@
 use nom::{IResult, Parser};
 use crate::ast::literal::Literal;
-use nom::character::complete::{digit1, one_of, char, anychar};
+use nom::character::complete::{digit1, one_of, char, anychar, none_of};
 use crate::ast::expr::{Expr, PostfixSuffix, CallArg, Lambda};
 use nom::combinator::{map, opt, iterator};
 use nom::sequence::tuple;
 use nom::branch::alt;
 use crate::parser::nom::lexical_structure::{identifier, whitespace0, whitespace1};
-use crate::ast::expr::Expr::BinOp;
+use crate::ast::expr::Expr::{BinOp, Call};
 use nom::multi::many0;
 use nom::error::ParseError;
 use crate::parser::nom::type_::{type_, type_arguments};
@@ -22,10 +22,10 @@ pub fn integer_literal(s: &str) -> IResult<&str, Literal> {
 pub fn string_literal(s: &str) -> IResult<&str, Literal> {
     map(tuple((
         char('"'),
-        anychar,
+        many0(none_of("\"")),
         char('"'),
     )), |(a, b, c)| {
-        Literal::StringLiteral { value: "".to_string() }
+        Literal::StringLiteral { value: b.into_iter().collect() }
     })(s)
 }
 
@@ -83,7 +83,23 @@ pub fn postfix_expr(s: &str) -> IResult<&str, Expr> {
         primary_expr,
         many0(postfix_suffix)
     )), |(e, suffixes)|{
-        // TODO:
+        let mut e = e;
+        for suffix in suffixes {
+            e = match suffix {
+                // TODO: impl
+                PostfixSuffix::Operator { .. } => { e }
+                PostfixSuffix::TypeArgumentSuffix { .. } => { e }
+                PostfixSuffix::CallSuffix { args, tailing_lambda } => {
+                    Call {
+                        target: Box::new(e),
+                        args,
+                        tailing_lambda
+                    }
+                }
+                PostfixSuffix::IndexingSuffix => { e }
+                PostfixSuffix::NavigationSuffix => { e }
+            }
+        }
         e
     })(s)
 }
@@ -260,23 +276,29 @@ pub fn call_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
     })(s)
 }
 /*
-<value_arguments> ::= "(" <value_argument> ("," <value_argument>)* ","? ")"
+<value_arguments> ::= "(" (<value_argument> ("," <value_argument>)* ","?)? ")"
 */
 pub fn value_arguments(s: &str) -> IResult<&str, Vec<CallArg>> {
     map(tuple((
             char('('),
-            value_argument,
-            many0(tuple((
-                char(','),
-                value_argument
-                ))),
-            opt(char(',')),
+            opt(tuple((value_argument,
+                       many0(tuple((
+                           char(','),
+                           value_argument
+                       ))),
+                       opt(char(','))))),
             char(')'),
-        )), |(_, a, ags,_, _)| {
-            let mut args = vec![a];
-            for (_, ar) in ags {
-                args.insert(args.len(), ar);
-            }
+        )), |(_, args_t, _)| {
+            let mut args = vec![];
+            match args_t {
+                Some((a, ags,_)) => {
+                    args.insert(args.len(), a);
+                    for (_, ar) in ags {
+                        args.insert(args.len(), ar);
+                    }
+                },
+                None => {}
+            };
             args
     })(s)
 }
@@ -615,9 +637,10 @@ pub fn expr(s: &str) -> IResult<&str, Expr> {
 mod tests {
     use nom::error::ErrorKind;
     use nom::Err::Error;
-    use crate::parser::nom::expression::{integer_literal, disjunction_expr};
-    use crate::ast::literal::Literal::IntegerLiteral;
-    use crate::ast::expr::Expr::{BinOp, Literal};
+    use crate::parser::nom::expression::{integer_literal, disjunction_expr, expr, postfix_suffix, value_arguments, string_literal};
+    use crate::ast::literal::Literal::{IntegerLiteral, StringLiteral};
+    use crate::ast::expr::Expr::{BinOp, Literal, Call, Name};
+    use crate::ast::expr::{PostfixSuffix, CallArg};
 
     #[test]
     fn test_numeric() {
@@ -625,7 +648,43 @@ mod tests {
         assert_eq!(integer_literal("12"), Ok(("", IntegerLiteral { value: "12".to_string() })));
     }
     #[test]
+    fn test_string_literal() {
+        assert_eq!(string_literal("\"\""), Ok(("", StringLiteral { value: "".to_string() })));
+    }
+    #[test]
     fn test_disjunction_expr() {
         assert_eq!(disjunction_expr("1||2 || 3"), Ok(("", BinOp { left: Box::from(BinOp { left: Box::from(Literal { literal: IntegerLiteral { value: "1".parse().unwrap() } }), kind: "||".parse().unwrap(), right: Box::from(Literal { literal: IntegerLiteral { value: "2".parse().unwrap() } }) }), kind: "||".parse().unwrap(), right: Box::from(Literal { literal: IntegerLiteral { value: "3".parse().unwrap() } }) })))
+    }
+
+    #[test]
+    fn test_value_arguments_no_args() {
+        assert_eq!(value_arguments("()"), Ok(("", vec![])))
+    }
+
+    #[test]
+    fn test_value_arguments_no_labeled_args() {
+        assert_eq!(value_arguments("(\"Hello, World\")"), Ok(("", vec![CallArg { label: None, arg: Box::from(Literal { literal: StringLiteral { value: "Hello, World".parse().unwrap() } }), is_vararg: false }])))
+    }
+
+    #[test]
+    fn test_postfix_suffix_call() {
+        assert_eq!(postfix_suffix("()"), Ok(("", PostfixSuffix::CallSuffix { args: vec![], tailing_lambda: None })))
+    }
+    #[test]
+    fn test_call_expr_no_args() {
+        assert_eq!(expr("puts()"), Ok(("", Call {
+            target: Box::new(Name { name: "puts".parse().unwrap() }),
+            args: vec![],
+            tailing_lambda: None
+        })));
+    }
+    #[test]
+
+    fn test_call_expr() {
+        assert_eq!(expr("puts(\"Hello, World\")"), Ok(("", Call {
+            target: Box::new(Name { name: "puts".parse().unwrap() }),
+            args: vec![CallArg { label: None, arg: Box::from(Literal { literal: StringLiteral { value: "Hello, World".parse().unwrap() } }), is_vararg: false }],
+            tailing_lambda: None
+        })));
     }
 }
