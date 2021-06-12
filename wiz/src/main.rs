@@ -9,19 +9,29 @@ use inkwell::module::{Module, Linkage};
 use inkwell::targets::{InitializationConfig, Target};
 use std::error::Error;
 use std::path::Path;
-use std::env::args;
-use inkwell::support::LLVMString;
 use crate::llvm_ir::codegen::CodeGen;
+use clap::{App, Arg};
 
 mod ast;
 mod parser;
 mod llvm_ir;
 
 fn main() -> Result<(), Box<dyn Error>> {
+    let app = App::new("wiz")
+        .arg(Arg::with_name("input")
+            .required(true)
+        )
+        .arg(Arg::with_name("output")
+            .short("o")
+            .takes_value(true)
+            .default_value("out.ll")
+        );
+
+    let matches = app.get_matches();
+    let input = matches.value_of("input").unwrap();
+    let output = matches.value_of("output").unwrap();
+
     let mut module_name = "main";
-    for arg in args() {
-        println!("{}", arg);
-    }
     let context = Context::create();
     let module = context.create_module(module_name);
     let execution_engine = module.create_jit_execution_engine(OptimizationLevel::None)?;
@@ -32,23 +42,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         execution_engine,
     };
 
-    let sum = codegen.jit_compile_sum().ok_or("Unable to JIT compile `sum`")?;
-
-    let x = 1u64;
-    let y = 2u64;
-    let z = 3u64;
-    let file = std::fs::File::open(Path::new("../helloworld.wiz"));
+    let file = std::fs::File::open(Path::new(input));
     let ast_file = parse_from_file(file.unwrap());
 
-    unsafe {
-        println!("{} + {} + {} = {}", x, y, z, sum.call(x, y, z));
-        assert_eq!(sum.call(x, y, z), x + y + z);
-    }
     codegen.builtin_print();
-    // codegen.initialize();
-    println!("{:?}", ast_file.unwrap());
-    // codegen.file(ast_file.unwrap());
-    codegen.print_to_file(Path::new("./sample.ll"));
+    // println!("{:?}", ast_file.unwrap());
+    codegen.file(ast_file.unwrap());
+    codegen.print_to_file(Path::new(output));
 
     Ok(())
 }

@@ -10,7 +10,7 @@ use crate::ast::expr::{Expr, CallArg};
 use crate::ast::literal::Literal;
 use inkwell::types::{StringRadix, AnyTypeEnum};
 use std::process::exit;
-use inkwell::values::{AnyValueEnum, BasicValueEnum, CallSiteValue, InstructionValue, PointerValue, AnyValue};
+use inkwell::values::{AnyValueEnum, BasicValueEnum, CallSiteValue, InstructionValue, PointerValue, AnyValue, GlobalValue, BasicValue};
 use crate::ast::decl::Decl;
 use crate::ast::type_name::TypeName;
 use crate::ast::fun::body_def::FunBody;
@@ -92,8 +92,11 @@ impl<'ctx> CodeGen<'ctx> {
                         exit(-1)
                     }
                     Literal::StringLiteral { value } => unsafe {
-                        let str = self.context.const_string(value.as_ref(), true);
+                        let str = self.builder.build_global_string(value.as_ref(), value.as_str());
+                        let i8_ptr_type = self.context.i8_type().ptr_type(AddressSpace::Generic);
+                        let str = self.builder.build_bitcast(str.as_pointer_value(), i8_ptr_type, value.as_str());
                         str.as_any_value_enum()
+
                     }
                     Literal::NullLiteral => {
                         println!("Literall::Null");
