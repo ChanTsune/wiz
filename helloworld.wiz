@@ -1,1 +1,4 @@
-fun main()=puts("Hello world")
+fun main(){
+    puts("Hello world!")
+    puts("Welcome to Wiz!!")
+}

@@ -1,17 +1,55 @@
-use nom::IResult;
+use nom::{IResult, InputTakeAtPosition, AsChar};
 use nom::character::complete::{space0, space1, alpha1, one_of, char};
 use nom::branch::alt;
 use crate::parser::nom::character::{alphabet, digit, under_score};
 use nom::combinator::{opt, map};
 use nom::sequence::tuple;
+use nom::error::{ParseError, ErrorKind};
 
-pub fn whitespace0(s: &str) -> IResult<&str, &str> {
-    space0(s)
+pub fn whitespace0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+    where
+        T: InputTakeAtPosition,
+        <T as InputTakeAtPosition>::Item: AsChar + Clone,
+{
+    input.split_at_position_complete(|item| {
+        let c = item.as_char();
+        !c.is_whitespace()
+    })
 }
 
-pub fn whitespace1(s: &str) -> IResult<&str, &str> {
-    space1(s)
+pub fn whitespace1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+    where
+        T: InputTakeAtPosition,
+        <T as InputTakeAtPosition>::Item: AsChar + Clone,
+{
+    input.split_at_position1_complete(|item| {
+        let c = item.as_char();
+        !c.is_whitespace()
+    }, ErrorKind::Space)
 }
+
+pub fn whitespace_without_eol0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+    where
+        T: InputTakeAtPosition,
+        <T as InputTakeAtPosition>::Item: AsChar + Clone,
+{
+    input.split_at_position_complete(|item| {
+        let c = item.as_char();
+        !c.is_whitespace() || (c == '\n')
+    })
+}
+
+pub fn whitespace_without_eol1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+    where
+        T: InputTakeAtPosition,
+        <T as InputTakeAtPosition>::Item: AsChar + Clone,
+{
+    input.split_at_position1_complete(|item| {
+        let c = item.as_char();
+        !c.is_whitespace() || (c == '\n')
+    }, ErrorKind::Space)
+}
+
 
 pub fn identifier_head(s: &str) -> IResult<&str, char> {
     alt((alphabet,

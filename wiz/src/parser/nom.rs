@@ -19,6 +19,7 @@ use nom::branch::alt;
 use crate::parser::nom::expression::expr;
 use nom::multi::many0;
 use crate::parser::nom::declaration::decl;
+use crate::parser::nom::lexical_structure::whitespace0;
 
 
 pub fn decl_stmt(s: &str) -> IResult<&str, Stmt> {
@@ -28,7 +29,10 @@ pub fn decl_stmt(s: &str) -> IResult<&str, Stmt> {
 }
 
 pub fn expr_stmt(s: &str) -> IResult<&str, Stmt> {
-    map(expr, |e| {
+    map(tuple((
+        whitespace0,
+        expr,
+        )),|(sp, e)| {
         Stmt::Expr { expr: e }
     })(s)
 }

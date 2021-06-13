@@ -5,7 +5,7 @@ use crate::ast::expr::{Expr, PostfixSuffix, CallArg, Lambda};
 use nom::combinator::{map, opt, iterator};
 use nom::sequence::tuple;
 use nom::branch::alt;
-use crate::parser::nom::lexical_structure::{identifier, whitespace0, whitespace1};
+use crate::parser::nom::lexical_structure::{identifier, whitespace0, whitespace1, whitespace_without_eol0};
 use crate::ast::expr::Expr::{BinOp, Call};
 use nom::multi::many0;
 use nom::error::ParseError;
@@ -182,7 +182,7 @@ pub fn conjunction_expr(s: &str) -> IResult<&str, Expr> {
         tuple((
             equality_expr,
             many0(tuple((
-                whitespace0,
+                whitespace_without_eol0,
                 conjunction_operator,
                 whitespace0,
                 equality_expr,
@@ -201,7 +201,7 @@ pub fn equality_expr(s: &str) -> IResult<&str, Expr> {
         tuple((
             comparison_expr,
             many0(tuple((
-                whitespace0,
+                whitespace_without_eol0,
                 equality_operator,
                 whitespace0,
                 comparison_expr,
@@ -231,7 +231,7 @@ pub fn comparison_expr(s: &str) -> IResult<&str, Expr> {
         tuple((
             generic_call_like_comparison_expr,
             many0(tuple((
-                whitespace0,
+                whitespace_without_eol0,
                 comparison_operator,
                 whitespace0,
                 generic_call_like_comparison_expr,
@@ -434,7 +434,7 @@ pub fn elvis_expr(s: &str) -> IResult<&str, Expr> {
         tuple((
             infix_function_call_expr,
             many0(tuple((
-                whitespace0,
+                whitespace_without_eol0,
                 elvis_operator,
                 whitespace0,
                 infix_function_call_expr,
@@ -458,7 +458,7 @@ pub fn infix_function_call_expr(s: &str) -> IResult<&str, Expr> {
         tuple((
             range_expr,
             many0(tuple((
-                whitespace0,
+                whitespace_without_eol0,
                 identifier,
                 whitespace0,
                 range_expr,
@@ -478,7 +478,7 @@ pub fn range_expr(s: &str) -> IResult<&str, Expr> {
         tuple((
             additive_expr,
             many0(tuple((
-                whitespace0,
+                whitespace_without_eol0,
                 range_operator,
                 whitespace0,
                 additive_expr,
@@ -508,7 +508,7 @@ pub fn additive_expr(s: &str) -> IResult<&str, Expr> {
         tuple((
             multiplicative_expr,
             many0(tuple((
-                whitespace0,
+                whitespace_without_eol0,
                 additive_operator,
                 whitespace0,
                 multiplicative_expr,
@@ -538,7 +538,7 @@ pub fn multiplicative_expr(s: &str) -> IResult<&str, Expr> {
         tuple((
             as_expr,
             many0(tuple((
-                whitespace0,
+                whitespace_without_eol0,
                 multiplicative_operator,
                 whitespace0,
                 as_expr,
@@ -619,7 +619,7 @@ pub fn disjunction_expr(s: &str) -> IResult<&str, Expr> {
         tuple((
             conjunction_expr,
             many0(tuple((
-                whitespace0,
+                whitespace_without_eol0,
                 disjunction_operator,
                 whitespace0,
                 conjunction_expr,

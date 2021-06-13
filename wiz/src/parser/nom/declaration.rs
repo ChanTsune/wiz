@@ -156,9 +156,11 @@ pub fn function_body(s: &str) -> IResult<&str, FunBody> {
 pub fn block(s: &str) -> IResult<&str, Block> {
     map(tuple((
         char('{'),
+        whitespace0,
         stmts,
+        whitespace0,
         char('}'),
-    )), |(_, stmts, _)| {
+    )), |(_, _, stmts, _, _)| {
         Block { body: stmts }
     })(s)
 }
@@ -197,6 +199,14 @@ mod test {
                 }
             ]
         })))
+    }
+
+    #[test]
+    fn test_block() {
+        assert_eq!(block(
+            r"{
+    1
+}"), Ok(("", Block { body: vec![Stmt::Expr { expr: Expr::Literal { literal: Literal::IntegerLiteral { value: "1".to_string() } } }] })))
     }
 
     #[test]
