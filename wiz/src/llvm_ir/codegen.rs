@@ -107,9 +107,63 @@ impl<'ctx> CodeGen<'ctx> {
             Expr::BinOp { left, kind, right } => {
                 let lft = self.expr(*left);
                 let rit = self.expr(*right);
-                let v = self.builder.build_int_add(lft.into_int_value(), rit.into_int_value(), "sum");
-
-                AnyValueEnum::from(v)
+                match (lft, rit) {
+                    (AnyValueEnum::IntValue(left), AnyValueEnum::IntValue(right)) => {
+                        match &*kind {
+                            "+" => {
+                                let v = self.builder.build_int_add(left, right, "sum");
+                                v.as_any_value_enum()
+                            },
+                            "-" => {
+                                let v = self.builder.build_int_sub(left, right,"sub");
+                                v.as_any_value_enum()
+                            },
+                            "*" => {
+                                let v = self.builder.build_int_mul(left, right, "mul");
+                                v.as_any_value_enum()
+                            },
+                            "/" => {
+                                let v = self.builder.build_int_signed_div(left, right, "sdiv");
+                                v.as_any_value_enum()
+                            },
+                            "%" => {
+                                let v = self.builder.build_int_signed_rem(left, right, "srem");
+                                v.as_any_value_enum()
+                            },
+                            _ => {
+                                exit(-1)
+                            }
+                        }
+                    },
+                    (AnyValueEnum::FloatValue(left), AnyValueEnum::FloatValue(right)) => {
+                        match &*kind {
+                            "+" => {
+                                let v = self.builder.build_float_add(left, right, "sum");
+                                v.as_any_value_enum()
+                            },
+                            "-" => {
+                                let v = self.builder.build_float_sub(left, right, "sub");
+                                v.as_any_value_enum()
+                            },
+                            "*" => {
+                                let v = self.builder.build_float_mul(left, right, "sub");
+                                v.as_any_value_enum()
+                            },
+                            "/" => {
+                                let v = self.builder.build_float_div(left, right, "sub");
+                                v.as_any_value_enum()
+                            },
+                            "%" => {
+                                let v = self.builder.build_float_rem(left, right, "sub");
+                                v.as_any_value_enum()
+                            },
+                            _ => {
+                                exit(-1)
+                            }
+                        }
+                    }
+                    (_, _) => { exit(-1) }
+                }
             }
             Expr::UnaryOp { .. } => {
                 println!("{:?}", e);
