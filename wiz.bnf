@@ -12,10 +12,10 @@
 <var_decl> ::= <value>
         | <variable>
 
-<value> ::= "val" <white_space> <identifire> ":" <white_space> <type_name> <white_space> "=" <white_space> <expr>
-          | "val" <white_space> <identifire> "=" <white_space> <expr>
-<variable> ::= "var" <white_space> <identifire> ":" <white_space> <type_name> <white_space> "=" <white_space> <expr>
-          | "var" <white_space> <identifire> "=" <white_space> <expr>
+<value> ::= "val" <var_body>
+<variable> ::= "var" <var_body>
+
+<var_body> ::= <identifire> (":" <white_space>* <type>)? "=" <expr>
 
 <modifiers> ::= <modifier>+
 
@@ -132,7 +132,7 @@
 
 <annotated_lambda> ::= <label>? <lambda_literal>
 
-<label> ::= 
+<label> ::= <identifier>
 
 <prefix_expr> ::= <prefix_operator> <postfix_expr>
                 | <postfix_expr>

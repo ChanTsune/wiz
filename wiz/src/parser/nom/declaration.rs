@@ -3,7 +3,7 @@ use crate::ast::decl::Decl;
 use nom::branch::alt;
 use nom::combinator::{map, opt};
 use nom::sequence::tuple;
-use crate::parser::nom::keywords::{fun_keyword, where_keyword};
+use crate::parser::nom::keywords::{fun_keyword, where_keyword, var_keyword, val_keyword};
 use crate::parser::nom::lexical_structure::{identifier, whitespace1, whitespace0};
 use nom::character::complete::char;
 use crate::parser::nom::type_::type_;
@@ -14,13 +14,16 @@ use crate::parser::nom::expression::expr;
 use crate::ast::type_name::{TypeName, TypeParam};
 use nom::multi::many0;
 use crate::parser::nom::stmts;
+use crate::ast::expr::Expr;
 
 pub fn decl(s: &str) -> IResult<&str, Decl> {
     alt((
         function_decl,
-        function_decl,
+        var_decl,
     ))(s)
 }
+
+//region func
 
 pub fn function_decl(s: &str) -> IResult<&str, Decl> {
     map(tuple((
@@ -164,6 +167,67 @@ pub fn block(s: &str) -> IResult<&str, Block> {
         Block { body: stmts }
     })(s)
 }
+
+//endregion
+
+//region var
+
+pub fn var_decl(s: &str) -> IResult<&str, Decl> {
+    alt((
+        var,
+        val
+    ))(s)
+}
+
+pub fn var(s: &str) -> IResult<&str, Decl> {
+    map(tuple((
+        var_keyword,
+        whitespace1,
+        var_body,
+    )), |(_, _, (name, t, e))| {
+        Decl::Var {
+            is_mut: true,
+            name: name,
+            type_: t,
+            value: e,
+        }
+    })(s)
+}
+
+pub fn val(s: &str) -> IResult<&str, Decl> {
+    map(tuple((
+        val_keyword,
+        whitespace1,
+        var_body,
+    )), |(_, _, (name, t, e))| {
+        Decl::Var {
+            is_mut: false,
+            name: name,
+            type_: t,
+            value: e,
+        }
+    })(s)
+}
+
+pub fn var_body(s: &str) -> IResult<&str, (String, Option<TypeName>, Expr)> {
+    map(tuple((
+        identifier,
+        whitespace0,
+        opt(tuple((
+            char(':'),
+            whitespace0,
+            type_,
+        ))),
+        whitespace0,
+        char('='),
+        whitespace0,
+        expr,
+    )), |(name, _, t, _, _, _, e)| {
+        (name, t.map(|(_, _, t)| { t }), e)
+    })(s)
+}
+
+//endregion
 
 #[cfg(test)]
 mod test {

@@ -4,11 +4,15 @@ use crate::ast::fun::arg_def::ArgDef;
 use crate::ast::type_name::TypeName;
 use crate::ast::block::Block;
 use crate::ast::fun::body_def::FunBody;
+use crate::ast::expr::Expr;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum Decl {
     Var {
-        // TODO
+        is_mut: bool,
+        name: String,
+        type_: Option<TypeName>,
+        value: Expr
     },
     Fun {
         modifiers: Vec<String>,
