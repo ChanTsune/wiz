@@ -29,19 +29,23 @@ pub fn decl_stmt(s: &str) -> IResult<&str, Stmt> {
 }
 
 pub fn expr_stmt(s: &str) -> IResult<&str, Stmt> {
-    map(tuple((
-        whitespace0,
+    map(
         expr,
-        )),|(sp, e)| {
+        | e| {
         Stmt::Expr { expr: e }
     })(s)
 }
 
 pub fn stmt(s: &str) -> IResult<&str, Stmt> {
-    alt((
-        expr_stmt,
-        decl_stmt,
-    ))(s)
+    map(tuple((
+        whitespace0,
+        alt((
+            expr_stmt,
+            decl_stmt,
+            ))
+        )),|(ws, stm)|{
+        stm
+    })(s)
 }
 
 pub fn stmts(s: &str) -> IResult<&str, Vec<Stmt>> {

@@ -82,7 +82,7 @@ pub fn postfix_expr(s: &str) -> IResult<&str, Expr> {
     map(tuple((
         primary_expr,
         many0(postfix_suffix)
-    )), |(e, suffixes)|{
+    )), |(e, suffixes)| {
         let mut e = e;
         for suffix in suffixes {
             e = match suffix {
@@ -93,7 +93,7 @@ pub fn postfix_expr(s: &str) -> IResult<&str, Expr> {
                     Call {
                         target: Box::new(e),
                         args,
-                        tailing_lambda
+                        tailing_lambda,
                     }
                 }
                 PostfixSuffix::IndexingSuffix => { e }
@@ -112,26 +112,25 @@ pub fn postfix_expr(s: &str) -> IResult<&str, Expr> {
 */
 pub fn postfix_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
     alt((
-            map(postfix_operator, |s|{
-                PostfixSuffix::Operator { kind: s }
-            }),
-            map(type_arguments,|type_names| {
-                PostfixSuffix::TypeArgumentSuffix { types: type_names }
-            }),
-            call_suffix,
-            // map(index_suffix, || {
-            //
-            // }),
-            // map(navigation_suffix, || {
-            //
-            // }),
-        ))(s)
+        map(postfix_operator, |s| {
+            PostfixSuffix::Operator { kind: s }
+        }),
+        map(type_arguments, |type_names| {
+            PostfixSuffix::TypeArgumentSuffix { types: type_names }
+        }),
+        call_suffix,
+        // map(index_suffix, || {
+        //
+        // }),
+        // map(navigation_suffix, || {
+        //
+        // }),
+    ))(s)
 }
 
 pub fn postfix_operator(s: &str) -> IResult<&str, String> {
-    map(char('!'), |c|{c.to_string()})(s)
+    map(char('!'), |c| { c.to_string() })(s)
 }
-
 
 
 // pub fn indexing_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
@@ -158,7 +157,7 @@ pub fn prefix_expr(s: &str) -> IResult<&str, Expr> {
     })(s)
 }
 
-fn _binop(e:Expr, v: Vec<(&str, String, &str, Expr)>) -> Expr {
+fn _binop(e: Expr, v: Vec<(&str, String, &str, Expr)>) -> Expr {
     let mut bin_op = e;
     for (_, op, _, ex) in v {
         bin_op = Expr::BinOp {
@@ -169,6 +168,7 @@ fn _binop(e:Expr, v: Vec<(&str, String, &str, Expr)>) -> Expr {
     }
     bin_op
 }
+
 // &&
 pub fn conjunction_operator(s: &str) -> IResult<&str, String> {
     map(tuple((char('&'), char('&'))), |(a, b)| { a.to_string() + &*b.to_string() })(s)
@@ -190,7 +190,7 @@ pub fn conjunction_expr(s: &str) -> IResult<&str, Expr> {
         )),
         |(op, v)| {
             _binop(op, v)
-        }
+        },
     )(s)
 }
 /*
@@ -209,7 +209,7 @@ pub fn equality_expr(s: &str) -> IResult<&str, Expr> {
         )),
         |(op, v)| {
             _binop(op, v)
-        }
+        },
     )(s)
 }
 
@@ -218,9 +218,9 @@ pub fn equality_expr(s: &str) -> IResult<&str, Expr> {
 */
 pub fn equality_operator(s: &str) -> IResult<&str, String> {
     alt((
-        map(tuple((char('='), char('='))), |(a, b)| {a.to_string() + &*b.to_string() }),
-        map(tuple((char('!'), char('='))), |(a, b)| {a.to_string() + &*b.to_string() }),
-        ))(s)
+        map(tuple((char('='), char('='))), |(a, b)| { a.to_string() + &*b.to_string() }),
+        map(tuple((char('!'), char('='))), |(a, b)| { a.to_string() + &*b.to_string() }),
+    ))(s)
 }
 
 /*
@@ -239,7 +239,7 @@ pub fn comparison_expr(s: &str) -> IResult<&str, Expr> {
         )),
         |(op, v)| {
             _binop(op, v)
-        }
+        },
     )(s)
 }
 
@@ -248,11 +248,11 @@ pub fn comparison_expr(s: &str) -> IResult<&str, Expr> {
 */
 pub fn comparison_operator(s: &str) -> IResult<&str, String> {
     alt((
-        map(tuple((char('<'), char('='))), |(a, b)| {a.to_string() + &*b.to_string() }),
-        map(tuple((char('>'), char('='))), |(a, b)| {a.to_string() + &*b.to_string() }),
-        map(char('='), |a| {a.to_string() }),
-        map(char('='), |a| {a.to_string() }),
-        ))(s)
+        map(tuple((char('<'), char('='))), |(a, b)| { a.to_string() + &*b.to_string() }),
+        map(tuple((char('>'), char('='))), |(a, b)| { a.to_string() + &*b.to_string() }),
+        map(char('='), |a| { a.to_string() }),
+        map(char('='), |a| { a.to_string() }),
+    ))(s)
 }
 /*
 <call_suffix> ::= <type_arguments>? ((<value_arguments>? <annotated_lambda>) | <value_arguments>)
@@ -264,14 +264,14 @@ pub fn call_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
             map(tuple((
                 opt(value_arguments),
                 annotated_lambda,
-            )),|(args, l)|{
+            )), |(args, l)| {
                 (args, Option::Some(l))
             }),
-            map(value_arguments, |v|{
+            map(value_arguments, |v| {
                 (Option::Some(v), Option::None)
             })
-            ))
-        )), |(ta, (args,tl))|{
+        ))
+    )), |(ta, (args, tl))| {
         PostfixSuffix::CallSuffix { args: args.unwrap_or(vec![]), tailing_lambda: tl }
     })(s)
 }
@@ -280,26 +280,26 @@ pub fn call_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
 */
 pub fn value_arguments(s: &str) -> IResult<&str, Vec<CallArg>> {
     map(tuple((
-            char('('),
-            opt(tuple((value_argument,
-                       many0(tuple((
-                           char(','),
-                           value_argument
-                       ))),
-                       opt(char(','))))),
-            char(')'),
-        )), |(_, args_t, _)| {
-            let mut args = vec![];
-            match args_t {
-                Some((a, ags,_)) => {
-                    args.insert(args.len(), a);
-                    for (_, ar) in ags {
-                        args.insert(args.len(), ar);
-                    }
-                },
-                None => {}
-            };
-            args
+        char('('),
+        opt(tuple((value_argument,
+                   many0(tuple((
+                       char(','),
+                       value_argument
+                   ))),
+                   opt(char(','))))),
+        char(')'),
+    )), |(_, args_t, _)| {
+        let mut args = vec![];
+        match args_t {
+            Some((a, ags, _)) => {
+                args.insert(args.len(), a);
+                for (_, ar) in ags {
+                    args.insert(args.len(), ar);
+                }
+            }
+            None => {}
+        };
+        args
     })(s)
 }
 /*
@@ -307,20 +307,24 @@ pub fn value_arguments(s: &str) -> IResult<&str, Vec<CallArg>> {
 */
 pub fn value_argument(s: &str) -> IResult<&str, CallArg> {
     map(tuple((
+        whitespace0,
         opt(tuple((
             identifier,
-            char(':')
-            ))),
+            whitespace0,
+            char(':'),
+            whitespace0,
+        ))),
         opt(char('*')),
         expr,
-        )), |(arg_label, is_vararg, arg)|{
-            CallArg{
-                label: arg_label.map(|(label, _)|{label}),
-                arg: Box::new(arg),
-                is_vararg: match is_vararg {
-                    None => false,
-                    Some(_) => true,
-            } }
+    )), |(_, arg_label, is_vararg, arg)| {
+        CallArg {
+            label: arg_label.map(|(label, _, _, _)| { label }),
+            arg: Box::new(arg),
+            is_vararg: match is_vararg {
+                None => false,
+                Some(_) => true,
+            },
+        }
     })(s)
 }
 /*
@@ -328,9 +332,9 @@ pub fn value_argument(s: &str) -> IResult<&str, CallArg> {
 */
 pub fn annotated_lambda(s: &str) -> IResult<&str, Lambda> {
     map(tuple((
-            opt(label), // TODO: label
-            lambda_literal
-        )), |(l, lmd)| {
+        opt(label), // TODO: label
+        lambda_literal
+    )), |(l, lmd)| {
         lmd
     })(s)
 }
@@ -340,8 +344,8 @@ pub fn lambda_literal(s: &str) -> IResult<&str, Lambda> {
         char('{'),
         stmts,
         char('}'),
-        )), |(_, stms,_)|{
-            Lambda{ stmts: stms}
+    )), |(_, stms, _)| {
+        Lambda { stmts: stms }
     })(s)
 }
 
@@ -351,7 +355,6 @@ pub fn label(s: &str) -> IResult<&str, char> {
 }
 
 
-
 /*
 <generic_call_like_comparison_expr> ::= <infix_operation_expr> <call_suffix>*
 */
@@ -359,7 +362,7 @@ pub fn generic_call_like_comparison_expr(s: &str) -> IResult<&str, Expr> {
     map(tuple((
         infix_operation_expr,
         many0(call_suffix)
-        )), |(e, calls)| {
+    )), |(e, calls)| {
         // TODO: use calls
         e
     })(s)
@@ -372,7 +375,7 @@ pub fn infix_operation_expr(s: &str) -> IResult<&str, Expr> {
     enum P {
         IN {
             op: String,
-            expr: Expr
+            expr: Expr,
         },
         IS {
             op: String,
@@ -397,32 +400,32 @@ pub fn infix_operation_expr(s: &str) -> IResult<&str, Expr> {
                     whitespace1,
                     type_,
                 )), |(_, op, _, type_)| {
-                    P::IS {op, type_}
+                    P::IS { op, type_ }
                 })
-                )))
+            )))
         )),
         |(op, v)| {
             let mut bin_op = op;
             for p in v {
                 match p {
-                    P::IS{ op, type_ } => {
+                    P::IS { op, type_ } => {
                         bin_op = Expr::TypeCast {
                             target: Box::new(bin_op),
                             is_safe: op.ends_with("?"),
-                            type_
+                            type_,
                         }
-                    },
-                    P::IN{op, expr} => {
+                    }
+                    P::IN { op, expr } => {
                         bin_op = Expr::BinOp {
                             left: Box::new(bin_op),
                             kind: op,
-                            right: Box::new(expr)
+                            right: Box::new(expr),
                         }
                     }
                 }
             }
             bin_op
-        }
+        },
     )(s)
 }
 
@@ -442,7 +445,7 @@ pub fn elvis_expr(s: &str) -> IResult<&str, Expr> {
         )),
         |(op, v)| {
             _binop(op, v)
-        }
+        },
     )(s)
 }
 
@@ -466,7 +469,7 @@ pub fn infix_function_call_expr(s: &str) -> IResult<&str, Expr> {
         )),
         |(op, v)| {
             _binop(op, v)
-        }
+        },
     )(s)
 }
 
@@ -486,7 +489,7 @@ pub fn range_expr(s: &str) -> IResult<&str, Expr> {
         )),
         |(op, v)| {
             _binop(op, v)
-        }
+        },
     )(s)
 }
 
@@ -516,7 +519,7 @@ pub fn additive_expr(s: &str) -> IResult<&str, Expr> {
         )),
         |(op, v)| {
             _binop(op, v)
-        }
+        },
     )(s)
 }
 
@@ -527,7 +530,7 @@ pub fn additive_operator(s: &str) -> IResult<&str, String> {
     map(alt((
         char('+'),
         char('-'),
-        )), |c| c.to_string())(s)
+    )), |c| c.to_string())(s)
 }
 
 /*
@@ -542,11 +545,11 @@ pub fn multiplicative_expr(s: &str) -> IResult<&str, Expr> {
                 multiplicative_operator,
                 whitespace0,
                 as_expr,
-                )))
-            )),
+            )))
+        )),
         |(op, v)| {
             _binop(op, v)
-        }
+        },
     )(s)
 }
 
@@ -558,7 +561,7 @@ pub fn multiplicative_operator(s: &str) -> IResult<&str, String> {
         char('*'),
         char('/'),
         char('%'),
-    )), |c|{c.to_string()})(s)
+    )), |c| { c.to_string() })(s)
 }
 
 /*
@@ -585,7 +588,7 @@ pub fn as_expr(s: &str) -> IResult<&str, Expr> {
                 }
             }
             bin_op
-        }
+        },
     )(s)
 }
 
@@ -647,10 +650,12 @@ mod tests {
         assert_eq!(integer_literal("1"), Ok(("", IntegerLiteral { value: "1".to_string() })));
         assert_eq!(integer_literal("12"), Ok(("", IntegerLiteral { value: "12".to_string() })));
     }
+
     #[test]
     fn test_string_literal() {
         assert_eq!(string_literal("\"\""), Ok(("", StringLiteral { value: "".to_string() })));
     }
+
     #[test]
     fn test_disjunction_expr() {
         assert_eq!(disjunction_expr("1||2 || 3"), Ok(("", BinOp { left: Box::from(BinOp { left: Box::from(Literal { literal: IntegerLiteral { value: "1".parse().unwrap() } }), kind: "||".parse().unwrap(), right: Box::from(Literal { literal: IntegerLiteral { value: "2".parse().unwrap() } }) }), kind: "||".parse().unwrap(), right: Box::from(Literal { literal: IntegerLiteral { value: "3".parse().unwrap() } }) })))
@@ -670,21 +675,31 @@ mod tests {
     fn test_postfix_suffix_call() {
         assert_eq!(postfix_suffix("()"), Ok(("", PostfixSuffix::CallSuffix { args: vec![], tailing_lambda: None })))
     }
+
     #[test]
     fn test_call_expr_no_args() {
         assert_eq!(expr("puts()"), Ok(("", Call {
             target: Box::new(Name { name: "puts".parse().unwrap() }),
             args: vec![],
-            tailing_lambda: None
+            tailing_lambda: None,
         })));
     }
-    #[test]
 
+    #[test]
     fn test_call_expr() {
         assert_eq!(expr("puts(\"Hello, World\")"), Ok(("", Call {
             target: Box::new(Name { name: "puts".parse().unwrap() }),
             args: vec![CallArg { label: None, arg: Box::from(Literal { literal: StringLiteral { value: "Hello, World".parse().unwrap() } }), is_vararg: false }],
-            tailing_lambda: None
+            tailing_lambda: None,
+        })));
+    }
+
+    #[test]
+    fn test_call_expr_with_label() {
+        assert_eq!(expr("puts(string: \"Hello, World\")"), Ok(("", Call {
+            target: Box::new(Name { name: "puts".parse().unwrap() }),
+            args: vec![CallArg { label: Some(String::from("string")), arg: Box::from(Literal { literal: StringLiteral { value: "Hello, World".parse().unwrap() } }), is_vararg: false }],
+            tailing_lambda: None,
         })));
     }
 }

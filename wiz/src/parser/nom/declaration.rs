@@ -231,7 +231,7 @@ pub fn var_body(s: &str) -> IResult<&str, (String, Option<TypeName>, Expr)> {
 
 #[cfg(test)]
 mod test {
-    use crate::parser::nom::declaration::{block, function_decl, function_body};
+    use crate::parser::nom::declaration::{block, function_decl, function_body, var_decl};
     use crate::ast::block::Block;
     use crate::ast::stmt::Stmt;
     use crate::ast::literal::Literal;
@@ -291,6 +291,24 @@ mod test {
             arg_defs: vec![],
             return_type: TypeName { name: "Unit".to_string(), type_params: vec![] },
             body: Some(FunBody::Block { block: Block { body: vec![] } }),
+        })))
+    }
+    #[test]
+    fn test_var_decl() {
+        assert_eq!(var_decl("val a: Int = 1"), Ok(("", Decl::Var {
+            is_mut: false,
+            name: "a".to_string(),
+            type_: Some(TypeName{ name: "Int".to_string(), type_params: vec![] }),
+            value: Expr::Literal { literal: Literal::IntegerLiteral { value: "1".to_string() } }
+        })))        
+    }
+    #[test]
+    fn test_var_decl_without_type() {
+        assert_eq!(var_decl("val a = 1"), Ok(("", Decl::Var {
+            is_mut: false,
+            name: "a".to_string(),
+            type_: None,
+            value: Expr::Literal { literal: Literal::IntegerLiteral { value: "1".to_string() } }
         })))
     }
 }
