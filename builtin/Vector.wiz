@@ -1,0 +1,6 @@
+
+struct Vector<T> {
+    private var buffer: [T]
+    private var bufferLength: Int
+    private var itemCount: Int
+}
