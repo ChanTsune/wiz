@@ -40,8 +40,8 @@ pub fn stmt(s: &str) -> IResult<&str, Stmt> {
     map(tuple((
         whitespace0,
         alt((
-            expr_stmt,
             decl_stmt,
+            expr_stmt,
             ))
         )),|(ws, stm)|{
         stm
