@@ -20,6 +20,8 @@ use nom::Parser;
 use std::iter::Map;
 use nom::lib::std::convert::TryFrom;
 use std::ffi::CString;
+use std::collections::HashMap;
+use std::borrow::{Borrow, BorrowMut};
 
 /// Convenience type alias for the `sum` function.
 ///
@@ -32,9 +34,31 @@ pub struct CodeGen<'ctx> {
     pub(crate) module: Module<'ctx>,
     pub(crate) builder: Builder<'ctx>,
     pub(crate) execution_engine: ExecutionEngine<'ctx>,
+    pub(crate) local_environments: Vec<HashMap<String, AnyValueEnum<'ctx>>>,
 }
 
 impl<'ctx> CodeGen<'ctx> {
+    fn get_from_environment(&self, name: String) -> Option<AnyValueEnum<'ctx>> {
+        for i in (0..self.local_environments.len()).rev() {
+            if let Some(v) = self.local_environments[i].get(&*name) {
+                return Some(*v)
+            }
+        }
+        self.module.get_function(&*name).map(|i|{i.as_any_value_enum()})
+    }
+
+    fn set_to_environment(&mut self, name: String, value: AnyValueEnum<'ctx>) {
+        let len = self.local_environments.len();
+        self.local_environments[len - 1].insert(name, value);
+    }
+
+    fn push_environment(&mut self) {
+        self.local_environments.push(HashMap::new())
+    }
+
+    fn pop_environment(&mut self) {
+        self.local_environments.pop();
+    }
     /**
     * Generate main function as entry point.
     */
@@ -65,31 +89,23 @@ impl<'ctx> CodeGen<'ctx> {
         self.module.add_function("puts", fn_type, Some(Linkage::External))
     }
 
-    pub fn expr(&self, e: Expr) -> AnyValueEnum {
+    pub fn expr(&self, e: Expr) -> AnyValueEnum<'ctx> {
         println!("{:?}", e);
         match e {
             Expr::Name { name } => {
-                match self.module.get_function(&*name) {
-                    Some(f) => {
-                        AnyValueEnum::from(f)
-                    }
-                    None => {
-                        println!("Expr::Name");
-                        exit(-1)
-                    }
-                }
+                self.get_from_environment(name).unwrap()
             }
             Expr::Literal { literal } => {
                 match literal {
                     Literal::IntegerLiteral { value } => {
                         let i: u64 = value.parse().unwrap();
                         let i64_type = self.context.i64_type();
-                        let i = i64_type.const_int(i, false);
-                        AnyValueEnum::from(i)
+                        i64_type.const_int(i, false).as_any_value_enum()
                     }
-                    Literal::FloatingPointLiteral { .. } => {
-                        println!("Literal::FloatingPoint");
-                        exit(-1)
+                    Literal::FloatingPointLiteral { value } => {
+                        let f: f64 = value.parse().unwrap();
+                        let f64_type = self.context.f64_type();
+                        f64_type.const_float(f).as_any_value_enum()
                     }
                     Literal::StringLiteral { value } => unsafe {
                         let str = self.builder.build_global_string(value.as_ref(), value.as_str());
@@ -237,13 +253,31 @@ impl<'ctx> CodeGen<'ctx> {
         }
     }
 
-    pub fn decl(&self, d: Decl) -> AnyValueEnum {
+    pub fn decl(&mut self, d: Decl) -> AnyValueEnum<'ctx> {
+        println!("{:?}", &d);
         match d {
-            Decl::Var { .. } => {
-                println!("{:?}", d);
-                exit(-1)
+            Decl::Var { is_mut, name, type_, value } => {
+                let value = self.expr(value);
+                match value {
+                    AnyValueEnum::IntValue(i) => {
+                        let i64_type = self.context.i64_type();
+                        let ptr = self.builder.build_alloca(i64_type, &*name);
+                        self.set_to_environment(name, ptr.as_any_value_enum());
+                        self.builder.build_store(ptr, i).as_any_value_enum()
+                    }
+                    AnyValueEnum::FloatValue(f) => {
+                        let f64_type = self.context.f64_type();
+                        let ptr = self.builder.build_alloca(f64_type, &*name);
+                        self.set_to_environment(name, ptr.as_any_value_enum());
+                        self.builder.build_store(ptr, f).as_any_value_enum()
+                    }
+                    _ => {
+                        exit(-1)
+                    }
+                }
             }
             Decl::Fun { modifiers, name, arg_defs, return_type, body } => {
+                self.push_environment();
                 let return_type_name: &str = &*return_type.name;
                 match return_type_name {
                     "Unit" => {
@@ -265,6 +299,7 @@ impl<'ctx> CodeGen<'ctx> {
                             }
                         };
                         self.builder.build_return(None);
+                        self.pop_environment();
                         AnyValueEnum::from(function)
                     }
                     _ => {
@@ -296,14 +331,14 @@ impl<'ctx> CodeGen<'ctx> {
         }
     }
 
-    pub fn stmt(&self, s:Stmt) -> AnyValueEnum {
+    pub fn stmt(&mut self, s:Stmt) -> AnyValueEnum {
         match s {
             Stmt::Decl { decl } => { self.decl(decl) }
             Stmt::Expr { expr } => { self.expr(expr) }
         }
     }
 
-    pub fn file(&self, f:File) {
+    pub fn file(&mut self, f:File) {
         for d in f.body {
             self.decl(d);
         }

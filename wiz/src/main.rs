@@ -35,11 +35,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     let context = Context::create();
     let module = context.create_module(module_name);
     let execution_engine = module.create_jit_execution_engine(OptimizationLevel::None)?;
-    let codegen = CodeGen {
+    let mut codegen = CodeGen {
         context: &context,
         module,
         builder: context.create_builder(),
         execution_engine,
+        local_environments: vec![]
     };
 
     let file = std::fs::File::open(Path::new(input));
