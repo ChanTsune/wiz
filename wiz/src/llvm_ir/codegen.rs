@@ -44,7 +44,12 @@ impl<'ctx> CodeGen<'ctx> {
                 return Some(*v)
             }
         }
-        self.module.get_function(&*name).map(|i|{i.as_any_value_enum()})
+        match self.module.get_function(&*name) {
+            Some(f) => {
+                Some(AnyValueEnum::FunctionValue(f))
+            }
+            None => None
+        }
     }
 
     fn set_to_environment(&mut self, name: String, value: AnyValueEnum<'ctx>) {
@@ -178,7 +183,14 @@ impl<'ctx> CodeGen<'ctx> {
                             }
                         }
                     }
-                    (_, _) => { exit(-1) }
+                    (AnyValueEnum::PointerValue(left), AnyValueEnum::PointerValue(right)) => {
+                        self.builder.build_load(left, "left");
+                        self.builder.build_load(right, "right").as_any_value_enum()
+                    }
+                    (r, l) => {
+                        println!("{:?},{:?}", r, l);
+                        exit(-5)
+                    }
                 }
             }
             Expr::UnaryOp { .. } => {
@@ -224,8 +236,11 @@ impl<'ctx> CodeGen<'ctx> {
                             }
                         }
                     }
+                    AnyValueEnum::PointerValue(p) => {
+                        println!("{:?}", p);
+                        exit(-12)
+                    }
                     _ => {
-                        // println!("{:?}", e);
                         exit(-1)
                     }
                 }
