@@ -39,8 +39,8 @@ pub struct CodeGen<'ctx> {
 
 impl<'ctx> CodeGen<'ctx> {
     fn get_from_environment(&self, name: String) -> Option<AnyValueEnum<'ctx>> {
-        for i in (0..self.local_environments.len()).rev() {
-            if let Some(v) = self.local_environments[i].get(&*name) {
+        for e in self.local_environments.iter().rev() {
+            if let Some(v) = e.get(&*name) {
                 return Some(*v)
             }
         }
