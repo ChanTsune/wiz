@@ -53,7 +53,11 @@ pub fn stmts(s: &str) -> IResult<&str, Vec<Stmt>> {
 }
 
 pub fn file(s: &str) -> IResult<&str, File> {
-    map(many0(decl), |decls| {
-        File{ body: decls }
+    map(many0(tuple((
+        whitespace0,
+        decl,
+        whitespace0,
+        ))), |decls| {
+        File{ body: decls.into_iter().map(|(_,f,_)|{f}).collect() }
     })(s)
 }
