@@ -1,4 +1,3 @@
-
 struct UnicodeScalar {
-
+    val codePoint: UInt32
 }
