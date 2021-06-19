@@ -292,35 +292,62 @@ impl<'ctx> CodeGen<'ctx> {
                 }
             }
             Decl::Fun { modifiers, name, arg_defs, return_type, body } => {
-                self.push_environment();
-                let return_type_name: &str = &*return_type.name;
-                match return_type_name {
-                    "Unit" => {
-                        let void_type = self.context.void_type();
-                        let fn_type = void_type.fn_type(&[], false);
-                        let function = self.module.add_function(&*name, fn_type,None);
-                        let basic_block = self.context.append_basic_block(function, "entry");
-                        self.builder.position_at_end(basic_block);
-                        match body {
-                            None => {}
-                            Some(FunBody::Expr { expr }) => {
-
-                                self.expr(expr);
-                            }
-                            Some(FunBody::Block { block }) => {
-                                for stmt in block.body {
-                                    self.stmt(stmt);
+                let return_type_name: &str = &*return_type.name; // NOTE: for debug
+                let return_type = type_name_to_type(self.context, &*return_type.name);
+                if let Some(body) = body {
+                    self.push_environment();
+                    let func = match return_type {
+                        // AnyTypeEnum::ArrayType(_) => {}
+                        // AnyTypeEnum::FloatType(_) => {}
+                        // AnyTypeEnum::FunctionType(_) => {}
+                        // AnyTypeEnum::IntType(_) => {}
+                        // AnyTypeEnum::PointerType(_) => {}
+                        // AnyTypeEnum::StructType(_) => {}
+                        // AnyTypeEnum::VectorType(_) => {}
+                        AnyTypeEnum::VoidType(void_type) => {
+                            let fn_type = void_type.fn_type(&[], false);
+                            let function = self.module.add_function(&*name, fn_type,None);
+                            let basic_block = self.context.append_basic_block(function, "entry");
+                            self.builder.position_at_end(basic_block);
+                            match body {
+                                FunBody::Expr { expr } => {
+                                    self.expr(expr);
                                 }
-                            }
-                        };
-                        self.builder.build_return(None);
-                        self.pop_environment();
-                        AnyValueEnum::from(function)
-                    }
-                    _ => {
-                        println!("{}", return_type_name);
-                        exit(-1)
-                    }
+                                FunBody::Block { block } => {
+                                    for stmt in block.body {
+                                        self.stmt(stmt);
+                                    }
+                                }
+                            };
+                            self.builder.build_return(None);
+                            function
+                        }
+                        _ => {
+                            println!("{}", return_type_name);
+                            exit(-1)
+                        }
+                    };
+                    self.pop_environment();
+                    AnyValueEnum::from(func)
+                } else {
+                    let func = match return_type {
+                        // AnyTypeEnum::ArrayType(_) => {}
+                        // AnyTypeEnum::FloatType(_) => {}
+                        // AnyTypeEnum::FunctionType(_) => {}
+                        // AnyTypeEnum::IntType(_) => {}
+                        // AnyTypeEnum::PointerType(_) => {}
+                        // AnyTypeEnum::StructType(_) => {}
+                        // AnyTypeEnum::VectorType(_) => {}
+                        AnyTypeEnum::VoidType(void_type) => {
+                            let fn_type = void_type.fn_type(&[], false);
+                            self.module.add_function(&*name, fn_type,None)
+                        }
+                        _ => {
+                            println!("{}", return_type_name);
+                            exit(-1)
+                        }
+                    };
+                    AnyValueEnum::from(func)
                 }
             }
             Decl::Struct { .. } => {
@@ -386,3 +413,22 @@ impl<'ctx> CodeGen<'ctx> {
     }
 }
 
+fn type_name_to_type<'ctx>(context: &'ctx Context, type_name: &str) -> AnyTypeEnum<'ctx> {
+    match type_name {
+        "Unit" => {
+            AnyTypeEnum::from(context.void_type())
+        }
+        "Int32" | "UInt32" => {
+            AnyTypeEnum::from(context.i32_type())
+        }
+        "Float" => {
+            AnyTypeEnum::from(context.f32_type())
+        }
+        "Double" => {
+            AnyTypeEnum::from(context.f64_type())
+        }
+        _ => {
+            AnyTypeEnum::from(context.void_type())
+        }
+    }
+}
