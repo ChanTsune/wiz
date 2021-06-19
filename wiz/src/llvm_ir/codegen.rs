@@ -8,7 +8,7 @@ use std::path::Path;
 use either::Either;
 use crate::ast::expr::{Expr, CallArg};
 use crate::ast::literal::Literal;
-use inkwell::types::{StringRadix, AnyTypeEnum};
+use inkwell::types::{StringRadix, AnyTypeEnum, BasicTypeEnum};
 use std::process::exit;
 use inkwell::values::{AnyValueEnum, BasicValueEnum, CallSiteValue, InstructionValue, PointerValue, AnyValue, GlobalValue, BasicValue};
 use crate::ast::decl::Decl;
@@ -85,13 +85,6 @@ impl<'ctx> CodeGen<'ctx> {
         self.builder.build_call(put_function, &[sum.try_as_basic_value().left().unwrap().into()], "_");
 
         self.builder.build_return(None);
-    }
-
-    pub fn builtin_print(&self) -> inkwell::values::FunctionValue {
-        let i32_type = self.context.i32_type();
-        let i8p_type = self.context.i8_type().ptr_type(AddressSpace::Generic);
-        let fn_type = i32_type.fn_type(&[i8p_type.into()], false);
-        self.module.add_function("puts", fn_type, Some(Linkage::External))
     }
 
     pub fn expr(&self, e: Expr) -> AnyValueEnum<'ctx> {
@@ -292,6 +285,12 @@ impl<'ctx> CodeGen<'ctx> {
                 }
             }
             Decl::Fun { modifiers, name, arg_defs, return_type, body } => {
+                let args: Vec<BasicTypeEnum<'ctx>> = arg_defs.into_iter()
+                    .map(|a|{type_name_to_type(self.context,&*a.type_name.name)})
+                    .map(|a|{
+                        println!("{:?}", &a);
+                        BasicTypeEnum::try_from(a).unwrap()}
+                    ).collect();
                 let return_type_name: &str = &*return_type.name; // NOTE: for debug
                 let return_type = type_name_to_type(self.context, &*return_type.name);
                 if let Some(body) = body {
@@ -305,7 +304,7 @@ impl<'ctx> CodeGen<'ctx> {
                         // AnyTypeEnum::StructType(_) => {}
                         // AnyTypeEnum::VectorType(_) => {}
                         AnyTypeEnum::VoidType(void_type) => {
-                            let fn_type = void_type.fn_type(&[], false);
+                            let fn_type = void_type.fn_type(&args, false);
                             let function = self.module.add_function(&*name, fn_type,None);
                             let basic_block = self.context.append_basic_block(function, "entry");
                             self.builder.position_at_end(basic_block);
@@ -339,7 +338,7 @@ impl<'ctx> CodeGen<'ctx> {
                         // AnyTypeEnum::StructType(_) => {}
                         // AnyTypeEnum::VectorType(_) => {}
                         AnyTypeEnum::VoidType(void_type) => {
-                            let fn_type = void_type.fn_type(&[], false);
+                            let fn_type = void_type.fn_type(&args, false);
                             self.module.add_function(&*name, fn_type,None)
                         }
                         _ => {
@@ -426,6 +425,9 @@ fn type_name_to_type<'ctx>(context: &'ctx Context, type_name: &str) -> AnyTypeEn
         }
         "Double" => {
             AnyTypeEnum::from(context.f64_type())
+        }
+        "String" => {
+            AnyTypeEnum::from(context.i8_type().ptr_type(AddressSpace::Generic))
         }
         _ => {
             AnyTypeEnum::from(context.void_type())

@@ -11,6 +11,7 @@ use std::error::Error;
 use std::path::Path;
 use crate::llvm_ir::codegen::CodeGen;
 use clap::{App, Arg};
+use std::fs::read_to_string;
 
 mod ast;
 mod parser;
@@ -43,11 +44,21 @@ fn main() -> Result<(), Box<dyn Error>> {
         local_environments: vec![]
     };
 
+    let builtin_dir = std::fs::read_dir(Path::new("../builtin")).unwrap();
+    for path in builtin_dir {
+        let path = path.unwrap().path();
+        if path.ends_with("builtin.ll.wiz") {
+            println!("{:?}", &path);
+            let built_in = parse_from_string(read_to_string(path).unwrap());
+            println!("{:?}", &built_in);
+            codegen.file(built_in);
+        }
+    }
+
     let file = std::fs::File::open(Path::new(input));
     let ast_file = parse_from_file(file.unwrap());
 
-    codegen.builtin_print();
-    // println!("{:?}", ast_file.unwrap());
+    // println!("{:?}", &ast_file.unwrap());
     codegen.file(ast_file.unwrap());
     codegen.print_to_file(Path::new(output));
 
