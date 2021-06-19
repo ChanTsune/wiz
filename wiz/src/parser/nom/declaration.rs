@@ -35,6 +35,7 @@ pub fn function_decl(s: &str) -> IResult<&str, Decl> {
         whitespace0,
         opt(tuple((
             char(':'),
+            whitespace0,
             type_,
         ))),
         whitespace0,
@@ -59,7 +60,7 @@ pub fn function_decl(s: &str) -> IResult<&str, Decl> {
             name: name,
             arg_defs: args,
             return_type: match return_type {
-                Some((_, type_)) => { type_ }
+                Some((_, _, type_)) => { type_ }
                 None => { TypeName { name: "Unit".parse().unwrap(), type_params: vec![] } }
             },
             body: body,
@@ -239,6 +240,7 @@ mod test {
     use crate::ast::fun::body_def::FunBody;
     use crate::ast::decl::Decl;
     use crate::ast::type_name::TypeName;
+    use crate::ast::fun::arg_def::ArgDef;
 
     #[test]
     fn test_empty_block() {
@@ -293,6 +295,22 @@ mod test {
             body: Some(FunBody::Block { block: Block { body: vec![] } }),
         })))
     }
+
+    #[test]
+    fn test_function_no_body() {
+        assert_eq!(function_decl("fun puts(_ item: String): Unit"), Ok(("", Decl::Fun {
+            modifiers: vec![],
+            name: "puts".to_string(),
+            arg_defs: vec![ArgDef{
+                label: "_".to_string(),
+                name: "item".to_string(),
+                type_name: TypeName { name: "String".to_string(), type_params: vec![] }
+            }],
+            return_type: TypeName { name: "Unit".to_string(), type_params: vec![] },
+            body: None,
+        })))
+    }
+
     #[test]
     fn test_var_decl() {
         assert_eq!(var_decl("val a: Int = 1"), Ok(("", Decl::Var {
