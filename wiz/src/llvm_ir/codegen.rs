@@ -112,6 +112,11 @@ impl<'ctx> CodeGen<'ctx> {
                         str.as_any_value_enum()
 
                     }
+                    Literal::BooleanLiteral { value } => {
+                        let b: bool = value.parse().unwrap();
+                        let i8_type = self.context.i8_type();
+                        i8_type.const_int(if b {1} else {0}, false).as_any_value_enum()
+                    }
                     Literal::NullLiteral => {
                         println!("Literall::Null");
                         exit(-1)
