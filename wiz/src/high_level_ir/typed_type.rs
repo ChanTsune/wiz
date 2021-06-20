@@ -1,9 +1,12 @@
+use std::fmt;
 
-struct Package {
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct Package {
     names: Vec<String>
 }
 
-struct TypedType {
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct TypedType {
     package: Package,
     name: String
 }

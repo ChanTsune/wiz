@@ -13,6 +13,9 @@ pub enum Literal {
     StringLiteral {
         value: String
     },
+    BooleanLiteral {
+        value: String
+    },
     NullLiteral,
 }
 
