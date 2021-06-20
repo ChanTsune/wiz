@@ -16,6 +16,8 @@ use std::fs::read_to_string;
 mod ast;
 mod parser;
 mod llvm_ir;
+mod high_level_ir;
+mod middle_level_ir;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let app = App::new("wiz")

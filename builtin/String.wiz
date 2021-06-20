@@ -1,4 +1,4 @@
 
 struct String {
-    private buffer: Vector<UnicodeScalar>
+    private buffer: Vector<UInt8>
 }
