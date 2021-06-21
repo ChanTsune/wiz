@@ -13,7 +13,8 @@ pub enum TypedDecl {
     Fun {
         modifiers: Vec<String>,
         name: String,
-        arg_defs: Vec<TypedArgDef>
+        arg_defs: Vec<TypedArgDef>,
+        body: Option<TypedFunBody>
     },
     Struct,
     Class,
@@ -27,4 +28,9 @@ pub struct TypedArgDef {
     label: String,
     name: String,
     type_: TypedType
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub enum TypedFunBody {
+    // TODO
 }
