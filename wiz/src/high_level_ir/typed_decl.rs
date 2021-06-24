@@ -1,6 +1,7 @@
 use std::fmt;
 use crate::high_level_ir::typed_type::TypedType;
 use crate::high_level_ir::typed_expr::TypedExpr;
+use crate::high_level_ir::typed_stmt::TypedBlock;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum TypedDecl {
@@ -14,7 +15,8 @@ pub enum TypedDecl {
         modifiers: Vec<String>,
         name: String,
         arg_defs: Vec<TypedArgDef>,
-        body: Option<TypedFunBody>
+        body: Option<TypedFunBody>,
+        return_type: TypedType
     },
     Struct,
     Class,
@@ -25,12 +27,13 @@ pub enum TypedDecl {
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct TypedArgDef {
-    label: String,
-    name: String,
-    type_: TypedType
+    pub(crate) label: String,
+    pub(crate) name: String,
+    pub(crate) type_: TypedType
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum TypedFunBody {
-    // TODO
+    Expr(TypedExpr),
+    Block(TypedBlock)
 }
