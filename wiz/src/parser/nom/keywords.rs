@@ -18,9 +18,13 @@ pub fn val_keyword(s: &str) -> IResult<&str, &str> {
     tag("val")(s)
 }
 
+pub fn while_keyword(s: &str) -> IResult<&str, &str> {
+    tag("while")(s)
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::parser::nom::keywords::{fun_keyword, where_keyword, var_keyword, val_keyword};
+    use crate::parser::nom::keywords::{fun_keyword, where_keyword, var_keyword, val_keyword, while_keyword};
 
     #[test]
     fn test_fun_keyword() {
@@ -40,5 +44,10 @@ mod tests {
     #[test]
     fn test_val_keyword() {
         assert_eq!(val_keyword("val"), Ok(("", "val")))
+    }
+
+    #[test]
+    fn test_while_keyword() {
+        assert_eq!(while_keyword("while"), Ok(("", "while")))
     }
 }
