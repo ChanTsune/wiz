@@ -76,6 +76,8 @@ impl AstToHLIR {
             Stmt::Expr { expr } => {
                 TypedStmt::Expr(self.expr(expr))
             }
+            Stmt::Assignment(_) => { TypedStmt::Assignment }
+            Stmt::Loop(_) => { TypedStmt::Loop }
         }
     }
 

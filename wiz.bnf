@@ -165,7 +165,7 @@
         # | <return>
         # | <member>
         # | <for>
-        # | <while>
+                | <while>
         # | <break>
         # | <continue>
         # | <unaryop>
@@ -173,6 +173,7 @@
 
 <parenthesized_expr> ::= "(" <white_spaces> <expr> <white_spaces> ")"
 
+<while> = "while" <expr> <block>
 
 <name_expr> ::= <identifire>
 

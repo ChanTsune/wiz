@@ -14,7 +14,7 @@ use inkwell::values::{AnyValueEnum, BasicValueEnum, CallSiteValue, InstructionVa
 use crate::ast::decl::Decl;
 use crate::ast::type_name::TypeName;
 use crate::ast::fun::body_def::FunBody;
-use crate::ast::stmt::Stmt;
+use crate::ast::stmt::{Stmt, AssignmentStmt};
 use crate::ast::file::File;
 use nom::Parser;
 use std::iter::Map;
@@ -380,7 +380,39 @@ impl<'ctx> CodeGen<'ctx> {
     pub fn stmt(&mut self, s:Stmt) -> AnyValueEnum {
         match s {
             Stmt::Decl { decl } => { self.decl(decl) }
+            Stmt::Assignment(a) => { self.assignment_stmt(a) }
+            Stmt::Loop(_) => { exit(-9) }
             Stmt::Expr { expr } => { self.expr(expr) }
+        }
+    }
+
+    pub fn assignment_stmt(&mut self, assignment: AssignmentStmt) -> AnyValueEnum<'ctx> {
+        let value = self.expr(assignment.value);
+        match value {
+            AnyValueEnum::IntValue(i) => {
+                let target = self.get_from_environment(assignment.target).unwrap();
+                if let AnyValueEnum::PointerValue(p) = target {
+                    return AnyValueEnum::from(self.builder.build_store(p, i))
+                }
+                exit(-3)
+            }
+            AnyValueEnum::FloatValue(f) => {
+                let target = self.get_from_environment(assignment.target).unwrap();
+                if let AnyValueEnum::PointerValue(p) = target {
+                    return AnyValueEnum::from(self.builder.build_store(p, f))
+                }
+                exit(-3)
+            }
+            _ => {
+                exit(-3)
+            }
+            // AnyValueEnum::PhiValue(_) => {}
+            // AnyValueEnum::ArrayValue(_) => {}
+            // AnyValueEnum::FunctionValue(_) => {}
+            // AnyValueEnum::PointerValue(_) => {}
+            // AnyValueEnum::StructValue(_) => {}
+            // AnyValueEnum::VectorValue(_) => {}
+            // AnyValueEnum::InstructionValue(_) => {}
         }
     }
 
