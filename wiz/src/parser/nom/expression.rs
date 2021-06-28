@@ -250,8 +250,8 @@ pub fn comparison_operator(s: &str) -> IResult<&str, String> {
     alt((
         map(tuple((char('<'), char('='))), |(a, b)| { a.to_string() + &*b.to_string() }),
         map(tuple((char('>'), char('='))), |(a, b)| { a.to_string() + &*b.to_string() }),
-        map(char('='), |a| { a.to_string() }),
-        map(char('='), |a| { a.to_string() }),
+        map(char('<'), |a| { a.to_string() }),
+        map(char('>'), |a| { a.to_string() }),
     ))(s)
 }
 /*
