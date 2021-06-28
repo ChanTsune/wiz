@@ -56,9 +56,18 @@
 <stmts> ::= <stmt> | <stmt> <stmts>
 
 <stmt> ::= <decl_stmt>
+         | <assignment_stmt>
+        # | <for>
+         | <while_stmt>
+        # | <break>
+        # | <continue>
          | <expr_stmt>
 
 <decl_stmt> ::= <decl> <eol>
+
+<assignment_stmt> ::= <identifier> "=" <expr>
+
+<while_stmt> ::= "while" <expr> <block>
 
 <expr_stmt> ::= <expr> <eol>
 
@@ -164,16 +173,10 @@
                 | <function_literal>
         # | <return>
         # | <member>
-        # | <for>
-                | <while>
-        # | <break>
-        # | <continue>
         # | <unaryop>
         # | <subscript>
 
 <parenthesized_expr> ::= "(" <white_spaces> <expr> <white_spaces> ")"
-
-<while> = "while" <expr> <block>
 
 <name_expr> ::= <identifire>
 
