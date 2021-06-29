@@ -1,0 +1,11 @@
+version: '2'
+
+services:
+  builder:
+    build:
+        context: .
+        dockerfile: ./Dockerfile
+    volumes:
+        - ./:/wiz
+    tty:
+        true
