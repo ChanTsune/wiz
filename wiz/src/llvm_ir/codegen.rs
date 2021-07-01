@@ -2,7 +2,7 @@ use inkwell::context::Context;
 use inkwell::module::{Module, Linkage};
 use inkwell::builder::Builder;
 use inkwell::execution_engine::{ExecutionEngine, JitFunction};
-use inkwell::AddressSpace;
+use inkwell::{AddressSpace, FloatPredicate, IntPredicate};
 use inkwell::support::{LLVMString};
 use std::path::Path;
 use either::Either;
@@ -10,11 +10,11 @@ use crate::ast::expr::{Expr, CallArg};
 use crate::ast::literal::Literal;
 use inkwell::types::{StringRadix, AnyTypeEnum, BasicTypeEnum};
 use std::process::exit;
-use inkwell::values::{AnyValueEnum, BasicValueEnum, CallSiteValue, InstructionValue, PointerValue, AnyValue, GlobalValue, BasicValue};
+use inkwell::values::{AnyValueEnum, BasicValueEnum, CallSiteValue, InstructionValue, PointerValue, AnyValue, GlobalValue, BasicValue, FunctionValue};
 use crate::ast::decl::Decl;
 use crate::ast::type_name::TypeName;
 use crate::ast::fun::body_def::FunBody;
-use crate::ast::stmt::{Stmt, AssignmentStmt};
+use crate::ast::stmt::{Stmt, AssignmentStmt, LoopStmt};
 use crate::ast::file::File;
 use nom::Parser;
 use std::iter::Map;
@@ -22,6 +22,7 @@ use nom::lib::std::convert::TryFrom;
 use std::ffi::CString;
 use std::collections::HashMap;
 use std::borrow::{Borrow, BorrowMut};
+use inkwell::basic_block::BasicBlock;
 
 /// Convenience type alias for the `sum` function.
 ///
@@ -35,6 +36,7 @@ pub struct CodeGen<'ctx> {
     pub(crate) builder: Builder<'ctx>,
     pub(crate) execution_engine: ExecutionEngine<'ctx>,
     pub(crate) local_environments: Vec<HashMap<String, AnyValueEnum<'ctx>>>,
+    pub(crate) current_function: Option<FunctionValue<'ctx>>,
 }
 
 impl<'ctx> CodeGen<'ctx> {
@@ -126,6 +128,8 @@ impl<'ctx> CodeGen<'ctx> {
             Expr::BinOp { left, kind, right } => {
                 let lft = self.expr(*left);
                 let rit = self.expr(*right);
+                let lft = self.load_if_pointer_value(lft);
+                let rit = self.load_if_pointer_value(rit);
                 match (lft, rit) {
                     (AnyValueEnum::IntValue(left), AnyValueEnum::IntValue(right)) => {
                         match &*kind {
@@ -149,6 +153,30 @@ impl<'ctx> CodeGen<'ctx> {
                                 let v = self.builder.build_int_signed_rem(left, right, "srem");
                                 v.as_any_value_enum()
                             },
+                            "==" => {
+                                let v = self.builder.build_int_compare(IntPredicate::EQ, left, right, "eq");
+                                v.as_any_value_enum()
+                            },
+                            ">=" => {
+                                let v = self.builder.build_int_compare(IntPredicate::SGE, left, right, "gte");
+                                v.as_any_value_enum()
+                            },
+                            ">" => {
+                                let v = self.builder.build_int_compare(IntPredicate::SGT, left, right, "gt");
+                                v.as_any_value_enum()
+                            },
+                            "<=" => {
+                                let v = self.builder.build_int_compare(IntPredicate::SLE, left, right, "lte");
+                                v.as_any_value_enum()
+                            },
+                            "<" => {
+                                let v = self.builder.build_int_compare(IntPredicate::SLT, left, right, "lt");
+                                v.as_any_value_enum()
+                            },
+                            "!=" => {
+                                let v = self.builder.build_int_compare(IntPredicate::NE, left, right, "neq");
+                                v.as_any_value_enum()
+                            }
                             _ => {
                                 exit(-1)
                             }
@@ -165,17 +193,41 @@ impl<'ctx> CodeGen<'ctx> {
                                 v.as_any_value_enum()
                             },
                             "*" => {
-                                let v = self.builder.build_float_mul(left, right, "sub");
+                                let v = self.builder.build_float_mul(left, right, "mul");
                                 v.as_any_value_enum()
                             },
                             "/" => {
-                                let v = self.builder.build_float_div(left, right, "sub");
+                                let v = self.builder.build_float_div(left, right, "div");
                                 v.as_any_value_enum()
                             },
                             "%" => {
-                                let v = self.builder.build_float_rem(left, right, "sub");
+                                let v = self.builder.build_float_rem(left, right, "rem");
                                 v.as_any_value_enum()
                             },
+                            "==" => {
+                                let v = self.builder.build_float_compare(FloatPredicate::OEQ, left, right, "eq");
+                                v.as_any_value_enum()
+                            },
+                            ">=" => {
+                                let v = self.builder.build_float_compare(FloatPredicate::OGE, left, right, "gte");
+                                v.as_any_value_enum()
+                            },
+                            ">" => {
+                                let v = self.builder.build_float_compare(FloatPredicate::OGT, left, right, "gt");
+                                v.as_any_value_enum()
+                            },
+                            "<=" => {
+                                let v = self.builder.build_float_compare(FloatPredicate::OLE, left, right, "lte");
+                                v.as_any_value_enum()
+                            },
+                            "<" => {
+                                let v = self.builder.build_float_compare(FloatPredicate::OLT, left, right, "lt");
+                                v.as_any_value_enum()
+                            },
+                            "!=" => {
+                                let v = self.builder.build_float_compare(FloatPredicate::ONE, left, right, "neq");
+                                v.as_any_value_enum()
+                            }
                             _ => {
                                 exit(-1)
                             }
@@ -266,6 +318,15 @@ impl<'ctx> CodeGen<'ctx> {
         }
     }
 
+    pub fn load_if_pointer_value(&self, v:AnyValueEnum<'ctx>) -> AnyValueEnum<'ctx> {
+        if v.is_pointer_value() {
+            let p = v.into_pointer_value();
+            self.builder.build_load(p, "v").as_any_value_enum()
+        } else {
+            v
+        }
+    }
+
     pub fn decl(&mut self, d: Decl) -> AnyValueEnum<'ctx> {
         println!("{:?}", &d);
         match d {
@@ -311,6 +372,7 @@ impl<'ctx> CodeGen<'ctx> {
                         AnyTypeEnum::VoidType(void_type) => {
                             let fn_type = void_type.fn_type(&args, false);
                             let function = self.module.add_function(&*name, fn_type,None);
+                            self.current_function = Some(function);
                             let basic_block = self.context.append_basic_block(function, "entry");
                             self.builder.position_at_end(basic_block);
                             match body {
@@ -344,7 +406,9 @@ impl<'ctx> CodeGen<'ctx> {
                         // AnyTypeEnum::VectorType(_) => {}
                         AnyTypeEnum::VoidType(void_type) => {
                             let fn_type = void_type.fn_type(&args, false);
-                            self.module.add_function(&*name, fn_type,None)
+                            let f = self.module.add_function(&*name, fn_type,None);
+                            self.current_function = Some(f);
+                            f
                         }
                         _ => {
                             println!("{}", return_type_name);
