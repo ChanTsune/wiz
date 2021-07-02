@@ -43,7 +43,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         module,
         builder: context.create_builder(),
         execution_engine,
-        local_environments: vec![]
+        local_environments: vec![],
+        current_function: None,
     };
 
     let builtin_dir = std::fs::read_dir(Path::new("../builtin")).unwrap();

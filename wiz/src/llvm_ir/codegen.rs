@@ -445,7 +445,7 @@ impl<'ctx> CodeGen<'ctx> {
         match s {
             Stmt::Decl { decl } => { self.decl(decl) }
             Stmt::Assignment(a) => { self.assignment_stmt(a) }
-            Stmt::Loop(_) => { exit(-9) }
+            Stmt::Loop(l) => { self.loop_stmt(l) }
             Stmt::Expr { expr } => { self.expr(expr) }
         }
     }
@@ -477,6 +477,27 @@ impl<'ctx> CodeGen<'ctx> {
             // AnyValueEnum::StructValue(_) => {}
             // AnyValueEnum::VectorValue(_) => {}
             // AnyValueEnum::InstructionValue(_) => {}
+        }
+    }
+
+    pub fn loop_stmt(&mut self, lop: LoopStmt) -> AnyValueEnum<'ctx> {
+        match lop {
+            LoopStmt::While { condition, block } => {
+                let loop_body_block = self.context.append_basic_block(self.current_function.unwrap(), "loop");
+                let after_loop_block = self.context.append_basic_block(self.current_function.unwrap(), "after_loop");
+                // loop に入るかの検査
+                self.builder.build_conditional_branch(self.expr(condition.clone()).into_int_value(), loop_body_block, after_loop_block);
+                self.builder.position_at_end(loop_body_block);
+                for stmt in block.body {
+                    self.stmt(stmt);
+                }
+                // loop を継続するかの検査
+                let i = self.builder.build_conditional_branch(self.expr(condition).into_int_value(), loop_body_block, after_loop_block);
+                self.builder.position_at_end(after_loop_block);
+                i.as_any_value_enum()
+            }
+            LoopStmt::DoWhile { .. } => { exit(-1) }
+            LoopStmt::For { .. } => { exit(-1) }
         }
     }
 

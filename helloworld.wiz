@@ -1,6 +1,9 @@
 fun main() {
-    val a = 1
+    var a = 1
     val b = 2
+    while a < 5 {
+        a = a + 1
+    }
     val c = a + b
     puts(String(from: c))
     puts("Hello world!")
