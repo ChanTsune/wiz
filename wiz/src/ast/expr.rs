@@ -3,6 +3,7 @@ use crate::ast::literal::Literal;
 use std::fmt;
 use crate::ast::type_name::TypeName;
 use crate::ast::stmt::Stmt;
+use crate::ast::block::Block;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum Expr {
@@ -44,7 +45,9 @@ pub enum Expr {
         tailing_lambda: Option<Lambda>
     },
     If {
-        // TODO
+        condition: Box<Expr>,
+        body: Block,
+        else_body: Option<Block>
     },
     When {
         // TODO

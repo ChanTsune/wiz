@@ -168,7 +168,7 @@
         # | <dict>
         # | <string_builder>
         # | <call>
-        # | <if>
+                | <if>
         # | <when>
                 | <function_literal>
         # | <return>
@@ -195,6 +195,8 @@
 <function_literal> ::= <lambda_literal>
 
 <lambda_literal> ::= "{" <stmts> "}"
+
+<if> ::= "if" <expr> <block> ("else" (<block> | <if>))?
 
 <postfix_operator> ::= "!"
 

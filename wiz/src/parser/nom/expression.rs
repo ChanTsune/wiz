@@ -12,6 +12,10 @@ use nom::error::ParseError;
 use crate::parser::nom::type_::{type_, type_arguments};
 use crate::ast::type_name::TypeName;
 use crate::parser::nom::stmts;
+use crate::parser::nom::keywords::{if_keyword, else_keyword};
+use crate::parser::nom::declaration::block;
+use crate::ast::block::Block;
+use crate::ast::stmt::Stmt;
 
 pub fn integer_literal(s: &str) -> IResult<&str, Literal> {
     map(digit1, |n: &str| {
@@ -70,11 +74,41 @@ pub fn parenthesized_expr(s: &str) -> IResult<&str, Expr> {
 
 pub fn primary_expr(s: &str) -> IResult<&str, Expr> {
     alt((
+        if_expr,
         name_expr,
         literal_expr,
         parenthesized_expr,
     ))(s)
 }
+/*
+<if> ::= "if" <expr> <block> ("else" (<block> | <if>))?
+*/
+pub fn if_expr(s: &str) -> IResult<&str, Expr> {
+    map(tuple((
+        if_keyword,
+        whitespace1,
+        expr,
+        whitespace0,
+        block,
+        opt(map(tuple((
+            whitespace0,
+            else_keyword,
+            whitespace0,
+            alt((block, map(if_expr, |ib|{
+                Block{ body: vec![Stmt::Expr{ expr: ib }] }
+            })))
+        )),|(_, _, _, e)|{
+            e
+        }))
+        )), |(_, _, condition, _, body, else_body)|{
+        Expr::If {
+            condition: Box::new(condition),
+            body,
+            else_body
+        }
+    })(s)
+}
+
 /*
 <postfix_expr> ::= <primary_expr> <postfix_suffix>*
 */
@@ -640,10 +674,11 @@ pub fn expr(s: &str) -> IResult<&str, Expr> {
 mod tests {
     use nom::error::ErrorKind;
     use nom::Err::Error;
-    use crate::parser::nom::expression::{integer_literal, disjunction_expr, expr, postfix_suffix, value_arguments, string_literal};
+    use crate::parser::nom::expression::{integer_literal, disjunction_expr, expr, postfix_suffix, value_arguments, string_literal, if_expr};
     use crate::ast::literal::Literal::{IntegerLiteral, StringLiteral};
-    use crate::ast::expr::Expr::{BinOp, Literal, Call, Name};
+    use crate::ast::expr::Expr::{BinOp, Literal, Call, Name, If};
     use crate::ast::expr::{PostfixSuffix, CallArg};
+    use crate::ast::block::Block;
 
     #[test]
     fn test_numeric() {
@@ -701,5 +736,22 @@ mod tests {
             args: vec![CallArg { label: Some(String::from("string")), arg: Box::from(Literal { literal: StringLiteral { value: "Hello, World".parse().unwrap() } }), is_vararg: false }],
             tailing_lambda: None,
         })));
+    }
+
+    #[test]
+    fn test_if_expr() {
+        assert_eq!(expr(r"if a { }"), Ok(("", If {
+            condition: Box::new(Name { name: "a".to_string() }),
+            body: Block { body: vec![] },
+            else_body: None
+        })))
+    }
+    #[test]
+    fn test_if_expr_with_else() {
+        assert_eq!(expr(r"if a { } else { }"), Ok(("", If {
+            condition: Box::new(Name { name: "a".to_string() }),
+            body: Block { body: vec![] },
+            else_body: Some(Block { body: vec![] })
+        })))
     }
 }
