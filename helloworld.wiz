@@ -2,10 +2,13 @@ fun main() {
     var a = 1
     val b = 2
     while a < 5 {
+        if a % 2 == 0 {
+            puts("Hello world!")
+        } else {
+            puts("Welcome to Wiz!!")
+        }
         a = a + 1
     }
     val c = a + b
-    puts(String(from: c))
-    puts("Hello world!")
-    puts("Welcome to Wiz!!")
+    puts("...bye")
 }
