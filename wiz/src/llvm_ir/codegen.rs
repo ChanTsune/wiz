@@ -23,6 +23,7 @@ use std::ffi::CString;
 use std::collections::HashMap;
 use std::borrow::{Borrow, BorrowMut};
 use inkwell::basic_block::BasicBlock;
+use crate::ast::block::Block;
 
 /// Convenience type alias for the `sum` function.
 ///
@@ -89,7 +90,7 @@ impl<'ctx> CodeGen<'ctx> {
         self.builder.build_return(None);
     }
 
-    pub fn expr(&self, e: Expr) -> AnyValueEnum<'ctx> {
+    pub fn expr(&mut self, e: Expr) -> AnyValueEnum<'ctx> {
         println!("{:?}", e);
         match e {
             Expr::Name { name } => {
@@ -295,9 +296,52 @@ impl<'ctx> CodeGen<'ctx> {
                     }
                 }
             }
-            Expr::If { .. } => {
-                println!("{:?}", e);
-                exit(-1)
+            Expr::If { condition, body, else_body } => {
+                match else_body {
+                    None => {
+                        let if_block = self.context.append_basic_block(self.current_function.unwrap(), "if");
+                        let after_if_block = self.context.append_basic_block(self.current_function.unwrap(), "else");
+                        let cond = self.expr(*condition);
+                        self.builder.build_conditional_branch(cond.into_int_value(), if_block, after_if_block);
+                        self.builder.position_at_end(if_block);
+                        for stmt in body.body {
+                            self.stmt(stmt);
+                        }
+                        self.builder.position_at_end(after_if_block);
+
+                        self.context.i64_type().const_int(0, false).as_any_value_enum() // mean Void value
+                    }
+                    Some(else_body) => {
+                        let i64_type = self.context.i64_type();
+                        let if_value = self.builder.build_alloca(i64_type, "if_value");
+                        let if_block = self.context.append_basic_block(self.current_function.unwrap(), "if");
+                        let else_block = self.context.append_basic_block(self.current_function.unwrap(), "else");
+                        let after_if_block = self.context.append_basic_block(self.current_function.unwrap(), "after_if");
+                        let cond = self.expr(*condition);
+                        self.builder.build_conditional_branch(cond.into_int_value(), if_block, else_block);
+                        self.builder.position_at_end(if_block);
+                        let stmt_last_index = body.body.len() - 1;
+                        for (i, stmt) in body.body.into_iter().enumerate() {
+                            let t = self.stmt(stmt);
+                            // if stmt_last_index == i {
+                            //     self.builder.build_store(if_value, t.into_int_value());
+                            // }
+                        };
+                        self.builder.build_unconditional_branch(after_if_block);
+                        self.builder.position_at_end(else_block);
+                        let stmt_last_index = else_body.body.len() - 1;
+                        for (i, stmt) in else_body.body.into_iter().enumerate() {
+                            let t = self.stmt(stmt);
+                            // if stmt_last_index == i {
+                            //     self.builder.build_store(if_value, t.into_int_value());
+                            // }
+                        };
+                        self.builder.build_unconditional_branch(after_if_block);
+                        self.builder.position_at_end(after_if_block);
+
+                        if_value.as_any_value_enum()
+                    }
+                }
             }
             Expr::When { .. } => {
                 println!("{:?}", e);
@@ -486,13 +530,15 @@ impl<'ctx> CodeGen<'ctx> {
                 let loop_body_block = self.context.append_basic_block(self.current_function.unwrap(), "loop");
                 let after_loop_block = self.context.append_basic_block(self.current_function.unwrap(), "after_loop");
                 // loop に入るかの検査
-                self.builder.build_conditional_branch(self.expr(condition.clone()).into_int_value(), loop_body_block, after_loop_block);
+                let cond = self.expr(condition.clone());
+                self.builder.build_conditional_branch(cond.into_int_value(), loop_body_block, after_loop_block);
                 self.builder.position_at_end(loop_body_block);
                 for stmt in block.body {
                     self.stmt(stmt);
                 }
                 // loop を継続するかの検査
-                let i = self.builder.build_conditional_branch(self.expr(condition).into_int_value(), loop_body_block, after_loop_block);
+                let cond = self.expr(condition);
+                let i = self.builder.build_conditional_branch(cond.into_int_value(), loop_body_block, after_loop_block);
                 self.builder.position_at_end(after_loop_block);
                 i.as_any_value_enum()
             }
