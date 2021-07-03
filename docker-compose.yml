@@ -7,5 +7,5 @@ services:
         dockerfile: ./Dockerfile
     volumes:
         - ./:/wiz
-    tty:
-        true
+    working_dir: /wiz/wiz
+    command: /root/.cargo/bin/cargo run ../helloworld.wiz
