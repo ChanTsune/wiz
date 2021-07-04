@@ -4,19 +4,15 @@ use std::fmt;
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct TypeName {
     pub(crate) name: String,
-    pub(crate) type_params: Vec<TypeParam>
+    pub(crate) type_params: Vec<TypeParam>,
 }
 
-impl Node for TypeName {
-
-}
+impl Node for TypeName {}
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct TypeParam {
     pub(crate) name: String,
-    pub(crate) type_constraints: Vec<TypeName>
+    pub(crate) type_constraints: Vec<TypeName>,
 }
 
-impl Node for TypeParam {
-
-}
+impl Node for TypeParam {}

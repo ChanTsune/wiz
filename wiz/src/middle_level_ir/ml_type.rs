@@ -1,4 +1,3 @@
-
 pub struct MLType {
-    name: String
+    name: String,
 }

@@ -1,22 +1,22 @@
-use crate::ast::node::Node;
-use crate::ast::literal::Literal;
-use std::fmt;
-use crate::ast::type_name::TypeName;
-use crate::ast::stmt::Stmt;
 use crate::ast::block::Block;
+use crate::ast::literal::Literal;
+use crate::ast::node::Node;
+use crate::ast::stmt::Stmt;
+use crate::ast::type_name::TypeName;
+use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum Expr {
     Name {
-        name: String
+        name: String,
     },
     Literal {
-        literal: Literal
+        literal: Literal,
     },
     BinOp {
         left: Box<Expr>,
         kind: String,
-        right: Box<Expr>
+        right: Box<Expr>,
     },
     UnaryOp {
         target: Box<Expr>,
@@ -28,10 +28,10 @@ pub enum Expr {
         idx_or_key: Box<Expr>,
     },
     List {
-        values: Vec<Expr>
+        values: Vec<Expr>,
     },
     Tuple {
-        values: Vec<Expr>
+        values: Vec<Expr>,
     },
     Dict {
         // TODO
@@ -42,18 +42,18 @@ pub enum Expr {
     Call {
         target: Box<Expr>,
         args: Vec<CallArg>,
-        tailing_lambda: Option<Lambda>
+        tailing_lambda: Option<Lambda>,
     },
     If {
         condition: Box<Expr>,
         body: Block,
-        else_body: Option<Block>
+        else_body: Option<Block>,
     },
     When {
         // TODO
     },
     Lambda {
-        lambda: Lambda
+        lambda: Lambda,
     },
     Return {
         // TODO
@@ -61,37 +61,35 @@ pub enum Expr {
     TypeCast {
         target: Box<Expr>,
         is_safe: bool,
-        type_: TypeName
-    }
+        type_: TypeName,
+    },
 }
 
-impl Node for Expr {
-
-}
+impl Node for Expr {}
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct CallArg {
     pub(crate) label: Option<String>,
     pub(crate) arg: Box<Expr>,
-    pub(crate) is_vararg: bool
+    pub(crate) is_vararg: bool,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct Lambda {
-    pub(crate) stmts: Vec<Stmt>
+    pub(crate) stmts: Vec<Stmt>,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum PostfixSuffix {
     Operator {
-        kind: String
+        kind: String,
     },
     TypeArgumentSuffix {
-        types: Vec<TypeName>
+        types: Vec<TypeName>,
     },
     CallSuffix {
         args: Vec<CallArg>,
-        tailing_lambda: Option<Lambda>
+        tailing_lambda: Option<Lambda>,
     },
     IndexingSuffix,
     NavigationSuffix,

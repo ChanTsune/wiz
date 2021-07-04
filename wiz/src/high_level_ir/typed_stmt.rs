@@ -1,6 +1,6 @@
-use std::fmt;
-use crate::high_level_ir::typed_expr::TypedExpr;
 use crate::high_level_ir::typed_decl::TypedDecl;
+use crate::high_level_ir::typed_expr::TypedExpr;
+use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum TypedStmt {
@@ -12,5 +12,5 @@ pub enum TypedStmt {
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct TypedBlock {
-    pub(crate) body: Vec<TypedStmt>
+    pub(crate) body: Vec<TypedStmt>,
 }

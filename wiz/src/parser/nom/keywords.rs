@@ -1,6 +1,6 @@
-use nom::IResult;
-use nom::combinator::map;
 use nom::bytes::complete::tag;
+use nom::combinator::map;
+use nom::IResult;
 
 pub fn fun_keyword(s: &str) -> IResult<&str, &str> {
     tag("fun")(s)
@@ -32,7 +32,10 @@ pub fn else_keyword(s: &str) -> IResult<&str, &str> {
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::nom::keywords::{fun_keyword, where_keyword, var_keyword, val_keyword, while_keyword, if_keyword, else_keyword};
+    use crate::parser::nom::keywords::{
+        else_keyword, fun_keyword, if_keyword, val_keyword, var_keyword, where_keyword,
+        while_keyword,
+    };
 
     #[test]
     fn test_fun_keyword() {

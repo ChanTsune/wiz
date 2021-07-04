@@ -1,6 +1,6 @@
-use nom::{IResult, Slice, InputIter, AsChar};
-use nom::character::complete::{one_of, char};
+use nom::character::complete::{char, one_of};
 use nom::combinator::map;
+use nom::{AsChar, IResult, InputIter, Slice};
 use std::ops::RangeFrom;
 
 pub fn alphabet(s: &str) -> IResult<&str, char> {
@@ -12,9 +12,9 @@ pub fn digit(s: &str) -> IResult<&str, char> {
 }
 
 pub fn under_score<I>(s: I) -> IResult<I, char>
-    where
-        I: Slice<RangeFrom<usize>> + InputIter,
-        <I as InputIter>::Item: AsChar,
+where
+    I: Slice<RangeFrom<usize>> + InputIter,
+    <I as InputIter>::Item: AsChar,
 {
     char('_')(s)
 }

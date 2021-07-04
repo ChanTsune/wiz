@@ -1,10 +1,10 @@
 use super::node::Node;
-use std::fmt;
-use crate::ast::fun::arg_def::ArgDef;
-use crate::ast::type_name::TypeName;
 use crate::ast::block::Block;
-use crate::ast::fun::body_def::FunBody;
 use crate::ast::expr::Expr;
+use crate::ast::fun::arg_def::ArgDef;
+use crate::ast::fun::body_def::FunBody;
+use crate::ast::type_name::TypeName;
+use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum Decl {
@@ -12,7 +12,7 @@ pub enum Decl {
         is_mut: bool,
         name: String,
         type_: Option<TypeName>,
-        value: Expr
+        value: Expr,
     },
     Fun {
         modifiers: Vec<String>,
@@ -35,9 +35,7 @@ pub enum Decl {
     },
     Extension {
         // TODO
-    }
+    },
 }
 
-impl Node for Decl {
-
-}
+impl Node for Decl {}

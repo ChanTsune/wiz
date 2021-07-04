@@ -1,4 +1,3 @@
-
 pub enum MLExpr {
     Name,
     Literal,
@@ -6,5 +5,5 @@ pub enum MLExpr {
     If,
     When,
     Return,
-    TypeCast
+    TypeCast,
 }

@@ -1,32 +1,31 @@
-use crate::parser::parser::{parse_from_string, parse_from_file};
+use crate::parser::parser::{parse_from_file, parse_from_string};
 
-use inkwell::{OptimizationLevel, AddressSpace};
+use crate::llvm_ir::codegen::CodeGen;
+use clap::{App, Arg};
 use inkwell::builder::Builder;
 use inkwell::context::Context;
 use inkwell::execution_engine::{ExecutionEngine, JitFunction};
-use inkwell::module::{Module, Linkage};
+use inkwell::module::{Linkage, Module};
 use inkwell::targets::{InitializationConfig, Target};
+use inkwell::{AddressSpace, OptimizationLevel};
 use std::error::Error;
-use std::path::Path;
-use crate::llvm_ir::codegen::CodeGen;
-use clap::{App, Arg};
 use std::fs::read_to_string;
+use std::path::Path;
 
 mod ast;
-mod parser;
-mod llvm_ir;
 mod high_level_ir;
+mod llvm_ir;
 mod middle_level_ir;
+mod parser;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let app = App::new("wiz")
-        .arg(Arg::with_name("input")
-            .required(true)
-        )
-        .arg(Arg::with_name("output")
-            .short("o")
-            .takes_value(true)
-            .default_value("out.ll")
+        .arg(Arg::with_name("input").required(true))
+        .arg(
+            Arg::with_name("output")
+                .short("o")
+                .takes_value(true)
+                .default_value("out.ll"),
         );
 
     let matches = app.get_matches();

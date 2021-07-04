@@ -4,10 +4,6 @@ use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum FunBody {
-    Block{
-        block: Block
-    },
-    Expr {
-        expr: Expr
-    }
+    Block { block: Block },
+    Expr { expr: Expr },
 }
