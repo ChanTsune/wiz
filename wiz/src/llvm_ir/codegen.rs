@@ -1,29 +1,32 @@
-use inkwell::context::Context;
-use inkwell::module::{Module, Linkage};
-use inkwell::builder::Builder;
-use inkwell::execution_engine::{ExecutionEngine, JitFunction};
-use inkwell::{AddressSpace, FloatPredicate, IntPredicate};
-use inkwell::support::{LLVMString};
-use std::path::Path;
-use either::Either;
-use crate::ast::expr::{Expr, CallArg};
-use crate::ast::literal::Literal;
-use inkwell::types::{StringRadix, AnyTypeEnum, BasicTypeEnum};
-use std::process::exit;
-use inkwell::values::{AnyValueEnum, BasicValueEnum, CallSiteValue, InstructionValue, PointerValue, AnyValue, GlobalValue, BasicValue, FunctionValue};
-use crate::ast::decl::Decl;
-use crate::ast::type_name::TypeName;
-use crate::ast::fun::body_def::FunBody;
-use crate::ast::stmt::{Stmt, AssignmentStmt, LoopStmt};
-use crate::ast::file::File;
-use nom::Parser;
-use std::iter::Map;
-use nom::lib::std::convert::TryFrom;
-use std::ffi::CString;
-use std::collections::HashMap;
-use std::borrow::{Borrow, BorrowMut};
-use inkwell::basic_block::BasicBlock;
 use crate::ast::block::Block;
+use crate::ast::decl::Decl;
+use crate::ast::expr::{CallArg, Expr};
+use crate::ast::file::File;
+use crate::ast::fun::body_def::FunBody;
+use crate::ast::literal::Literal;
+use crate::ast::stmt::{AssignmentStmt, LoopStmt, Stmt};
+use crate::ast::type_name::TypeName;
+use either::Either;
+use inkwell::basic_block::BasicBlock;
+use inkwell::builder::Builder;
+use inkwell::context::Context;
+use inkwell::execution_engine::{ExecutionEngine, JitFunction};
+use inkwell::module::{Linkage, Module};
+use inkwell::support::LLVMString;
+use inkwell::types::{AnyTypeEnum, BasicTypeEnum, StringRadix};
+use inkwell::values::{
+    AnyValue, AnyValueEnum, BasicValue, BasicValueEnum, CallSiteValue, FunctionValue, GlobalValue,
+    InstructionValue, PointerValue,
+};
+use inkwell::{AddressSpace, FloatPredicate, IntPredicate};
+use nom::lib::std::convert::TryFrom;
+use nom::Parser;
+use std::borrow::{Borrow, BorrowMut};
+use std::collections::HashMap;
+use std::ffi::CString;
+use std::iter::Map;
+use std::path::Path;
+use std::process::exit;
 
 /// Convenience type alias for the `sum` function.
 ///
