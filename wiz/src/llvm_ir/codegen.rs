@@ -313,33 +313,28 @@ impl<'ctx> CodeGen<'ctx> {
                     }
                     Some(else_body) => {
                         let i64_type = self.context.i64_type();
-                        let if_value = self.builder.build_alloca(i64_type, "if_value");
                         let if_block = self.context.append_basic_block(self.current_function.unwrap(), "if");
                         let else_block = self.context.append_basic_block(self.current_function.unwrap(), "else");
                         let after_if_block = self.context.append_basic_block(self.current_function.unwrap(), "after_if");
                         let cond = self.expr(*condition);
                         self.builder.build_conditional_branch(cond.into_int_value(), if_block, else_block);
                         self.builder.position_at_end(if_block);
-                        let stmt_last_index = body.body.len() - 1;
-                        for (i, stmt) in body.body.into_iter().enumerate() {
-                            let t = self.stmt(stmt);
-                            // if stmt_last_index == i {
-                            //     self.builder.build_store(if_value, t.into_int_value());
-                            // }
-                        };
+                        let stmt_last_expr= self.block(body);
                         self.builder.build_unconditional_branch(after_if_block);
                         self.builder.position_at_end(else_block);
-                        let stmt_last_index = else_body.body.len() - 1;
-                        for (i, stmt) in else_body.body.into_iter().enumerate() {
-                            let t = self.stmt(stmt);
-                            // if stmt_last_index == i {
-                            //     self.builder.build_store(if_value, t.into_int_value());
-                            // }
-                        };
+                        let else_stmt_last_expr = self.block(else_body);
                         self.builder.build_unconditional_branch(after_if_block);
                         self.builder.position_at_end(after_if_block);
-
-                        if_value.as_any_value_enum()
+                        match (BasicValueEnum::try_from(stmt_last_expr),BasicValueEnum::try_from(else_stmt_last_expr)) {
+                            (Ok(if_), Ok(else_)) => {
+                                let if_value = self.builder.build_phi(i64_type, "if_value");
+                                if_value.add_incoming(&[(&if_, if_block), (&else_, else_block)]);
+                                if_value.as_any_value_enum()
+                            }
+                            _ => {
+                                i64_type.const_int(0, false).as_any_value_enum()
+                            }
+                        }
                     }
                 }
             }
@@ -360,6 +355,19 @@ impl<'ctx> CodeGen<'ctx> {
                 exit(-1)
             }
         }
+    }
+
+    pub fn block(&mut self, b: Block) -> AnyValueEnum<'ctx> {
+        let i64_type = self.context.i64_type();
+        let last_index = b.body.len() - 1;
+        for (i, stmt) in b.body.into_iter().enumerate() {
+            if i == last_index {
+                return self.stmt(stmt)
+            } else {
+                self.stmt(stmt)
+            };
+        }
+        AnyValueEnum::from(i64_type.const_int(0, false))
     }
 
     pub fn load_if_pointer_value(&self, v:AnyValueEnum<'ctx>) -> AnyValueEnum<'ctx> {
@@ -485,7 +493,7 @@ impl<'ctx> CodeGen<'ctx> {
         }
     }
 
-    pub fn stmt(&mut self, s:Stmt) -> AnyValueEnum {
+    pub fn stmt(&mut self, s:Stmt) -> AnyValueEnum<'ctx> {
         match s {
             Stmt::Decl { decl } => { self.decl(decl) }
             Stmt::Assignment(a) => { self.assignment_stmt(a) }
