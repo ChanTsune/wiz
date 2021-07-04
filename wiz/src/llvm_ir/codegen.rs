@@ -47,14 +47,12 @@ impl<'ctx> CodeGen<'ctx> {
     fn get_from_environment(&self, name: String) -> Option<AnyValueEnum<'ctx>> {
         for e in self.local_environments.iter().rev() {
             if let Some(v) = e.get(&*name) {
-                return Some(*v)
+                return Some(*v);
             }
         }
         match self.module.get_function(&*name) {
-            Some(f) => {
-                Some(AnyValueEnum::FunctionValue(f))
-            }
-            None => None
+            Some(f) => Some(AnyValueEnum::FunctionValue(f)),
+            None => None,
         }
     }
 
@@ -71,8 +69,8 @@ impl<'ctx> CodeGen<'ctx> {
         self.local_environments.pop();
     }
     /**
-    * Generate main function as entry point.
-    */
+     * Generate main function as entry point.
+     */
     pub fn initialize(&self) {
         let void_type = self.context.void_type();
         let fn_type = void_type.fn_type(&[], false);
