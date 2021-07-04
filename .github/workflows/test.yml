@@ -35,4 +35,4 @@ jobs:
           command: test
           args: --release --all-features
       - name: run test
-          run: cd wiz && cargo run ../helloworld.wiz && clang out.ll
+        run: cd wiz && cargo run ../helloworld.wiz && clang out.ll
