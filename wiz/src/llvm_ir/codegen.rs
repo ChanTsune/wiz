@@ -325,13 +325,16 @@ impl<'ctx> CodeGen<'ctx> {
                         let cond = self.expr(*condition);
                         self.builder.build_conditional_branch(cond.into_int_value(), if_block, else_block);
                         self.builder.position_at_end(if_block);
-                        let stmt_last_expr= self.block(body);
+                        let stmt_last_expr = self.block(body);
                         self.builder.build_unconditional_branch(after_if_block);
                         self.builder.position_at_end(else_block);
                         let else_stmt_last_expr = self.block(else_body);
                         self.builder.build_unconditional_branch(after_if_block);
                         self.builder.position_at_end(after_if_block);
-                        match (BasicValueEnum::try_from(stmt_last_expr),BasicValueEnum::try_from(else_stmt_last_expr)) {
+                        match (
+                            BasicValueEnum::try_from(stmt_last_expr),
+                            BasicValueEnum::try_from(else_stmt_last_expr),
+                        ) {
                             (Ok(if_), Ok(else_)) => {
                                 let if_value = self.builder.build_phi(i64_type, "if_value");
                                 if_value.add_incoming(&[(&if_, if_block), (&else_, else_block)]);
@@ -368,7 +371,7 @@ impl<'ctx> CodeGen<'ctx> {
         let last_index = b.body.len() - 1;
         for (i, stmt) in b.body.into_iter().enumerate() {
             if i == last_index {
-                return self.stmt(stmt)
+                return self.stmt(stmt);
             } else {
                 self.stmt(stmt)
             };
@@ -376,7 +379,7 @@ impl<'ctx> CodeGen<'ctx> {
         AnyValueEnum::from(i64_type.const_int(0, false))
     }
 
-    pub fn load_if_pointer_value(&self, v:AnyValueEnum<'ctx>) -> AnyValueEnum<'ctx> {
+    pub fn load_if_pointer_value(&self, v: AnyValueEnum<'ctx>) -> AnyValueEnum<'ctx> {
         if v.is_pointer_value() {
             let p = v.into_pointer_value();
             self.builder.build_load(p, "v").as_any_value_enum()
@@ -388,7 +391,12 @@ impl<'ctx> CodeGen<'ctx> {
     pub fn decl(&mut self, d: Decl) -> AnyValueEnum<'ctx> {
         println!("{:?}", &d);
         match d {
-            Decl::Var { is_mut, name, type_, value } => {
+            Decl::Var {
+                is_mut,
+                name,
+                type_,
+                value,
+            } => {
                 let value = self.expr(value);
                 match value {
                     AnyValueEnum::IntValue(i) => {
@@ -429,7 +437,7 @@ impl<'ctx> CodeGen<'ctx> {
                         // AnyTypeEnum::VectorType(_) => {}
                         AnyTypeEnum::VoidType(void_type) => {
                             let fn_type = void_type.fn_type(&args, false);
-                            let function = self.module.add_function(&*name, fn_type,None);
+                            let function = self.module.add_function(&*name, fn_type, None);
                             self.current_function = Some(function);
                             let basic_block = self.context.append_basic_block(function, "entry");
                             self.builder.position_at_end(basic_block);
@@ -464,7 +472,7 @@ impl<'ctx> CodeGen<'ctx> {
                         // AnyTypeEnum::VectorType(_) => {}
                         AnyTypeEnum::VoidType(void_type) => {
                             let fn_type = void_type.fn_type(&args, false);
-                            let f = self.module.add_function(&*name, fn_type,None);
+                            let f = self.module.add_function(&*name, fn_type, None);
                             self.current_function = Some(f);
                             f
                         }
@@ -499,7 +507,7 @@ impl<'ctx> CodeGen<'ctx> {
         }
     }
 
-    pub fn stmt(&mut self, s:Stmt) -> AnyValueEnum<'ctx> {
+    pub fn stmt(&mut self, s: Stmt) -> AnyValueEnum<'ctx> {
         match s {
             Stmt::Decl { decl } => { self.decl(decl) }
             Stmt::Assignment(a) => { self.assignment_stmt(a) }
@@ -514,14 +522,14 @@ impl<'ctx> CodeGen<'ctx> {
             AnyValueEnum::IntValue(i) => {
                 let target = self.get_from_environment(assignment.target).unwrap();
                 if let AnyValueEnum::PointerValue(p) = target {
-                    return AnyValueEnum::from(self.builder.build_store(p, i))
+                    return AnyValueEnum::from(self.builder.build_store(p, i));
                 }
                 exit(-3)
             }
             AnyValueEnum::FloatValue(f) => {
                 let target = self.get_from_environment(assignment.target).unwrap();
                 if let AnyValueEnum::PointerValue(p) = target {
-                    return AnyValueEnum::from(self.builder.build_store(p, f))
+                    return AnyValueEnum::from(self.builder.build_store(p, f));
                 }
                 exit(-3)
             }
@@ -541,18 +549,30 @@ impl<'ctx> CodeGen<'ctx> {
     pub fn loop_stmt(&mut self, lop: LoopStmt) -> AnyValueEnum<'ctx> {
         match lop {
             LoopStmt::While { condition, block } => {
-                let loop_body_block = self.context.append_basic_block(self.current_function.unwrap(), "loop");
-                let after_loop_block = self.context.append_basic_block(self.current_function.unwrap(), "after_loop");
+                let loop_body_block = self
+                    .context
+                    .append_basic_block(self.current_function.unwrap(), "loop");
+                let after_loop_block = self
+                    .context
+                    .append_basic_block(self.current_function.unwrap(), "after_loop");
                 // loop に入るかの検査
                 let cond = self.expr(condition.clone());
-                self.builder.build_conditional_branch(cond.into_int_value(), loop_body_block, after_loop_block);
+                self.builder.build_conditional_branch(
+                    cond.into_int_value(),
+                    loop_body_block,
+                    after_loop_block,
+                );
                 self.builder.position_at_end(loop_body_block);
                 for stmt in block.body {
                     self.stmt(stmt);
                 }
                 // loop を継続するかの検査
                 let cond = self.expr(condition);
-                let i = self.builder.build_conditional_branch(cond.into_int_value(), loop_body_block, after_loop_block);
+                let i = self.builder.build_conditional_branch(
+                    cond.into_int_value(),
+                    loop_body_block,
+                    after_loop_block,
+                );
                 self.builder.position_at_end(after_loop_block);
                 i.as_any_value_enum()
             }
@@ -561,7 +581,7 @@ impl<'ctx> CodeGen<'ctx> {
         }
     }
 
-    pub fn file(&mut self, f:File) {
+    pub fn file(&mut self, f: File) {
         for d in f.body {
             self.decl(d);
         }
@@ -587,8 +607,8 @@ impl<'ctx> CodeGen<'ctx> {
         unsafe { self.execution_engine.get_function("sum").ok() }
     }
     /**
-    * Write the LLVM IR to a file in the path.
-    */
+     * Write the LLVM IR to a file in the path.
+     */
     pub fn print_to_file<P: AsRef<Path>>(&self, path: P) -> Result<(), LLVMString> {
         self.module.print_to_file(path)
     }

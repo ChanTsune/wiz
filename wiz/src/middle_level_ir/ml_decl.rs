@@ -1,6 +1,8 @@
 use crate::middle_level_ir::ml_expr::MLExpr;
 use crate::middle_level_ir::ml_type::MLType;
+use std::fmt;
 
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum MLDecl {
     Var {
         is_mute: bool,
@@ -18,9 +20,11 @@ pub enum MLDecl {
     Struct,
 }
 
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct MLArgDef {
     name: String,
     type_: MLType,
 }
 
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct MLFunBody {}

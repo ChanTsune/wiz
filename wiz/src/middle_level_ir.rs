@@ -16,7 +16,7 @@ pub mod ml_type;
 pub struct HLIR2MLIR {}
 
 impl HLIR2MLIR {
-    fn new() -> Self {
+    pub fn new() -> Self {
         HLIR2MLIR {}
     }
 

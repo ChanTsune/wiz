@@ -19,13 +19,13 @@ pub mod typed_file;
 pub mod typed_stmt;
 pub mod typed_type;
 
-pub struct AstToHLIR {
+pub struct Ast2HLIR {
     environment: Vec<HashMap<String, TypedType>>,
 }
 
-impl AstToHLIR {
-    fn new() -> Self {
-        AstToHLIR {
+impl Ast2HLIR {
+    pub fn new() -> Self {
+        Ast2HLIR {
             environment: vec![],
         }
     }
