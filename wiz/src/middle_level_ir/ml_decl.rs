@@ -1,4 +1,3 @@
-use crate::ast::type_name::TypeName;
 use crate::middle_level_ir::ml_expr::MLExpr;
 use crate::middle_level_ir::ml_type::MLType;
 
@@ -13,7 +12,7 @@ pub enum MLDecl {
         modifiers: Vec<String>,
         name: String,
         arg_defs: Vec<MLArgDef>,
-        return_type: TypeName,
+        return_type: MLType,
         body: Option<MLFunBody>,
     },
     Struct,

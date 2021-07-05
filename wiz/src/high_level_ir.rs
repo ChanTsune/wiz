@@ -10,15 +10,14 @@ use crate::high_level_ir::typed_expr::{TypedCallArg, TypedExpr, TypedLiteral};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{TypedBlock, TypedStmt};
 use crate::high_level_ir::typed_type::{Package, TypedType};
-use crate::parser::nom::declaration::decl;
 use std::collections::HashMap;
 use std::option::Option::Some;
 
-mod typed_decl;
-mod typed_expr;
-mod typed_file;
-mod typed_stmt;
-mod typed_type;
+pub mod typed_decl;
+pub mod typed_expr;
+pub mod typed_file;
+pub mod typed_stmt;
+pub mod typed_type;
 
 pub struct AstToHLIR {
     environment: Vec<HashMap<String, TypedType>>,

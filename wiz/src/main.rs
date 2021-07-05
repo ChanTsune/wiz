@@ -2,12 +2,8 @@ use crate::parser::parser::{parse_from_file, parse_from_string};
 
 use crate::llvm_ir::codegen::CodeGen;
 use clap::{App, Arg};
-use inkwell::builder::Builder;
 use inkwell::context::Context;
-use inkwell::execution_engine::{ExecutionEngine, JitFunction};
-use inkwell::module::{Linkage, Module};
-use inkwell::targets::{InitializationConfig, Target};
-use inkwell::{AddressSpace, OptimizationLevel};
+use inkwell::OptimizationLevel;
 use std::error::Error;
 use std::fs::read_to_string;
 use std::path::Path;

@@ -1,5 +1,4 @@
 use nom::character::complete::{char, one_of};
-use nom::combinator::map;
 use nom::{AsChar, IResult, InputIter, Slice};
 use std::ops::RangeFrom;
 

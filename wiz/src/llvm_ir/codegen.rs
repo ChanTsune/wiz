@@ -81,12 +81,17 @@ impl<'ctx> CodeGen<'ctx> {
         let x = self.context.i64_type().const_int(1, false);
         let y = self.context.i64_type().const_int(2, false);
 
-        let sum = self.builder.build_call(sum_function, &[x.into(), y.into()], "sum");
-
+        let sum = self
+            .builder
+            .build_call(sum_function, &[x.into(), y.into()], "sum");
 
         let put_function = self.module.get_function("puts").unwrap();
 
-        self.builder.build_call(put_function, &[sum.try_as_basic_value().left().unwrap().into()], "_");
+        self.builder.build_call(
+            put_function,
+            &[sum.try_as_basic_value().left().unwrap().into()],
+            "_",
+        );
 
         self.builder.build_return(None);
     }
@@ -591,23 +596,11 @@ impl<'ctx> CodeGen<'ctx> {
 
 fn type_name_to_type<'ctx>(context: &'ctx Context, type_name: &str) -> AnyTypeEnum<'ctx> {
     match type_name {
-        "Unit" => {
-            AnyTypeEnum::from(context.void_type())
-        }
-        "Int32" | "UInt32" => {
-            AnyTypeEnum::from(context.i32_type())
-        }
-        "Float" => {
-            AnyTypeEnum::from(context.f32_type())
-        }
-        "Double" => {
-            AnyTypeEnum::from(context.f64_type())
-        }
-        "String" => {
-            AnyTypeEnum::from(context.i8_type().ptr_type(AddressSpace::Generic))
-        }
-        _ => {
-            AnyTypeEnum::from(context.void_type())
-        }
+        "Unit" => AnyTypeEnum::from(context.void_type()),
+        "Int32" | "UInt32" => AnyTypeEnum::from(context.i32_type()),
+        "Float" => AnyTypeEnum::from(context.f32_type()),
+        "Double" => AnyTypeEnum::from(context.f64_type()),
+        "String" => AnyTypeEnum::from(context.i8_type().ptr_type(AddressSpace::Generic)),
+        _ => AnyTypeEnum::from(context.void_type()),
     }
 }

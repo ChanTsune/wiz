@@ -1,5 +1,4 @@
 pub mod character;
-pub mod combinator;
 pub mod declaration;
 pub mod expression;
 pub mod keywords;

@@ -1,3 +1,3 @@
 pub struct MLType {
-    name: String,
+    pub(crate) name: String,
 }

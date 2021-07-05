@@ -1,5 +1,4 @@
 use super::node::Node;
-use crate::ast::block::Block;
 use crate::ast::expr::Expr;
 use crate::ast::fun::arg_def::ArgDef;
 use crate::ast::fun::body_def::FunBody;
