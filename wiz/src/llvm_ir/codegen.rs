@@ -194,45 +194,75 @@ impl<'ctx> CodeGen<'ctx> {
                             "+" => {
                                 let v = self.builder.build_float_add(left, right, "sum");
                                 v.as_any_value_enum()
-                            },
+                            }
                             "-" => {
                                 let v = self.builder.build_float_sub(left, right, "sub");
                                 v.as_any_value_enum()
-                            },
+                            }
                             "*" => {
                                 let v = self.builder.build_float_mul(left, right, "mul");
                                 v.as_any_value_enum()
-                            },
+                            }
                             "/" => {
                                 let v = self.builder.build_float_div(left, right, "div");
                                 v.as_any_value_enum()
-                            },
+                            }
                             "%" => {
                                 let v = self.builder.build_float_rem(left, right, "rem");
                                 v.as_any_value_enum()
-                            },
+                            }
                             "==" => {
-                                let v = self.builder.build_float_compare(FloatPredicate::OEQ, left, right, "eq");
+                                let v = self.builder.build_float_compare(
+                                    FloatPredicate::OEQ,
+                                    left,
+                                    right,
+                                    "eq",
+                                );
                                 v.as_any_value_enum()
-                            },
+                            }
                             ">=" => {
-                                let v = self.builder.build_float_compare(FloatPredicate::OGE, left, right, "gte");
+                                let v = self.builder.build_float_compare(
+                                    FloatPredicate::OGE,
+                                    left,
+                                    right,
+                                    "gte",
+                                );
                                 v.as_any_value_enum()
-                            },
+                            }
                             ">" => {
-                                let v = self.builder.build_float_compare(FloatPredicate::OGT, left, right, "gt");
+                                let v = self.builder.build_float_compare(
+                                    FloatPredicate::OGT,
+                                    left,
+                                    right,
+                                    "gt",
+                                );
                                 v.as_any_value_enum()
-                            },
+                            }
                             "<=" => {
-                                let v = self.builder.build_float_compare(FloatPredicate::OLE, left, right, "lte");
+                                let v = self.builder.build_float_compare(
+                                    FloatPredicate::OLE,
+                                    left,
+                                    right,
+                                    "lte",
+                                );
                                 v.as_any_value_enum()
-                            },
+                            }
                             "<" => {
-                                let v = self.builder.build_float_compare(FloatPredicate::OLT, left, right, "lt");
+                                let v = self.builder.build_float_compare(
+                                    FloatPredicate::OLT,
+                                    left,
+                                    right,
+                                    "lt",
+                                );
                                 v.as_any_value_enum()
-                            },
+                            }
                             "!=" => {
-                                let v = self.builder.build_float_compare(FloatPredicate::ONE, left, right, "neq");
+                                let v = self.builder.build_float_compare(
+                                    FloatPredicate::ONE,
+                                    left,
+                                    right,
+                                    "neq",
+                                );
                                 v.as_any_value_enum()
                             }
                             _ => {
@@ -274,7 +304,11 @@ impl<'ctx> CodeGen<'ctx> {
                 println!("{:?}", e);
                 exit(-1)
             }
-            Expr::Call { target, args, tailing_lambda } => {
+            Expr::Call {
+                target,
+                args,
+                tailing_lambda,
+            } => {
                 let target = self.expr(*target);
                 println!("{:?}", &args);
                 let args = args.into_iter().map(|arg|{ self.expr(*arg.arg) });

@@ -1,4 +1,4 @@
-use crate::high_level_ir::typed_decl::TypedDecl;
+use crate::high_level_ir::typed_decl::{TypedDecl, TypedFun};
 use crate::high_level_ir::typed_expr::TypedExpr;
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_type::TypedType;
@@ -45,13 +45,13 @@ impl HLIR2MLIR {
                 type_: self.type_(type_),
                 value: MLExpr::Name,
             },
-            TypedDecl::Fun {
-                modifiers,
-                name,
-                arg_defs,
-                body,
-                return_type,
-            } => MLDecl::Fun {
+            TypedDecl::Fun(TypedFun{
+                               modifiers,
+                               name,
+                               arg_defs,
+                               body,
+                               return_type,
+                           }) => MLDecl::Fun {
                 modifiers,
                 name,
                 arg_defs: vec![],
