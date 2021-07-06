@@ -5,7 +5,7 @@ use crate::ast::fun::body_def::FunBody;
 use crate::ast::literal::Literal;
 use crate::ast::stmt::Stmt;
 use crate::ast::type_name::TypeName;
-use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedFunBody};
+use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedFunBody, TypedFun};
 use crate::high_level_ir::typed_expr::{TypedCallArg, TypedExpr, TypedLiteral};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{TypedBlock, TypedStmt};
@@ -20,26 +20,28 @@ pub mod typed_stmt;
 pub mod typed_type;
 
 pub struct Ast2HLIR {
-    environment: Vec<HashMap<String, TypedType>>,
+    type_environment: Vec<HashMap<String, TypedType>>,
+    func_environment: Vec<HashMap<String, TypedDecl>>,
 }
 
 impl Ast2HLIR {
     pub fn new() -> Self {
         Ast2HLIR {
-            environment: vec![],
+            type_environment: vec![],
+            func_environment: vec![],
         }
     }
 
-    fn push_env(&mut self) {
-        self.environment.push(HashMap::new())
+    fn push_type_env(&mut self) {
+        self.type_environment.push(HashMap::new())
     }
 
-    fn pop_env(&mut self) {
-        self.environment.pop();
+    fn pop_type_env(&mut self) {
+        self.type_environment.pop();
     }
 
     fn get_type_by(&self, name: String) -> Option<TypedType> {
-        for env in self.environment.iter().rev() {
+        for env in self.type_environment.iter().rev() {
             if let Some(v) = env.get(&*name) {
                 return Some(v.clone());
             }
@@ -104,7 +106,7 @@ impl Ast2HLIR {
                 arg_defs,
                 return_type,
                 body,
-            } => TypedDecl::Fun {
+            } => TypedDecl::Fun(TypedFun {
                 modifiers: modifiers,
                 name: name,
                 arg_defs: arg_defs
@@ -122,7 +124,7 @@ impl Ast2HLIR {
                     FunBody::Expr { expr } => TypedFunBody::Expr(self.expr(expr)),
                 }),
                 return_type: self.resolve_by_type_name(return_type).unwrap(),
-            },
+            }),
             Decl::Struct { .. } => TypedDecl::Struct,
             Decl::Class { .. } => TypedDecl::Class,
             Decl::Enum { .. } => TypedDecl::Enum,

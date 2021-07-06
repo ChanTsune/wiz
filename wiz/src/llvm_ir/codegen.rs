@@ -416,13 +416,21 @@ impl<'ctx> CodeGen<'ctx> {
                     }
                 }
             }
-            Decl::Fun { modifiers, name, arg_defs, return_type, body } => {
-                let args: Vec<BasicTypeEnum<'ctx>> = arg_defs.into_iter()
-                    .map(|a|{type_name_to_type(self.context,&*a.type_name.name)})
-                    .map(|a|{
+            Decl::Fun {
+                modifiers,
+                name,
+                arg_defs,
+                return_type,
+                body,
+            } => {
+                let args: Vec<BasicTypeEnum<'ctx>> = arg_defs
+                    .into_iter()
+                    .map(|a| type_name_to_type(self.context, &*a.type_name.name))
+                    .map(|a| {
                         println!("{:?}", &a);
-                        BasicTypeEnum::try_from(a).unwrap()}
-                    ).collect();
+                        BasicTypeEnum::try_from(a).unwrap()
+                    })
+                    .collect();
                 let return_type_name: &str = &*return_type.name; // NOTE: for debug
                 let return_type = type_name_to_type(self.context, &*return_type.name);
                 if let Some(body) = body {

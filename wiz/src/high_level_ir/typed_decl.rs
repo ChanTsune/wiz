@@ -11,18 +11,21 @@ pub enum TypedDecl {
         type_: TypedType,
         value: TypedExpr,
     },
-    Fun {
-        modifiers: Vec<String>,
-        name: String,
-        arg_defs: Vec<TypedArgDef>,
-        body: Option<TypedFunBody>,
-        return_type: TypedType,
-    },
+    Fun(TypedFun),
     Struct,
     Class,
     Enum,
     Protocol,
     Extension,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct TypedFun {
+    pub(crate) modifiers: Vec<String>,
+    pub(crate) name: String,
+    pub(crate) arg_defs: Vec<TypedArgDef>,
+    pub(crate) body: Option<TypedFunBody>,
+    pub(crate) return_type: TypedType,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
