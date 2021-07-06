@@ -99,95 +99,121 @@ impl<'ctx> CodeGen<'ctx> {
     pub fn expr(&mut self, e: Expr) -> AnyValueEnum<'ctx> {
         println!("{:?}", e);
         match e {
-            Expr::Name { name } => {
-                self.get_from_environment(name).unwrap()
-            }
-            Expr::Literal { literal } => {
-                match literal {
-                    Literal::IntegerLiteral { value } => {
-                        let i: u64 = value.parse().unwrap();
-                        let i64_type = self.context.i64_type();
-                        i64_type.const_int(i, false).as_any_value_enum()
-                    }
-                    Literal::FloatingPointLiteral { value } => {
-                        let f: f64 = value.parse().unwrap();
-                        let f64_type = self.context.f64_type();
-                        f64_type.const_float(f).as_any_value_enum()
-                    }
-                    Literal::StringLiteral { value } => unsafe {
-                        let str = self.builder.build_global_string(value.as_ref(), value.as_str());
-                        let i8_ptr_type = self.context.i8_type().ptr_type(AddressSpace::Generic);
-                        let str = self.builder.build_bitcast(str.as_pointer_value(), i8_ptr_type, value.as_str());
-                        str.as_any_value_enum()
-
-                    }
-                    Literal::BooleanLiteral { value } => {
-                        let b: bool = value.parse().unwrap();
-                        let i8_type = self.context.i8_type();
-                        i8_type.const_int(if b {1} else {0}, false).as_any_value_enum()
-                    }
-                    Literal::NullLiteral => {
-                        println!("Literall::Null");
-                        exit(-1)
-                    }
+            Expr::Name { name } => self.get_from_environment(name).unwrap(),
+            Expr::Literal { literal } => match literal {
+                Literal::IntegerLiteral { value } => {
+                    let i: u64 = value.parse().unwrap();
+                    let i64_type = self.context.i64_type();
+                    i64_type.const_int(i, false).as_any_value_enum()
                 }
-            }
+                Literal::FloatingPointLiteral { value } => {
+                    let f: f64 = value.parse().unwrap();
+                    let f64_type = self.context.f64_type();
+                    f64_type.const_float(f).as_any_value_enum()
+                }
+                Literal::StringLiteral { value } => unsafe {
+                    let str = self
+                        .builder
+                        .build_global_string(value.as_ref(), value.as_str());
+                    let i8_ptr_type = self.context.i8_type().ptr_type(AddressSpace::Generic);
+                    let str = self.builder.build_bitcast(
+                        str.as_pointer_value(),
+                        i8_ptr_type,
+                        value.as_str(),
+                    );
+                    str.as_any_value_enum()
+                },
+                Literal::BooleanLiteral { value } => {
+                    let b: bool = value.parse().unwrap();
+                    let i8_type = self.context.i8_type();
+                    i8_type
+                        .const_int(if b { 1 } else { 0 }, false)
+                        .as_any_value_enum()
+                }
+                Literal::NullLiteral => {
+                    println!("Literall::Null");
+                    exit(-2)
+                }
+            },
             Expr::BinOp { left, kind, right } => {
                 let lft = self.expr(*left);
                 let rit = self.expr(*right);
                 let lft = self.load_if_pointer_value(lft);
                 let rit = self.load_if_pointer_value(rit);
                 match (lft, rit) {
-                    (AnyValueEnum::IntValue(left), AnyValueEnum::IntValue(right)) => {
-                        match &*kind {
-                            "+" => {
-                                let v = self.builder.build_int_add(left, right, "sum");
-                                v.as_any_value_enum()
-                            },
-                            "-" => {
-                                let v = self.builder.build_int_sub(left, right,"sub");
-                                v.as_any_value_enum()
-                            },
-                            "*" => {
-                                let v = self.builder.build_int_mul(left, right, "mul");
-                                v.as_any_value_enum()
-                            },
-                            "/" => {
-                                let v = self.builder.build_int_signed_div(left, right, "sdiv");
-                                v.as_any_value_enum()
-                            },
-                            "%" => {
-                                let v = self.builder.build_int_signed_rem(left, right, "srem");
-                                v.as_any_value_enum()
-                            },
-                            "==" => {
-                                let v = self.builder.build_int_compare(IntPredicate::EQ, left, right, "eq");
-                                v.as_any_value_enum()
-                            },
-                            ">=" => {
-                                let v = self.builder.build_int_compare(IntPredicate::SGE, left, right, "gte");
-                                v.as_any_value_enum()
-                            },
-                            ">" => {
-                                let v = self.builder.build_int_compare(IntPredicate::SGT, left, right, "gt");
-                                v.as_any_value_enum()
-                            },
-                            "<=" => {
-                                let v = self.builder.build_int_compare(IntPredicate::SLE, left, right, "lte");
-                                v.as_any_value_enum()
-                            },
-                            "<" => {
-                                let v = self.builder.build_int_compare(IntPredicate::SLT, left, right, "lt");
-                                v.as_any_value_enum()
-                            },
-                            "!=" => {
-                                let v = self.builder.build_int_compare(IntPredicate::NE, left, right, "neq");
-                                v.as_any_value_enum()
-                            }
-                            _ => {
-                                exit(-1)
-                            }
+                    (AnyValueEnum::IntValue(left), AnyValueEnum::IntValue(right)) => match &*kind {
+                        "+" => {
+                            let v = self.builder.build_int_add(left, right, "sum");
+                            v.as_any_value_enum()
                         }
+                        "-" => {
+                            let v = self.builder.build_int_sub(left, right, "sub");
+                            v.as_any_value_enum()
+                        }
+                        "*" => {
+                            let v = self.builder.build_int_mul(left, right, "mul");
+                            v.as_any_value_enum()
+                        }
+                        "/" => {
+                            let v = self.builder.build_int_signed_div(left, right, "sdiv");
+                            v.as_any_value_enum()
+                        }
+                        "%" => {
+                            let v = self.builder.build_int_signed_rem(left, right, "srem");
+                            v.as_any_value_enum()
+                        }
+                        "==" => {
+                            let v =
+                                self.builder
+                                    .build_int_compare(IntPredicate::EQ, left, right, "eq");
+                            v.as_any_value_enum()
+                        }
+                        ">=" => {
+                            let v = self.builder.build_int_compare(
+                                IntPredicate::SGE,
+                                left,
+                                right,
+                                "gte",
+                            );
+                            v.as_any_value_enum()
+                        }
+                        ">" => {
+                            let v = self.builder.build_int_compare(
+                                IntPredicate::SGT,
+                                left,
+                                right,
+                                "gt",
+                            );
+                            v.as_any_value_enum()
+                        }
+                        "<=" => {
+                            let v = self.builder.build_int_compare(
+                                IntPredicate::SLE,
+                                left,
+                                right,
+                                "lte",
+                            );
+                            v.as_any_value_enum()
+                        }
+                        "<" => {
+                            let v = self.builder.build_int_compare(
+                                IntPredicate::SLT,
+                                left,
+                                right,
+                                "lt",
+                            );
+                            v.as_any_value_enum()
+                        }
+                        "!=" => {
+                            let v = self.builder.build_int_compare(
+                                IntPredicate::NE,
+                                left,
+                                right,
+                                "neq",
+                            );
+                            v.as_any_value_enum()
+                        }
+                        _ => exit(-3),
                     },
                     (AnyValueEnum::FloatValue(left), AnyValueEnum::FloatValue(right)) => {
                         match &*kind {
@@ -311,20 +337,19 @@ impl<'ctx> CodeGen<'ctx> {
             } => {
                 let target = self.expr(*target);
                 println!("{:?}", &args);
-                let args = args.into_iter().map(|arg|{ self.expr(*arg.arg) });
-                let args: Vec<BasicValueEnum> = args.filter_map(|arg|{
-                    BasicValueEnum::try_from(arg).ok()
-                }).collect();
+                let args = args.into_iter().map(|arg| self.expr(*arg.arg));
+                let args: Vec<BasicValueEnum> = args
+                    .filter_map(|arg| BasicValueEnum::try_from(arg).ok())
+                    .collect();
                 match target {
                     AnyValueEnum::FunctionValue(function) => {
-                        let bv = self.builder.build_call(function, &args, "f_call").try_as_basic_value();
+                        let bv = self
+                            .builder
+                            .build_call(function, &args, "f_call")
+                            .try_as_basic_value();
                         match bv {
-                            Either::Left(vb) => {
-                                AnyValueEnum::from(vb)
-                            }
-                            Either::Right(iv) => {
-                                AnyValueEnum::from(iv)
-                            }
+                            Either::Left(vb) => AnyValueEnum::from(vb),
+                            Either::Right(iv) => AnyValueEnum::from(iv),
                         }
                     }
                     AnyValueEnum::PointerValue(p) => {
@@ -336,28 +361,53 @@ impl<'ctx> CodeGen<'ctx> {
                     }
                 }
             }
-            Expr::If { condition, body, else_body } => {
+            Expr::If {
+                condition,
+                body,
+                else_body,
+            } => {
                 match else_body {
                     None => {
-                        let if_block = self.context.append_basic_block(self.current_function.unwrap(), "if");
-                        let after_if_block = self.context.append_basic_block(self.current_function.unwrap(), "else");
+                        let if_block = self
+                            .context
+                            .append_basic_block(self.current_function.unwrap(), "if");
+                        let after_if_block = self
+                            .context
+                            .append_basic_block(self.current_function.unwrap(), "else");
                         let cond = self.expr(*condition);
-                        self.builder.build_conditional_branch(cond.into_int_value(), if_block, after_if_block);
+                        self.builder.build_conditional_branch(
+                            cond.into_int_value(),
+                            if_block,
+                            after_if_block,
+                        );
                         self.builder.position_at_end(if_block);
                         for stmt in body.body {
                             self.stmt(stmt);
                         }
                         self.builder.position_at_end(after_if_block);
 
-                        self.context.i64_type().const_int(0, false).as_any_value_enum() // mean Void value
+                        self.context
+                            .i64_type()
+                            .const_int(0, false)
+                            .as_any_value_enum() // mean Void value
                     }
                     Some(else_body) => {
                         let i64_type = self.context.i64_type();
-                        let if_block = self.context.append_basic_block(self.current_function.unwrap(), "if");
-                        let else_block = self.context.append_basic_block(self.current_function.unwrap(), "else");
-                        let after_if_block = self.context.append_basic_block(self.current_function.unwrap(), "after_if");
+                        let if_block = self
+                            .context
+                            .append_basic_block(self.current_function.unwrap(), "if");
+                        let else_block = self
+                            .context
+                            .append_basic_block(self.current_function.unwrap(), "else");
+                        let after_if_block = self
+                            .context
+                            .append_basic_block(self.current_function.unwrap(), "after_if");
                         let cond = self.expr(*condition);
-                        self.builder.build_conditional_branch(cond.into_int_value(), if_block, else_block);
+                        self.builder.build_conditional_branch(
+                            cond.into_int_value(),
+                            if_block,
+                            else_block,
+                        );
                         self.builder.position_at_end(if_block);
                         let stmt_last_expr = self.block(body);
                         self.builder.build_unconditional_branch(after_if_block);
