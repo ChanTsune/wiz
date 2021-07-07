@@ -1,10 +1,13 @@
 use crate::parser::nom::character::{alphabet, digit, under_score};
-use nom::branch::alt;
-use nom::character::complete::{alpha1, char, one_of, space0, space1};
+use nom::branch::{alt, permutation};
+use nom::character::complete::{alpha1, char, one_of, space0, space1, anychar};
 use nom::combinator::{map, opt};
 use nom::error::{ErrorKind, ParseError};
 use nom::sequence::tuple;
 use nom::{AsChar, IResult, InputTakeAtPosition};
+use nom::multi::many0;
+use nom::bytes::complete::tag;
+use std::iter::FromIterator;
 
 pub fn whitespace0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
@@ -56,6 +59,41 @@ where
     )
 }
 
+pub fn line_comment_start(s: &str) -> IResult<&str, &str> {
+    tag("//")(s)
+}
+
+pub fn line_comment(input: &str) -> IResult<&str, String> {
+    map(tuple((
+        line_comment_start,
+        many0(anychar),
+        opt(char('\n'))
+    )), |(s,c,e)|{
+        s.to_string() + &*String::from_iter(c) + &*e.map(|c| { c.to_string() }).unwrap_or("".parse().unwrap())
+    })(input)
+}
+
+fn inline_comment_start(input: &str) -> IResult<&str, &str> {
+    tag("/*")(input)
+}
+
+fn inline_comment_end(input: &str) -> IResult<&str, &str> {
+    tag("*/")(input)
+}
+
+pub fn inline_comment(input: &str) -> IResult<&str, String> {
+    map(permutation((inline_comment_start, many0(anychar), inline_comment_end)),|(a, b, c)|{
+        a.to_string() + &*String::from_iter(b) + c
+    })(input)
+}
+
+pub fn comment(input: &str) -> IResult<&str, String> {
+    alt((
+        line_comment,
+        inline_comment,
+        ))(input)
+}
+
 pub fn identifier_head(s: &str) -> IResult<&str, char> {
     alt((alphabet, under_score))(s)
 }
@@ -90,7 +128,7 @@ pub fn identifier(s: &str) -> IResult<&str, String> {
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::nom::lexical_structure::identifier;
+    use crate::parser::nom::lexical_structure::{identifier, comment};
     use nom::error;
     use nom::error::ErrorKind;
     use nom::Err;
@@ -120,5 +158,9 @@ mod tests {
                 code: ErrorKind::Char
             }))
         );
+    }
+    #[test]
+    fn test_comment() {
+        assert_eq!(comment("// code comment"), Ok(("", String::from("// code comment"))))
     }
 }
