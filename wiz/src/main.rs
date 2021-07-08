@@ -61,8 +61,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let ast_file = parse_from_file(file.unwrap()).unwrap();
 
     // println!("{:?}", &ast_file.unwrap());
-    codegen.file(ast_file.unwrap());
     codegen.print_to_file(Path::new(output));
+    codegen.file(ast_file);
 
     Ok(())
 }
