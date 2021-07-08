@@ -3,15 +3,16 @@ use std::fs::File;
 use std::io;
 use std::io::Read;
 use std::process::exit;
+use crate::ast::file::WizFile;
 
-pub fn parse_from_string(string: String) -> crate::ast::file::FileSyntax {
+pub fn parse_from_string(string: String) -> WizFile {
     return match file(&*string) {
-        Ok((s, f)) => f,
+        Ok((s, f)) => WizFile{ name: String::new(), syntax: f },
         Err(..) => exit(-1),
     };
 }
 
-pub fn parse_from_file(mut file: File) -> io::Result<crate::ast::file::FileSyntax> {
+pub fn parse_from_file(mut file: File) -> io::Result<WizFile> {
     let mut string = String::new();
     let result = file.read_to_string(&mut string);
     return result.map(|_| parse_from_string(string));

@@ -53,12 +53,13 @@ fn main() -> Result<(), Box<dyn Error>> {
             let built_in = parse_from_string(read_to_string(path).unwrap());
             let builtin_clone = built_in.clone();
             println!("{:?}", &built_in);
-            codegen.file(built_in);
+            codegen.file(built_in.syntax);
         }
     }
 
     let file = std::fs::File::open(Path::new(input));
-    let ast_file = parse_from_file(file.unwrap()).unwrap();
+    let ast_file = parse_from_file(file.unwrap()).unwrap().syntax;
+    let ast = ast_file.clone();
 
     // println!("{:?}", &ast_file.unwrap());
     codegen.file(ast_file);

@@ -1,6 +1,6 @@
 use crate::ast::decl::Decl;
 use crate::ast::expr::Expr;
-use crate::ast::file::FileSyntax;
+use crate::ast::file::{FileSyntax, WizFile};
 use crate::ast::fun::body_def::FunBody;
 use crate::ast::literal::Literal;
 use crate::ast::stmt::Stmt;
@@ -20,15 +20,15 @@ pub mod typed_stmt;
 pub mod typed_type;
 
 pub struct Ast2HLIR {
-    type_environment: Vec<HashMap<String, TypedType>>,
-    func_environment: Vec<HashMap<String, TypedDecl>>,
+    type_environment: HashMap<String, TypedType>,
+    decl_environment: HashMap<String, TypedDecl>,
 }
 
 impl Ast2HLIR {
     pub fn new() -> Self {
         Ast2HLIR {
-            type_environment: vec![],
-            func_environment: vec![],
+            type_environment: HashMap::new(),
+            decl_environment: HashMap::new(),
         }
     }
 
@@ -41,12 +41,7 @@ impl Ast2HLIR {
     }
 
     fn get_type_by(&self, name: String) -> Option<TypedType> {
-        for env in self.type_environment.iter().rev() {
-            if let Some(v) = env.get(&*name) {
-                return Some(v.clone());
-            }
-        }
-        None
+        self.type_environment.get(&*name).map(|a|{a.clone()})
     }
 
     fn resolve_by_type_name(&self, type_name: TypeName) -> Option<TypedType> {
