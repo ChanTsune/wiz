@@ -52,6 +52,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             println!("{:?}", &path);
             let built_in = parse_from_string(read_to_string(path).unwrap());
             let builtin_clone = built_in.clone();
+            ast2hlir.preload_types(builtin_clone);
             println!("{:?}", &built_in);
             codegen.file(built_in.syntax);
         }

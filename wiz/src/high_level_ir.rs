@@ -26,18 +26,36 @@ pub struct Ast2HLIR {
 
 impl Ast2HLIR {
     pub fn new() -> Self {
+        let mut builtin_types = HashMap::new();
+        builtin_types.insert(String::from("Int8"), TypedType { package: Package { names: vec![] }, name: "Int8".to_string() });
+        builtin_types.insert(String::from("Int16"), TypedType { package: Package { names: vec![] }, name: "Int16".to_string() });
+        builtin_types.insert(String::from("Int32"), TypedType { package: Package { names: vec![] }, name: "Int32".to_string() });
+        builtin_types.insert(String::from("Int64"), TypedType { package: Package { names: vec![] }, name: "Int64".to_string() });
+        builtin_types.insert(String::from("UInt8"), TypedType { package: Package { names: vec![] }, name: "UInt8".to_string() });
+        builtin_types.insert(String::from("UInt16"), TypedType { package: Package { names: vec![] }, name: "UInt16".to_string() });
+        builtin_types.insert(String::from("UInt32"), TypedType { package: Package { names: vec![] }, name: "UInt32".to_string() });
+        builtin_types.insert(String::from("UInt64"), TypedType { package: Package { names: vec![] }, name: "UInt64".to_string() });
+        builtin_types.insert(String::from("String"), TypedType { package: Package { names: vec![] }, name: "String".to_string() });
+        builtin_types.insert(String::from("Noting"), TypedType::noting());
+        builtin_types.insert(String::from("Unit"), TypedType { package: Package { names: vec![] }, name: "Unit".to_string() });
         Ast2HLIR {
-            type_environment: HashMap::new(),
+            type_environment: builtin_types,
             decl_environment: HashMap::new(),
         }
     }
 
-    fn push_type_env(&mut self) {
-        self.type_environment.push(HashMap::new())
-    }
-
-    fn pop_type_env(&mut self) {
-        self.type_environment.pop();
+    pub fn preload_types(&mut self, ast: WizFile) {
+        for decl in ast.syntax.body {
+            match decl {
+                Decl::Var { .. } => {}
+                Decl::Fun { .. } => {}
+                Decl::Struct {  } => {}
+                Decl::Class {  } => {}
+                Decl::Enum {  } => {}
+                Decl::Protocol {  } => {}
+                Decl::Extension {  } => {}
+            }
+        }
     }
 
     fn get_type_by(&self, name: String) -> Option<TypedType> {
