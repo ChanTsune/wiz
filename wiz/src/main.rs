@@ -1,6 +1,8 @@
 use crate::parser::parser::{parse_from_file, parse_from_string};
 
+use crate::high_level_ir::Ast2HLIR;
 use crate::llvm_ir::codegen::CodeGen;
+use crate::middle_level_ir::HLIR2MLIR;
 use clap::{App, Arg};
 use inkwell::context::Context;
 use inkwell::OptimizationLevel;
@@ -41,19 +43,22 @@ fn main() -> Result<(), Box<dyn Error>> {
         current_function: None,
     };
 
+    let mut ast2hlir = Ast2HLIR::new();
+
     let builtin_dir = std::fs::read_dir(Path::new("../builtin")).unwrap();
     for path in builtin_dir {
         let path = path.unwrap().path();
         if path.ends_with("builtin.ll.wiz") {
             println!("{:?}", &path);
             let built_in = parse_from_string(read_to_string(path).unwrap());
+            let builtin_clone = built_in.clone();
             println!("{:?}", &built_in);
             codegen.file(built_in);
         }
     }
 
     let file = std::fs::File::open(Path::new(input));
-    let ast_file = parse_from_file(file.unwrap());
+    let ast_file = parse_from_file(file.unwrap()).unwrap();
 
     // println!("{:?}", &ast_file.unwrap());
     codegen.file(ast_file.unwrap());

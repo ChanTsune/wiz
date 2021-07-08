@@ -1,7 +1,7 @@
 use crate::ast::block::Block;
 use crate::ast::decl::Decl;
 use crate::ast::expr::{CallArg, Expr};
-use crate::ast::file::File;
+use crate::ast::file::FileSyntax;
 use crate::ast::fun::body_def::FunBody;
 use crate::ast::literal::Literal;
 use crate::ast::stmt::{AssignmentStmt, LoopStmt, Stmt};
@@ -673,7 +673,7 @@ impl<'ctx> CodeGen<'ctx> {
         }
     }
 
-    pub fn file(&mut self, f: File) {
+    pub fn file(&mut self, f: FileSyntax) {
         for d in f.body {
             self.decl(d);
         }

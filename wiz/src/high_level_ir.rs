@@ -1,6 +1,6 @@
 use crate::ast::decl::Decl;
 use crate::ast::expr::Expr;
-use crate::ast::file::File;
+use crate::ast::file::FileSyntax;
 use crate::ast::fun::body_def::FunBody;
 use crate::ast::literal::Literal;
 use crate::ast::stmt::Stmt;
@@ -66,7 +66,7 @@ impl Ast2HLIR {
         None
     }
 
-    pub fn file(&self, f: File) -> TypedFile {
+    pub fn file(&self, f: FileSyntax) -> TypedFile {
         TypedFile {
             body: f.body.into_iter().map(|d| self.decl(d)).collect(),
         }

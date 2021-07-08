@@ -7,7 +7,7 @@ pub mod type_;
 
 use crate::ast::decl::Decl;
 use crate::ast::expr::Expr;
-use crate::ast::file::File;
+use crate::ast::file::FileSyntax;
 use crate::ast::literal::Literal;
 use crate::ast::stmt::{AssignmentStmt, LoopStmt, Stmt};
 use crate::parser::nom::declaration::{block, decl};
@@ -69,9 +69,9 @@ pub fn stmts(s: &str) -> IResult<&str, Vec<Stmt>> {
     many0(stmt)(s)
 }
 
-pub fn file(s: &str) -> IResult<&str, File> {
+pub fn file(s: &str) -> IResult<&str, FileSyntax> {
     map(many0(tuple((whitespace0, decl, whitespace0))), |decls| {
-        File {
+        FileSyntax {
             body: decls.into_iter().map(|(_, f, _)| f).collect(),
         }
     })(s)
