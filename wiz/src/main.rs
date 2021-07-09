@@ -66,5 +66,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     codegen.file(ast_file);
     let _ = codegen.print_to_file(Path::new(output));
 
+    let hlfile = ast2hlir.file(ast);
+
+    let mut hlir2mlir = HLIR2MLIR::new();
+
+    let ml = hlir2mlir.file(hlfile);
+    println!("{:?}", ml);
+
     Ok(())
 }

@@ -59,11 +59,14 @@ impl Ast2HLIR {
     }
 
     fn get_type_by(&self, name: String) -> Option<TypedType> {
-        self.type_environment.get(&*name).map(|a|{a.clone()})
+        None
     }
 
     fn resolve_by_type_name(&self, type_name: TypeName) -> Option<TypedType> {
-        None
+        self.type_environment.get(&*type_name.name).map(|a|{
+            println!("TypeResolver :: {:?}", a);
+            a.clone()
+        })
     }
 
     fn resolve_by_binop(
