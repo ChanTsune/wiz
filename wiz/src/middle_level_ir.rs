@@ -42,7 +42,7 @@ impl HLIR2MLIR {
             } => MLDecl::Var {
                 is_mute: is_mut,
                 name: name,
-                type_: self.type_(type_),
+                type_: self.type_(type_.unwrap()),
                 value: MLExpr::Name,
             },
             TypedDecl::Fun(TypedFun{

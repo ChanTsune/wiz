@@ -68,14 +68,14 @@ impl Ast2HLIR {
 
     fn resolve_by_binop(
         &self,
-        left_type: &TypedType,
+        left_type: &Option<TypedType>,
         kind: &String,
-        right_type: &TypedType,
+        right_type: &Option<TypedType>,
     ) -> Option<TypedType> {
         None
     }
 
-    fn resolve_by_unaryop(&self, target_type: &TypedType, kind: &String) -> Option<TypedType> {
+    fn resolve_by_unaryop(&self, target_type: &Option<TypedType>, kind: &String) -> Option<TypedType> {
         None
     }
 
@@ -107,7 +107,7 @@ impl Ast2HLIR {
                     is_mut: is_mut,
                     name: name,
                     type_: match type_ {
-                        Some(t) => self.resolve_by_type_name(t).unwrap(),
+                        Some(t) => self.resolve_by_type_name(t),
                         None => expr.type_(),
                     },
                     value: TypedExpr::Subscript,
@@ -150,7 +150,7 @@ impl Ast2HLIR {
         match e {
             Expr::Name { name } => TypedExpr::Name {
                 name: name.clone(),
-                type_: self.get_type_by(name).unwrap(),
+                type_: self.get_type_by(name),
             },
             Expr::Literal { literal } => match literal {
                 Literal::IntegerLiteral { value } => TypedExpr::Literal(TypedLiteral::Integer {
@@ -198,7 +198,7 @@ impl Ast2HLIR {
                     left: left,
                     kind: kind,
                     right: right,
-                    type_: type_.unwrap(),
+                    type_: type_,
                 }
             }
             Expr::UnaryOp {
@@ -212,7 +212,7 @@ impl Ast2HLIR {
                     target: Box::new(target),
                     prefix: prefix,
                     kind: kind,
-                    type_: type_.unwrap(),
+                    type_: type_,
                 }
             }
             Expr::Subscript { .. } => TypedExpr::Subscript,
@@ -247,7 +247,7 @@ impl Ast2HLIR {
                 TypedExpr::Call {
                     target: Box::new(self.expr(*target)),
                     args: args,
-                    type_: TypedType::noting(),
+                    type_: None,
                 }
             }
             Expr::If { .. } => TypedExpr::If,

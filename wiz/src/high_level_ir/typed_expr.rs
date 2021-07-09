@@ -5,20 +5,20 @@ use std::fmt;
 pub enum TypedExpr {
     Name {
         name: String,
-        type_: TypedType,
+        type_: Option<TypedType>,
     },
     Literal(TypedLiteral),
     BinOp {
         left: Box<TypedExpr>,
         kind: String,
         right: Box<TypedExpr>,
-        type_: TypedType,
+        type_: Option<TypedType>,
     },
     UnaryOp {
         target: Box<TypedExpr>,
         prefix: bool,
         kind: String,
-        type_: TypedType,
+        type_: Option<TypedType>,
     },
     Subscript,
     List,
@@ -28,7 +28,7 @@ pub enum TypedExpr {
     Call {
         target: Box<TypedExpr>,
         args: Vec<TypedCallArg>,
-        type_: TypedType,
+        type_: Option<TypedType>,
     },
     If,
     When,
@@ -54,10 +54,10 @@ pub struct TypedCallArg {
 }
 
 impl TypedExpr {
-    pub fn type_(&self) -> TypedType {
+    pub fn type_(&self) -> Option<TypedType> {
         match self {
             TypedExpr::Name { name, type_ } => type_.clone(),
-            TypedExpr::Literal(l) => l.type_(),
+            TypedExpr::Literal(l) => Some(l.type_()),
             TypedExpr::BinOp {
                 left,
                 kind,
@@ -70,21 +70,21 @@ impl TypedExpr {
                 kind,
                 type_,
             } => type_.clone(),
-            TypedExpr::Subscript => TypedType::noting(),
-            TypedExpr::List => TypedType::noting(),
-            TypedExpr::Tuple => TypedType::noting(),
-            TypedExpr::Dict => TypedType::noting(),
-            TypedExpr::StringBuilder => TypedType::noting(),
+            TypedExpr::Subscript => None,
+            TypedExpr::List => None,
+            TypedExpr::Tuple => None,
+            TypedExpr::Dict => None,
+            TypedExpr::StringBuilder => None,
             TypedExpr::Call {
                 target,
                 args,
                 type_,
             } => type_.clone(),
-            TypedExpr::If => TypedType::noting(),
-            TypedExpr::When => TypedType::noting(),
-            TypedExpr::Lambda => TypedType::noting(),
-            TypedExpr::Return => TypedType::noting(),
-            TypedExpr::TypeCast => TypedType::noting(),
+            TypedExpr::If => None,
+            TypedExpr::When => None,
+            TypedExpr::Lambda => None,
+            TypedExpr::Return => None,
+            TypedExpr::TypeCast => None,
         }
     }
 }

@@ -8,7 +8,7 @@ pub enum TypedDecl {
     Var {
         is_mut: bool,
         name: String,
-        type_: TypedType,
+        type_: Option<TypedType>,
         value: TypedExpr,
     },
     Fun(TypedFun),
