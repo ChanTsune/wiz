@@ -5,7 +5,7 @@ use crate::ast::fun::body_def::FunBody;
 use crate::ast::literal::Literal;
 use crate::ast::stmt::Stmt;
 use crate::ast::type_name::TypeName;
-use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedFunBody, TypedFun};
+use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedFun, TypedFunBody};
 use crate::high_level_ir::typed_expr::{TypedCallArg, TypedExpr, TypedLiteral};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{TypedBlock, TypedStmt};
@@ -27,17 +27,77 @@ pub struct Ast2HLIR {
 impl Ast2HLIR {
     pub fn new() -> Self {
         let mut builtin_types = HashMap::new();
-        builtin_types.insert(String::from("Int8"), TypedType { package: Package { names: vec![] }, name: "Int8".to_string() });
-        builtin_types.insert(String::from("Int16"), TypedType { package: Package { names: vec![] }, name: "Int16".to_string() });
-        builtin_types.insert(String::from("Int32"), TypedType { package: Package { names: vec![] }, name: "Int32".to_string() });
-        builtin_types.insert(String::from("Int64"), TypedType { package: Package { names: vec![] }, name: "Int64".to_string() });
-        builtin_types.insert(String::from("UInt8"), TypedType { package: Package { names: vec![] }, name: "UInt8".to_string() });
-        builtin_types.insert(String::from("UInt16"), TypedType { package: Package { names: vec![] }, name: "UInt16".to_string() });
-        builtin_types.insert(String::from("UInt32"), TypedType { package: Package { names: vec![] }, name: "UInt32".to_string() });
-        builtin_types.insert(String::from("UInt64"), TypedType { package: Package { names: vec![] }, name: "UInt64".to_string() });
-        builtin_types.insert(String::from("String"), TypedType { package: Package { names: vec![] }, name: "String".to_string() });
+        builtin_types.insert(
+            String::from("Int8"),
+            TypedType {
+                package: Package { names: vec![] },
+                name: "Int8".to_string(),
+            },
+        );
+        builtin_types.insert(
+            String::from("Int16"),
+            TypedType {
+                package: Package { names: vec![] },
+                name: "Int16".to_string(),
+            },
+        );
+        builtin_types.insert(
+            String::from("Int32"),
+            TypedType {
+                package: Package { names: vec![] },
+                name: "Int32".to_string(),
+            },
+        );
+        builtin_types.insert(
+            String::from("Int64"),
+            TypedType {
+                package: Package { names: vec![] },
+                name: "Int64".to_string(),
+            },
+        );
+        builtin_types.insert(
+            String::from("UInt8"),
+            TypedType {
+                package: Package { names: vec![] },
+                name: "UInt8".to_string(),
+            },
+        );
+        builtin_types.insert(
+            String::from("UInt16"),
+            TypedType {
+                package: Package { names: vec![] },
+                name: "UInt16".to_string(),
+            },
+        );
+        builtin_types.insert(
+            String::from("UInt32"),
+            TypedType {
+                package: Package { names: vec![] },
+                name: "UInt32".to_string(),
+            },
+        );
+        builtin_types.insert(
+            String::from("UInt64"),
+            TypedType {
+                package: Package { names: vec![] },
+                name: "UInt64".to_string(),
+            },
+        );
+        builtin_types.insert(
+            String::from("String"),
+            TypedType {
+                package: Package { names: vec![] },
+                name: "String".to_string(),
+            },
+        );
         builtin_types.insert(String::from("Noting"), TypedType::noting());
-        builtin_types.insert(String::from("Unit"), TypedType { package: Package { names: vec![] }, name: "Unit".to_string() });
+        builtin_types.insert(
+            String::from("Unit"),
+            TypedType {
+                package: Package { names: vec![] },
+                name: "Unit".to_string(),
+            },
+        );
         Ast2HLIR {
             type_environment: builtin_types,
             decl_environment: HashMap::new(),
@@ -49,11 +109,11 @@ impl Ast2HLIR {
             match decl {
                 Decl::Var { .. } => {}
                 Decl::Fun { .. } => {}
-                Decl::Struct {  } => {}
-                Decl::Class {  } => {}
-                Decl::Enum {  } => {}
-                Decl::Protocol {  } => {}
-                Decl::Extension {  } => {}
+                Decl::Struct {} => {}
+                Decl::Class {} => {}
+                Decl::Enum {} => {}
+                Decl::Protocol {} => {}
+                Decl::Extension {} => {}
             }
         }
     }
@@ -63,7 +123,7 @@ impl Ast2HLIR {
     }
 
     fn resolve_by_type_name(&self, type_name: TypeName) -> Option<TypedType> {
-        self.type_environment.get(&*type_name.name).map(|a|{
+        self.type_environment.get(&*type_name.name).map(|a| {
             println!("TypeResolver :: {:?}", a);
             a.clone()
         })
@@ -78,7 +138,11 @@ impl Ast2HLIR {
         None
     }
 
-    fn resolve_by_unaryop(&self, target_type: &Option<TypedType>, kind: &String) -> Option<TypedType> {
+    fn resolve_by_unaryop(
+        &self,
+        target_type: &Option<TypedType>,
+        kind: &String,
+    ) -> Option<TypedType> {
         None
     }
 

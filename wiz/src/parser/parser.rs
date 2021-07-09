@@ -1,13 +1,16 @@
+use crate::ast::file::WizFile;
 use crate::parser::nom::file;
 use std::fs::File;
 use std::io;
 use std::io::Read;
 use std::process::exit;
-use crate::ast::file::WizFile;
 
 pub fn parse_from_string(string: String) -> WizFile {
     return match file(&*string) {
-        Ok((s, f)) => WizFile{ name: String::new(), syntax: f },
+        Ok((s, f)) => WizFile {
+            name: String::new(),
+            syntax: f,
+        },
         Err(..) => exit(-1),
     };
 }

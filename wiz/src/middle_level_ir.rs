@@ -1,16 +1,19 @@
-use crate::high_level_ir::typed_decl::{TypedDecl, TypedFun};
+use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedFun, TypedFunBody};
 use crate::high_level_ir::typed_expr::TypedExpr;
 use crate::high_level_ir::typed_file::TypedFile;
+use crate::high_level_ir::typed_stmt::TypedBlock;
 use crate::high_level_ir::typed_type::TypedType;
-use crate::middle_level_ir::ml_decl::MLDecl;
+use crate::middle_level_ir::ml_decl::{MLArgDef, MLDecl, MLFunBody};
 use crate::middle_level_ir::ml_expr::MLExpr;
 use crate::middle_level_ir::ml_file::MLFile;
+use crate::middle_level_ir::ml_stmt::{MLBlock, MLStmt};
 use crate::middle_level_ir::ml_type::MLType;
 use std::process::exit;
 
 pub mod ml_decl;
 pub mod ml_expr;
 pub mod ml_file;
+pub mod ml_stmt;
 pub mod ml_type;
 
 pub struct HLIR2MLIR {}
@@ -29,7 +32,9 @@ impl HLIR2MLIR {
     }
 
     pub fn file(&self, f: TypedFile) -> MLFile {
-        MLFile { body: vec![] }
+        MLFile {
+            body: f.body.into_iter().map(|d| self.decl(d)).collect(),
+        }
     }
 
     pub fn decl(&self, d: TypedDecl) -> MLDecl {
@@ -45,18 +50,18 @@ impl HLIR2MLIR {
                 type_: self.type_(type_.unwrap()),
                 value: MLExpr::Name,
             },
-            TypedDecl::Fun(TypedFun{
-                               modifiers,
-                               name,
-                               arg_defs,
-                               body,
-                               return_type,
-                           }) => MLDecl::Fun {
+            TypedDecl::Fun(TypedFun {
                 modifiers,
                 name,
-                arg_defs: vec![],
+                arg_defs,
+                body,
+                return_type,
+            }) => MLDecl::Fun {
+                modifiers,
+                name,
+                arg_defs: arg_defs.into_iter().map(|a| self.arg_def(a)).collect(),
                 return_type: self.type_(return_type),
-                body: None,
+                body: body.map(|b| self.fun_body(b)),
             },
             TypedDecl::Struct => exit(-1),
             TypedDecl::Class => exit(-1),
@@ -84,5 +89,27 @@ impl HLIR2MLIR {
             TypedExpr::Return => exit(-1),
             TypedExpr::TypeCast => exit(-1),
         }
+    }
+
+    pub fn arg_def(&self, e: TypedArgDef) -> MLArgDef {
+        MLArgDef {
+            name: e.name,
+            type_: self.type_(e.type_),
+        }
+    }
+
+    pub fn fun_body(&self, b: TypedFunBody) -> MLFunBody {
+        match b {
+            TypedFunBody::Expr(e) => MLFunBody {
+                body: vec![MLStmt::Expr(self.expr(e))],
+            },
+            TypedFunBody::Block(b) => MLFunBody {
+                body: self.block(b).body,
+            },
+        }
+    }
+
+    pub fn block(&self, b: TypedBlock) -> MLBlock {
+        MLBlock { body: vec![] }
     }
 }

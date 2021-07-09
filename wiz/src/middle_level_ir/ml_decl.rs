@@ -1,4 +1,5 @@
 use crate::middle_level_ir::ml_expr::MLExpr;
+use crate::middle_level_ir::ml_stmt::MLStmt;
 use crate::middle_level_ir::ml_type::MLType;
 use std::fmt;
 
@@ -22,9 +23,11 @@ pub enum MLDecl {
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct MLArgDef {
-    name: String,
-    type_: MLType,
+    pub(crate) name: String,
+    pub(crate) type_: MLType,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
-pub struct MLFunBody {}
+pub struct MLFunBody {
+    pub(crate) body: Vec<MLStmt>,
+}
