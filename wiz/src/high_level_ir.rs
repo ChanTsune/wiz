@@ -4,12 +4,12 @@ use crate::ast::expr::Expr;
 use crate::ast::file::{FileSyntax, WizFile};
 use crate::ast::fun::body_def::FunBody;
 use crate::ast::literal::Literal;
-use crate::ast::stmt::Stmt;
+use crate::ast::stmt::{Stmt, AssignmentStmt, LoopStmt};
 use crate::ast::type_name::TypeName;
 use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedFun, TypedFunBody};
 use crate::high_level_ir::typed_expr::{TypedCallArg, TypedExpr, TypedLiteral};
 use crate::high_level_ir::typed_file::TypedFile;
-use crate::high_level_ir::typed_stmt::{TypedBlock, TypedStmt};
+use crate::high_level_ir::typed_stmt::{TypedBlock, TypedStmt, TypedAssignmentStmt, TypedLoopStmt, TypedWhileLoopStmt, TypedForStmt};
 use crate::high_level_ir::typed_type::{Package, TypedType};
 use std::collections::HashMap;
 use std::option::Option::Some;
@@ -183,8 +183,33 @@ impl Ast2HLIR {
         match s {
             Stmt::Decl { decl } => TypedStmt::Decl(self.decl(decl)),
             Stmt::Expr { expr } => TypedStmt::Expr(self.expr(expr)),
-            Stmt::Assignment(a) => TypedStmt::Assignment,
-            Stmt::Loop(_) => TypedStmt::Loop,
+            Stmt::Assignment(a) => TypedStmt::Assignment(self.assignment(a)),
+            Stmt::Loop(l) => TypedStmt::Loop(self.loop_stmt(l)),
+        }
+    }
+
+    pub fn assignment(&self, a: AssignmentStmt) -> TypedAssignmentStmt {
+        TypedAssignmentStmt {
+            target: a.target,
+            value: self.expr(a.value)
+        }
+    }
+
+    pub fn loop_stmt(&mut self, l: LoopStmt) -> TypedLoopStmt {
+        match l {
+            LoopStmt::While { condition, block } => {
+                TypedLoopStmt::While(TypedWhileLoopStmt {
+                    condition: self.expr(condition),
+                    block: self.block(block)
+                })
+            }
+            LoopStmt::For { values, iterator, block } => {
+                TypedLoopStmt::For(TypedForStmt {
+                    values: values,
+                    iterator: self.expr(iterator),
+                    block: self.block(block)
+                })
+            }
         }
     }
 

@@ -6,8 +6,20 @@ use std::fmt;
 pub enum MLStmt {
     Expr(MLExpr),
     Decl(MLDecl),
-    Assignment,
-    Loop,
+    Assignment(MLAssignmentStmt),
+    Loop(MLLoopStmt),
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct MLAssignmentStmt {
+    pub(crate) target: String,
+    pub(crate) value: MLExpr,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct MLLoopStmt {
+    pub(crate) condition: MLExpr,
+    pub(crate) block: MLBlock,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]

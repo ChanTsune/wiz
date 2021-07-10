@@ -1,12 +1,12 @@
 use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedFun, TypedFunBody};
 use crate::high_level_ir::typed_expr::TypedExpr;
 use crate::high_level_ir::typed_file::TypedFile;
-use crate::high_level_ir::typed_stmt::{TypedBlock, TypedStmt};
+use crate::high_level_ir::typed_stmt::{TypedBlock, TypedStmt, TypedAssignmentStmt, TypedLoopStmt};
 use crate::high_level_ir::typed_type::TypedType;
 use crate::middle_level_ir::ml_decl::{MLArgDef, MLDecl, MLFunBody};
 use crate::middle_level_ir::ml_expr::MLExpr;
 use crate::middle_level_ir::ml_file::MLFile;
-use crate::middle_level_ir::ml_stmt::{MLBlock, MLStmt};
+use crate::middle_level_ir::ml_stmt::{MLBlock, MLStmt, MLAssignmentStmt, MLLoopStmt};
 use crate::middle_level_ir::ml_type::MLType;
 use std::process::exit;
 
@@ -41,8 +41,27 @@ impl HLIR2MLIR {
         match s {
             TypedStmt::Expr(e) => MLStmt::Expr(self.expr(e)),
             TypedStmt::Decl(d) => MLStmt::Decl(self.decl(d)),
-            TypedStmt::Assignment => MLStmt::Assignment,
-            TypedStmt::Loop => MLStmt::Loop,
+            TypedStmt::Assignment(a) => MLStmt::Assignment(self.assignment(a)),
+            TypedStmt::Loop(l) => MLStmt::Loop(self.loop_stmt(l)),
+        }
+    }
+
+    pub fn assignment(&self, a: TypedAssignmentStmt) -> MLAssignmentStmt {
+        MLAssignmentStmt {
+            target: a.target,
+            value: self.expr(a.value)
+        }
+    }
+
+    pub fn loop_stmt(&self, l: TypedLoopStmt) -> MLLoopStmt {
+        match l {
+            TypedLoopStmt::While(w) => {
+                MLLoopStmt {
+                    condition: self.expr(w.condition),
+                    block: self.block(w.block),
+                }
+            }
+            TypedLoopStmt::For(_) => { exit(-1) }
         }
     }
 

@@ -6,8 +6,33 @@ use std::fmt;
 pub enum TypedStmt {
     Expr(TypedExpr),
     Decl(TypedDecl),
-    Assignment,
-    Loop,
+    Assignment(TypedAssignmentStmt),
+    Loop(TypedLoopStmt),
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct TypedAssignmentStmt {
+    pub(crate) target: String,
+    pub(crate) value: TypedExpr,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub enum TypedLoopStmt {
+    While(TypedWhileLoopStmt),
+    For(TypedForStmt),
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct TypedWhileLoopStmt {
+    pub(crate) condition: TypedExpr,
+    pub(crate) block: TypedBlock,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct TypedForStmt {
+    pub(crate) values: Vec<String>,
+    pub(crate) iterator: TypedExpr,
+    pub(crate) block: TypedBlock,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
