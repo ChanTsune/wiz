@@ -68,6 +68,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let hlfile = ast2hlir.file(ast);
 
+    println!("{:?}", &hlfile);
+
     let mut hlir2mlir = HLIR2MLIR::new();
 
     let ml = hlir2mlir.file(hlfile);

@@ -1,7 +1,7 @@
 use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedFun, TypedFunBody};
 use crate::high_level_ir::typed_expr::TypedExpr;
 use crate::high_level_ir::typed_file::TypedFile;
-use crate::high_level_ir::typed_stmt::TypedBlock;
+use crate::high_level_ir::typed_stmt::{TypedBlock, TypedStmt};
 use crate::high_level_ir::typed_type::TypedType;
 use crate::middle_level_ir::ml_decl::{MLArgDef, MLDecl, MLFunBody};
 use crate::middle_level_ir::ml_expr::MLExpr;
@@ -37,6 +37,15 @@ impl HLIR2MLIR {
         }
     }
 
+    pub fn stmt(&self, s: TypedStmt) -> MLStmt {
+        match s {
+            TypedStmt::Expr(e) => MLStmt::Expr(self.expr(e)),
+            TypedStmt::Decl(d) => MLStmt::Decl(self.decl(d)),
+            TypedStmt::Assignment => MLStmt::Assignment,
+            TypedStmt::Loop => MLStmt::Loop,
+        }
+    }
+
     pub fn decl(&self, d: TypedDecl) -> MLDecl {
         match d {
             TypedDecl::Var {
@@ -44,12 +53,15 @@ impl HLIR2MLIR {
                 name,
                 type_,
                 value,
-            } => MLDecl::Var {
-                is_mute: is_mut,
-                name: name,
-                type_: self.type_(type_.unwrap()),
-                value: MLExpr::Name,
-            },
+            } => {
+                let expr = self.expr(value);
+                MLDecl::Var {
+                    is_mute: is_mut,
+                    name: name,
+                    type_: self.type_(type_.unwrap()),
+                    value: expr,
+                }
+            }
             TypedDecl::Fun(TypedFun {
                 modifiers,
                 name,
@@ -74,16 +86,16 @@ impl HLIR2MLIR {
     pub fn expr(&self, e: TypedExpr) -> MLExpr {
         match e {
             TypedExpr::Name { .. } => MLExpr::Name,
-            TypedExpr::Literal(_) => exit(-1),
-            TypedExpr::BinOp { .. } => exit(-1),
+            TypedExpr::Literal(_) => MLExpr::Literal,
+            TypedExpr::BinOp { .. } => MLExpr::Call,
             TypedExpr::UnaryOp { .. } => exit(-1),
             TypedExpr::Subscript => exit(-1),
             TypedExpr::List => exit(-1),
             TypedExpr::Tuple => exit(-1),
             TypedExpr::Dict => exit(-1),
             TypedExpr::StringBuilder => exit(-1),
-            TypedExpr::Call { .. } => exit(-1),
-            TypedExpr::If => exit(-1),
+            TypedExpr::Call { .. } => MLExpr::Call,
+            TypedExpr::If => MLExpr::If,
             TypedExpr::When => exit(-1),
             TypedExpr::Lambda => exit(-1),
             TypedExpr::Return => exit(-1),
@@ -110,6 +122,8 @@ impl HLIR2MLIR {
     }
 
     pub fn block(&self, b: TypedBlock) -> MLBlock {
-        MLBlock { body: vec![] }
+        MLBlock {
+            body: b.body.into_iter().map(|s| self.stmt(s)).collect(),
+        }
     }
 }

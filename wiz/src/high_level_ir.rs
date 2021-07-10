@@ -1,3 +1,4 @@
+use crate::ast::block::Block;
 use crate::ast::decl::Decl;
 use crate::ast::expr::Expr;
 use crate::ast::file::{FileSyntax, WizFile};
@@ -12,6 +13,7 @@ use crate::high_level_ir::typed_stmt::{TypedBlock, TypedStmt};
 use crate::high_level_ir::typed_type::{Package, TypedType};
 use std::collections::HashMap;
 use std::option::Option::Some;
+use std::process::exit;
 
 pub mod typed_decl;
 pub mod typed_expr;
@@ -20,6 +22,7 @@ pub mod typed_stmt;
 pub mod typed_type;
 
 pub struct Ast2HLIR {
+    name_environment: Vec<HashMap<String, TypedType>>,
     type_environment: HashMap<String, TypedType>,
     decl_environment: HashMap<String, TypedDecl>,
 }
@@ -99,6 +102,7 @@ impl Ast2HLIR {
             },
         );
         Ast2HLIR {
+            name_environment: vec![HashMap::new()],
             type_environment: builtin_types,
             decl_environment: HashMap::new(),
         }
@@ -119,7 +123,25 @@ impl Ast2HLIR {
     }
 
     fn get_type_by(&self, name: String) -> Option<TypedType> {
+        for env in self.name_environment.iter().rev() {
+            if let Some(t) = env.get(&*name) {
+                return Some(t.clone());
+            }
+        }
         None
+    }
+
+    fn put_type_by(&mut self, name: String, type_: &TypedType) {
+        let last_index = self.name_environment.len() - 1;
+        self.name_environment[last_index].insert(name, type_.clone());
+    }
+
+    fn push_name_environment(&mut self) {
+        self.name_environment.push(HashMap::new());
+    }
+
+    fn pop_name_environment(&mut self) {
+        self.name_environment.pop();
     }
 
     fn resolve_by_type_name(&self, type_name: TypeName) -> Option<TypedType> {
@@ -135,7 +157,12 @@ impl Ast2HLIR {
         kind: &String,
         right_type: &Option<TypedType>,
     ) -> Option<TypedType> {
-        None
+        match (left_type, right_type) {
+            (Some(l), Some(r)) => Some(l.clone()),
+            (Some(l), None) => Some(l.clone()),
+            (None, Some(r)) => Some(r.clone()),
+            (_, _) => None,
+        }
     }
 
     fn resolve_by_unaryop(
@@ -146,22 +173,22 @@ impl Ast2HLIR {
         None
     }
 
-    pub fn file(&self, f: FileSyntax) -> TypedFile {
+    pub fn file(&mut self, f: FileSyntax) -> TypedFile {
         TypedFile {
             body: f.body.into_iter().map(|d| self.decl(d)).collect(),
         }
     }
 
-    pub fn stmt(&self, s: Stmt) -> TypedStmt {
+    pub fn stmt(&mut self, s: Stmt) -> TypedStmt {
         match s {
             Stmt::Decl { decl } => TypedStmt::Decl(self.decl(decl)),
             Stmt::Expr { expr } => TypedStmt::Expr(self.expr(expr)),
-            Stmt::Assignment(_) => TypedStmt::Assignment,
+            Stmt::Assignment(a) => TypedStmt::Assignment,
             Stmt::Loop(_) => TypedStmt::Loop,
         }
     }
 
-    pub fn decl(&self, d: Decl) -> TypedDecl {
+    pub fn decl(&mut self, d: Decl) -> TypedDecl {
         match d {
             Decl::Var {
                 is_mut,
@@ -170,14 +197,44 @@ impl Ast2HLIR {
                 value,
             } => {
                 let expr = self.expr(value);
+                let type_ = match (type_, expr.type_()) {
+                    (Some(tn), Some(expr_type)) => {
+                        let var_type = self.resolve_by_type_name(tn.clone());
+                        if let Some(var_type) = var_type {
+                            if var_type == expr_type {
+                                expr_type
+                            } else {
+                                eprintln!(
+                                    "Type miss match error => {:?} and {:?}",
+                                    var_type, expr_type
+                                );
+                                exit(-1);
+                            }
+                        } else {
+                            eprintln!("Can not resolve type {:?} error =>", tn);
+                            exit(-1)
+                        }
+                    }
+                    (Some(t), None) => {
+                        if let Some(tt) = self.resolve_by_type_name(t.clone()) {
+                            tt
+                        } else {
+                            eprintln!("Can not resolve type {:?} error =>", t);
+                            exit(-1)
+                        }
+                    }
+                    (None, Some(t)) => t,
+                    (None, None) => {
+                        eprintln!("Can not resolve type error");
+                        exit(-1)
+                    }
+                };
+                self.put_type_by(name.clone(), &type_);
                 TypedDecl::Var {
                     is_mut: is_mut,
                     name: name,
-                    type_: match type_ {
-                        Some(t) => self.resolve_by_type_name(t),
-                        None => expr.type_(),
-                    },
-                    value: TypedExpr::Subscript,
+                    type_: Some(type_),
+                    value: expr,
                 }
             }
             Decl::Fun {
@@ -198,9 +255,7 @@ impl Ast2HLIR {
                     })
                     .collect(),
                 body: body.map(|b| match b {
-                    FunBody::Block { block } => TypedFunBody::Block(TypedBlock {
-                        body: block.body.into_iter().map(|s| self.stmt(s)).collect(),
-                    }),
+                    FunBody::Block { block } => TypedFunBody::Block(self.block(block)),
                     FunBody::Expr { expr } => TypedFunBody::Expr(self.expr(expr)),
                 }),
                 return_type: self.resolve_by_type_name(return_type).unwrap(),
@@ -323,5 +378,14 @@ impl Ast2HLIR {
             Expr::Return { .. } => TypedExpr::Return,
             Expr::TypeCast { .. } => TypedExpr::TypeCast,
         }
+    }
+
+    pub fn block(&mut self, block: Block) -> TypedBlock {
+        self.push_name_environment();
+        let b = TypedBlock {
+            body: block.body.into_iter().map(|s| self.stmt(s)).collect(),
+        };
+        self.pop_name_environment();
+        b
     }
 }
