@@ -4,12 +4,14 @@ use crate::ast::expr::Expr;
 use crate::ast::file::{FileSyntax, WizFile};
 use crate::ast::fun::body_def::FunBody;
 use crate::ast::literal::Literal;
-use crate::ast::stmt::{Stmt, AssignmentStmt, LoopStmt};
+use crate::ast::stmt::{AssignmentStmt, LoopStmt, Stmt};
 use crate::ast::type_name::TypeName;
 use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedFun, TypedFunBody};
-use crate::high_level_ir::typed_expr::{TypedCallArg, TypedExpr, TypedLiteral};
+use crate::high_level_ir::typed_expr::{TypedCallArg, TypedExpr, TypedIf, TypedLiteral};
 use crate::high_level_ir::typed_file::TypedFile;
-use crate::high_level_ir::typed_stmt::{TypedBlock, TypedStmt, TypedAssignmentStmt, TypedLoopStmt, TypedWhileLoopStmt, TypedForStmt};
+use crate::high_level_ir::typed_stmt::{
+    TypedAssignmentStmt, TypedBlock, TypedForStmt, TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
+};
 use crate::high_level_ir::typed_type::{Package, TypedType};
 use std::collections::HashMap;
 use std::option::Option::Some;
@@ -30,34 +32,10 @@ pub struct Ast2HLIR {
 impl Ast2HLIR {
     pub fn new() -> Self {
         let mut builtin_types = HashMap::new();
-        builtin_types.insert(
-            String::from("Int8"),
-            TypedType {
-                package: Package { names: vec![] },
-                name: "Int8".to_string(),
-            },
-        );
-        builtin_types.insert(
-            String::from("Int16"),
-            TypedType {
-                package: Package { names: vec![] },
-                name: "Int16".to_string(),
-            },
-        );
-        builtin_types.insert(
-            String::from("Int32"),
-            TypedType {
-                package: Package { names: vec![] },
-                name: "Int32".to_string(),
-            },
-        );
-        builtin_types.insert(
-            String::from("Int64"),
-            TypedType {
-                package: Package { names: vec![] },
-                name: "Int64".to_string(),
-            },
-        );
+        builtin_types.insert(String::from("Int8"), TypedType::int8());
+        builtin_types.insert(String::from("Int16"), TypedType::int16());
+        builtin_types.insert(String::from("Int32"), TypedType::int32());
+        builtin_types.insert(String::from("Int64"), TypedType::int64());
         builtin_types.insert(
             String::from("UInt8"),
             TypedType {
@@ -188,28 +166,28 @@ impl Ast2HLIR {
         }
     }
 
-    pub fn assignment(&self, a: AssignmentStmt) -> TypedAssignmentStmt {
+    pub fn assignment(&mut self, a: AssignmentStmt) -> TypedAssignmentStmt {
         TypedAssignmentStmt {
             target: a.target,
-            value: self.expr(a.value)
+            value: self.expr(a.value),
         }
     }
 
     pub fn loop_stmt(&mut self, l: LoopStmt) -> TypedLoopStmt {
         match l {
-            LoopStmt::While { condition, block } => {
-                TypedLoopStmt::While(TypedWhileLoopStmt {
-                    condition: self.expr(condition),
-                    block: self.block(block)
-                })
-            }
-            LoopStmt::For { values, iterator, block } => {
-                TypedLoopStmt::For(TypedForStmt {
-                    values: values,
-                    iterator: self.expr(iterator),
-                    block: self.block(block)
-                })
-            }
+            LoopStmt::While { condition, block } => TypedLoopStmt::While(TypedWhileLoopStmt {
+                condition: self.expr(condition),
+                block: self.block(block),
+            }),
+            LoopStmt::For {
+                values,
+                iterator,
+                block,
+            } => TypedLoopStmt::For(TypedForStmt {
+                values: values,
+                iterator: self.expr(iterator),
+                block: self.block(block),
+            }),
         }
     }
 
@@ -221,6 +199,7 @@ impl Ast2HLIR {
                 type_,
                 value,
             } => {
+                println!("{:?}", &value);
                 let expr = self.expr(value);
                 let type_ = match (type_, expr.type_()) {
                     (Some(tn), Some(expr_type)) => {
@@ -293,7 +272,7 @@ impl Ast2HLIR {
         }
     }
 
-    pub fn expr(&self, e: Expr) -> TypedExpr {
+    pub fn expr(&mut self, e: Expr) -> TypedExpr {
         match e {
             Expr::Name { name } => TypedExpr::Name {
                 name: name.clone(),
@@ -397,7 +376,20 @@ impl Ast2HLIR {
                     type_: None,
                 }
             }
-            Expr::If { .. } => TypedExpr::If,
+            Expr::If {
+                condition,
+                body,
+                else_body,
+            } => {
+                let block = self.block(body);
+                let type_ = block.type_();
+                TypedExpr::If(TypedIf {
+                    condition: Box::new(self.expr(*condition)),
+                    body: block,
+                    else_body: else_body.map(|b| self.block(b)),
+                    type_: type_,
+                })
+            }
             Expr::When { .. } => TypedExpr::When,
             Expr::Lambda { .. } => TypedExpr::Lambda,
             Expr::Return { .. } => TypedExpr::Return,

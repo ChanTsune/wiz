@@ -1,5 +1,6 @@
 use crate::high_level_ir::typed_decl::TypedDecl;
 use crate::high_level_ir::typed_expr::TypedExpr;
+use crate::high_level_ir::typed_type::TypedType;
 use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -38,4 +39,17 @@ pub struct TypedForStmt {
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct TypedBlock {
     pub(crate) body: Vec<TypedStmt>,
+}
+
+impl TypedBlock {
+    pub fn type_(&self) -> Option<TypedType> {
+        if let Some(stmt) = self.body.last() {
+            match stmt {
+                TypedStmt::Expr(e) => e.type_(),
+                _ => None,
+            }
+        } else {
+            None
+        }
+    }
 }

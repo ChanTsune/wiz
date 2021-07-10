@@ -1,12 +1,14 @@
 use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedFun, TypedFunBody};
-use crate::high_level_ir::typed_expr::TypedExpr;
+use crate::high_level_ir::typed_expr::{TypedExpr, TypedIf, TypedLiteral};
 use crate::high_level_ir::typed_file::TypedFile;
-use crate::high_level_ir::typed_stmt::{TypedBlock, TypedStmt, TypedAssignmentStmt, TypedLoopStmt};
+use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
 use crate::high_level_ir::typed_type::TypedType;
 use crate::middle_level_ir::ml_decl::{MLArgDef, MLDecl, MLFunBody};
-use crate::middle_level_ir::ml_expr::MLExpr;
+use crate::middle_level_ir::ml_expr::{
+    MLBinOp, MLBinopKind, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLName,
+};
 use crate::middle_level_ir::ml_file::MLFile;
-use crate::middle_level_ir::ml_stmt::{MLBlock, MLStmt, MLAssignmentStmt, MLLoopStmt};
+use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
 use crate::middle_level_ir::ml_type::MLType;
 use std::process::exit;
 
@@ -49,19 +51,17 @@ impl HLIR2MLIR {
     pub fn assignment(&self, a: TypedAssignmentStmt) -> MLAssignmentStmt {
         MLAssignmentStmt {
             target: a.target,
-            value: self.expr(a.value)
+            value: self.expr(a.value),
         }
     }
 
     pub fn loop_stmt(&self, l: TypedLoopStmt) -> MLLoopStmt {
         match l {
-            TypedLoopStmt::While(w) => {
-                MLLoopStmt {
-                    condition: self.expr(w.condition),
-                    block: self.block(w.block),
-                }
-            }
-            TypedLoopStmt::For(_) => { exit(-1) }
+            TypedLoopStmt::While(w) => MLLoopStmt {
+                condition: self.expr(w.condition),
+                block: self.block(w.block),
+            },
+            TypedLoopStmt::For(_) => exit(-1),
         }
     }
 
@@ -104,21 +104,84 @@ impl HLIR2MLIR {
 
     pub fn expr(&self, e: TypedExpr) -> MLExpr {
         match e {
-            TypedExpr::Name { .. } => MLExpr::Name,
-            TypedExpr::Literal(_) => MLExpr::Literal,
-            TypedExpr::BinOp { .. } => MLExpr::Call,
+            TypedExpr::Name { name, type_ } => MLExpr::Name(MLName {
+                name: name,
+                type_: self.type_(type_.unwrap()),
+            }),
+            TypedExpr::Literal(l) => MLExpr::Literal(self.literal(l)),
+            TypedExpr::BinOp {
+                left,
+                kind,
+                right,
+                type_,
+            } => MLExpr::PrimitiveBinOp(MLBinOp {
+                left: Box::new(self.expr(*left)),
+                kind: match &*kind {
+                    "+" => MLBinopKind::Plus,
+                    "-" => MLBinopKind::Minus,
+                    _ => exit(-1),
+                },
+                right: Box::new(self.expr(*right)),
+                type_: self.type_(type_.unwrap()),
+            }),
             TypedExpr::UnaryOp { .. } => exit(-1),
             TypedExpr::Subscript => exit(-1),
             TypedExpr::List => exit(-1),
             TypedExpr::Tuple => exit(-1),
             TypedExpr::Dict => exit(-1),
             TypedExpr::StringBuilder => exit(-1),
-            TypedExpr::Call { .. } => MLExpr::Call,
-            TypedExpr::If => MLExpr::If,
+            TypedExpr::Call {
+                target,
+                args,
+                type_,
+            } => MLExpr::Call(MLCall {
+                target: Box::new(self.expr(*target)),
+                args: args
+                    .into_iter()
+                    .map(|a| MLCallArg {
+                        arg: self.expr(*a.arg),
+                    })
+                    .collect(),
+                type_: self.type_(type_.unwrap()),
+            }),
+            TypedExpr::If(i) => MLExpr::If(self.if_expr(i)),
             TypedExpr::When => exit(-1),
             TypedExpr::Lambda => exit(-1),
             TypedExpr::Return => exit(-1),
             TypedExpr::TypeCast => exit(-1),
+        }
+    }
+
+    pub fn literal(&self, l: TypedLiteral) -> MLLiteral {
+        match l {
+            TypedLiteral::Integer { value, type_ } => MLLiteral::Integer {
+                value: value,
+                type_: self.type_(type_),
+            },
+            TypedLiteral::FloatingPoint { value, type_ } => MLLiteral::FloatingPoint {
+                value: value,
+                type_: self.type_(type_),
+            },
+            TypedLiteral::String { value, type_ } => MLLiteral::String {
+                value: value,
+                type_: self.type_(type_),
+            },
+            TypedLiteral::Boolean { value, type_ } => MLLiteral::Boolean {
+                value: value,
+                type_: self.type_(type_),
+            },
+            TypedLiteral::NullLiteral { type_ } => MLLiteral::Null {
+                type_: self.type_(type_),
+            },
+        }
+    }
+
+    pub fn if_expr(&self, i: TypedIf) -> MLIf {
+        MLIf {
+            condition: Box::new(self.expr(*i.condition)),
+            body: self.block(i.body),
+            else_body: i.else_body.map(|b| self.block(b)),
+            type_: self.type_(i.type_.unwrap()),
         }
     }
 

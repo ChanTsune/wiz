@@ -1,3 +1,4 @@
+use crate::high_level_ir::typed_stmt::TypedBlock;
 use crate::high_level_ir::typed_type::TypedType;
 use std::fmt;
 
@@ -30,7 +31,7 @@ pub enum TypedExpr {
         args: Vec<TypedCallArg>,
         type_: Option<TypedType>,
     },
-    If,
+    If(TypedIf),
     When,
     Lambda,
     Return,
@@ -51,6 +52,14 @@ pub struct TypedCallArg {
     pub(crate) label: Option<String>,
     pub(crate) arg: Box<TypedExpr>,
     pub(crate) is_vararg: bool,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct TypedIf {
+    pub(crate) condition: Box<TypedExpr>,
+    pub(crate) body: TypedBlock,
+    pub(crate) else_body: Option<TypedBlock>,
+    pub(crate) type_: Option<TypedType>,
 }
 
 impl TypedExpr {
@@ -80,7 +89,7 @@ impl TypedExpr {
                 args,
                 type_,
             } => type_.clone(),
-            TypedExpr::If => None,
+            TypedExpr::If(i) => i.type_.clone(),
             TypedExpr::When => None,
             TypedExpr::Lambda => None,
             TypedExpr::Return => None,
