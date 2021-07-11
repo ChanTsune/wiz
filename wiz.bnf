@@ -1,0 +1,216 @@
+<syntax> ::= <decl> <syntax>
+           | <decl>
+
+<decl> ::= <var_decl>
+         | <fun_decl>
+        #  | <struct_decl>
+        #  | <class_decl>
+        #  | <enum_decl>
+        #  | <protocol_decl>
+        #  | <extension_decl>
+
+<var_decl> ::= <value>
+        | <variable>
+
+<value> ::= "val" <var_body>
+<variable> ::= "var" <var_body>
+
+<var_body> ::= <identifire> (":" <white_space>* <type>)? "=" <expr>
+
+<modifiers> ::= <modifier>+
+
+<modifier> ::= <function_modifier>
+        #      | <visibility_modifier>
+
+<function_modifier> ::= 'operator'
+                      | 'infix'
+                      | 'inline'
+
+<fun_decl> ::= <modifiers>? "fun" <identifire> <type_parameters>? <function_value_parameters> (":" <type>)? <type_constraints>? <function_body>?
+
+<function_value_parameters> ::= "(" (<function_value_parameter> ("," <function_value_parameter>)* ","?)? ")"
+
+<function_value_parameter> ::= <function_value_label> <function_value_name> ":" <type> ("=" <expr>)?
+
+<function_value_label> ::= <identifier>
+<function_value_name> ::= <identifier>
+
+<type_constraints> ::= "where" <type_constraint> ("," <type_constraint>)*
+
+<type_constraint> ::= <identifier> ":" <type>
+
+<function_body> ::= <block>
+                | "=" <expr>
+
+<arg_defs> ::= <arg_def> "," <arg_defs>
+             | <arg_def> ","
+             | <arg_def>
+
+<arg_def> ::= <arg_label> <white_spaces> <arg_name> ":" <type_name>
+
+<arg_label> ::= <identifire>
+<arg_name> ::= <identifire> 
+
+<block> ::= "{" <stmts> "}"
+
+<stmts> ::= <stmt> | <stmt> <stmts>
+
+<stmt> ::= <decl_stmt>
+         | <assignment_stmt>
+        # | <for>
+         | <while_stmt>
+        # | <break>
+        # | <continue>
+         | <expr_stmt>
+
+<decl_stmt> ::= <decl> <eol>
+
+<assignment_stmt> ::= <identifier> "=" <expr>
+
+<while_stmt> ::= "while" <expr> <block>
+
+<expr_stmt> ::= <expr> <eol>
+
+<type_name> ::= <identifire>
+
+<type_parameters> ::= "<" <type_parameter> ("," <type_parameter>)* ","? ">"
+
+<type_parameter> ::= <identifier> (":", <type>)?
+
+<expr> ::= <disjunction_expr>
+
+<disjunction_expr> ::= <conjunction_expr> ("||" <conjunction_expr>)*
+
+<conjunction_expr> ::= <equality_expr> ("&&" <equality_expr>)*
+
+<equality_expr> ::= <comparison_expr> (<equality_operator> <comparison_expr>)*
+
+<equality_operator> ::= "==" | "!="
+
+<comparison_expr> ::= <generic_call_like_comparison_expr> (<comparison_operator> <generic_call_like_comparison_expr>)*
+
+<comparison_operator> ::= "<"  | ">"  | "<="  | ">="
+
+<generic_call_like_comparison_expr> ::= <infix_operation_expr> <call_suffix>*
+
+<infix_operation_expr> ::= <elvis_expr> ((<in_operator> <elvis_expr>) | (<is_operator> <type>))*
+
+<elvis_expr> ::= <infix_function_call> (":?" <infix_function_call_expr>)*
+
+<infix_function_call_expr> ::=  <range_expr> (<identifier> <range_expr>)*
+
+<range_expr> ::= <additive_expr> (<range_operator> <additive_expr>)*
+
+<range_operator> ::= "..." || "..<"
+
+<additive_expr> ::= <multiplicative_expr> (<additive_operator> <multiplicative_expr>)*
+
+<additive_operator> ::= "+" | "-"
+
+<multiplicative_expr> ::= <as_expr> (<multiplicative_operator> <as_expr>)*
+
+<multiplicative_operator> ::= "*" | "/" | "%"
+
+<as_expr> ::= <prefix_expr> (<as_operator> <type>)*
+
+<as_operator> ::= "as" | "as?"
+
+<in_operator> ::= "in" | "!in"
+
+<is_operator> ::= "is" | "!is"
+
+<type> ::= <parenthesized_type> | <nullable_type> | <type_reference> | <function_type>
+
+<parenthesized_type> ::= "(" <type> ")"
+<nullable_type> ::= (<type_reference> | <parenthesized_type>) "?"
+<type_reference> ::= <user_type>
+<user_type> ::= <simple_user_type> ("." <simple_user_type>)*
+<simple_user_type> ::= <identifier> <type_arguments>?
+<function_type> ::= <function_type_parameters> "->" <type>
+<function_type_parameters> ::= '(' (<parameter> | <type>)? (',' (<parameter> | <type>))* ','? ')'
+
+<parameter> ::= <identifier> ":" <type>
+
+<call_suffix> ::= <type_arguments>? ((<value_arguments>? <annotated_lambda>) | <value_arguments>)
+
+<type_arguments> ::= "<" <type> ("," <type>)* ","? ">"
+
+<value_arguments> ::= "(" <value_argument> ("," <value_argument>)* ","? ")"
+
+<value_argument> ::= (<identifier> ":")? "*"? <expr>
+
+<annotated_lambda> ::= <label>? <lambda_literal>
+
+<label> ::= <identifier>
+
+<prefix_expr> ::= <prefix_operator> <postfix_expr>
+                | <postfix_expr>
+
+<postfix_expr> ::= <primary_expr> <postfix_suffix>*
+
+<postfix_suffix> ::= <postfix_operator>
+                   | <type_arguments>
+                   | <call_suffix>
+                   | <indexing_suffix>
+                   | <navigation_suffix>
+
+<indexing_suffix> ::=
+<navigation_suffix> ::=
+
+
+<binary_expr> ::= <white_space> <operator> <white_space> <expr>
+
+<primary_expr> ::= <name_expr>
+                 | <literal_expr>
+                 | <parenthesized_expr>
+        # | <list>
+        # | <tuple>
+        # | <dict>
+        # | <string_builder>
+        # | <call>
+                | <if>
+        # | <when>
+                | <function_literal>
+        # | <return>
+        # | <member>
+        # | <unaryop>
+        # | <subscript>
+
+<parenthesized_expr> ::= "(" <white_spaces> <expr> <white_spaces> ")"
+
+<name_expr> ::= <identifire>
+
+<literal_expr> ::= <integer_literal>
+            # | <floating_point_literal>
+            # | <string_literal>
+            # | <boolean_literal>
+            # | <null_literal>
+
+<integer_literal> ::= <digits>
+# <floating_point_literal> ::=
+# <string_literal> ::= 
+# <boolean_literal> ::=
+# <null_literal> ::=
+
+<function_literal> ::= <lambda_literal>
+
+<lambda_literal> ::= "{" <stmts> "}"
+
+<if> ::= "if" <expr> <block> ("else" (<block> | <if>))?
+
+<postfix_operator> ::= "!"
+
+<digits> ::= <digit> <digits>
+           | <digit>
+<digit> ::= "0-9"
+
+<identifire> ::= <identifire_head> | <identifire_head> <identifire_items>
+<identifire_items> ::= <identifire_item> | <identifire_item> <identifire_items>
+<identifire_head> ::= "a-zA-Z" | "_"
+<identifire_item> ::= <identifire_head> | "_" | <digit>
+
+<white_spaces> ::= <white_space> <white_spaces>
+                 | <white_space>
+<white_space> ::= " " | <eol>
+
+<eol> = "\n"

@@ -1,0 +1,25 @@
+
+struct Vector<T> {
+    private var buffer: Array<T>
+    private var bufferLength: Int
+    private var itemCount: Int
+}
+
+extension Vector<T> {
+
+    func append(element: T) {
+        self.reserve(itemCount + 1)
+        self.buffer.set(itemCount, element)
+    }
+
+    func reserve(capacity: Int) {
+        if self.bufferLength < capacity {
+            let newBuffer = Array<T>(capacity)
+            var index = 0
+            while index < itemCount {
+                newBuffer.set(index, self.buffer.get(index))
+            }
+            self.buffer = newBuffer
+        }
+    }
+}

@@ -1,0 +1,4 @@
+enum Optional<T> {
+    Some(val value: T)
+    None()
+}

@@ -1,0 +1,14 @@
+fun main() {
+    var a = 1
+    val b = 2
+    while a < 15 {
+        if a % 2 == 0 {
+            puts("Hello world!")
+        } else {
+            puts("Welcome to Wiz!!")
+        }
+        a = a + if a % 2 == 0 { 1 } else { 3 }
+    }
+    val c = a + b
+    puts("...bye")
+}

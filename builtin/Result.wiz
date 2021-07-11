@@ -1,0 +1,4 @@
+enum Result<S, T: Error> {
+    Success(val value: S)
+    Failre(val value: T)
+}

@@ -1,0 +1,72 @@
+-- ASDL's 4 builtin types are:
+-- identifier, int, string, constant
+
+module wiz
+{
+    module = Module(string name, file* files)
+    file = File(decl* body)
+
+    decl = Var(var var)
+         | Fun(fun fun)
+         | Struct(type_name name, decl* members)
+         | Class(type_name name, decl* members)
+         | Enum(enum enum)
+         | Protocol(protocol protocol)
+         | Extension(extension extension)
+
+    stmt = DeclStmt(decl decl)
+         | ExprStmt(expr expr)
+
+    var = Value(string name, type_name? type_name, expr value)
+        | Variable(string name, type_name? type_name, expr value)
+
+    fun = Function(string name, arg_def* args, type_name? return_type, block body)
+
+    arg_def = ArgDef(stirng label, string name, type_name type)
+
+    protocol = Protocol(type_name name, decl* fun)
+
+    extension = Extension(type_name target, type_name* protocol_names, fun* functions)
+
+    block = Block(stmt* stmts)
+
+    expr = Name(string name)
+         | Member(string name)
+         | Literal(literal value)
+         | BinOp(expr left, string kind, expr right)
+         | UnaryOp(expr target, bool prefix, string kind)
+         | Subscript(expr ratget, expr idx_or_key)
+         | List(expr* exprs)
+         | Tuple(expr* exprs)
+         | Dict(key_value_pair* pairs)
+         | StringBuilder(expr* exprs)
+         | Call(expr target, arg* args, lambda? tailing_lambda)
+         | Lambda(lambda lambda)
+         | If(if if)
+         | When(when when)
+         | For(for for)
+         | While(while while)
+         | Break(string? label)
+         | Continue(string? label)
+         | Return(expr value, string? label)
+     literal = IntegerLiteral(string value)
+             | FloatingPointLiteral(string value)
+             | StringLiteral(string value)
+             | BooleanLitelal(string value)
+             | NullLiteral()
+     key_value_pair = KeyValuePair(expr key, expr value)
+     arg = Arg(stirng? name, expr value)
+     for = For(string? label, string* names, block body)
+     while = While(expr condition, block body)
+     if = If(expr condition, block body, else? else)
+     when = ConditionWhen(condition_block_pair* pairs)
+          | TypeWhen(expr value, type_block_pair* pairs)
+          | CaseWhen(expr value, case_block_pair* pairs)
+     type_block_pair = TypeBodyPair(type_name type_name, block body)
+     case_block_pair = CaseBlockPair(expr value, block body)
+     condition_block_pair = ConditionBodyPair(expr condition, block body)
+     lambda = Lambda(block body)
+
+     type_name = TypeName(string name, type_param* type_params)
+     type_param = TypeParam(string param_name, type_name* type_constraint)
+}

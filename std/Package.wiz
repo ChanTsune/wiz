@@ -1,0 +1,14 @@
+use wiz::package::Package
+use wiz::package::Version
+use wiz::package::Release
+use wiz::package::Target
+use wiz::package::Build
+use wiz::package::Link
+
+
+val package = Package(
+    name: "std",
+    version: Version(major: 0, minor: 0, patch: 0, release: Option<Release>.Some(Release.Alpha(0)), build: Option<Release>.Some(Build(""))),
+    description: "Wiz language standerd library.",
+    target: Target.Library(Link.Static),
+)

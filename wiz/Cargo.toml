@@ -1,0 +1,13 @@
+[package]
+name = "wiz"
+version = "0.0.0"
+authors = ["ChanTsune <41658782+ChanTsune@users.noreply.github.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+nom = "6.1.2"
+inkwell = { git = "https://github.com/TheDan64/inkwell", branch = "master", features = ["llvm11-0"] }
+either ="1.6.1"
+clap = "2.33.3"
