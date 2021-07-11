@@ -14,7 +14,7 @@ jobs:
             ~/.cargo/git
             target          
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - name: run test
+      - name: run format
         run: cd wiz && cargo fmt
       - name: Commit changes
         uses: EndBug/add-and-commit@v7.2.1
