@@ -7,12 +7,7 @@ use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum Decl {
-    Var {
-        is_mut: bool,
-        name: String,
-        type_: Option<TypeName>,
-        value: Expr,
-    },
+    Var(VarSyntax),
     Fun {
         modifiers: Vec<String>,
         name: String,
@@ -38,3 +33,11 @@ pub enum Decl {
 }
 
 impl Node for Decl {}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct VarSyntax {
+    pub(crate) is_mut: bool,
+    pub(crate) name: String,
+    pub(crate) type_: Option<TypeName>,
+    pub(crate) value: Expr,
+}

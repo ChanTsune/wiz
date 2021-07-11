@@ -1,7 +1,10 @@
 use crate::parser::parser::{parse_from_file, parse_from_string};
 
+use crate::ast::file::WizFile;
+use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::Ast2HLIR;
 use crate::llvm_ir::codegen::CodeGen;
+use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::HLIR2MLIR;
 use clap::{App, Arg};
 use inkwell::context::Context;
@@ -46,15 +49,15 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut ast2hlir = Ast2HLIR::new();
 
     let builtin_dir = std::fs::read_dir(Path::new("../builtin")).unwrap();
+    let mut builtin_syntax: Vec<WizFile> = vec![];
     for path in builtin_dir {
         let path = path.unwrap().path();
         if path.ends_with("builtin.ll.wiz") {
             println!("{:?}", &path);
-            let built_in = parse_from_string(read_to_string(path).unwrap());
-            let builtin_clone = built_in.clone();
-            ast2hlir.preload_types(builtin_clone);
-            println!("{:?}", &built_in);
-            codegen.file(built_in.syntax);
+            let builtin = parse_from_string(read_to_string(path).unwrap());
+            builtin_syntax.push(builtin.clone());
+            println!("{:?}", &builtin);
+            ast2hlir.preload_types(builtin);
         }
     }
 
@@ -62,9 +65,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     let ast_file = parse_from_file(file.unwrap()).unwrap().syntax;
     let ast = ast_file.clone();
 
-    // println!("{:?}", &ast_file.unwrap());
-    codegen.file(ast_file);
-    let _ = codegen.print_to_file(Path::new(output));
+    let builtin_hlir: Vec<TypedFile> = builtin_syntax
+        .into_iter()
+        .map(|w| ast2hlir.file(w.syntax))
+        .collect();
 
     let hlfile = ast2hlir.file(ast);
 
@@ -72,8 +76,20 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut hlir2mlir = HLIR2MLIR::new();
 
+    let builtin_mlir: Vec<MLFile> = builtin_hlir
+        .into_iter()
+        .map(|w| hlir2mlir.file(w))
+        .collect();
+
     let ml = hlir2mlir.file(hlfile);
-    println!("{:?}", ml);
+
+    for m in builtin_mlir {
+        codegen.file(m);
+    }
+    println!("{:?}", &ml);
+
+    codegen.file(ml);
+    let _ = codegen.print_to_file(Path::new(output));
 
     Ok(())
 }

@@ -1,12 +1,12 @@
 use crate::ast::block::Block;
-use crate::ast::decl::Decl;
+use crate::ast::decl::{Decl, VarSyntax};
 use crate::ast::expr::Expr;
 use crate::ast::file::{FileSyntax, WizFile};
 use crate::ast::fun::body_def::FunBody;
 use crate::ast::literal::Literal;
 use crate::ast::stmt::{AssignmentStmt, LoopStmt, Stmt};
 use crate::ast::type_name::TypeName;
-use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedFun, TypedFunBody};
+use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedVar};
 use crate::high_level_ir::typed_expr::{TypedCallArg, TypedExpr, TypedIf, TypedLiteral};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{
@@ -89,8 +89,17 @@ impl Ast2HLIR {
     pub fn preload_types(&mut self, ast: WizFile) {
         for decl in ast.syntax.body {
             match decl {
-                Decl::Var { .. } => {}
-                Decl::Fun { .. } => {}
+                Decl::Var(v) => {
+                    let var = self.var_syntax(v);
+                    self.put_type_by(var.name, &var.type_.unwrap())
+                }
+                Decl::Fun {
+                    modifiers,
+                    name,
+                    arg_defs,
+                    return_type,
+                    body,
+                } => self.put_type_by(name, &self.resolve_by_type_name(return_type).unwrap()),
                 Decl::Struct {} => {}
                 Decl::Class {} => {}
                 Decl::Enum {} => {}
@@ -193,82 +202,83 @@ impl Ast2HLIR {
 
     pub fn decl(&mut self, d: Decl) -> TypedDecl {
         match d {
-            Decl::Var {
-                is_mut,
-                name,
-                type_,
-                value,
-            } => {
-                println!("{:?}", &value);
-                let expr = self.expr(value);
-                let type_ = match (type_, expr.type_()) {
-                    (Some(tn), Some(expr_type)) => {
-                        let var_type = self.resolve_by_type_name(tn.clone());
-                        if let Some(var_type) = var_type {
-                            if var_type == expr_type {
-                                expr_type
-                            } else {
-                                eprintln!(
-                                    "Type miss match error => {:?} and {:?}",
-                                    var_type, expr_type
-                                );
-                                exit(-1);
-                            }
-                        } else {
-                            eprintln!("Can not resolve type {:?} error =>", tn);
-                            exit(-1)
-                        }
-                    }
-                    (Some(t), None) => {
-                        if let Some(tt) = self.resolve_by_type_name(t.clone()) {
-                            tt
-                        } else {
-                            eprintln!("Can not resolve type {:?} error =>", t);
-                            exit(-1)
-                        }
-                    }
-                    (None, Some(t)) => t,
-                    (None, None) => {
-                        eprintln!("Can not resolve type error");
-                        exit(-1)
-                    }
-                };
-                self.put_type_by(name.clone(), &type_);
-                TypedDecl::Var {
-                    is_mut: is_mut,
-                    name: name,
-                    type_: Some(type_),
-                    value: expr,
-                }
-            }
+            Decl::Var(v) => TypedDecl::Var(self.var_syntax(v)),
             Decl::Fun {
                 modifiers,
                 name,
                 arg_defs,
                 return_type,
                 body,
-            } => TypedDecl::Fun(TypedFun {
-                modifiers: modifiers,
-                name: name,
-                arg_defs: arg_defs
-                    .into_iter()
-                    .map(|a| TypedArgDef {
-                        label: a.label,
-                        name: a.name,
-                        type_: self.resolve_by_type_name(a.type_name).unwrap(),
-                    })
-                    .collect(),
-                body: body.map(|b| match b {
-                    FunBody::Block { block } => TypedFunBody::Block(self.block(block)),
-                    FunBody::Expr { expr } => TypedFunBody::Expr(self.expr(expr)),
-                }),
-                return_type: self.resolve_by_type_name(return_type).unwrap(),
-            }),
+            } => {
+                let f = TypedFun {
+                    modifiers: modifiers,
+                    name: name,
+                    arg_defs: arg_defs
+                        .into_iter()
+                        .map(|a| TypedArgDef {
+                            label: a.label,
+                            name: a.name,
+                            type_: self.resolve_by_type_name(a.type_name).unwrap(),
+                        })
+                        .collect(),
+                    body: body.map(|b| match b {
+                        FunBody::Block { block } => TypedFunBody::Block(self.block(block)),
+                        FunBody::Expr { expr } => TypedFunBody::Expr(self.expr(expr)),
+                    }),
+                    return_type: self.resolve_by_type_name(return_type).unwrap(),
+                };
+                self.put_type_by(f.name.clone(), &f.return_type);
+                TypedDecl::Fun(f)
+            }
             Decl::Struct { .. } => TypedDecl::Struct,
             Decl::Class { .. } => TypedDecl::Class,
             Decl::Enum { .. } => TypedDecl::Enum,
             Decl::Protocol { .. } => TypedDecl::Protocol,
             Decl::Extension { .. } => TypedDecl::Extension,
+        }
+    }
+
+    pub fn var_syntax(&mut self, v: VarSyntax) -> TypedVar {
+        println!("{:?}", &v.value);
+        let expr = self.expr(v.value);
+        let type_ = match (v.type_, expr.type_()) {
+            (Some(tn), Some(expr_type)) => {
+                let var_type = self.resolve_by_type_name(tn.clone());
+                if let Some(var_type) = var_type {
+                    if var_type == expr_type {
+                        expr_type
+                    } else {
+                        eprintln!(
+                            "Type miss match error => {:?} and {:?}",
+                            var_type, expr_type
+                        );
+                        exit(-1);
+                    }
+                } else {
+                    eprintln!("Can not resolve type {:?} error =>", tn);
+                    exit(-1)
+                }
+            }
+            (Some(t), None) => {
+                if let Some(tt) = self.resolve_by_type_name(t.clone()) {
+                    tt
+                } else {
+                    eprintln!("Can not resolve type {:?} error =>", t);
+                    exit(-1)
+                }
+            }
+            (None, Some(t)) => t,
+            (None, None) => {
+                eprintln!("Can not resolve type error");
+                exit(-1)
+            }
+        };
+        self.put_type_by(v.name.clone(), &type_);
+        TypedVar {
+            is_mut: v.is_mut,
+            name: v.name,
+            type_: Some(type_),
+            value: expr,
         }
     }
 
@@ -370,10 +380,12 @@ impl Ast2HLIR {
                     )
                 }
                 // TODO: resolve call type
+                let e = self.expr(*target);
+                let return_type = e.type_();
                 TypedExpr::Call {
-                    target: Box::new(self.expr(*target)),
+                    target: Box::new(e),
                     args: args,
-                    type_: None,
+                    type_: return_type,
                 }
             }
             Expr::If {

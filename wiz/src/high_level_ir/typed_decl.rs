@@ -5,18 +5,21 @@ use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum TypedDecl {
-    Var {
-        is_mut: bool,
-        name: String,
-        type_: Option<TypedType>,
-        value: TypedExpr,
-    },
+    Var(TypedVar),
     Fun(TypedFun),
     Struct,
     Class,
     Enum,
     Protocol,
     Extension,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct TypedVar {
+    pub(crate) is_mut: bool,
+    pub(crate) name: String,
+    pub(crate) type_: Option<TypedType>,
+    pub(crate) value: TypedExpr,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]

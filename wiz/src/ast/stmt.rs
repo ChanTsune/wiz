@@ -26,10 +26,6 @@ pub enum LoopStmt {
         condition: Expr,
         block: Block,
     },
-    DoWhile {
-        condition: Expr,
-        block: Block,
-    },
     For {
         values: Vec<String>,
         iterator: Expr,

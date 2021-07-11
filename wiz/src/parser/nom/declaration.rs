@@ -1,5 +1,5 @@
 use crate::ast::block::Block;
-use crate::ast::decl::Decl;
+use crate::ast::decl::{Decl, VarSyntax};
 use crate::ast::expr::Expr;
 use crate::ast::fun::arg_def::ArgDef;
 use crate::ast::fun::body_def::FunBody;
@@ -162,11 +162,13 @@ pub fn var_decl(s: &str) -> IResult<&str, Decl> {
 pub fn var(s: &str) -> IResult<&str, Decl> {
     map(
         tuple((var_keyword, whitespace1, var_body)),
-        |(_, _, (name, t, e))| Decl::Var {
-            is_mut: true,
-            name: name,
-            type_: t,
-            value: e,
+        |(_, _, (name, t, e))| {
+            Decl::Var(VarSyntax {
+                is_mut: true,
+                name: name,
+                type_: t,
+                value: e,
+            })
         },
     )(s)
 }
@@ -174,11 +176,13 @@ pub fn var(s: &str) -> IResult<&str, Decl> {
 pub fn val(s: &str) -> IResult<&str, Decl> {
     map(
         tuple((val_keyword, whitespace1, var_body)),
-        |(_, _, (name, t, e))| Decl::Var {
-            is_mut: false,
-            name: name,
-            type_: t,
-            value: e,
+        |(_, _, (name, t, e))| {
+            Decl::Var(VarSyntax {
+                is_mut: false,
+                name: name,
+                type_: t,
+                value: e,
+            })
         },
     )(s)
 }
@@ -203,7 +207,7 @@ pub fn var_body(s: &str) -> IResult<&str, (String, Option<TypeName>, Expr)> {
 #[cfg(test)]
 mod test {
     use crate::ast::block::Block;
-    use crate::ast::decl::Decl;
+    use crate::ast::decl::{Decl, VarSyntax};
     use crate::ast::expr::Expr;
     use crate::ast::fun::arg_def::ArgDef;
     use crate::ast::fun::body_def::FunBody;
@@ -369,7 +373,7 @@ mod test {
             var_decl("val a: Int = 1"),
             Ok((
                 "",
-                Decl::Var {
+                Decl::Var(VarSyntax {
                     is_mut: false,
                     name: "a".to_string(),
                     type_: Some(TypeName {
@@ -381,7 +385,7 @@ mod test {
                             value: "1".to_string()
                         }
                     }
-                }
+                })
             ))
         )
     }
@@ -391,7 +395,7 @@ mod test {
             var_decl("val a = 1"),
             Ok((
                 "",
-                Decl::Var {
+                Decl::Var(VarSyntax {
                     is_mut: false,
                     name: "a".to_string(),
                     type_: None,
@@ -400,7 +404,7 @@ mod test {
                             value: "1".to_string()
                         }
                     }
-                }
+                })
             ))
         )
     }

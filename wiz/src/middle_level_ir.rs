@@ -67,17 +67,12 @@ impl HLIR2MLIR {
 
     pub fn decl(&self, d: TypedDecl) -> MLDecl {
         match d {
-            TypedDecl::Var {
-                is_mut,
-                name,
-                type_,
-                value,
-            } => {
-                let expr = self.expr(value);
+            TypedDecl::Var(v) => {
+                let expr = self.expr(v.value);
                 MLDecl::Var {
-                    is_mute: is_mut,
-                    name: name,
-                    type_: self.type_(type_.unwrap()),
+                    is_mute: v.is_mut,
+                    name: v.name,
+                    type_: self.type_(v.type_.unwrap()),
                     value: expr,
                 }
             }
