@@ -1,7 +1,7 @@
 use crate::parser::nom::character::{alphabet, digit, under_score};
 use nom::branch::{alt, permutation};
 use nom::bytes::complete::tag;
-use nom::character::complete::{alpha1, anychar, char, one_of, space0, space1};
+use nom::character::complete::{anychar, char};
 use nom::combinator::{map, opt};
 use nom::error::{ErrorKind, ParseError};
 use nom::multi::many0;

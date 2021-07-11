@@ -1,11 +1,11 @@
 use crate::ast::type_name::TypeName;
 use crate::parser::nom::lexical_structure::identifier;
 use nom::branch::alt;
-use nom::character::complete::{anychar, char};
+use nom::character::complete::char;
 use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
-use nom::{IResult, Parser};
+use nom::IResult;
 
 pub fn type_(s: &str) -> IResult<&str, TypeName> {
     alt((

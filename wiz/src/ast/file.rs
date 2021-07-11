@@ -1,7 +1,6 @@
 use super::decl::Decl;
 use super::node::Node;
 use std::fmt;
-use std::path::Path;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct WizFile {

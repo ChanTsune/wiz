@@ -5,21 +5,18 @@ pub mod keywords;
 pub mod lexical_structure;
 pub mod type_;
 
-use crate::ast::decl::Decl;
-use crate::ast::expr::Expr;
 use crate::ast::file::FileSyntax;
-use crate::ast::literal::Literal;
 use crate::ast::stmt::{AssignmentStmt, LoopStmt, Stmt};
 use crate::parser::nom::declaration::{block, decl};
 use crate::parser::nom::expression::expr;
 use crate::parser::nom::keywords::while_keyword;
 use crate::parser::nom::lexical_structure::{identifier, whitespace0, whitespace1};
 use nom::branch::alt;
-use nom::character::complete::{char, digit1, one_of, space0, space1};
+use nom::character::complete::char;
 use nom::combinator::map;
 use nom::multi::many0;
 use nom::sequence::tuple;
-use nom::{Err, IResult};
+use nom::IResult;
 
 pub fn decl_stmt(s: &str) -> IResult<&str, Stmt> {
     map(decl, |d| Stmt::Decl { decl: d })(s)

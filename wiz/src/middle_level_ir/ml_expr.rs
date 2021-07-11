@@ -1,4 +1,3 @@
-use crate::high_level_ir::typed_stmt::TypedBlock;
 use crate::middle_level_ir::ml_stmt::MLBlock;
 use crate::middle_level_ir::ml_type::MLType;
 use std::fmt;

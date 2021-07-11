@@ -1,5 +1,5 @@
 use crate::ast::block::Block;
-use crate::ast::expr::Expr::{BinOp, Call};
+use crate::ast::expr::Expr::Call;
 use crate::ast::expr::{CallArg, Expr, Lambda, PostfixSuffix};
 use crate::ast::literal::Literal;
 use crate::ast::stmt::Stmt;
@@ -12,9 +12,8 @@ use crate::parser::nom::lexical_structure::{
 use crate::parser::nom::stmts;
 use crate::parser::nom::type_::{type_, type_arguments};
 use nom::branch::alt;
-use nom::character::complete::{anychar, char, digit1, none_of, one_of};
-use nom::combinator::{iterator, map, opt};
-use nom::error::ParseError;
+use nom::character::complete::{char, digit1, none_of, one_of};
+use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
 use nom::{IResult, Parser};

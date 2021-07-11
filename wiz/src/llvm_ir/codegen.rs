@@ -1,37 +1,21 @@
-use crate::ast::block::Block;
-use crate::ast::decl::Decl;
-use crate::ast::expr::{CallArg, Expr};
-use crate::ast::file::FileSyntax;
-use crate::ast::fun::body_def::FunBody;
-use crate::ast::literal::Literal;
-use crate::ast::stmt::{AssignmentStmt, LoopStmt, Stmt};
-use crate::ast::type_name::TypeName;
 use crate::middle_level_ir::ml_decl::MLDecl;
 use crate::middle_level_ir::ml_expr::{
     MLBinOp, MLBinopKind, MLCall, MLExpr, MLIf, MLLiteral, MLUnaryOp,
 };
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
-use crate::middle_level_ir::ml_type::MLType;
 use either::Either;
-use inkwell::basic_block::BasicBlock;
 use inkwell::builder::Builder;
 use inkwell::context::Context;
 use inkwell::execution_engine::{ExecutionEngine, JitFunction};
-use inkwell::module::{Linkage, Module};
+use inkwell::module::Module;
 use inkwell::support::LLVMString;
-use inkwell::types::{AnyTypeEnum, BasicTypeEnum, StringRadix};
-use inkwell::values::{
-    AnyValue, AnyValueEnum, BasicValue, BasicValueEnum, CallSiteValue, FunctionValue, GlobalValue,
-    InstructionValue, PointerValue,
-};
+use inkwell::types::{AnyTypeEnum, BasicTypeEnum};
+use inkwell::values::{AnyValue, AnyValueEnum, BasicValueEnum, FunctionValue};
 use inkwell::{AddressSpace, FloatPredicate, IntPredicate};
 use nom::lib::std::convert::TryFrom;
 use nom::Parser;
-use std::borrow::{Borrow, BorrowMut};
 use std::collections::HashMap;
-use std::ffi::CString;
-use std::iter::Map;
 use std::path::Path;
 use std::process::exit;
 

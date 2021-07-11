@@ -1,5 +1,4 @@
 use nom::bytes::complete::tag;
-use nom::combinator::map;
 use nom::IResult;
 
 pub fn fun_keyword(s: &str) -> IResult<&str, &str> {
