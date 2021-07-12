@@ -1,5 +1,5 @@
 use crate::ast::block::Block;
-use crate::ast::decl::{Decl, VarSyntax};
+use crate::ast::decl::{Decl, VarSyntax, FunSyntax};
 use crate::ast::expr::Expr;
 use crate::ast::fun::arg_def::ArgDef;
 use crate::ast::fun::body_def::FunBody;
@@ -38,7 +38,7 @@ pub fn function_decl(s: &str) -> IResult<&str, Decl> {
             opt(function_body),
         )),
         |(f, _, name, /* type_params, */ args, _, return_type, _, t_constraints, _, body)| {
-            Decl::Fun {
+            Decl::Fun (FunSyntax{
                 modifiers: vec![],
                 name: name,
                 arg_defs: args,
@@ -50,7 +50,7 @@ pub fn function_decl(s: &str) -> IResult<&str, Decl> {
                     },
                 },
                 body: body,
-            }
+            })
         },
     )(s)
 }
@@ -207,7 +207,7 @@ pub fn var_body(s: &str) -> IResult<&str, (String, Option<TypeName>, Expr)> {
 #[cfg(test)]
 mod test {
     use crate::ast::block::Block;
-    use crate::ast::decl::{Decl, VarSyntax};
+    use crate::ast::decl::{Decl, VarSyntax, FunSyntax};
     use crate::ast::expr::Expr;
     use crate::ast::fun::arg_def::ArgDef;
     use crate::ast::fun::body_def::FunBody;
@@ -324,7 +324,7 @@ mod test {
             function_decl("fun function() {}"),
             Ok((
                 "",
-                Decl::Fun {
+                Decl::Fun (FunSyntax{
                     modifiers: vec![],
                     name: "function".to_string(),
                     arg_defs: vec![],
@@ -335,7 +335,7 @@ mod test {
                     body: Some(FunBody::Block {
                         block: Block { body: vec![] }
                     }),
-                }
+                })
             ))
         )
     }
@@ -346,7 +346,7 @@ mod test {
             function_decl("fun puts(_ item: String): Unit"),
             Ok((
                 "",
-                Decl::Fun {
+                Decl::Fun (FunSyntax{
                     modifiers: vec![],
                     name: "puts".to_string(),
                     arg_defs: vec![ArgDef {
@@ -362,7 +362,7 @@ mod test {
                         type_params: vec![]
                     },
                     body: None,
-                }
+                })
             ))
         )
     }

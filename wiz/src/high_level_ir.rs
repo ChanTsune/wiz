@@ -1,5 +1,5 @@
 use crate::ast::block::Block;
-use crate::ast::decl::{Decl, VarSyntax};
+use crate::ast::decl::{Decl, VarSyntax, FunSyntax};
 use crate::ast::expr::Expr;
 use crate::ast::file::{FileSyntax, WizFile};
 use crate::ast::fun::body_def::FunBody;
@@ -93,13 +93,9 @@ impl Ast2HLIR {
                     let var = self.var_syntax(v);
                     self.put_type_by(var.name, &var.type_.unwrap())
                 }
-                Decl::Fun {
-                    modifiers,
-                    name,
-                    arg_defs,
-                    return_type,
-                    body,
-                } => self.put_type_by(name, &self.resolve_by_type_name(return_type).unwrap()),
+                Decl::Fun(f) => {
+                    self.put_type_by(f.name, &self.resolve_by_type_name(f.return_type).unwrap())
+                },
                 Decl::Struct {} => {}
                 Decl::Class {} => {}
                 Decl::Enum {} => {}
@@ -203,32 +199,8 @@ impl Ast2HLIR {
     pub fn decl(&mut self, d: Decl) -> TypedDecl {
         match d {
             Decl::Var(v) => TypedDecl::Var(self.var_syntax(v)),
-            Decl::Fun {
-                modifiers,
-                name,
-                arg_defs,
-                return_type,
-                body,
-            } => {
-                let f = TypedFun {
-                    modifiers: modifiers,
-                    name: name,
-                    arg_defs: arg_defs
-                        .into_iter()
-                        .map(|a| TypedArgDef {
-                            label: a.label,
-                            name: a.name,
-                            type_: self.resolve_by_type_name(a.type_name).unwrap(),
-                        })
-                        .collect(),
-                    body: body.map(|b| match b {
-                        FunBody::Block { block } => TypedFunBody::Block(self.block(block)),
-                        FunBody::Expr { expr } => TypedFunBody::Expr(self.expr(expr)),
-                    }),
-                    return_type: self.resolve_by_type_name(return_type).unwrap(),
-                };
-                self.put_type_by(f.name.clone(), &f.return_type);
-                TypedDecl::Fun(f)
+            Decl::Fun(f) => {
+                TypedDecl::Fun(self.fun_syntax(f))
             }
             Decl::Struct { .. } => TypedDecl::Struct,
             Decl::Class { .. } => TypedDecl::Class,
@@ -280,6 +252,29 @@ impl Ast2HLIR {
             type_: Some(type_),
             value: expr,
         }
+    }
+
+    pub fn fun_syntax(&mut self, f: FunSyntax) -> TypedFun {
+        let f = TypedFun {
+            modifiers: f.modifiers,
+            name: f.name,
+            arg_defs: f.arg_defs
+                .into_iter()
+                .map(|a| TypedArgDef {
+                    label: a.label,
+                    name: a.name,
+                    type_: self.resolve_by_type_name(a.type_name).unwrap(),
+                })
+                .collect(),
+            body: f.body.map(|b| match b {
+                FunBody::Block { block } => TypedFunBody::Block(self.block(block)),
+                FunBody::Expr { expr } => TypedFunBody::Expr(self.expr(expr)),
+            }),
+            return_type: self.resolve_by_type_name(f.return_type).unwrap(),
+        };
+        self.put_type_by(f.name.clone(), &f.return_type);
+        f
+
     }
 
     pub fn expr(&mut self, e: Expr) -> TypedExpr {
