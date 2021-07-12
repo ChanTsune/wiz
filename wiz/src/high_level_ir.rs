@@ -1,5 +1,5 @@
 use crate::ast::block::Block;
-use crate::ast::decl::{Decl, VarSyntax, FunSyntax};
+use crate::ast::decl::{Decl, FunSyntax, VarSyntax};
 use crate::ast::expr::Expr;
 use crate::ast::file::{FileSyntax, WizFile};
 use crate::ast::fun::body_def::FunBody;
@@ -95,7 +95,7 @@ impl Ast2HLIR {
                 }
                 Decl::Fun(f) => {
                     self.put_type_by(f.name, &self.resolve_by_type_name(f.return_type).unwrap())
-                },
+                }
                 Decl::Struct {} => {}
                 Decl::Class {} => {}
                 Decl::Enum {} => {}
@@ -199,9 +199,7 @@ impl Ast2HLIR {
     pub fn decl(&mut self, d: Decl) -> TypedDecl {
         match d {
             Decl::Var(v) => TypedDecl::Var(self.var_syntax(v)),
-            Decl::Fun(f) => {
-                TypedDecl::Fun(self.fun_syntax(f))
-            }
+            Decl::Fun(f) => TypedDecl::Fun(self.fun_syntax(f)),
             Decl::Struct { .. } => TypedDecl::Struct,
             Decl::Class { .. } => TypedDecl::Class,
             Decl::Enum { .. } => TypedDecl::Enum,
@@ -258,7 +256,8 @@ impl Ast2HLIR {
         let f = TypedFun {
             modifiers: f.modifiers,
             name: f.name,
-            arg_defs: f.arg_defs
+            arg_defs: f
+                .arg_defs
                 .into_iter()
                 .map(|a| TypedArgDef {
                     label: a.label,
@@ -274,7 +273,6 @@ impl Ast2HLIR {
         };
         self.put_type_by(f.name.clone(), &f.return_type);
         f
-
     }
 
     pub fn expr(&mut self, e: Expr) -> TypedExpr {
