@@ -1,9 +1,14 @@
+
+fun helloWorld(): Unit {
+    puts("Hello world!")
+}
+
 fun main() {
     var a = 1
     val b = 2
     while a < 15 {
         if a % 2 == 0 {
-            puts("Hello world!")
+            helloWorld()
         } else {
             puts("Welcome to Wiz!!")
         }
