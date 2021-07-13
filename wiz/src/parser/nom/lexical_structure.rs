@@ -1,6 +1,6 @@
 use crate::parser::nom::character::{alphabet, digit, under_score};
 use nom::branch::{alt, permutation};
-use nom::bytes::complete::{tag, is_not};
+use nom::bytes::complete::{is_not, tag};
 use nom::character::complete::{anychar, char};
 use nom::combinator::{map, opt};
 use nom::error::{ErrorKind, ParseError};
@@ -167,9 +167,6 @@ mod tests {
     }
     #[test]
     fn test_inline_comment() {
-        assert_eq!(
-            comment("/* a */"),
-            Ok(("", String::from("/* a */")))
-        )
+        assert_eq!(comment("/* a */"), Ok(("", String::from("/* a */"))))
     }
 }
