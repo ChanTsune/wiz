@@ -1,12 +1,10 @@
 use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedFun, TypedFunBody};
-use crate::high_level_ir::typed_expr::{TypedExpr, TypedIf, TypedLiteral};
+use crate::high_level_ir::typed_expr::{TypedExpr, TypedIf, TypedLiteral, TypedName, TypedReturn};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
 use crate::high_level_ir::typed_type::TypedType;
 use crate::middle_level_ir::ml_decl::{MLArgDef, MLDecl, MLFunBody};
-use crate::middle_level_ir::ml_expr::{
-    MLBinOp, MLBinopKind, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLName,
-};
+use crate::middle_level_ir::ml_expr::{MLBinOp, MLBinopKind, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLName, MLReturn};
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
 use crate::middle_level_ir::ml_type::MLType;
@@ -99,10 +97,7 @@ impl HLIR2MLIR {
 
     pub fn expr(&self, e: TypedExpr) -> MLExpr {
         match e {
-            TypedExpr::Name { name, type_ } => MLExpr::Name(MLName {
-                name: name,
-                type_: self.type_(type_.unwrap()),
-            }),
+            TypedExpr::Name(name) => MLExpr::Name(self.name(name)),
             TypedExpr::Literal(l) => MLExpr::Literal(self.literal(l)),
             TypedExpr::BinOp {
                 left,
@@ -151,8 +146,16 @@ impl HLIR2MLIR {
             TypedExpr::If(i) => MLExpr::If(self.if_expr(i)),
             TypedExpr::When => exit(-1),
             TypedExpr::Lambda => exit(-1),
-            TypedExpr::Return => exit(-1),
+            TypedExpr::Return(r) => MLExpr::Return(self.return_expr(r)),
             TypedExpr::TypeCast => exit(-1),
+        }
+    }
+
+    pub fn name(&self, n: TypedName) -> MLName {
+        println!("{:?}", &n);
+        MLName {
+            name: n.name,
+            type_: self.type_(n.type_.unwrap()),
         }
     }
 
@@ -186,6 +189,13 @@ impl HLIR2MLIR {
             body: self.block(i.body),
             else_body: i.else_body.map(|b| self.block(b)),
             type_: self.type_(i.type_.unwrap()),
+        }
+    }
+
+    pub fn return_expr(&self, r: TypedReturn) -> MLReturn {
+        MLReturn {
+            value: r.value.map(|v|{Box::new(self.expr(*v))}),
+            type_: self.type_(r.type_.unwrap())
         }
     }
 

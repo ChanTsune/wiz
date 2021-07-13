@@ -29,12 +29,13 @@ pub fn else_keyword(s: &str) -> IResult<&str, &str> {
     tag("else")(s)
 }
 
+pub fn return_keyword(s: &str) -> IResult<&str, &str> {
+    tag("return")(s)
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::parser::nom::keywords::{
-        else_keyword, fun_keyword, if_keyword, val_keyword, var_keyword, where_keyword,
-        while_keyword,
-    };
+    use crate::parser::nom::keywords::{else_keyword, fun_keyword, if_keyword, val_keyword, var_keyword, where_keyword, while_keyword, return_keyword};
 
     #[test]
     fn test_fun_keyword() {
@@ -69,5 +70,10 @@ mod tests {
     #[test]
     fn test_else_keyword() {
         assert_eq!(else_keyword("else"), Ok(("", "else")))
+    }
+
+    #[test]
+    fn test_return_keyword() {
+        assert_eq!(return_keyword("return"), Ok(("", "return")))
     }
 }

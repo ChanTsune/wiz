@@ -55,9 +55,7 @@ pub enum Expr {
     Lambda {
         lambda: Lambda,
     },
-    Return {
-        // TODO
-    },
+    Return(ReturnSyntax),
     TypeCast {
         target: Box<Expr>,
         is_safe: bool,
@@ -93,4 +91,9 @@ pub enum PostfixSuffix {
     },
     IndexingSuffix,
     NavigationSuffix,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct ReturnSyntax {
+    pub(crate) value: Option<Box<Expr>>
 }

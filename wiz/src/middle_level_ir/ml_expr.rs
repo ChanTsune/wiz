@@ -11,7 +11,7 @@ pub enum MLExpr {
     PrimitiveUnaryOp(MLUnaryOp),
     If(MLIf),
     When,
-    Return,
+    Return(MLReturn),
     TypeCast,
 }
 
@@ -85,4 +85,10 @@ pub enum MLUnaryOpKind {
     Negative,
     Positive,
     Not,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct MLReturn {
+    pub(crate) value: Option<Box<MLExpr>>,
+    pub(crate) type_: MLType
 }

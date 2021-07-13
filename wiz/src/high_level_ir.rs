@@ -1,13 +1,13 @@
 use crate::ast::block::Block;
 use crate::ast::decl::{Decl, FunSyntax, VarSyntax};
-use crate::ast::expr::Expr;
+use crate::ast::expr::{Expr, ReturnSyntax};
 use crate::ast::file::{FileSyntax, WizFile};
 use crate::ast::fun::body_def::FunBody;
 use crate::ast::literal::Literal;
 use crate::ast::stmt::{AssignmentStmt, LoopStmt, Stmt};
 use crate::ast::type_name::TypeName;
 use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedVar};
-use crate::high_level_ir::typed_expr::{TypedCallArg, TypedExpr, TypedIf, TypedLiteral};
+use crate::high_level_ir::typed_expr::{TypedCallArg, TypedExpr, TypedIf, TypedLiteral, TypedName, TypedReturn};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{
     TypedAssignmentStmt, TypedBlock, TypedForStmt, TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
@@ -277,10 +277,10 @@ impl Ast2HLIR {
 
     pub fn expr(&mut self, e: Expr) -> TypedExpr {
         match e {
-            Expr::Name { name } => TypedExpr::Name {
+            Expr::Name { name } => TypedExpr::Name ( TypedName{
                 name: name.clone(),
                 type_: self.get_type_by(name),
-            },
+            }),
             Expr::Literal { literal } => match literal {
                 Literal::IntegerLiteral { value } => TypedExpr::Literal(TypedLiteral::Integer {
                     value,
@@ -397,8 +397,20 @@ impl Ast2HLIR {
             }
             Expr::When { .. } => TypedExpr::When,
             Expr::Lambda { .. } => TypedExpr::Lambda,
-            Expr::Return { .. } => TypedExpr::Return,
+            Expr::Return(r) => TypedExpr::Return(self.return_syntax(r)),
             Expr::TypeCast { .. } => TypedExpr::TypeCast,
+        }
+    }
+
+    pub fn return_syntax(&mut self, r: ReturnSyntax) -> TypedReturn {
+        let value = r.value.map(|v|{Box::new(self.expr(*v))});
+        let t = match &value {
+            Some(v) => v.type_(),
+            None => None
+        };
+        TypedReturn {
+            value: value,
+            type_: t
         }
     }
 

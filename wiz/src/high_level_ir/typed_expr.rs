@@ -4,10 +4,7 @@ use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum TypedExpr {
-    Name {
-        name: String,
-        type_: Option<TypedType>,
-    },
+    Name(TypedName),
     Literal(TypedLiteral),
     BinOp {
         left: Box<TypedExpr>,
@@ -34,8 +31,14 @@ pub enum TypedExpr {
     If(TypedIf),
     When,
     Lambda,
-    Return,
+    Return(TypedReturn),
     TypeCast,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct TypedName {
+    pub(crate) name: String,
+    pub(crate) type_: Option<TypedType>,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -62,10 +65,16 @@ pub struct TypedIf {
     pub(crate) type_: Option<TypedType>,
 }
 
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct TypedReturn {
+    pub(crate) value: Option<Box<TypedExpr>>,
+    pub(crate) type_: Option<TypedType>
+}
+
 impl TypedExpr {
     pub fn type_(&self) -> Option<TypedType> {
         match self {
-            TypedExpr::Name { name, type_ } => type_.clone(),
+            TypedExpr::Name(name) => name.type_.clone(),
             TypedExpr::Literal(l) => Some(l.type_()),
             TypedExpr::BinOp {
                 left,
@@ -92,7 +101,7 @@ impl TypedExpr {
             TypedExpr::If(i) => i.type_.clone(),
             TypedExpr::When => None,
             TypedExpr::Lambda => None,
-            TypedExpr::Return => None,
+            TypedExpr::Return(r) => r.type_.clone(),
             TypedExpr::TypeCast => None,
         }
     }
