@@ -138,7 +138,7 @@ pub fn type_constraint(s: &str) -> IResult<&str, TypeParam> {
 pub fn function_body(s: &str) -> IResult<&str, FunBody> {
     alt((
         map(block, |b| FunBody::Block { block: b }),
-        map(tuple((char('='), expr)), |(_, ex)| FunBody::Expr {
+        map(tuple((char('='),whitespace0, expr)), |(_, _, ex)| FunBody::Expr {
             expr: ex,
         }),
     ))(s)
@@ -306,7 +306,7 @@ mod test {
     #[test]
     fn test_function_body_expr_case() {
         assert_eq!(
-            function_body("=name"),
+            function_body("= name"),
             Ok((
                 "",
                 FunBody::Expr {
