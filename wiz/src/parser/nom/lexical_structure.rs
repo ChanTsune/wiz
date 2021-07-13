@@ -1,6 +1,6 @@
 use crate::parser::nom::character::{alphabet, digit, under_score};
 use nom::branch::{alt, permutation};
-use nom::bytes::complete::tag;
+use nom::bytes::complete::{tag, is_not};
 use nom::character::complete::{anychar, char};
 use nom::combinator::{map, opt};
 use nom::error::{ErrorKind, ParseError};
@@ -84,8 +84,8 @@ fn inline_comment_end(input: &str) -> IResult<&str, &str> {
 
 pub fn inline_comment(input: &str) -> IResult<&str, String> {
     map(
-        permutation((inline_comment_start, many0(anychar), inline_comment_end)),
-        |(a, b, c)| a.to_string() + &*String::from_iter(b) + c,
+        permutation((inline_comment_start, is_not("*/"), inline_comment_end)),
+        |(a, b, c)| a.to_string() + b + c,
     )(input)
 }
 
@@ -163,6 +163,13 @@ mod tests {
         assert_eq!(
             comment("// code comment"),
             Ok(("", String::from("// code comment")))
+        )
+    }
+    #[test]
+    fn test_inline_comment() {
+        assert_eq!(
+            comment("/* a */"),
+            Ok(("", String::from("/* a */")))
         )
     }
 }
