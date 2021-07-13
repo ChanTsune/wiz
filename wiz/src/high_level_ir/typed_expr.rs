@@ -68,7 +68,7 @@ pub struct TypedIf {
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct TypedReturn {
     pub(crate) value: Option<Box<TypedExpr>>,
-    pub(crate) type_: Option<TypedType>
+    pub(crate) type_: Option<TypedType>,
 }
 
 impl TypedExpr {

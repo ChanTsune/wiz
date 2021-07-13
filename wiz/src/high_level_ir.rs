@@ -7,7 +7,9 @@ use crate::ast::literal::Literal;
 use crate::ast::stmt::{AssignmentStmt, LoopStmt, Stmt};
 use crate::ast::type_name::TypeName;
 use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedVar};
-use crate::high_level_ir::typed_expr::{TypedCallArg, TypedExpr, TypedIf, TypedLiteral, TypedName, TypedReturn};
+use crate::high_level_ir::typed_expr::{
+    TypedCallArg, TypedExpr, TypedIf, TypedLiteral, TypedName, TypedReturn,
+};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{
     TypedAssignmentStmt, TypedBlock, TypedForStmt, TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
@@ -277,7 +279,7 @@ impl Ast2HLIR {
 
     pub fn expr(&mut self, e: Expr) -> TypedExpr {
         match e {
-            Expr::Name { name } => TypedExpr::Name ( TypedName{
+            Expr::Name { name } => TypedExpr::Name(TypedName {
                 name: name.clone(),
                 type_: self.get_type_by(name),
             }),
@@ -403,14 +405,14 @@ impl Ast2HLIR {
     }
 
     pub fn return_syntax(&mut self, r: ReturnSyntax) -> TypedReturn {
-        let value = r.value.map(|v|{Box::new(self.expr(*v))});
+        let value = r.value.map(|v| Box::new(self.expr(*v)));
         let t = match &value {
             Some(v) => v.type_(),
-            None => None
+            None => None,
         };
         TypedReturn {
             value: value,
-            type_: t
+            type_: t,
         }
     }
 

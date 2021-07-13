@@ -1,5 +1,7 @@
 use crate::middle_level_ir::ml_decl::MLDecl;
-use crate::middle_level_ir::ml_expr::{MLBinOp, MLBinopKind, MLCall, MLExpr, MLIf, MLLiteral, MLUnaryOp, MLReturn};
+use crate::middle_level_ir::ml_expr::{
+    MLBinOp, MLBinopKind, MLCall, MLExpr, MLIf, MLLiteral, MLReturn, MLUnaryOp,
+};
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
 use either::Either;
@@ -382,9 +384,9 @@ impl<'ctx> CodeGen<'ctx> {
         let v = match r.value {
             Some(e) => match BasicValueEnum::try_from(self.expr(*e)) {
                 Ok(b) => Some(b),
-                Err(_) => None
+                Err(_) => None,
             },
-            None => None
+            None => None,
         };
 
         AnyValueEnum::from(self.builder.build_return(match &v {

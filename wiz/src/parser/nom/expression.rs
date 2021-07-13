@@ -55,15 +55,24 @@ pub fn parenthesized_expr(s: &str) -> IResult<&str, Expr> {
 }
 
 pub fn return_expr(s: &str) -> IResult<&str, Expr> {
-    map(tuple((return_keyword, whitespace1,opt(expr))),|(_,_, e)|{
-        Expr::Return(ReturnSyntax {
-            value: e.map(|i|{Box::new(i)})
-        })
-    })(s)
+    map(
+        tuple((return_keyword, whitespace1, opt(expr))),
+        |(_, _, e)| {
+            Expr::Return(ReturnSyntax {
+                value: e.map(|i| Box::new(i)),
+            })
+        },
+    )(s)
 }
 
 pub fn primary_expr(s: &str) -> IResult<&str, Expr> {
-    alt((return_expr,if_expr, name_expr, literal_expr, parenthesized_expr))(s)
+    alt((
+        return_expr,
+        if_expr,
+        name_expr,
+        literal_expr,
+        parenthesized_expr,
+    ))(s)
 }
 /*
 <if> ::= "if" <expr> <block> ("else" (<block> | <if>))?
@@ -642,9 +651,12 @@ pub fn expr(s: &str) -> IResult<&str, Expr> {
 mod tests {
     use crate::ast::block::Block;
     use crate::ast::expr::Expr::{BinOp, Call, If, Literal, Name};
-    use crate::ast::expr::{CallArg, PostfixSuffix, Expr, ReturnSyntax};
+    use crate::ast::expr::{CallArg, Expr, PostfixSuffix, ReturnSyntax};
     use crate::ast::literal::Literal::{IntegerLiteral, StringLiteral};
-    use crate::parser::nom::expression::{disjunction_expr, expr, if_expr, integer_literal, postfix_suffix, string_literal, value_arguments, return_expr};
+    use crate::parser::nom::expression::{
+        disjunction_expr, expr, if_expr, integer_literal, postfix_suffix, return_expr,
+        string_literal, value_arguments,
+    };
     use nom::error::ErrorKind;
     use nom::Err::Error;
 
@@ -853,8 +865,16 @@ mod tests {
     }
     #[test]
     fn test_return() {
-        assert_eq!(return_expr("return name"), Ok(("", Expr::Return(ReturnSyntax {
-            value: Some(Box::new(Expr::Name { name: "name".to_string() }))
-        }))))
+        assert_eq!(
+            return_expr("return name"),
+            Ok((
+                "",
+                Expr::Return(ReturnSyntax {
+                    value: Some(Box::new(Expr::Name {
+                        name: "name".to_string()
+                    }))
+                })
+            ))
+        )
     }
 }

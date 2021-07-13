@@ -90,5 +90,5 @@ pub enum MLUnaryOpKind {
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct MLReturn {
     pub(crate) value: Option<Box<MLExpr>>,
-    pub(crate) type_: MLType
+    pub(crate) type_: MLType,
 }

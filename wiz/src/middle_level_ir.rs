@@ -4,7 +4,9 @@ use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
 use crate::high_level_ir::typed_type::TypedType;
 use crate::middle_level_ir::ml_decl::{MLArgDef, MLDecl, MLFunBody};
-use crate::middle_level_ir::ml_expr::{MLBinOp, MLBinopKind, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLName, MLReturn};
+use crate::middle_level_ir::ml_expr::{
+    MLBinOp, MLBinopKind, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLName, MLReturn,
+};
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
 use crate::middle_level_ir::ml_type::MLType;
@@ -194,8 +196,8 @@ impl HLIR2MLIR {
 
     pub fn return_expr(&self, r: TypedReturn) -> MLReturn {
         MLReturn {
-            value: r.value.map(|v|{Box::new(self.expr(*v))}),
-            type_: self.type_(r.type_.unwrap())
+            value: r.value.map(|v| Box::new(self.expr(*v))),
+            type_: self.type_(r.type_.unwrap()),
         }
     }
 

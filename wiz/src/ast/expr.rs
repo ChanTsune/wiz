@@ -95,5 +95,5 @@ pub enum PostfixSuffix {
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct ReturnSyntax {
-    pub(crate) value: Option<Box<Expr>>
+    pub(crate) value: Option<Box<Expr>>,
 }
