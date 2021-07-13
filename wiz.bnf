@@ -171,7 +171,7 @@
                 | <if>
         # | <when>
                 | <function_literal>
-        # | <return>
+                | <return>
         # | <member>
         # | <unaryop>
         # | <subscript>
@@ -197,6 +197,8 @@
 <lambda_literal> ::= "{" <stmts> "}"
 
 <if> ::= "if" <expr> <block> ("else" (<block> | <if>))?
+
+<return> ::= "return" <expr>?
 
 <postfix_operator> ::= "!"
 
