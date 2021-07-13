@@ -138,8 +138,8 @@ pub fn type_constraint(s: &str) -> IResult<&str, TypeParam> {
 pub fn function_body(s: &str) -> IResult<&str, FunBody> {
     alt((
         map(block, |b| FunBody::Block { block: b }),
-        map(tuple((char('='),whitespace0, expr)), |(_, _, ex)| FunBody::Expr {
-            expr: ex,
+        map(tuple((char('='), whitespace0, expr)), |(_, _, ex)| {
+            FunBody::Expr { expr: ex }
         }),
     ))(s)
 }
