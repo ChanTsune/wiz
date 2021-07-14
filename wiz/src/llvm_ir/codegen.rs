@@ -98,7 +98,7 @@ impl<'ctx> CodeGen<'ctx> {
             MLExpr::Call(c) => self.call(c),
             MLExpr::If(i) => self.if_expr(i),
             MLExpr::When => exit(-1),
-            MLExpr::Return(r) => exit(-1),
+            MLExpr::Return(r) => self.return_expr(r),
             MLExpr::TypeCast => exit(-1),
         }
     }
@@ -429,14 +429,14 @@ impl<'ctx> CodeGen<'ctx> {
                 let value = self.expr(value);
                 match value {
                     AnyValueEnum::IntValue(i) => {
-                        let i64_type = self.context.i64_type();
-                        let ptr = self.builder.build_alloca(i64_type, &*name);
+                        let int_type = i.get_type();
+                        let ptr = self.builder.build_alloca(int_type, &*name);
                         self.set_to_environment(name, ptr.as_any_value_enum());
                         self.builder.build_store(ptr, i).as_any_value_enum()
                     }
                     AnyValueEnum::FloatValue(f) => {
-                        let f64_type = self.context.f64_type();
-                        let ptr = self.builder.build_alloca(f64_type, &*name);
+                        let float_type = f.get_type();
+                        let ptr = self.builder.build_alloca(float_type, &*name);
                         self.set_to_environment(name, ptr.as_any_value_enum());
                         self.builder.build_store(ptr, f).as_any_value_enum()
                     }
