@@ -40,31 +40,19 @@ impl Ast2HLIR {
         builtin_types.insert(String::from("Int64"), TypedType::int64());
         builtin_types.insert(
             String::from("UInt8"),
-            TypedType {
-                package: Package { names: vec![] },
-                name: "UInt8".to_string(),
-            },
+            TypedType::uint8(),
         );
         builtin_types.insert(
             String::from("UInt16"),
-            TypedType {
-                package: Package { names: vec![] },
-                name: "UInt16".to_string(),
-            },
+            TypedType::uint16(),
         );
         builtin_types.insert(
             String::from("UInt32"),
-            TypedType {
-                package: Package { names: vec![] },
-                name: "UInt32".to_string(),
-            },
+            TypedType::uint32(),
         );
         builtin_types.insert(
             String::from("UInt64"),
-            TypedType {
-                package: Package { names: vec![] },
-                name: "UInt64".to_string(),
-            },
+            TypedType::uint64(),
         );
         builtin_types.insert(
             String::from("String"),
@@ -76,10 +64,7 @@ impl Ast2HLIR {
         builtin_types.insert(String::from("Noting"), TypedType::noting());
         builtin_types.insert(
             String::from("Unit"),
-            TypedType {
-                package: Package { names: vec![] },
-                name: "Unit".to_string(),
-            },
+            TypedType::unit(),
         );
         Ast2HLIR {
             name_environment: vec![HashMap::new()],
@@ -184,7 +169,7 @@ impl Ast2HLIR {
         match l {
             LoopStmt::While { condition, block } => TypedLoopStmt::While(TypedWhileLoopStmt {
                 condition: self.expr(condition),
-                block: self.block(block),
+                block: self.block_with_env(block),
             }),
             LoopStmt::For {
                 values,
@@ -193,7 +178,7 @@ impl Ast2HLIR {
             } => TypedLoopStmt::For(TypedForStmt {
                 values: values,
                 iterator: self.expr(iterator),
-                block: self.block(block),
+                block: self.block_with_env(block),
             }),
         }
     }
@@ -255,24 +240,34 @@ impl Ast2HLIR {
     }
 
     pub fn fun_syntax(&mut self, f: FunSyntax) -> TypedFun {
+        let args: Vec<TypedArgDef> = f
+            .arg_defs
+            .into_iter()
+            .map(|a| TypedArgDef {
+                label: a.label,
+                name: a.name,
+                type_: self.resolve_by_type_name(a.type_name).unwrap(),
+            })
+            .collect();
+        self.push_name_environment();
+        for arg in args.iter() {
+            self.put_type_by(arg.name.clone(), &arg.type_)
+        };
         let f = TypedFun {
             modifiers: f.modifiers,
             name: f.name,
-            arg_defs: f
-                .arg_defs
-                .into_iter()
-                .map(|a| TypedArgDef {
-                    label: a.label,
-                    name: a.name,
-                    type_: self.resolve_by_type_name(a.type_name).unwrap(),
-                })
-                .collect(),
-            body: f.body.map(|b| match b {
-                FunBody::Block { block } => TypedFunBody::Block(self.block(block)),
-                FunBody::Expr { expr } => TypedFunBody::Expr(self.expr(expr)),
+            arg_defs: args,
+            body: f.body.map(|b| {
+
+                let b = match b {
+                    FunBody::Block { block } => TypedFunBody::Block(self.block(block)),
+                    FunBody::Expr { expr } => TypedFunBody::Expr(self.expr(expr)),
+                };
+                b
             }),
             return_type: self.resolve_by_type_name(f.return_type).unwrap(),
         };
+        self.pop_name_environment();
         self.put_type_by(f.name.clone(), &f.return_type);
         f
     }
@@ -388,12 +383,12 @@ impl Ast2HLIR {
                 body,
                 else_body,
             } => {
-                let block = self.block(body);
+                let block = self.block_with_env(body);
                 let type_ = block.type_();
                 TypedExpr::If(TypedIf {
                     condition: Box::new(self.expr(*condition)),
                     body: block,
-                    else_body: else_body.map(|b| self.block(b)),
+                    else_body: else_body.map(|b| self.block_with_env(b)),
                     type_: type_,
                 })
             }
@@ -417,10 +412,15 @@ impl Ast2HLIR {
     }
 
     pub fn block(&mut self, block: Block) -> TypedBlock {
-        self.push_name_environment();
-        let b = TypedBlock {
+        TypedBlock {
             body: block.body.into_iter().map(|s| self.stmt(s)).collect(),
-        };
+        }
+    }
+
+
+    pub fn block_with_env(&mut self, block: Block) -> TypedBlock {
+        self.push_name_environment();
+        let b = self.block(block);
         self.pop_name_environment();
         b
     }
