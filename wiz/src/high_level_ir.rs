@@ -38,22 +38,10 @@ impl Ast2HLIR {
         builtin_types.insert(String::from("Int16"), TypedType::int16());
         builtin_types.insert(String::from("Int32"), TypedType::int32());
         builtin_types.insert(String::from("Int64"), TypedType::int64());
-        builtin_types.insert(
-            String::from("UInt8"),
-            TypedType::uint8(),
-        );
-        builtin_types.insert(
-            String::from("UInt16"),
-            TypedType::uint16(),
-        );
-        builtin_types.insert(
-            String::from("UInt32"),
-            TypedType::uint32(),
-        );
-        builtin_types.insert(
-            String::from("UInt64"),
-            TypedType::uint64(),
-        );
+        builtin_types.insert(String::from("UInt8"), TypedType::uint8());
+        builtin_types.insert(String::from("UInt16"), TypedType::uint16());
+        builtin_types.insert(String::from("UInt32"), TypedType::uint32());
+        builtin_types.insert(String::from("UInt64"), TypedType::uint64());
         builtin_types.insert(
             String::from("String"),
             TypedType {
@@ -62,10 +50,7 @@ impl Ast2HLIR {
             },
         );
         builtin_types.insert(String::from("Noting"), TypedType::noting());
-        builtin_types.insert(
-            String::from("Unit"),
-            TypedType::unit(),
-        );
+        builtin_types.insert(String::from("Unit"), TypedType::unit());
         Ast2HLIR {
             name_environment: vec![HashMap::new()],
             type_environment: builtin_types,
@@ -252,13 +237,12 @@ impl Ast2HLIR {
         self.push_name_environment();
         for arg in args.iter() {
             self.put_type_by(arg.name.clone(), &arg.type_)
-        };
+        }
         let f = TypedFun {
             modifiers: f.modifiers,
             name: f.name,
             arg_defs: args,
             body: f.body.map(|b| {
-
                 let b = match b {
                     FunBody::Block { block } => TypedFunBody::Block(self.block(block)),
                     FunBody::Expr { expr } => TypedFunBody::Expr(self.expr(expr)),
@@ -416,7 +400,6 @@ impl Ast2HLIR {
             body: block.body.into_iter().map(|s| self.stmt(s)).collect(),
         }
     }
-
 
     pub fn block_with_env(&mut self, block: Block) -> TypedBlock {
         self.push_name_environment();

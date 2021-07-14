@@ -23,7 +23,9 @@ impl TypedType {
         Self::builtin("Noting")
     }
 
-    pub fn unit() -> TypedType {Self::builtin("Unit")}
+    pub fn unit() -> TypedType {
+        Self::builtin("Unit")
+    }
 
     pub fn int8() -> TypedType {
         Self::builtin("Int8")
