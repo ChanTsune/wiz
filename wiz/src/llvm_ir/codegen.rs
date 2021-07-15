@@ -451,7 +451,7 @@ impl<'ctx> CodeGen<'ctx> {
                 body,
             } => {
                 let args: Vec<BasicTypeEnum<'ctx>> = arg_defs
-                    .into_iter()
+                    .iter()
                     .map(|a| type_name_to_type(self.context, &*a.type_.name))
                     .map(|a| {
                         println!("{:?}", &a);
