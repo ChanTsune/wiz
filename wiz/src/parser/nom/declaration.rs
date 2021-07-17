@@ -42,7 +42,7 @@ pub fn function_decl(s: &str) -> IResult<&str, Decl> {
                 modifiers: vec![],
                 name: name,
                 arg_defs: args,
-                return_type: return_type.map(|(_, _, t)|{t}),
+                return_type: return_type.map(|(_, _, t)| t),
                 body: body,
             })
         },

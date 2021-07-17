@@ -91,7 +91,7 @@ impl HLIR2MLIR {
                     return_type: self.type_(return_type),
                     body: body.map(|b| self.fun_body(b)),
                 }
-            },
+            }
             TypedDecl::Struct => exit(-1),
             TypedDecl::Class => exit(-1),
             TypedDecl::Enum => exit(-1),

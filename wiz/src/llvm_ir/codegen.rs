@@ -520,7 +520,7 @@ impl<'ctx> CodeGen<'ctx> {
                         // AnyTypeEnum::FunctionType(_) => {}
                         AnyTypeEnum::IntType(int_type) => {
                             let fn_type = int_type.fn_type(&args, false);
-                            let f = self.module.add_function(&*name, fn_type    , None);
+                            let f = self.module.add_function(&*name, fn_type, None);
                             self.current_function = Some(f);
                             f
                         }

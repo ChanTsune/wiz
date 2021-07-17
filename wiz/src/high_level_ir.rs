@@ -244,30 +244,24 @@ impl Ast2HLIR {
         }
         let body = match f.body {
             None => None,
-            Some(b) => {
-                Some(match b {
-                    FunBody::Block { block } => {
-                        TypedFunBody::Block(self.block(block))
-                    },
-                    FunBody::Expr { expr } => {
-                        TypedFunBody::Expr(self.expr(expr))
-                    },
-                })
-            }
+            Some(b) => Some(match b {
+                FunBody::Block { block } => TypedFunBody::Block(self.block(block)),
+                FunBody::Expr { expr } => TypedFunBody::Expr(self.expr(expr)),
+            }),
         };
 
         let return_type = self.resolve_by_type_name(f.return_type);
 
         let return_type = match return_type {
-            None => {match &body {
-                Some(TypedFunBody::Expr(e)) => {e.type_().unwrap()},
-                Some(TypedFunBody::Block(b)) => {TypedType::unit()},
+            None => match &body {
+                Some(TypedFunBody::Expr(e)) => e.type_().unwrap(),
+                Some(TypedFunBody::Block(b)) => TypedType::unit(),
                 None => {
                     eprintln!("Can not resolve type...");
                     exit(-1)
                 }
-            }}
-            Some(t) => {t}
+            },
+            Some(t) => t,
         };
 
         let f = TypedFun {
