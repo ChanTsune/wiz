@@ -123,6 +123,12 @@ impl MLLiteral {
     }
 }
 
+impl MLCallArg {
+    pub fn type_(&self) -> MLType {
+        self.arg.type_()
+    }
+}
+
 impl MLReturn {
     pub fn new(expr: MLExpr) -> Self {
         let type_ = expr.type_();
