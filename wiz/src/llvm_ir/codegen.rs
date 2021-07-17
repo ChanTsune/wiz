@@ -158,7 +158,15 @@ impl<'ctx> CodeGen<'ctx> {
     pub fn call(&mut self, c: MLCall) -> AnyValueEnum<'ctx> {
         let target = self.expr(*c.target);
         println!("{:?}", &(c.args));
-        let args = c.args.into_iter().map(|arg| self.expr(arg.arg));
+        let args = c.args.into_iter().map(|arg| {
+            // TODO: change stored pointer value load method!
+            if arg.arg.type_().name != String::from("String") {
+                let e = self.expr(arg.arg);
+                self.load_if_pointer_value(e)
+            } else {
+                self.expr(arg.arg)
+            }
+        });
         let args: Vec<BasicValueEnum> = args
             .filter_map(|arg| BasicValueEnum::try_from(arg).ok())
             .collect();
@@ -466,13 +474,29 @@ impl<'ctx> CodeGen<'ctx> {
                         // AnyTypeEnum::ArrayType(_) => {}
                         // AnyTypeEnum::FloatType(_) => {}
                         // AnyTypeEnum::FunctionType(_) => {}
-                        // AnyTypeEnum::IntType(_) => {}
+                        AnyTypeEnum::IntType(int_type) => {
+                            let fn_type = int_type.fn_type(&args, false);
+                            let function = self.module.add_function(&*name, fn_type, None);
+                            for (v, a) in function.get_params().iter().zip(arg_defs) {
+                                self.set_to_environment(a.name, v.as_any_value_enum());
+                            }
+                            self.current_function = Some(function);
+                            let basic_block = self.context.append_basic_block(function, "entry");
+                            self.builder.position_at_end(basic_block);
+                            for stmt in body.body {
+                                self.stmt(stmt);
+                            }
+                            function
+                        }
                         // AnyTypeEnum::PointerType(_) => {}
                         // AnyTypeEnum::StructType(_) => {}
                         // AnyTypeEnum::VectorType(_) => {}
                         AnyTypeEnum::VoidType(void_type) => {
                             let fn_type = void_type.fn_type(&args, false);
                             let function = self.module.add_function(&*name, fn_type, None);
+                            for (v, a) in function.get_params().iter().zip(arg_defs) {
+                                self.set_to_environment(a.name, v.as_any_value_enum());
+                            }
                             self.current_function = Some(function);
                             let basic_block = self.context.append_basic_block(function, "entry");
                             self.builder.position_at_end(basic_block);
@@ -494,7 +518,12 @@ impl<'ctx> CodeGen<'ctx> {
                         // AnyTypeEnum::ArrayType(_) => {}
                         // AnyTypeEnum::FloatType(_) => {}
                         // AnyTypeEnum::FunctionType(_) => {}
-                        // AnyTypeEnum::IntType(_) => {}
+                        AnyTypeEnum::IntType(int_type) => {
+                            let fn_type = int_type.fn_type(&args, false);
+                            let f = self.module.add_function(&*name, fn_type    , None);
+                            self.current_function = Some(f);
+                            f
+                        }
                         // AnyTypeEnum::PointerType(_) => {}
                         // AnyTypeEnum::StructType(_) => {}
                         // AnyTypeEnum::VectorType(_) => {}

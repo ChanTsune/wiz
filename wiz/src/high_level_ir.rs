@@ -99,11 +99,15 @@ impl Ast2HLIR {
         self.name_environment.pop();
     }
 
-    fn resolve_by_type_name(&self, type_name: TypeName) -> Option<TypedType> {
-        self.type_environment.get(&*type_name.name).map(|a| {
-            println!("TypeResolver :: {:?}", a);
-            a.clone()
-        })
+    fn resolve_by_type_name(&self, type_name: Option<TypeName>) -> Option<TypedType> {
+        if let Some(type_name) = type_name {
+            self.type_environment.get(&*type_name.name).map(|a| {
+                println!("TypeResolver :: {:?}", a);
+                a.clone()
+            })
+        } else {
+            None
+        }
     }
 
     fn resolve_by_binop(
@@ -185,7 +189,7 @@ impl Ast2HLIR {
         let expr = self.expr(v.value);
         let type_ = match (v.type_, expr.type_()) {
             (Some(tn), Some(expr_type)) => {
-                let var_type = self.resolve_by_type_name(tn.clone());
+                let var_type = self.resolve_by_type_name(Some(tn.clone()));
                 if let Some(var_type) = var_type {
                     if var_type == expr_type {
                         expr_type
@@ -202,7 +206,7 @@ impl Ast2HLIR {
                 }
             }
             (Some(t), None) => {
-                if let Some(tt) = self.resolve_by_type_name(t.clone()) {
+                if let Some(tt) = self.resolve_by_type_name(Some(t.clone())) {
                     tt
                 } else {
                     eprintln!("Can not resolve type {:?} error =>", t);
@@ -231,25 +235,47 @@ impl Ast2HLIR {
             .map(|a| TypedArgDef {
                 label: a.label,
                 name: a.name,
-                type_: self.resolve_by_type_name(a.type_name).unwrap(),
+                type_: self.resolve_by_type_name(Some(a.type_name)).unwrap(),
             })
             .collect();
         self.push_name_environment();
         for arg in args.iter() {
             self.put_type_by(arg.name.clone(), &arg.type_)
         }
+        let body = match f.body {
+            None => None,
+            Some(b) => {
+                Some(match b {
+                    FunBody::Block { block } => {
+                        TypedFunBody::Block(self.block(block))
+                    },
+                    FunBody::Expr { expr } => {
+                        TypedFunBody::Expr(self.expr(expr))
+                    },
+                })
+            }
+        };
+
+        let return_type = self.resolve_by_type_name(f.return_type);
+
+        let return_type = match return_type {
+            None => {match &body {
+                Some(TypedFunBody::Expr(e)) => {e.type_().unwrap()},
+                Some(TypedFunBody::Block(b)) => {TypedType::unit()},
+                None => {
+                    eprintln!("Can not resolve type...");
+                    exit(-1)
+                }
+            }}
+            Some(t) => {t}
+        };
+
         let f = TypedFun {
             modifiers: f.modifiers,
             name: f.name,
             arg_defs: args,
-            body: f.body.map(|b| {
-                let b = match b {
-                    FunBody::Block { block } => TypedFunBody::Block(self.block(block)),
-                    FunBody::Expr { expr } => TypedFunBody::Expr(self.expr(expr)),
-                };
-                b
-            }),
-            return_type: self.resolve_by_type_name(f.return_type).unwrap(),
+            body: body,
+            return_type: return_type,
         };
         self.pop_name_environment();
         self.put_type_by(f.name.clone(), &f.return_type);

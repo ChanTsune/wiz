@@ -42,13 +42,7 @@ pub fn function_decl(s: &str) -> IResult<&str, Decl> {
                 modifiers: vec![],
                 name: name,
                 arg_defs: args,
-                return_type: match return_type {
-                    Some((_, _, type_)) => type_,
-                    None => TypeName {
-                        name: "Unit".parse().unwrap(),
-                        type_params: vec![],
-                    },
-                },
+                return_type: return_type.map(|(_, _, t)|{t}),
                 body: body,
             })
         },
@@ -328,10 +322,10 @@ mod test {
                     modifiers: vec![],
                     name: "function".to_string(),
                     arg_defs: vec![],
-                    return_type: TypeName {
+                    return_type: Some(TypeName {
                         name: "Unit".to_string(),
                         type_params: vec![]
-                    },
+                    }),
                     body: Some(FunBody::Block {
                         block: Block { body: vec![] }
                     }),
@@ -357,10 +351,10 @@ mod test {
                             type_params: vec![]
                         }
                     }],
-                    return_type: TypeName {
+                    return_type: Some(TypeName {
                         name: "Unit".to_string(),
                         type_params: vec![]
-                    },
+                    }),
                     body: None,
                 })
             ))

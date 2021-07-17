@@ -41,6 +41,6 @@ pub struct FunSyntax {
     pub(crate) modifiers: Vec<String>,
     pub(crate) name: String,
     pub(crate) arg_defs: Vec<ArgDef>,
-    pub(crate) return_type: TypeName,
+    pub(crate) return_type: Option<TypeName>,
     pub(crate) body: Option<FunBody>,
 }

@@ -82,12 +82,15 @@ impl HLIR2MLIR {
                 arg_defs,
                 body,
                 return_type,
-            }) => MLDecl::Fun {
-                modifiers,
-                name,
-                arg_defs: arg_defs.into_iter().map(|a| self.arg_def(a)).collect(),
-                return_type: self.type_(return_type),
-                body: body.map(|b| self.fun_body(b)),
+            }) => {
+                let args = arg_defs.into_iter().map(|a| self.arg_def(a)).collect();
+                MLDecl::Fun {
+                    modifiers,
+                    name,
+                    arg_defs: args,
+                    return_type: self.type_(return_type),
+                    body: body.map(|b| self.fun_body(b)),
+                }
             },
             TypedDecl::Struct => exit(-1),
             TypedDecl::Class => exit(-1),
@@ -211,7 +214,7 @@ impl HLIR2MLIR {
     pub fn fun_body(&self, b: TypedFunBody) -> MLFunBody {
         match b {
             TypedFunBody::Expr(e) => MLFunBody {
-                body: vec![MLStmt::Expr(self.expr(e))],
+                body: vec![MLStmt::Expr(MLExpr::Return(MLReturn::new(self.expr(e))))],
             },
             TypedFunBody::Block(b) => MLFunBody {
                 body: self.block(b).body,
