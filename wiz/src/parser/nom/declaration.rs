@@ -322,10 +322,7 @@ mod test {
                     modifiers: vec![],
                     name: "function".to_string(),
                     arg_defs: vec![],
-                    return_type: Some(TypeName {
-                        name: "Unit".to_string(),
-                        type_params: vec![]
-                    }),
+                    return_type: None,
                     body: Some(FunBody::Block {
                         block: Block { body: vec![] }
                     }),
