@@ -4,6 +4,7 @@ pub mod expression;
 pub mod keywords;
 pub mod lexical_structure;
 pub mod type_;
+pub mod operators;
 
 use crate::ast::file::FileSyntax;
 use crate::ast::stmt::{AssignmentStmt, LoopStmt, Stmt};
