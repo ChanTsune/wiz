@@ -46,10 +46,10 @@ pub struct FunSyntax {
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct StructSyntax {
     pub(crate) name: String,
-    pub(crate) properties: Vec<StructPropertySyntax>
+    pub(crate) properties: Vec<StructPropertySyntax>,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum StructPropertySyntax {
-    StoredProperty(VarSyntax)
+    StoredProperty(VarSyntax),
 }
