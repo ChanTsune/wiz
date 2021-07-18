@@ -58,5 +58,5 @@ pub enum StructPropertySyntax {
 pub struct StoredPropertySyntax {
     pub(crate) is_mut: bool,
     pub(crate) name: String,
-    pub(crate) type_: TypeName
+    pub(crate) type_: TypeName,
 }

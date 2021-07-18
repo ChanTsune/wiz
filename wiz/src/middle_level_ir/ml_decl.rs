@@ -35,7 +35,7 @@ pub struct MLFunBody {
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct MLStruct {
     pub(crate) name: String,
-    pub(crate) fields: Vec<MLField>
+    pub(crate) fields: Vec<MLField>,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]

@@ -460,7 +460,7 @@ impl<'ctx> CodeGen<'ctx> {
             } => {
                 let args: Vec<BasicTypeEnum<'ctx>> = arg_defs
                     .iter()
-                    .map(|a| self.type_name_to_type( &*a.type_.name))
+                    .map(|a| self.type_name_to_type(&*a.type_.name))
                     .map(|a| {
                         println!("{:?}", &a);
                         BasicTypeEnum::try_from(a).unwrap()
@@ -547,10 +547,14 @@ impl<'ctx> CodeGen<'ctx> {
 
     pub fn struct_(&self, s: MLStruct) -> AnyValueEnum<'ctx> {
         let struct_ = self.context.opaque_struct_type(&*s.name);
-        let struct_fields: Vec<BasicTypeEnum<'ctx>> = s.fields.into_iter().map(|f|{
-            let any_type = self.type_name_to_type(&*(f.type_.name));
-            BasicTypeEnum::try_from(any_type).unwrap()
-        }).collect();
+        let struct_fields: Vec<BasicTypeEnum<'ctx>> = s
+            .fields
+            .into_iter()
+            .map(|f| {
+                let any_type = self.type_name_to_type(&*(f.type_.name));
+                BasicTypeEnum::try_from(any_type).unwrap()
+            })
+            .collect();
         struct_.set_body(&struct_fields, false);
         struct_.const_zero().as_any_value_enum()
     }
@@ -666,9 +670,7 @@ impl<'ctx> CodeGen<'ctx> {
             "Float" => AnyTypeEnum::from(self.context.f32_type()),
             "Double" => AnyTypeEnum::from(self.context.f64_type()),
             "String" => AnyTypeEnum::from(self.context.i8_type().ptr_type(AddressSpace::Generic)),
-            t => {
-                AnyTypeEnum::from(self.module.get_struct_type(t).unwrap())
-            },
+            t => AnyTypeEnum::from(self.module.get_struct_type(t).unwrap()),
         }
     }
 }

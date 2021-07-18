@@ -1,12 +1,16 @@
 use crate::ast::block::Block;
-use crate::ast::decl::{Decl, FunSyntax, VarSyntax, StructSyntax, StructPropertySyntax, StoredPropertySyntax};
+use crate::ast::decl::{
+    Decl, FunSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, VarSyntax,
+};
 use crate::ast::expr::{Expr, ReturnSyntax};
 use crate::ast::file::{FileSyntax, WizFile};
 use crate::ast::fun::body_def::FunBody;
 use crate::ast::literal::Literal;
 use crate::ast::stmt::{AssignmentStmt, LoopStmt, Stmt};
 use crate::ast::type_name::TypeName;
-use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedVar, TypedStruct, TypedStoredProperty};
+use crate::high_level_ir::typed_decl::{
+    TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedStoredProperty, TypedStruct, TypedVar,
+};
 use crate::high_level_ir::typed_expr::{
     TypedCallArg, TypedExpr, TypedIf, TypedLiteral, TypedName, TypedReturn,
 };
@@ -93,7 +97,10 @@ impl Ast2HLIR {
 
     fn put_new_type(&mut self, s: &TypedStruct) {
         let name = s.name.clone();
-        let t = TypedType { package: Package { names: vec![] }, name: name.clone() };
+        let t = TypedType {
+            package: Package { names: vec![] },
+            name: name.clone(),
+        };
         self.type_environment.insert(name, t);
     }
 
@@ -186,7 +193,7 @@ impl Ast2HLIR {
                 let struct_ = self.struct_syntax(s);
                 self.put_new_type(&struct_);
                 TypedDecl::Struct(struct_)
-            },
+            }
             Decl::Class { .. } => TypedDecl::Class,
             Decl::Enum { .. } => TypedDecl::Enum,
             Decl::Protocol { .. } => TypedDecl::Protocol,
@@ -295,13 +302,16 @@ impl Ast2HLIR {
                 }
             };
         }
-        TypedStruct { name: s.name, stored_properties: stored_properties }
+        TypedStruct {
+            name: s.name,
+            stored_properties: stored_properties,
+        }
     }
 
     pub fn stored_property_syntax(&self, p: StoredPropertySyntax) -> TypedStoredProperty {
         TypedStoredProperty {
             name: p.name,
-            type_: self.resolve_by_type_name(Some(p.type_)).unwrap()
+            type_: self.resolve_by_type_name(Some(p.type_)).unwrap(),
         }
     }
 
