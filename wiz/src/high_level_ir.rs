@@ -1,12 +1,12 @@
 use crate::ast::block::Block;
-use crate::ast::decl::{Decl, FunSyntax, VarSyntax};
+use crate::ast::decl::{Decl, FunSyntax, VarSyntax, StructSyntax, StructPropertySyntax, StoredPropertySyntax};
 use crate::ast::expr::{Expr, ReturnSyntax};
 use crate::ast::file::{FileSyntax, WizFile};
 use crate::ast::fun::body_def::FunBody;
 use crate::ast::literal::Literal;
 use crate::ast::stmt::{AssignmentStmt, LoopStmt, Stmt};
 use crate::ast::type_name::TypeName;
-use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedVar};
+use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedVar, TypedStruct, TypedStoredProperty};
 use crate::high_level_ir::typed_expr::{
     TypedCallArg, TypedExpr, TypedIf, TypedLiteral, TypedName, TypedReturn,
 };
@@ -89,6 +89,12 @@ impl Ast2HLIR {
     fn put_type_by(&mut self, name: String, type_: &TypedType) {
         let last_index = self.name_environment.len() - 1;
         self.name_environment[last_index].insert(name, type_.clone());
+    }
+
+    fn put_new_type(&mut self, s: &TypedStruct) {
+        let name = s.name.clone();
+        let t = TypedType { package: Package { names: vec![] }, name: name.clone() };
+        self.type_environment.insert(name, t);
     }
 
     fn push_name_environment(&mut self) {
@@ -176,7 +182,11 @@ impl Ast2HLIR {
         match d {
             Decl::Var(v) => TypedDecl::Var(self.var_syntax(v)),
             Decl::Fun(f) => TypedDecl::Fun(self.fun_syntax(f)),
-            Decl::Struct(_) => TypedDecl::Struct,
+            Decl::Struct(s) => {
+                let struct_ = self.struct_syntax(s);
+                self.put_new_type(&struct_);
+                TypedDecl::Struct(struct_)
+            },
             Decl::Class { .. } => TypedDecl::Class,
             Decl::Enum { .. } => TypedDecl::Enum,
             Decl::Protocol { .. } => TypedDecl::Protocol,
@@ -274,6 +284,25 @@ impl Ast2HLIR {
         self.pop_name_environment();
         self.put_type_by(f.name.clone(), &f.return_type);
         f
+    }
+
+    pub fn struct_syntax(&mut self, s: StructSyntax) -> TypedStruct {
+        let mut stored_properties: Vec<TypedStoredProperty> = vec![];
+        for p in s.properties {
+            match p {
+                StructPropertySyntax::StoredProperty(v) => {
+                    stored_properties.push(self.stored_property_syntax(v));
+                }
+            };
+        }
+        TypedStruct { name: s.name, stored_properties: stored_properties }
+    }
+
+    pub fn stored_property_syntax(&self, p: StoredPropertySyntax) -> TypedStoredProperty {
+        TypedStoredProperty {
+            name: p.name,
+            type_: self.resolve_by_type_name(Some(p.type_)).unwrap()
+        }
     }
 
     pub fn expr(&mut self, e: Expr) -> TypedExpr {

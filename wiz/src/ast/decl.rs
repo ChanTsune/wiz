@@ -51,5 +51,12 @@ pub struct StructSyntax {
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum StructPropertySyntax {
-    StoredProperty(VarSyntax),
+    StoredProperty(StoredPropertySyntax),
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct StoredPropertySyntax {
+    pub(crate) is_mut: bool,
+    pub(crate) name: String,
+    pub(crate) type_: TypeName
 }

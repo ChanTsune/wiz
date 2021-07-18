@@ -1,5 +1,5 @@
 use crate::ast::block::Block;
-use crate::ast::decl::{Decl, FunSyntax, StructPropertySyntax, StructSyntax, VarSyntax};
+use crate::ast::decl::{Decl, FunSyntax, StructPropertySyntax, StructSyntax, VarSyntax, StoredPropertySyntax};
 use crate::ast::expr::Expr;
 use crate::ast::fun::arg_def::ArgDef;
 use crate::ast::fun::body_def::FunBody;
@@ -71,9 +71,44 @@ pub fn struct_property(s: &str) -> IResult<&str, StructPropertySyntax> {
     stored_property(s)
 }
 
-// <stored_property> ::= <var_decl>
+// <stored_property> ::= <mutable_stored_property> | <immutable_stored_property>
 pub fn stored_property(s: &str) -> IResult<&str, StructPropertySyntax> {
-    map(var_syntax, |var| StructPropertySyntax::StoredProperty(var))(s)
+    map(alt((mutable_stored_property, immutable_stored_property)), |stored_property| StructPropertySyntax::StoredProperty(stored_property))(s)
+}
+
+// <mutable_stored_property> ::= "var" <stored_property_body>
+pub fn mutable_stored_property(s: &str) -> IResult<&str, StoredPropertySyntax>{
+    map(tuple((var_keyword, stored_property_body)),|(_, (name, _, typ))|{
+        StoredPropertySyntax {
+            is_mut: true,
+            name: name,
+            type_: typ
+        }
+    })(s)
+}
+
+// <immutable_stored_property> ::= "val" <stored_property_body>
+pub fn immutable_stored_property(s: &str) -> IResult<&str, StoredPropertySyntax> {
+    map(tuple((val_keyword, stored_property_body)),|(_, (name, _, typ))|{
+        StoredPropertySyntax {
+            is_mut: false,
+            name: name,
+            type_: typ
+        }
+    })(s)
+}
+
+// <stored_property_body> ::= <identifier> ":" <type>
+pub fn stored_property_body(s: &str) -> IResult<&str, (String, char, TypeName)>{
+    map(tuple((
+        whitespace1,
+        identifier,
+        whitespace0,
+        char(':'),
+        whitespace0,
+        type_)),|(_, name, _, c, _, typ)|{
+        (name, c, typ)
+    })(s)
 }
 
 //endregion
@@ -259,7 +294,7 @@ pub fn var_body(s: &str) -> IResult<&str, (String, Option<TypeName>, Expr)> {
 #[cfg(test)]
 mod test {
     use crate::ast::block::Block;
-    use crate::ast::decl::{Decl, FunSyntax, StructPropertySyntax, StructSyntax, VarSyntax};
+    use crate::ast::decl::{Decl, FunSyntax, StructPropertySyntax, StructSyntax, VarSyntax, StoredPropertySyntax};
     use crate::ast::expr::Expr;
     use crate::ast::fun::arg_def::ArgDef;
     use crate::ast::fun::body_def::FunBody;
@@ -275,24 +310,19 @@ mod test {
         assert_eq!(
             struct_syntax(
                 r##"struct A {
-        var a: String = "",
+        var a: String,
         }"##
             ),
             Ok((
                 "",
                 StructSyntax {
                     name: "A".to_string(),
-                    properties: vec![StructPropertySyntax::StoredProperty(VarSyntax {
+                    properties: vec![StructPropertySyntax::StoredProperty(StoredPropertySyntax {
                         is_mut: true,
                         name: "a".to_string(),
-                        type_: Some(TypeName {
+                        type_: TypeName {
                             name: "String".to_string(),
                             type_params: vec![]
-                        }),
-                        value: Expr::Literal {
-                            literal: Literal::StringLiteral {
-                                value: "".to_string()
-                            }
                         }
                     })]
                 }

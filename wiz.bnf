@@ -16,7 +16,11 @@
 <struct_property> ::= <stored_property>
                 #       | <computed_property>
 
-<stored_property> ::= <var_decl>
+<stored_property> ::= <mutable_stored_property> | <immutable_stored_property>
+
+<mutable_stored_property> ::= "var" <stored_property_body>
+<immutable_stored_property> ::= "val" <stored_property_body>
+<stored_property_body> ::= <identifier> ":" <type>
 
 <var_decl> ::= <value>
         | <variable>
@@ -24,7 +28,7 @@
 <value> ::= "val" <var_body>
 <variable> ::= "var" <var_body>
 
-<var_body> ::= <identifire> (":" <white_space>* <type>)? "=" <expr>
+<var_body> ::= <identifire> (":" <type>)? "=" <expr>
 
 <modifiers> ::= <modifier>+
 

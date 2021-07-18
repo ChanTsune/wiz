@@ -7,7 +7,7 @@ use std::fmt;
 pub enum TypedDecl {
     Var(TypedVar),
     Fun(TypedFun),
-    Struct,
+    Struct(TypedStruct),
     Class,
     Enum,
     Protocol,
@@ -42,4 +42,16 @@ pub struct TypedArgDef {
 pub enum TypedFunBody {
     Expr(TypedExpr),
     Block(TypedBlock),
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct TypedStruct {
+    pub(crate) name: String,
+    pub(crate) stored_properties: Vec<TypedStoredProperty>
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct TypedStoredProperty {
+    pub(crate) name: String,
+    pub(crate) type_: TypedType
 }

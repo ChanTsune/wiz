@@ -1,4 +1,4 @@
-use crate::middle_level_ir::ml_decl::MLDecl;
+use crate::middle_level_ir::ml_decl::{MLDecl, MLStruct};
 use crate::middle_level_ir::ml_expr::{
     MLBinOp, MLBinopKind, MLCall, MLExpr, MLIf, MLLiteral, MLReturn, MLUnaryOp,
 };
@@ -460,14 +460,14 @@ impl<'ctx> CodeGen<'ctx> {
             } => {
                 let args: Vec<BasicTypeEnum<'ctx>> = arg_defs
                     .iter()
-                    .map(|a| type_name_to_type(self.context, &*a.type_.name))
+                    .map(|a| self.type_name_to_type( &*a.type_.name))
                     .map(|a| {
                         println!("{:?}", &a);
                         BasicTypeEnum::try_from(a).unwrap()
                     })
                     .collect();
                 let return_type_name: &str = &*return_type.name; // NOTE: for debug
-                let return_type = type_name_to_type(self.context, &*return_type.name);
+                let return_type = self.type_name_to_type(&*return_type.name);
                 if let Some(body) = body {
                     self.push_environment();
                     let func = match return_type {
@@ -541,8 +541,18 @@ impl<'ctx> CodeGen<'ctx> {
                     AnyValueEnum::from(func)
                 }
             }
-            MLDecl::Struct => exit(-1),
+            MLDecl::Struct(s) => self.struct_(s),
         }
+    }
+
+    pub fn struct_(&self, s: MLStruct) -> AnyValueEnum<'ctx> {
+        let struct_ = self.context.opaque_struct_type(&*s.name);
+        let struct_fields: Vec<BasicTypeEnum<'ctx>> = s.fields.into_iter().map(|f|{
+            let any_type = self.type_name_to_type(&*(f.type_.name));
+            BasicTypeEnum::try_from(any_type).unwrap()
+        }).collect();
+        struct_.set_body(&struct_fields, false);
+        struct_.const_zero().as_any_value_enum()
     }
 
     pub fn stmt(&mut self, s: MLStmt) -> AnyValueEnum<'ctx> {
@@ -643,20 +653,22 @@ impl<'ctx> CodeGen<'ctx> {
     pub fn print_to_file<P: AsRef<Path>>(&self, path: P) -> Result<(), LLVMString> {
         self.module.print_to_file(path)
     }
-}
 
-fn type_name_to_type<'ctx>(context: &'ctx Context, type_name: &str) -> AnyTypeEnum<'ctx> {
-    println!("{}", type_name);
-    match type_name {
-        "Unit" => AnyTypeEnum::from(context.void_type()),
-        "Int8" | "UInt8" => AnyTypeEnum::from(context.i8_type()),
-        "Int16" | "UInt16" => AnyTypeEnum::from(context.i16_type()),
-        "Int32" | "UInt32" => AnyTypeEnum::from(context.i32_type()),
-        "Int64" | "UInt64" => AnyTypeEnum::from(context.i64_type()),
-        "Bool" => AnyTypeEnum::from(context.bool_type()),
-        "Float" => AnyTypeEnum::from(context.f32_type()),
-        "Double" => AnyTypeEnum::from(context.f64_type()),
-        "String" => AnyTypeEnum::from(context.i8_type().ptr_type(AddressSpace::Generic)),
-        _ => AnyTypeEnum::from(context.void_type()),
+    fn type_name_to_type(&self, type_name: &str) -> AnyTypeEnum<'ctx> {
+        println!("{}", type_name);
+        match type_name {
+            "Unit" => AnyTypeEnum::from(self.context.void_type()),
+            "Int8" | "UInt8" => AnyTypeEnum::from(self.context.i8_type()),
+            "Int16" | "UInt16" => AnyTypeEnum::from(self.context.i16_type()),
+            "Int32" | "UInt32" => AnyTypeEnum::from(self.context.i32_type()),
+            "Int64" | "UInt64" => AnyTypeEnum::from(self.context.i64_type()),
+            "Bool" => AnyTypeEnum::from(self.context.bool_type()),
+            "Float" => AnyTypeEnum::from(self.context.f32_type()),
+            "Double" => AnyTypeEnum::from(self.context.f64_type()),
+            "String" => AnyTypeEnum::from(self.context.i8_type().ptr_type(AddressSpace::Generic)),
+            t => {
+                AnyTypeEnum::from(self.module.get_struct_type(t).unwrap())
+            },
+        }
     }
 }

@@ -18,7 +18,7 @@ pub enum MLDecl {
         return_type: MLType,
         body: Option<MLFunBody>,
     },
-    Struct,
+    Struct(MLStruct),
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -30,4 +30,16 @@ pub struct MLArgDef {
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct MLFunBody {
     pub(crate) body: Vec<MLStmt>,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct MLStruct {
+    pub(crate) name: String,
+    pub(crate) fields: Vec<MLField>
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct MLField {
+    pub(crate) name: String,
+    pub(crate) type_: MLType,
 }
