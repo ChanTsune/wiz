@@ -68,7 +68,7 @@ impl Ast2HLIR {
                 Decl::Fun(f) => {
                     self.put_type_by(f.name, &self.resolve_by_type_name(f.return_type).unwrap())
                 }
-                Decl::Struct {} => {}
+                Decl::Struct(_) => {}
                 Decl::Class {} => {}
                 Decl::Enum {} => {}
                 Decl::Protocol {} => {}
@@ -176,7 +176,7 @@ impl Ast2HLIR {
         match d {
             Decl::Var(v) => TypedDecl::Var(self.var_syntax(v)),
             Decl::Fun(f) => TypedDecl::Fun(self.fun_syntax(f)),
-            Decl::Struct { .. } => TypedDecl::Struct,
+            Decl::Struct(_) => TypedDecl::Struct,
             Decl::Class { .. } => TypedDecl::Class,
             Decl::Enum { .. } => TypedDecl::Enum,
             Decl::Protocol { .. } => TypedDecl::Protocol,

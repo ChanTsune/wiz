@@ -9,9 +9,7 @@ use std::fmt;
 pub enum Decl {
     Var(VarSyntax),
     Fun(FunSyntax),
-    Struct {
-        // TODO
-    },
+    Struct(StructSyntax),
     Class {
         // TODO
     },
@@ -43,4 +41,15 @@ pub struct FunSyntax {
     pub(crate) arg_defs: Vec<ArgDef>,
     pub(crate) return_type: Option<TypeName>,
     pub(crate) body: Option<FunBody>,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct StructSyntax {
+    pub(crate) name: String,
+    pub(crate) properties: Vec<StructPropertySyntax>
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub enum StructPropertySyntax {
+    StoredProperty(VarSyntax)
 }

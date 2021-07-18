@@ -3,11 +3,20 @@
 
 <decl> ::= <var_decl>
          | <fun_decl>
-        #  | <struct_decl>
+         | <struct_decl>
         #  | <class_decl>
         #  | <enum_decl>
         #  | <protocol_decl>
         #  | <extension_decl>
+
+<struct_decl> ::= "struct" <identifier> "{" <struct_properties> "}"
+
+<struct_properties> ::= (<struct_property> ("," <struct_property>)* ","?)?
+
+<struct_property> ::= <stored_property>
+                #       | <computed_property>
+
+<stored_property> ::= <var_decl>
 
 <var_decl> ::= <value>
         | <variable>
@@ -135,7 +144,7 @@
 
 <type_arguments> ::= "<" <type> ("," <type>)* ","? ">"
 
-<value_arguments> ::= "(" <value_argument> ("," <value_argument>)* ","? ")"
+<value_arguments> ::= "(" (<value_argument> ("," <value_argument>)* ","?)? ")"
 
 <value_argument> ::= (<identifier> ":")? "*"? <expr>
 

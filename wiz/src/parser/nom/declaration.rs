@@ -1,11 +1,11 @@
 use crate::ast::block::Block;
-use crate::ast::decl::{Decl, FunSyntax, VarSyntax};
+use crate::ast::decl::{Decl, FunSyntax, VarSyntax, StructSyntax, StructPropertySyntax};
 use crate::ast::expr::Expr;
 use crate::ast::fun::arg_def::ArgDef;
 use crate::ast::fun::body_def::FunBody;
 use crate::ast::type_name::{TypeName, TypeParam};
 use crate::parser::nom::expression::expr;
-use crate::parser::nom::keywords::{fun_keyword, val_keyword, var_keyword, where_keyword};
+use crate::parser::nom::keywords::{fun_keyword, val_keyword, var_keyword, where_keyword, struct_keyword};
 use crate::parser::nom::lexical_structure::{identifier, whitespace0, whitespace1};
 use crate::parser::nom::stmts;
 use crate::parser::nom::type_::type_;
@@ -17,8 +17,66 @@ use nom::sequence::tuple;
 use nom::{IResult, Parser};
 
 pub fn decl(s: &str) -> IResult<&str, Decl> {
-    alt((function_decl, var_decl))(s)
+    alt((struct_decl, function_decl, var_decl))(s)
 }
+
+//region struct
+
+pub fn struct_decl(s: &str) -> IResult<&str, Decl> {
+    map(struct_syntax, |struct_syntax|{
+        Decl::Struct(struct_syntax)
+    })(s)
+}
+
+// <struct_decl> ::= "struct" <identifier> "{" <struct_properties> "}"
+pub fn struct_syntax(s: &str) -> IResult<&str, StructSyntax> {
+    map(tuple((
+        struct_keyword,
+        whitespace1,
+        identifier,
+        whitespace0,
+        char('{'),
+        whitespace0,
+        struct_properties,
+        whitespace0,
+        char('}')
+    )),|(_, _, name,_ , _, _, properties,_, _)|{
+        StructSyntax { name, properties }
+    })(s)
+}
+
+// <struct_properties> ::= (<struct_property> ("," <struct_property>)* ","?)?
+pub fn struct_properties(s: &str) -> IResult<&str, Vec<StructPropertySyntax>> {
+    map(opt(tuple((
+        struct_property,
+        whitespace0,
+        many0(tuple((char(','), struct_property))),
+        opt(char(',')),
+    ))),|o|{
+        match o {
+            None => vec![],
+            Some((p,_, ps, _)) => {
+                let mut ps: Vec<StructPropertySyntax> = ps.into_iter().map(|(_, p)|{p}).collect();
+                ps.insert(0, p);
+                ps
+            },
+        }
+    })(s)
+}
+
+// <struct_property> ::= <stored_property>
+pub fn struct_property(s: &str) -> IResult<&str, StructPropertySyntax> {
+    stored_property(s)
+}
+
+// <stored_property> ::= <var_decl>
+pub fn stored_property(s: &str) -> IResult<&str, StructPropertySyntax> {
+    map(var_syntax, |var|{
+        StructPropertySyntax::StoredProperty(var)
+    })(s)
+}
+
+//endregion
 
 //region func
 
@@ -150,33 +208,39 @@ pub fn block(s: &str) -> IResult<&str, Block> {
 //region var
 
 pub fn var_decl(s: &str) -> IResult<&str, Decl> {
+    map(var_syntax,|v|{
+        Decl::Var(v)
+    })(s)
+}
+
+pub fn var_syntax(s: &str) -> IResult<&str, VarSyntax> {
     alt((var, val))(s)
 }
 
-pub fn var(s: &str) -> IResult<&str, Decl> {
+pub fn var(s: &str) -> IResult<&str, VarSyntax> {
     map(
         tuple((var_keyword, whitespace1, var_body)),
         |(_, _, (name, t, e))| {
-            Decl::Var(VarSyntax {
+            VarSyntax {
                 is_mut: true,
                 name: name,
                 type_: t,
                 value: e,
-            })
+            }
         },
     )(s)
 }
 
-pub fn val(s: &str) -> IResult<&str, Decl> {
+pub fn val(s: &str) -> IResult<&str, VarSyntax> {
     map(
         tuple((val_keyword, whitespace1, var_body)),
         |(_, _, (name, t, e))| {
-            Decl::Var(VarSyntax {
+            VarSyntax {
                 is_mut: false,
                 name: name,
                 type_: t,
                 value: e,
-            })
+            }
         },
     )(s)
 }
@@ -201,14 +265,31 @@ pub fn var_body(s: &str) -> IResult<&str, (String, Option<TypeName>, Expr)> {
 #[cfg(test)]
 mod test {
     use crate::ast::block::Block;
-    use crate::ast::decl::{Decl, FunSyntax, VarSyntax};
+    use crate::ast::decl::{Decl, FunSyntax, VarSyntax, StructSyntax, StructPropertySyntax};
     use crate::ast::expr::Expr;
     use crate::ast::fun::arg_def::ArgDef;
     use crate::ast::fun::body_def::FunBody;
     use crate::ast::literal::Literal;
     use crate::ast::stmt::Stmt;
     use crate::ast::type_name::TypeName;
-    use crate::parser::nom::declaration::{block, function_body, function_decl, var_decl};
+    use crate::parser::nom::declaration::{block, function_body, function_decl, var_decl, struct_syntax};
+
+    #[test]
+    fn test_struct_syntax() {
+        assert_eq!(struct_syntax(r##"struct A {
+        var a: String = "",
+        }"##), Ok(("", StructSyntax {
+            name: "A".to_string(),
+            properties: vec![
+                StructPropertySyntax::StoredProperty(VarSyntax{
+                    is_mut: true,
+                    name: "a".to_string(),
+                    type_: Some(TypeName { name: "String".to_string(), type_params: vec![] }),
+                    value: Expr::Literal { literal: Literal::StringLiteral { value: "".to_string() } }
+                })
+            ]
+        })))
+    }
 
     #[test]
     fn test_empty_block() {
@@ -380,6 +461,7 @@ mod test {
             ))
         )
     }
+
     #[test]
     fn test_var_decl_without_type() {
         assert_eq!(
