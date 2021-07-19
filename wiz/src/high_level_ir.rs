@@ -300,6 +300,9 @@ impl Ast2HLIR {
                 StructPropertySyntax::StoredProperty(v) => {
                     stored_properties.push(self.stored_property_syntax(v));
                 }
+                StructPropertySyntax::ComputedProperty => {}
+                StructPropertySyntax::Init => {}
+                StructPropertySyntax::Method => {}
             };
         }
         TypedStruct {
