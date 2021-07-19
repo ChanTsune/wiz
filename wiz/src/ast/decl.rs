@@ -54,7 +54,7 @@ pub enum StructPropertySyntax {
     StoredProperty(StoredPropertySyntax),
     ComputedProperty,
     Init,
-    Method
+    Method,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
