@@ -6,13 +6,7 @@ use std::fmt;
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum MLDecl {
     Var(MLVar),
-    Fun {
-        modifiers: Vec<String>,
-        name: String,
-        arg_defs: Vec<MLArgDef>,
-        return_type: MLType,
-        body: Option<MLFunBody>,
-    },
+    Fun(MLFun),
     Struct(MLStruct),
 }
 
@@ -22,6 +16,15 @@ pub struct MLVar  {
     pub(crate) name: String,
     pub(crate) type_: MLType,
     pub(crate) value: MLExpr,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct MLFun  {
+    pub(crate)modifiers: Vec<String>,
+    pub(crate)name: String,
+    pub(crate) arg_defs: Vec<MLArgDef>,
+    pub(crate) return_type: MLType,
+    pub(crate) body: Option<MLFunBody>,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]

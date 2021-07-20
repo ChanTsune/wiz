@@ -3,7 +3,7 @@ use crate::high_level_ir::typed_expr::{TypedExpr, TypedIf, TypedLiteral, TypedNa
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
 use crate::high_level_ir::typed_type::TypedType;
-use crate::middle_level_ir::ml_decl::{MLArgDef, MLDecl, MLField, MLFunBody, MLStruct, MLVar};
+use crate::middle_level_ir::ml_decl::{MLArgDef, MLDecl, MLField, MLFunBody, MLStruct, MLVar, MLFun};
 use crate::middle_level_ir::ml_expr::{
     MLBinOp, MLBinopKind, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLName, MLReturn,
 };
@@ -71,21 +71,8 @@ impl HLIR2MLIR {
                 MLDecl::Var(self.var(v))
 
             }
-            TypedDecl::Fun(TypedFun {
-                modifiers,
-                name,
-                arg_defs,
-                body,
-                return_type,
-            }) => {
-                let args = arg_defs.into_iter().map(|a| self.arg_def(a)).collect();
-                MLDecl::Fun {
-                    modifiers,
-                    name,
-                    arg_defs: args,
-                    return_type: self.type_(return_type),
-                    body: body.map(|b| self.fun_body(b)),
-                }
+            TypedDecl::Fun(f) => {
+                MLDecl::Fun(self.fun(f))
             }
             TypedDecl::Struct(s) => {
                 MLDecl::Struct(self.struct_(s))
@@ -104,6 +91,24 @@ impl HLIR2MLIR {
             name: v.name,
             type_: self.type_(v.type_.unwrap()),
             value: expr,
+        }
+    }
+
+    pub fn fun(&self, f: TypedFun) -> MLFun {
+        let TypedFun {
+            modifiers,
+            name,
+            arg_defs,
+            body,
+            return_type,
+        } = f;
+        let args = arg_defs.into_iter().map(|a| self.arg_def(a)).collect();
+        MLFun {
+            modifiers,
+            name,
+            arg_defs: args,
+            return_type: self.type_(return_type),
+            body: body.map(|b| self.fun_body(b)),
         }
     }
 

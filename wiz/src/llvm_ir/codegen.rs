@@ -1,4 +1,4 @@
-use crate::middle_level_ir::ml_decl::{MLDecl, MLStruct, MLVar};
+use crate::middle_level_ir::ml_decl::{MLDecl, MLStruct, MLVar, MLFun};
 use crate::middle_level_ir::ml_expr::{
     MLBinOp, MLBinopKind, MLCall, MLExpr, MLIf, MLLiteral, MLReturn, MLUnaryOp,
 };
@@ -431,95 +431,8 @@ impl<'ctx> CodeGen<'ctx> {
             MLDecl::Var( v) => {
                 self.var(v)
             }
-            MLDecl::Fun {
-                modifiers,
-                name,
-                arg_defs,
-                return_type,
-                body,
-            } => {
-                let args: Vec<BasicTypeEnum<'ctx>> = arg_defs
-                    .iter()
-                    .map(|a| self.type_name_to_type(&*a.type_.name))
-                    .map(|a| {
-                        println!("{:?}", &a);
-                        BasicTypeEnum::try_from(a).unwrap()
-                    })
-                    .collect();
-                let return_type_name: &str = &*return_type.name; // NOTE: for debug
-                let return_type = self.type_name_to_type(&*return_type.name);
-                if let Some(body) = body {
-                    self.push_environment();
-                    let func = match return_type {
-                        // AnyTypeEnum::ArrayType(_) => {}
-                        // AnyTypeEnum::FloatType(_) => {}
-                        // AnyTypeEnum::FunctionType(_) => {}
-                        AnyTypeEnum::IntType(int_type) => {
-                            let fn_type = int_type.fn_type(&args, false);
-                            let function = self.module.add_function(&*name, fn_type, None);
-                            for (v, a) in function.get_params().iter().zip(arg_defs) {
-                                self.set_to_environment(a.name, v.as_any_value_enum());
-                            }
-                            self.current_function = Some(function);
-                            let basic_block = self.context.append_basic_block(function, "entry");
-                            self.builder.position_at_end(basic_block);
-                            for stmt in body.body {
-                                self.stmt(stmt);
-                            }
-                            function
-                        }
-                        // AnyTypeEnum::PointerType(_) => {}
-                        // AnyTypeEnum::StructType(_) => {}
-                        // AnyTypeEnum::VectorType(_) => {}
-                        AnyTypeEnum::VoidType(void_type) => {
-                            let fn_type = void_type.fn_type(&args, false);
-                            let function = self.module.add_function(&*name, fn_type, None);
-                            for (v, a) in function.get_params().iter().zip(arg_defs) {
-                                self.set_to_environment(a.name, v.as_any_value_enum());
-                            }
-                            self.current_function = Some(function);
-                            let basic_block = self.context.append_basic_block(function, "entry");
-                            self.builder.position_at_end(basic_block);
-                            for stmt in body.body {
-                                self.stmt(stmt);
-                            }
-                            self.builder.build_return(None);
-                            function
-                        }
-                        _ => {
-                            println!("{}", return_type_name);
-                            exit(-1)
-                        }
-                    };
-                    self.pop_environment();
-                    AnyValueEnum::from(func)
-                } else {
-                    let func = match return_type {
-                        // AnyTypeEnum::ArrayType(_) => {}
-                        // AnyTypeEnum::FloatType(_) => {}
-                        // AnyTypeEnum::FunctionType(_) => {}
-                        AnyTypeEnum::IntType(int_type) => {
-                            let fn_type = int_type.fn_type(&args, false);
-                            let f = self.module.add_function(&*name, fn_type, None);
-                            self.current_function = Some(f);
-                            f
-                        }
-                        // AnyTypeEnum::PointerType(_) => {}
-                        // AnyTypeEnum::StructType(_) => {}
-                        // AnyTypeEnum::VectorType(_) => {}
-                        AnyTypeEnum::VoidType(void_type) => {
-                            let fn_type = void_type.fn_type(&args, false);
-                            let f = self.module.add_function(&*name, fn_type, None);
-                            self.current_function = Some(f);
-                            f
-                        }
-                        _ => {
-                            println!("{}", return_type_name);
-                            exit(-1)
-                        }
-                    };
-                    AnyValueEnum::from(func)
-                }
+            MLDecl::Fun(f) => {
+                self.fun(f)
             }
             MLDecl::Struct(s) => self.struct_(s),
         }
@@ -547,6 +460,98 @@ impl<'ctx> CodeGen<'ctx> {
                 self.builder.build_store(ptr, f).as_any_value_enum()
             }
             _ => exit(-1),
+        }
+    }
+
+    pub fn fun(&mut self, f: MLFun) -> AnyValueEnum<'ctx> {
+        let MLFun {
+            modifiers,
+            name,
+            arg_defs,
+            return_type,
+            body,
+        } = f;
+        let args: Vec<BasicTypeEnum<'ctx>> = arg_defs
+            .iter()
+            .map(|a| self.type_name_to_type(&*a.type_.name))
+            .map(|a| {
+                println!("{:?}", &a);
+                BasicTypeEnum::try_from(a).unwrap()
+            })
+            .collect();
+        let return_type_name: &str = &*return_type.name; // NOTE: for debug
+        let return_type = self.type_name_to_type(&*return_type.name);
+        if let Some(body) = body {
+            self.push_environment();
+            let func = match return_type {
+                // AnyTypeEnum::ArrayType(_) => {}
+                // AnyTypeEnum::FloatType(_) => {}
+                // AnyTypeEnum::FunctionType(_) => {}
+                AnyTypeEnum::IntType(int_type) => {
+                    let fn_type = int_type.fn_type(&args, false);
+                    let function = self.module.add_function(&*name, fn_type, None);
+                    for (v, a) in function.get_params().iter().zip(arg_defs) {
+                        self.set_to_environment(a.name, v.as_any_value_enum());
+                    }
+                    self.current_function = Some(function);
+                    let basic_block = self.context.append_basic_block(function, "entry");
+                    self.builder.position_at_end(basic_block);
+                    for stmt in body.body {
+                        self.stmt(stmt);
+                    }
+                    function
+                }
+                // AnyTypeEnum::PointerType(_) => {}
+                // AnyTypeEnum::StructType(_) => {}
+                // AnyTypeEnum::VectorType(_) => {}
+                AnyTypeEnum::VoidType(void_type) => {
+                    let fn_type = void_type.fn_type(&args, false);
+                    let function = self.module.add_function(&*name, fn_type, None);
+                    for (v, a) in function.get_params().iter().zip(arg_defs) {
+                        self.set_to_environment(a.name, v.as_any_value_enum());
+                    }
+                    self.current_function = Some(function);
+                    let basic_block = self.context.append_basic_block(function, "entry");
+                    self.builder.position_at_end(basic_block);
+                    for stmt in body.body {
+                        self.stmt(stmt);
+                    }
+                    self.builder.build_return(None);
+                    function
+                }
+                _ => {
+                    println!("{}", return_type_name);
+                    exit(-1)
+                }
+            };
+            self.pop_environment();
+            AnyValueEnum::from(func)
+        } else {
+            let func = match return_type {
+                // AnyTypeEnum::ArrayType(_) => {}
+                // AnyTypeEnum::FloatType(_) => {}
+                // AnyTypeEnum::FunctionType(_) => {}
+                AnyTypeEnum::IntType(int_type) => {
+                    let fn_type = int_type.fn_type(&args, false);
+                    let f = self.module.add_function(&*name, fn_type, None);
+                    self.current_function = Some(f);
+                    f
+                }
+                // AnyTypeEnum::PointerType(_) => {}
+                // AnyTypeEnum::StructType(_) => {}
+                // AnyTypeEnum::VectorType(_) => {}
+                AnyTypeEnum::VoidType(void_type) => {
+                    let fn_type = void_type.fn_type(&args, false);
+                    let f = self.module.add_function(&*name, fn_type, None);
+                    self.current_function = Some(f);
+                    f
+                }
+                _ => {
+                    println!("{}", return_type_name);
+                    exit(-1)
+                }
+            };
+            AnyValueEnum::from(func)
         }
     }
 
