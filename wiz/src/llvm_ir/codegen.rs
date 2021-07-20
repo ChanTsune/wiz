@@ -1,4 +1,4 @@
-use crate::middle_level_ir::ml_decl::{MLDecl, MLStruct, MLVar, MLFun};
+use crate::middle_level_ir::ml_decl::{MLDecl, MLFun, MLStruct, MLVar};
 use crate::middle_level_ir::ml_expr::{
     MLBinOp, MLBinopKind, MLCall, MLExpr, MLIf, MLLiteral, MLReturn, MLUnaryOp,
 };
@@ -428,13 +428,8 @@ impl<'ctx> CodeGen<'ctx> {
     pub fn decl(&mut self, d: MLDecl) -> AnyValueEnum<'ctx> {
         println!("{:?}", &d);
         match d {
-            MLDecl::Var( v) => {
-                self.var(v)
-            }
-            MLDecl::Fun(f) => {
-                self.fun(f)
-
-            }
+            MLDecl::Var(v) => self.var(v),
+            MLDecl::Fun(f) => self.fun(f),
             MLDecl::Struct(s) => self.struct_(s),
         }
     }

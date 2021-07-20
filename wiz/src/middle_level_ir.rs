@@ -5,7 +5,9 @@ use crate::high_level_ir::typed_expr::{TypedExpr, TypedIf, TypedLiteral, TypedNa
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
 use crate::high_level_ir::typed_type::TypedType;
-use crate::middle_level_ir::ml_decl::{MLArgDef, MLDecl, MLField, MLFunBody, MLStruct, MLVar, MLFun};
+use crate::middle_level_ir::ml_decl::{
+    MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar,
+};
 use crate::middle_level_ir::ml_expr::{
     MLBinOp, MLBinopKind, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLName, MLReturn,
 };
@@ -69,14 +71,8 @@ impl HLIR2MLIR {
 
     pub fn decl(&self, d: TypedDecl) -> MLDecl {
         match d {
-            TypedDecl::Var(v) => {
-                MLDecl::Var(self.var(v))
-
-            }
-            TypedDecl::Fun(f) => {
-                MLDecl::Fun(self.fun(f))
-
-            }
+            TypedDecl::Var(v) => MLDecl::Var(self.var(v)),
+            TypedDecl::Fun(f) => MLDecl::Fun(self.fun(f)),
             TypedDecl::Struct(s) => MLDecl::Struct(self.struct_(s)),
             TypedDecl::Class => exit(-1),
             TypedDecl::Enum => exit(-1),

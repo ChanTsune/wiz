@@ -19,9 +19,9 @@ pub struct MLVar {
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
-pub struct MLFun  {
-    pub(crate)modifiers: Vec<String>,
-    pub(crate)name: String,
+pub struct MLFun {
+    pub(crate) modifiers: Vec<String>,
+    pub(crate) name: String,
     pub(crate) arg_defs: Vec<MLArgDef>,
     pub(crate) return_type: MLType,
     pub(crate) body: Option<MLFunBody>,
