@@ -17,7 +17,7 @@ pub enum MLDecl {
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
-pub struct MLVar  {
+pub struct MLVar {
     pub(crate) is_mute: bool,
     pub(crate) name: String,
     pub(crate) type_: MLType,

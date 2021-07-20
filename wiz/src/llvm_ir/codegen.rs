@@ -428,9 +428,7 @@ impl<'ctx> CodeGen<'ctx> {
     pub fn decl(&mut self, d: MLDecl) -> AnyValueEnum<'ctx> {
         println!("{:?}", &d);
         match d {
-            MLDecl::Var( v) => {
-                self.var(v)
-            }
+            MLDecl::Var(v) => self.var(v),
             MLDecl::Fun {
                 modifiers,
                 name,

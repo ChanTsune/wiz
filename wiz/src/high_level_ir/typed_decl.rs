@@ -66,5 +66,5 @@ pub struct TypedComputedProperty {
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct TypedInitializer {
-    pub(crate) type_: TypedType
+    pub(crate) type_: TypedType,
 }
