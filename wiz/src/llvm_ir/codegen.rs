@@ -433,6 +433,7 @@ impl<'ctx> CodeGen<'ctx> {
             }
             MLDecl::Fun(f) => {
                 self.fun(f)
+
             }
             MLDecl::Struct(s) => self.struct_(s),
         }

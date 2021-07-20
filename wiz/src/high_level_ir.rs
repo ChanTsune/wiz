@@ -8,7 +8,10 @@ use crate::ast::fun::body_def::FunBody;
 use crate::ast::literal::Literal;
 use crate::ast::stmt::{AssignmentStmt, LoopStmt, Stmt};
 use crate::ast::type_name::TypeName;
-use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedStoredProperty, TypedStruct, TypedVar, TypedComputedProperty, TypedInitializer};
+use crate::high_level_ir::typed_decl::{
+    TypedArgDef, TypedComputedProperty, TypedDecl, TypedFun, TypedFunBody, TypedInitializer,
+    TypedStoredProperty, TypedStruct, TypedVar,
+};
 use crate::high_level_ir::typed_expr::{
     TypedCallArg, TypedExpr, TypedIf, TypedLiteral, TypedName, TypedReturn,
 };
@@ -315,13 +318,15 @@ impl Ast2HLIR {
             name: s.name,
             init: initializers,
             stored_properties,
-            computed_properties
+            computed_properties,
         }
     }
 
     fn default_init_if_needed(&self, mut s: TypedStruct) -> TypedStruct {
         if s.init.is_empty() {
-            s.init.push(TypedInitializer { type_: self.typed_type_from_typed_struct(&s) })
+            s.init.push(TypedInitializer {
+                type_: self.typed_type_from_typed_struct(&s),
+            })
         }
         s
     }
