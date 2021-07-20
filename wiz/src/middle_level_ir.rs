@@ -1,11 +1,9 @@
-use crate::high_level_ir::typed_decl::{
-    TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedStruct,
-};
+use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedStruct, TypedVar};
 use crate::high_level_ir::typed_expr::{TypedExpr, TypedIf, TypedLiteral, TypedName, TypedReturn};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
 use crate::high_level_ir::typed_type::TypedType;
-use crate::middle_level_ir::ml_decl::{MLArgDef, MLDecl, MLField, MLFunBody, MLStruct};
+use crate::middle_level_ir::ml_decl::{MLArgDef, MLDecl, MLField, MLFunBody, MLStruct, MLVar};
 use crate::middle_level_ir::ml_expr::{
     MLBinOp, MLBinopKind, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLName, MLReturn,
 };
@@ -70,13 +68,8 @@ impl HLIR2MLIR {
     pub fn decl(&self, d: TypedDecl) -> MLDecl {
         match d {
             TypedDecl::Var(v) => {
-                let expr = self.expr(v.value);
-                MLDecl::Var {
-                    is_mute: v.is_mut,
-                    name: v.name,
-                    type_: self.type_(v.type_.unwrap()),
-                    value: expr,
-                }
+                MLDecl::Var(self.var(v))
+
             }
             TypedDecl::Fun(TypedFun {
                 modifiers,
@@ -94,11 +87,23 @@ impl HLIR2MLIR {
                     body: body.map(|b| self.fun_body(b)),
                 }
             }
-            TypedDecl::Struct(s) => MLDecl::Struct(self.struct_(s)),
+            TypedDecl::Struct(s) => {
+                MLDecl::Struct(self.struct_(s))
+            },
             TypedDecl::Class => exit(-1),
             TypedDecl::Enum => exit(-1),
             TypedDecl::Protocol => exit(-1),
             TypedDecl::Extension => exit(-1),
+        }
+    }
+
+    pub fn var(&self, v: TypedVar) -> MLVar {
+        let expr = self.expr(v.value);
+        MLVar {
+            is_mute: v.is_mut,
+            name: v.name,
+            type_: self.type_(v.type_.unwrap()),
+            value: expr,
         }
     }
 

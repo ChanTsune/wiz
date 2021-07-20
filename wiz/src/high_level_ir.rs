@@ -8,9 +8,7 @@ use crate::ast::fun::body_def::FunBody;
 use crate::ast::literal::Literal;
 use crate::ast::stmt::{AssignmentStmt, LoopStmt, Stmt};
 use crate::ast::type_name::TypeName;
-use crate::high_level_ir::typed_decl::{
-    TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedStoredProperty, TypedStruct, TypedVar,
-};
+use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedStoredProperty, TypedStruct, TypedVar, TypedComputedProperty, TypedInitializer};
 use crate::high_level_ir::typed_expr::{
     TypedCallArg, TypedExpr, TypedIf, TypedLiteral, TypedName, TypedReturn,
 };
@@ -96,12 +94,17 @@ impl Ast2HLIR {
     }
 
     fn put_new_type(&mut self, s: &TypedStruct) {
+        let t = self.typed_type_from_typed_struct(s);
+        let name = t.name.clone();
+        self.type_environment.insert(name, t);
+    }
+
+    fn typed_type_from_typed_struct(&self, s: &TypedStruct) -> TypedType {
         let name = s.name.clone();
-        let t = TypedType {
+        TypedType {
             package: Package { names: vec![] },
             name: name.clone(),
-        };
-        self.type_environment.insert(name, t);
+        }
     }
 
     fn push_name_environment(&mut self) {
@@ -192,6 +195,7 @@ impl Ast2HLIR {
             Decl::Struct(s) => {
                 let struct_ = self.struct_syntax(s);
                 self.put_new_type(&struct_);
+                let struct_ = self.default_init_if_needed(struct_);
                 TypedDecl::Struct(struct_)
             }
             Decl::Class { .. } => TypedDecl::Class,
@@ -295,6 +299,8 @@ impl Ast2HLIR {
 
     pub fn struct_syntax(&mut self, s: StructSyntax) -> TypedStruct {
         let mut stored_properties: Vec<TypedStoredProperty> = vec![];
+        let mut computed_properties: Vec<TypedComputedProperty> = vec![];
+        let mut initializers: Vec<TypedInitializer> = vec![];
         for p in s.properties {
             match p {
                 StructPropertySyntax::StoredProperty(v) => {
@@ -307,8 +313,17 @@ impl Ast2HLIR {
         }
         TypedStruct {
             name: s.name,
-            stored_properties: stored_properties,
+            init: initializers,
+            stored_properties,
+            computed_properties
         }
+    }
+
+    fn default_init_if_needed(&self, mut s: TypedStruct) -> TypedStruct {
+        if s.init.is_empty() {
+            s.init.push(TypedInitializer { type_: self.typed_type_from_typed_struct(&s) })
+        }
+        s
     }
 
     pub fn stored_property_syntax(&self, p: StoredPropertySyntax) -> TypedStoredProperty {

@@ -1,4 +1,4 @@
-use crate::middle_level_ir::ml_decl::{MLDecl, MLStruct};
+use crate::middle_level_ir::ml_decl::{MLDecl, MLStruct, MLVar};
 use crate::middle_level_ir::ml_expr::{
     MLBinOp, MLBinopKind, MLCall, MLExpr, MLIf, MLLiteral, MLReturn, MLUnaryOp,
 };
@@ -428,28 +428,8 @@ impl<'ctx> CodeGen<'ctx> {
     pub fn decl(&mut self, d: MLDecl) -> AnyValueEnum<'ctx> {
         println!("{:?}", &d);
         match d {
-            MLDecl::Var {
-                is_mute,
-                name,
-                type_,
-                value,
-            } => {
-                let value = self.expr(value);
-                match value {
-                    AnyValueEnum::IntValue(i) => {
-                        let int_type = i.get_type();
-                        let ptr = self.builder.build_alloca(int_type, &*name);
-                        self.set_to_environment(name, ptr.as_any_value_enum());
-                        self.builder.build_store(ptr, i).as_any_value_enum()
-                    }
-                    AnyValueEnum::FloatValue(f) => {
-                        let float_type = f.get_type();
-                        let ptr = self.builder.build_alloca(float_type, &*name);
-                        self.set_to_environment(name, ptr.as_any_value_enum());
-                        self.builder.build_store(ptr, f).as_any_value_enum()
-                    }
-                    _ => exit(-1),
-                }
+            MLDecl::Var( v) => {
+                self.var(v)
             }
             MLDecl::Fun {
                 modifiers,
@@ -542,6 +522,31 @@ impl<'ctx> CodeGen<'ctx> {
                 }
             }
             MLDecl::Struct(s) => self.struct_(s),
+        }
+    }
+
+    pub fn var(&mut self, v: MLVar) -> AnyValueEnum<'ctx> {
+        let MLVar {
+            is_mute,
+            name,
+            type_,
+            value,
+        } = v;
+        let value = self.expr(value);
+        match value {
+            AnyValueEnum::IntValue(i) => {
+                let int_type = i.get_type();
+                let ptr = self.builder.build_alloca(int_type, &*name);
+                self.set_to_environment(name, ptr.as_any_value_enum());
+                self.builder.build_store(ptr, i).as_any_value_enum()
+            }
+            AnyValueEnum::FloatValue(f) => {
+                let float_type = f.get_type();
+                let ptr = self.builder.build_alloca(float_type, &*name);
+                self.set_to_environment(name, ptr.as_any_value_enum());
+                self.builder.build_store(ptr, f).as_any_value_enum()
+            }
+            _ => exit(-1),
         }
     }
 

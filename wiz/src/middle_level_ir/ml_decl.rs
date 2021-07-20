@@ -5,12 +5,7 @@ use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum MLDecl {
-    Var {
-        is_mute: bool,
-        name: String,
-        type_: MLType,
-        value: MLExpr,
-    },
+    Var(MLVar),
     Fun {
         modifiers: Vec<String>,
         name: String,
@@ -19,6 +14,14 @@ pub enum MLDecl {
         body: Option<MLFunBody>,
     },
     Struct(MLStruct),
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct MLVar  {
+    pub(crate) is_mute: bool,
+    pub(crate) name: String,
+    pub(crate) type_: MLType,
+    pub(crate) value: MLExpr,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]

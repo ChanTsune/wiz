@@ -47,11 +47,24 @@ pub enum TypedFunBody {
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct TypedStruct {
     pub(crate) name: String,
+    pub(crate) init: Vec<TypedInitializer>,
     pub(crate) stored_properties: Vec<TypedStoredProperty>,
+    pub(crate) computed_properties: Vec<TypedComputedProperty>,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct TypedStoredProperty {
     pub(crate) name: String,
     pub(crate) type_: TypedType,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct TypedComputedProperty {
+    pub(crate) name: String,
+    pub(crate) type_: TypedType,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct TypedInitializer {
+    pub(crate) type_: TypedType
 }
