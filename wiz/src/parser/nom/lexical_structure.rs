@@ -131,7 +131,7 @@ pub fn eol(s: &str) -> IResult<&str, char> {
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::nom::lexical_structure::{comment, identifier, eol};
+    use crate::parser::nom::lexical_structure::{comment, eol, identifier};
     use nom::error;
     use nom::error::ErrorKind;
     use nom::Err;

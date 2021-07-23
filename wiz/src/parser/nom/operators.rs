@@ -1,6 +1,6 @@
-use nom::IResult;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
+use nom::IResult;
 
 pub fn simple_member_access_operator(s: &str) -> IResult<&str, &str> {
     tag(".")(s)
@@ -11,12 +11,8 @@ pub fn safe_member_access_operator(s: &str) -> IResult<&str, &str> {
 }
 
 pub fn member_access_operator(s: &str) -> IResult<&str, &str> {
-    alt((
-        simple_member_access_operator,
-        safe_member_access_operator,
-        ))(s)
+    alt((simple_member_access_operator, safe_member_access_operator))(s)
 }
-
 
 mod test {
     use crate::parser::nom::operators::member_access_operator;

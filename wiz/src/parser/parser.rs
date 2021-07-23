@@ -9,14 +9,14 @@ pub fn parse_from_string(string: String) -> WizFile {
     return match file(&*string) {
         Ok((s, f)) => {
             if !s.is_empty() {
-                eprintln!("{}",s);
+                eprintln!("{}", s);
                 exit(-1)
             }
             WizFile {
                 name: String::new(),
                 syntax: f,
             }
-        },
+        }
         Err(..) => exit(-1),
     };
 }

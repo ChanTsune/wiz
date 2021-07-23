@@ -30,7 +30,7 @@ pub enum Expr {
     Member {
         target: Box<Expr>,
         name: String,
-        is_safe: bool
+        is_safe: bool,
     },
     List {
         values: Vec<Expr>,
@@ -97,7 +97,7 @@ pub enum PostfixSuffix {
     IndexingSuffix,
     NavigationSuffix {
         is_safe: bool,
-        name: String
+        name: String,
     },
 }
 

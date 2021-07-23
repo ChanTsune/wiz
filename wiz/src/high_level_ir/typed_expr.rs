@@ -61,9 +61,9 @@ pub struct TypedCallArg {
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct TypedMember {
     pub(crate) target: Box<TypedExpr>,
-    pub(crate)name: String,
-    pub(crate)is_safe: bool,
-    pub(crate) type_: Option<TypedType>
+    pub(crate) name: String,
+    pub(crate) is_safe: bool,
+    pub(crate) type_: Option<TypedType>,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
