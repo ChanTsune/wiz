@@ -17,6 +17,7 @@ use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
 use nom::{IResult, Parser};
+use crate::parser::nom::operators::member_access_operator;
 
 pub fn integer_literal(s: &str) -> IResult<&str, Literal> {
     map(digit1, |n: &str| Literal::IntegerLiteral {
@@ -130,7 +131,13 @@ pub fn postfix_expr(s: &str) -> IResult<&str, Expr> {
                         tailing_lambda,
                     },
                     PostfixSuffix::IndexingSuffix => e,
-                    PostfixSuffix::NavigationSuffix => e,
+                    PostfixSuffix::NavigationSuffix { is_safe, name } => {
+                        Expr::Member {
+                            target: Box::new(e),
+                            name,
+                            is_safe
+                        }
+                    },
                 }
             }
             e
@@ -154,10 +161,20 @@ pub fn postfix_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
         // map(index_suffix, || {
         //
         // }),
-        // map(navigation_suffix, || {
-        //
-        // }),
+        navigation_suffix,
     ))(s)
+}
+
+/*
+<navigation_suffix> ::= <member_access_operator> <identifier>
+*/
+pub fn navigation_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
+    map(tuple((
+        member_access_operator,
+        identifier,
+        )), |(op, name)|{
+            PostfixSuffix::NavigationSuffix { is_safe: op == "?.", name }
+    })(s)
 }
 
 pub fn postfix_operator(s: &str) -> IResult<&str, String> {

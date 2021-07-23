@@ -125,9 +125,13 @@ pub fn identifier(s: &str) -> IResult<&str, String> {
     ))(s)
 }
 
+pub fn eol(s: &str) -> IResult<&str, char> {
+    char('\n')(s)
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::parser::nom::lexical_structure::{comment, identifier};
+    use crate::parser::nom::lexical_structure::{comment, identifier, eol};
     use nom::error;
     use nom::error::ErrorKind;
     use nom::Err;
@@ -168,5 +172,10 @@ mod tests {
     #[test]
     fn test_inline_comment() {
         assert_eq!(comment("/* a */"), Ok(("", String::from("/* a */"))))
+    }
+
+    #[test]
+    fn test_eol() {
+        assert_eq!(eol("\n"), Ok(("", '\n')))
     }
 }

@@ -166,6 +166,7 @@ impl HLIR2MLIR {
             }),
             TypedExpr::UnaryOp { .. } => exit(-1),
             TypedExpr::Subscript => exit(-1),
+            TypedExpr::Member(m) => exit(-1),
             TypedExpr::List => exit(-1),
             TypedExpr::Tuple => exit(-1),
             TypedExpr::Dict => exit(-1),

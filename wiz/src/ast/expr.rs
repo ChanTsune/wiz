@@ -27,6 +27,11 @@ pub enum Expr {
         target: Box<Expr>,
         idx_or_key: Box<Expr>,
     },
+    Member {
+        target: Box<Expr>,
+        name: String,
+        is_safe: bool
+    },
     List {
         values: Vec<Expr>,
     },
@@ -90,7 +95,10 @@ pub enum PostfixSuffix {
         tailing_lambda: Option<Lambda>,
     },
     IndexingSuffix,
-    NavigationSuffix,
+    NavigationSuffix {
+        is_safe: bool,
+        name: String
+    },
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]

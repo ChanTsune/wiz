@@ -19,6 +19,7 @@ pub enum TypedExpr {
         type_: Option<TypedType>,
     },
     Subscript,
+    Member(TypedMember),
     List,
     Tuple,
     Dict,
@@ -58,6 +59,14 @@ pub struct TypedCallArg {
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct TypedMember {
+    pub(crate) target: Box<TypedExpr>,
+    pub(crate)name: String,
+    pub(crate)is_safe: bool,
+    pub(crate) type_: Option<TypedType>
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct TypedIf {
     pub(crate) condition: Box<TypedExpr>,
     pub(crate) body: TypedBlock,
@@ -89,6 +98,7 @@ impl TypedExpr {
                 type_,
             } => type_.clone(),
             TypedExpr::Subscript => None,
+            TypedExpr::Member(m) => m.type_.clone(),
             TypedExpr::List => None,
             TypedExpr::Tuple => None,
             TypedExpr::Dict => None,

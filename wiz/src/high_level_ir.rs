@@ -12,9 +12,7 @@ use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedFun, TypedFunBody, TypedInitializer,
     TypedStoredProperty, TypedStruct, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{
-    TypedCallArg, TypedExpr, TypedIf, TypedLiteral, TypedName, TypedReturn,
-};
+use crate::high_level_ir::typed_expr::{TypedCallArg, TypedExpr, TypedIf, TypedLiteral, TypedName, TypedReturn, TypedMember};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{
     TypedAssignmentStmt, TypedBlock, TypedForStmt, TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
@@ -253,6 +251,7 @@ impl Ast2HLIR {
     }
 
     pub fn fun_syntax(&mut self, f: FunSyntax) -> TypedFun {
+        println!("{:?}", &f);
         let args: Vec<TypedArgDef> = f
             .arg_defs
             .into_iter()
@@ -433,6 +432,14 @@ impl Ast2HLIR {
                 }
             }
             Expr::Subscript { .. } => TypedExpr::Subscript,
+            Expr::Member { target, name, is_safe } => {
+                TypedExpr::Member(TypedMember {
+                    target: Box::new(TypedExpr::Subscript),
+                    name,
+                    is_safe,
+                    type_: None
+                })
+            }
             Expr::List { .. } => TypedExpr::List,
             Expr::Tuple { .. } => TypedExpr::Tuple,
             Expr::Dict { .. } => TypedExpr::Dict,
