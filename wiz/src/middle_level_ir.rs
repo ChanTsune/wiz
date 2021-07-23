@@ -39,16 +39,20 @@ impl HLIR2MLIR {
 
     pub fn file(&self, f: TypedFile) -> MLFile {
         MLFile {
-            body: f.body.into_iter().map(|d| self.decl(d)).collect(),
+            body: f.body.into_iter().map(|d| self.decl(d)).flatten().collect(),
         }
     }
 
-    pub fn stmt(&self, s: TypedStmt) -> MLStmt {
+    pub fn stmt(&self, s: TypedStmt) -> Vec<MLStmt> {
         match s {
-            TypedStmt::Expr(e) => MLStmt::Expr(self.expr(e)),
-            TypedStmt::Decl(d) => MLStmt::Decl(self.decl(d)),
-            TypedStmt::Assignment(a) => MLStmt::Assignment(self.assignment(a)),
-            TypedStmt::Loop(l) => MLStmt::Loop(self.loop_stmt(l)),
+            TypedStmt::Expr(e) => vec![MLStmt::Expr(self.expr(e))],
+            TypedStmt::Decl(d) => {
+                self.decl(d).into_iter().map(|dc|{
+                    MLStmt::Decl(dc)
+                }).collect()
+            },
+            TypedStmt::Assignment(a) => vec![MLStmt::Assignment(self.assignment(a))],
+            TypedStmt::Loop(l) => vec![MLStmt::Loop(self.loop_stmt(l))],
         }
     }
 
@@ -69,11 +73,19 @@ impl HLIR2MLIR {
         }
     }
 
-    pub fn decl(&self, d: TypedDecl) -> MLDecl {
+    pub fn decl(&self, d: TypedDecl) -> Vec<MLDecl> {
         match d {
-            TypedDecl::Var(v) => MLDecl::Var(self.var(v)),
-            TypedDecl::Fun(f) => MLDecl::Fun(self.fun(f)),
-            TypedDecl::Struct(s) => MLDecl::Struct(self.struct_(s)),
+            TypedDecl::Var(v) => vec![MLDecl::Var(self.var(v))],
+            TypedDecl::Fun(f) => vec![MLDecl::Fun(self.fun(f))],
+            TypedDecl::Struct(s) => {
+                let (st, fns) = self.struct_(s);
+                let mut fns:Vec<MLDecl> = fns.into_iter().map(|f|{
+                    MLDecl::Fun(f)
+                }).collect();
+                let mut r= vec![MLDecl::Struct(st)];
+                    r.append(&mut fns);
+                r
+            },
             TypedDecl::Class => exit(-1),
             TypedDecl::Enum => exit(-1),
             TypedDecl::Protocol => exit(-1),
@@ -109,8 +121,8 @@ impl HLIR2MLIR {
         }
     }
 
-    pub fn struct_(&self, s: TypedStruct) -> MLStruct {
-        MLStruct {
+    pub fn struct_(&self, s: TypedStruct) -> (MLStruct, Vec<MLFun>) {
+        (MLStruct {
             name: s.name,
             fields: s
                 .stored_properties
@@ -120,7 +132,7 @@ impl HLIR2MLIR {
                     type_: self.type_(p.type_),
                 })
                 .collect(),
-        }
+        }, vec![])
     }
 
     pub fn expr(&self, e: TypedExpr) -> MLExpr {
@@ -247,7 +259,7 @@ impl HLIR2MLIR {
 
     pub fn block(&self, b: TypedBlock) -> MLBlock {
         MLBlock {
-            body: b.body.into_iter().map(|s| self.stmt(s)).collect(),
+            body: b.body.into_iter().map(|s| self.stmt(s)).flatten().collect(),
         }
     }
 }
