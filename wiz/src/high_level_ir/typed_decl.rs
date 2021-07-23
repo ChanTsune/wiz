@@ -68,5 +68,5 @@ pub struct TypedComputedProperty {
 pub struct TypedInitializer {
     pub(crate) type_: TypedType,
     pub(crate) args: Vec<TypedArgDef>,
-    pub(crate) block: TypedBlock
+    pub(crate) block: TypedBlock,
 }

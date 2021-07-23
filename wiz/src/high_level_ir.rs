@@ -323,22 +323,34 @@ impl Ast2HLIR {
     }
 
     fn default_init_if_needed(&self, mut s: TypedStruct) -> TypedStruct {
-        let args: Vec<TypedArgDef> = s.stored_properties
+        let args: Vec<TypedArgDef> = s
+            .stored_properties
             .iter()
-            .map(|p|{
-                TypedArgDef {
-                    label: p.name.clone(),
-                    name: p.name.clone(),
-                    type_: p.type_.clone()
-                }
-            }).collect();
+            .map(|p| TypedArgDef {
+                label: p.name.clone(),
+                name: p.name.clone(),
+                type_: p.type_.clone(),
+            })
+            .collect();
         if s.init.is_empty() {
             s.init.push(TypedInitializer {
                 type_: self.typed_type_from_typed_struct(&s),
                 args,
-                block: TypedBlock { body: s.stored_properties.iter().map(|p|{
-                    TypedStmt::Assignment(TypedAssignmentStmt { target: "self.".to_string() + &*p.name.clone(), value: TypedExpr::Name(TypedName { name: p.name.clone(), type_: Some(p.type_.clone()) }) })
-                }).collect() }
+                block: TypedBlock {
+                    body: s
+                        .stored_properties
+                        .iter()
+                        .map(|p| {
+                            TypedStmt::Assignment(TypedAssignmentStmt {
+                                target: "self.".to_string() + &*p.name.clone(),
+                                value: TypedExpr::Name(TypedName {
+                                    name: p.name.clone(),
+                                    type_: Some(p.type_.clone()),
+                                }),
+                            })
+                        })
+                        .collect(),
+                },
             })
         }
         s

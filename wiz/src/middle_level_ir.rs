@@ -46,11 +46,11 @@ impl HLIR2MLIR {
     pub fn stmt(&self, s: TypedStmt) -> Vec<MLStmt> {
         match s {
             TypedStmt::Expr(e) => vec![MLStmt::Expr(self.expr(e))],
-            TypedStmt::Decl(d) => {
-                self.decl(d).into_iter().map(|dc|{
-                    MLStmt::Decl(dc)
-                }).collect()
-            },
+            TypedStmt::Decl(d) => self
+                .decl(d)
+                .into_iter()
+                .map(|dc| MLStmt::Decl(dc))
+                .collect(),
             TypedStmt::Assignment(a) => vec![MLStmt::Assignment(self.assignment(a))],
             TypedStmt::Loop(l) => vec![MLStmt::Loop(self.loop_stmt(l))],
         }
@@ -79,13 +79,11 @@ impl HLIR2MLIR {
             TypedDecl::Fun(f) => vec![MLDecl::Fun(self.fun(f))],
             TypedDecl::Struct(s) => {
                 let (st, fns) = self.struct_(s);
-                let mut fns:Vec<MLDecl> = fns.into_iter().map(|f|{
-                    MLDecl::Fun(f)
-                }).collect();
-                let mut r= vec![MLDecl::Struct(st)];
-                    r.append(&mut fns);
+                let mut fns: Vec<MLDecl> = fns.into_iter().map(|f| MLDecl::Fun(f)).collect();
+                let mut r = vec![MLDecl::Struct(st)];
+                r.append(&mut fns);
                 r
-            },
+            }
             TypedDecl::Class => exit(-1),
             TypedDecl::Enum => exit(-1),
             TypedDecl::Protocol => exit(-1),
@@ -122,17 +120,20 @@ impl HLIR2MLIR {
     }
 
     pub fn struct_(&self, s: TypedStruct) -> (MLStruct, Vec<MLFun>) {
-        (MLStruct {
-            name: s.name,
-            fields: s
-                .stored_properties
-                .into_iter()
-                .map(|p| MLField {
-                    name: p.name,
-                    type_: self.type_(p.type_),
-                })
-                .collect(),
-        }, vec![])
+        (
+            MLStruct {
+                name: s.name,
+                fields: s
+                    .stored_properties
+                    .into_iter()
+                    .map(|p| MLField {
+                        name: p.name,
+                        type_: self.type_(p.type_),
+                    })
+                    .collect(),
+            },
+            vec![],
+        )
     }
 
     pub fn expr(&self, e: TypedExpr) -> MLExpr {
