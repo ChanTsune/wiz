@@ -168,8 +168,9 @@
                    | <navigation_suffix>
 
 <indexing_suffix> ::=
-<navigation_suffix> ::=
+<navigation_suffix> ::= <member_access_operator> <identifier>
 
+<member_access_operator> ::= "." || "?."
 
 <binary_expr> ::= <white_space> <operator> <white_space> <expr>
 
