@@ -449,7 +449,13 @@ impl<'ctx> CodeGen<'ctx> {
                 self.set_to_environment(name, ptr.as_any_value_enum());
                 self.builder.build_store(ptr, f).as_any_value_enum()
             }
-            _ => exit(-1),
+            AnyValueEnum::StructValue(s) => {
+                let struct_type = s.get_type();
+                let ptr = self.builder.build_alloca(struct_type, &*name);
+                self.set_to_environment(name, ptr.as_any_value_enum());
+                self.builder.build_store(ptr, s).as_any_value_enum()
+            }
+            _ => exit(-14),
         }
     }
 
