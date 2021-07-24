@@ -16,8 +16,8 @@ use crate::middle_level_ir::ml_expr::{
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
 use crate::middle_level_ir::ml_type::MLType;
-use std::process::exit;
 use std::collections::HashMap;
+use std::process::exit;
 
 pub mod ml_decl;
 pub mod ml_expr;
@@ -26,13 +26,13 @@ pub mod ml_stmt;
 pub mod ml_type;
 
 pub struct HLIR2MLIR {
-    structs: HashMap<MLType, MLStruct>
+    structs: HashMap<MLType, MLStruct>,
 }
 
 impl HLIR2MLIR {
     pub fn new() -> Self {
         HLIR2MLIR {
-            structs: HashMap::new()
+            structs: HashMap::new(),
         }
     }
 
