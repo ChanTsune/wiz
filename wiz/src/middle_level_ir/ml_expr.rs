@@ -30,6 +30,7 @@ pub enum MLLiteral {
     String { value: String, type_: MLType },
     Boolean { value: String, type_: MLType },
     Null { type_: MLType },
+    Struct { type_: MLType }
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -127,6 +128,7 @@ impl MLLiteral {
             MLLiteral::String { value, type_ } => type_.clone(),
             MLLiteral::Boolean { value, type_ } => type_.clone(),
             MLLiteral::Null { type_ } => type_.clone(),
+            MLLiteral::Struct { type_} => type_.clone(),
         }
     }
 }

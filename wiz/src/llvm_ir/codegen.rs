@@ -131,6 +131,11 @@ impl<'ctx> CodeGen<'ctx> {
                 println!("Literall::Null");
                 exit(-2)
             }
+            MLLiteral::Struct { type_ } => {
+                let struct_type = self.module.get_struct_type(&*type_.name);
+                let struct_type = struct_type.unwrap();
+                struct_type.const_zero().as_any_value_enum()
+            }
         }
     }
 

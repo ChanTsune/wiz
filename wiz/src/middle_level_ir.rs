@@ -122,11 +122,27 @@ impl HLIR2MLIR {
     }
 
     pub fn struct_(&self, s: TypedStruct) -> (MLStruct, Vec<MLFun>) {
+        let TypedStruct { name, init, stored_properties, computed_properties } = s;
+        let mut init: Vec<MLFun> = init.into_iter().map(|i|{
+            let type_ = self.type_(i.type_);
+            let mut body = self.block(i.block).body;
+            body.insert(0, MLStmt::Assignment(MLAssignmentStmt { target: String::from("self"), value: MLExpr::Literal(MLLiteral::Struct { type_: type_.clone() }) }));
+            MLFun {
+                modifiers: vec![],
+                name: name.clone() + ".init",
+                arg_defs: i.args.into_iter().map(|a|{
+                    self.arg_def(a)
+                }).collect(),
+                return_type: type_,
+                body: Some(MLFunBody { body })
+            }
+        }).collect();
+        let mut funs: Vec<MLFun> = vec![];
+        funs.append(&mut init);
         (
             MLStruct {
-                name: s.name,
-                fields: s
-                    .stored_properties
+                name,
+                fields: stored_properties
                     .into_iter()
                     .map(|p| MLField {
                         name: p.name,
@@ -134,7 +150,7 @@ impl HLIR2MLIR {
                     })
                     .collect(),
             },
-            vec![],
+            funs,
         )
     }
 
