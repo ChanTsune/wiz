@@ -14,6 +14,10 @@ pub fn member_access_operator(s: &str) -> IResult<&str, &str> {
     alt((simple_member_access_operator, safe_member_access_operator))(s)
 }
 
+pub fn assignment_operator(s: &str) -> IResult<&str, &str> {
+    tag("=")(s)
+}
+
 mod test {
     use crate::parser::nom::operators::member_access_operator;
 
