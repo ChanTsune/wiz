@@ -47,10 +47,7 @@ impl Ast2HLIR {
         builtin_types.insert(String::from("UInt16"), TypedType::uint16());
         builtin_types.insert(String::from("UInt32"), TypedType::uint32());
         builtin_types.insert(String::from("UInt64"), TypedType::uint64());
-        builtin_types.insert(
-            String::from("String"),
-            TypedType::string(),
-        );
+        builtin_types.insert(String::from("String"), TypedType::string());
         builtin_types.insert(String::from("Noting"), TypedType::noting());
         builtin_types.insert(String::from("Unit"), TypedType::unit());
         Ast2HLIR {
@@ -149,21 +146,21 @@ impl Ast2HLIR {
         None
     }
 
-    fn resolve_member_type(&self, t:&TypedType, member_name: String) -> Option<TypedType> {
+    fn resolve_member_type(&self, t: &TypedType, member_name: String) -> Option<TypedType> {
         let s = self.struct_environment.get(t)?;
         for p in s.stored_properties.iter() {
             if p.name == member_name {
-                return Some(p.type_.clone())
+                return Some(p.type_.clone());
             }
         }
         for p in s.computed_properties.iter() {
             if p.name == member_name {
-                return Some(p.type_.clone())
+                return Some(p.type_.clone());
             }
         }
         // TODO: change resolve method
         if member_name == "init" {
-            return Some(t.clone())
+            return Some(t.clone());
         }
         None
     }
@@ -216,7 +213,8 @@ impl Ast2HLIR {
                 let struct_ = self.struct_syntax(s);
                 self.put_new_type(&struct_);
                 let struct_ = self.default_init_if_needed(struct_);
-                self.struct_environment.insert(self.typed_type_from_typed_struct(&struct_), struct_.clone());
+                self.struct_environment
+                    .insert(self.typed_type_from_typed_struct(&struct_), struct_.clone());
                 TypedDecl::Struct(struct_)
             }
             Decl::Class { .. } => TypedDecl::Class,
@@ -454,7 +452,7 @@ impl Ast2HLIR {
                     is_safe,
                     type_,
                 })
-            },
+            }
             Expr::List { .. } => TypedExpr::List,
             Expr::Tuple { .. } => TypedExpr::Tuple,
             Expr::Dict { .. } => TypedExpr::Dict,

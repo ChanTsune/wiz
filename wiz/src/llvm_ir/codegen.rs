@@ -1,7 +1,10 @@
 use crate::middle_level_ir::ml_decl::{MLDecl, MLFun, MLStruct, MLVar};
-use crate::middle_level_ir::ml_expr::{MLBinOp, MLBinopKind, MLCall, MLExpr, MLIf, MLLiteral, MLReturn, MLUnaryOp, MLMember};
+use crate::middle_level_ir::ml_expr::{
+    MLBinOp, MLBinopKind, MLCall, MLExpr, MLIf, MLLiteral, MLMember, MLReturn, MLUnaryOp,
+};
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
+use crate::middle_level_ir::ml_type::MLType;
 use either::Either;
 use inkwell::builder::Builder;
 use inkwell::context::Context;
@@ -16,7 +19,6 @@ use nom::Parser;
 use std::collections::HashMap;
 use std::path::Path;
 use std::process::exit;
-use crate::middle_level_ir::ml_type::MLType;
 
 /// Convenience type alias for the `sum` function.
 ///
@@ -60,7 +62,7 @@ impl<'ctx> CodeGen<'ctx> {
         self.local_environments.pop();
     }
 
-    fn get_struct_field_index_by_name(&self, m:MLType, n: String) -> u32 {
+    fn get_struct_field_index_by_name(&self, m: MLType, n: String) -> u32 {
         0
     }
 
@@ -303,7 +305,10 @@ impl<'ctx> CodeGen<'ctx> {
     pub fn member(&mut self, m: MLMember) -> AnyValueEnum<'ctx> {
         let target = self.expr(*m.target);
         let field_index = self.get_struct_field_index_by_name(m.type_, m.name);
-        let ep = self.builder.build_struct_gep(target.into_pointer_value(), field_index,"struct_gep").unwrap();
+        let ep = self
+            .builder
+            .build_struct_gep(target.into_pointer_value(), field_index, "struct_gep")
+            .unwrap();
         ep.as_any_value_enum()
     }
 

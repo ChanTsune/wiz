@@ -93,7 +93,7 @@ pub enum MLUnaryOpKind {
 pub struct MLMember {
     pub(crate) target: Box<MLExpr>,
     pub(crate) name: String,
-    pub(crate) type_: MLType
+    pub(crate) type_: MLType,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
