@@ -492,7 +492,20 @@ impl<'ctx> CodeGen<'ctx> {
                     function
                 }
                 // AnyTypeEnum::PointerType(_) => {}
-                // AnyTypeEnum::StructType(_) => {}
+                AnyTypeEnum::StructType(struct_type) => {
+                    let fn_type = struct_type.fn_type(&args, false);
+                    let function = self.module.add_function(&*name, fn_type, None);
+                    for (v, a) in function.get_params().iter().zip(arg_defs) {
+                        self.set_to_environment(a.name, v.as_any_value_enum());
+                    }
+                    self.current_function = Some(function);
+                    let basic_block = self.context.append_basic_block(function, "entry");
+                    self.builder.position_at_end(basic_block);
+                    for stmt in body.body {
+                        self.stmt(stmt);
+                    }
+                    function
+                }
                 // AnyTypeEnum::VectorType(_) => {}
                 AnyTypeEnum::VoidType(void_type) => {
                     let fn_type = void_type.fn_type(&args, false);
@@ -528,7 +541,12 @@ impl<'ctx> CodeGen<'ctx> {
                     f
                 }
                 // AnyTypeEnum::PointerType(_) => {}
-                // AnyTypeEnum::StructType(_) => {}
+                AnyTypeEnum::StructType(struct_type) => {
+                    let fn_type = struct_type.fn_type(&args, false);
+                    let f = self.module.add_function(&*name, fn_type, None);
+                    self.current_function = Some(f);
+                    f
+                }
                 // AnyTypeEnum::VectorType(_) => {}
                 AnyTypeEnum::VoidType(void_type) => {
                     let fn_type = void_type.fn_type(&args, false);
@@ -576,7 +594,7 @@ impl<'ctx> CodeGen<'ctx> {
                 if let AnyValueEnum::PointerValue(p) = target {
                     return AnyValueEnum::from(self.builder.build_store(p, i));
                 }
-                exit(-30)
+                exit(-3)
             }
             AnyValueEnum::FloatValue(f) => {
                 let target = self.get_from_environment(assignment.target).unwrap();
@@ -585,13 +603,20 @@ impl<'ctx> CodeGen<'ctx> {
                 }
                 exit(-3)
             }
-            _ => exit(-3), // AnyValueEnum::PhiValue(_) => {}
-                           // AnyValueEnum::ArrayValue(_) => {}
-                           // AnyValueEnum::FunctionValue(_) => {}
-                           // AnyValueEnum::PointerValue(_) => {}
-                           // AnyValueEnum::StructValue(_) => {}
-                           // AnyValueEnum::VectorValue(_) => {}
-                           // AnyValueEnum::InstructionValue(_) => {}
+            // AnyValueEnum::PhiValue(_) => {}
+            // AnyValueEnum::ArrayValue(_) => {}
+            // AnyValueEnum::FunctionValue(_) => {}
+            // AnyValueEnum::PointerValue(_) => {}
+           AnyValueEnum::StructValue(s) => {
+               let target = self.get_from_environment(assignment.target).unwrap();
+               if let AnyValueEnum::PointerValue(p) = target {
+                   return AnyValueEnum::from(self.builder.build_store(p, s));
+               }
+               exit(-3)
+           }
+           // AnyValueEnum::VectorValue(_) => {}
+           // AnyValueEnum::InstructionValue(_) => {}
+            _ => exit(-3),
         }
     }
 

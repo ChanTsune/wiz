@@ -135,12 +135,14 @@ impl HLIR2MLIR {
                 let mut body = self.block(i.block).body;
                 body.insert(
                     0,
-                    MLStmt::Assignment(MLAssignmentStmt {
-                        target: String::from("self"),
+                    MLStmt::Decl(MLDecl::Var(MLVar {
+                        is_mute: true,
+                        name:String::from("self"),
                         value: MLExpr::Literal(MLLiteral::Struct {
                             type_: type_.clone(),
                         }),
-                    }),
+                        type_: type_.clone(),
+                    })),
                 );
                 MLFun {
                     modifiers: vec![],
