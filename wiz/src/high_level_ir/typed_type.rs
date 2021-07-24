@@ -1,11 +1,11 @@
 use std::fmt;
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
 pub struct Package {
     pub(crate) names: Vec<String>,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
 pub struct TypedType {
     pub(crate) package: Package,
     pub(crate) name: String,
@@ -56,5 +56,21 @@ impl TypedType {
 
     pub fn uint64() -> TypedType {
         Self::builtin("UInt64")
+    }
+
+    pub fn float() -> TypedType {
+        Self::builtin("Float")
+    }
+
+    pub fn double() -> TypedType {
+        Self::builtin("Double")
+    }
+
+    pub fn bool() -> TypedType {
+        Self::builtin("Bool")
+    }
+
+    pub fn string() -> TypedType {
+        Self::builtin("String")
     }
 }

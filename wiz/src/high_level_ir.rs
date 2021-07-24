@@ -33,7 +33,7 @@ pub mod typed_type;
 pub struct Ast2HLIR {
     name_environment: Vec<HashMap<String, TypedType>>,
     type_environment: HashMap<String, TypedType>,
-    decl_environment: HashMap<String, TypedDecl>,
+    struct_environment: HashMap<TypedType, TypedStruct>,
 }
 
 impl Ast2HLIR {
@@ -49,17 +49,14 @@ impl Ast2HLIR {
         builtin_types.insert(String::from("UInt64"), TypedType::uint64());
         builtin_types.insert(
             String::from("String"),
-            TypedType {
-                package: Package { names: vec![] },
-                name: "String".to_string(),
-            },
+            TypedType::string(),
         );
         builtin_types.insert(String::from("Noting"), TypedType::noting());
         builtin_types.insert(String::from("Unit"), TypedType::unit());
         Ast2HLIR {
             name_environment: vec![HashMap::new()],
             type_environment: builtin_types,
-            decl_environment: HashMap::new(),
+            struct_environment: HashMap::new(),
         }
     }
 
@@ -99,7 +96,8 @@ impl Ast2HLIR {
     fn put_new_type(&mut self, s: &TypedStruct) {
         let t = self.typed_type_from_typed_struct(s);
         let name = t.name.clone();
-        self.type_environment.insert(name, t);
+        self.type_environment.insert(name.clone(), t.clone());
+        self.name_environment[0].insert(name, t);
     }
 
     fn typed_type_from_typed_struct(&self, s: &TypedStruct) -> TypedType {
@@ -151,6 +149,25 @@ impl Ast2HLIR {
         None
     }
 
+    fn resolve_member_type(&self, t:&TypedType, member_name: String) -> Option<TypedType> {
+        let s = self.struct_environment.get(t)?;
+        for p in s.stored_properties.iter() {
+            if p.name == member_name {
+                return Some(p.type_.clone())
+            }
+        }
+        for p in s.computed_properties.iter() {
+            if p.name == member_name {
+                return Some(p.type_.clone())
+            }
+        }
+        // TODO: change resolve method
+        if member_name == "init" {
+            return Some(t.clone())
+        }
+        None
+    }
+
     pub fn file(&mut self, f: FileSyntax) -> TypedFile {
         TypedFile {
             body: f.body.into_iter().map(|d| self.decl(d)).collect(),
@@ -199,6 +216,7 @@ impl Ast2HLIR {
                 let struct_ = self.struct_syntax(s);
                 self.put_new_type(&struct_);
                 let struct_ = self.default_init_if_needed(struct_);
+                self.struct_environment.insert(self.typed_type_from_typed_struct(&struct_), struct_.clone());
                 TypedDecl::Struct(struct_)
             }
             Decl::Class { .. } => TypedDecl::Class,
@@ -373,33 +391,21 @@ impl Ast2HLIR {
             Expr::Literal { literal } => match literal {
                 Literal::IntegerLiteral { value } => TypedExpr::Literal(TypedLiteral::Integer {
                     value,
-                    type_: TypedType {
-                        package: Package { names: vec![] },
-                        name: "Int64".to_string(),
-                    },
+                    type_: TypedType::int64(),
                 }),
                 Literal::FloatingPointLiteral { value } => {
                     TypedExpr::Literal(TypedLiteral::FloatingPoint {
                         value,
-                        type_: TypedType {
-                            package: Package { names: vec![] },
-                            name: "Double".to_string(),
-                        },
+                        type_: TypedType::double(),
                     })
                 }
                 Literal::StringLiteral { value } => TypedExpr::Literal(TypedLiteral::String {
                     value,
-                    type_: TypedType {
-                        package: Package { names: vec![] },
-                        name: "String".to_string(),
-                    },
+                    type_: TypedType::string(),
                 }),
                 Literal::BooleanLiteral { value } => TypedExpr::Literal(TypedLiteral::Boolean {
                     value,
-                    type_: TypedType {
-                        package: Package { names: vec![] },
-                        name: "Bool".to_string(),
-                    },
+                    type_: TypedType::bool(),
                 }),
                 Literal::NullLiteral => TypedExpr::Literal(TypedLiteral::NullLiteral {
                     type_: TypedType {
@@ -438,12 +444,17 @@ impl Ast2HLIR {
                 target,
                 name,
                 is_safe,
-            } => TypedExpr::Member(TypedMember {
-                target: Box::new(TypedExpr::Subscript),
-                name,
-                is_safe,
-                type_: None,
-            }),
+            } => {
+                let target = self.expr(*target);
+                let target_type = target.type_().unwrap();
+                let type_ = self.resolve_member_type(&target_type, name.clone());
+                TypedExpr::Member(TypedMember {
+                    target: Box::new(target),
+                    name,
+                    is_safe,
+                    type_,
+                })
+            },
             Expr::List { .. } => TypedExpr::List,
             Expr::Tuple { .. } => TypedExpr::Tuple,
             Expr::Dict { .. } => TypedExpr::Dict,

@@ -10,6 +10,7 @@ pub enum MLExpr {
     Call(MLCall),
     PrimitiveBinOp(MLBinOp),
     PrimitiveUnaryOp(MLUnaryOp),
+    Member(MLMember),
     If(MLIf),
     When,
     Return(MLReturn),
@@ -89,6 +90,13 @@ pub enum MLUnaryOpKind {
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct MLMember {
+    pub(crate) target: Box<MLExpr>,
+    pub(crate) name: String,
+    pub(crate) type_: MLType
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct MLReturn {
     pub(crate) value: Option<Box<MLExpr>>,
     pub(crate) type_: MLType,
@@ -102,6 +110,7 @@ impl MLExpr {
             MLExpr::Call(c) => c.type_.clone(),
             MLExpr::PrimitiveBinOp(b) => b.type_.clone(),
             MLExpr::PrimitiveUnaryOp(b) => b.type_.clone(),
+            MLExpr::Member(f) => f.type_.clone(),
             MLExpr::If(i) => i.type_.clone(),
             MLExpr::When => exit(-9),
             MLExpr::Return(r) => r.type_.clone(),

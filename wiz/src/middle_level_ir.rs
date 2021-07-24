@@ -1,16 +1,14 @@
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedStruct, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{TypedExpr, TypedIf, TypedLiteral, TypedName, TypedReturn};
+use crate::high_level_ir::typed_expr::{TypedExpr, TypedIf, TypedLiteral, TypedName, TypedReturn, TypedMember};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
 use crate::high_level_ir::typed_type::TypedType;
 use crate::middle_level_ir::ml_decl::{
     MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar,
 };
-use crate::middle_level_ir::ml_expr::{
-    MLBinOp, MLBinopKind, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLName, MLReturn,
-};
+use crate::middle_level_ir::ml_expr::{MLBinOp, MLBinopKind, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLName, MLReturn, MLMember};
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
 use crate::middle_level_ir::ml_type::MLType;
@@ -166,7 +164,7 @@ impl HLIR2MLIR {
             }),
             TypedExpr::UnaryOp { .. } => exit(-1),
             TypedExpr::Subscript => exit(-1),
-            TypedExpr::Member(m) => exit(-1),
+            TypedExpr::Member(m) => self.member(m),
             TypedExpr::List => exit(-1),
             TypedExpr::Tuple => exit(-1),
             TypedExpr::Dict => exit(-1),
@@ -223,6 +221,17 @@ impl HLIR2MLIR {
                 type_: self.type_(type_),
             },
         }
+    }
+
+    pub fn member(&self, m: TypedMember) -> MLExpr {
+        let target = self.expr(*m.target);
+        // if target has member as stored_property
+        MLExpr::Member(MLMember {
+            target: Box::new(target),
+            name: m.name,
+            type_: self.type_(m.type_.unwrap()) }
+        )
+        // else field as function call etc...
     }
 
     pub fn if_expr(&self, i: TypedIf) -> MLIf {

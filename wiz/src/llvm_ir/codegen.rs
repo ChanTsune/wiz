@@ -1,7 +1,5 @@
 use crate::middle_level_ir::ml_decl::{MLDecl, MLFun, MLStruct, MLVar};
-use crate::middle_level_ir::ml_expr::{
-    MLBinOp, MLBinopKind, MLCall, MLExpr, MLIf, MLLiteral, MLReturn, MLUnaryOp,
-};
+use crate::middle_level_ir::ml_expr::{MLBinOp, MLBinopKind, MLCall, MLExpr, MLIf, MLLiteral, MLReturn, MLUnaryOp, MLMember};
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
 use either::Either;
@@ -18,6 +16,7 @@ use nom::Parser;
 use std::collections::HashMap;
 use std::path::Path;
 use std::process::exit;
+use crate::middle_level_ir::ml_type::MLType;
 
 /// Convenience type alias for the `sum` function.
 ///
@@ -60,32 +59,9 @@ impl<'ctx> CodeGen<'ctx> {
     fn pop_environment(&mut self) {
         self.local_environments.pop();
     }
-    /**
-     * Generate main function as entry point.
-     */
-    pub fn initialize(&self) {
-        let void_type = self.context.void_type();
-        let fn_type = void_type.fn_type(&[], false);
-        let function = self.module.add_function("main", fn_type, None);
-        let basic_block = self.context.append_basic_block(function, "entry");
-        self.builder.position_at_end(basic_block);
-        let sum_function = self.module.get_function("sum").unwrap();
-        let x = self.context.i64_type().const_int(1, false);
-        let y = self.context.i64_type().const_int(2, false);
 
-        let sum = self
-            .builder
-            .build_call(sum_function, &[x.into(), y.into()], "sum");
-
-        let put_function = self.module.get_function("puts").unwrap();
-
-        self.builder.build_call(
-            put_function,
-            &[sum.try_as_basic_value().left().unwrap().into()],
-            "_",
-        );
-
-        self.builder.build_return(None);
+    fn get_struct_field_index_by_name(&self, m:MLType, n: String) -> u32 {
+        0
     }
 
     pub fn expr(&mut self, e: MLExpr) -> AnyValueEnum<'ctx> {
@@ -96,6 +72,7 @@ impl<'ctx> CodeGen<'ctx> {
             MLExpr::PrimitiveBinOp(b) => self.binop(b),
             MLExpr::PrimitiveUnaryOp(u) => self.unaryop(u),
             MLExpr::Call(c) => self.call(c),
+            MLExpr::Member(m) => self.member(m),
             MLExpr::If(i) => self.if_expr(i),
             MLExpr::When => exit(-1),
             MLExpr::Return(r) => self.return_expr(r),
@@ -321,6 +298,13 @@ impl<'ctx> CodeGen<'ctx> {
 
     pub fn unaryop(&self, u: MLUnaryOp) -> AnyValueEnum<'ctx> {
         exit(-1)
+    }
+
+    pub fn member(&mut self, m: MLMember) -> AnyValueEnum<'ctx> {
+        let target = self.expr(*m.target);
+        let field_index = self.get_struct_field_index_by_name(m.type_, m.name);
+        let ep = self.builder.build_struct_gep(target.into_pointer_value(), field_index,"struct_gep").unwrap();
+        ep.as_any_value_enum()
     }
 
     pub fn if_expr(&mut self, i: MLIf) -> AnyValueEnum<'ctx> {
