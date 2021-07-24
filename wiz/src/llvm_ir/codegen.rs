@@ -607,15 +607,15 @@ impl<'ctx> CodeGen<'ctx> {
             // AnyValueEnum::ArrayValue(_) => {}
             // AnyValueEnum::FunctionValue(_) => {}
             // AnyValueEnum::PointerValue(_) => {}
-           AnyValueEnum::StructValue(s) => {
-               let target = self.get_from_environment(assignment.target).unwrap();
-               if let AnyValueEnum::PointerValue(p) = target {
-                   return AnyValueEnum::from(self.builder.build_store(p, s));
-               }
-               exit(-3)
-           }
-           // AnyValueEnum::VectorValue(_) => {}
-           // AnyValueEnum::InstructionValue(_) => {}
+            AnyValueEnum::StructValue(s) => {
+                let target = self.get_from_environment(assignment.target).unwrap();
+                if let AnyValueEnum::PointerValue(p) = target {
+                    return AnyValueEnum::from(self.builder.build_store(p, s));
+                }
+                exit(-3)
+            }
+            // AnyValueEnum::VectorValue(_) => {}
+            // AnyValueEnum::InstructionValue(_) => {}
             _ => exit(-3),
         }
     }

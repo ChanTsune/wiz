@@ -146,7 +146,7 @@ impl HLIR2MLIR {
                     0,
                     MLStmt::Decl(MLDecl::Var(MLVar {
                         is_mute: true,
-                        name:String::from("self"),
+                        name: String::from("self"),
                         value: MLExpr::Literal(MLLiteral::Struct {
                             type_: type_.clone(),
                         }),
