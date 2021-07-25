@@ -16,9 +16,7 @@ use crate::high_level_ir::typed_expr::{
     TypedCallArg, TypedExpr, TypedIf, TypedLiteral, TypedMember, TypedName, TypedReturn,
 };
 use crate::high_level_ir::typed_file::TypedFile;
-use crate::high_level_ir::typed_stmt::{
-    TypedAssignmentStmt, TypedBlock, TypedForStmt, TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
-};
+use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedForStmt, TypedLoopStmt, TypedStmt, TypedWhileLoopStmt, TypedAssignment};
 use crate::high_level_ir::typed_type::{Package, TypedType};
 use std::collections::HashMap;
 use std::option::Option::Some;
@@ -181,9 +179,14 @@ impl Ast2HLIR {
     }
 
     pub fn assignment(&mut self, a: AssignmentStmt) -> TypedAssignmentStmt {
-        TypedAssignmentStmt {
-            target: a.target,
-            value: self.expr(a.value),
+        match a {
+            AssignmentStmt::Assignment(a) => {
+                TypedAssignmentStmt::Assignment(TypedAssignment {
+                    target: self.expr(a.target),
+                    value: self.expr(a.value),
+            })
+            }
+            AssignmentStmt::AssignmentAndOperator(_) => {exit(-1)}
         }
     }
 
@@ -352,21 +355,28 @@ impl Ast2HLIR {
             })
             .collect();
         if s.init.is_empty() {
+            let struct_type = self.typed_type_from_typed_struct(&s);
             s.init.push(TypedInitializer {
-                type_: self.typed_type_from_typed_struct(&s),
+                type_: struct_type.clone(),
                 args,
                 block: TypedBlock {
                     body: s
                         .stored_properties
                         .iter()
                         .map(|p| {
-                            TypedStmt::Assignment(TypedAssignmentStmt {
-                                target: "self.".to_string() + &*p.name.clone(),
+                            let struct_type =  self.typed_type_from_typed_struct(&s);
+                            TypedStmt::Assignment(TypedAssignmentStmt::Assignment(TypedAssignment {
+                                target: TypedExpr::Member(TypedMember {
+                                    target: Box::new(TypedExpr::Name(TypedName { name: "self".to_string(), type_: Some(struct_type) })),
+                                    name: p.name.clone(),
+                                    is_safe: false,
+                                    type_: Some(p.type_.clone())
+                                }),
                                 value: TypedExpr::Name(TypedName {
                                     name: p.name.clone(),
                                     type_: Some(p.type_.clone()),
                                 }),
-                            })
+                            }))
                         })
                         .collect(),
                 },

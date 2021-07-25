@@ -15,8 +15,21 @@ pub enum Stmt {
 impl Node for Stmt {}
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
-pub struct AssignmentStmt {
-    pub(crate) target: String,
+pub enum AssignmentStmt {
+    Assignment(AssignmentSyntax),
+    AssignmentAndOperator(AssignmentAndOperatorSyntax)
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct AssignmentSyntax {
+    pub(crate) target: Expr,
+    pub(crate) value: Expr,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct AssignmentAndOperatorSyntax {
+    pub(crate) target: Expr,
+    pub(crate) operator: String,
     pub(crate) value: Expr,
 }
 

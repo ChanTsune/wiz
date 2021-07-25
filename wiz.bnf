@@ -78,7 +78,23 @@
 
 <decl_stmt> ::= <decl> <eol>
 
-<assignment_stmt> ::= <identifier> "=" <expr>
+<assignment_stmt> ::= ((<directly_assignable_expr> '=') | (<assignable_expr> <assignment_and_operator>)) <expr>
+
+<directly_assignable_expr> ::= <postfix_expr> <assignable_suffix>
+                             | <identifier>
+                             | <parenthesized_directly_assignable_expr>
+
+<assignable_expr> ::= <prefix_expr>
+                    | <parenthesized_assignable_expression>
+
+<assignable_suffix> ::= <type_arguments>
+                      | <indexing_suffix>
+                      | <navigation_suffix>
+
+<parenthesized_directly_assignable_expr> ::= '(' <directly_assignable_expr> ')'
+<parenthesized_assignable_expression> ::= "(" <assignable_expr> ")"
+
+<assignment_and_operator> ::= "+="|"-="|"*="|"/="|"%="
 
 <while_stmt> ::= "while" <expr> <block>
 

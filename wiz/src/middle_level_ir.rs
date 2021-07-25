@@ -40,6 +40,10 @@ impl HLIR2MLIR {
         self.structs.get(typ).unwrap()
     }
 
+    fn add_struct(&mut self, typ: MLType, struct_: MLStruct) {
+        self.structs.insert(typ, struct_);
+    }
+
     pub fn type_(&self, t: TypedType) -> MLType {
         let mut pkg = t.package.names;
         pkg.append(&mut vec![t.name]);
@@ -48,13 +52,13 @@ impl HLIR2MLIR {
         }
     }
 
-    pub fn file(&self, f: TypedFile) -> MLFile {
+    pub fn file(&mut self, f: TypedFile) -> MLFile {
         MLFile {
             body: f.body.into_iter().map(|d| self.decl(d)).flatten().collect(),
         }
     }
 
-    pub fn stmt(&self, s: TypedStmt) -> Vec<MLStmt> {
+    pub fn stmt(&mut self, s: TypedStmt) -> Vec<MLStmt> {
         match s {
             TypedStmt::Expr(e) => vec![MLStmt::Expr(self.expr(e))],
             TypedStmt::Decl(d) => self
@@ -67,14 +71,16 @@ impl HLIR2MLIR {
         }
     }
 
-    pub fn assignment(&self, a: TypedAssignmentStmt) -> MLAssignmentStmt {
-        MLAssignmentStmt {
-            target: a.target,
-            value: self.expr(a.value),
-        }
+    pub fn assignment(&mut self, a: TypedAssignmentStmt) -> MLAssignmentStmt {
+        match a { TypedAssignmentStmt::Assignment(a) => {
+            MLAssignmentStmt {
+                target: self.expr(a.target),
+                value: self.expr(a.value),
+            }
+        } }
     }
 
-    pub fn loop_stmt(&self, l: TypedLoopStmt) -> MLLoopStmt {
+    pub fn loop_stmt(&mut self, l: TypedLoopStmt) -> MLLoopStmt {
         match l {
             TypedLoopStmt::While(w) => MLLoopStmt {
                 condition: self.expr(w.condition),
@@ -84,7 +90,7 @@ impl HLIR2MLIR {
         }
     }
 
-    pub fn decl(&self, d: TypedDecl) -> Vec<MLDecl> {
+    pub fn decl(&mut self, d: TypedDecl) -> Vec<MLDecl> {
         match d {
             TypedDecl::Var(v) => vec![MLDecl::Var(self.var(v))],
             TypedDecl::Fun(f) => vec![MLDecl::Fun(self.fun(f))],
@@ -102,7 +108,7 @@ impl HLIR2MLIR {
         }
     }
 
-    pub fn var(&self, v: TypedVar) -> MLVar {
+    pub fn var(&mut self, v: TypedVar) -> MLVar {
         let expr = self.expr(v.value);
         MLVar {
             is_mute: v.is_mut,
@@ -112,7 +118,7 @@ impl HLIR2MLIR {
         }
     }
 
-    pub fn fun(&self, f: TypedFun) -> MLFun {
+    pub fn fun(&mut self, f: TypedFun) -> MLFun {
         let TypedFun {
             modifiers,
             name,
@@ -130,13 +136,26 @@ impl HLIR2MLIR {
         }
     }
 
-    pub fn struct_(&self, s: TypedStruct) -> (MLStruct, Vec<MLFun>) {
+    pub fn struct_(&mut self, s: TypedStruct) -> (MLStruct, Vec<MLFun>) {
         let TypedStruct {
             name,
             init,
             stored_properties,
             computed_properties, member_functions, static_function,
         } = s;
+        let struct_ =             MLStruct {
+            name:name.clone(),
+            fields: stored_properties
+                .into_iter()
+                .map(|p| MLField {
+                    name: p.name,
+                    type_: self.type_(p.type_),
+                })
+                .collect(),
+        };
+
+        self.add_struct(MLType { name: struct_.name.clone() }, struct_.clone());
+
         let mut init: Vec<MLFun> = init
             .into_iter()
             .map(|i| {
@@ -164,22 +183,10 @@ impl HLIR2MLIR {
             .collect();
         let mut funs: Vec<MLFun> = vec![];
         funs.append(&mut init);
-        (
-            MLStruct {
-                name,
-                fields: stored_properties
-                    .into_iter()
-                    .map(|p| MLField {
-                        name: p.name,
-                        type_: self.type_(p.type_),
-                    })
-                    .collect(),
-            },
-            funs,
-        )
+        (struct_,funs)
     }
 
-    pub fn expr(&self, e: TypedExpr) -> MLExpr {
+    pub fn expr(&mut self, e: TypedExpr) -> MLExpr {
         match e {
             TypedExpr::Name(name) => MLExpr::Name(self.name(name)),
             TypedExpr::Literal(l) => MLExpr::Literal(self.literal(l)),
@@ -237,7 +244,7 @@ impl HLIR2MLIR {
     }
 
     pub fn name(&self, n: TypedName) -> MLName {
-        println!("{:?}", &n);
+        println!("MLIR => name :: {:?}", &n);
         MLName {
             name: n.name,
             type_: self.type_(n.type_.unwrap()),
@@ -268,18 +275,29 @@ impl HLIR2MLIR {
         }
     }
 
-    pub fn member(&self, m: TypedMember) -> MLExpr {
-        let target = self.expr(*m.target);
-        // if target has member as stored_property
-        MLExpr::Member(MLMember {
-            target: Box::new(target),
-            name: m.name,
-            type_: self.type_(m.type_.unwrap()),
-        })
+    pub fn member(&mut self, m: TypedMember) -> MLExpr {
+        let TypedMember { target, name, is_safe, type_ } = m;
+        let target = self.expr(*target);
+        let struct_ = self.get_struct(&target.type_());
+        let type_ = self.type_(type_.unwrap());
+        let is_stored = struct_.fields.iter().any(|f|{f.name == name});
+        if is_stored {
+            MLExpr::Member(MLMember {
+                target: Box::new(target),
+                name,
+                type_,
+            })
+        } else {
+            MLExpr::Call(MLCall {
+                target: Box::new(MLExpr::Name(MLName { name: target.type_().name +"."+ &*name, type_: type_.clone() })),
+                args: vec![],
+                type_: type_
+            })
+        }
         // else field as function call etc...
     }
 
-    pub fn if_expr(&self, i: TypedIf) -> MLIf {
+    pub fn if_expr(&mut self, i: TypedIf) -> MLIf {
         MLIf {
             condition: Box::new(self.expr(*i.condition)),
             body: self.block(i.body),
@@ -288,7 +306,7 @@ impl HLIR2MLIR {
         }
     }
 
-    pub fn return_expr(&self, r: TypedReturn) -> MLReturn {
+    pub fn return_expr(&mut self, r: TypedReturn) -> MLReturn {
         MLReturn {
             value: r.value.map(|v| Box::new(self.expr(*v))),
             type_: self.type_(r.type_.unwrap()),
@@ -302,7 +320,7 @@ impl HLIR2MLIR {
         }
     }
 
-    pub fn fun_body(&self, b: TypedFunBody) -> MLFunBody {
+    pub fn fun_body(&mut self, b: TypedFunBody) -> MLFunBody {
         match b {
             TypedFunBody::Expr(e) => MLFunBody {
                 body: vec![MLStmt::Expr(MLExpr::Return(MLReturn::new(self.expr(e))))],
@@ -313,7 +331,7 @@ impl HLIR2MLIR {
         }
     }
 
-    pub fn block(&self, b: TypedBlock) -> MLBlock {
+    pub fn block(&mut self, b: TypedBlock) -> MLBlock {
         MLBlock {
             body: b.body.into_iter().map(|s| self.stmt(s)).flatten().collect(),
         }

@@ -304,6 +304,7 @@ impl<'ctx> CodeGen<'ctx> {
     }
 
     pub fn unaryop(&self, u: MLUnaryOp) -> AnyValueEnum<'ctx> {
+        println!("Unsupported unaryop {:?}", &u);
         exit(-1)
     }
 
@@ -594,16 +595,17 @@ impl<'ctx> CodeGen<'ctx> {
 
     pub fn assignment_stmt(&mut self, assignment: MLAssignmentStmt) -> AnyValueEnum<'ctx> {
         let value = self.expr(assignment.value);
+        println!("{:?}", &assignment.target);
         match value {
             AnyValueEnum::IntValue(i) => {
-                let target = self.get_from_environment(assignment.target).unwrap();
+                let target = self.expr(assignment.target);
                 if let AnyValueEnum::PointerValue(p) = target {
                     return AnyValueEnum::from(self.builder.build_store(p, i));
                 }
                 exit(-3)
             }
             AnyValueEnum::FloatValue(f) => {
-                let target = self.get_from_environment(assignment.target).unwrap();
+                let target = self.expr(assignment.target);
                 if let AnyValueEnum::PointerValue(p) = target {
                     return AnyValueEnum::from(self.builder.build_store(p, f));
                 }
@@ -614,7 +616,7 @@ impl<'ctx> CodeGen<'ctx> {
             // AnyValueEnum::FunctionValue(_) => {}
             // AnyValueEnum::PointerValue(_) => {}
             AnyValueEnum::StructValue(s) => {
-                let target = self.get_from_environment(assignment.target).unwrap();
+                let target = self.expr(assignment.target);
                 if let AnyValueEnum::PointerValue(p) = target {
                     return AnyValueEnum::from(self.builder.build_store(p, s));
                 }

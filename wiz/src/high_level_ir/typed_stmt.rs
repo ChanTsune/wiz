@@ -12,8 +12,13 @@ pub enum TypedStmt {
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
-pub struct TypedAssignmentStmt {
-    pub(crate) target: String,
+pub enum TypedAssignmentStmt {
+    Assignment(TypedAssignment)
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct TypedAssignment {
+    pub(crate) target: TypedExpr,
     pub(crate) value: TypedExpr,
 }
 
