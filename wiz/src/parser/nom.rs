@@ -163,7 +163,7 @@ mod tests {
     use crate::ast::block::Block;
     use crate::ast::expr::Expr;
     use crate::ast::literal::Literal;
-    use crate::ast::stmt::{AssignmentStmt, LoopStmt, Stmt, AssignmentSyntax};
+    use crate::ast::stmt::{AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt};
     use crate::parser::nom::while_stmt;
 
     #[test]
@@ -187,20 +187,24 @@ mod tests {
                         })
                     },
                     block: Block {
-                        body: vec![Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax  {
-                            target: Expr::Name { name: "a".to_string()},
-                            value: Expr::BinOp {
-                                left: Box::new(Expr::Name {
+                        body: vec![Stmt::Assignment(AssignmentStmt::Assignment(
+                            AssignmentSyntax {
+                                target: Expr::Name {
                                     name: "a".to_string()
-                                }),
-                                kind: "+".to_string(),
-                                right: Box::new(Expr::Literal {
-                                    literal: Literal::IntegerLiteral {
-                                        value: "1".to_string()
-                                    }
-                                })
+                                },
+                                value: Expr::BinOp {
+                                    left: Box::new(Expr::Name {
+                                        name: "a".to_string()
+                                    }),
+                                    kind: "+".to_string(),
+                                    right: Box::new(Expr::Literal {
+                                        literal: Literal::IntegerLiteral {
+                                            value: "1".to_string()
+                                        }
+                                    })
+                                }
                             }
-                        }))]
+                        ))]
                     }
                 }
             ))
