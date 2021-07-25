@@ -77,7 +77,7 @@ impl Ast2HLIR {
         }
     }
 
-    fn get_type_by(&self, name: String) -> Option<TypedType> {
+    fn resolve_name(&self, name: String) -> Option<TypedType> {
         for env in self.name_environment.iter().rev() {
             if let Some(t) = env.get(&*name) {
                 return Some(t.clone());
@@ -408,7 +408,7 @@ impl Ast2HLIR {
         match e {
             Expr::Name { name } => TypedExpr::Name(TypedName {
                 name: name.clone(),
-                type_: self.get_type_by(name),
+                type_: self.resolve_name(name),
             }),
             Expr::Literal { literal } => match literal {
                 Literal::IntegerLiteral { value } => TypedExpr::Literal(TypedLiteral::Integer {
