@@ -141,7 +141,9 @@ impl HLIR2MLIR {
             name,
             init,
             stored_properties,
-            computed_properties, member_functions, static_function,
+            computed_properties,
+            member_functions,
+            static_function,
         } = s;
         let struct_ =             MLStruct {
             name:name.clone(),

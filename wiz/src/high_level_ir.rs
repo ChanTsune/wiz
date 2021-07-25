@@ -340,7 +340,7 @@ impl Ast2HLIR {
             stored_properties,
             computed_properties,
             member_functions: vec![],
-            static_function: vec![]
+            static_function: vec![],
         }
     }
 
