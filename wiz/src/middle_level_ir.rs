@@ -135,7 +135,9 @@ impl HLIR2MLIR {
             name,
             init,
             stored_properties,
-            computed_properties, member_functions, static_function,
+            computed_properties,
+            member_functions,
+            static_function,
         } = s;
         let mut init: Vec<MLFun> = init
             .into_iter()
