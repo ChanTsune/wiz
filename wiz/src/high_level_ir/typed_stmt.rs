@@ -13,7 +13,7 @@ pub enum TypedStmt {
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum TypedAssignmentStmt {
-    Assignment(TypedAssignment)
+    Assignment(TypedAssignment),
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]

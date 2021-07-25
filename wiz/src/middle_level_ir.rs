@@ -72,12 +72,12 @@ impl HLIR2MLIR {
     }
 
     pub fn assignment(&mut self, a: TypedAssignmentStmt) -> MLAssignmentStmt {
-        match a { TypedAssignmentStmt::Assignment(a) => {
-            MLAssignmentStmt {
+        match a {
+            TypedAssignmentStmt::Assignment(a) => MLAssignmentStmt {
                 target: self.expr(a.target),
                 value: self.expr(a.value),
-            }
-        } }
+            },
+        }
     }
 
     pub fn loop_stmt(&mut self, l: TypedLoopStmt) -> MLLoopStmt {
@@ -145,8 +145,8 @@ impl HLIR2MLIR {
             member_functions,
             static_function,
         } = s;
-        let struct_ =             MLStruct {
-            name:name.clone(),
+        let struct_ = MLStruct {
+            name: name.clone(),
             fields: stored_properties
                 .into_iter()
                 .map(|p| MLField {
@@ -156,7 +156,12 @@ impl HLIR2MLIR {
                 .collect(),
         };
 
-        self.add_struct(MLType { name: struct_.name.clone() }, struct_.clone());
+        self.add_struct(
+            MLType {
+                name: struct_.name.clone(),
+            },
+            struct_.clone(),
+        );
 
         let mut init: Vec<MLFun> = init
             .into_iter()
@@ -185,7 +190,7 @@ impl HLIR2MLIR {
             .collect();
         let mut funs: Vec<MLFun> = vec![];
         funs.append(&mut init);
-        (struct_,funs)
+        (struct_, funs)
     }
 
     pub fn expr(&mut self, e: TypedExpr) -> MLExpr {
@@ -278,11 +283,16 @@ impl HLIR2MLIR {
     }
 
     pub fn member(&mut self, m: TypedMember) -> MLExpr {
-        let TypedMember { target, name, is_safe, type_ } = m;
+        let TypedMember {
+            target,
+            name,
+            is_safe,
+            type_,
+        } = m;
         let target = self.expr(*target);
         let struct_ = self.get_struct(&target.type_());
         let type_ = self.type_(type_.unwrap());
-        let is_stored = struct_.fields.iter().any(|f|{f.name == name});
+        let is_stored = struct_.fields.iter().any(|f| f.name == name);
         if is_stored {
             MLExpr::Member(MLMember {
                 target: Box::new(target),
@@ -291,9 +301,12 @@ impl HLIR2MLIR {
             })
         } else {
             MLExpr::Call(MLCall {
-                target: Box::new(MLExpr::Name(MLName { name: target.type_().name +"."+ &*name, type_: type_.clone() })),
+                target: Box::new(MLExpr::Name(MLName {
+                    name: target.type_().name + "." + &*name,
+                    type_: type_.clone(),
+                })),
                 args: vec![],
-                type_: type_
+                type_: type_,
             })
         }
         // else field as function call etc...

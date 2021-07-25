@@ -17,7 +17,7 @@ impl Node for Stmt {}
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum AssignmentStmt {
     Assignment(AssignmentSyntax),
-    AssignmentAndOperator(AssignmentAndOperatorSyntax)
+    AssignmentAndOperator(AssignmentAndOperatorSyntax),
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
