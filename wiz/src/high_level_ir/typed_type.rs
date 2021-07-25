@@ -26,12 +26,12 @@ pub struct TypedFunctionType {
 #[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
 pub struct TypedTypeParam {
     pub(crate) name: String,
-    pub(crate) type_constraint: Vec<TypedType>
+    pub(crate) type_constraint: Vec<TypedType>,
 }
 
 impl TypedType {
     fn builtin(name: &str) -> TypedType {
-        TypedType::Value( TypedValueType {
+        TypedType::Value(TypedValueType {
             package: Package { names: vec![] },
             name: String::from(name),
         })

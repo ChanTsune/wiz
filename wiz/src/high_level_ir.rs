@@ -168,9 +168,7 @@ impl Ast2HLIR {
                 }
                 None
             }
-            TypedType::Function(_) => {
-                None
-            }
+            TypedType::Function(_) => None,
         }
     }
 
@@ -432,7 +430,7 @@ impl Ast2HLIR {
                     type_: TypedType::bool(),
                 }),
                 Literal::NullLiteral => TypedExpr::Literal(TypedLiteral::NullLiteral {
-                    type_: TypedType::Value (TypedValueType{
+                    type_: TypedType::Value(TypedValueType {
                         package: Package { names: vec![] },
                         name: "Option<*>".to_string(),
                     }),
