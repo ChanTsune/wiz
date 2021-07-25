@@ -50,6 +50,15 @@ pub struct TypedStruct {
     pub(crate) init: Vec<TypedInitializer>,
     pub(crate) stored_properties: Vec<TypedStoredProperty>,
     pub(crate) computed_properties: Vec<TypedComputedProperty>,
+    pub(crate) member_functions: Vec<TypedMemberFunction>,
+    pub(crate) static_function: Vec<TypedFun>,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct TypedInitializer {
+    pub(crate) type_: TypedType,
+    pub(crate) args: Vec<TypedArgDef>,
+    pub(crate) block: TypedBlock,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -65,8 +74,10 @@ pub struct TypedComputedProperty {
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
-pub struct TypedInitializer {
-    pub(crate) type_: TypedType,
+pub struct TypedMemberFunction {
+    pub(crate) name: String,
     pub(crate) args: Vec<TypedArgDef>,
-    pub(crate) block: TypedBlock,
+    pub(crate) body: TypedFunBody,
+    pub(crate) return_type: TypedType,
+    pub(crate) type_: TypedType,
 }

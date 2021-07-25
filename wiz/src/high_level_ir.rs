@@ -336,6 +336,8 @@ impl Ast2HLIR {
             init: initializers,
             stored_properties,
             computed_properties,
+            member_functions: vec![],
+            static_function: vec![]
         }
     }
 
