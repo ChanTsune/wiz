@@ -20,7 +20,7 @@ use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentStmt, TypedBlock, TypedForStmt, TypedLoopStmt, TypedStmt,
     TypedWhileLoopStmt,
 };
-use crate::high_level_ir::typed_type::{Package, TypedType};
+use crate::high_level_ir::typed_type::{Package, TypedType, TypedValueType};
 use std::collections::HashMap;
 use std::option::Option::Some;
 use std::process::exit;
@@ -34,7 +34,7 @@ pub mod typed_type;
 pub struct Ast2HLIR {
     name_environment: Vec<HashMap<String, TypedType>>,
     type_environment: HashMap<String, TypedType>,
-    struct_environment: HashMap<TypedType, TypedStruct>,
+    struct_environment: HashMap<TypedValueType, TypedStruct>,
 }
 
 impl Ast2HLIR {
@@ -94,13 +94,14 @@ impl Ast2HLIR {
     fn put_new_type(&mut self, s: &TypedStruct) {
         let t = self.typed_type_from_typed_struct(s);
         let name = t.name.clone();
+        let t = TypedType::Value(t);
         self.type_environment.insert(name.clone(), t.clone());
         self.name_environment[0].insert(name, t);
     }
 
-    fn typed_type_from_typed_struct(&self, s: &TypedStruct) -> TypedType {
+    fn typed_type_from_typed_struct(&self, s: &TypedStruct) -> TypedValueType {
         let name = s.name.clone();
-        TypedType {
+        TypedValueType {
             package: Package { names: vec![] },
             name: name.clone(),
         }
@@ -148,22 +149,29 @@ impl Ast2HLIR {
     }
 
     fn resolve_member_type(&self, t: &TypedType, member_name: String) -> Option<TypedType> {
-        let s = self.struct_environment.get(t)?;
-        for p in s.stored_properties.iter() {
-            if p.name == member_name {
-                return Some(p.type_.clone());
+        match t {
+            TypedType::Value(t) => {
+                let s = self.struct_environment.get(t)?;
+                for p in s.stored_properties.iter() {
+                    if p.name == member_name {
+                        return Some(p.type_.clone());
+                    }
+                }
+                for p in s.computed_properties.iter() {
+                    if p.name == member_name {
+                        return Some(p.type_.clone());
+                    }
+                }
+                // TODO: change resolve method
+                if member_name == "init" {
+                    return Some(TypedType::Value(t.clone()));
+                }
+                None
+            }
+            TypedType::Function(_) => {
+                None
             }
         }
-        for p in s.computed_properties.iter() {
-            if p.name == member_name {
-                return Some(p.type_.clone());
-            }
-        }
-        // TODO: change resolve method
-        if member_name == "init" {
-            return Some(t.clone());
-        }
-        None
     }
 
     pub fn file(&mut self, f: FileSyntax) -> TypedFile {
@@ -358,7 +366,7 @@ impl Ast2HLIR {
         if s.init.is_empty() {
             let struct_type = self.typed_type_from_typed_struct(&s);
             s.init.push(TypedInitializer {
-                type_: struct_type.clone(),
+                type_: TypedType::Value(struct_type.clone()),
                 args,
                 block: TypedBlock {
                     body: s
@@ -371,7 +379,7 @@ impl Ast2HLIR {
                                     target: TypedExpr::Member(TypedMember {
                                         target: Box::new(TypedExpr::Name(TypedName {
                                             name: "self".to_string(),
-                                            type_: Some(struct_type),
+                                            type_: Some(TypedType::Value(struct_type)),
                                         })),
                                         name: p.name.clone(),
                                         is_safe: false,
@@ -424,10 +432,10 @@ impl Ast2HLIR {
                     type_: TypedType::bool(),
                 }),
                 Literal::NullLiteral => TypedExpr::Literal(TypedLiteral::NullLiteral {
-                    type_: TypedType {
+                    type_: TypedType::Value (TypedValueType{
                         package: Package { names: vec![] },
                         name: "Option<*>".to_string(),
-                    },
+                    }),
                 }),
             },
             Expr::BinOp { left, kind, right } => {

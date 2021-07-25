@@ -6,17 +6,35 @@ pub struct Package {
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
-pub struct TypedType {
+pub enum TypedType {
+    Value(TypedValueType),
+    Function(Box<TypedFunctionType>),
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
+pub struct TypedValueType {
     pub(crate) package: Package,
     pub(crate) name: String,
 }
 
+#[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
+pub struct TypedFunctionType {
+    pub(crate) arguments: Vec<TypedType>,
+    pub(crate) return_type: TypedType,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
+pub struct TypedTypeParam {
+    pub(crate) name: String,
+    pub(crate) type_constraint: Vec<TypedType>
+}
+
 impl TypedType {
     fn builtin(name: &str) -> TypedType {
-        TypedType {
+        TypedType::Value( TypedValueType {
             package: Package { names: vec![] },
             name: String::from(name),
-        }
+        })
     }
 
     pub fn noting() -> TypedType {
@@ -50,6 +68,7 @@ impl TypedType {
     pub fn uint16() -> TypedType {
         Self::builtin("UInt16")
     }
+
     pub fn uint32() -> TypedType {
         Self::builtin("UInt32")
     }

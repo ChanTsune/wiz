@@ -45,10 +45,18 @@ impl HLIR2MLIR {
     }
 
     pub fn type_(&self, t: TypedType) -> MLType {
-        let mut pkg = t.package.names;
-        pkg.append(&mut vec![t.name]);
-        MLType {
-            name: pkg.join("::"),
+        match t {
+            TypedType::Value(t) => {
+                let mut pkg = t.package.names;
+                pkg.append(&mut vec![t.name]);
+                MLType {
+                    name: pkg.join("::"),
+                }
+            }
+            TypedType::Function(f) => {
+                println!("{:?}", f);
+                exit(-9)
+            }
         }
     }
 
