@@ -21,11 +21,11 @@ use crate::high_level_ir::typed_stmt::{
     TypedWhileLoopStmt,
 };
 use crate::high_level_ir::typed_type::{Package, TypedType, TypedValueType};
-use std::collections::HashMap;
-use std::option::Option::Some;
-use std::fmt;
-use std::process::exit;
 use crate::utils::stacked_hash_map::StackedHashMap;
+use std::collections::HashMap;
+use std::fmt;
+use std::option::Option::Some;
+use std::process::exit;
 
 pub mod typed_decl;
 pub mod typed_expr;
@@ -63,7 +63,7 @@ impl Ast2HLIRContext {
     }
 
     fn put_type(&mut self, s: &TypedStruct) {
-        let typed_value_type =        TypedValueType {
+        let typed_value_type = TypedValueType {
             package: Package { names: vec![] },
             name: s.name.clone(),
         };
@@ -84,12 +84,10 @@ impl Ast2HLIRContext {
             None
         }
     }
-
-
 }
 
 pub struct Ast2HLIR {
-    context: Ast2HLIRContext
+    context: Ast2HLIRContext,
 }
 
 impl Ast2HLIR {
@@ -110,8 +108,8 @@ impl Ast2HLIR {
             context: Ast2HLIRContext {
                 name_environment: StackedHashMap::from(HashMap::new()),
                 type_environment: StackedHashMap::from(builtin_types),
-                struct_environment: StackedHashMap::from(HashMap::new())
-            }
+                struct_environment: StackedHashMap::from(HashMap::new()),
+            },
         }
     }
 
@@ -122,9 +120,10 @@ impl Ast2HLIR {
                     let var = self.var_syntax(v);
                     self.context.put_name(var.name, &var.type_.unwrap())
                 }
-                Decl::Fun(f) => {
-                    self.context.put_name(f.name, &self.context.resolve_by_type_name(f.return_type).unwrap())
-                }
+                Decl::Fun(f) => self.context.put_name(
+                    f.name,
+                    &self.context.resolve_by_type_name(f.return_type).unwrap(),
+                ),
                 Decl::Struct(_) => {}
                 Decl::Class {} => {}
                 Decl::Enum {} => {}
@@ -292,7 +291,10 @@ impl Ast2HLIR {
             .map(|a| TypedArgDef {
                 label: a.label,
                 name: a.name,
-                type_: self.context.resolve_by_type_name(Some(a.type_name)).unwrap(),
+                type_: self
+                    .context
+                    .resolve_by_type_name(Some(a.type_name))
+                    .unwrap(),
             })
             .collect();
         self.context.push();
