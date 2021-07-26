@@ -18,6 +18,7 @@ mod high_level_ir;
 mod llvm_ir;
 mod middle_level_ir;
 mod parser;
+mod utils;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let app = App::new("wiz")
