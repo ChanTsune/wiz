@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::fmt;
 use std::hash::Hash;
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(fmt::Debug, Clone)]
 pub(crate) struct StackedHashMap<K, V> {
     map_stack: Vec<HashMap<K, V>>,
 }

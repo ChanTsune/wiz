@@ -23,7 +23,9 @@ use crate::high_level_ir::typed_stmt::{
 use crate::high_level_ir::typed_type::{Package, TypedType, TypedValueType};
 use std::collections::HashMap;
 use std::option::Option::Some;
+use std::fmt;
 use std::process::exit;
+use crate::utils::stacked_hash_map::StackedHashMap;
 
 pub mod typed_decl;
 pub mod typed_expr;
@@ -31,10 +33,63 @@ pub mod typed_file;
 pub mod typed_stmt;
 pub mod typed_type;
 
+#[derive(fmt::Debug, Clone)]
+struct Ast2HLIRContext {
+    name_environment: StackedHashMap<String, TypedType>,
+    type_environment: StackedHashMap<String, TypedType>,
+    struct_environment: StackedHashMap<TypedValueType, TypedStruct>,
+}
+
+impl Ast2HLIRContext {
+    pub(crate) fn push(&mut self) {
+        self.name_environment.push(HashMap::new());
+        self.type_environment.push(HashMap::new());
+        self.struct_environment.push(HashMap::new());
+    }
+
+    pub(crate) fn pop(&mut self) {
+        self.name_environment.pop();
+        self.type_environment.pop();
+        self.struct_environment.pop();
+    }
+
+    pub(crate) fn resolve_name(&self, name: String) -> Option<TypedType> {
+        let v = self.name_environment.get(&name)?;
+        Some(v.clone())
+    }
+
+    pub(crate) fn put_name(&mut self, name: String, type_: &TypedType) {
+        self.name_environment.insert(name, type_.clone());
+    }
+
+    fn put_type(&mut self, s: &TypedStruct) {
+        let typed_value_type =        TypedValueType {
+            package: Package { names: vec![] },
+            name: s.name.clone(),
+        };
+        let name = typed_value_type.name.clone();
+        let t = TypedType::Value(typed_value_type.clone());
+        self.type_environment.insert(name.clone(), t.clone());
+        self.name_environment.insert(name, t);
+        self.struct_environment.insert(typed_value_type, s.clone());
+    }
+
+    fn resolve_by_type_name(&self, type_name: Option<TypeName>) -> Option<TypedType> {
+        if let Some(type_name) = type_name {
+            self.type_environment.get(&type_name.name).map(|a| {
+                println!("TypeResolver :: {:?}", a);
+                a.clone()
+            })
+        } else {
+            None
+        }
+    }
+
+
+}
+
 pub struct Ast2HLIR {
-    name_environment: Vec<HashMap<String, TypedType>>,
-    type_environment: HashMap<String, TypedType>,
-    struct_environment: HashMap<TypedValueType, TypedStruct>,
+    context: Ast2HLIRContext
 }
 
 impl Ast2HLIR {
@@ -52,9 +107,11 @@ impl Ast2HLIR {
         builtin_types.insert(String::from("Noting"), TypedType::noting());
         builtin_types.insert(String::from("Unit"), TypedType::unit());
         Ast2HLIR {
-            name_environment: vec![HashMap::new()],
-            type_environment: builtin_types,
-            struct_environment: HashMap::new(),
+            context: Ast2HLIRContext {
+                name_environment: StackedHashMap::from(HashMap::new()),
+                type_environment: StackedHashMap::from(builtin_types),
+                struct_environment: StackedHashMap::from(HashMap::new())
+            }
         }
     }
 
@@ -63,10 +120,10 @@ impl Ast2HLIR {
             match decl {
                 Decl::Var(v) => {
                     let var = self.var_syntax(v);
-                    self.put_type_by(var.name, &var.type_.unwrap())
+                    self.context.put_name(var.name, &var.type_.unwrap())
                 }
                 Decl::Fun(f) => {
-                    self.put_type_by(f.name, &self.resolve_by_type_name(f.return_type).unwrap())
+                    self.context.put_name(f.name, &self.context.resolve_by_type_name(f.return_type).unwrap())
                 }
                 Decl::Struct(_) => {}
                 Decl::Class {} => {}
@@ -74,55 +131,6 @@ impl Ast2HLIR {
                 Decl::Protocol {} => {}
                 Decl::Extension {} => {}
             }
-        }
-    }
-
-    fn resolve_name(&self, name: String) -> Option<TypedType> {
-        for env in self.name_environment.iter().rev() {
-            if let Some(t) = env.get(&*name) {
-                return Some(t.clone());
-            }
-        }
-        None
-    }
-
-    fn put_type_by(&mut self, name: String, type_: &TypedType) {
-        let last_index = self.name_environment.len() - 1;
-        self.name_environment[last_index].insert(name, type_.clone());
-    }
-
-    fn put_new_type(&mut self, s: &TypedStruct) {
-        let t = self.typed_type_from_typed_struct(s);
-        let name = t.name.clone();
-        let t = TypedType::Value(t);
-        self.type_environment.insert(name.clone(), t.clone());
-        self.name_environment[0].insert(name, t);
-    }
-
-    fn typed_type_from_typed_struct(&self, s: &TypedStruct) -> TypedValueType {
-        let name = s.name.clone();
-        TypedValueType {
-            package: Package { names: vec![] },
-            name: name.clone(),
-        }
-    }
-
-    fn push_name_environment(&mut self) {
-        self.name_environment.push(HashMap::new());
-    }
-
-    fn pop_name_environment(&mut self) {
-        self.name_environment.pop();
-    }
-
-    fn resolve_by_type_name(&self, type_name: Option<TypeName>) -> Option<TypedType> {
-        if let Some(type_name) = type_name {
-            self.type_environment.get(&*type_name.name).map(|a| {
-                println!("TypeResolver :: {:?}", a);
-                a.clone()
-            })
-        } else {
-            None
         }
     }
 
@@ -151,7 +159,7 @@ impl Ast2HLIR {
     fn resolve_member_type(&self, t: &TypedType, member_name: String) -> Option<TypedType> {
         match t {
             TypedType::Value(t) => {
-                let s = self.struct_environment.get(t)?;
+                let s = self.context.struct_environment.get(t)?;
                 for p in s.stored_properties.iter() {
                     if p.name == member_name {
                         return Some(p.type_.clone());
@@ -221,10 +229,8 @@ impl Ast2HLIR {
             Decl::Fun(f) => TypedDecl::Fun(self.fun_syntax(f)),
             Decl::Struct(s) => {
                 let struct_ = self.struct_syntax(s);
-                self.put_new_type(&struct_);
+                self.context.put_type(&struct_);
                 let struct_ = self.default_init_if_needed(struct_);
-                self.struct_environment
-                    .insert(self.typed_type_from_typed_struct(&struct_), struct_.clone());
                 TypedDecl::Struct(struct_)
             }
             Decl::Class { .. } => TypedDecl::Class,
@@ -239,7 +245,7 @@ impl Ast2HLIR {
         let expr = self.expr(v.value);
         let type_ = match (v.type_, expr.type_()) {
             (Some(tn), Some(expr_type)) => {
-                let var_type = self.resolve_by_type_name(Some(tn.clone()));
+                let var_type = self.context.resolve_by_type_name(Some(tn.clone()));
                 if let Some(var_type) = var_type {
                     if var_type == expr_type {
                         expr_type
@@ -256,7 +262,7 @@ impl Ast2HLIR {
                 }
             }
             (Some(t), None) => {
-                if let Some(tt) = self.resolve_by_type_name(Some(t.clone())) {
+                if let Some(tt) = self.context.resolve_by_type_name(Some(t.clone())) {
                     tt
                 } else {
                     eprintln!("Can not resolve type {:?} error =>", t);
@@ -269,7 +275,7 @@ impl Ast2HLIR {
                 exit(-1)
             }
         };
-        self.put_type_by(v.name.clone(), &type_);
+        self.context.put_name(v.name.clone(), &type_);
         TypedVar {
             is_mut: v.is_mut,
             name: v.name,
@@ -286,12 +292,12 @@ impl Ast2HLIR {
             .map(|a| TypedArgDef {
                 label: a.label,
                 name: a.name,
-                type_: self.resolve_by_type_name(Some(a.type_name)).unwrap(),
+                type_: self.context.resolve_by_type_name(Some(a.type_name)).unwrap(),
             })
             .collect();
-        self.push_name_environment();
+        self.context.push();
         for arg in args.iter() {
-            self.put_type_by(arg.name.clone(), &arg.type_)
+            self.context.put_name(arg.name.clone(), &arg.type_)
         }
         let body = match f.body {
             None => None,
@@ -301,7 +307,7 @@ impl Ast2HLIR {
             }),
         };
 
-        let return_type = self.resolve_by_type_name(f.return_type);
+        let return_type = self.context.resolve_by_type_name(f.return_type);
 
         let return_type = match return_type {
             None => match &body {
@@ -322,8 +328,8 @@ impl Ast2HLIR {
             body: body,
             return_type: return_type,
         };
-        self.pop_name_environment();
-        self.put_type_by(f.name.clone(), &f.return_type);
+        self.context.pop();
+        self.context.put_name(f.name.clone(), &f.return_type);
         f
     }
 
@@ -362,7 +368,10 @@ impl Ast2HLIR {
             })
             .collect();
         if s.init.is_empty() {
-            let struct_type = self.typed_type_from_typed_struct(&s);
+            let struct_type = TypedValueType {
+                package: Package { names: vec![] },
+                name: s.name.clone(),
+            };
             s.init.push(TypedInitializer {
                 type_: TypedType::Value(struct_type.clone()),
                 args,
@@ -371,7 +380,10 @@ impl Ast2HLIR {
                         .stored_properties
                         .iter()
                         .map(|p| {
-                            let struct_type = self.typed_type_from_typed_struct(&s);
+                            let struct_type = TypedValueType {
+                                package: Package { names: vec![] },
+                                name: s.name.clone(),
+                            };
                             TypedStmt::Assignment(TypedAssignmentStmt::Assignment(
                                 TypedAssignment {
                                     target: TypedExpr::Member(TypedMember {
@@ -400,7 +412,7 @@ impl Ast2HLIR {
     pub fn stored_property_syntax(&self, p: StoredPropertySyntax) -> TypedStoredProperty {
         TypedStoredProperty {
             name: p.name,
-            type_: self.resolve_by_type_name(Some(p.type_)).unwrap(),
+            type_: self.context.resolve_by_type_name(Some(p.type_)).unwrap(),
         }
     }
 
@@ -408,7 +420,7 @@ impl Ast2HLIR {
         match e {
             Expr::Name { name } => TypedExpr::Name(TypedName {
                 name: name.clone(),
-                type_: self.resolve_name(name),
+                type_: self.context.resolve_name(name),
             }),
             Expr::Literal { literal } => match literal {
                 Literal::IntegerLiteral { value } => TypedExpr::Literal(TypedLiteral::Integer {
@@ -553,9 +565,9 @@ impl Ast2HLIR {
     }
 
     pub fn block_with_env(&mut self, block: Block) -> TypedBlock {
-        self.push_name_environment();
+        self.context.push();
         let b = self.block(block);
-        self.pop_name_environment();
+        self.context.pop();
         b
     }
 }
