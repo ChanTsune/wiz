@@ -1,4 +1,5 @@
 use std::fmt;
+use crate::high_level_ir::typed_decl::TypedArgDef;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
 pub struct Package {
@@ -19,7 +20,7 @@ pub struct TypedValueType {
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
 pub struct TypedFunctionType {
-    pub(crate) arguments: Vec<TypedType>,
+    pub(crate) arguments: Vec<TypedArgDef>,
     pub(crate) return_type: TypedType,
 }
 

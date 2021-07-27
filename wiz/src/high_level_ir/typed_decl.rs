@@ -31,7 +31,7 @@ pub struct TypedFun {
     pub(crate) return_type: TypedType,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
 pub struct TypedArgDef {
     pub(crate) label: String,
     pub(crate) name: String,

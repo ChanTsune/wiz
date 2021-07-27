@@ -63,15 +63,15 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     let file = std::fs::File::open(Path::new(input));
-    let ast_file = parse_from_file(file.unwrap()).unwrap().syntax;
-    let ast = ast_file.clone();
+    let ast_file = parse_from_file(file.unwrap()).unwrap();
 
     let builtin_hlir: Vec<TypedFile> = builtin_syntax
         .into_iter()
         .map(|w| ast2hlir.file(w.syntax))
         .collect();
 
-    let hlfile = ast2hlir.file(ast);
+    ast2hlir.preload_types(ast_file.clone());
+    let hlfile = ast2hlir.file(ast_file.syntax);
 
     println!("{:?}", &hlfile);
 

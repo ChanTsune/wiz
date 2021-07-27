@@ -20,12 +20,13 @@ use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentStmt, TypedBlock, TypedForStmt, TypedLoopStmt, TypedStmt,
     TypedWhileLoopStmt,
 };
-use crate::high_level_ir::typed_type::{Package, TypedType, TypedValueType};
+use crate::high_level_ir::typed_type::{Package, TypedType, TypedValueType, TypedFunctionType};
 use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::HashMap;
 use std::fmt;
 use std::option::Option::Some;
 use std::process::exit;
+use crate::ast::fun::arg_def::ArgDef;
 
 pub mod typed_decl;
 pub mod typed_expr;
@@ -120,11 +121,35 @@ impl Ast2HLIR {
                     let var = self.var_syntax(v);
                     self.context.put_name(var.name, &var.type_.unwrap())
                 }
-                Decl::Fun(f) => self.context.put_name(
-                    f.name,
-                    &self.context.resolve_by_type_name(f.return_type).unwrap(),
-                ),
-                Decl::Struct(_) => {}
+                Decl::Fun(f) => {
+                    let return_type = match f.body {
+                        Some(FunBody::Block {..}) => {
+                            if let Some(r) = f.return_type {
+                                self.context.resolve_by_type_name(Some(r)).unwrap()
+                            } else {
+                                TypedType::unit()
+                            }
+                        }
+                        Some(FunBody::Expr { expr }) => {
+                            self.expr(expr).type_().unwrap()
+                        }
+                        None => {
+                            TypedType::unit()
+                        }
+                    };
+                    self.context.put_name(
+                        f.name,
+                        &TypedType::Function(Box::new(TypedFunctionType {
+                            arguments: f.arg_defs.into_iter().map(|a|self.arg_def(a)).collect(),
+                            return_type: return_type
+                        })),
+                    )
+                },
+                Decl::Struct(s) => {
+                    let s = self.struct_syntax(s);
+                    println!("Struct {:?}", &s);
+                    self.context.put_type(&s)
+                }
                 Decl::Class {} => {}
                 Decl::Enum {} => {}
                 Decl::Protocol {} => {}
@@ -228,7 +253,6 @@ impl Ast2HLIR {
             Decl::Fun(f) => TypedDecl::Fun(self.fun_syntax(f)),
             Decl::Struct(s) => {
                 let struct_ = self.struct_syntax(s);
-                self.context.put_type(&struct_);
                 let struct_ = self.default_init_if_needed(struct_);
                 TypedDecl::Struct(struct_)
             }
@@ -283,19 +307,23 @@ impl Ast2HLIR {
         }
     }
 
+    pub fn arg_def(&self, a: ArgDef) -> TypedArgDef {
+        TypedArgDef {
+            label: a.label,
+            name: a.name,
+            type_: self
+                .context
+                .resolve_by_type_name(Some(a.type_name))
+                .unwrap(),
+        }
+    }
+
     pub fn fun_syntax(&mut self, f: FunSyntax) -> TypedFun {
         println!("{:?}", &f);
         let args: Vec<TypedArgDef> = f
             .arg_defs
             .into_iter()
-            .map(|a| TypedArgDef {
-                label: a.label,
-                name: a.name,
-                type_: self
-                    .context
-                    .resolve_by_type_name(Some(a.type_name))
-                    .unwrap(),
-            })
+            .map(|a| self.arg_def(a))
             .collect();
         self.context.push();
         for arg in args.iter() {
