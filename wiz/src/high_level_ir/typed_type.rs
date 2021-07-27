@@ -1,5 +1,5 @@
-use std::fmt;
 use crate::high_level_ir::typed_decl::TypedArgDef;
+use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
 pub struct Package {

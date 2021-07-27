@@ -4,6 +4,7 @@ use crate::ast::decl::{
 };
 use crate::ast::expr::{Expr, ReturnSyntax};
 use crate::ast::file::{FileSyntax, WizFile};
+use crate::ast::fun::arg_def::ArgDef;
 use crate::ast::fun::body_def::FunBody;
 use crate::ast::literal::Literal;
 use crate::ast::stmt::{AssignmentStmt, LoopStmt, Stmt};
@@ -20,13 +21,12 @@ use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentStmt, TypedBlock, TypedForStmt, TypedLoopStmt, TypedStmt,
     TypedWhileLoopStmt,
 };
-use crate::high_level_ir::typed_type::{Package, TypedType, TypedValueType, TypedFunctionType};
+use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
 use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::HashMap;
 use std::fmt;
 use std::option::Option::Some;
 use std::process::exit;
-use crate::ast::fun::arg_def::ArgDef;
 
 pub mod typed_decl;
 pub mod typed_expr;
@@ -123,28 +123,24 @@ impl Ast2HLIR {
                 }
                 Decl::Fun(f) => {
                     let return_type = match f.body {
-                        Some(FunBody::Block {..}) => {
+                        Some(FunBody::Block { .. }) => {
                             if let Some(r) = f.return_type {
                                 self.context.resolve_by_type_name(Some(r)).unwrap()
                             } else {
                                 TypedType::unit()
                             }
                         }
-                        Some(FunBody::Expr { expr }) => {
-                            self.expr(expr).type_().unwrap()
-                        }
-                        None => {
-                            TypedType::unit()
-                        }
+                        Some(FunBody::Expr { expr }) => self.expr(expr).type_().unwrap(),
+                        None => TypedType::unit(),
                     };
                     self.context.put_name(
                         f.name,
                         &TypedType::Function(Box::new(TypedFunctionType {
-                            arguments: f.arg_defs.into_iter().map(|a|self.arg_def(a)).collect(),
-                            return_type: return_type
+                            arguments: f.arg_defs.into_iter().map(|a| self.arg_def(a)).collect(),
+                            return_type: return_type,
                         })),
                     )
-                },
+                }
                 Decl::Struct(s) => {
                     let s = self.struct_syntax(s);
                     println!("Struct {:?}", &s);
@@ -320,11 +316,7 @@ impl Ast2HLIR {
 
     pub fn fun_syntax(&mut self, f: FunSyntax) -> TypedFun {
         println!("{:?}", &f);
-        let args: Vec<TypedArgDef> = f
-            .arg_defs
-            .into_iter()
-            .map(|a| self.arg_def(a))
-            .collect();
+        let args: Vec<TypedArgDef> = f.arg_defs.into_iter().map(|a| self.arg_def(a)).collect();
         self.context.push();
         for arg in args.iter() {
             self.context.put_name(arg.name.clone(), &arg.type_)
