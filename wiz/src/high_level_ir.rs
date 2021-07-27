@@ -2,7 +2,7 @@ use crate::ast::block::Block;
 use crate::ast::decl::{
     Decl, FunSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, VarSyntax,
 };
-use crate::ast::expr::{Expr, ReturnSyntax, NameExprSyntax};
+use crate::ast::expr::{Expr, NameExprSyntax, ReturnSyntax};
 use crate::ast::file::{FileSyntax, WizFile};
 use crate::ast::fun::arg_def::ArgDef;
 use crate::ast::fun::body_def::FunBody;

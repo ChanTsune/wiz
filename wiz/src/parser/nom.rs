@@ -6,7 +6,7 @@ pub mod lexical_structure;
 pub mod operators;
 pub mod type_;
 
-use crate::ast::expr::{Expr, PostfixSuffix, NameExprSyntax};
+use crate::ast::expr::{Expr, NameExprSyntax, PostfixSuffix};
 use crate::ast::file::FileSyntax;
 use crate::ast::stmt::{
     AssignmentAndOperatorSyntax, AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt,
@@ -178,11 +178,11 @@ mod tests {
                 "",
                 LoopStmt::While {
                     condition: Expr::BinOp {
-                        left: Box::new(Expr::Name(NameExprSyntax{
+                        left: Box::new(Expr::Name(NameExprSyntax {
                             name: "a".to_string()
                         })),
                         kind: "<".to_string(),
-                        right: Box::new(Expr::Name(NameExprSyntax{
+                        right: Box::new(Expr::Name(NameExprSyntax {
                             name: "b".to_string()
                         }))
                     },

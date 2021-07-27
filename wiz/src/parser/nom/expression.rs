@@ -1,6 +1,6 @@
 use crate::ast::block::Block;
 use crate::ast::expr::Expr::Call;
-use crate::ast::expr::{CallArg, Expr, Lambda, PostfixSuffix, ReturnSyntax, NameExprSyntax};
+use crate::ast::expr::{CallArg, Expr, Lambda, NameExprSyntax, PostfixSuffix, ReturnSyntax};
 use crate::ast::literal::Literal;
 use crate::ast::stmt::Stmt;
 use crate::ast::type_name::TypeName;
@@ -45,7 +45,7 @@ pub fn literal_expr(s: &str) -> IResult<&str, Expr> {
 }
 
 pub fn name_expr(s: &str) -> IResult<&str, Expr> {
-    map(identifier, |name| Expr::Name(NameExprSyntax{ name }))(s)
+    map(identifier, |name| Expr::Name(NameExprSyntax { name }))(s)
 }
 
 pub fn parenthesized_expr(s: &str) -> IResult<&str, Expr> {
@@ -666,7 +666,7 @@ pub fn expr(s: &str) -> IResult<&str, Expr> {
 mod tests {
     use crate::ast::block::Block;
     use crate::ast::expr::Expr::{BinOp, Call, If, Literal, Name};
-    use crate::ast::expr::{CallArg, Expr, PostfixSuffix, ReturnSyntax, NameExprSyntax};
+    use crate::ast::expr::{CallArg, Expr, NameExprSyntax, PostfixSuffix, ReturnSyntax};
     use crate::ast::literal::Literal::{IntegerLiteral, StringLiteral};
     use crate::parser::nom::expression::{
         disjunction_expr, expr, integer_literal, postfix_suffix, return_expr, string_literal,
@@ -801,7 +801,7 @@ mod tests {
             Ok((
                 "",
                 Call {
-                    target: Box::new(Expr::Name (NameExprSyntax {
+                    target: Box::new(Expr::Name(NameExprSyntax {
                         name: "puts".parse().unwrap()
                     })),
                     args: vec![CallArg {
@@ -867,7 +867,7 @@ mod tests {
             Ok((
                 "",
                 If {
-                    condition: Box::new(Expr::Name(NameExprSyntax  {
+                    condition: Box::new(Expr::Name(NameExprSyntax {
                         name: "a".to_string()
                     })),
                     body: Block { body: vec![] },
