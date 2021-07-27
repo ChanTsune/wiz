@@ -1,7 +1,9 @@
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedStruct, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{TypedExpr, TypedIf, TypedLiteral, TypedMember, TypedName, TypedReturn, TypedCall};
+use crate::high_level_ir::typed_expr::{
+    TypedCall, TypedExpr, TypedIf, TypedLiteral, TypedMember, TypedName, TypedReturn,
+};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
 use crate::high_level_ir::typed_type::TypedType;
@@ -306,7 +308,7 @@ impl HLIR2MLIR {
     }
 
     pub fn call(&mut self, c: TypedCall) -> MLCall {
-        let TypedCall  {
+        let TypedCall {
             target,
             args,
             type_,

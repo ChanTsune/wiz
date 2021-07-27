@@ -2,7 +2,7 @@ use crate::ast::block::Block;
 use crate::ast::decl::{
     Decl, FunSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, VarSyntax,
 };
-use crate::ast::expr::{Expr, NameExprSyntax, ReturnSyntax, CallExprSyntax};
+use crate::ast::expr::{CallExprSyntax, Expr, NameExprSyntax, ReturnSyntax};
 use crate::ast::file::{FileSyntax, WizFile};
 use crate::ast::fun::arg_def::ArgDef;
 use crate::ast::fun::body_def::FunBody;
@@ -13,7 +13,9 @@ use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedFun, TypedFunBody, TypedInitializer,
     TypedStoredProperty, TypedStruct, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{TypedCallArg, TypedExpr, TypedIf, TypedLiteral, TypedMember, TypedName, TypedReturn, TypedCall};
+use crate::high_level_ir::typed_expr::{
+    TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedLiteral, TypedMember, TypedName, TypedReturn,
+};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentStmt, TypedBlock, TypedForStmt, TypedLoopStmt, TypedStmt,
@@ -510,9 +512,7 @@ impl Ast2HLIR {
             Expr::Tuple { .. } => TypedExpr::Tuple,
             Expr::Dict { .. } => TypedExpr::Dict,
             Expr::StringBuilder { .. } => TypedExpr::StringBuilder,
-            Expr::Call(c) => {
-                TypedExpr::Call(self.call_syntax(c))
-            }
+            Expr::Call(c) => TypedExpr::Call(self.call_syntax(c)),
             Expr::If {
                 condition,
                 body,
