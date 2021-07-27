@@ -24,11 +24,7 @@ pub enum TypedExpr {
     Tuple,
     Dict,
     StringBuilder,
-    Call {
-        target: Box<TypedExpr>,
-        args: Vec<TypedCallArg>,
-        type_: Option<TypedType>,
-    },
+    Call(TypedCall),
     If(TypedIf),
     When,
     Lambda,
@@ -49,6 +45,13 @@ pub enum TypedLiteral {
     String { value: String, type_: TypedType },
     Boolean { value: String, type_: TypedType },
     NullLiteral { type_: TypedType },
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct TypedCall {
+    pub(crate) target: Box<TypedExpr>,
+    pub(crate) args: Vec<TypedCallArg>,
+    pub(crate) type_: Option<TypedType>,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -103,11 +106,7 @@ impl TypedExpr {
             TypedExpr::Tuple => None,
             TypedExpr::Dict => None,
             TypedExpr::StringBuilder => None,
-            TypedExpr::Call {
-                target,
-                args,
-                type_,
-            } => type_.clone(),
+            TypedExpr::Call(c) => c.type_.clone(),
             TypedExpr::If(i) => i.type_.clone(),
             TypedExpr::When => None,
             TypedExpr::Lambda => None,

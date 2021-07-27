@@ -1,6 +1,6 @@
 use crate::ast::block::Block;
 use crate::ast::expr::Expr::Call;
-use crate::ast::expr::{CallArg, Expr, Lambda, NameExprSyntax, PostfixSuffix, ReturnSyntax};
+use crate::ast::expr::{CallArg, Expr, Lambda, NameExprSyntax, PostfixSuffix, ReturnSyntax, CallExprSyntax};
 use crate::ast::literal::Literal;
 use crate::ast::stmt::Stmt;
 use crate::ast::type_name::TypeName;
@@ -125,11 +125,11 @@ pub fn postfix_expr(s: &str) -> IResult<&str, Expr> {
                     PostfixSuffix::CallSuffix {
                         args,
                         tailing_lambda,
-                    } => Call {
+                    } => Call(CallExprSyntax {
                         target: Box::new(e),
                         args,
                         tailing_lambda,
-                    },
+                    }),
                     PostfixSuffix::IndexingSuffix => e,
                     PostfixSuffix::NavigationSuffix { is_safe, name } => Expr::Member {
                         target: Box::new(e),
@@ -666,7 +666,7 @@ pub fn expr(s: &str) -> IResult<&str, Expr> {
 mod tests {
     use crate::ast::block::Block;
     use crate::ast::expr::Expr::{BinOp, Call, If, Literal, Name};
-    use crate::ast::expr::{CallArg, Expr, NameExprSyntax, PostfixSuffix, ReturnSyntax};
+    use crate::ast::expr::{CallArg, Expr, NameExprSyntax, PostfixSuffix, ReturnSyntax, CallExprSyntax};
     use crate::ast::literal::Literal::{IntegerLiteral, StringLiteral};
     use crate::parser::nom::expression::{
         disjunction_expr, expr, integer_literal, postfix_suffix, return_expr, string_literal,
@@ -783,13 +783,13 @@ mod tests {
             expr("puts()"),
             Ok((
                 "",
-                Call {
+                Expr::Call(CallExprSyntax {
                     target: Box::new(Expr::Name(NameExprSyntax {
                         name: "puts".parse().unwrap()
                     })),
                     args: vec![],
                     tailing_lambda: None,
-                }
+                })
             ))
         );
     }
@@ -800,7 +800,7 @@ mod tests {
             expr("puts(\"Hello, World\")"),
             Ok((
                 "",
-                Call {
+                Expr::Call(CallExprSyntax {
                     target: Box::new(Expr::Name(NameExprSyntax {
                         name: "puts".parse().unwrap()
                     })),
@@ -814,7 +814,7 @@ mod tests {
                         is_vararg: false
                     }],
                     tailing_lambda: None,
-                }
+                })
             ))
         );
     }
@@ -825,7 +825,7 @@ mod tests {
             expr("puts(string: \"Hello, World\")"),
             Ok((
                 "",
-                Call {
+                Expr::Call(CallExprSyntax {
                     target: Box::new(Expr::Name(NameExprSyntax {
                         name: "puts".parse().unwrap()
                     })),
@@ -839,7 +839,7 @@ mod tests {
                         is_vararg: false
                     }],
                     tailing_lambda: None,
-                }
+                })
             ))
         );
     }

@@ -1,9 +1,7 @@
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedStruct, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{
-    TypedExpr, TypedIf, TypedLiteral, TypedMember, TypedName, TypedReturn,
-};
+use crate::high_level_ir::typed_expr::{TypedExpr, TypedIf, TypedLiteral, TypedMember, TypedName, TypedReturn, TypedCall};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
 use crate::high_level_ir::typed_type::TypedType;
@@ -236,20 +234,7 @@ impl HLIR2MLIR {
             TypedExpr::Tuple => exit(-1),
             TypedExpr::Dict => exit(-1),
             TypedExpr::StringBuilder => exit(-1),
-            TypedExpr::Call {
-                target,
-                args,
-                type_,
-            } => MLExpr::Call(MLCall {
-                target: Box::new(self.expr(*target)),
-                args: args
-                    .into_iter()
-                    .map(|a| MLCallArg {
-                        arg: self.expr(*a.arg),
-                    })
-                    .collect(),
-                type_: self.type_(type_.unwrap()),
-            }),
+            TypedExpr::Call(c) => MLExpr::Call(self.call(c)),
             TypedExpr::If(i) => MLExpr::If(self.if_expr(i)),
             TypedExpr::When => exit(-1),
             TypedExpr::Lambda => exit(-1),
@@ -318,6 +303,24 @@ impl HLIR2MLIR {
             })
         }
         // else field as function call etc...
+    }
+
+    pub fn call(&mut self, c: TypedCall) -> MLCall {
+        let TypedCall  {
+            target,
+            args,
+            type_,
+        } = c;
+        MLCall {
+            target: Box::new(self.expr(*target)),
+            args: args
+                .into_iter()
+                .map(|a| MLCallArg {
+                    arg: self.expr(*a.arg),
+                })
+                .collect(),
+            type_: self.type_(type_.unwrap()),
+        }
     }
 
     pub fn if_expr(&mut self, i: TypedIf) -> MLIf {

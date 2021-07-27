@@ -2,7 +2,7 @@ use crate::ast::block::Block;
 use crate::ast::decl::{
     Decl, FunSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, VarSyntax,
 };
-use crate::ast::expr::{Expr, NameExprSyntax, ReturnSyntax};
+use crate::ast::expr::{Expr, NameExprSyntax, ReturnSyntax, CallExprSyntax};
 use crate::ast::file::{FileSyntax, WizFile};
 use crate::ast::fun::arg_def::ArgDef;
 use crate::ast::fun::body_def::FunBody;
@@ -13,9 +13,7 @@ use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedFun, TypedFunBody, TypedInitializer,
     TypedStoredProperty, TypedStruct, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{
-    TypedCallArg, TypedExpr, TypedIf, TypedLiteral, TypedMember, TypedName, TypedReturn,
-};
+use crate::high_level_ir::typed_expr::{TypedCallArg, TypedExpr, TypedIf, TypedLiteral, TypedMember, TypedName, TypedReturn, TypedCall};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentStmt, TypedBlock, TypedForStmt, TypedLoopStmt, TypedStmt,
@@ -512,37 +510,8 @@ impl Ast2HLIR {
             Expr::Tuple { .. } => TypedExpr::Tuple,
             Expr::Dict { .. } => TypedExpr::Dict,
             Expr::StringBuilder { .. } => TypedExpr::StringBuilder,
-            Expr::Call {
-                target,
-                args,
-                tailing_lambda,
-            } => {
-                let mut args: Vec<TypedCallArg> = args
-                    .into_iter()
-                    .map(|a| TypedCallArg {
-                        label: a.label,
-                        arg: Box::new(self.expr(*a.arg)),
-                        is_vararg: a.is_vararg,
-                    })
-                    .collect();
-                if let Some(lambda) = tailing_lambda {
-                    args.insert(
-                        args.len(),
-                        TypedCallArg {
-                            label: None,
-                            arg: Box::new(TypedExpr::Lambda /* TODO: use lambda */),
-                            is_vararg: false,
-                        },
-                    )
-                }
-                // TODO: resolve call type
-                let e = self.expr(*target);
-                let return_type = e.type_();
-                TypedExpr::Call {
-                    target: Box::new(e),
-                    args: args,
-                    type_: return_type,
-                }
+            Expr::Call(c) => {
+                TypedExpr::Call(self.call_syntax(c))
             }
             Expr::If {
                 condition,
@@ -570,6 +539,41 @@ impl Ast2HLIR {
         TypedName {
             name: name.clone(),
             type_: self.context.resolve_name(name),
+        }
+    }
+
+    pub fn call_syntax(&mut self, c: CallExprSyntax) -> TypedCall {
+        let CallExprSyntax {
+            target,
+            args,
+            tailing_lambda,
+        } = c;
+        let mut args: Vec<TypedCallArg> = args
+            .into_iter()
+            .map(|a| TypedCallArg {
+                label: a.label,
+                arg: Box::new(self.expr(*a.arg)),
+                is_vararg: a.is_vararg,
+            })
+            .collect();
+        if let Some(lambda) = tailing_lambda {
+            args.insert(
+                args.len(),
+                TypedCallArg {
+                    label: None,
+                    arg: Box::new(TypedExpr::Lambda /* TODO: use lambda */),
+                    is_vararg: false,
+                },
+            )
+        }
+        // TODO: resolve call type
+        let e = self.expr(*target);
+        let return_type = e.type_();
+
+        TypedCall {
+            target: Box::new(e),
+            args: args,
+            type_: return_type,
         }
     }
 

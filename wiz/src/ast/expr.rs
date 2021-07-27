@@ -42,11 +42,7 @@ pub enum Expr {
     StringBuilder {
         // TODO
     },
-    Call {
-        target: Box<Expr>,
-        args: Vec<CallArg>,
-        tailing_lambda: Option<Lambda>,
-    },
+    Call(CallExprSyntax),
     If {
         condition: Box<Expr>,
         body: Block,
@@ -71,6 +67,13 @@ impl Node for Expr {}
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct NameExprSyntax {
     pub(crate) name: String,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct CallExprSyntax {
+    pub(crate) target: Box<Expr>,
+    pub(crate) args: Vec<CallArg>,
+    pub(crate) tailing_lambda: Option<Lambda>,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
