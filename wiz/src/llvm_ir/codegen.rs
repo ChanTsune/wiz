@@ -15,7 +15,6 @@ use inkwell::types::{AnyTypeEnum, BasicTypeEnum};
 use inkwell::values::{AnyValue, AnyValueEnum, BasicValueEnum, FunctionValue};
 use inkwell::{AddressSpace, FloatPredicate, IntPredicate};
 use nom::lib::std::convert::TryFrom;
-use nom::Parser;
 use std::collections::HashMap;
 use std::path::Path;
 use std::process::exit;

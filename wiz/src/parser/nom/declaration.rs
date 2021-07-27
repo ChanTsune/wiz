@@ -18,7 +18,7 @@ use nom::character::complete::char;
 use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
-use nom::{IResult, Parser};
+use nom::{IResult};
 
 pub fn decl(s: &str) -> IResult<&str, Decl> {
     alt((struct_decl, function_decl, var_decl))(s)

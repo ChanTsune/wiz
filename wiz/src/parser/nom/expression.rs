@@ -17,7 +17,7 @@ use nom::character::complete::{char, digit1, none_of, one_of};
 use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
-use nom::{IResult, Parser};
+use nom::{IResult};
 
 pub fn integer_literal(s: &str) -> IResult<&str, Literal> {
     map(digit1, |n: &str| Literal::IntegerLiteral {
@@ -669,11 +669,9 @@ mod tests {
     use crate::ast::expr::{CallArg, Expr, PostfixSuffix, ReturnSyntax};
     use crate::ast::literal::Literal::{IntegerLiteral, StringLiteral};
     use crate::parser::nom::expression::{
-        disjunction_expr, expr, if_expr, integer_literal, postfix_suffix, return_expr,
+        disjunction_expr, expr, integer_literal, postfix_suffix, return_expr,
         string_literal, value_arguments,
     };
-    use nom::error::ErrorKind;
-    use nom::Err::Error;
 
     #[test]
     fn test_numeric() {
