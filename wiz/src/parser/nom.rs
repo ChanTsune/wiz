@@ -6,7 +6,7 @@ pub mod lexical_structure;
 pub mod operators;
 pub mod type_;
 
-use crate::ast::expr::{Expr, PostfixSuffix};
+use crate::ast::expr::{Expr, PostfixSuffix, NameExprSyntax};
 use crate::ast::file::FileSyntax;
 use crate::ast::stmt::{
     AssignmentAndOperatorSyntax, AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt,
@@ -79,7 +79,7 @@ pub fn directly_assignable_expr(s: &str) -> IResult<&str, Expr> {
             },
             _ => e,
         }),
-        map(identifier, |name| Expr::Name { name }),
+        map(identifier, |name| Expr::Name(NameExprSyntax { name })),
         map(parenthesized_directly_assignable_expr, |e| e),
     ))(s)
 }
@@ -161,7 +161,7 @@ pub fn file(s: &str) -> IResult<&str, FileSyntax> {
 
 mod tests {
     use crate::ast::block::Block;
-    use crate::ast::expr::Expr;
+    use crate::ast::expr::{Expr, NameExprSyntax};
     use crate::ast::literal::Literal;
     use crate::ast::stmt::{AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt};
     use crate::parser::nom::while_stmt;
@@ -178,24 +178,24 @@ mod tests {
                 "",
                 LoopStmt::While {
                     condition: Expr::BinOp {
-                        left: Box::new(Expr::Name {
+                        left: Box::new(Expr::Name(NameExprSyntax{
                             name: "a".to_string()
-                        }),
+                        })),
                         kind: "<".to_string(),
-                        right: Box::new(Expr::Name {
+                        right: Box::new(Expr::Name(NameExprSyntax{
                             name: "b".to_string()
-                        })
+                        }))
                     },
                     block: Block {
                         body: vec![Stmt::Assignment(AssignmentStmt::Assignment(
                             AssignmentSyntax {
-                                target: Expr::Name {
+                                target: Expr::Name(NameExprSyntax {
                                     name: "a".to_string()
-                                },
+                                }),
                                 value: Expr::BinOp {
-                                    left: Box::new(Expr::Name {
+                                    left: Box::new(Expr::Name(NameExprSyntax {
                                         name: "a".to_string()
-                                    }),
+                                    })),
                                     kind: "+".to_string(),
                                     right: Box::new(Expr::Literal {
                                         literal: Literal::IntegerLiteral {

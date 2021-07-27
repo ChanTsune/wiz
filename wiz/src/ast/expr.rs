@@ -7,9 +7,7 @@ use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum Expr {
-    Name {
-        name: String,
-    },
+    Name(NameExprSyntax),
     Literal {
         literal: Literal,
     },
@@ -69,6 +67,11 @@ pub enum Expr {
 }
 
 impl Node for Expr {}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct NameExprSyntax {
+    pub(crate) name: String,
+}
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct CallArg {

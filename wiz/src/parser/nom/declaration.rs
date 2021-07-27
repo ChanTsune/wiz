@@ -306,7 +306,7 @@ mod test {
     use crate::ast::decl::{
         Decl, FunSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, VarSyntax,
     };
-    use crate::ast::expr::Expr;
+    use crate::ast::expr::{Expr, NameExprSyntax};
     use crate::ast::fun::arg_def::ArgDef;
     use crate::ast::fun::body_def::FunBody;
     use crate::ast::literal::Literal;
@@ -435,9 +435,9 @@ mod test {
             Ok((
                 "",
                 FunBody::Expr {
-                    expr: Expr::Name {
+                    expr: Expr::Name(NameExprSyntax {
                         name: "name".to_string()
-                    }
+                    })
                 }
             ))
         )

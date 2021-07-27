@@ -2,7 +2,7 @@ use crate::ast::block::Block;
 use crate::ast::decl::{
     Decl, FunSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, VarSyntax,
 };
-use crate::ast::expr::{Expr, ReturnSyntax};
+use crate::ast::expr::{Expr, ReturnSyntax, NameExprSyntax};
 use crate::ast::file::{FileSyntax, WizFile};
 use crate::ast::fun::arg_def::ArgDef;
 use crate::ast::fun::body_def::FunBody;
@@ -440,10 +440,7 @@ impl Ast2HLIR {
 
     pub fn expr(&mut self, e: Expr) -> TypedExpr {
         match e {
-            Expr::Name { name } => TypedExpr::Name(TypedName {
-                name: name.clone(),
-                type_: self.context.resolve_name(name),
-            }),
+            Expr::Name(n) => TypedExpr::Name(self.name_syntax(n)),
             Expr::Literal { literal } => match literal {
                 Literal::IntegerLiteral { value } => TypedExpr::Literal(TypedLiteral::Integer {
                     value,
@@ -565,6 +562,14 @@ impl Ast2HLIR {
             Expr::Lambda { .. } => TypedExpr::Lambda,
             Expr::Return(r) => TypedExpr::Return(self.return_syntax(r)),
             Expr::TypeCast { .. } => TypedExpr::TypeCast,
+        }
+    }
+
+    pub fn name_syntax(&self, n: NameExprSyntax) -> TypedName {
+        let NameExprSyntax { name } = n;
+        TypedName {
+            name: name.clone(),
+            type_: self.context.resolve_name(name),
         }
     }
 
