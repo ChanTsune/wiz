@@ -1,17 +1,17 @@
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
 use std::fmt;
-use std::hash::{Hash, BuildHasher};
+use std::hash::{BuildHasher, Hash};
 
 #[derive(fmt::Debug, Clone)]
-pub(crate) struct StackedHashMap<K, V,  S = RandomState> {
-    map_stack: Vec<HashMap<K, V,S>>,
+pub(crate) struct StackedHashMap<K, V, S = RandomState> {
+    map_stack: Vec<HashMap<K, V, S>>,
 }
 
 impl<K, V, S> StackedHashMap<K, V, S>
 where
     K: Hash + Eq,
-    S: BuildHasher
+    S: BuildHasher,
 {
     pub(crate) fn new() -> Self {
         StackedHashMap { map_stack: vec![] }
