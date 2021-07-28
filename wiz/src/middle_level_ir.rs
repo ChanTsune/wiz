@@ -6,7 +6,7 @@ use crate::high_level_ir::typed_expr::{
 };
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
-use crate::high_level_ir::typed_type::TypedType;
+use crate::high_level_ir::typed_type::{TypedType, TypedValueType, TypedFunctionType};
 use crate::middle_level_ir::ml_decl::{
     MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar,
 };
@@ -15,7 +15,7 @@ use crate::middle_level_ir::ml_expr::{
 };
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
-use crate::middle_level_ir::ml_type::MLType;
+use crate::middle_level_ir::ml_type::{MLType, MLValueType, MLFunctionType};
 use std::collections::HashMap;
 use std::process::exit;
 
@@ -26,7 +26,7 @@ pub mod ml_stmt;
 pub mod ml_type;
 
 pub struct HLIR2MLIR {
-    structs: HashMap<MLType, MLStruct>,
+    structs: HashMap<MLValueType, MLStruct>,
 }
 
 impl HLIR2MLIR {
@@ -37,25 +37,53 @@ impl HLIR2MLIR {
     }
 
     fn get_struct(&self, typ: &MLType) -> &MLStruct {
-        self.structs.get(typ).unwrap()
+        let typ = typ.clone();
+        self.structs.get(&typ.into_value_type()).unwrap()
     }
 
-    fn add_struct(&mut self, typ: MLType, struct_: MLStruct) {
+    fn add_struct(&mut self, typ: MLValueType, struct_: MLStruct) {
         self.structs.insert(typ, struct_);
     }
 
     pub fn type_(&self, t: TypedType) -> MLType {
         match t {
             TypedType::Value(t) => {
-                let mut pkg = t.package.names;
-                pkg.append(&mut vec![t.name]);
-                MLType {
-                    name: pkg.join("::"),
-                }
+                MLType::Value(self.value_type(t))
             }
             TypedType::Function(f) => {
-                println!("{:?}", f);
-                exit(-9)
+                MLType::Function(self.function_type(*f))
+            }
+        }
+    }
+
+    pub fn value_type(&self, t: TypedValueType) -> MLValueType {
+        let mut pkg = t.package.names;
+        pkg.push(t.name);
+        MLValueType {
+            name: pkg.join("::"),
+        }
+    }
+
+    pub fn function_type(&self, t: TypedFunctionType) -> MLFunctionType {
+        MLFunctionType {
+            arguments: t.arguments.into_iter().map(|a|{
+                match self.type_(a.type_) {
+                    MLType::Value(v) => {
+                        v
+                    }
+                    MLType::Function(_) => {
+                        exit(-9)
+                    }
+                }
+            }).collect(),
+            return_type: match self.type_(t.return_type) {
+                MLType::Value(v) => {
+                    v
+                }
+                MLType::Function(f) => {
+                    println!("{:?}", f);
+                    exit(-9)
+                }
             }
         }
     }
@@ -165,7 +193,7 @@ impl HLIR2MLIR {
         };
 
         self.add_struct(
-            MLType {
+            MLValueType {
                 name: struct_.name.clone(),
             },
             struct_.clone(),
@@ -297,7 +325,7 @@ impl HLIR2MLIR {
         } else {
             MLExpr::Call(MLCall {
                 target: Box::new(MLExpr::Name(MLName {
-                    name: target.type_().name + "." + &*name,
+                    name: target.type_().into_value_type().name + "." + &*name,
                     type_: type_.clone(),
                 })),
                 args: vec![],

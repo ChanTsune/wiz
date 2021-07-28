@@ -85,6 +85,7 @@ impl<'ctx> CodeGen<'ctx> {
         match l {
             MLLiteral::Integer { value, type_ } => {
                 let i: u64 = value.parse().unwrap();
+                let type_ = type_.into_value_type();
                 let int_type = match &*(type_.name) {
                     "Int8" | "UInt8" => self.context.i8_type(),
                     "Int16" | "UInt16" => self.context.i16_type(),
@@ -99,6 +100,7 @@ impl<'ctx> CodeGen<'ctx> {
             }
             MLLiteral::FloatingPoint { value, type_ } => {
                 let f: f64 = value.parse().unwrap();
+                let type_ = type_.into_value_type();
                 let float_type = match &*(type_.name) {
                     "Float" => self.context.f32_type(),
                     "Double" => self.context.f64_type(),
@@ -131,6 +133,7 @@ impl<'ctx> CodeGen<'ctx> {
                 exit(-2)
             }
             MLLiteral::Struct { type_ } => {
+                let type_ = type_.into_value_type();
                 let struct_type = self.module.get_struct_type(&*type_.name);
                 let struct_type = struct_type.unwrap();
                 struct_type.const_zero().as_any_value_enum()
@@ -143,7 +146,7 @@ impl<'ctx> CodeGen<'ctx> {
         println!("{:?}", &(c.args));
         let args = c.args.into_iter().map(|arg| {
             // TODO: change stored pointer value load method!
-            if arg.arg.type_().name != String::from("String") {
+            if arg.arg.type_().into_value_type().name != String::from("String") {
                 let e = self.expr(arg.arg);
                 self.load_if_pointer_value(e)
             } else {
@@ -469,14 +472,17 @@ impl<'ctx> CodeGen<'ctx> {
         } = f;
         let args: Vec<BasicTypeEnum<'ctx>> = arg_defs
             .iter()
-            .map(|a| self.type_name_to_type(&*a.type_.name))
+            .map(|a| {
+                let a = a.type_.clone();
+                self.type_name_to_type(&*a.into_value_type().name)
+            })
             .map(|a| {
                 println!("{:?}", &a);
                 BasicTypeEnum::try_from(a).unwrap()
             })
             .collect();
-        let return_type_name: &str = &*return_type.name; // NOTE: for debug
-        let return_type = self.type_name_to_type(&*return_type.name);
+        let return_type_name: &str = &*return_type.into_value_type().name; // NOTE: for debug
+        let return_type = self.type_name_to_type(return_type_name);
         if let Some(body) = body {
             self.push_environment();
             let func = match return_type {
@@ -575,7 +581,7 @@ impl<'ctx> CodeGen<'ctx> {
             .fields
             .into_iter()
             .map(|f| {
-                let any_type = self.type_name_to_type(&*(f.type_.name));
+                let any_type = self.type_name_to_type(&*(f.type_.into_value_type().name));
                 BasicTypeEnum::try_from(any_type).unwrap()
             })
             .collect();

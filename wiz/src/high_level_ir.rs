@@ -351,7 +351,7 @@ impl Ast2HLIR {
             return_type: return_type,
         };
         self.context.pop();
-        self.context.put_name(f.name.clone(), &f.return_type);
+        self.context.put_name(f.name.clone(), &f.type_());
         f
     }
 
