@@ -669,12 +669,12 @@ mod tests {
     use crate::ast::expr::{
         CallArg, CallExprSyntax, Expr, NameExprSyntax, PostfixSuffix, ReturnSyntax,
     };
+    use crate::ast::literal::Literal;
     use crate::ast::literal::Literal::{IntegerLiteral, StringLiteral};
     use crate::parser::nom::expression::{
         disjunction_expr, expr, integer_literal, postfix_suffix, return_expr, string_literal,
         value_arguments,
     };
-    use crate::ast::literal::Literal;
 
     #[test]
     fn test_numeric() {
@@ -802,7 +802,7 @@ mod tests {
                     args: vec![CallArg {
                         label: None,
                         arg: Box::from(Expr::Literal(Literal::StringLiteral {
-                                value: "Hello, World".parse().unwrap()
+                            value: "Hello, World".parse().unwrap()
                         })),
                         is_vararg: false
                     }],

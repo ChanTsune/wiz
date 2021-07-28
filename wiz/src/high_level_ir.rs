@@ -441,7 +441,7 @@ impl Ast2HLIR {
     pub fn expr(&mut self, e: Expr) -> TypedExpr {
         match e {
             Expr::Name(n) => TypedExpr::Name(self.name_syntax(n)),
-            Expr::Literal(literal)  => match literal {
+            Expr::Literal(literal) => match literal {
                 Literal::IntegerLiteral { value } => TypedExpr::Literal(TypedLiteral::Integer {
                     value,
                     type_: TypedType::int64(),
