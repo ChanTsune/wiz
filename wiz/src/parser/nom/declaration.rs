@@ -354,11 +354,9 @@ mod test {
                 "",
                 Block {
                     body: vec![Stmt::Expr {
-                        expr: Expr::Literal {
-                            literal: Literal::IntegerLiteral {
-                                value: "1".to_string()
-                            }
-                        }
+                        expr: Expr::Literal(Literal::IntegerLiteral {
+                            value: "1".to_string()
+                        })
                     }]
                 }
             ))
@@ -374,17 +372,13 @@ mod test {
                 Block {
                     body: vec![Stmt::Expr {
                         expr: Expr::BinOp {
-                            left: Box::new(Expr::Literal {
-                                literal: Literal::IntegerLiteral {
-                                    value: "1".to_string()
-                                }
-                            }),
+                            left: Box::new(Expr::Literal(Literal::IntegerLiteral {
+                                value: "1".to_string()
+                            })),
                             kind: "+".to_string(),
-                            right: Box::new(Expr::Literal {
-                                literal: Literal::IntegerLiteral {
-                                    value: "1".to_string()
-                                }
-                            }),
+                            right: Box::new(Expr::Literal(Literal::IntegerLiteral {
+                                value: "1".to_string()
+                            })),
                         }
                     }]
                 }
@@ -404,11 +398,9 @@ mod test {
                 "",
                 Block {
                     body: vec![Stmt::Expr {
-                        expr: Expr::Literal {
-                            literal: Literal::IntegerLiteral {
-                                value: "1".to_string()
-                            }
-                        }
+                        expr: Expr::Literal(Literal::IntegerLiteral {
+                            value: "1".to_string()
+                        })
                     }]
                 }
             ))
@@ -502,11 +494,9 @@ mod test {
                         name: "Int".to_string(),
                         type_params: vec![]
                     }),
-                    value: Expr::Literal {
-                        literal: Literal::IntegerLiteral {
-                            value: "1".to_string()
-                        }
-                    }
+                    value: Expr::Literal(Literal::IntegerLiteral {
+                        value: "1".to_string()
+                    })
                 })
             ))
         )
@@ -522,11 +512,9 @@ mod test {
                     is_mut: false,
                     name: "a".to_string(),
                     type_: None,
-                    value: Expr::Literal {
-                        literal: Literal::IntegerLiteral {
-                            value: "1".to_string()
-                        }
-                    }
+                    value: Expr::Literal(Literal::IntegerLiteral {
+                        value: "1".to_string()
+                    })
                 })
             ))
         )

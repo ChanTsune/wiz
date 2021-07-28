@@ -41,9 +41,7 @@ pub fn prefix_operator(s: &str) -> IResult<&str, String> {
 }
 
 pub fn literal_expr(s: &str) -> IResult<&str, Expr> {
-    map(alt((integer_literal, string_literal)), |l| Expr::Literal {
-        literal: l,
-    })(s)
+    map(alt((integer_literal, string_literal)), |l| Expr::Literal(l))(s)
 }
 
 pub fn name_expr(s: &str) -> IResult<&str, Expr> {
@@ -667,7 +665,7 @@ pub fn expr(s: &str) -> IResult<&str, Expr> {
 #[cfg(test)]
 mod tests {
     use crate::ast::block::Block;
-    use crate::ast::expr::Expr::{BinOp, Call, If, Literal, Name};
+    use crate::ast::expr::Expr::{BinOp, Call, If, Name};
     use crate::ast::expr::{
         CallArg, CallExprSyntax, Expr, NameExprSyntax, PostfixSuffix, ReturnSyntax,
     };
@@ -676,6 +674,7 @@ mod tests {
         disjunction_expr, expr, integer_literal, postfix_suffix, return_expr, string_literal,
         value_arguments,
     };
+    use crate::ast::literal::Literal;
 
     #[test]
     fn test_numeric() {
@@ -720,24 +719,18 @@ mod tests {
                 "",
                 BinOp {
                     left: Box::from(BinOp {
-                        left: Box::from(Literal {
-                            literal: IntegerLiteral {
-                                value: "1".parse().unwrap()
-                            }
-                        }),
+                        left: Box::from(Expr::Literal(Literal::IntegerLiteral {
+                            value: "1".parse().unwrap()
+                        })),
                         kind: "||".parse().unwrap(),
-                        right: Box::from(Literal {
-                            literal: IntegerLiteral {
-                                value: "2".parse().unwrap()
-                            }
-                        })
+                        right: Box::from(Expr::Literal(Literal::IntegerLiteral {
+                            value: "2".parse().unwrap()
+                        }))
                     }),
                     kind: "||".parse().unwrap(),
-                    right: Box::from(Literal {
-                        literal: IntegerLiteral {
-                            value: "3".parse().unwrap()
-                        }
-                    })
+                    right: Box::from(Expr::Literal(Literal::IntegerLiteral {
+                        value: "3".parse().unwrap()
+                    }))
                 }
             ))
         )
@@ -756,11 +749,9 @@ mod tests {
                 "",
                 vec![CallArg {
                     label: None,
-                    arg: Box::from(Literal {
-                        literal: StringLiteral {
-                            value: "Hello, World".parse().unwrap()
-                        }
-                    }),
+                    arg: Box::from(Expr::Literal(Literal::StringLiteral {
+                        value: "Hello, World".parse().unwrap()
+                    })),
                     is_vararg: false
                 }]
             ))
@@ -810,11 +801,9 @@ mod tests {
                     })),
                     args: vec![CallArg {
                         label: None,
-                        arg: Box::from(Literal {
-                            literal: StringLiteral {
+                        arg: Box::from(Expr::Literal(Literal::StringLiteral {
                                 value: "Hello, World".parse().unwrap()
-                            }
-                        }),
+                        })),
                         is_vararg: false
                     }],
                     tailing_lambda: None,
@@ -835,11 +824,9 @@ mod tests {
                     })),
                     args: vec![CallArg {
                         label: Some(String::from("string")),
-                        arg: Box::from(Literal {
-                            literal: StringLiteral {
-                                value: "Hello, World".parse().unwrap()
-                            }
-                        }),
+                        arg: Box::from(Expr::Literal(Literal::StringLiteral {
+                            value: "Hello, World".parse().unwrap()
+                        })),
                         is_vararg: false
                     }],
                     tailing_lambda: None,

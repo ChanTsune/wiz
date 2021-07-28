@@ -8,9 +8,7 @@ use std::fmt;
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum Expr {
     Name(NameExprSyntax),
-    Literal {
-        literal: Literal,
-    },
+    Literal(Literal),
     BinOp {
         left: Box<Expr>,
         kind: String,
