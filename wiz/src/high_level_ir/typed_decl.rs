@@ -1,6 +1,6 @@
 use crate::high_level_ir::typed_expr::TypedExpr;
 use crate::high_level_ir::typed_stmt::TypedBlock;
-use crate::high_level_ir::typed_type::{TypedType, TypedFunctionType};
+use crate::high_level_ir::typed_type::{TypedFunctionType, TypedType};
 use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -86,7 +86,7 @@ impl TypedFun {
     pub fn type_(&self) -> TypedType {
         TypedType::Function(Box::new(TypedFunctionType {
             arguments: self.arg_defs.clone(),
-            return_type: self.return_type.clone()
+            return_type: self.return_type.clone(),
         }))
     }
 }

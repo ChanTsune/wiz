@@ -6,7 +6,7 @@ use crate::high_level_ir::typed_expr::{
 };
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
-use crate::high_level_ir::typed_type::{TypedType, TypedValueType, TypedFunctionType};
+use crate::high_level_ir::typed_type::{TypedFunctionType, TypedType, TypedValueType};
 use crate::middle_level_ir::ml_decl::{
     MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar,
 };
@@ -15,7 +15,7 @@ use crate::middle_level_ir::ml_expr::{
 };
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
-use crate::middle_level_ir::ml_type::{MLType, MLValueType, MLFunctionType};
+use crate::middle_level_ir::ml_type::{MLFunctionType, MLType, MLValueType};
 use std::collections::HashMap;
 use std::process::exit;
 
@@ -47,12 +47,8 @@ impl HLIR2MLIR {
 
     pub fn type_(&self, t: TypedType) -> MLType {
         match t {
-            TypedType::Value(t) => {
-                MLType::Value(self.value_type(t))
-            }
-            TypedType::Function(f) => {
-                MLType::Function(self.function_type(*f))
-            }
+            TypedType::Value(t) => MLType::Value(self.value_type(t)),
+            TypedType::Function(f) => MLType::Function(self.function_type(*f)),
         }
     }
 
@@ -66,25 +62,21 @@ impl HLIR2MLIR {
 
     pub fn function_type(&self, t: TypedFunctionType) -> MLFunctionType {
         MLFunctionType {
-            arguments: t.arguments.into_iter().map(|a|{
-                match self.type_(a.type_) {
-                    MLType::Value(v) => {
-                        v
-                    }
-                    MLType::Function(_) => {
-                        exit(-9)
-                    }
-                }
-            }).collect(),
+            arguments: t
+                .arguments
+                .into_iter()
+                .map(|a| match self.type_(a.type_) {
+                    MLType::Value(v) => v,
+                    MLType::Function(_) => exit(-9),
+                })
+                .collect(),
             return_type: match self.type_(t.return_type) {
-                MLType::Value(v) => {
-                    v
-                }
+                MLType::Value(v) => v,
                 MLType::Function(f) => {
                     println!("{:?}", f);
                     exit(-9)
                 }
-            }
+            },
         }
     }
 
