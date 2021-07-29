@@ -75,7 +75,7 @@ impl Ast2HLIRContext {
         self.struct_environment.insert(typed_value_type, s.clone());
     }
 
-    fn resolve_by_type_name(&self, type_name: Option<TypeName>) -> Option<TypedType> {
+    fn resolve_type(&self, type_name: Option<TypeName>) -> Option<TypedType> {
         if let Some(type_name) = type_name {
             self.type_environment.get(&type_name.name).map(|a| {
                 println!("TypeResolver :: {:?}", a);
@@ -125,7 +125,7 @@ impl Ast2HLIR {
                     let return_type = match f.body {
                         Some(FunBody::Block { .. }) => {
                             if let Some(r) = f.return_type {
-                                self.context.resolve_by_type_name(Some(r)).unwrap()
+                                self.context.resolve_type(Some(r)).unwrap()
                             } else {
                                 TypedType::unit()
                             }
@@ -264,7 +264,7 @@ impl Ast2HLIR {
         let expr = self.expr(v.value);
         let type_ = match (v.type_, expr.type_()) {
             (Some(tn), Some(expr_type)) => {
-                let var_type = self.context.resolve_by_type_name(Some(tn.clone()));
+                let var_type = self.context.resolve_type(Some(tn.clone()));
                 if let Some(var_type) = var_type {
                     if var_type == expr_type {
                         expr_type
@@ -281,7 +281,7 @@ impl Ast2HLIR {
                 }
             }
             (Some(t), None) => {
-                if let Some(tt) = self.context.resolve_by_type_name(Some(t.clone())) {
+                if let Some(tt) = self.context.resolve_type(Some(t.clone())) {
                     tt
                 } else {
                     eprintln!("Can not resolve type {:?} error =>", t);
@@ -309,7 +309,7 @@ impl Ast2HLIR {
             name: a.name,
             type_: self
                 .context
-                .resolve_by_type_name(Some(a.type_name))
+                .resolve_type(Some(a.type_name))
                 .unwrap(),
         }
     }
@@ -329,7 +329,7 @@ impl Ast2HLIR {
             }),
         };
 
-        let return_type = self.context.resolve_by_type_name(f.return_type);
+        let return_type = self.context.resolve_type(f.return_type);
 
         let return_type = match return_type {
             None => match &body {
@@ -434,7 +434,7 @@ impl Ast2HLIR {
     pub fn stored_property_syntax(&self, p: StoredPropertySyntax) -> TypedStoredProperty {
         TypedStoredProperty {
             name: p.name,
-            type_: self.context.resolve_by_type_name(Some(p.type_)).unwrap(),
+            type_: self.context.resolve_type(Some(p.type_)).unwrap(),
         }
     }
 
