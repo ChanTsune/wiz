@@ -307,10 +307,7 @@ impl Ast2HLIR {
         TypedArgDef {
             label: a.label,
             name: a.name,
-            type_: self
-                .context
-                .resolve_type(Some(a.type_name))
-                .unwrap(),
+            type_: self.context.resolve_type(Some(a.type_name)).unwrap(),
         }
     }
 
