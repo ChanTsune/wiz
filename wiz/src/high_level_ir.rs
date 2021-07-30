@@ -14,7 +14,7 @@ use crate::high_level_ir::typed_decl::{
     TypedStoredProperty, TypedStruct, TypedVar,
 };
 use crate::high_level_ir::typed_expr::{
-    TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedLiteral, TypedMember, TypedName, TypedReturn,
+    TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedLiteral, TypedInstanceMember, TypedName, TypedReturn,
 };
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{
@@ -405,7 +405,7 @@ impl Ast2HLIR {
                             };
                             TypedStmt::Assignment(TypedAssignmentStmt::Assignment(
                                 TypedAssignment {
-                                    target: TypedExpr::Member(TypedMember {
+                                    target: TypedExpr::Member(TypedInstanceMember {
                                         target: Box::new(TypedExpr::Name(TypedName {
                                             name: "self".to_string(),
                                             type_: Some(TypedType::Value(struct_type)),
@@ -498,7 +498,7 @@ impl Ast2HLIR {
                 let target = self.expr(*target);
                 let target_type = target.type_().unwrap();
                 let type_ = self.resolve_member_type(&target_type, name.clone());
-                TypedExpr::Member(TypedMember {
+                TypedExpr::Member(TypedInstanceMember {
                     target: Box::new(target),
                     name,
                     is_safe,

@@ -2,7 +2,7 @@ use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedStruct, TypedVar,
 };
 use crate::high_level_ir::typed_expr::{
-    TypedCall, TypedExpr, TypedIf, TypedLiteral, TypedMember, TypedName, TypedReturn,
+    TypedCall, TypedExpr, TypedIf, TypedLiteral, TypedInstanceMember, TypedName, TypedReturn,
 };
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
@@ -297,8 +297,8 @@ impl HLIR2MLIR {
         }
     }
 
-    pub fn member(&mut self, m: TypedMember) -> MLExpr {
-        let TypedMember {
+    pub fn member(&mut self, m: TypedInstanceMember) -> MLExpr {
+        let TypedInstanceMember {
             target,
             name,
             is_safe,

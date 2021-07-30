@@ -19,7 +19,7 @@ pub enum TypedExpr {
         type_: Option<TypedType>,
     },
     Subscript,
-    Member(TypedMember),
+    Member(TypedInstanceMember),
     List,
     Tuple,
     Dict,
@@ -62,7 +62,7 @@ pub struct TypedCallArg {
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
-pub struct TypedMember {
+pub struct TypedInstanceMember {
     pub(crate) target: Box<TypedExpr>,
     pub(crate) name: String,
     pub(crate) is_safe: bool,
