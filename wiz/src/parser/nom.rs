@@ -167,7 +167,7 @@ mod tests {
     use crate::parser::nom::while_stmt;
 
     #[test]
-    fn test_while_stmt() {
+    fn test_while_stmt_with_bracket() {
         assert_eq!(
             while_stmt(
                 r"while (a < b) {
@@ -181,6 +181,52 @@ mod tests {
                         left: Box::new(Expr::Name(NameExprSyntax {
                             name: "a".to_string()
                         })),
+                        kind: "<".to_string(),
+                        right: Box::new(Expr::Name(NameExprSyntax {
+                            name: "b".to_string()
+                        }))
+                    },
+                    block: Block {
+                        body: vec![Stmt::Assignment(AssignmentStmt::Assignment(
+                            AssignmentSyntax {
+                                target: Expr::Name(NameExprSyntax {
+                                    name: "a".to_string()
+                                }),
+                                value: Expr::BinOp {
+                                    left: Box::new(Expr::Name(NameExprSyntax {
+                                        name: "a".to_string()
+                                    })),
+                                    kind: "+".to_string(),
+                                    right: Box::new(Expr::Literal(Literal::IntegerLiteral {
+                                        value: "1".to_string()
+                                    }))
+                                }
+                            }
+                        ))]
+                    }
+                }
+            ))
+        )
+    }
+    #[test]
+    fn test_while_stmt() {
+        assert_eq!(
+            while_stmt(
+                r"while a.c < b {
+            a = a + 1
+        }"
+            ),
+            Ok((
+                "",
+                LoopStmt::While {
+                    condition: Expr::BinOp {
+                        left: Box::new(Expr::Member {
+                            target: Box::new(Expr::Name(NameExprSyntax {
+                                name: "a".to_string()
+                            })),
+                            name: "c".to_string(),
+                            is_safe: false
+                        }),
                         kind: "<".to_string(),
                         right: Box::new(Expr::Name(NameExprSyntax {
                             name: "b".to_string()
