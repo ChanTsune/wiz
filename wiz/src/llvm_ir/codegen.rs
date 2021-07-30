@@ -5,6 +5,7 @@ use crate::middle_level_ir::ml_expr::{
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
 use crate::middle_level_ir::ml_type::MLType;
+use crate::utils::stacked_hash_map::StackedHashMap;
 use either::Either;
 use inkwell::builder::Builder;
 use inkwell::context::Context;
@@ -18,7 +19,6 @@ use nom::lib::std::convert::TryFrom;
 use std::collections::HashMap;
 use std::path::Path;
 use std::process::exit;
-use crate::utils::stacked_hash_map::StackedHashMap;
 
 /// Convenience type alias for the `sum` function.
 ///
@@ -39,10 +39,10 @@ impl<'ctx> CodeGen<'ctx> {
     fn get_from_environment(&self, name: String) -> Option<AnyValueEnum<'ctx>> {
         match self.local_environments.get(&name) {
             Some(v) => Some(*v),
-            None =>         match self.module.get_function(&*name) {
+            None => match self.module.get_function(&*name) {
                 Some(f) => Some(AnyValueEnum::FunctionValue(f)),
                 None => None,
-            }
+            },
         }
     }
 

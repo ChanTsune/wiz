@@ -6,13 +6,13 @@ use crate::high_level_ir::Ast2HLIR;
 use crate::llvm_ir::codegen::CodeGen;
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::HLIR2MLIR;
+use crate::utils::stacked_hash_map::StackedHashMap;
 use clap::{App, Arg};
 use inkwell::context::Context;
 use inkwell::OptimizationLevel;
 use std::error::Error;
 use std::fs::read_to_string;
 use std::path::Path;
-use crate::utils::stacked_hash_map::StackedHashMap;
 
 mod ast;
 mod high_level_ir;
