@@ -14,7 +14,8 @@ use crate::high_level_ir::typed_decl::{
     TypedStoredProperty, TypedStruct, TypedVar,
 };
 use crate::high_level_ir::typed_expr::{
-    TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedLiteral, TypedInstanceMember, TypedName, TypedReturn,
+    TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName,
+    TypedReturn,
 };
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{

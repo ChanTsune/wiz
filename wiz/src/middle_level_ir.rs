@@ -2,7 +2,7 @@ use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedStruct, TypedVar,
 };
 use crate::high_level_ir::typed_expr::{
-    TypedCall, TypedExpr, TypedIf, TypedLiteral, TypedInstanceMember, TypedName, TypedReturn,
+    TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn,
 };
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
