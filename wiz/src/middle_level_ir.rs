@@ -1,7 +1,10 @@
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedStruct, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn, TypedStaticMember};
+use crate::high_level_ir::typed_expr::{
+    TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn,
+    TypedStaticMember,
+};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
 use crate::high_level_ir::typed_type::{TypedFunctionType, TypedType, TypedValueType};
@@ -332,7 +335,10 @@ impl HLIR2MLIR {
 
     pub fn static_member(&self, sm: TypedStaticMember) -> MLExpr {
         let type_name = self.type_(sm.target).into_value_type().name;
-        MLExpr::Name(MLName { name: type_name + "#" + &*sm.name, type_: self.type_(sm.type_.unwrap()) })
+        MLExpr::Name(MLName {
+            name: type_name + "#" + &*sm.name,
+            type_: self.type_(sm.type_.unwrap()),
+        })
     }
 
     pub fn call(&mut self, c: TypedCall) -> MLCall {

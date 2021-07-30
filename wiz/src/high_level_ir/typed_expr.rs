@@ -75,7 +75,7 @@ pub struct TypedInstanceMember {
 pub struct TypedStaticMember {
     pub(crate) target: TypedType,
     pub(crate) name: String,
-    pub(crate) type_: Option<TypedType>
+    pub(crate) type_: Option<TypedType>,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]

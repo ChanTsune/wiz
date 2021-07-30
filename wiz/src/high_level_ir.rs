@@ -13,7 +13,10 @@ use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedFun, TypedFunBody, TypedInitializer,
     TypedStoredProperty, TypedStruct, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn, TypedStaticMember};
+use crate::high_level_ir::typed_expr::{
+    TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName,
+    TypedReturn, TypedStaticMember,
+};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentStmt, TypedBlock, TypedForStmt, TypedLoopStmt, TypedStmt,
@@ -21,11 +24,11 @@ use crate::high_level_ir::typed_stmt::{
 };
 use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
 use crate::utils::stacked_hash_map::StackedHashMap;
+use either::Either;
 use std::collections::HashMap;
 use std::fmt;
 use std::option::Option::Some;
 use std::process::exit;
-use either::Either;
 
 pub mod typed_decl;
 pub mod typed_expr;
@@ -62,7 +65,8 @@ impl Ast2HLIRContext {
     }
 
     pub(crate) fn put_name(&mut self, name: String, type_: &TypedType) {
-        self.name_environment.insert(name, Ast2HLIRName::Name(type_.clone()));
+        self.name_environment
+            .insert(name, Ast2HLIRName::Name(type_.clone()));
     }
 
     fn put_type(&mut self, s: &TypedStruct) {
@@ -441,15 +445,9 @@ impl Ast2HLIR {
 
     pub fn expr(&mut self, e: Expr) -> TypedExpr {
         match e {
-            Expr::Name(n) => {
-                match self.name_syntax(n) {
-                    Either::Left(name) => {
-                        TypedExpr::Name(name)
-                    }
-                    Either::Right(n) => {
-                        TypedExpr::Type(n)
-                    }
-                }
+            Expr::Name(n) => match self.name_syntax(n) {
+                Either::Left(name) => TypedExpr::Name(name),
+                Either::Right(n) => TypedExpr::Type(n),
             },
             Expr::Literal(literal) => match literal {
                 Literal::IntegerLiteral { value } => TypedExpr::Literal(TypedLiteral::Integer {
@@ -514,7 +512,7 @@ impl Ast2HLIR {
                     TypedExpr::StaticMember(TypedStaticMember {
                         target: target,
                         name: name,
-                        type_: type_
+                        type_: type_,
                     })
                 } else {
                     let target_type = target.type_().unwrap();
@@ -556,21 +554,15 @@ impl Ast2HLIR {
     pub fn name_syntax(&self, n: NameExprSyntax) -> Either<TypedName, TypedType> {
         let NameExprSyntax { name } = n;
         match self.context.resolve_name(name.clone()) {
-            None => {
-                Either::Left(TypedName {
-                    name: name,
-                    type_: None,
-                })
-            }
-            Some(Ast2HLIRName::Name(t)) => {
-                Either::Left(TypedName {
-                    name: name,
-                    type_: Some(t),
-                })
-            }
-            Some(Ast2HLIRName::Type(t)) => {
-                Either::Right(t)
-            }
+            None => Either::Left(TypedName {
+                name: name,
+                type_: None,
+            }),
+            Some(Ast2HLIRName::Name(t)) => Either::Left(TypedName {
+                name: name,
+                type_: Some(t),
+            }),
+            Some(Ast2HLIRName::Type(t)) => Either::Right(t),
         }
     }
 
