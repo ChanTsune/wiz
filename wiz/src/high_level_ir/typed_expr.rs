@@ -20,6 +20,7 @@ pub enum TypedExpr {
     },
     Subscript,
     Member(TypedInstanceMember),
+    StaticMember(TypedStaticMember),
     List,
     Tuple,
     Dict,
@@ -30,6 +31,7 @@ pub enum TypedExpr {
     Lambda,
     Return(TypedReturn),
     TypeCast,
+    Type(TypedType),
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -70,6 +72,13 @@ pub struct TypedInstanceMember {
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct TypedStaticMember {
+    pub(crate) target: TypedType,
+    pub(crate) name: String,
+    pub(crate) type_: Option<TypedType>
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct TypedIf {
     pub(crate) condition: Box<TypedExpr>,
     pub(crate) body: TypedBlock,
@@ -102,6 +111,7 @@ impl TypedExpr {
             } => type_.clone(),
             TypedExpr::Subscript => None,
             TypedExpr::Member(m) => m.type_.clone(),
+            TypedExpr::StaticMember(sm) => sm.type_.clone(),
             TypedExpr::List => None,
             TypedExpr::Tuple => None,
             TypedExpr::Dict => None,
@@ -112,6 +122,7 @@ impl TypedExpr {
             TypedExpr::Lambda => None,
             TypedExpr::Return(r) => r.type_.clone(),
             TypedExpr::TypeCast => None,
+            TypedExpr::Type(_) => None,
         }
     }
 }

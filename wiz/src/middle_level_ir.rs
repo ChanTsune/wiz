@@ -1,9 +1,7 @@
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedStruct, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{
-    TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn,
-};
+use crate::high_level_ir::typed_expr::{TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn, TypedStaticMember};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
 use crate::high_level_ir::typed_type::{TypedFunctionType, TypedType, TypedValueType};
@@ -252,6 +250,7 @@ impl HLIR2MLIR {
             TypedExpr::UnaryOp { .. } => exit(-1),
             TypedExpr::Subscript => exit(-1),
             TypedExpr::Member(m) => self.member(m),
+            TypedExpr::StaticMember(sm) => self.static_member(sm),
             TypedExpr::List => exit(-1),
             TypedExpr::Tuple => exit(-1),
             TypedExpr::Dict => exit(-1),
@@ -262,6 +261,10 @@ impl HLIR2MLIR {
             TypedExpr::Lambda => exit(-1),
             TypedExpr::Return(r) => MLExpr::Return(self.return_expr(r)),
             TypedExpr::TypeCast => exit(-1),
+            TypedExpr::Type(t) => {
+                eprintln!("Never execution branch executed!! => {:?}", t);
+                exit(-1)
+            }
         }
     }
 
@@ -325,6 +328,11 @@ impl HLIR2MLIR {
             })
         }
         // else field as function call etc...
+    }
+
+    pub fn static_member(&self, sm: TypedStaticMember) -> MLExpr {
+        let type_name = self.type_(sm.target).into_value_type().name;
+        MLExpr::Name(MLName { name: type_name + "#" + &*sm.name, type_: self.type_(sm.type_.unwrap()) })
     }
 
     pub fn call(&mut self, c: TypedCall) -> MLCall {
