@@ -884,10 +884,18 @@ mod tests {
 
     #[test]
     fn test_struct_member() {
-        assert_eq!(expr("a.b"), Ok(("", Expr::Member {
-            target: Box::new(Expr::Name(NameExprSyntax { name: "a".to_string() })),
-            name: "b".to_string(),
-            is_safe: false
-        })))
+        assert_eq!(
+            expr("a.b"),
+            Ok((
+                "",
+                Expr::Member {
+                    target: Box::new(Expr::Name(NameExprSyntax {
+                        name: "a".to_string()
+                    })),
+                    name: "b".to_string(),
+                    is_safe: false
+                }
+            ))
+        )
     }
 }
