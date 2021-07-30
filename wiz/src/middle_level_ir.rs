@@ -208,9 +208,13 @@ impl HLIR2MLIR {
                         type_: type_.clone(),
                     })),
                 );
+                body.push(MLStmt::Expr(MLExpr::Return(MLReturn {
+                    value: Some(Box::new(MLExpr::Name(MLName { name: String::from("self"), type_: type_.clone() }))),
+                    type_: type_.clone()
+                })));
                 MLFun {
                     modifiers: vec![],
-                    name: name.clone() + ".init",
+                    name: name.clone() + "#init",
                     arg_defs: i.args.into_iter().map(|a| self.arg_def(a)).collect(),
                     return_type: type_,
                     body: Some(MLFunBody { body }),

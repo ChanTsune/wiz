@@ -12,6 +12,7 @@ use inkwell::OptimizationLevel;
 use std::error::Error;
 use std::fs::read_to_string;
 use std::path::Path;
+use crate::utils::stacked_hash_map::StackedHashMap;
 
 mod ast;
 mod high_level_ir;
@@ -43,7 +44,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         module,
         builder: context.create_builder(),
         execution_engine,
-        local_environments: vec![],
+        local_environments: StackedHashMap::new(),
         current_function: None,
     };
 

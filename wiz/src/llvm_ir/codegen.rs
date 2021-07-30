@@ -18,6 +18,7 @@ use nom::lib::std::convert::TryFrom;
 use std::collections::HashMap;
 use std::path::Path;
 use std::process::exit;
+use crate::utils::stacked_hash_map::StackedHashMap;
 
 /// Convenience type alias for the `sum` function.
 ///
@@ -30,27 +31,23 @@ pub struct CodeGen<'ctx> {
     pub(crate) module: Module<'ctx>,
     pub(crate) builder: Builder<'ctx>,
     pub(crate) execution_engine: ExecutionEngine<'ctx>,
-    pub(crate) local_environments: Vec<HashMap<String, AnyValueEnum<'ctx>>>,
+    pub(crate) local_environments: StackedHashMap<String, AnyValueEnum<'ctx>>,
     pub(crate) current_function: Option<FunctionValue<'ctx>>,
 }
 
 impl<'ctx> CodeGen<'ctx> {
     fn get_from_environment(&self, name: String) -> Option<AnyValueEnum<'ctx>> {
-        for e in self.local_environments.iter().rev() {
-            println!("MAP -> {:?}", e);
-            if let Some(v) = e.get(&*name) {
-                return Some(*v);
+        match self.local_environments.get(&name) {
+            Some(v) => Some(*v),
+            None =>         match self.module.get_function(&*name) {
+                Some(f) => Some(AnyValueEnum::FunctionValue(f)),
+                None => None,
             }
-        }
-        match self.module.get_function(&*name) {
-            Some(f) => Some(AnyValueEnum::FunctionValue(f)),
-            None => None,
         }
     }
 
     fn set_to_environment(&mut self, name: String, value: AnyValueEnum<'ctx>) {
-        let len = self.local_environments.len();
-        self.local_environments[len - 1].insert(name, value);
+        self.local_environments.insert(name, value);
     }
 
     fn push_environment(&mut self) {
