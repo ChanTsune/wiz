@@ -384,9 +384,19 @@ impl<'ctx> CodeGen<'ctx> {
 
     pub fn return_expr(&mut self, r: MLReturn) -> AnyValueEnum<'ctx> {
         let v = match r.value {
-            Some(e) => match BasicValueEnum::try_from(self.expr(*e)) {
-                Ok(b) => Some(b),
-                Err(_) => None,
+            Some(e) => {
+                match *e {
+                    MLExpr::Name(_) => {
+                        let n = self.expr(*e);
+                        Some(self.builder.build_load(n.into_pointer_value(), "v"))
+                    }
+                    _ => {
+                        match BasicValueEnum::try_from(self.expr(*e)) {
+                            Ok(b) => Some(b),
+                            Err(_) => None,
+                        }
+                    }
+                }
             },
             None => None,
         };
