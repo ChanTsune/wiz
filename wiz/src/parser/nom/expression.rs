@@ -112,7 +112,7 @@ pub fn if_expr(s: &str) -> IResult<&str, Expr> {
 <postfix_expr> ::= <primary_expr> <postfix_suffix>*
 */
 pub fn postfix_expr(s: &str) -> IResult<&str, Expr> {
-    map(_postfix_expr,     |(e, suffixes)| {
+    map(_postfix_expr, |(e, suffixes)| {
         let mut e = e;
         for suffix in suffixes {
             e = match suffix {
@@ -136,12 +136,11 @@ pub fn postfix_expr(s: &str) -> IResult<&str, Expr> {
             }
         }
         e
-    },
-    )(s)
+    })(s)
 }
 
 pub fn _postfix_expr(s: &str) -> IResult<&str, (Expr, Vec<PostfixSuffix>)> {
-        tuple((primary_expr, many0(postfix_suffix)))(s)
+    tuple((primary_expr, many0(postfix_suffix)))(s)
 }
 
 /*
