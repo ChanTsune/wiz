@@ -20,10 +20,11 @@ use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
 use nom::combinator::map;
+use nom::error::ErrorKind;
 use nom::multi::many0;
 use nom::sequence::tuple;
-use nom::{IResult, error};
 use nom::Err::Error;
+use nom::{error, IResult};
 
 pub fn decl_stmt(s: &str) -> IResult<&str, Stmt> {
     map(decl, |d| Stmt::Decl { decl: d })(s)
@@ -87,7 +88,7 @@ fn _directly_assignable_postfix_expr(s: &str) -> IResult<&str, Expr> {
     match expr {
         Expr::Member { .. } => IResult::Ok((e, expr)),
         Expr::Subscript { .. } => IResult::Ok((e, expr)),
-        _ => IResult::Err(Error(error::Error::new(e, error::ErrorKind::Alt)))
+        _ => IResult::Err(Error(error::Error::new(e, error::ErrorKind::Alt))),
     }
 }
 
@@ -162,7 +163,9 @@ mod tests {
     use crate::ast::expr::{Expr, NameExprSyntax};
     use crate::ast::literal::Literal;
     use crate::ast::stmt::{AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt};
-    use crate::parser::nom::{while_stmt, assignment_stmt, directly_assignable_expr, assignable_expr};
+    use crate::parser::nom::{
+        assignable_expr, assignment_stmt, directly_assignable_expr, while_stmt,
+    };
 
     #[test]
     fn test_while_stmt_with_bracket() {
@@ -256,49 +259,95 @@ mod tests {
 
     #[test]
     fn test_directly_assignable_expr() {
-        assert_eq!(directly_assignable_expr("a.b"), Ok(("", Expr::Member {
-            target: Box::new(Expr::Name(NameExprSyntax { name: "a".to_string() })),
-            name: "b".to_string(),
-            is_safe: false
-        })))
+        assert_eq!(
+            directly_assignable_expr("a.b"),
+            Ok((
+                "",
+                Expr::Member {
+                    target: Box::new(Expr::Name(NameExprSyntax {
+                        name: "a".to_string()
+                    })),
+                    name: "b".to_string(),
+                    is_safe: false
+                }
+            ))
+        )
     }
 
     #[test]
     fn test_assignable_expr() {
-        assert_eq!(assignable_expr("a.b"), Ok(("", Expr::Member {
-            target: Box::new(Expr::Name(NameExprSyntax { name: "a".to_string() })),
-            name: "b".to_string(),
-            is_safe: false
-        })))
+        assert_eq!(
+            assignable_expr("a.b"),
+            Ok((
+                "",
+                Expr::Member {
+                    target: Box::new(Expr::Name(NameExprSyntax {
+                        name: "a".to_string()
+                    })),
+                    name: "b".to_string(),
+                    is_safe: false
+                }
+            ))
+        )
     }
 
     #[test]
     fn test_assignment() {
-        assert_eq!(assignment_stmt("a = b"), Ok(("", Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax {
-            target: Expr::Name(NameExprSyntax { name: "a".to_string() }),
-            value: Expr::Name(NameExprSyntax { name: "b".to_string() })
-        })))))
+        assert_eq!(
+            assignment_stmt("a = b"),
+            Ok((
+                "",
+                Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax {
+                    target: Expr::Name(NameExprSyntax {
+                        name: "a".to_string()
+                    }),
+                    value: Expr::Name(NameExprSyntax {
+                        name: "b".to_string()
+                    })
+                }))
+            ))
+        )
     }
     #[test]
     fn test_assignment_struct_field() {
-        assert_eq!(assignment_stmt("a = b.c"), Ok(("", Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax {
-            target: Expr::Name(NameExprSyntax { name: "a".to_string() }),
-            value: Expr::Member {
-                target: Box::new(Expr::Name(NameExprSyntax { name: "b".to_string() })),
-                name: "c".to_string(),
-                is_safe: false
-            }
-        })))))
+        assert_eq!(
+            assignment_stmt("a = b.c"),
+            Ok((
+                "",
+                Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax {
+                    target: Expr::Name(NameExprSyntax {
+                        name: "a".to_string()
+                    }),
+                    value: Expr::Member {
+                        target: Box::new(Expr::Name(NameExprSyntax {
+                            name: "b".to_string()
+                        })),
+                        name: "c".to_string(),
+                        is_safe: false
+                    }
+                }))
+            ))
+        )
     }
     #[test]
     fn test_assignment_to_struct_field() {
-        assert_eq!(assignment_stmt("a.b = c"), Ok(("", Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax {
-            target:Expr::Member {
-                target: Box::new(Expr::Name(NameExprSyntax { name: "a".to_string() })),
-                name: "b".to_string(),
-                is_safe: false
-            },
-            value: Expr::Name(NameExprSyntax { name: "c".to_string() }),
-        })))))
+        assert_eq!(
+            assignment_stmt("a.b = c"),
+            Ok((
+                "",
+                Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax {
+                    target: Expr::Member {
+                        target: Box::new(Expr::Name(NameExprSyntax {
+                            name: "a".to_string()
+                        })),
+                        name: "b".to_string(),
+                        is_safe: false
+                    },
+                    value: Expr::Name(NameExprSyntax {
+                        name: "c".to_string()
+                    }),
+                }))
+            ))
+        )
     }
 }
