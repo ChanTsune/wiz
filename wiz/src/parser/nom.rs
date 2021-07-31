@@ -12,7 +12,7 @@ use crate::ast::stmt::{
     AssignmentAndOperatorSyntax, AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt,
 };
 use crate::parser::nom::declaration::{block, decl};
-use crate::parser::nom::expression::{expr, navigation_suffix, postfix_expr, prefix_expr};
+use crate::parser::nom::expression::{expr, navigation_suffix, postfix_expr, prefix_expr, _postfix_expr};
 use crate::parser::nom::keywords::while_keyword;
 use crate::parser::nom::lexical_structure::{identifier, whitespace0, whitespace1};
 use crate::parser::nom::operators::assignment_operator;
@@ -22,7 +22,9 @@ use nom::character::complete::char;
 use nom::combinator::map;
 use nom::multi::many0;
 use nom::sequence::tuple;
-use nom::IResult;
+use nom::{IResult, error};
+use nom::error::ErrorKind;
+use nom::Err::Error;
 
 pub fn decl_stmt(s: &str) -> IResult<&str, Stmt> {
     map(decl, |d| Stmt::Decl { decl: d })(s)
@@ -70,19 +72,26 @@ pub fn assignment_stmt(s: &str) -> IResult<&str, Stmt> {
 */
 pub fn directly_assignable_expr(s: &str) -> IResult<&str, Expr> {
     alt((
-        map(tuple((postfix_expr, assignable_suffix)), |(e, s)| match s {
-            PostfixSuffix::IndexingSuffix => e,
-            PostfixSuffix::NavigationSuffix { is_safe, name } => Expr::Member {
-                target: Box::new(e),
-                name,
-                is_safe,
-            },
-            _ => e,
-        }),
+        _directly_assignable_postfix_expr,
         map(identifier, |name| Expr::Name(NameExprSyntax { name })),
         map(parenthesized_directly_assignable_expr, |e| e),
     ))(s)
 }
+
+/*
+<assignable_suffix> ::= <type_arguments>
+  | <indexing_suffix>
+  | <navigation_suffix>
+*/
+fn _directly_assignable_postfix_expr(s: &str) -> IResult<&str, Expr> {
+    let (e, expr) = postfix_expr(s)?;
+    match expr {
+        Expr::Member { .. } => IResult::Ok((e, expr)),
+        Expr::Subscript { .. } => IResult::Ok((e, expr)),
+        _ => IResult::Err(Error(error::Error::new(e, error::ErrorKind::Alt)))
+    }
+}
+
 /*
 <assignable_expr> ::= <prefix_expr>
   | <parenthesized_assignable_expression>
@@ -98,16 +107,6 @@ pub fn parenthesized_assignable_expression(s: &str) -> IResult<&str, Expr> {
         tuple((char('('), assignable_expr, char(')'))),
         |(_, e, _)| e,
     )(s)
-}
-
-/*
-<assignable_suffix> ::= <type_arguments>
-  | <indexing_suffix>
-  | <navigation_suffix>
-*/
-pub fn assignable_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
-    // TODO: PostfixSuffix to assignableSuffix
-    alt((navigation_suffix, navigation_suffix))(s)
 }
 
 /*
@@ -164,7 +163,7 @@ mod tests {
     use crate::ast::expr::{Expr, NameExprSyntax};
     use crate::ast::literal::Literal;
     use crate::ast::stmt::{AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt};
-    use crate::parser::nom::while_stmt;
+    use crate::parser::nom::{while_stmt, assignment_stmt, directly_assignable_expr, assignable_expr};
 
     #[test]
     fn test_while_stmt_with_bracket() {
@@ -208,6 +207,7 @@ mod tests {
             ))
         )
     }
+
     #[test]
     fn test_while_stmt() {
         assert_eq!(
@@ -253,5 +253,53 @@ mod tests {
                 }
             ))
         )
+    }
+
+    #[test]
+    fn test_directly_assignable_expr() {
+        assert_eq!(directly_assignable_expr("a.b"), Ok(("", Expr::Member {
+            target: Box::new(Expr::Name(NameExprSyntax { name: "a".to_string() })),
+            name: "b".to_string(),
+            is_safe: false
+        })))
+    }
+
+    #[test]
+    fn test_assignable_expr() {
+        assert_eq!(assignable_expr("a.b"), Ok(("", Expr::Member {
+            target: Box::new(Expr::Name(NameExprSyntax { name: "a".to_string() })),
+            name: "b".to_string(),
+            is_safe: false
+        })))
+    }
+
+    #[test]
+    fn test_assignment() {
+        assert_eq!(assignment_stmt("a = b"), Ok(("", Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax {
+            target: Expr::Name(NameExprSyntax { name: "a".to_string() }),
+            value: Expr::Name(NameExprSyntax { name: "b".to_string() })
+        })))))
+    }
+    #[test]
+    fn test_assignment_struct_field() {
+        assert_eq!(assignment_stmt("a = b.c"), Ok(("", Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax {
+            target: Expr::Name(NameExprSyntax { name: "a".to_string() }),
+            value: Expr::Member {
+                target: Box::new(Expr::Name(NameExprSyntax { name: "b".to_string() })),
+                name: "c".to_string(),
+                is_safe: false
+            }
+        })))))
+    }
+    #[test]
+    fn test_assignment_to_struct_field() {
+        assert_eq!(assignment_stmt("a.b = c"), Ok(("", Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax {
+            target:Expr::Member {
+                target: Box::new(Expr::Name(NameExprSyntax { name: "a".to_string() })),
+                name: "b".to_string(),
+                is_safe: false
+            },
+            value: Expr::Name(NameExprSyntax { name: "c".to_string() }),
+        })))))
     }
 }
