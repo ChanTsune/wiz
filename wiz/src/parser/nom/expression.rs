@@ -112,35 +112,38 @@ pub fn if_expr(s: &str) -> IResult<&str, Expr> {
 <postfix_expr> ::= <primary_expr> <postfix_suffix>*
 */
 pub fn postfix_expr(s: &str) -> IResult<&str, Expr> {
-    map(
-        tuple((primary_expr, many0(postfix_suffix))),
-        |(e, suffixes)| {
-            let mut e = e;
-            for suffix in suffixes {
-                e = match suffix {
-                    // TODO: impl
-                    PostfixSuffix::Operator { .. } => e,
-                    PostfixSuffix::TypeArgumentSuffix { .. } => e,
-                    PostfixSuffix::CallSuffix {
-                        args,
-                        tailing_lambda,
-                    } => Expr::Call(CallExprSyntax {
-                        target: Box::new(e),
-                        args,
-                        tailing_lambda,
-                    }),
-                    PostfixSuffix::IndexingSuffix => e,
-                    PostfixSuffix::NavigationSuffix { is_safe, name } => Expr::Member {
-                        target: Box::new(e),
-                        name,
-                        is_safe,
-                    },
-                }
+    map(_postfix_expr,     |(e, suffixes)| {
+        let mut e = e;
+        for suffix in suffixes {
+            e = match suffix {
+                // TODO: impl
+                PostfixSuffix::Operator { .. } => e,
+                PostfixSuffix::TypeArgumentSuffix { .. } => e,
+                PostfixSuffix::CallSuffix {
+                    args,
+                    tailing_lambda,
+                } => Expr::Call(CallExprSyntax {
+                    target: Box::new(e),
+                    args,
+                    tailing_lambda,
+                }),
+                PostfixSuffix::IndexingSuffix => e,
+                PostfixSuffix::NavigationSuffix { is_safe, name } => Expr::Member {
+                    target: Box::new(e),
+                    name,
+                    is_safe,
+                },
             }
-            e
-        },
+        }
+        e
+    },
     )(s)
 }
+
+pub fn _postfix_expr(s: &str) -> IResult<&str, (Expr, Vec<PostfixSuffix>)> {
+        tuple((primary_expr, many0(postfix_suffix)))(s)
+}
+
 /*
 <postfix_suffix> ::= <postfix_operator>
                    | <type_arguments>
