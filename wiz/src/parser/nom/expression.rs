@@ -850,6 +850,7 @@ mod tests {
             ))
         )
     }
+
     #[test]
     fn test_if_expr_with_else() {
         assert_eq!(
@@ -866,6 +867,7 @@ mod tests {
             ))
         )
     }
+
     #[test]
     fn test_return() {
         assert_eq!(
