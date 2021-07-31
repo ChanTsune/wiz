@@ -662,7 +662,7 @@ pub fn expr(s: &str) -> IResult<&str, Expr> {
 #[cfg(test)]
 mod tests {
     use crate::ast::block::Block;
-    use crate::ast::expr::Expr::{BinOp, Call, If, Name};
+    use crate::ast::expr::Expr::{BinOp, If};
     use crate::ast::expr::{
         CallArg, CallExprSyntax, Expr, NameExprSyntax, PostfixSuffix, ReturnSyntax,
     };
