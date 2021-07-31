@@ -72,13 +72,22 @@ impl<'ctx> CodeGen<'ctx> {
     fn get_struct_field_index_by_name(&self, m: MLType, n: String) -> Option<u32> {
         match m {
             MLType::Value(m) => match self.ml_context.get_struct(&m.name) {
-                None => None,
+                None => {
+                    eprintln!("Type {:?} dose not defined.", m);
+                    None
+                },
                 Some(s) => match s.fields.iter().position(|f| f.name == n) {
-                    None => None,
+                    None => {
+                        eprintln!("field '{:?}' dose not found in {:?}", n, m);
+                        None
+                    },
                     Some(i) => Some(i as u32),
                 },
             },
-            MLType::Function(f) => None,
+            MLType::Function(f) => {
+                eprintln!("Invalid type '{:?}'", f);
+                None
+            },
         }
     }
 
@@ -328,10 +337,10 @@ impl<'ctx> CodeGen<'ctx> {
     }
 
     pub fn member(&mut self, m: MLMember) -> AnyValueEnum<'ctx> {
-        let target = self.expr(*m.target);
         let field_index = self
-            .get_struct_field_index_by_name(m.type_, m.name)
+            .get_struct_field_index_by_name(m.target.type_(), m.name)
             .unwrap();
+        let target = self.expr(*m.target);
         let ep = self
             .builder
             .build_struct_gep(target.into_pointer_value(), field_index, "struct_gep")
@@ -600,7 +609,8 @@ impl<'ctx> CodeGen<'ctx> {
         }
     }
 
-    pub fn struct_(&self, s: MLStruct) -> AnyValueEnum<'ctx> {
+    pub fn struct_(&mut self, s: MLStruct) -> AnyValueEnum<'ctx> {
+        self.ml_context.put_struct(s.clone());
         let struct_ = self.context.opaque_struct_type(&*s.name);
         let struct_fields: Vec<BasicTypeEnum<'ctx>> = s
             .fields

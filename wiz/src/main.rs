@@ -13,6 +13,7 @@ use inkwell::OptimizationLevel;
 use std::error::Error;
 use std::fs::read_to_string;
 use std::path::Path;
+use std::collections::HashMap;
 
 mod ast;
 mod high_level_ir;
@@ -45,8 +46,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         builder: context.create_builder(),
         execution_engine,
         ml_context: MLContext {
-            struct_environment: StackedHashMap::new(),
-            local_environments: StackedHashMap::new(),
+            struct_environment: StackedHashMap::from(HashMap::new()),
+            local_environments: StackedHashMap::from(HashMap::new()),
             current_function: None,
         },
     };
