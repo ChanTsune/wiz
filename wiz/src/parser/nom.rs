@@ -6,13 +6,13 @@ pub mod lexical_structure;
 pub mod operators;
 pub mod type_;
 
-use crate::ast::expr::{Expr, NameExprSyntax, PostfixSuffix};
+use crate::ast::expr::{Expr, NameExprSyntax};
 use crate::ast::file::FileSyntax;
 use crate::ast::stmt::{
     AssignmentAndOperatorSyntax, AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt,
 };
 use crate::parser::nom::declaration::{block, decl};
-use crate::parser::nom::expression::{expr, navigation_suffix, postfix_expr, prefix_expr, _postfix_expr};
+use crate::parser::nom::expression::{expr, postfix_expr, prefix_expr};
 use crate::parser::nom::keywords::while_keyword;
 use crate::parser::nom::lexical_structure::{identifier, whitespace0, whitespace1};
 use crate::parser::nom::operators::assignment_operator;
@@ -23,7 +23,6 @@ use nom::combinator::map;
 use nom::multi::many0;
 use nom::sequence::tuple;
 use nom::{IResult, error};
-use nom::error::ErrorKind;
 use nom::Err::Error;
 
 pub fn decl_stmt(s: &str) -> IResult<&str, Stmt> {
