@@ -3,7 +3,7 @@ use crate::parser::parser::{parse_from_file, parse_from_string};
 use crate::ast::file::WizFile;
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::Ast2HLIR;
-use crate::llvm_ir::codegen::CodeGen;
+use crate::llvm_ir::codegen::{CodeGen, MLContext};
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::HLIR2MLIR;
 use crate::utils::stacked_hash_map::StackedHashMap;
@@ -44,8 +44,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         module,
         builder: context.create_builder(),
         execution_engine,
-        local_environments: StackedHashMap::new(),
-        current_function: None,
+        ml_context: MLContext {
+            struct_environment: StackedHashMap::new(),
+            local_environments: StackedHashMap::new(),
+            current_function: None
+        },
     };
 
     let mut ast2hlir = Ast2HLIR::new();

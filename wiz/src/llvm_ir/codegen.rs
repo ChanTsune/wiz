@@ -9,7 +9,7 @@ use crate::utils::stacked_hash_map::StackedHashMap;
 use either::Either;
 use inkwell::builder::Builder;
 use inkwell::context::Context;
-use inkwell::execution_engine::{ExecutionEngine, JitFunction};
+use inkwell::execution_engine::{ExecutionEngine};
 use inkwell::module::Module;
 use inkwell::support::LLVMString;
 use inkwell::types::{AnyTypeEnum, BasicTypeEnum};
@@ -20,24 +20,43 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::process::exit;
 
-/// Convenience type alias for the `sum` function.
-///
-/// Calling this is innately `unsafe` because there's no guarantee it doesn't
-/// do `unsafe` operations internally.
-type SumFunc = unsafe extern "C" fn(u64, u64, u64) -> u64;
+pub(crate) struct MLContext<'ctx> {
+    pub (crate) struct_environment: StackedHashMap<String, MLStruct>,
+    pub(crate) local_environments: StackedHashMap<String, AnyValueEnum<'ctx>>,
+    pub(crate) current_function: Option<FunctionValue<'ctx>>,
+}
+
+impl <'ctx> MLContext<'ctx> {
+    pub fn push_environment(&mut self) {
+        self.struct_environment.push(HashMap::new());
+        self.local_environments.push(HashMap::new());
+    }
+
+    pub fn pop_environment(&mut self) {
+        self.struct_environment.pop();
+        self.local_environments.pop();
+    }
+
+    pub fn put_struct(&mut self, s: MLStruct) {
+        self.struct_environment.insert(s.name.clone(), s);
+    }
+
+    pub fn get_struct(&self, name: &String) -> Option<MLStruct> {
+        self.struct_environment.get(name).map(|s|{s.clone()})
+    }
+}
 
 pub struct CodeGen<'ctx> {
     pub(crate) context: &'ctx Context,
     pub(crate) module: Module<'ctx>,
     pub(crate) builder: Builder<'ctx>,
     pub(crate) execution_engine: ExecutionEngine<'ctx>,
-    pub(crate) local_environments: StackedHashMap<String, AnyValueEnum<'ctx>>,
-    pub(crate) current_function: Option<FunctionValue<'ctx>>,
+    pub(crate) ml_context: MLContext<'ctx>
 }
 
 impl<'ctx> CodeGen<'ctx> {
     fn get_from_environment(&self, name: String) -> Option<AnyValueEnum<'ctx>> {
-        match self.local_environments.get(&name) {
+        match self.ml_context.local_environments.get(&name) {
             Some(v) => Some(*v),
             None => match self.module.get_function(&*name) {
                 Some(f) => Some(AnyValueEnum::FunctionValue(f)),
@@ -47,19 +66,26 @@ impl<'ctx> CodeGen<'ctx> {
     }
 
     fn set_to_environment(&mut self, name: String, value: AnyValueEnum<'ctx>) {
-        self.local_environments.insert(name, value);
+        self.ml_context.local_environments.insert(name, value);
     }
 
-    fn push_environment(&mut self) {
-        self.local_environments.push(HashMap::new())
-    }
-
-    fn pop_environment(&mut self) {
-        self.local_environments.pop();
-    }
-
-    fn get_struct_field_index_by_name(&self, m: MLType, n: String) -> u32 {
-        0
+    fn get_struct_field_index_by_name(&self, m: MLType, n: String) -> Option<u32> {
+        match m {
+            MLType::Value(m) => {
+                match self.ml_context.get_struct(&m.name) {
+                    None => {None}
+                    Some(s) => {
+                        match s.fields.iter().position(|f|{f.name == n}) {
+                            None => {None}
+                            Some(i) => {Some(i as u32)}
+                        }
+                    }
+                }
+            }
+            MLType::Function(f) => {
+                None
+            }
+        }
     }
 
     pub fn expr(&mut self, e: MLExpr) -> AnyValueEnum<'ctx> {
@@ -309,7 +335,7 @@ impl<'ctx> CodeGen<'ctx> {
 
     pub fn member(&mut self, m: MLMember) -> AnyValueEnum<'ctx> {
         let target = self.expr(*m.target);
-        let field_index = self.get_struct_field_index_by_name(m.type_, m.name);
+        let field_index = self.get_struct_field_index_by_name(m.type_, m.name).unwrap();
         let ep = self
             .builder
             .build_struct_gep(target.into_pointer_value(), field_index, "struct_gep")
@@ -325,10 +351,10 @@ impl<'ctx> CodeGen<'ctx> {
             None => {
                 let if_block = self
                     .context
-                    .append_basic_block(self.current_function.unwrap(), "if");
+                    .append_basic_block(self.ml_context.current_function.unwrap(), "if");
                 let after_if_block = self
                     .context
-                    .append_basic_block(self.current_function.unwrap(), "else");
+                    .append_basic_block(self.ml_context.current_function.unwrap(), "else");
                 let cond = self.expr(*condition);
                 self.builder.build_conditional_branch(
                     cond.into_int_value(),
@@ -350,13 +376,13 @@ impl<'ctx> CodeGen<'ctx> {
                 let i64_type = self.context.i64_type();
                 let if_block = self
                     .context
-                    .append_basic_block(self.current_function.unwrap(), "if");
+                    .append_basic_block(self.ml_context.current_function.unwrap(), "if");
                 let else_block = self
                     .context
-                    .append_basic_block(self.current_function.unwrap(), "else");
+                    .append_basic_block(self.ml_context.current_function.unwrap(), "else");
                 let after_if_block = self
                     .context
-                    .append_basic_block(self.current_function.unwrap(), "after_if");
+                    .append_basic_block(self.ml_context.current_function.unwrap(), "after_if");
                 let cond = self.expr(*condition);
                 self.builder
                     .build_conditional_branch(cond.into_int_value(), if_block, else_block);
@@ -487,7 +513,7 @@ impl<'ctx> CodeGen<'ctx> {
         let return_type_name: &str = &*return_type.into_value_type().name; // NOTE: for debug
         let return_type = self.type_name_to_type(return_type_name);
         if let Some(body) = body {
-            self.push_environment();
+            self.ml_context.push_environment();
             let func = match return_type {
                 // AnyTypeEnum::ArrayType(_) => {}
                 // AnyTypeEnum::FloatType(_) => {}
@@ -498,7 +524,7 @@ impl<'ctx> CodeGen<'ctx> {
                     for (v, a) in function.get_params().iter().zip(arg_defs) {
                         self.set_to_environment(a.name, v.as_any_value_enum());
                     }
-                    self.current_function = Some(function);
+                    self.ml_context.current_function = Some(function);
                     let basic_block = self.context.append_basic_block(function, "entry");
                     self.builder.position_at_end(basic_block);
                     for stmt in body.body {
@@ -513,7 +539,7 @@ impl<'ctx> CodeGen<'ctx> {
                     for (v, a) in function.get_params().iter().zip(arg_defs) {
                         self.set_to_environment(a.name, v.as_any_value_enum());
                     }
-                    self.current_function = Some(function);
+                    self.ml_context.current_function = Some(function);
                     let basic_block = self.context.append_basic_block(function, "entry");
                     self.builder.position_at_end(basic_block);
                     for stmt in body.body {
@@ -528,7 +554,7 @@ impl<'ctx> CodeGen<'ctx> {
                     for (v, a) in function.get_params().iter().zip(arg_defs) {
                         self.set_to_environment(a.name, v.as_any_value_enum());
                     }
-                    self.current_function = Some(function);
+                    self.ml_context.current_function = Some(function);
                     let basic_block = self.context.append_basic_block(function, "entry");
                     self.builder.position_at_end(basic_block);
                     for stmt in body.body {
@@ -542,7 +568,7 @@ impl<'ctx> CodeGen<'ctx> {
                     exit(-1)
                 }
             };
-            self.pop_environment();
+            self.ml_context.pop_environment();
             AnyValueEnum::from(func)
         } else {
             let func = match return_type {
@@ -552,21 +578,21 @@ impl<'ctx> CodeGen<'ctx> {
                 AnyTypeEnum::IntType(int_type) => {
                     let fn_type = int_type.fn_type(&args, false);
                     let f = self.module.add_function(&*name, fn_type, None);
-                    self.current_function = Some(f);
+                    self.ml_context.current_function = Some(f);
                     f
                 }
                 // AnyTypeEnum::PointerType(_) => {}
                 AnyTypeEnum::StructType(struct_type) => {
                     let fn_type = struct_type.fn_type(&args, false);
                     let f = self.module.add_function(&*name, fn_type, None);
-                    self.current_function = Some(f);
+                    self.ml_context.current_function = Some(f);
                     f
                 }
                 // AnyTypeEnum::VectorType(_) => {}
                 AnyTypeEnum::VoidType(void_type) => {
                     let fn_type = void_type.fn_type(&args, false);
                     let f = self.module.add_function(&*name, fn_type, None);
-                    self.current_function = Some(f);
+                    self.ml_context.current_function = Some(f);
                     f
                 }
                 _ => {
@@ -641,10 +667,10 @@ impl<'ctx> CodeGen<'ctx> {
         let block = lop.block;
         let loop_body_block = self
             .context
-            .append_basic_block(self.current_function.unwrap(), "loop");
+            .append_basic_block(self.ml_context.current_function.unwrap(), "loop");
         let after_loop_block = self
             .context
-            .append_basic_block(self.current_function.unwrap(), "after_loop");
+            .append_basic_block(self.ml_context.current_function.unwrap(), "after_loop");
         // loop に入るかの検査
         let cond = self.expr(condition.clone());
         self.builder.build_conditional_branch(
@@ -673,25 +699,6 @@ impl<'ctx> CodeGen<'ctx> {
         }
     }
 
-    pub fn jit_compile_sum(&self) -> Option<JitFunction<SumFunc>> {
-        let i64_type = self.context.i64_type();
-        let fn_type = i64_type.fn_type(&[i64_type.into(), i64_type.into(), i64_type.into()], false);
-        let function = self.module.add_function("sum", fn_type, None);
-        let basic_block = self.context.append_basic_block(function, "entry");
-
-        self.builder.position_at_end(basic_block);
-
-        let x = function.get_nth_param(0)?.into_int_value();
-        let y = function.get_nth_param(1)?.into_int_value();
-        let z = function.get_nth_param(2)?.into_int_value();
-
-        let sum = self.builder.build_int_add(x, y, "sum");
-        let sum = self.builder.build_int_add(sum, z, "sum");
-
-        self.builder.build_return(Some(&sum));
-
-        unsafe { self.execution_engine.get_function("sum").ok() }
-    }
     /**
      * Write the LLVM IR to a file in the path.
      */
