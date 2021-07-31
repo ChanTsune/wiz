@@ -20,7 +20,6 @@ use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
 use nom::combinator::map;
-use nom::error::ErrorKind;
 use nom::multi::many0;
 use nom::sequence::tuple;
 use nom::Err::Error;
