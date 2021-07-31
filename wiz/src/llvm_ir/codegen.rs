@@ -9,7 +9,7 @@ use crate::utils::stacked_hash_map::StackedHashMap;
 use either::Either;
 use inkwell::builder::Builder;
 use inkwell::context::Context;
-use inkwell::execution_engine::{ExecutionEngine};
+use inkwell::execution_engine::ExecutionEngine;
 use inkwell::module::Module;
 use inkwell::support::LLVMString;
 use inkwell::types::{AnyTypeEnum, BasicTypeEnum};
@@ -21,12 +21,12 @@ use std::path::Path;
 use std::process::exit;
 
 pub(crate) struct MLContext<'ctx> {
-    pub (crate) struct_environment: StackedHashMap<String, MLStruct>,
+    pub(crate) struct_environment: StackedHashMap<String, MLStruct>,
     pub(crate) local_environments: StackedHashMap<String, AnyValueEnum<'ctx>>,
     pub(crate) current_function: Option<FunctionValue<'ctx>>,
 }
 
-impl <'ctx> MLContext<'ctx> {
+impl<'ctx> MLContext<'ctx> {
     pub fn push_environment(&mut self) {
         self.struct_environment.push(HashMap::new());
         self.local_environments.push(HashMap::new());
@@ -42,7 +42,7 @@ impl <'ctx> MLContext<'ctx> {
     }
 
     pub fn get_struct(&self, name: &String) -> Option<MLStruct> {
-        self.struct_environment.get(name).map(|s|{s.clone()})
+        self.struct_environment.get(name).map(|s| s.clone())
     }
 }
 
@@ -51,7 +51,7 @@ pub struct CodeGen<'ctx> {
     pub(crate) module: Module<'ctx>,
     pub(crate) builder: Builder<'ctx>,
     pub(crate) execution_engine: ExecutionEngine<'ctx>,
-    pub(crate) ml_context: MLContext<'ctx>
+    pub(crate) ml_context: MLContext<'ctx>,
 }
 
 impl<'ctx> CodeGen<'ctx> {
@@ -71,20 +71,14 @@ impl<'ctx> CodeGen<'ctx> {
 
     fn get_struct_field_index_by_name(&self, m: MLType, n: String) -> Option<u32> {
         match m {
-            MLType::Value(m) => {
-                match self.ml_context.get_struct(&m.name) {
-                    None => {None}
-                    Some(s) => {
-                        match s.fields.iter().position(|f|{f.name == n}) {
-                            None => {None}
-                            Some(i) => {Some(i as u32)}
-                        }
-                    }
-                }
-            }
-            MLType::Function(f) => {
-                None
-            }
+            MLType::Value(m) => match self.ml_context.get_struct(&m.name) {
+                None => None,
+                Some(s) => match s.fields.iter().position(|f| f.name == n) {
+                    None => None,
+                    Some(i) => Some(i as u32),
+                },
+            },
+            MLType::Function(f) => None,
         }
     }
 
@@ -335,7 +329,9 @@ impl<'ctx> CodeGen<'ctx> {
 
     pub fn member(&mut self, m: MLMember) -> AnyValueEnum<'ctx> {
         let target = self.expr(*m.target);
-        let field_index = self.get_struct_field_index_by_name(m.type_, m.name).unwrap();
+        let field_index = self
+            .get_struct_field_index_by_name(m.type_, m.name)
+            .unwrap();
         let ep = self
             .builder
             .build_struct_gep(target.into_pointer_value(), field_index, "struct_gep")

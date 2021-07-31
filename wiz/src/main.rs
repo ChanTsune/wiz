@@ -47,7 +47,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         ml_context: MLContext {
             struct_environment: StackedHashMap::new(),
             local_environments: StackedHashMap::new(),
-            current_function: None
+            current_function: None,
         },
     };
 
