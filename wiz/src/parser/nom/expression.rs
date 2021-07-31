@@ -1,5 +1,4 @@
 use crate::ast::block::Block;
-use crate::ast::expr::Expr::Call;
 use crate::ast::expr::{
     CallArg, CallExprSyntax, Expr, Lambda, NameExprSyntax, PostfixSuffix, ReturnSyntax,
 };
@@ -125,7 +124,7 @@ pub fn postfix_expr(s: &str) -> IResult<&str, Expr> {
                     PostfixSuffix::CallSuffix {
                         args,
                         tailing_lambda,
-                    } => Call(CallExprSyntax {
+                    } => Expr::Call(CallExprSyntax {
                         target: Box::new(e),
                         args,
                         tailing_lambda,
