@@ -54,13 +54,13 @@ pub fn struct_properties(s: &str) -> IResult<&str, Vec<StructPropertySyntax>> {
         opt(tuple((
             struct_property,
             whitespace0,
-            many0(tuple((char(','), struct_property))),
-            opt(char(',')),
+            many0(tuple((char(','), whitespace0, struct_property))),
+            opt(tuple((char(','), whitespace0))),
         ))),
         |o| match o {
             None => vec![],
             Some((p, _, ps, _)) => {
-                let mut ps: Vec<StructPropertySyntax> = ps.into_iter().map(|(_, p)| p).collect();
+                let mut ps: Vec<StructPropertySyntax> = ps.into_iter().map(|(_, _, p)| p).collect();
                 ps.insert(0, p);
                 ps
             }
@@ -312,9 +312,41 @@ mod test {
     use crate::ast::literal::Literal;
     use crate::ast::stmt::Stmt;
     use crate::ast::type_name::TypeName;
-    use crate::parser::nom::declaration::{
-        block, function_body, function_decl, struct_syntax, var_decl,
-    };
+    use crate::parser::nom::declaration::{block, function_body, function_decl, struct_syntax, var_decl, stored_property, struct_properties};
+
+    #[test]
+    fn test_struct_properties() {
+        assert_eq!(struct_properties(
+            r"val a: Int64,
+                 val b: Int64,
+            "
+        ), Ok(("", vec![
+            StructPropertySyntax::StoredProperty(StoredPropertySyntax {
+                is_mut: false,
+                name: "a".to_string(),
+                type_: TypeName { name: "Int64".to_string(), type_params: vec![] }
+            }),
+            StructPropertySyntax::StoredProperty(StoredPropertySyntax {
+                is_mut: false,
+                name: "b".to_string(),
+                type_: TypeName { name: "Int64".to_string(), type_params: vec![] }
+            }),
+        ])))
+    }
+
+    #[test]
+    fn test_stored_property() {
+        assert_eq!(stored_property("val a: Int64"), Ok(("", StructPropertySyntax::StoredProperty(StoredPropertySyntax {
+            is_mut: false,
+            name: "a".to_string(),
+            type_: TypeName { name: "Int64".to_string(), type_params: vec![] }
+        }))));
+        assert_eq!(stored_property("var a: Int64"), Ok(("", StructPropertySyntax::StoredProperty(StoredPropertySyntax {
+            is_mut: true,
+            name: "a".to_string(),
+            type_: TypeName { name: "Int64".to_string(), type_params: vec![] }
+        }))));
+    }
 
     #[test]
     fn test_struct_syntax() {
