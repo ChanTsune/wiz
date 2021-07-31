@@ -181,10 +181,6 @@ pub fn postfix_operator(s: &str) -> IResult<&str, String> {
 // pub fn indexing_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
 //
 // }
-//
-// pub fn navigation_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
-//
-// }
 
 pub fn prefix_expr(s: &str) -> IResult<&str, Expr> {
     map(
