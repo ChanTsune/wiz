@@ -10,10 +10,10 @@ use crate::utils::stacked_hash_map::StackedHashMap;
 use clap::{App, Arg};
 use inkwell::context::Context;
 use inkwell::OptimizationLevel;
+use std::collections::HashMap;
 use std::error::Error;
 use std::fs::read_to_string;
 use std::path::Path;
-use std::collections::HashMap;
 
 mod ast;
 mod high_level_ir;

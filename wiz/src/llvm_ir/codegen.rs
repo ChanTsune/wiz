@@ -75,19 +75,19 @@ impl<'ctx> CodeGen<'ctx> {
                 None => {
                     eprintln!("Type {:?} dose not defined.", m);
                     None
-                },
+                }
                 Some(s) => match s.fields.iter().position(|f| f.name == n) {
                     None => {
                         eprintln!("field '{:?}' dose not found in {:?}", n, m);
                         None
-                    },
+                    }
                     Some(i) => Some(i as u32),
                 },
             },
             MLType::Function(f) => {
                 eprintln!("Invalid type '{:?}'", f);
                 None
-            },
+            }
         }
     }
 
