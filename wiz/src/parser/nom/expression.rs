@@ -1,14 +1,16 @@
 use crate::ast::block::Block;
-use crate::ast::expr::Expr::Call;
-use crate::ast::expr::{CallArg, Expr, Lambda, PostfixSuffix};
+use crate::ast::expr::{
+    CallArg, CallExprSyntax, Expr, Lambda, NameExprSyntax, PostfixSuffix, ReturnSyntax,
+};
 use crate::ast::literal::Literal;
 use crate::ast::stmt::Stmt;
 use crate::ast::type_name::TypeName;
 use crate::parser::nom::declaration::block;
-use crate::parser::nom::keywords::{else_keyword, if_keyword};
+use crate::parser::nom::keywords::{else_keyword, if_keyword, return_keyword};
 use crate::parser::nom::lexical_structure::{
     identifier, whitespace0, whitespace1, whitespace_without_eol0,
 };
+use crate::parser::nom::operators::member_access_operator;
 use crate::parser::nom::stmts;
 use crate::parser::nom::type_::{type_, type_arguments};
 use nom::branch::alt;
@@ -16,7 +18,7 @@ use nom::character::complete::{char, digit1, none_of, one_of};
 use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
-use nom::{IResult, Parser};
+use nom::IResult;
 
 pub fn integer_literal(s: &str) -> IResult<&str, Literal> {
     map(digit1, |n: &str| Literal::IntegerLiteral {
@@ -33,22 +35,16 @@ pub fn string_literal(s: &str) -> IResult<&str, Literal> {
     )(s)
 }
 
-pub fn binary_operator(s: &str) -> IResult<&str, String> {
-    map(one_of("+-*/%"), |c| c.to_string())(s)
-}
-
 pub fn prefix_operator(s: &str) -> IResult<&str, String> {
     map(one_of("+-!"), |c| c.to_string())(s)
 }
 
 pub fn literal_expr(s: &str) -> IResult<&str, Expr> {
-    map(alt((integer_literal, string_literal)), |l| Expr::Literal {
-        literal: l,
-    })(s)
+    map(alt((integer_literal, string_literal)), |l| Expr::Literal(l))(s)
 }
 
 pub fn name_expr(s: &str) -> IResult<&str, Expr> {
-    map(identifier, |name| Expr::Name { name })(s)
+    map(identifier, |name| Expr::Name(NameExprSyntax { name }))(s)
 }
 
 pub fn parenthesized_expr(s: &str) -> IResult<&str, Expr> {
@@ -58,8 +54,25 @@ pub fn parenthesized_expr(s: &str) -> IResult<&str, Expr> {
     )(s)
 }
 
+pub fn return_expr(s: &str) -> IResult<&str, Expr> {
+    map(
+        tuple((return_keyword, whitespace1, opt(expr))),
+        |(_, _, e)| {
+            Expr::Return(ReturnSyntax {
+                value: e.map(|i| Box::new(i)),
+            })
+        },
+    )(s)
+}
+
 pub fn primary_expr(s: &str) -> IResult<&str, Expr> {
-    alt((if_expr, name_expr, literal_expr, parenthesized_expr))(s)
+    alt((
+        return_expr,
+        if_expr,
+        name_expr,
+        literal_expr,
+        parenthesized_expr,
+    ))(s)
 }
 /*
 <if> ::= "if" <expr> <block> ("else" (<block> | <if>))?
@@ -99,31 +112,37 @@ pub fn if_expr(s: &str) -> IResult<&str, Expr> {
 <postfix_expr> ::= <primary_expr> <postfix_suffix>*
 */
 pub fn postfix_expr(s: &str) -> IResult<&str, Expr> {
-    map(
-        tuple((primary_expr, many0(postfix_suffix))),
-        |(e, suffixes)| {
-            let mut e = e;
-            for suffix in suffixes {
-                e = match suffix {
-                    // TODO: impl
-                    PostfixSuffix::Operator { .. } => e,
-                    PostfixSuffix::TypeArgumentSuffix { .. } => e,
-                    PostfixSuffix::CallSuffix {
-                        args,
-                        tailing_lambda,
-                    } => Call {
-                        target: Box::new(e),
-                        args,
-                        tailing_lambda,
-                    },
-                    PostfixSuffix::IndexingSuffix => e,
-                    PostfixSuffix::NavigationSuffix => e,
-                }
+    map(_postfix_expr, |(e, suffixes)| {
+        let mut e = e;
+        for suffix in suffixes {
+            e = match suffix {
+                // TODO: impl
+                PostfixSuffix::Operator { .. } => e,
+                PostfixSuffix::TypeArgumentSuffix { .. } => e,
+                PostfixSuffix::CallSuffix {
+                    args,
+                    tailing_lambda,
+                } => Expr::Call(CallExprSyntax {
+                    target: Box::new(e),
+                    args,
+                    tailing_lambda,
+                }),
+                PostfixSuffix::IndexingSuffix => e,
+                PostfixSuffix::NavigationSuffix { is_safe, name } => Expr::Member {
+                    target: Box::new(e),
+                    name,
+                    is_safe,
+                },
             }
-            e
-        },
-    )(s)
+        }
+        e
+    })(s)
 }
+
+pub fn _postfix_expr(s: &str) -> IResult<&str, (Expr, Vec<PostfixSuffix>)> {
+    tuple((primary_expr, many0(postfix_suffix)))(s)
+}
+
 /*
 <postfix_suffix> ::= <postfix_operator>
                    | <type_arguments>
@@ -141,10 +160,20 @@ pub fn postfix_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
         // map(index_suffix, || {
         //
         // }),
-        // map(navigation_suffix, || {
-        //
-        // }),
+        navigation_suffix,
     ))(s)
+}
+
+/*
+<navigation_suffix> ::= <member_access_operator> <identifier>
+*/
+pub fn navigation_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
+    map(tuple((member_access_operator, identifier)), |(op, name)| {
+        PostfixSuffix::NavigationSuffix {
+            is_safe: op == "?.",
+            name,
+        }
+    })(s)
 }
 
 pub fn postfix_operator(s: &str) -> IResult<&str, String> {
@@ -152,10 +181,6 @@ pub fn postfix_operator(s: &str) -> IResult<&str, String> {
 }
 
 // pub fn indexing_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
-//
-// }
-//
-// pub fn navigation_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
 //
 // }
 
@@ -173,7 +198,7 @@ pub fn prefix_expr(s: &str) -> IResult<&str, Expr> {
     )(s)
 }
 
-fn _binop(e: Expr, v: Vec<(&str, String, &str, Expr)>) -> Expr {
+fn _binop(e: Expr, v: Vec<(String, String, String, Expr)>) -> Expr {
     let mut bin_op = e;
     for (_, op, _, ex) in v {
         bin_op = Expr::BinOp {
@@ -637,15 +662,16 @@ pub fn expr(s: &str) -> IResult<&str, Expr> {
 #[cfg(test)]
 mod tests {
     use crate::ast::block::Block;
-    use crate::ast::expr::Expr::{BinOp, Call, If, Literal, Name};
-    use crate::ast::expr::{CallArg, PostfixSuffix};
+    use crate::ast::expr::Expr::{BinOp, If};
+    use crate::ast::expr::{
+        CallArg, CallExprSyntax, Expr, NameExprSyntax, PostfixSuffix, ReturnSyntax,
+    };
+    use crate::ast::literal::Literal;
     use crate::ast::literal::Literal::{IntegerLiteral, StringLiteral};
     use crate::parser::nom::expression::{
-        disjunction_expr, expr, if_expr, integer_literal, postfix_suffix, string_literal,
+        disjunction_expr, expr, integer_literal, postfix_suffix, return_expr, string_literal,
         value_arguments,
     };
-    use nom::error::ErrorKind;
-    use nom::Err::Error;
 
     #[test]
     fn test_numeric() {
@@ -690,24 +716,18 @@ mod tests {
                 "",
                 BinOp {
                     left: Box::from(BinOp {
-                        left: Box::from(Literal {
-                            literal: IntegerLiteral {
-                                value: "1".parse().unwrap()
-                            }
-                        }),
+                        left: Box::from(Expr::Literal(Literal::IntegerLiteral {
+                            value: "1".parse().unwrap()
+                        })),
                         kind: "||".parse().unwrap(),
-                        right: Box::from(Literal {
-                            literal: IntegerLiteral {
-                                value: "2".parse().unwrap()
-                            }
-                        })
+                        right: Box::from(Expr::Literal(Literal::IntegerLiteral {
+                            value: "2".parse().unwrap()
+                        }))
                     }),
                     kind: "||".parse().unwrap(),
-                    right: Box::from(Literal {
-                        literal: IntegerLiteral {
-                            value: "3".parse().unwrap()
-                        }
-                    })
+                    right: Box::from(Expr::Literal(Literal::IntegerLiteral {
+                        value: "3".parse().unwrap()
+                    }))
                 }
             ))
         )
@@ -726,11 +746,9 @@ mod tests {
                 "",
                 vec![CallArg {
                     label: None,
-                    arg: Box::from(Literal {
-                        literal: StringLiteral {
-                            value: "Hello, World".parse().unwrap()
-                        }
-                    }),
+                    arg: Box::from(Expr::Literal(Literal::StringLiteral {
+                        value: "Hello, World".parse().unwrap()
+                    })),
                     is_vararg: false
                 }]
             ))
@@ -757,13 +775,13 @@ mod tests {
             expr("puts()"),
             Ok((
                 "",
-                Call {
-                    target: Box::new(Name {
+                Expr::Call(CallExprSyntax {
+                    target: Box::new(Expr::Name(NameExprSyntax {
                         name: "puts".parse().unwrap()
-                    }),
+                    })),
                     args: vec![],
                     tailing_lambda: None,
-                }
+                })
             ))
         );
     }
@@ -774,21 +792,19 @@ mod tests {
             expr("puts(\"Hello, World\")"),
             Ok((
                 "",
-                Call {
-                    target: Box::new(Name {
+                Expr::Call(CallExprSyntax {
+                    target: Box::new(Expr::Name(NameExprSyntax {
                         name: "puts".parse().unwrap()
-                    }),
+                    })),
                     args: vec![CallArg {
                         label: None,
-                        arg: Box::from(Literal {
-                            literal: StringLiteral {
-                                value: "Hello, World".parse().unwrap()
-                            }
-                        }),
+                        arg: Box::from(Expr::Literal(Literal::StringLiteral {
+                            value: "Hello, World".parse().unwrap()
+                        })),
                         is_vararg: false
                     }],
                     tailing_lambda: None,
-                }
+                })
             ))
         );
     }
@@ -799,21 +815,19 @@ mod tests {
             expr("puts(string: \"Hello, World\")"),
             Ok((
                 "",
-                Call {
-                    target: Box::new(Name {
+                Expr::Call(CallExprSyntax {
+                    target: Box::new(Expr::Name(NameExprSyntax {
                         name: "puts".parse().unwrap()
-                    }),
+                    })),
                     args: vec![CallArg {
                         label: Some(String::from("string")),
-                        arg: Box::from(Literal {
-                            literal: StringLiteral {
-                                value: "Hello, World".parse().unwrap()
-                            }
-                        }),
+                        arg: Box::from(Expr::Literal(Literal::StringLiteral {
+                            value: "Hello, World".parse().unwrap()
+                        })),
                         is_vararg: false
                     }],
                     tailing_lambda: None,
-                }
+                })
             ))
         );
     }
@@ -825,15 +839,16 @@ mod tests {
             Ok((
                 "",
                 If {
-                    condition: Box::new(Name {
+                    condition: Box::new(Expr::Name(NameExprSyntax {
                         name: "a".to_string()
-                    }),
+                    })),
                     body: Block { body: vec![] },
                     else_body: None
                 }
             ))
         )
     }
+
     #[test]
     fn test_if_expr_with_else() {
         assert_eq!(
@@ -841,11 +856,43 @@ mod tests {
             Ok((
                 "",
                 If {
-                    condition: Box::new(Name {
+                    condition: Box::new(Expr::Name(NameExprSyntax {
                         name: "a".to_string()
-                    }),
+                    })),
                     body: Block { body: vec![] },
                     else_body: Some(Block { body: vec![] })
+                }
+            ))
+        )
+    }
+
+    #[test]
+    fn test_return() {
+        assert_eq!(
+            return_expr("return name"),
+            Ok((
+                "",
+                Expr::Return(ReturnSyntax {
+                    value: Some(Box::new(Expr::Name(NameExprSyntax {
+                        name: "name".to_string()
+                    })))
+                })
+            ))
+        )
+    }
+
+    #[test]
+    fn test_struct_member() {
+        assert_eq!(
+            expr("a.b"),
+            Ok((
+                "",
+                Expr::Member {
+                    target: Box::new(Expr::Name(NameExprSyntax {
+                        name: "a".to_string()
+                    })),
+                    name: "b".to_string(),
+                    is_safe: false
                 }
             ))
         )

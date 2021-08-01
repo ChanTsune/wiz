@@ -4,10 +4,7 @@ use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum TypedExpr {
-    Name {
-        name: String,
-        type_: Option<TypedType>,
-    },
+    Name(TypedName),
     Literal(TypedLiteral),
     BinOp {
         left: Box<TypedExpr>,
@@ -22,20 +19,25 @@ pub enum TypedExpr {
         type_: Option<TypedType>,
     },
     Subscript,
+    Member(TypedInstanceMember),
+    StaticMember(TypedStaticMember),
     List,
     Tuple,
     Dict,
     StringBuilder,
-    Call {
-        target: Box<TypedExpr>,
-        args: Vec<TypedCallArg>,
-        type_: Option<TypedType>,
-    },
+    Call(TypedCall),
     If(TypedIf),
     When,
     Lambda,
-    Return,
+    Return(TypedReturn),
     TypeCast,
+    Type(TypedType),
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct TypedName {
+    pub(crate) name: String,
+    pub(crate) type_: Option<TypedType>,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -48,10 +50,32 @@ pub enum TypedLiteral {
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct TypedCall {
+    pub(crate) target: Box<TypedExpr>,
+    pub(crate) args: Vec<TypedCallArg>,
+    pub(crate) type_: Option<TypedType>,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct TypedCallArg {
     pub(crate) label: Option<String>,
     pub(crate) arg: Box<TypedExpr>,
     pub(crate) is_vararg: bool,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct TypedInstanceMember {
+    pub(crate) target: Box<TypedExpr>,
+    pub(crate) name: String,
+    pub(crate) is_safe: bool,
+    pub(crate) type_: Option<TypedType>,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct TypedStaticMember {
+    pub(crate) target: TypedType,
+    pub(crate) name: String,
+    pub(crate) type_: Option<TypedType>,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -62,10 +86,16 @@ pub struct TypedIf {
     pub(crate) type_: Option<TypedType>,
 }
 
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct TypedReturn {
+    pub(crate) value: Option<Box<TypedExpr>>,
+    pub(crate) type_: Option<TypedType>,
+}
+
 impl TypedExpr {
     pub fn type_(&self) -> Option<TypedType> {
         match self {
-            TypedExpr::Name { name, type_ } => type_.clone(),
+            TypedExpr::Name(name) => name.type_.clone(),
             TypedExpr::Literal(l) => Some(l.type_()),
             TypedExpr::BinOp {
                 left,
@@ -80,20 +110,19 @@ impl TypedExpr {
                 type_,
             } => type_.clone(),
             TypedExpr::Subscript => None,
+            TypedExpr::Member(m) => m.type_.clone(),
+            TypedExpr::StaticMember(sm) => sm.type_.clone(),
             TypedExpr::List => None,
             TypedExpr::Tuple => None,
             TypedExpr::Dict => None,
             TypedExpr::StringBuilder => None,
-            TypedExpr::Call {
-                target,
-                args,
-                type_,
-            } => type_.clone(),
+            TypedExpr::Call(c) => c.type_.clone(),
             TypedExpr::If(i) => i.type_.clone(),
             TypedExpr::When => None,
             TypedExpr::Lambda => None,
-            TypedExpr::Return => None,
+            TypedExpr::Return(r) => r.type_.clone(),
             TypedExpr::TypeCast => None,
+            TypedExpr::Type(_) => None,
         }
     }
 }

@@ -1,6 +1,7 @@
 use crate::middle_level_ir::ml_stmt::MLBlock;
 use crate::middle_level_ir::ml_type::MLType;
 use std::fmt;
+use std::process::exit;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum MLExpr {
@@ -9,9 +10,10 @@ pub enum MLExpr {
     Call(MLCall),
     PrimitiveBinOp(MLBinOp),
     PrimitiveUnaryOp(MLUnaryOp),
+    Member(MLMember),
     If(MLIf),
     When,
-    Return,
+    Return(MLReturn),
     TypeCast,
 }
 
@@ -28,6 +30,7 @@ pub enum MLLiteral {
     String { value: String, type_: MLType },
     Boolean { value: String, type_: MLType },
     Null { type_: MLType },
+    Struct { type_: MLType },
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -85,4 +88,63 @@ pub enum MLUnaryOpKind {
     Negative,
     Positive,
     Not,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct MLMember {
+    pub(crate) target: Box<MLExpr>,
+    pub(crate) name: String,
+    pub(crate) type_: MLType,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct MLReturn {
+    pub(crate) value: Option<Box<MLExpr>>,
+    pub(crate) type_: MLType,
+}
+
+impl MLExpr {
+    pub fn type_(&self) -> MLType {
+        match self {
+            MLExpr::Name(n) => n.type_.clone(),
+            MLExpr::Literal(l) => l.type_(),
+            MLExpr::Call(c) => c.type_.clone(),
+            MLExpr::PrimitiveBinOp(b) => b.type_.clone(),
+            MLExpr::PrimitiveUnaryOp(b) => b.type_.clone(),
+            MLExpr::Member(f) => f.type_.clone(),
+            MLExpr::If(i) => i.type_.clone(),
+            MLExpr::When => exit(-9),
+            MLExpr::Return(r) => r.type_.clone(),
+            MLExpr::TypeCast => exit(-9),
+        }
+    }
+}
+
+impl MLLiteral {
+    pub fn type_(&self) -> MLType {
+        match self {
+            MLLiteral::Integer { value, type_ } => type_.clone(),
+            MLLiteral::FloatingPoint { value, type_ } => type_.clone(),
+            MLLiteral::String { value, type_ } => type_.clone(),
+            MLLiteral::Boolean { value, type_ } => type_.clone(),
+            MLLiteral::Null { type_ } => type_.clone(),
+            MLLiteral::Struct { type_ } => type_.clone(),
+        }
+    }
+}
+
+impl MLCallArg {
+    pub fn type_(&self) -> MLType {
+        self.arg.type_()
+    }
+}
+
+impl MLReturn {
+    pub fn new(expr: MLExpr) -> Self {
+        let type_ = expr.type_();
+        MLReturn {
+            value: Some(Box::new(expr)),
+            type_: type_,
+        }
+    }
 }

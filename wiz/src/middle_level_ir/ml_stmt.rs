@@ -12,7 +12,7 @@ pub enum MLStmt {
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct MLAssignmentStmt {
-    pub(crate) target: String,
+    pub(crate) target: MLExpr,
     pub(crate) value: MLExpr,
 }
 

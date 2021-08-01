@@ -1,14 +1,30 @@
+struct A {
+    var a: Int64,
+    val b: Int64,
+}
+
+
+fun helloWorld(): Unit {
+    puts("Hello world!")
+}
+
+fun modBy2(_ n: Int64): Int64 {
+    return n % 2
+}
+
+fun modBy2Expr(_ n: Int64) = n % 2
+
 fun main() {
-    var a = 1
+    var s = A.init(a: 1, b: 0)
     val b = 2
-    while a < 15 {
-        if a % 2 == 0 {
-            puts("Hello world!")
+    while s.a < 15 {
+        if modBy2(s.a) == 0 {
+            helloWorld()
         } else {
             puts("Welcome to Wiz!!")
         }
-        a = a + if a % 2 == 0 { 1 } else { 3 }
+        s.a = s.a + if modBy2Expr(s.a) == 0 { 1 } else { 3 }
     }
-    val c = a + b
+    val c = s.a + b
     puts("...bye")
 }

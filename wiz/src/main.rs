@@ -3,12 +3,14 @@ use crate::parser::parser::{parse_from_file, parse_from_string};
 use crate::ast::file::WizFile;
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::Ast2HLIR;
-use crate::llvm_ir::codegen::CodeGen;
+use crate::llvm_ir::codegen::{CodeGen, MLContext};
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::HLIR2MLIR;
+use crate::utils::stacked_hash_map::StackedHashMap;
 use clap::{App, Arg};
 use inkwell::context::Context;
 use inkwell::OptimizationLevel;
+use std::collections::HashMap;
 use std::error::Error;
 use std::fs::read_to_string;
 use std::path::Path;
@@ -18,6 +20,7 @@ mod high_level_ir;
 mod llvm_ir;
 mod middle_level_ir;
 mod parser;
+mod utils;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let app = App::new("wiz")
@@ -42,8 +45,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         module,
         builder: context.create_builder(),
         execution_engine,
-        local_environments: vec![],
-        current_function: None,
+        ml_context: MLContext {
+            struct_environment: StackedHashMap::from(HashMap::new()),
+            local_environments: StackedHashMap::from(HashMap::new()),
+            current_function: None,
+        },
     };
 
     let mut ast2hlir = Ast2HLIR::new();
@@ -62,15 +68,15 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     let file = std::fs::File::open(Path::new(input));
-    let ast_file = parse_from_file(file.unwrap()).unwrap().syntax;
-    let ast = ast_file.clone();
+    let ast_file = parse_from_file(file.unwrap()).unwrap();
 
     let builtin_hlir: Vec<TypedFile> = builtin_syntax
         .into_iter()
         .map(|w| ast2hlir.file(w.syntax))
         .collect();
 
-    let hlfile = ast2hlir.file(ast);
+    ast2hlir.preload_types(ast_file.clone());
+    let hlfile = ast2hlir.file(ast_file.syntax);
 
     println!("{:?}", &hlfile);
 

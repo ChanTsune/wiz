@@ -8,16 +8,8 @@ use std::fmt;
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum Decl {
     Var(VarSyntax),
-    Fun {
-        modifiers: Vec<String>,
-        name: String,
-        arg_defs: Vec<ArgDef>,
-        return_type: TypeName,
-        body: Option<FunBody>,
-    },
-    Struct {
-        // TODO
-    },
+    Fun(FunSyntax),
+    Struct(StructSyntax),
     Class {
         // TODO
     },
@@ -40,4 +32,34 @@ pub struct VarSyntax {
     pub(crate) name: String,
     pub(crate) type_: Option<TypeName>,
     pub(crate) value: Expr,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct FunSyntax {
+    pub(crate) modifiers: Vec<String>,
+    pub(crate) name: String,
+    pub(crate) arg_defs: Vec<ArgDef>,
+    pub(crate) return_type: Option<TypeName>,
+    pub(crate) body: Option<FunBody>,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct StructSyntax {
+    pub(crate) name: String,
+    pub(crate) properties: Vec<StructPropertySyntax>,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub enum StructPropertySyntax {
+    StoredProperty(StoredPropertySyntax),
+    ComputedProperty,
+    Init,
+    Method,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct StoredPropertySyntax {
+    pub(crate) is_mut: bool,
+    pub(crate) name: String,
+    pub(crate) type_: TypeName,
 }

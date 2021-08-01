@@ -3,11 +3,24 @@
 
 <decl> ::= <var_decl>
          | <fun_decl>
-        #  | <struct_decl>
+         | <struct_decl>
         #  | <class_decl>
         #  | <enum_decl>
         #  | <protocol_decl>
         #  | <extension_decl>
+
+<struct_decl> ::= "struct" <identifier> "{" <struct_properties> "}"
+
+<struct_properties> ::= (<struct_property> ("," <struct_property>)* ","?)?
+
+<struct_property> ::= <stored_property>
+                #       | <computed_property>
+
+<stored_property> ::= <mutable_stored_property> | <immutable_stored_property>
+
+<mutable_stored_property> ::= "var" <stored_property_body>
+<immutable_stored_property> ::= "val" <stored_property_body>
+<stored_property_body> ::= <identifier> ":" <type>
 
 <var_decl> ::= <value>
         | <variable>
@@ -15,7 +28,7 @@
 <value> ::= "val" <var_body>
 <variable> ::= "var" <var_body>
 
-<var_body> ::= <identifire> (":" <white_space>* <type>)? "=" <expr>
+<var_body> ::= <identifire> (":" <type>)? "=" <expr>
 
 <modifiers> ::= <modifier>+
 
@@ -65,7 +78,23 @@
 
 <decl_stmt> ::= <decl> <eol>
 
-<assignment_stmt> ::= <identifier> "=" <expr>
+<assignment_stmt> ::= ((<directly_assignable_expr> '=') | (<assignable_expr> <assignment_and_operator>)) <expr>
+
+<directly_assignable_expr> ::= <postfix_expr> <assignable_suffix>
+                             | <identifier>
+                             | <parenthesized_directly_assignable_expr>
+
+<assignable_expr> ::= <prefix_expr>
+                    | <parenthesized_assignable_expression>
+
+<assignable_suffix> ::= <type_arguments>
+                      | <indexing_suffix>
+                      | <navigation_suffix>
+
+<parenthesized_directly_assignable_expr> ::= '(' <directly_assignable_expr> ')'
+<parenthesized_assignable_expression> ::= "(" <assignable_expr> ")"
+
+<assignment_and_operator> ::= "+="|"-="|"*="|"/="|"%="
 
 <while_stmt> ::= "while" <expr> <block>
 
@@ -135,7 +164,7 @@
 
 <type_arguments> ::= "<" <type> ("," <type>)* ","? ">"
 
-<value_arguments> ::= "(" <value_argument> ("," <value_argument>)* ","? ")"
+<value_arguments> ::= "(" (<value_argument> ("," <value_argument>)* ","?)? ")"
 
 <value_argument> ::= (<identifier> ":")? "*"? <expr>
 
@@ -155,8 +184,9 @@
                    | <navigation_suffix>
 
 <indexing_suffix> ::=
-<navigation_suffix> ::=
+<navigation_suffix> ::= <member_access_operator> <identifier>
 
+<member_access_operator> ::= "." || "?."
 
 <binary_expr> ::= <white_space> <operator> <white_space> <expr>
 
@@ -171,7 +201,7 @@
                 | <if>
         # | <when>
                 | <function_literal>
-        # | <return>
+                | <return>
         # | <member>
         # | <unaryop>
         # | <subscript>
@@ -197,6 +227,8 @@
 <lambda_literal> ::= "{" <stmts> "}"
 
 <if> ::= "if" <expr> <block> ("else" (<block> | <if>))?
+
+<return> ::= "return" <expr>?
 
 <postfix_operator> ::= "!"
 

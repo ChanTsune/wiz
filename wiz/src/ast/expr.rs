@@ -7,12 +7,8 @@ use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum Expr {
-    Name {
-        name: String,
-    },
-    Literal {
-        literal: Literal,
-    },
+    Name(NameExprSyntax),
+    Literal(Literal),
     BinOp {
         left: Box<Expr>,
         kind: String,
@@ -27,6 +23,11 @@ pub enum Expr {
         target: Box<Expr>,
         idx_or_key: Box<Expr>,
     },
+    Member {
+        target: Box<Expr>,
+        name: String,
+        is_safe: bool,
+    },
     List {
         values: Vec<Expr>,
     },
@@ -39,11 +40,7 @@ pub enum Expr {
     StringBuilder {
         // TODO
     },
-    Call {
-        target: Box<Expr>,
-        args: Vec<CallArg>,
-        tailing_lambda: Option<Lambda>,
-    },
+    Call(CallExprSyntax),
     If {
         condition: Box<Expr>,
         body: Block,
@@ -55,9 +52,7 @@ pub enum Expr {
     Lambda {
         lambda: Lambda,
     },
-    Return {
-        // TODO
-    },
+    Return(ReturnSyntax),
     TypeCast {
         target: Box<Expr>,
         is_safe: bool,
@@ -66,6 +61,18 @@ pub enum Expr {
 }
 
 impl Node for Expr {}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct NameExprSyntax {
+    pub(crate) name: String,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct CallExprSyntax {
+    pub(crate) target: Box<Expr>,
+    pub(crate) args: Vec<CallArg>,
+    pub(crate) tailing_lambda: Option<Lambda>,
+}
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct CallArg {
@@ -92,5 +99,13 @@ pub enum PostfixSuffix {
         tailing_lambda: Option<Lambda>,
     },
     IndexingSuffix,
-    NavigationSuffix,
+    NavigationSuffix {
+        is_safe: bool,
+        name: String,
+    },
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct ReturnSyntax {
+    pub(crate) value: Option<Box<Expr>>,
 }

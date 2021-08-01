@@ -1,6 +1,6 @@
 use crate::parser::nom::character::{alphabet, digit, under_score};
 use nom::branch::{alt, permutation};
-use nom::bytes::complete::tag;
+use nom::bytes::complete::{is_not, tag};
 use nom::character::complete::{anychar, char};
 use nom::combinator::{map, opt};
 use nom::error::{ErrorKind, ParseError};
@@ -9,7 +9,34 @@ use nom::sequence::tuple;
 use nom::{AsChar, IResult, InputTakeAtPosition};
 use std::iter::FromIterator;
 
-pub fn whitespace0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+pub fn whitespace0(s: &str) -> IResult<&str, String> {
+    map(
+        tuple((_whitespace0, opt(comment), _whitespace0)),
+        |(w1, c, w2)| String::from(w1) + &*c.unwrap_or(String::new()) + w2,
+    )(s)
+}
+
+pub fn whitespace1(s: &str) -> IResult<&str, String> {
+    map(
+        alt((
+            tuple((_whitespace0, opt(comment), _whitespace1)),
+            tuple((_whitespace1, opt(comment), _whitespace0)),
+        )),
+        |(w1, c, w2)| String::from(w1) + &*c.unwrap_or(String::new()) + w2,
+    )(s)
+}
+pub fn whitespace_without_eol0(s: &str) -> IResult<&str, String> {
+    map(
+        tuple((
+            _whitespace_without_eol0,
+            opt(comment),
+            _whitespace_without_eol0,
+        )),
+        |(w1, c, w2)| String::from(w1) + &*c.unwrap_or(String::new()) + w2,
+    )(s)
+}
+
+fn _whitespace0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
     T: InputTakeAtPosition,
     <T as InputTakeAtPosition>::Item: AsChar + Clone,
@@ -20,7 +47,7 @@ where
     })
 }
 
-pub fn whitespace1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+fn _whitespace1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
     T: InputTakeAtPosition,
     <T as InputTakeAtPosition>::Item: AsChar + Clone,
@@ -34,7 +61,7 @@ where
     )
 }
 
-pub fn whitespace_without_eol0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+fn _whitespace_without_eol0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
     T: InputTakeAtPosition,
     <T as InputTakeAtPosition>::Item: AsChar + Clone,
@@ -84,8 +111,8 @@ fn inline_comment_end(input: &str) -> IResult<&str, &str> {
 
 pub fn inline_comment(input: &str) -> IResult<&str, String> {
     map(
-        permutation((inline_comment_start, many0(anychar), inline_comment_end)),
-        |(a, b, c)| a.to_string() + &*String::from_iter(b) + c,
+        permutation((inline_comment_start, is_not("*/"), inline_comment_end)),
+        |(a, b, c)| a.to_string() + b + c,
     )(input)
 }
 
@@ -125,9 +152,13 @@ pub fn identifier(s: &str) -> IResult<&str, String> {
     ))(s)
 }
 
+pub fn eol(s: &str) -> IResult<&str, char> {
+    char('\n')(s)
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::parser::nom::lexical_structure::{comment, identifier};
+    use crate::parser::nom::lexical_structure::{comment, eol, identifier};
     use nom::error;
     use nom::error::ErrorKind;
     use nom::Err;
@@ -164,5 +195,14 @@ mod tests {
             comment("// code comment"),
             Ok(("", String::from("// code comment")))
         )
+    }
+    #[test]
+    fn test_inline_comment() {
+        assert_eq!(comment("/* a */"), Ok(("", String::from("/* a */"))))
+    }
+
+    #[test]
+    fn test_eol() {
+        assert_eq!(eol("\n"), Ok(("", '\n')))
     }
 }
