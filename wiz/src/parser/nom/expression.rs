@@ -198,7 +198,7 @@ pub fn prefix_expr(s: &str) -> IResult<&str, Expr> {
     )(s)
 }
 
-fn _binop(e: Expr, v: Vec<(&str, String, &str, Expr)>) -> Expr {
+fn _binop(e: Expr, v: Vec<(String, String, String, Expr)>) -> Expr {
     let mut bin_op = e;
     for (_, op, _, ex) in v {
         bin_op = Expr::BinOp {

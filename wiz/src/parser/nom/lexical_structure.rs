@@ -9,7 +9,44 @@ use nom::sequence::tuple;
 use nom::{AsChar, IResult, InputTakeAtPosition};
 use std::iter::FromIterator;
 
-pub fn whitespace0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+pub fn whitespace0(s: &str) -> IResult<&str, String> {
+    map(tuple((
+        _whitespace0,
+        opt(comment),
+        _whitespace0,
+    )),|(w1, c, w2)|{
+        String::from(w1) + &*c.unwrap_or(String::new()) + w2
+    })(s)
+}
+
+pub fn whitespace1(s: &str) -> IResult<&str, String> {
+    map(alt((
+                tuple((
+                          _whitespace0,
+                          opt(comment),
+                          _whitespace1,
+                      )),
+                tuple((
+                    _whitespace1,
+                    opt(comment),
+                    _whitespace0,
+                )),
+                )),|(w1, c, w2)|{
+        String::from(w1) + &*c.unwrap_or(String::new()) + w2
+    })(s)
+}
+pub fn whitespace_without_eol0(s: &str) -> IResult<&str, String> {
+    map(tuple((
+        _whitespace_without_eol0,
+        opt(comment),
+        _whitespace_without_eol0,
+    )),|(w1, c, w2)|{
+        String::from(w1) + &*c.unwrap_or(String::new()) + w2
+    })(s)
+}
+
+
+fn _whitespace0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
     T: InputTakeAtPosition,
     <T as InputTakeAtPosition>::Item: AsChar + Clone,
@@ -20,7 +57,7 @@ where
     })
 }
 
-pub fn whitespace1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+fn _whitespace1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
     T: InputTakeAtPosition,
     <T as InputTakeAtPosition>::Item: AsChar + Clone,
@@ -34,7 +71,7 @@ where
     )
 }
 
-pub fn whitespace_without_eol0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+fn _whitespace_without_eol0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
     T: InputTakeAtPosition,
     <T as InputTakeAtPosition>::Item: AsChar + Clone,
