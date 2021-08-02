@@ -34,7 +34,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let matches = app.get_matches();
     let inputs = matches.values_of_lossy("input").unwrap();
-    let input:&str = &inputs[0];
+    let input: &str = &inputs[0];
     let output = matches.value_of("output").unwrap();
 
     let mut module_name = "main";
