@@ -24,7 +24,7 @@ mod utils;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let app = App::new("wiz")
-        .arg(Arg::with_name("input").required(true))
+        .arg(Arg::with_name("input").required(true).multiple(true))
         .arg(
             Arg::with_name("output")
                 .short("o")
@@ -33,7 +33,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         );
 
     let matches = app.get_matches();
-    let input = matches.value_of("input").unwrap();
+    let inputs = matches.values_of_lossy("input").unwrap();
+    let input:&str = &inputs[0];
     let output = matches.value_of("output").unwrap();
 
     let mut module_name = "main";
