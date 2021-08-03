@@ -211,7 +211,7 @@ impl Ast2HLIR {
     pub fn file(&mut self, f: WizFile) -> TypedFile {
         TypedFile {
             name: f.name,
-            body: self.file_syntax(f.syntax)
+            body: self.file_syntax(f.syntax),
         }
     }
 
