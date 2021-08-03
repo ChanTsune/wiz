@@ -34,24 +34,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let matches = app.get_matches();
     let inputs = matches.values_of_lossy("input").unwrap();
-    let input: &str = &inputs[0];
     let output = matches.value_of("output").unwrap();
-
-    let mut module_name = "main";
-    let context = Context::create();
-    let module = context.create_module(module_name);
-    let execution_engine = module.create_jit_execution_engine(OptimizationLevel::None)?;
-    let mut codegen = CodeGen {
-        context: &context,
-        module,
-        builder: context.create_builder(),
-        execution_engine,
-        ml_context: MLContext {
-            struct_environment: StackedHashMap::from(HashMap::new()),
-            local_environments: StackedHashMap::from(HashMap::new()),
-            current_function: None,
-        },
-    };
+    let input: &str = &inputs[0];
 
     let mut ast2hlir = Ast2HLIR::new();
 
@@ -89,6 +73,22 @@ fn main() -> Result<(), Box<dyn Error>> {
         .collect();
 
     let ml = hlir2mlir.file(hlfile);
+
+    let module_name = "main";
+    let context = Context::create();
+    let module = context.create_module(module_name);
+    let execution_engine = module.create_jit_execution_engine(OptimizationLevel::None)?;
+    let mut codegen = CodeGen {
+        context: &context,
+        module,
+        builder: context.create_builder(),
+        execution_engine,
+        ml_context: MLContext {
+            struct_environment: StackedHashMap::from(HashMap::new()),
+            local_environments: StackedHashMap::from(HashMap::new()),
+            current_function: None,
+        },
+    };
 
     for m in builtin_mlir {
         codegen.file(m);
