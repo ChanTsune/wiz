@@ -22,14 +22,15 @@ mod middle_level_ir;
 mod parser;
 mod utils;
 
-
 fn get_builtin_syntax() -> Vec<WizFile> {
     let builtin_dir = std::fs::read_dir(Path::new("../builtin")).unwrap();
-    builtin_dir.flatten().map(|p|p.path())
-        .filter(|path|path.ends_with("builtin.ll.wiz"))
-        .map(|path|read_to_string(path))
+    builtin_dir
         .flatten()
-        .map(|data|parse_from_string(data))
+        .map(|p| p.path())
+        .filter(|path| path.ends_with("builtin.ll.wiz"))
+        .map(|path| read_to_string(path))
+        .flatten()
+        .map(|data| parse_from_string(data))
         .collect()
 }
 
