@@ -83,6 +83,7 @@ impl HLIR2MLIR {
 
     pub fn file(&mut self, f: TypedFile) -> MLFile {
         MLFile {
+            name: f.name,
             body: f.body.into_iter().map(|d| self.decl(d)).flatten().collect(),
         }
     }
