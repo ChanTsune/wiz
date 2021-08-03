@@ -22,6 +22,17 @@ mod middle_level_ir;
 mod parser;
 mod utils;
 
+
+fn get_builtin_syntax() -> Vec<WizFile> {
+    let builtin_dir = std::fs::read_dir(Path::new("../builtin")).unwrap();
+    builtin_dir.flatten().map(|p|p.path())
+        .filter(|path|path.ends_with("builtin.ll.wiz"))
+        .map(|path|read_to_string(path))
+        .flatten()
+        .map(|data|parse_from_string(data))
+        .collect()
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     let app = App::new("wiz")
         .arg(Arg::with_name("input").required(true).multiple(true))
@@ -37,19 +48,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     let output = matches.value_of("output").unwrap();
     let input: &str = &inputs[0];
 
+    let builtin_syntax = get_builtin_syntax();
+
     let mut ast2hlir = Ast2HLIR::new();
 
-    let builtin_dir = std::fs::read_dir(Path::new("../builtin")).unwrap();
-    let mut builtin_syntax: Vec<WizFile> = vec![];
-    for path in builtin_dir {
-        let path = path.unwrap().path();
-        if path.ends_with("builtin.ll.wiz") {
-            println!("{:?}", &path);
-            let builtin = parse_from_string(read_to_string(path).unwrap());
-            builtin_syntax.push(builtin.clone());
-            println!("{:?}", &builtin);
-            ast2hlir.preload_types(builtin);
-        }
+    for builtin in builtin_syntax.iter() {
+        ast2hlir.preload_types(builtin.clone());
     }
 
     let file = std::fs::File::open(Path::new(input));
