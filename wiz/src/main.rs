@@ -12,6 +12,7 @@ use inkwell::context::Context;
 use inkwell::OptimizationLevel;
 use std::collections::HashMap;
 use std::error::Error;
+use std::fs;
 use std::fs::read_to_string;
 use std::path::Path;
 
@@ -57,18 +58,23 @@ fn main() -> Result<(), Box<dyn Error>> {
         ast2hlir.preload_types(builtin.clone());
     }
 
-    let file = std::fs::File::open(Path::new(input));
-    let ast_file = parse_from_file(file.unwrap()).unwrap();
-
     let builtin_hlir: Vec<TypedFile> = builtin_syntax
         .into_iter()
         .map(|w| ast2hlir.file(w))
         .collect();
 
-    ast2hlir.preload_types(ast_file.clone());
-    let hlfile = ast2hlir.file(ast_file);
+    let ast_files: Vec<WizFile> = inputs.iter()
+        .map(|s|{fs::File::open(Path::new(s))})
+        .flatten()
+        .map(|f|parse_from_file(f))
+        .flatten()
+        .collect();
 
-    println!("{:?}", &hlfile);
+    for ast_file in ast_files.iter() {
+        ast2hlir.preload_types(ast_file.clone());
+    }
+
+    let hlfiles:Vec<TypedFile> = ast_files.into_iter().map(|f|ast2hlir.file(f)).collect();
 
     let mut hlir2mlir = HLIR2MLIR::new();
 
@@ -77,31 +83,34 @@ fn main() -> Result<(), Box<dyn Error>> {
         .map(|w| hlir2mlir.file(w))
         .collect();
 
-    let ml = hlir2mlir.file(hlfile);
+    let mlfiles: Vec<MLFile> = hlfiles.into_iter().map(|f|hlir2mlir.file(f)).collect();
 
-    let module_name = "main";
-    let context = Context::create();
-    let module = context.create_module(module_name);
-    let execution_engine = module.create_jit_execution_engine(OptimizationLevel::None)?;
-    let mut codegen = CodeGen {
-        context: &context,
-        module,
-        builder: context.create_builder(),
-        execution_engine,
-        ml_context: MLContext {
-            struct_environment: StackedHashMap::from(HashMap::new()),
-            local_environments: StackedHashMap::from(HashMap::new()),
-            current_function: None,
-        },
-    };
+    for mlfile in mlfiles {
+        let module_name = &mlfile.name;
+        let context = Context::create();
+        let module = context.create_module(module_name);
+        let execution_engine = module.create_jit_execution_engine(OptimizationLevel::None)?;
+        let mut codegen = CodeGen {
+            context: &context,
+            module,
+            builder: context.create_builder(),
+            execution_engine,
+            ml_context: MLContext {
+                struct_environment: StackedHashMap::from(HashMap::new()),
+                local_environments: StackedHashMap::from(HashMap::new()),
+                current_function: None,
+            },
+        };
 
-    for m in builtin_mlir {
-        codegen.file(m);
+        for m in builtin_mlir.iter() {
+            codegen.file(m.clone());
+        }
+
+        println!("{:?}", &mlfile);
+
+        codegen.file(mlfile);
+        let _ = codegen.print_to_file(Path::new(output));
     }
-    println!("{:?}", &ml);
-
-    codegen.file(ml);
-    let _ = codegen.print_to_file(Path::new(output));
 
     Ok(())
 }
