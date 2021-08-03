@@ -63,10 +63,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         .map(|w| ast2hlir.file(w))
         .collect();
 
-    let ast_files: Vec<WizFile> = inputs.iter()
-        .map(|s|{fs::File::open(Path::new(s))})
+    let ast_files: Vec<WizFile> = inputs
+        .iter()
+        .map(|s| fs::File::open(Path::new(s)))
         .flatten()
-        .map(|f|parse_from_file(f))
+        .map(|f| parse_from_file(f))
         .flatten()
         .collect();
 
@@ -74,7 +75,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         ast2hlir.preload_types(ast_file.clone());
     }
 
-    let hlfiles:Vec<TypedFile> = ast_files.into_iter().map(|f|ast2hlir.file(f)).collect();
+    let hlfiles: Vec<TypedFile> = ast_files.into_iter().map(|f| ast2hlir.file(f)).collect();
 
     let mut hlir2mlir = HLIR2MLIR::new();
 
@@ -83,7 +84,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .map(|w| hlir2mlir.file(w))
         .collect();
 
-    let mlfiles: Vec<MLFile> = hlfiles.into_iter().map(|f|hlir2mlir.file(f)).collect();
+    let mlfiles: Vec<MLFile> = hlfiles.into_iter().map(|f| hlir2mlir.file(f)).collect();
 
     for mlfile in mlfiles {
         let module_name = &mlfile.name;
