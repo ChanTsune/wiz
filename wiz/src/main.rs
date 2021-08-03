@@ -57,11 +57,11 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let builtin_hlir: Vec<TypedFile> = builtin_syntax
         .into_iter()
-        .map(|w| ast2hlir.file(w.syntax))
+        .map(|w| ast2hlir.file(w))
         .collect();
 
     ast2hlir.preload_types(ast_file.clone());
-    let hlfile = ast2hlir.file(ast_file.syntax);
+    let hlfile = ast2hlir.file(ast_file);
 
     println!("{:?}", &hlfile);
 

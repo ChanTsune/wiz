@@ -208,10 +208,15 @@ impl Ast2HLIR {
         }
     }
 
-    pub fn file(&mut self, f: FileSyntax) -> TypedFile {
+    pub fn file(&mut self, f: WizFile) -> TypedFile {
         TypedFile {
-            body: f.body.into_iter().map(|d| self.decl(d)).collect(),
+            name: f.name,
+            body: self.file_syntax(f.syntax)
         }
+    }
+
+    pub fn file_syntax(&mut self, f: FileSyntax) -> Vec<TypedDecl> {
+        f.body.into_iter().map(|d| self.decl(d)).collect()
     }
 
     pub fn stmt(&mut self, s: Stmt) -> TypedStmt {
