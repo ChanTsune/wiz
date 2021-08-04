@@ -1,4 +1,4 @@
-use crate::parser::parser::{parse_from_file, parse_from_string};
+use crate::parser::parser::{parse_from_file_path, parse_from_file_path_str};
 
 use crate::ast::file::WizFile;
 use crate::high_level_ir::typed_file::TypedFile;
@@ -12,8 +12,6 @@ use inkwell::context::Context;
 use inkwell::OptimizationLevel;
 use std::collections::HashMap;
 use std::error::Error;
-use std::fs;
-use std::fs::read_to_string;
 use std::path::Path;
 
 mod ast;
@@ -29,9 +27,8 @@ fn get_builtin_syntax() -> Vec<WizFile> {
         .flatten()
         .map(|p| p.path())
         .filter(|path| path.ends_with("builtin.ll.wiz"))
-        .map(|path| read_to_string(path))
+        .map(|path| parse_from_file_path(path.as_path()))
         .flatten()
-        .map(|data| parse_from_string(data))
         .collect()
 }
 
@@ -48,7 +45,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     let matches = app.get_matches();
     let inputs = matches.values_of_lossy("input").unwrap();
     let output = matches.value_of("output").unwrap();
-    let input: &str = &inputs[0];
 
     let builtin_syntax = get_builtin_syntax();
 
@@ -65,9 +61,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let ast_files: Vec<WizFile> = inputs
         .iter()
-        .map(|s| fs::File::open(Path::new(s)))
-        .flatten()
-        .map(|f| parse_from_file(f))
+        .map(|s|parse_from_file_path_str(s))
         .flatten()
         .collect();
 
