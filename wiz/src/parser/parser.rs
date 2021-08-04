@@ -1,10 +1,10 @@
 use crate::ast::file::WizFile;
 use crate::parser::nom::file;
-use std::fs::{File, read_to_string};
+use std::fs::{read_to_string, File};
 use std::io;
 use std::io::Read;
-use std::process::exit;
 use std::path::Path;
+use std::process::exit;
 
 pub fn parse_from_string(string: String) -> WizFile {
     return match file(&*string) {

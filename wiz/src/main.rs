@@ -61,7 +61,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let ast_files: Vec<WizFile> = inputs
         .iter()
-        .map(|s|parse_from_file_path_str(s))
+        .map(|s| parse_from_file_path_str(s))
         .flatten()
         .collect();
 
