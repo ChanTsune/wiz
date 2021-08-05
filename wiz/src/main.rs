@@ -36,11 +36,7 @@ fn get_builtin_syntax() -> Vec<WizFile> {
 fn main() -> Result<(), Box<dyn Error>> {
     let app = App::new("wiz")
         .arg(Arg::with_name("input").required(true).multiple(true))
-        .arg(
-            Arg::with_name("output")
-                .short("o")
-                .takes_value(true)
-        );
+        .arg(Arg::with_name("output").short("o").takes_value(true));
 
     let matches = app.get_matches();
     let inputs = matches.values_of_lossy("input").unwrap();
@@ -115,7 +111,6 @@ fn main() -> Result<(), Box<dyn Error>> {
             output_path.set_extension("ll");
             String::from(output_path.to_str().unwrap())
         };
-
 
         codegen.file(mlfile.clone());
 
