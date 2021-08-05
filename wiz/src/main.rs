@@ -13,6 +13,7 @@ use inkwell::OptimizationLevel;
 use std::collections::HashMap;
 use std::error::Error;
 use std::path::Path;
+use std::process::exit;
 
 mod ast;
 mod high_level_ir;
@@ -39,12 +40,11 @@ fn main() -> Result<(), Box<dyn Error>> {
             Arg::with_name("output")
                 .short("o")
                 .takes_value(true)
-                .default_value("out.ll"),
         );
 
     let matches = app.get_matches();
     let inputs = matches.values_of_lossy("input").unwrap();
-    let output = matches.value_of("output").unwrap();
+    let output = matches.value_of("output");
 
     let builtin_syntax = get_builtin_syntax();
 
@@ -103,8 +103,25 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         println!("{:?}", &mlfile);
 
-        codegen.file(mlfile);
-        let _ = codegen.print_to_file(Path::new(output));
+        let output = if let Some(output) = output {
+            if inputs.len() == 1 {
+                String::from(output)
+            } else {
+                eprintln!("multiple file detected, can not use -o option");
+                exit(-1)
+            }
+        } else {
+            let mut output_path = Path::new(&mlfile.name).to_path_buf();
+            output_path.set_extension("ll");
+            String::from(output_path.to_str().unwrap())
+        };
+
+
+        codegen.file(mlfile.clone());
+
+        println!("Output Path -> {:?}", output);
+
+        codegen.print_to_file(Path::new(&output))?;
     }
 
     Ok(())
