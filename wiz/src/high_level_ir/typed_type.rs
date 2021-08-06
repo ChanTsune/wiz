@@ -16,6 +16,7 @@ pub enum TypedType {
 pub struct TypedValueType {
     pub(crate) package: Package,
     pub(crate) name: String,
+    pub(crate) type_params: Option<Vec<TypedTypeParam>>
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
@@ -35,6 +36,7 @@ impl TypedType {
         TypedType::Value(TypedValueType {
             package: Package { names: vec![] },
             name: String::from(name),
+            type_params: None
         })
     }
 
