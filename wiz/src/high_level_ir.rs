@@ -73,7 +73,7 @@ impl Ast2HLIRContext {
         let typed_value_type = TypedValueType {
             package: Package { names: vec![] },
             name: s.name.clone(),
-            type_params: None
+            type_params: None,
         };
         let name = typed_value_type.name.clone();
         let t = TypedType::Value(typed_value_type.clone());
@@ -404,7 +404,7 @@ impl Ast2HLIR {
             let struct_type = TypedValueType {
                 package: Package { names: vec![] },
                 name: s.name.clone(),
-                type_params: None
+                type_params: None,
             };
             s.init.push(TypedInitializer {
                 type_: TypedType::Value(struct_type.clone()),
@@ -417,7 +417,7 @@ impl Ast2HLIR {
                             let struct_type = TypedValueType {
                                 package: Package { names: vec![] },
                                 name: s.name.clone(),
-                                type_params: None
+                                type_params: None,
                             };
                             TypedStmt::Assignment(TypedAssignmentStmt::Assignment(
                                 TypedAssignment {
@@ -480,7 +480,7 @@ impl Ast2HLIR {
                     type_: TypedType::Value(TypedValueType {
                         package: Package { names: vec![] },
                         name: "Option".to_string(),
-                        type_params: None
+                        type_params: None,
                     }),
                 }),
             },
