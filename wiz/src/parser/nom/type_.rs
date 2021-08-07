@@ -46,10 +46,9 @@ pub fn user_type(s: &str) -> IResult<&str, TypeName> {
 
 pub fn simple_user_type(s: &str) -> IResult<&str, TypeName> {
     map(tuple((identifier, opt(type_arguments))), |(name, args)| {
-        // TODO: use args
         TypeName {
             name,
-            type_args: None,
+            type_args: args,
         }
     })(s)
 }
