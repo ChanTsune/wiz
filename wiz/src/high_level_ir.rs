@@ -22,7 +22,9 @@ use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentStmt, TypedBlock, TypedForStmt, TypedLoopStmt, TypedStmt,
     TypedWhileLoopStmt,
 };
-use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType, TypedTypeParam};
+use crate::high_level_ir::typed_type::{
+    Package, TypedFunctionType, TypedType, TypedTypeParam, TypedValueType,
+};
 use crate::utils::stacked_hash_map::StackedHashMap;
 use either::Either;
 use std::collections::HashMap;
@@ -357,16 +359,20 @@ impl Ast2HLIR {
         let f = TypedFun {
             modifiers: f.modifiers,
             name: f.name,
-            type_params: f.type_params.map(|v|{
-                v.into_iter().map(|p|{
-                    TypedTypeParam {
+            type_params: f.type_params.map(|v| {
+                v.into_iter()
+                    .map(|p| TypedTypeParam {
                         name: p.name,
                         type_constraint: match p.type_constraints {
-                            None => {vec![]}
-                            Some(tn) => {vec![self.type_(tn)]}
-                        }
-                    }
-                }).collect()
+                            None => {
+                                vec![]
+                            }
+                            Some(tn) => {
+                                vec![self.type_(tn)]
+                            }
+                        },
+                    })
+                    .collect()
             }),
             arg_defs: args,
             body: body,
@@ -381,11 +387,9 @@ impl Ast2HLIR {
         TypedType::Value(TypedValueType {
             package: Package { names: vec![] },
             name: tn.name,
-            type_args: tn.type_args.map(|v|{
-                v.into_iter().map(|t|{
-                    self.type_(t)
-                }).collect()
-            })
+            type_args: tn
+                .type_args
+                .map(|v| v.into_iter().map(|t| self.type_(t)).collect()),
         })
     }
 
