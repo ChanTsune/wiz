@@ -333,7 +333,7 @@ mod test {
                         name: "a".to_string(),
                         type_: TypeName {
                             name: "Int64".to_string(),
-                            type_params: vec![]
+                            type_args: vec![]
                         }
                     }),
                     StructPropertySyntax::StoredProperty(StoredPropertySyntax {
@@ -341,7 +341,7 @@ mod test {
                         name: "b".to_string(),
                         type_: TypeName {
                             name: "Int64".to_string(),
-                            type_params: vec![]
+                            type_args: vec![]
                         }
                     }),
                 ]
@@ -360,7 +360,7 @@ mod test {
                     name: "a".to_string(),
                     type_: TypeName {
                         name: "Int64".to_string(),
-                        type_params: vec![]
+                        type_args: vec![]
                     }
                 })
             ))
@@ -374,7 +374,7 @@ mod test {
                     name: "a".to_string(),
                     type_: TypeName {
                         name: "Int64".to_string(),
-                        type_params: vec![]
+                        type_args: vec![]
                     }
                 })
             ))
@@ -398,7 +398,7 @@ mod test {
                         name: "a".to_string(),
                         type_: TypeName {
                             name: "String".to_string(),
-                            type_params: vec![]
+                            type_args: vec![]
                         }
                     })]
                 }
@@ -533,12 +533,12 @@ mod test {
                         name: "item".to_string(),
                         type_name: TypeName {
                             name: "String".to_string(),
-                            type_params: vec![]
+                            type_args: vec![]
                         }
                     }],
                     return_type: Some(TypeName {
                         name: "Unit".to_string(),
-                        type_params: vec![]
+                        type_args: vec![]
                     }),
                     body: None,
                 })
@@ -557,7 +557,7 @@ mod test {
                     name: "a".to_string(),
                     type_: Some(TypeName {
                         name: "Int".to_string(),
-                        type_params: vec![]
+                        type_args: vec![]
                     }),
                     value: Expr::Literal(Literal::IntegerLiteral {
                         value: "1".to_string()

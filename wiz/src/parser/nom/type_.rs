@@ -1,4 +1,4 @@
-use crate::ast::type_name::TypeName;
+use crate::ast::type_name::{TypeName, TypeParam};
 use crate::parser::nom::lexical_structure::identifier;
 use nom::branch::alt;
 use nom::character::complete::char;
@@ -49,7 +49,7 @@ pub fn simple_user_type(s: &str) -> IResult<&str, TypeName> {
         // TODO: use args
         TypeName {
             name,
-            type_params: vec![],
+            type_args: None,
         }
     })(s)
 }
@@ -69,9 +69,7 @@ pub fn type_arguments(s: &str) -> IResult<&str, Vec<TypeName>> {
         )),
         |(_, t, ts, _, _)| {
             let mut t = vec![t];
-            for (_, b) in ts {
-                t.insert(t.len(), b)
-            }
+            t.append(ts.into_iter().map(|(_, b)|b).collect::<Vec<TypeName>>().as_mut());
             t
         },
     )(s)

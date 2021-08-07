@@ -4,7 +4,7 @@ use std::fmt;
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct TypeName {
     pub(crate) name: String,
-    pub(crate) type_params: Vec<TypeParam>,
+    pub(crate) type_args: Option<Vec<TypeName>>,
 }
 
 impl Node for TypeName {}
