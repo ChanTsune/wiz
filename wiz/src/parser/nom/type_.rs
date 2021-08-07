@@ -69,7 +69,12 @@ pub fn type_arguments(s: &str) -> IResult<&str, Vec<TypeName>> {
         )),
         |(_, t, ts, _, _)| {
             let mut t = vec![t];
-            t.append(ts.into_iter().map(|(_, b)|b).collect::<Vec<TypeName>>().as_mut());
+            t.append(
+                ts.into_iter()
+                    .map(|(_, b)| b)
+                    .collect::<Vec<TypeName>>()
+                    .as_mut(),
+            );
             t
         },
     )(s)
