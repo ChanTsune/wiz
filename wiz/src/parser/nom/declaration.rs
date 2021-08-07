@@ -30,7 +30,7 @@ pub fn struct_decl(s: &str) -> IResult<&str, Decl> {
     map(struct_syntax, |struct_syntax| Decl::Struct(struct_syntax))(s)
 }
 
-// <struct_decl> ::= "struct" <identifier> "{" <struct_properties> "}"
+// <struct_decl> ::= "struct" <identifier> <type_parameters>? "{" <struct_properties> "}"
 pub fn struct_syntax(s: &str) -> IResult<&str, StructSyntax> {
     map(
         tuple((
@@ -38,13 +38,15 @@ pub fn struct_syntax(s: &str) -> IResult<&str, StructSyntax> {
             whitespace1,
             identifier,
             whitespace0,
+            opt(type_parameters),
+            whitespace0,
             char('{'),
             whitespace0,
             struct_properties,
             whitespace0,
             char('}'),
         )),
-        |(_, _, name, _, _, _, properties, _, _)| StructSyntax { name, properties },
+        |(_, _, name, _, params, _,_,_, properties, _, _)| StructSyntax { name, type_params: params, properties },
     )(s)
 }
 
@@ -394,6 +396,7 @@ mod test {
                 "",
                 StructSyntax {
                     name: "A".to_string(),
+                    type_params: None,
                     properties: vec![StructPropertySyntax::StoredProperty(StoredPropertySyntax {
                         is_mut: true,
                         name: "a".to_string(),

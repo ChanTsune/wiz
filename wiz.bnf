@@ -9,7 +9,7 @@
         #  | <protocol_decl>
         #  | <extension_decl>
 
-<struct_decl> ::= "struct" <identifier> "{" <struct_properties> "}"
+<struct_decl> ::= "struct" <identifier> <type_parameters>? "{" <struct_properties> "}"
 
 <struct_properties> ::= (<struct_property> ("," <struct_property>)* ","?)?
 

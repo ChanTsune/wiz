@@ -47,6 +47,7 @@ pub struct FunSyntax {
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct StructSyntax {
     pub(crate) name: String,
+    pub(crate) type_params: Option<Vec<TypeParam>>,
     pub(crate) properties: Vec<StructPropertySyntax>,
 }
 
