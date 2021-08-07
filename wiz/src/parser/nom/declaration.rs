@@ -12,7 +12,7 @@ use crate::parser::nom::keywords::{
 };
 use crate::parser::nom::lexical_structure::{identifier, whitespace0, whitespace1};
 use crate::parser::nom::stmts;
-use crate::parser::nom::type_::type_;
+use crate::parser::nom::type_::{type_, type_parameters};
 use nom::branch::alt;
 use nom::character::complete::char;
 use nom::combinator::{map, opt};
@@ -130,7 +130,7 @@ pub fn function_decl(s: &str) -> IResult<&str, Decl> {
             fun_keyword,
             whitespace1,
             identifier,
-            // opt(type_parameters),
+            opt(type_parameters),
             function_value_parameters,
             whitespace0,
             opt(tuple((char(':'), whitespace0, type_))),
@@ -139,10 +139,11 @@ pub fn function_decl(s: &str) -> IResult<&str, Decl> {
             whitespace0,
             opt(function_body),
         )),
-        |(f, _, name, /* type_params, */ args, _, return_type, _, t_constraints, _, body)| {
+        |(f, _, name, type_params, args, _, return_type, _, t_constraints, _, body)| {
             Decl::Fun(FunSyntax {
                 modifiers: vec![],
                 name: name,
+                type_params,
                 arg_defs: args,
                 return_type: return_type.map(|(_, _, t)| t),
                 body: body,
@@ -226,7 +227,7 @@ pub fn type_constraint(s: &str) -> IResult<&str, TypeParam> {
     map(tuple((identifier, char(':'), type_)), |(id, _, typ)| {
         TypeParam {
             name: id,
-            type_constraints: vec![typ],
+            type_constraints: Some(vec![typ]),
         }
     })(s)
 }
@@ -509,6 +510,7 @@ mod test {
                 Decl::Fun(FunSyntax {
                     modifiers: vec![],
                     name: "function".to_string(),
+                    type_params: None,
                     arg_defs: vec![],
                     return_type: None,
                     body: Some(FunBody::Block {
@@ -528,6 +530,7 @@ mod test {
                 Decl::Fun(FunSyntax {
                     modifiers: vec![],
                     name: "puts".to_string(),
+                    type_params: None,
                     arg_defs: vec![ArgDef {
                         label: "_".to_string(),
                         name: "item".to_string(),

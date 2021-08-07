@@ -12,7 +12,7 @@ impl Node for TypeName {}
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct TypeParam {
     pub(crate) name: String,
-    pub(crate) type_constraints: Vec<TypeName>,
+    pub(crate) type_constraints: Option<Vec<TypeName>>,
 }
 
 impl Node for TypeParam {}
