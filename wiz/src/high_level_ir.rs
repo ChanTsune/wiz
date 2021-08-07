@@ -84,14 +84,19 @@ impl Ast2HLIRContext {
     }
 
     fn resolve_type(&self, type_name: Option<TypeName>) -> Option<TypedType> {
-        if let Some(type_name) = type_name {
+        let t = if let Some(type_name) = &type_name {
             match self.name_environment.get(&type_name.name) {
                 Some(Ast2HLIRName::Type(y)) => Some(y.clone()),
                 _ => None,
             }
         } else {
             None
+        };
+        match &t {
+            None => { eprintln!("Unresolved type {:?}.", type_name.unwrap()) }
+            _ => {}
         }
+        t
     }
 }
 
