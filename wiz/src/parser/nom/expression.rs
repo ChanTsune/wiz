@@ -21,7 +21,7 @@ use nom::sequence::tuple;
 use nom::IResult;
 
 pub fn integer_literal(s: &str) -> IResult<&str, Literal> {
-    map(digit1, |n: &str| Literal::IntegerLiteral {
+    map(digit1, |n: &str| Literal::Integer {
         value: n.to_string(),
     })(s)
 }
@@ -29,7 +29,7 @@ pub fn integer_literal(s: &str) -> IResult<&str, Literal> {
 pub fn string_literal(s: &str) -> IResult<&str, Literal> {
     map(
         tuple((char('"'), many0(none_of("\"")), char('"'))),
-        |(a, b, c)| Literal::StringLiteral {
+        |(a, b, c)| Literal::String {
             value: b.into_iter().collect(),
         },
     )(s)
@@ -667,7 +667,7 @@ mod tests {
         CallArg, CallExprSyntax, Expr, NameExprSyntax, PostfixSuffix, ReturnSyntax,
     };
     use crate::ast::literal::Literal;
-    use crate::ast::literal::Literal::{IntegerLiteral, StringLiteral};
+    use crate::ast::literal::Literal::{Integer};
     use crate::parser::nom::expression::{
         disjunction_expr, expr, integer_literal, postfix_suffix, return_expr, string_literal,
         value_arguments,
@@ -679,7 +679,7 @@ mod tests {
             integer_literal("1"),
             Ok((
                 "",
-                IntegerLiteral {
+                Integer {
                     value: "1".to_string()
                 }
             ))
@@ -688,7 +688,7 @@ mod tests {
             integer_literal("12"),
             Ok((
                 "",
-                IntegerLiteral {
+                Integer {
                     value: "12".to_string()
                 }
             ))
@@ -701,7 +701,7 @@ mod tests {
             string_literal("\"\""),
             Ok((
                 "",
-                StringLiteral {
+                Literal::String {
                     value: "".to_string()
                 }
             ))
@@ -716,16 +716,16 @@ mod tests {
                 "",
                 BinOp {
                     left: Box::from(BinOp {
-                        left: Box::from(Expr::Literal(Literal::IntegerLiteral {
+                        left: Box::from(Expr::Literal(Literal::Integer {
                             value: "1".parse().unwrap()
                         })),
                         kind: "||".parse().unwrap(),
-                        right: Box::from(Expr::Literal(Literal::IntegerLiteral {
+                        right: Box::from(Expr::Literal(Literal::Integer {
                             value: "2".parse().unwrap()
                         }))
                     }),
                     kind: "||".parse().unwrap(),
-                    right: Box::from(Expr::Literal(Literal::IntegerLiteral {
+                    right: Box::from(Expr::Literal(Literal::Integer {
                         value: "3".parse().unwrap()
                     }))
                 }
@@ -746,7 +746,7 @@ mod tests {
                 "",
                 vec![CallArg {
                     label: None,
-                    arg: Box::from(Expr::Literal(Literal::StringLiteral {
+                    arg: Box::from(Expr::Literal(Literal::String {
                         value: "Hello, World".parse().unwrap()
                     })),
                     is_vararg: false
@@ -798,7 +798,7 @@ mod tests {
                     })),
                     args: vec![CallArg {
                         label: None,
-                        arg: Box::from(Expr::Literal(Literal::StringLiteral {
+                        arg: Box::from(Expr::Literal(Literal::String {
                             value: "Hello, World".parse().unwrap()
                         })),
                         is_vararg: false
@@ -821,7 +821,7 @@ mod tests {
                     })),
                     args: vec![CallArg {
                         label: Some(String::from("string")),
-                        arg: Box::from(Expr::Literal(Literal::StringLiteral {
+                        arg: Box::from(Expr::Literal(Literal::String {
                             value: "Hello, World".parse().unwrap()
                         })),
                         is_vararg: false

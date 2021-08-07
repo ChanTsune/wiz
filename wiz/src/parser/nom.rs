@@ -197,7 +197,7 @@ mod tests {
                                         name: "a".to_string()
                                     })),
                                     kind: "+".to_string(),
-                                    right: Box::new(Expr::Literal(Literal::IntegerLiteral {
+                                    right: Box::new(Expr::Literal(Literal::Integer {
                                         value: "1".to_string()
                                     }))
                                 }
@@ -244,7 +244,7 @@ mod tests {
                                         name: "a".to_string()
                                     })),
                                     kind: "+".to_string(),
-                                    right: Box::new(Expr::Literal(Literal::IntegerLiteral {
+                                    right: Box::new(Expr::Literal(Literal::Integer {
                                         value: "1".to_string()
                                     }))
                                 }

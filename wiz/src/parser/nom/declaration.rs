@@ -419,7 +419,7 @@ mod test {
                 "",
                 Block {
                     body: vec![Stmt::Expr {
-                        expr: Expr::Literal(Literal::IntegerLiteral {
+                        expr: Expr::Literal(Literal::Integer {
                             value: "1".to_string()
                         })
                     }]
@@ -437,11 +437,11 @@ mod test {
                 Block {
                     body: vec![Stmt::Expr {
                         expr: Expr::BinOp {
-                            left: Box::new(Expr::Literal(Literal::IntegerLiteral {
+                            left: Box::new(Expr::Literal(Literal::Integer {
                                 value: "1".to_string()
                             })),
                             kind: "+".to_string(),
-                            right: Box::new(Expr::Literal(Literal::IntegerLiteral {
+                            right: Box::new(Expr::Literal(Literal::Integer {
                                 value: "1".to_string()
                             })),
                         }
@@ -463,7 +463,7 @@ mod test {
                 "",
                 Block {
                     body: vec![Stmt::Expr {
-                        expr: Expr::Literal(Literal::IntegerLiteral {
+                        expr: Expr::Literal(Literal::Integer {
                             value: "1".to_string()
                         })
                     }]
@@ -559,7 +559,7 @@ mod test {
                         name: "Int".to_string(),
                         type_args: None
                     }),
-                    value: Expr::Literal(Literal::IntegerLiteral {
+                    value: Expr::Literal(Literal::Integer {
                         value: "1".to_string()
                     })
                 })
@@ -577,7 +577,7 @@ mod test {
                     is_mut: false,
                     name: "a".to_string(),
                     type_: None,
-                    value: Expr::Literal(Literal::IntegerLiteral {
+                    value: Expr::Literal(Literal::Integer {
                         value: "1".to_string()
                     })
                 })

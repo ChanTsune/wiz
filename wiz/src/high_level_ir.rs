@@ -458,25 +458,25 @@ impl Ast2HLIR {
                 Either::Right(n) => TypedExpr::Type(n),
             },
             Expr::Literal(literal) => match literal {
-                Literal::IntegerLiteral { value } => TypedExpr::Literal(TypedLiteral::Integer {
+                Literal::Integer { value } => TypedExpr::Literal(TypedLiteral::Integer {
                     value,
                     type_: TypedType::int64(),
                 }),
-                Literal::FloatingPointLiteral { value } => {
+                Literal::FloatingPoint { value } => {
                     TypedExpr::Literal(TypedLiteral::FloatingPoint {
                         value,
                         type_: TypedType::double(),
                     })
                 }
-                Literal::StringLiteral { value } => TypedExpr::Literal(TypedLiteral::String {
+                Literal::String { value } => TypedExpr::Literal(TypedLiteral::String {
                     value,
                     type_: TypedType::string(),
                 }),
-                Literal::BooleanLiteral { value } => TypedExpr::Literal(TypedLiteral::Boolean {
+                Literal::Boolean { value } => TypedExpr::Literal(TypedLiteral::Boolean {
                     value,
                     type_: TypedType::bool(),
                 }),
-                Literal::NullLiteral => TypedExpr::Literal(TypedLiteral::NullLiteral {
+                Literal::Null => TypedExpr::Literal(TypedLiteral::NullLiteral {
                     type_: TypedType::Value(TypedValueType {
                         package: Package { names: vec![] },
                         name: "Option".to_string(),
