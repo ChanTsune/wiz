@@ -667,7 +667,7 @@ mod tests {
         CallArg, CallExprSyntax, Expr, NameExprSyntax, PostfixSuffix, ReturnSyntax,
     };
     use crate::ast::literal::Literal;
-    use crate::ast::literal::Literal::{Integer};
+    use crate::ast::literal::Literal::Integer;
     use crate::parser::nom::expression::{
         disjunction_expr, expr, integer_literal, postfix_suffix, return_expr, string_literal,
         value_arguments,
