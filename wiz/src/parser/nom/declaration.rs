@@ -46,7 +46,11 @@ pub fn struct_syntax(s: &str) -> IResult<&str, StructSyntax> {
             whitespace0,
             char('}'),
         )),
-        |(_, _, name, _, params, _,_,_, properties, _, _)| StructSyntax { name, type_params: params, properties },
+        |(_, _, name, _, params, _, _, _, properties, _, _)| StructSyntax {
+            name,
+            type_params: params,
+            properties,
+        },
     )(s)
 }
 
