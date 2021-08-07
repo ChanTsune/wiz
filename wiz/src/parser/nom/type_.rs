@@ -117,7 +117,7 @@ pub fn type_parameter(s: &str) -> IResult<&str, TypeParam> {
         )),
         |(name, _, typ)| TypeParam {
             name,
-            type_constraints: typ.map(|(_, _, t)| vec![t]),
+            type_constraints: typ.map(|(_, _, t)| t),
         },
     )(s)
 }
@@ -148,10 +148,10 @@ mod test {
                 "",
                 TypeParam {
                     name: "T".to_string(),
-                    type_constraints: Some(vec![TypeName {
+                    type_constraints: Some(TypeName {
                         name: "Int".to_string(),
                         type_args: None
-                    }])
+                    })
                 }
             ))
         );
@@ -161,10 +161,10 @@ mod test {
                 "",
                 TypeParam {
                     name: "T".to_string(),
-                    type_constraints: Some(vec![TypeName {
+                    type_constraints: Some(TypeName {
                         name: "Int".to_string(),
                         type_args: None
-                    }])
+                    })
                 }
             ))
         );
@@ -174,10 +174,10 @@ mod test {
                 "",
                 TypeParam {
                     name: "T".to_string(),
-                    type_constraints: Some(vec![TypeName {
+                    type_constraints: Some(TypeName {
                         name: "Int".to_string(),
                         type_args: None
-                    }])
+                    })
                 }
             ))
         );
@@ -187,10 +187,10 @@ mod test {
                 "",
                 TypeParam {
                     name: "T".to_string(),
-                    type_constraints: Some(vec![TypeName {
+                    type_constraints: Some(TypeName {
                         name: "Int".to_string(),
                         type_args: None
-                    }])
+                    })
                 }
             ))
         );

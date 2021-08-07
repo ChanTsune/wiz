@@ -227,7 +227,7 @@ pub fn type_constraint(s: &str) -> IResult<&str, TypeParam> {
     map(tuple((identifier, char(':'), type_)), |(id, _, typ)| {
         TypeParam {
             name: id,
-            type_constraints: Some(vec![typ]),
+            type_constraints: Some(typ),
         }
     })(s)
 }
