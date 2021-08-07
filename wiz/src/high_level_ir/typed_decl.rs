@@ -1,6 +1,6 @@
 use crate::high_level_ir::typed_expr::TypedExpr;
 use crate::high_level_ir::typed_stmt::TypedBlock;
-use crate::high_level_ir::typed_type::{TypedFunctionType, TypedType};
+use crate::high_level_ir::typed_type::{TypedFunctionType, TypedType, TypedTypeParam};
 use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -26,6 +26,7 @@ pub struct TypedVar {
 pub struct TypedFun {
     pub(crate) modifiers: Vec<String>,
     pub(crate) name: String,
+    pub(crate) type_params: Option<Vec<TypedTypeParam>>,
     pub(crate) arg_defs: Vec<TypedArgDef>,
     pub(crate) body: Option<TypedFunBody>,
     pub(crate) return_type: TypedType,

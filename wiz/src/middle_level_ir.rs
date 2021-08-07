@@ -152,10 +152,12 @@ impl HLIR2MLIR {
         let TypedFun {
             modifiers,
             name,
+            type_params,
             arg_defs,
             body,
             return_type,
         } = f;
+        // TODO: use type_params
         let args = arg_defs.into_iter().map(|a| self.arg_def(a)).collect();
         MLFun {
             modifiers,

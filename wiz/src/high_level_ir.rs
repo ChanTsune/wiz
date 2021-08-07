@@ -22,7 +22,7 @@ use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentStmt, TypedBlock, TypedForStmt, TypedLoopStmt, TypedStmt,
     TypedWhileLoopStmt,
 };
-use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
+use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType, TypedTypeParam};
 use crate::utils::stacked_hash_map::StackedHashMap;
 use either::Either;
 use std::collections::HashMap;
@@ -357,6 +357,17 @@ impl Ast2HLIR {
         let f = TypedFun {
             modifiers: f.modifiers,
             name: f.name,
+            type_params: f.type_params.map(|v|{
+                v.into_iter().map(|p|{
+                    TypedTypeParam {
+                        name: p.name,
+                        type_constraint: match p.type_constraints {
+                            None => {vec![]}
+                            Some(tn) => {vec![self.type_(tn)]}
+                        }
+                    }
+                }).collect()
+            }),
             arg_defs: args,
             body: body,
             return_type: return_type,
@@ -364,6 +375,18 @@ impl Ast2HLIR {
         self.context.pop();
         self.context.put_name(f.name.clone(), &f.type_());
         f
+    }
+
+    pub fn type_(&self, tn: TypeName) -> TypedType {
+        TypedType::Value(TypedValueType {
+            package: Package { names: vec![] },
+            name: tn.name,
+            type_args: tn.type_args.map(|v|{
+                v.into_iter().map(|t|{
+                    self.type_(t)
+                }).collect()
+            })
+        })
     }
 
     pub fn struct_syntax(&mut self, s: StructSyntax) -> TypedStruct {
