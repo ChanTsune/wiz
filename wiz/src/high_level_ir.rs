@@ -93,7 +93,9 @@ impl Ast2HLIRContext {
             None
         };
         match &t {
-            None => { eprintln!("Unresolved type {:?}.", type_name.unwrap()) }
+            None => {
+                eprintln!("Unresolved type {:?}.", type_name.unwrap())
+            }
             _ => {}
         }
         t
