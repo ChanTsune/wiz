@@ -48,6 +48,7 @@ pub enum TypedFunBody {
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct TypedStruct {
     pub(crate) name: String,
+    pub(crate) type_params: Option<Vec<TypedTypeParam>>,
     pub(crate) init: Vec<TypedInitializer>,
     pub(crate) stored_properties: Vec<TypedStoredProperty>,
     pub(crate) computed_properties: Vec<TypedComputedProperty>,

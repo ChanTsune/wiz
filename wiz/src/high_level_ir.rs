@@ -8,7 +8,7 @@ use crate::ast::fun::arg_def::ArgDef;
 use crate::ast::fun::body_def::FunBody;
 use crate::ast::literal::Literal;
 use crate::ast::stmt::{AssignmentStmt, LoopStmt, Stmt};
-use crate::ast::type_name::TypeName;
+use crate::ast::type_name::{TypeName, TypeParam};
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedFun, TypedFunBody, TypedInitializer,
     TypedStoredProperty, TypedStruct, TypedVar,
@@ -484,6 +484,15 @@ impl Ast2HLIR {
         })
     }
 
+    fn type_param(&self, tp: TypeParam) -> TypedTypeParam {
+        TypedTypeParam {
+            name: tp.name,
+            type_constraint: tp.type_constraints.map_or(vec![], |v|{
+                vec![self.type_(v)]
+            })
+        }
+    }
+
     pub fn struct_syntax(&mut self, s: StructSyntax) -> TypedStruct {
         let mut stored_properties: Vec<TypedStoredProperty> = vec![];
         let mut computed_properties: Vec<TypedComputedProperty> = vec![];
@@ -500,6 +509,11 @@ impl Ast2HLIR {
         }
         TypedStruct {
             name: s.name,
+            type_params: s.type_params.map(|v|{
+                v.into_iter().map(|tp|{
+                    self.type_param(tp)
+                }).collect()
+            }),
             init: initializers,
             stored_properties,
             computed_properties,

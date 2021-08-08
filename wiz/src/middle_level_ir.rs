@@ -171,6 +171,7 @@ impl HLIR2MLIR {
     pub fn struct_(&mut self, s: TypedStruct) -> (MLStruct, Vec<MLFun>) {
         let TypedStruct {
             name,
+            type_params,
             init,
             stored_properties,
             computed_properties,
