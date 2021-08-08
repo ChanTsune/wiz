@@ -56,9 +56,7 @@ impl HLIR2MLIR {
     pub fn value_type(&self, t: TypedValueType) -> MLValueType {
         let mut pkg = t.package.names;
         pkg.push(t.name);
-        MLValueType {
-            name: pkg.join("::"),
-        }
+        MLValueType::Name(pkg.join("::"))
     }
 
     pub fn function_type(&self, t: TypedFunctionType) -> MLFunctionType {
@@ -190,9 +188,7 @@ impl HLIR2MLIR {
         };
 
         self.add_struct(
-            MLValueType {
-                name: struct_.name.clone(),
-            },
+            MLValueType::Name(struct_.name.clone()),
             struct_.clone(),
         );
 
@@ -334,7 +330,7 @@ impl HLIR2MLIR {
         } else {
             MLExpr::Call(MLCall {
                 target: Box::new(MLExpr::Name(MLName {
-                    name: target.type_().into_value_type().name + "." + &*name,
+                    name: target.type_().into_value_type().name() + "." + &*name,
                     type_: type_.clone(),
                 })),
                 args: vec![],
@@ -345,7 +341,7 @@ impl HLIR2MLIR {
     }
 
     pub fn static_member(&self, sm: TypedStaticMember) -> MLExpr {
-        let type_name = self.type_(sm.target).into_value_type().name;
+        let type_name = self.type_(sm.target).into_value_type().name();
         MLExpr::Name(MLName {
             name: type_name + "#" + &*sm.name,
             type_: self.type_(sm.type_.unwrap()),
