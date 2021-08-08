@@ -89,7 +89,8 @@ impl Ast2HLIRContext {
             name: name.clone(),
             type_params: None, // TODO: type params
         };
-        self.name_environment.insert(name.clone(), Ast2HLIRName::Type(t));
+        self.name_environment
+            .insert(name.clone(), Ast2HLIRName::Type(t));
         self.struct_environment.insert(name, s.clone());
     }
 
