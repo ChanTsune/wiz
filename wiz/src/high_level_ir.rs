@@ -487,9 +487,7 @@ impl Ast2HLIR {
     fn type_param(&self, tp: TypeParam) -> TypedTypeParam {
         TypedTypeParam {
             name: tp.name,
-            type_constraint: tp.type_constraints.map_or(vec![], |v|{
-                vec![self.type_(v)]
-            })
+            type_constraint: tp.type_constraints.map_or(vec![], |v| vec![self.type_(v)]),
         }
     }
 
@@ -509,11 +507,9 @@ impl Ast2HLIR {
         }
         TypedStruct {
             name: s.name,
-            type_params: s.type_params.map(|v|{
-                v.into_iter().map(|tp|{
-                    self.type_param(tp)
-                }).collect()
-            }),
+            type_params: s
+                .type_params
+                .map(|v| v.into_iter().map(|tp| self.type_param(tp)).collect()),
             init: initializers,
             stored_properties,
             computed_properties,
