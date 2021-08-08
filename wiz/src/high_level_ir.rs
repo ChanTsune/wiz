@@ -110,42 +110,59 @@ impl Ast2HLIRContext {
             None
         };
         match (&t, &type_name) {
-            (None, None) => { eprintln!("Unresolved type {:?}.", type_name); None }
-            (None, Some(t)) => {eprintln!("Unresolved type {:?}.", t); None}
-            (Some(a2ht),Some(t)) => {
-                match (&a2ht.type_params, &t.type_args) {
-                    (None, None) => {
+            (None, None) => {
+                eprintln!("Unresolved type {:?}.", type_name);
+                None
+            }
+            (None, Some(t)) => {
+                eprintln!("Unresolved type {:?}.", t);
+                None
+            }
+            (Some(a2ht), Some(t)) => match (&a2ht.type_params, &t.type_args) {
+                (None, None) => Some(TypedType::Value(TypedValueType {
+                    package: Package { names: vec![] },
+                    name: a2ht.name.clone(),
+                    type_args: None,
+                })),
+                (None, Some(args)) => {
+                    eprintln!(
+                        "{:?} is not take type args. but passed {:?}",
+                        a2ht.name, args
+                    );
+                    None
+                }
+                (Some(_), None) => {
+                    eprintln!("{:?} is take type args. but not passed", a2ht.name);
+                    None
+                }
+                (Some(params), Some(args)) => {
+                    if params.len() != args.len() {
+                        eprintln!(
+                            "{:?} take {} type arguments. but {} given",
+                            a2ht.name,
+                            params.len(),
+                            args.len()
+                        );
+                        None
+                    } else {
                         Some(TypedType::Value(TypedValueType {
                             package: Package { names: vec![] },
                             name: a2ht.name.clone(),
-                            type_args: None
+                            type_args: Some(
+                                params
+                                    .into_iter()
+                                    .zip(args)
+                                    .map(|(p, t)| self.resolve_type(Some(t.clone())).unwrap())
+                                    .collect(),
+                            ),
                         }))
                     }
-                    (None, Some(args)) => {
-                        eprintln!("{:?} is not take type args. but passed {:?}", a2ht.name, args);
-                        None
-                    }
-                    (Some(_), None) => {
-                        eprintln!("{:?} is take type args. but not passed", a2ht.name);
-                        None
-                    }
-                    (Some(params), Some(args)) => {
-                        if params.len() != args.len() {
-                            eprintln!("{:?} take {} type arguments. but {} given", a2ht.name, params.len(), args.len());
-                            None
-                        } else {
-                            Some(TypedType::Value(TypedValueType {
-                                package: Package { names: vec![] },
-                                name: a2ht.name.clone(),
-                                type_args: Some(params.into_iter().zip(args).map(|(p, t)|{
-                                    self.resolve_type(Some(t.clone())).unwrap()
-                                }).collect())
-                            }))
-                        }
-                    }
                 }
+            },
+            _ => {
+                eprintln!("Never execution branch executed!!");
+                exit(-1)
             }
-            _ => { eprintln!("Never execution branch executed!!"); exit(-1) }
         }
     }
 }
@@ -157,31 +174,40 @@ pub struct Ast2HLIR {
 impl Ast2HLIR {
     pub fn new() -> Self {
         let builtin_types = vec![
-        String::from("Int8"),
-        String::from("Int16"),
-        String::from("Int32"),
-        String::from("Int64"),
-        String::from("UInt8"),
-        String::from("UInt16"),
-        String::from("UInt32"),
-        String::from("UInt64"),
-        String::from("String"),
-        String::from("Noting"),
-        String::from("Unit"),
+            String::from("Int8"),
+            String::from("Int16"),
+            String::from("Int32"),
+            String::from("Int64"),
+            String::from("UInt8"),
+            String::from("UInt16"),
+            String::from("UInt32"),
+            String::from("UInt64"),
+            String::from("String"),
+            String::from("Noting"),
+            String::from("Unit"),
         ];
         let mut names = HashMap::new();
         for t in builtin_types.into_iter() {
-            names.insert(t.clone(), Ast2HLIRName::Type(Ast2HLIRType {
-                name: t,
-                type_params: None,
-                protocols: vec![]
-            }));
+            names.insert(
+                t.clone(),
+                Ast2HLIRName::Type(Ast2HLIRType {
+                    name: t,
+                    type_params: None,
+                    protocols: vec![],
+                }),
+            );
         }
-        names.insert(String::from("Array"), Ast2HLIRName::Type(Ast2HLIRType {
-            name: String::from("Array"),
-            type_params: Some(vec![Ast2HLIRTypeParam { name: "T".to_string(), type_constraints: vec![] }]),
-            protocols: vec![]
-        }));
+        names.insert(
+            String::from("Array"),
+            Ast2HLIRName::Type(Ast2HLIRType {
+                name: String::from("Array"),
+                type_params: Some(vec![Ast2HLIRTypeParam {
+                    name: "T".to_string(),
+                    type_constraints: vec![],
+                }]),
+                protocols: vec![],
+            }),
+        );
         Ast2HLIR {
             context: Ast2HLIRContext {
                 name_environment: StackedHashMap::from(names),
@@ -666,7 +692,7 @@ impl Ast2HLIR {
             Some(Ast2HLIRName::Type(t)) => Either::Right(TypedType::Value(TypedValueType {
                 package: Package { names: vec![] },
                 name: t.name,
-                type_args: None
+                type_args: None,
             })),
         }
     }
