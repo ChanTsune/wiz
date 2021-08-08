@@ -87,13 +87,15 @@ impl Ast2HLIRContext {
         let name = s.name.clone();
         let t = Ast2HLIRType {
             name: name.clone(),
-            type_params: s.type_params.as_ref().map(|v|{
-                v.iter().map(|tp|{
-                    Ast2HLIRTypeParam {
-                        name: tp.name.clone(),
-                        type_constraints: vec![] // TODO: Type constraint
-                    }
-                }).collect()
+            type_params: s.type_params.as_ref().map(|v| {
+                v.iter()
+                    .map(|tp| {
+                        Ast2HLIRTypeParam {
+                            name: tp.name.clone(),
+                            type_constraints: vec![], // TODO: Type constraint
+                        }
+                    })
+                    .collect()
             }),
         };
         self.name_environment
