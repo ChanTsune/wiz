@@ -39,6 +39,19 @@ pub mod typed_stmt;
 pub mod typed_type;
 
 #[derive(fmt::Debug, Clone)]
+struct Ast2HLIRTypeParam {
+    name: String,
+    type_constraints: Vec<String>,
+}
+
+#[derive(fmt::Debug, Clone)]
+struct Ast2HLIRType {
+    name: String,
+    type_params: Option<Vec<Ast2HLIRTypeParam>>,
+    protocols: Vec<Ast2HLIRType>,
+}
+
+#[derive(fmt::Debug, Clone)]
 struct Ast2HLIRContext {
     name_environment: StackedHashMap<String, Ast2HLIRName>,
     struct_environment: StackedHashMap<TypedValueType, TypedStruct>,
@@ -46,7 +59,7 @@ struct Ast2HLIRContext {
 
 #[derive(fmt::Debug, Clone)]
 enum Ast2HLIRName {
-    Type(TypedType),
+    Type(Ast2HLIRType),
     Name(TypedType),
 }
 
@@ -78,7 +91,11 @@ impl Ast2HLIRContext {
             type_args: None,
         };
         let name = typed_value_type.name.clone();
-        let t = TypedType::Value(typed_value_type.clone());
+        let t = Ast2HLIRType {
+            name: name.clone(),
+            type_params: None, // TODO: type params
+            protocols: vec![],
+        };
         self.name_environment.insert(name, Ast2HLIRName::Type(t));
         self.struct_environment.insert(typed_value_type, s.clone());
     }
@@ -92,11 +109,44 @@ impl Ast2HLIRContext {
         } else {
             None
         };
-        match &t {
-            None => { eprintln!("Unresolved type {:?}.", type_name.unwrap()) }
-            _ => {}
+        match (&t, &type_name) {
+            (None, None) => { eprintln!("Unresolved type {:?}.", type_name); None }
+            (None, Some(t)) => {eprintln!("Unresolved type {:?}.", t); None}
+            (Some(a2ht),Some(t)) => {
+                match (&a2ht.type_params, &t.type_args) {
+                    (None, None) => {
+                        Some(TypedType::Value(TypedValueType {
+                            package: Package { names: vec![] },
+                            name: a2ht.name.clone(),
+                            type_args: None
+                        }))
+                    }
+                    (None, Some(args)) => {
+                        eprintln!("{:?} is not take type args. but passed {:?}", a2ht.name, args);
+                        None
+                    }
+                    (Some(_), None) => {
+                        eprintln!("{:?} is take type args. but not passed", a2ht.name);
+                        None
+                    }
+                    (Some(params), Some(args)) => {
+                        if params.len() != args.len() {
+                            eprintln!("{:?} take {} type arguments. but {} given", a2ht.name, params.len(), args.len());
+                            None
+                        } else {
+                            Some(TypedType::Value(TypedValueType {
+                                package: Package { names: vec![] },
+                                name: a2ht.name.clone(),
+                                type_args: Some(params.into_iter().zip(args).map(|(p, t)|{
+                                    self.resolve_type(Some(t.clone())).unwrap()
+                                }).collect())
+                            }))
+                        }
+                    }
+                }
+            }
+            _ => { eprintln!("Never execution branch executed!!"); exit(-1) }
         }
-        t
     }
 }
 
@@ -106,22 +156,32 @@ pub struct Ast2HLIR {
 
 impl Ast2HLIR {
     pub fn new() -> Self {
-        let mut builtin_types = HashMap::new();
-        builtin_types.insert(String::from("Int8"), TypedType::int8());
-        builtin_types.insert(String::from("Int16"), TypedType::int16());
-        builtin_types.insert(String::from("Int32"), TypedType::int32());
-        builtin_types.insert(String::from("Int64"), TypedType::int64());
-        builtin_types.insert(String::from("UInt8"), TypedType::uint8());
-        builtin_types.insert(String::from("UInt16"), TypedType::uint16());
-        builtin_types.insert(String::from("UInt32"), TypedType::uint32());
-        builtin_types.insert(String::from("UInt64"), TypedType::uint64());
-        builtin_types.insert(String::from("String"), TypedType::string());
-        builtin_types.insert(String::from("Noting"), TypedType::noting());
-        builtin_types.insert(String::from("Unit"), TypedType::unit());
+        let builtin_types = vec![
+        String::from("Int8"),
+        String::from("Int16"),
+        String::from("Int32"),
+        String::from("Int64"),
+        String::from("UInt8"),
+        String::from("UInt16"),
+        String::from("UInt32"),
+        String::from("UInt64"),
+        String::from("String"),
+        String::from("Noting"),
+        String::from("Unit"),
+        ];
         let mut names = HashMap::new();
-        for (k, v) in builtin_types.into_iter() {
-            names.insert(k, Ast2HLIRName::Type(v));
+        for t in builtin_types.into_iter() {
+            names.insert(t.clone(), Ast2HLIRName::Type(Ast2HLIRType {
+                name: t,
+                type_params: None,
+                protocols: vec![]
+            }));
         }
+        names.insert(String::from("Array"), Ast2HLIRName::Type(Ast2HLIRType {
+            name: String::from("Array"),
+            type_params: Some(vec![Ast2HLIRTypeParam { name: "T".to_string(), type_constraints: vec![] }]),
+            protocols: vec![]
+        }));
         Ast2HLIR {
             context: Ast2HLIRContext {
                 name_environment: StackedHashMap::from(names),
@@ -603,7 +663,11 @@ impl Ast2HLIR {
                 name: name,
                 type_: Some(t),
             }),
-            Some(Ast2HLIRName::Type(t)) => Either::Right(t),
+            Some(Ast2HLIRName::Type(t)) => Either::Right(TypedType::Value(TypedValueType {
+                package: Package { names: vec![] },
+                name: t.name,
+                type_args: None
+            })),
         }
     }
 
