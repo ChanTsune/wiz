@@ -48,7 +48,6 @@ struct Ast2HLIRTypeParam {
 struct Ast2HLIRType {
     name: String,
     type_params: Option<Vec<Ast2HLIRTypeParam>>,
-    protocols: Vec<Ast2HLIRType>,
 }
 
 #[derive(fmt::Debug, Clone)]
@@ -94,7 +93,6 @@ impl Ast2HLIRContext {
         let t = Ast2HLIRType {
             name: name.clone(),
             type_params: None, // TODO: type params
-            protocols: vec![],
         };
         self.name_environment.insert(name, Ast2HLIRName::Type(t));
         self.struct_environment.insert(typed_value_type, s.clone());
@@ -193,7 +191,6 @@ impl Ast2HLIR {
                 Ast2HLIRName::Type(Ast2HLIRType {
                     name: t,
                     type_params: None,
-                    protocols: vec![],
                 }),
             );
         }
@@ -205,7 +202,6 @@ impl Ast2HLIR {
                     name: "T".to_string(),
                     type_constraints: vec![],
                 }]),
-                protocols: vec![],
             }),
         );
         Ast2HLIR {
