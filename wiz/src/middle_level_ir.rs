@@ -187,10 +187,7 @@ impl HLIR2MLIR {
                 .collect(),
         };
 
-        self.add_struct(
-            MLValueType::Name(struct_.name.clone()),
-            struct_.clone(),
-        );
+        self.add_struct(MLValueType::Name(struct_.name.clone()), struct_.clone());
 
         let mut init: Vec<MLFun> = init
             .into_iter()

@@ -9,14 +9,14 @@ pub enum MLType {
 #[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
 pub enum MLValueType {
     Name(String),
-    Pointer(Box<MLValueType>)
+    Pointer(Box<MLValueType>),
 }
 
 impl MLValueType {
     pub(crate) fn name(&self) -> String {
         match self {
-            MLValueType::Name(name) => {name.clone()}
-            MLValueType::Pointer(p) => { String::from("*") + &*p.name()}
+            MLValueType::Name(name) => name.clone(),
+            MLValueType::Pointer(p) => String::from("*") + &*p.name(),
         }
     }
 }
