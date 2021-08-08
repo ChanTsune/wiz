@@ -53,7 +53,7 @@ struct Ast2HLIRType {
 #[derive(fmt::Debug, Clone)]
 struct Ast2HLIRContext {
     name_environment: StackedHashMap<String, Ast2HLIRName>,
-    struct_environment: StackedHashMap<TypedValueType, TypedStruct>,
+    struct_environment: StackedHashMap<String, TypedStruct>,
 }
 
 #[derive(fmt::Debug, Clone)]
@@ -84,18 +84,13 @@ impl Ast2HLIRContext {
     }
 
     fn put_type(&mut self, s: &TypedStruct) {
-        let typed_value_type = TypedValueType {
-            package: Package { names: vec![] },
-            name: s.name.clone(),
-            type_args: None,
-        };
-        let name = typed_value_type.name.clone();
+        let name = s.name.clone();
         let t = Ast2HLIRType {
             name: name.clone(),
             type_params: None, // TODO: type params
         };
-        self.name_environment.insert(name, Ast2HLIRName::Type(t));
-        self.struct_environment.insert(typed_value_type, s.clone());
+        self.name_environment.insert(name.clone(), Ast2HLIRName::Type(t));
+        self.struct_environment.insert(name, s.clone());
     }
 
     fn resolve_type(&self, type_name: Option<TypeName>) -> Option<TypedType> {
@@ -277,7 +272,7 @@ impl Ast2HLIR {
     fn resolve_member_type(&self, t: &TypedType, member_name: String) -> Option<TypedType> {
         match t {
             TypedType::Value(t) => {
-                let s = self.context.struct_environment.get(t)?;
+                let s = self.context.struct_environment.get(&t.name)?;
                 for p in s.stored_properties.iter() {
                     if p.name == member_name {
                         return Some(p.type_.clone());
