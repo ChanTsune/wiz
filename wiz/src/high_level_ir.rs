@@ -198,9 +198,9 @@ impl Ast2HLIR {
             );
         }
         names.insert(
-            String::from("Array"),
+            String::from("Pointer"),
             Ast2HLIRName::Type(Ast2HLIRType {
-                name: String::from("Array"),
+                name: String::from("Pointer"),
                 type_params: Some(vec![Ast2HLIRTypeParam {
                     name: "T".to_string(),
                     type_constraints: vec![],
