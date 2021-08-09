@@ -9,6 +9,7 @@ use crate::ast::fun::body_def::FunBody;
 use crate::ast::literal::Literal;
 use crate::ast::stmt::{AssignmentStmt, LoopStmt, Stmt};
 use crate::ast::type_name::{TypeName, TypeParam};
+use crate::constants::UNSAFE_POINTER;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedFun, TypedFunBody, TypedInitializer,
     TypedStoredProperty, TypedStruct, TypedVar,
@@ -31,7 +32,6 @@ use std::collections::HashMap;
 use std::fmt;
 use std::option::Option::Some;
 use std::process::exit;
-use crate::constants::UNSAFE_POINTER;
 
 pub mod typed_decl;
 pub mod typed_expr;
