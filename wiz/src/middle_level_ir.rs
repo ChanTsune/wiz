@@ -19,6 +19,7 @@ use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLS
 use crate::middle_level_ir::ml_type::{MLFunctionType, MLType, MLValueType};
 use std::collections::HashMap;
 use std::process::exit;
+use crate::constants::UNSAFE_POINTER;
 
 pub mod ml_decl;
 pub mod ml_expr;
@@ -54,9 +55,21 @@ impl HLIR2MLIR {
     }
 
     pub fn value_type(&self, t: TypedValueType) -> MLValueType {
-        let mut pkg = t.package.names;
-        pkg.push(t.name);
-        MLValueType::Name(pkg.join("::"))
+        if t.package.names.len() == 0 && t.name == UNSAFE_POINTER {
+            match  self.type_(t.type_args.unwrap()[0].clone()) {
+                MLType::Value(v) => {
+                    MLValueType::Pointer(Box::new(v))
+                }
+                MLType::Function(f) => {
+                    eprintln!("Function Pointer is unsupported {:?}", f);
+                    exit(-1)
+                }
+            }
+        } else {
+            let mut pkg = t.package.names;
+            pkg.push(t.name);
+            MLValueType::Name(pkg.join("::"))
+        }
     }
 
     pub fn function_type(&self, t: TypedFunctionType) -> MLFunctionType {

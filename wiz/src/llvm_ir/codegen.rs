@@ -661,7 +661,7 @@ impl<'ctx> CodeGen<'ctx> {
 
     pub fn assignment_stmt(&mut self, assignment: MLAssignmentStmt) -> AnyValueEnum<'ctx> {
         let value = self.expr(assignment.value);
-        println!("{:?}", &assignment.target);
+        println!("assignment target {:?}", &assignment.target);
         match value {
             AnyValueEnum::IntValue(i) => {
                 let target = self.expr(assignment.target);
@@ -680,7 +680,13 @@ impl<'ctx> CodeGen<'ctx> {
             // AnyValueEnum::PhiValue(_) => {}
             // AnyValueEnum::ArrayValue(_) => {}
             // AnyValueEnum::FunctionValue(_) => {}
-            // AnyValueEnum::PointerValue(_) => {}
+            AnyValueEnum::PointerValue(s) => {
+                let target = self.expr(assignment.target);
+                if let AnyValueEnum::PointerValue(p) = target {
+                    return AnyValueEnum::from(self.builder.build_store(p, s));
+                }
+                exit(-3)
+            }
             AnyValueEnum::StructValue(s) => {
                 let target = self.expr(assignment.target);
                 if let AnyValueEnum::PointerValue(p) = target {
