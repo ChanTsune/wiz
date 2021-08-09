@@ -3,6 +3,11 @@ struct A {
     val b: Int64,
 }
 
+struct UInt8Vector {
+    var ptr: UnsafePointer<UInt8>,
+    var length: UInt64,
+    var capacity: UInt64,
+}
 
 fun helloWorld(): Unit {
     puts("Hello world!")
