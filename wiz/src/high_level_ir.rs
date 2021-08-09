@@ -31,6 +31,7 @@ use std::collections::HashMap;
 use std::fmt;
 use std::option::Option::Some;
 use std::process::exit;
+use crate::constants::UNSAFE_POINTER;
 
 pub mod typed_decl;
 pub mod typed_expr;
@@ -200,9 +201,9 @@ impl Ast2HLIR {
             );
         }
         names.insert(
-            String::from("Pointer"),
+            String::from(UNSAFE_POINTER),
             Ast2HLIRName::Type(Ast2HLIRType {
-                name: String::from("Pointer"),
+                name: String::from(UNSAFE_POINTER),
                 type_params: Some(vec![Ast2HLIRTypeParam {
                     name: "T".to_string(),
                     type_constraints: vec![],
