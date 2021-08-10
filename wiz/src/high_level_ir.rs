@@ -420,6 +420,13 @@ impl Ast2HLIR {
         }
     }
 
+    pub fn fun_body(&mut self, body: FunBody) -> TypedFunBody {
+        match body {
+            FunBody::Block { block } => TypedFunBody::Block(self.block(block)),
+            FunBody::Expr { expr } => TypedFunBody::Expr(self.expr(expr)),
+        }
+    }
+
     pub fn fun_syntax(&mut self, f: FunSyntax) -> TypedFun {
         println!("{:?}", &f);
         let args: Vec<TypedArgDef> = f.arg_defs.into_iter().map(|a| self.arg_def(a)).collect();
@@ -429,10 +436,7 @@ impl Ast2HLIR {
         }
         let body = match f.body {
             None => None,
-            Some(b) => Some(match b {
-                FunBody::Block { block } => TypedFunBody::Block(self.block(block)),
-                FunBody::Expr { expr } => TypedFunBody::Expr(self.expr(expr)),
-            }),
+            Some(b) => Some(self.fun_body(b)),
         };
 
         let return_type = self.context.resolve_type(f.return_type);
