@@ -7,7 +7,9 @@ use crate::ast::fun::arg_def::ArgDef;
 use crate::ast::fun::body_def::FunBody;
 use crate::ast::type_name::{TypeName, TypeParam};
 use crate::parser::nom::expression::expr;
-use crate::parser::nom::keywords::{fun_keyword, struct_keyword, val_keyword, var_keyword, where_keyword, init_keyword};
+use crate::parser::nom::keywords::{
+    fun_keyword, init_keyword, struct_keyword, val_keyword, var_keyword, where_keyword,
+};
 use crate::parser::nom::lexical_structure::{identifier, whitespace0, whitespace1};
 use crate::parser::nom::stmts;
 use crate::parser::nom::type_::{type_, type_parameters};
@@ -75,10 +77,7 @@ pub fn struct_properties(s: &str) -> IResult<&str, Vec<StructPropertySyntax>> {
 // <struct_property> ::= <stored_property>
 //                     | <initializer>
 pub fn struct_property(s: &str) -> IResult<&str, StructPropertySyntax> {
-    alt((
-        stored_property,
-        initializer,
-        ))(s)
+    alt((stored_property, initializer))(s)
 }
 
 // <stored_property> ::= <mutable_stored_property> | <immutable_stored_property>
@@ -130,15 +129,16 @@ pub fn stored_property_body(s: &str) -> IResult<&str, (String, char, TypeName)> 
 
 // <initializer> =:: "init" <function_value_parameters> <function_body>
 pub fn initializer(s: &str) -> IResult<&str, StructPropertySyntax> {
-    map(tuple((
-        init_keyword,
-        whitespace0,
-        function_value_parameters,
-        whitespace0,
-        function_body,
-        )), |(_, _, args, _, body)|{
-        StructPropertySyntax::Init
-    })(s)
+    map(
+        tuple((
+            init_keyword,
+            whitespace0,
+            function_value_parameters,
+            whitespace0,
+            function_body,
+        )),
+        |(_, _, args, _, body)| StructPropertySyntax::Init,
+    )(s)
 }
 
 //endregion
