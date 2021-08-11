@@ -58,9 +58,8 @@ pub struct TypedStruct {
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct TypedInitializer {
-    pub(crate) type_: TypedType,
     pub(crate) args: Vec<TypedArgDef>,
-    pub(crate) block: TypedBlock,
+    pub(crate) body: TypedFunBody,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]

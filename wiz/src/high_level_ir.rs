@@ -1,7 +1,5 @@
 use crate::ast::block::Block;
-use crate::ast::decl::{
-    Decl, FunSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, VarSyntax,
-};
+use crate::ast::decl::{Decl, FunSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, VarSyntax, InitializerSyntax};
 use crate::ast::expr::{CallExprSyntax, Expr, NameExprSyntax, ReturnSyntax};
 use crate::ast::file::{FileSyntax, WizFile};
 use crate::ast::fun::arg_def::ArgDef;
@@ -501,16 +499,25 @@ impl Ast2HLIR {
         let mut stored_properties: Vec<TypedStoredProperty> = vec![];
         let mut computed_properties: Vec<TypedComputedProperty> = vec![];
         let mut initializers: Vec<TypedInitializer> = vec![];
+        self.context.push();
+        self.context.put_name(String::from("self"), &TypedType::Value(TypedValueType {
+            package: Package { names: vec![] },
+            name: s.name.to_string(),
+            type_args: None
+        }));
         for p in s.properties {
             match p {
                 StructPropertySyntax::StoredProperty(v) => {
                     stored_properties.push(self.stored_property_syntax(v));
                 }
                 StructPropertySyntax::ComputedProperty => {}
-                StructPropertySyntax::Init => {}
+                StructPropertySyntax::Init(init) => {
+                    initializers.push(self.initializer_syntax(init))
+                }
                 StructPropertySyntax::Method => {}
             };
         }
+        self.context.pop();
         TypedStruct {
             name: s.name,
             type_params: s
@@ -541,24 +548,18 @@ impl Ast2HLIR {
                 type_args: None,
             };
             s.init.push(TypedInitializer {
-                type_: TypedType::Value(struct_type.clone()),
                 args,
-                block: TypedBlock {
+                body: TypedFunBody::Block(TypedBlock {
                     body: s
                         .stored_properties
                         .iter()
                         .map(|p| {
-                            let struct_type = TypedValueType {
-                                package: Package { names: vec![] },
-                                name: s.name.clone(),
-                                type_args: None,
-                            };
                             TypedStmt::Assignment(TypedAssignmentStmt::Assignment(
                                 TypedAssignment {
                                     target: TypedExpr::Member(TypedInstanceMember {
                                         target: Box::new(TypedExpr::Name(TypedName {
                                             name: "self".to_string(),
-                                            type_: Some(TypedType::Value(struct_type)),
+                                            type_: Some(TypedType::Value(struct_type.clone())),
                                         })),
                                         name: p.name.clone(),
                                         is_safe: false,
@@ -572,7 +573,7 @@ impl Ast2HLIR {
                             ))
                         })
                         .collect(),
-                },
+                }),
             })
         }
         s
@@ -582,6 +583,13 @@ impl Ast2HLIR {
         TypedStoredProperty {
             name: p.name,
             type_: self.context.resolve_type(Some(p.type_)).unwrap(),
+        }
+    }
+
+    pub fn initializer_syntax(&mut self, init: InitializerSyntax) -> TypedInitializer {
+        TypedInitializer {
+            args: init.args.into_iter().map(|a|{self.arg_def(a)}).collect(),
+            body: self.fun_body(init.body)
         }
     }
 
@@ -650,6 +658,7 @@ impl Ast2HLIR {
                 is_safe,
             } => {
                 let target = self.expr(*target);
+                println!("target Expr -> {:?}", target);
                 if let TypedExpr::Type(target) = target {
                     let type_ = self.resolve_member_type(&target, name.clone());
                     TypedExpr::StaticMember(TypedStaticMember {

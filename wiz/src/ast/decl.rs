@@ -55,7 +55,7 @@ pub struct StructSyntax {
 pub enum StructPropertySyntax {
     StoredProperty(StoredPropertySyntax),
     ComputedProperty,
-    Init,
+    Init(InitializerSyntax),
     Method,
 }
 

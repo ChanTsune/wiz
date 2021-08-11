@@ -1,6 +1,7 @@
 use crate::ast::block::Block;
 use crate::ast::decl::{
     Decl, FunSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, VarSyntax,
+    InitializerSyntax
 };
 use crate::ast::expr::Expr;
 use crate::ast::fun::arg_def::ArgDef;
@@ -137,7 +138,10 @@ pub fn initializer(s: &str) -> IResult<&str, StructPropertySyntax> {
             whitespace0,
             function_body,
         )),
-        |(_, _, args, _, body)| StructPropertySyntax::Init,
+        |(_, _, args, _, body)| StructPropertySyntax::Init(InitializerSyntax {
+            args,
+            body
+        }),
     )(s)
 }
 

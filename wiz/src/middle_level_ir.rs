@@ -197,14 +197,14 @@ impl HLIR2MLIR {
                 })
                 .collect(),
         };
-
-        self.add_struct(MLValueType::Name(struct_.name.clone()), struct_.clone());
+        let value_type = MLValueType::Name(struct_.name.clone());
+        self.add_struct(value_type.clone(), struct_.clone());
 
         let mut init: Vec<MLFun> = init
             .into_iter()
             .map(|i| {
-                let type_ = self.type_(i.type_);
-                let mut body = self.block(i.block).body;
+                let type_ = MLType::Value(value_type.clone());
+                let mut body = self.fun_body(i.body).body;
                 body.insert(
                     0,
                     MLStmt::Decl(MLDecl::Var(MLVar {
