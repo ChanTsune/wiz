@@ -69,5 +69,5 @@ pub struct StoredPropertySyntax {
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct InitializerSyntax {
     pub(crate) args: Vec<ArgDef>,
-    pub(crate) body: FunBody
+    pub(crate) body: FunBody,
 }
