@@ -1,5 +1,8 @@
 use crate::ast::block::Block;
-use crate::ast::decl::{Decl, FunSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, VarSyntax, InitializerSyntax};
+use crate::ast::decl::{
+    Decl, FunSyntax, InitializerSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax,
+    VarSyntax,
+};
 use crate::ast::expr::{CallExprSyntax, Expr, NameExprSyntax, ReturnSyntax};
 use crate::ast::file::{FileSyntax, WizFile};
 use crate::ast::fun::arg_def::ArgDef;
@@ -500,11 +503,14 @@ impl Ast2HLIR {
         let mut computed_properties: Vec<TypedComputedProperty> = vec![];
         let mut initializers: Vec<TypedInitializer> = vec![];
         self.context.push();
-        self.context.put_name(String::from("self"), &TypedType::Value(TypedValueType {
-            package: Package { names: vec![] },
-            name: s.name.to_string(),
-            type_args: None
-        }));
+        self.context.put_name(
+            String::from("self"),
+            &TypedType::Value(TypedValueType {
+                package: Package { names: vec![] },
+                name: s.name.to_string(),
+                type_args: None,
+            }),
+        );
         for p in s.properties {
             match p {
                 StructPropertySyntax::StoredProperty(v) => {
@@ -588,8 +594,8 @@ impl Ast2HLIR {
 
     pub fn initializer_syntax(&mut self, init: InitializerSyntax) -> TypedInitializer {
         TypedInitializer {
-            args: init.args.into_iter().map(|a|{self.arg_def(a)}).collect(),
-            body: self.fun_body(init.body)
+            args: init.args.into_iter().map(|a| self.arg_def(a)).collect(),
+            body: self.fun_body(init.body),
         }
     }
 
