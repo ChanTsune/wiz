@@ -604,7 +604,12 @@ impl<'ctx> CodeGen<'ctx> {
         } else {
             let func = match return_type {
                 // AnyTypeEnum::ArrayType(_) => {}
-                // AnyTypeEnum::FloatType(_) => {}
+                AnyTypeEnum::FloatType(float_type) => {
+                    let fn_type = float_type.fn_type(&args, false);
+                    let f = self.module.add_function(&*name, fn_type, None);
+                    self.ml_context.current_function = Some(f);
+                    f
+                }
                 // AnyTypeEnum::FunctionType(_) => {}
                 AnyTypeEnum::IntType(int_type) => {
                     let fn_type = int_type.fn_type(&args, false);
@@ -612,7 +617,12 @@ impl<'ctx> CodeGen<'ctx> {
                     self.ml_context.current_function = Some(f);
                     f
                 }
-                // AnyTypeEnum::PointerType(_) => {}
+                AnyTypeEnum::PointerType(ptr_type) => {
+                    let fn_type = ptr_type.fn_type(&args, false);
+                    let f = self.module.add_function(&*name, fn_type, None);
+                    self.ml_context.current_function = Some(f);
+                    f
+                }
                 AnyTypeEnum::StructType(struct_type) => {
                     let fn_type = struct_type.fn_type(&args, false);
                     let f = self.module.add_function(&*name, fn_type, None);
