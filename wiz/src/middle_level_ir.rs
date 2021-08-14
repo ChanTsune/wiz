@@ -20,6 +20,7 @@ use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLS
 use crate::middle_level_ir::ml_type::{MLFunctionType, MLType, MLValueType};
 use std::collections::HashMap;
 use std::process::exit;
+use crate::utils::stacked_hash_map::StackedHashMap;
 
 pub mod ml_decl;
 pub mod ml_expr;
@@ -27,24 +28,38 @@ pub mod ml_file;
 pub mod ml_stmt;
 pub mod ml_type;
 
-pub struct HLIR2MLIR {
+struct HLIR2MLIRContext {
+    generic_structs: StackedHashMap<String, TypedStruct>,
     structs: HashMap<MLValueType, MLStruct>,
+}
+
+pub struct HLIR2MLIR {
+    context: HLIR2MLIRContext,
+}
+
+impl HLIR2MLIRContext {
+    fn new() -> Self {
+        Self{
+            generic_structs: StackedHashMap::from(HashMap::new()),
+            structs: HashMap::new(),
+        }
+    }
 }
 
 impl HLIR2MLIR {
     pub fn new() -> Self {
         HLIR2MLIR {
-            structs: HashMap::new(),
+            context: HLIR2MLIRContext::new(),
         }
     }
 
     fn get_struct(&self, typ: &MLType) -> &MLStruct {
         let typ = typ.clone();
-        self.structs.get(&typ.into_value_type()).unwrap()
+        self.context.structs.get(&typ.into_value_type()).unwrap()
     }
 
     fn add_struct(&mut self, typ: MLValueType, struct_: MLStruct) {
-        self.structs.insert(typ, struct_);
+        self.context.structs.insert(typ, struct_);
     }
 
     pub fn type_(&self, t: TypedType) -> MLType {
@@ -88,6 +103,20 @@ impl HLIR2MLIR {
                 }
             },
         }
+    }
+
+    pub fn get_parameterized_struct(&self, name: String, params:Vec<String>) -> Option<(MLStruct, Vec<MLFun>)> {
+        let struct_ = self.context.generic_structs.get(&name)?;
+        let struct_name = struct_.name.clone() + "<" + &params.join(",") + ">";
+        Some((
+            MLStruct { name: struct_name, fields: struct_.stored_properties.iter().map(|p|{
+                MLField {
+                    name: p.name.clone(),
+                    type_: self.type_(p.type_.clone())
+                }
+            }).collect() },
+            vec![]
+        ))
     }
 
     pub fn file(&mut self, f: TypedFile) -> MLFile {
