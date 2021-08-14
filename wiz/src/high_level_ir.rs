@@ -499,10 +499,20 @@ impl Ast2HLIR {
     }
 
     pub fn struct_syntax(&mut self, s: StructSyntax) -> TypedStruct {
-        let mut stored_properties: Vec<TypedStoredProperty> = vec![];
-        let mut computed_properties: Vec<TypedComputedProperty> = vec![];
-        let mut initializers: Vec<TypedInitializer> = vec![];
         self.context.push();
+        if let Some(type_params) = &s.type_params {
+            for type_param in type_params.iter() {
+                self.context.put_type(&TypedStruct {
+                    name: type_param.name.clone(),
+                    type_params: None,
+                    init: vec![],
+                    stored_properties: vec![],
+                    computed_properties: vec![],
+                    member_functions: vec![],
+                    static_function: vec![]
+                });
+            }
+        };
         self.context.put_name(
             String::from("self"),
             &TypedType::Value(TypedValueType {
@@ -511,6 +521,9 @@ impl Ast2HLIR {
                 type_args: None,
             }),
         );
+        let mut stored_properties: Vec<TypedStoredProperty> = vec![];
+        let mut computed_properties: Vec<TypedComputedProperty> = vec![];
+        let mut initializers: Vec<TypedInitializer> = vec![];
         for p in s.properties {
             match p {
                 StructPropertySyntax::StoredProperty(v) => {
