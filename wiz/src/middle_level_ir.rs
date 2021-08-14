@@ -18,9 +18,9 @@ use crate::middle_level_ir::ml_expr::{
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
 use crate::middle_level_ir::ml_type::{MLFunctionType, MLType, MLValueType};
+use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::HashMap;
 use std::process::exit;
-use crate::utils::stacked_hash_map::StackedHashMap;
 
 pub mod ml_decl;
 pub mod ml_expr;
@@ -39,7 +39,7 @@ pub struct HLIR2MLIR {
 
 impl HLIR2MLIRContext {
     fn new() -> Self {
-        Self{
+        Self {
             generic_structs: StackedHashMap::from(HashMap::new()),
             structs: HashMap::new(),
         }
@@ -105,17 +105,26 @@ impl HLIR2MLIR {
         }
     }
 
-    pub fn get_parameterized_struct(&self, name: String, params:Vec<String>) -> Option<(MLStruct, Vec<MLFun>)> {
+    pub fn get_parameterized_struct(
+        &self,
+        name: String,
+        params: Vec<String>,
+    ) -> Option<(MLStruct, Vec<MLFun>)> {
         let struct_ = self.context.generic_structs.get(&name)?;
         let struct_name = struct_.name.clone() + "<" + &params.join(",") + ">";
         Some((
-            MLStruct { name: struct_name, fields: struct_.stored_properties.iter().map(|p|{
-                MLField {
-                    name: p.name.clone(),
-                    type_: self.type_(p.type_.clone())
-                }
-            }).collect() },
-            vec![]
+            MLStruct {
+                name: struct_name,
+                fields: struct_
+                    .stored_properties
+                    .iter()
+                    .map(|p| MLField {
+                        name: p.name.clone(),
+                        type_: self.type_(p.type_.clone()),
+                    })
+                    .collect(),
+            },
+            vec![],
         ))
     }
 
