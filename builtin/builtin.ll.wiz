@@ -1,3 +1,5 @@
 
 fun puts(_ item: String): Unit
 fun putchar(_ item: UInt32): Unit
+fun malloc(_ size: UInt64): UnsafePointer<UInt8>
+fun free(_ ptr: UnsafePointer<UInt8>): Unit
