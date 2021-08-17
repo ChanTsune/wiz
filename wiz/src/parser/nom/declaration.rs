@@ -11,7 +11,9 @@ use crate::parser::nom::expression::expr;
 use crate::parser::nom::keywords::{
     fun_keyword, init_keyword, struct_keyword, val_keyword, var_keyword, where_keyword,
 };
-use crate::parser::nom::lexical_structure::{identifier, whitespace0, whitespace1, eol, whitespace_without_eol0};
+use crate::parser::nom::lexical_structure::{
+    eol, identifier, whitespace0, whitespace1, whitespace_without_eol0,
+};
 use crate::parser::nom::stmts;
 use crate::parser::nom::type_::{type_, type_parameters};
 use nom::branch::alt;
