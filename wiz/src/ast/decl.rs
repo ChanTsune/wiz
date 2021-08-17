@@ -56,7 +56,7 @@ pub enum StructPropertySyntax {
     StoredProperty(StoredPropertySyntax),
     ComputedProperty,
     Init(InitializerSyntax),
-    Method,
+    Method(MethodSyntax),
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -70,4 +70,13 @@ pub struct StoredPropertySyntax {
 pub struct InitializerSyntax {
     pub(crate) args: Vec<ArgDef>,
     pub(crate) body: FunBody,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct MethodSyntax {
+    pub(crate) name: String,
+    pub(crate) args: Vec<ArgDef>,
+    pub(crate) type_params: Option<Vec<TypeParam>>,
+    pub(crate) body: Option<FunBody>,
+    pub(crate) return_type: Option<TypeName>,
 }

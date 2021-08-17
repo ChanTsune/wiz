@@ -1,8 +1,5 @@
 use crate::ast::block::Block;
-use crate::ast::decl::{
-    Decl, FunSyntax, InitializerSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax,
-    VarSyntax,
-};
+use crate::ast::decl::{Decl, FunSyntax, InitializerSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, VarSyntax, MethodSyntax};
 use crate::ast::expr::Expr;
 use crate::ast::fun::arg_def::ArgDef;
 use crate::ast::fun::body_def::FunBody;
@@ -78,7 +75,7 @@ pub fn struct_properties(s: &str) -> IResult<&str, Vec<StructPropertySyntax>> {
 // <struct_property> ::= <stored_property>
 //                     | <initializer>
 pub fn struct_property(s: &str) -> IResult<&str, StructPropertySyntax> {
-    alt((stored_property, initializer))(s)
+    alt((stored_property, initializer, member_function))(s)
 }
 
 // <stored_property> ::= <mutable_stored_property> | <immutable_stored_property>
@@ -141,6 +138,36 @@ pub fn initializer(s: &str) -> IResult<&str, StructPropertySyntax> {
         |(_, _, args, _, body)| StructPropertySyntax::Init(InitializerSyntax { args, body }),
     )(s)
 }
+
+// <member_function> =:: <modifiers>? "fun" <identifire> <type_parameters>? <function_value_parameters> (":" <type>)? <type_constraints>? <function_body>?
+pub fn member_function(s: &str) -> IResult<&str, StructPropertySyntax> {
+    map(
+        tuple((
+            fun_keyword,
+            whitespace1,
+            identifier,
+            opt(type_parameters),
+            function_value_parameters,
+            whitespace0,
+            opt(tuple((char(':'), whitespace0, type_))),
+            whitespace0,
+            opt(type_constraints),
+            whitespace0,
+            opt(function_body),
+        )),
+        |(f, _, name, type_params, args, _, return_type, _, t_constraints, _, body)| {
+            StructPropertySyntax::Method(MethodSyntax {
+                // modifiers: vec![],
+                name: name,
+                type_params,
+                args,
+                return_type: return_type.map(|(_, _, t)| t),
+                body: body,
+            })
+        },
+    )(s)
+}
+
 
 //endregion
 
@@ -326,19 +353,14 @@ pub fn var_body(s: &str) -> IResult<&str, (String, Option<TypeName>, Expr)> {
 #[cfg(test)]
 mod test {
     use crate::ast::block::Block;
-    use crate::ast::decl::{
-        Decl, FunSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, VarSyntax,
-    };
+    use crate::ast::decl::{Decl, FunSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, VarSyntax, MethodSyntax};
     use crate::ast::expr::{Expr, NameExprSyntax};
     use crate::ast::fun::arg_def::ArgDef;
     use crate::ast::fun::body_def::FunBody;
     use crate::ast::literal::Literal;
     use crate::ast::stmt::Stmt;
     use crate::ast::type_name::TypeName;
-    use crate::parser::nom::declaration::{
-        block, function_body, function_decl, stored_property, struct_properties, struct_syntax,
-        var_decl,
-    };
+    use crate::parser::nom::declaration::{block, function_body, function_decl, stored_property, struct_properties, struct_syntax, var_decl, member_function};
 
     #[test]
     fn test_struct_properties() {
@@ -426,6 +448,26 @@ mod test {
                         }
                     })]
                 }
+            ))
+        )
+    }
+
+    #[test]
+    fn test_member_function() {
+        assert_eq!(
+            member_function("fun function() {}"),
+            Ok((
+                "",
+                StructPropertySyntax::Method(MethodSyntax {
+                    // modifiers: vec![],
+                    name: "function".to_string(),
+                    type_params: None,
+                    args: vec![],
+                    return_type: None,
+                    body: Some(FunBody::Block {
+                        block: Block { body: vec![] }
+                    }),
+                })
             ))
         )
     }

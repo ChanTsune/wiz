@@ -524,6 +524,7 @@ impl Ast2HLIR {
         let mut stored_properties: Vec<TypedStoredProperty> = vec![];
         let mut computed_properties: Vec<TypedComputedProperty> = vec![];
         let mut initializers: Vec<TypedInitializer> = vec![];
+        // let mut member_function: Vec<> = vec![];
         for p in s.properties {
             match p {
                 StructPropertySyntax::StoredProperty(v) => {
@@ -533,7 +534,9 @@ impl Ast2HLIR {
                 StructPropertySyntax::Init(init) => {
                     initializers.push(self.initializer_syntax(init))
                 }
-                StructPropertySyntax::Method => {}
+                StructPropertySyntax::Method(method) => {
+
+                }
             };
         }
         self.context.pop();
