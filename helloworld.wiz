@@ -1,12 +1,12 @@
 struct A {
-    var a: Int64,
-    val b: Int64,
+    var a: Int64
+    val b: Int64
 }
 
 struct UInt8Vector {
-    var ptr: UnsafePointer<UInt8>,
-    var length: UInt64,
-    var capacity: UInt64,
+    var ptr: UnsafePointer<UInt8>
+    var length: UInt64
+    var capacity: UInt64
 
     init() {
         self.capacity = 0

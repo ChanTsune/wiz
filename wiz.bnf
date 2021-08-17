@@ -11,7 +11,7 @@
 
 <struct_decl> ::= "struct" <identifier> <type_parameters>? "{" <struct_properties> "}"
 
-<struct_properties> ::= (<struct_property> ("," <struct_property>)* ","?)?
+<struct_properties> ::= (<struct_property> (<eol> <struct_property>)* <eol>?)?
 
 <struct_property> ::= <stored_property>
                 #       | <computed_property>
