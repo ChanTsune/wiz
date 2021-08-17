@@ -6,7 +6,6 @@ use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
 use nom::IResult;
-use std::option::Option;
 
 pub fn type_(s: &str) -> IResult<&str, TypeName> {
     alt((
