@@ -2,4 +2,6 @@
 fun puts(_ item: String): Unit
 fun putchar(_ item: UInt32): Unit
 fun malloc(_ size: UInt64): UnsafePointer<UInt8>
+fun calloc(_ count: UInt64, _ sizeOfContent: UInt64): UnsafePointer<UInt8>
+fun realloc(_ pointer: UnsafePointer<UInt8>, _ size: UInt64): UnsafePointer<UInt8>
 fun free(_ ptr: UnsafePointer<UInt8>): Unit
