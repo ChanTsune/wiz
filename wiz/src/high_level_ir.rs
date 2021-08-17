@@ -534,9 +534,7 @@ impl Ast2HLIR {
                 StructPropertySyntax::Init(init) => {
                     initializers.push(self.initializer_syntax(init))
                 }
-                StructPropertySyntax::Method(method) => {
-
-                }
+                StructPropertySyntax::Method(method) => {}
             };
         }
         self.context.pop();

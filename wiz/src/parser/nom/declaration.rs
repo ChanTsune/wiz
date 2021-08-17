@@ -1,5 +1,8 @@
 use crate::ast::block::Block;
-use crate::ast::decl::{Decl, FunSyntax, InitializerSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, VarSyntax, MethodSyntax};
+use crate::ast::decl::{
+    Decl, FunSyntax, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax,
+    StructSyntax, VarSyntax,
+};
 use crate::ast::expr::Expr;
 use crate::ast::fun::arg_def::ArgDef;
 use crate::ast::fun::body_def::FunBody;
@@ -167,7 +170,6 @@ pub fn member_function(s: &str) -> IResult<&str, StructPropertySyntax> {
         },
     )(s)
 }
-
 
 //endregion
 
@@ -353,14 +355,20 @@ pub fn var_body(s: &str) -> IResult<&str, (String, Option<TypeName>, Expr)> {
 #[cfg(test)]
 mod test {
     use crate::ast::block::Block;
-    use crate::ast::decl::{Decl, FunSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, VarSyntax, MethodSyntax};
+    use crate::ast::decl::{
+        Decl, FunSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax,
+        VarSyntax,
+    };
     use crate::ast::expr::{Expr, NameExprSyntax};
     use crate::ast::fun::arg_def::ArgDef;
     use crate::ast::fun::body_def::FunBody;
     use crate::ast::literal::Literal;
     use crate::ast::stmt::Stmt;
     use crate::ast::type_name::TypeName;
-    use crate::parser::nom::declaration::{block, function_body, function_decl, stored_property, struct_properties, struct_syntax, var_decl, member_function};
+    use crate::parser::nom::declaration::{
+        block, function_body, function_decl, member_function, stored_property, struct_properties,
+        struct_syntax, var_decl,
+    };
 
     #[test]
     fn test_struct_properties() {
