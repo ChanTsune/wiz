@@ -1,8 +1,5 @@
 use crate::ast::block::Block;
-use crate::ast::decl::{
-    Decl, FunSyntax, InitializerSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax,
-    VarSyntax,
-};
+use crate::ast::decl::{Decl, FunSyntax, InitializerSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, VarSyntax, MethodSyntax};
 use crate::ast::expr::{CallExprSyntax, Expr, NameExprSyntax, ReturnSyntax};
 use crate::ast::file::{FileSyntax, WizFile};
 use crate::ast::fun::arg_def::ArgDef;
@@ -11,10 +8,7 @@ use crate::ast::literal::Literal;
 use crate::ast::stmt::{AssignmentStmt, LoopStmt, Stmt};
 use crate::ast::type_name::{TypeName, TypeParam};
 use crate::constants::UNSAFE_POINTER;
-use crate::high_level_ir::typed_decl::{
-    TypedArgDef, TypedComputedProperty, TypedDecl, TypedFun, TypedFunBody, TypedInitializer,
-    TypedStoredProperty, TypedStruct, TypedVar,
-};
+use crate::high_level_ir::typed_decl::{TypedArgDef, TypedComputedProperty, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedStoredProperty, TypedStruct, TypedVar, TypedMemberFunction};
 use crate::high_level_ir::typed_expr::{
     TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName,
     TypedReturn, TypedStaticMember,
@@ -524,7 +518,7 @@ impl Ast2HLIR {
         let mut stored_properties: Vec<TypedStoredProperty> = vec![];
         let mut computed_properties: Vec<TypedComputedProperty> = vec![];
         let mut initializers: Vec<TypedInitializer> = vec![];
-        // let mut member_function: Vec<> = vec![];
+        let mut member_functions: Vec<TypedMemberFunction> = vec![];
         for p in s.properties {
             match p {
                 StructPropertySyntax::StoredProperty(v) => {
@@ -534,7 +528,9 @@ impl Ast2HLIR {
                 StructPropertySyntax::Init(init) => {
                     initializers.push(self.initializer_syntax(init))
                 }
-                StructPropertySyntax::Method(method) => {}
+                StructPropertySyntax::Method(method) => {
+                    member_functions.push(self.member_function(method))
+                }
             };
         }
         self.context.pop();
@@ -546,7 +542,7 @@ impl Ast2HLIR {
             init: initializers,
             stored_properties,
             computed_properties,
-            member_functions: vec![],
+            member_functions,
             static_function: vec![],
         }
     }
@@ -610,6 +606,54 @@ impl Ast2HLIR {
         TypedInitializer {
             args: init.args.into_iter().map(|a| self.arg_def(a)).collect(),
             body: self.fun_body(init.body),
+        }
+    }
+
+    pub fn member_function(&mut self, member_function: MethodSyntax) -> TypedMemberFunction {
+        let MethodSyntax {
+            name, args, type_params, body, return_type
+        } = member_function;
+
+        let rt = return_type.map(|r|{self.type_(r)});
+        let fb = body.map(|b|{
+            self.fun_body(b)
+        });
+        let (return_type, body) = match (rt, fb) {
+            (Some(rt), Some(TypedFunBody::Expr(fb))) => {
+                if rt != fb.type_().unwrap() {
+                    eprintln!("Type miss match error");
+                    exit(-1)
+                } else {
+                    (rt, TypedFunBody::Expr(fb))
+                }
+            }
+            (Some(rt), Some(TypedFunBody::Block(fb))) => {
+                (rt, TypedFunBody::Block(fb))
+            }
+            (Some(rt), None) => {
+                exit(-1)
+            }
+            (None, Some(TypedFunBody::Expr(fb))) => {
+                (fb.type_().unwrap(), TypedFunBody::Expr(fb))
+
+            }
+            (None, Some(TypedFunBody::Block(fb))) => {
+                (TypedType::unit(), TypedFunBody::Block(fb))
+            }
+            (None, None) => {
+                eprintln!("Error fun body and return type must be specify.");
+                exit(-1)
+            }
+        };
+        TypedMemberFunction {
+            name: name,
+            args: args.into_iter().map(|a|self.arg_def(a)).collect(),
+            type_params: type_params.map(|tps|{
+                tps.into_iter().map(|p|self.type_param(p)).collect()
+            }),
+            body: body,
+            return_type: return_type.clone(),
+            type_: TypedType::Function(Box::new(TypedFunctionType { arguments: vec![], return_type: return_type }))
         }
     }
 

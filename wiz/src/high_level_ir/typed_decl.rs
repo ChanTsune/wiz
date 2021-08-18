@@ -78,6 +78,7 @@ pub struct TypedComputedProperty {
 pub struct TypedMemberFunction {
     pub(crate) name: String,
     pub(crate) args: Vec<TypedArgDef>,
+    pub(crate) type_params: Option<Vec<TypedTypeParam>>,
     pub(crate) body: TypedFunBody,
     pub(crate) return_type: TypedType,
     pub(crate) type_: TypedType,
