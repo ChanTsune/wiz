@@ -1,5 +1,8 @@
 use crate::ast::block::Block;
-use crate::ast::decl::{Decl, FunSyntax, InitializerSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, VarSyntax, MethodSyntax};
+use crate::ast::decl::{
+    Decl, FunSyntax, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax,
+    StructSyntax, VarSyntax,
+};
 use crate::ast::expr::{CallExprSyntax, Expr, NameExprSyntax, ReturnSyntax};
 use crate::ast::file::{FileSyntax, WizFile};
 use crate::ast::fun::arg_def::ArgDef;
@@ -8,7 +11,10 @@ use crate::ast::literal::Literal;
 use crate::ast::stmt::{AssignmentStmt, LoopStmt, Stmt};
 use crate::ast::type_name::{TypeName, TypeParam};
 use crate::constants::UNSAFE_POINTER;
-use crate::high_level_ir::typed_decl::{TypedArgDef, TypedComputedProperty, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedStoredProperty, TypedStruct, TypedVar, TypedMemberFunction};
+use crate::high_level_ir::typed_decl::{
+    TypedArgDef, TypedComputedProperty, TypedDecl, TypedFun, TypedFunBody, TypedInitializer,
+    TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedVar,
+};
 use crate::high_level_ir::typed_expr::{
     TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName,
     TypedReturn, TypedStaticMember,
@@ -611,13 +617,15 @@ impl Ast2HLIR {
 
     pub fn member_function(&mut self, member_function: MethodSyntax) -> TypedMemberFunction {
         let MethodSyntax {
-            name, args, type_params, body, return_type
+            name,
+            args,
+            type_params,
+            body,
+            return_type,
         } = member_function;
 
-        let rt = return_type.map(|r|{self.type_(r)});
-        let fb = body.map(|b|{
-            self.fun_body(b)
-        });
+        let rt = return_type.map(|r| self.type_(r));
+        let fb = body.map(|b| self.fun_body(b));
         let (return_type, body) = match (rt, fb) {
             (Some(rt), Some(TypedFunBody::Expr(fb))) => {
                 if rt != fb.type_().unwrap() {
@@ -627,19 +635,10 @@ impl Ast2HLIR {
                     (rt, TypedFunBody::Expr(fb))
                 }
             }
-            (Some(rt), Some(TypedFunBody::Block(fb))) => {
-                (rt, TypedFunBody::Block(fb))
-            }
-            (Some(rt), None) => {
-                exit(-1)
-            }
-            (None, Some(TypedFunBody::Expr(fb))) => {
-                (fb.type_().unwrap(), TypedFunBody::Expr(fb))
-
-            }
-            (None, Some(TypedFunBody::Block(fb))) => {
-                (TypedType::unit(), TypedFunBody::Block(fb))
-            }
+            (Some(rt), Some(TypedFunBody::Block(fb))) => (rt, TypedFunBody::Block(fb)),
+            (Some(rt), None) => exit(-1),
+            (None, Some(TypedFunBody::Expr(fb))) => (fb.type_().unwrap(), TypedFunBody::Expr(fb)),
+            (None, Some(TypedFunBody::Block(fb))) => (TypedType::unit(), TypedFunBody::Block(fb)),
             (None, None) => {
                 eprintln!("Error fun body and return type must be specify.");
                 exit(-1)
@@ -647,13 +646,15 @@ impl Ast2HLIR {
         };
         TypedMemberFunction {
             name: name,
-            args: args.into_iter().map(|a|self.arg_def(a)).collect(),
-            type_params: type_params.map(|tps|{
-                tps.into_iter().map(|p|self.type_param(p)).collect()
-            }),
+            args: args.into_iter().map(|a| self.arg_def(a)).collect(),
+            type_params: type_params
+                .map(|tps| tps.into_iter().map(|p| self.type_param(p)).collect()),
             body: body,
             return_type: return_type.clone(),
-            type_: TypedType::Function(Box::new(TypedFunctionType { arguments: vec![], return_type: return_type }))
+            type_: TypedType::Function(Box::new(TypedFunctionType {
+                arguments: vec![],
+                return_type: return_type,
+            })),
         }
     }
 
