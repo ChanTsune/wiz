@@ -1,7 +1,5 @@
 use crate::constants::UNSAFE_POINTER;
-use crate::high_level_ir::typed_decl::{
-    TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedStruct, TypedVar,
-};
+use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedStruct, TypedVar, TypedMemberFunction};
 use crate::high_level_ir::typed_expr::{
     TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn,
     TypedStaticMember,
@@ -270,8 +268,27 @@ impl HLIR2MLIR {
                 }
             })
             .collect();
+        let mut members: Vec<MLFun> = member_functions.into_iter().map(|mf|{
+            let TypedMemberFunction {
+                name: fname, args, type_params, body, return_type, type_
+            } = mf;
+            let mut a = args.into_iter().map(|a|self.arg_def(a)).collect();
+            let mut args = vec![MLArgDef {
+                name: String::from("self"),
+                type_: MLType::Value(value_type.clone())
+            }];
+            args.append(&mut a);
+            MLFun {
+                modifiers: vec![],
+                name: name.clone() + &fname,
+                arg_defs: args,
+                return_type: self.type_(return_type),
+                body: Some(self.fun_body(body))
+            }
+        }).collect();
         let mut funs: Vec<MLFun> = vec![];
         funs.append(&mut init);
+        funs.append(&mut members);
         (struct_, funs)
     }
 
