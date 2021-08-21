@@ -154,6 +154,19 @@ impl HLIR2MLIR {
                 target: self.expr(a.target),
                 value: self.expr(a.value),
             },
+            TypedAssignmentStmt::AssignmentAndOperation(a) => {
+                let target = self.expr(a.target.clone());
+                let value = TypedExpr::BinOp {
+                    left: Box::new(a.target.clone()),
+                    kind: a.operator,
+                    right: Box::new(a.value),
+                    type_: a.target.type_()
+                };
+                MLAssignmentStmt {
+                    target: target,
+                    value: self.expr(value)
+                }
+            }
         }
     }
 
