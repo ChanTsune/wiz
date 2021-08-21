@@ -20,7 +20,10 @@ use crate::high_level_ir::typed_expr::{
     TypedReturn, TypedStaticMember,
 };
 use crate::high_level_ir::typed_file::TypedFile;
-use crate::high_level_ir::typed_stmt::{TypedAssignment, TypedAssignmentStmt, TypedBlock, TypedForStmt, TypedLoopStmt, TypedStmt, TypedWhileLoopStmt, TypedAssignmentAndOperation};
+use crate::high_level_ir::typed_stmt::{
+    TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedForStmt,
+    TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
+};
 use crate::high_level_ir::typed_type::{
     Package, TypedFunctionType, TypedType, TypedTypeParam, TypedValueType,
 };
@@ -328,11 +331,13 @@ impl Ast2HLIR {
                 target: self.expr(a.target),
                 value: self.expr(a.value),
             }),
-            AssignmentStmt::AssignmentAndOperator(a) => TypedAssignmentStmt::AssignmentAndOperation(TypedAssignmentAndOperation {
-                target: self.expr(a.target),
-                operator: a.operator,
-                value: self.expr(a.value),
-            }),
+            AssignmentStmt::AssignmentAndOperator(a) => {
+                TypedAssignmentStmt::AssignmentAndOperation(TypedAssignmentAndOperation {
+                    target: self.expr(a.target),
+                    operator: a.operator,
+                    value: self.expr(a.value),
+                })
+            }
         }
     }
 

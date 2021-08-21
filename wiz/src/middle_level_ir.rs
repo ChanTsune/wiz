@@ -160,11 +160,11 @@ impl HLIR2MLIR {
                     left: Box::new(a.target.clone()),
                     kind: a.operator,
                     right: Box::new(a.value),
-                    type_: a.target.type_()
+                    type_: a.target.type_(),
                 };
                 MLAssignmentStmt {
                     target: target,
-                    value: self.expr(value)
+                    value: self.expr(value),
                 }
             }
         }
