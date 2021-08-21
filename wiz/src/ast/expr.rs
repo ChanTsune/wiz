@@ -97,7 +97,7 @@ pub enum PostfixSuffix {
         tailing_lambda: Option<LambdaSyntax>,
     },
     IndexingSuffix {
-        indexes: Vec<Expr>
+        indexes: Vec<Expr>,
     },
     NavigationSuffix {
         is_safe: bool,

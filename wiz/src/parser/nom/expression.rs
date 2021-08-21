@@ -127,11 +127,9 @@ pub fn postfix_expr(s: &str) -> IResult<&str, Expr> {
                     args,
                     tailing_lambda,
                 }),
-                PostfixSuffix::IndexingSuffix {
-                    indexes
-                } => Expr::Subscript {
+                PostfixSuffix::IndexingSuffix { indexes } => Expr::Subscript {
                     target: Box::new(e),
-                    idx_or_keys: indexes
+                    idx_or_keys: indexes,
                 },
                 PostfixSuffix::NavigationSuffix { is_safe, name } => Expr::Member {
                     target: Box::new(e),
