@@ -39,6 +39,7 @@ pub mod typed_expr;
 pub mod typed_file;
 pub mod typed_stmt;
 pub mod typed_type;
+pub mod type_resolver;
 
 #[derive(fmt::Debug, Clone)]
 struct Ast2HLIRTypeParam {
