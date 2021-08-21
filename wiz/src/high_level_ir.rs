@@ -753,12 +753,16 @@ impl Ast2HLIR {
                 else_body,
             } => {
                 let block = self.block_with_env(body);
-                let type_ = block.type_();
+                let type_ = if else_body == None {
+                    TypedType::noting()
+                } else {
+                    block.type_().unwrap_or(TypedType::noting())
+                };
                 TypedExpr::If(TypedIf {
                     condition: Box::new(self.expr(*condition)),
                     body: block,
                     else_body: else_body.map(|b| self.block_with_env(b)),
-                    type_: type_,
+                    type_: Some(type_),
                 })
             }
             Expr::When { .. } => TypedExpr::When,
