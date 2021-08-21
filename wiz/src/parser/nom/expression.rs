@@ -161,9 +161,7 @@ pub fn postfix_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
             PostfixSuffix::TypeArgumentSuffix { types: type_names }
         }),
         call_suffix,
-        // map(index_suffix, || {
-        //
-        // }),
+        indexing_suffix,
         navigation_suffix,
     ))(s)
 }
@@ -184,9 +182,27 @@ pub fn postfix_operator(s: &str) -> IResult<&str, String> {
     map(char('!'), |c| c.to_string())(s)
 }
 
-// pub fn indexing_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
-//
-// }
+// <indexing_suffix> ::= "[" <expr> ("," <expr>)* ","? "]"
+pub fn indexing_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
+    map(tuple((
+        char('['),
+        whitespace0,
+        expr,
+        whitespace0,
+        many0(tuple((char(','), whitespace0, expr))),
+        whitespace0,
+        opt(char(',')),
+        whitespace0,
+        char(']'),
+        )), |(_, _, ex,_, exs, _, _, _, _)|{
+        let mut es = vec![ex];
+        let mut e = exs.into_iter().map(|(_, _, e)|e).collect();
+        es.append(&mut e);
+            PostfixSuffix::IndexingSuffix {
+                indexes: es
+            }
+    })(s)
+}
 
 pub fn prefix_expr(s: &str) -> IResult<&str, Expr> {
     map(
@@ -672,10 +688,7 @@ mod tests {
     };
     use crate::ast::literal::Literal;
     use crate::ast::literal::Literal::Integer;
-    use crate::parser::nom::expression::{
-        disjunction_expr, expr, integer_literal, postfix_suffix, return_expr, string_literal,
-        value_arguments,
-    };
+    use crate::parser::nom::expression::{disjunction_expr, expr, integer_literal, postfix_suffix, return_expr, string_literal, value_arguments, indexing_suffix};
 
     #[test]
     fn test_numeric() {
@@ -900,5 +913,20 @@ mod tests {
                 }
             ))
         )
+    }
+
+    #[test]
+    fn test_index_suffix() {
+        assert_eq!(indexing_suffix("[a]"), Ok(("", PostfixSuffix::IndexingSuffix { indexes: vec![
+            Expr::Name(NameExprSyntax { name: "a".to_string() }),
+        ] })));
+        assert_eq!(indexing_suffix("[a, b]"), Ok(("", PostfixSuffix::IndexingSuffix { indexes: vec![
+            Expr::Name(NameExprSyntax { name: "a".to_string() }),
+            Expr::Name(NameExprSyntax { name: "b".to_string() }),
+        ] })));
+        assert_eq!(indexing_suffix("[a, b, ]"), Ok(("", PostfixSuffix::IndexingSuffix { indexes: vec![
+            Expr::Name(NameExprSyntax { name: "a".to_string() }),
+            Expr::Name(NameExprSyntax { name: "b".to_string() }),
+        ] })));
     }
 }

@@ -189,7 +189,8 @@
                    | <indexing_suffix>
                    | <navigation_suffix>
 
-<indexing_suffix> ::=
+<indexing_suffix> ::= "[" <expr> ("," <expr>)* ","? "]"
+
 <navigation_suffix> ::= <member_access_operator> <identifier>
 
 <member_access_operator> ::= "." || "?."
