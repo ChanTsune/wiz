@@ -289,7 +289,7 @@ impl HLIR2MLIR {
                 args.append(&mut a);
                 MLFun {
                     modifiers: vec![],
-                    name: name.clone() + &fname,
+                    name: name.clone() + "::" + &fname,
                     arg_defs: args,
                     return_type: self.type_(return_type),
                     body: Some(self.fun_body(body)),
