@@ -1,7 +1,5 @@
 use crate::ast::block::Block;
-use crate::ast::expr::{
-    CallArg, CallExprSyntax, Expr, LambdaSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax,
-};
+use crate::ast::expr::{CallArg, CallExprSyntax, Expr, LambdaSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax, SubscriptSyntax};
 use crate::ast::literal::Literal;
 use crate::ast::stmt::Stmt;
 use crate::ast::type_name::TypeName;
@@ -127,10 +125,10 @@ pub fn postfix_expr(s: &str) -> IResult<&str, Expr> {
                     args,
                     tailing_lambda,
                 }),
-                PostfixSuffix::IndexingSuffix { indexes } => Expr::Subscript {
+                PostfixSuffix::IndexingSuffix { indexes } => Expr::Subscript(SubscriptSyntax {
                     target: Box::new(e),
                     idx_or_keys: indexes,
-                },
+                }),
                 PostfixSuffix::NavigationSuffix { is_safe, name } => Expr::Member {
                     target: Box::new(e),
                     name,

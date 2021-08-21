@@ -19,10 +19,7 @@ pub enum Expr {
         prefix: bool,
         kind: String,
     },
-    Subscript {
-        target: Box<Expr>,
-        idx_or_keys: Vec<Expr>,
-    },
+    Subscript(SubscriptSyntax),
     Member {
         target: Box<Expr>,
         name: String,
@@ -82,6 +79,12 @@ pub struct CallArg {
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct LambdaSyntax {
     pub(crate) stmts: Vec<Stmt>,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct SubscriptSyntax {
+    pub(crate) target: Box<Expr>,
+    pub(crate) idx_or_keys: Vec<Expr>,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
