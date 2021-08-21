@@ -21,7 +21,7 @@ pub enum Expr {
     },
     Subscript {
         target: Box<Expr>,
-        idx_or_key: Box<Expr>,
+        idx_or_keys: Vec<Expr>,
     },
     Member {
         target: Box<Expr>,
@@ -49,9 +49,7 @@ pub enum Expr {
     When {
         // TODO
     },
-    Lambda {
-        lambda: Lambda,
-    },
+    Lambda(LambdaSyntax),
     Return(ReturnSyntax),
     TypeCast {
         target: Box<Expr>,
@@ -71,7 +69,7 @@ pub struct NameExprSyntax {
 pub struct CallExprSyntax {
     pub(crate) target: Box<Expr>,
     pub(crate) args: Vec<CallArg>,
-    pub(crate) tailing_lambda: Option<Lambda>,
+    pub(crate) tailing_lambda: Option<LambdaSyntax>,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -82,7 +80,7 @@ pub struct CallArg {
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
-pub struct Lambda {
+pub struct LambdaSyntax {
     pub(crate) stmts: Vec<Stmt>,
 }
 
@@ -96,9 +94,11 @@ pub enum PostfixSuffix {
     },
     CallSuffix {
         args: Vec<CallArg>,
-        tailing_lambda: Option<Lambda>,
+        tailing_lambda: Option<LambdaSyntax>,
     },
-    IndexingSuffix,
+    IndexingSuffix {
+        indexes: Vec<Expr>
+    },
     NavigationSuffix {
         is_safe: bool,
         name: String,

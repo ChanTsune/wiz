@@ -1,6 +1,6 @@
 use crate::ast::block::Block;
 use crate::ast::expr::{
-    CallArg, CallExprSyntax, Expr, Lambda, NameExprSyntax, PostfixSuffix, ReturnSyntax,
+    CallArg, CallExprSyntax, Expr, LambdaSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax,
 };
 use crate::ast::literal::Literal;
 use crate::ast::stmt::Stmt;
@@ -127,7 +127,12 @@ pub fn postfix_expr(s: &str) -> IResult<&str, Expr> {
                     args,
                     tailing_lambda,
                 }),
-                PostfixSuffix::IndexingSuffix => e,
+                PostfixSuffix::IndexingSuffix {
+                    indexes
+                } => Expr::Subscript {
+                    target: Box::new(e),
+                    idx_or_keys: indexes
+                },
                 PostfixSuffix::NavigationSuffix { is_safe, name } => Expr::Member {
                     target: Box::new(e),
                     name,
@@ -373,7 +378,7 @@ pub fn value_argument(s: &str) -> IResult<&str, CallArg> {
 /*
 <annotated_lambda> ::= <label>? <lambda_literal>
 */
-pub fn annotated_lambda(s: &str) -> IResult<&str, Lambda> {
+pub fn annotated_lambda(s: &str) -> IResult<&str, LambdaSyntax> {
     map(
         tuple((
             opt(label), // TODO: label
@@ -383,9 +388,9 @@ pub fn annotated_lambda(s: &str) -> IResult<&str, Lambda> {
     )(s)
 }
 
-pub fn lambda_literal(s: &str) -> IResult<&str, Lambda> {
+pub fn lambda_literal(s: &str) -> IResult<&str, LambdaSyntax> {
     map(tuple((char('{'), stmts, char('}'))), |(_, stms, _)| {
-        Lambda { stmts: stms }
+        LambdaSyntax { stmts: stms }
     })(s)
 }
 
