@@ -14,6 +14,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::path::Path;
 use std::process::exit;
+use crate::high_level_ir::type_resolver::{TypeResolver, ResolverResult};
 
 mod ast;
 mod constants;
@@ -67,6 +68,19 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     let hlfiles: Vec<TypedFile> = ast_files.into_iter().map(|f| ast2hlir.file(f)).collect();
+
+    let type_resolver = TypeResolver::new();
+
+    for hlir in builtin_hlir.iter() {
+        type_resolver.preload(hlir.clone());
+    }
+
+    for hlir in hlfiles.iter() {
+        type_resolver.preload(hlir.clone());
+    }
+
+    let hlfiles = hlfiles.into_iter().map(|f| type_resolver.file(f)).collect::<ResolverResult<Vec<TypedFile>>>()?;
+
 
     let mut hlir2mlir = HLIR2MLIR::new();
 
