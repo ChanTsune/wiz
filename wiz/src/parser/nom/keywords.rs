@@ -37,11 +37,15 @@ pub fn return_keyword(s: &str) -> IResult<&str, &str> {
     tag("return")(s)
 }
 
+pub fn init_keyword(s: &str) -> IResult<&str, &str> {
+    tag("init")(s)
+}
+
 #[cfg(test)]
 mod tests {
     use crate::parser::nom::keywords::{
-        else_keyword, fun_keyword, if_keyword, return_keyword, struct_keyword, val_keyword,
-        var_keyword, where_keyword, while_keyword,
+        else_keyword, fun_keyword, if_keyword, init_keyword, return_keyword, struct_keyword,
+        val_keyword, var_keyword, where_keyword, while_keyword,
     };
 
     #[test]
@@ -87,5 +91,10 @@ mod tests {
     #[test]
     fn test_return_keyword() {
         assert_eq!(return_keyword("return"), Ok(("", "return")))
+    }
+
+    #[test]
+    fn test_init_keyword() {
+        assert_eq!(init_keyword("init"), Ok(("", "init")))
     }
 }

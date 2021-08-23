@@ -3,5 +3,6 @@ use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct TypedFile {
+    pub(crate) name: String,
     pub(crate) body: Vec<TypedDecl>,
 }

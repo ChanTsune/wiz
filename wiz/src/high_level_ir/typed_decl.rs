@@ -1,6 +1,6 @@
 use crate::high_level_ir::typed_expr::TypedExpr;
 use crate::high_level_ir::typed_stmt::TypedBlock;
-use crate::high_level_ir::typed_type::{TypedFunctionType, TypedType};
+use crate::high_level_ir::typed_type::{TypedFunctionType, TypedType, TypedTypeParam};
 use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -26,6 +26,7 @@ pub struct TypedVar {
 pub struct TypedFun {
     pub(crate) modifiers: Vec<String>,
     pub(crate) name: String,
+    pub(crate) type_params: Option<Vec<TypedTypeParam>>,
     pub(crate) arg_defs: Vec<TypedArgDef>,
     pub(crate) body: Option<TypedFunBody>,
     pub(crate) return_type: TypedType,
@@ -47,6 +48,7 @@ pub enum TypedFunBody {
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct TypedStruct {
     pub(crate) name: String,
+    pub(crate) type_params: Option<Vec<TypedTypeParam>>,
     pub(crate) init: Vec<TypedInitializer>,
     pub(crate) stored_properties: Vec<TypedStoredProperty>,
     pub(crate) computed_properties: Vec<TypedComputedProperty>,
@@ -56,9 +58,8 @@ pub struct TypedStruct {
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct TypedInitializer {
-    pub(crate) type_: TypedType,
     pub(crate) args: Vec<TypedArgDef>,
-    pub(crate) block: TypedBlock,
+    pub(crate) body: TypedFunBody,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -77,6 +78,7 @@ pub struct TypedComputedProperty {
 pub struct TypedMemberFunction {
     pub(crate) name: String,
     pub(crate) args: Vec<TypedArgDef>,
+    pub(crate) type_params: Option<Vec<TypedTypeParam>>,
     pub(crate) body: TypedFunBody,
     pub(crate) return_type: TypedType,
     pub(crate) type_: TypedType,

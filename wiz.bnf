@@ -9,18 +9,24 @@
         #  | <protocol_decl>
         #  | <extension_decl>
 
-<struct_decl> ::= "struct" <identifier> "{" <struct_properties> "}"
+<struct_decl> ::= "struct" <identifier> <type_parameters>? "{" <struct_properties> "}"
 
-<struct_properties> ::= (<struct_property> ("," <struct_property>)* ","?)?
+<struct_properties> ::= (<struct_property> (<eol> <struct_property>)* <eol>?)?
 
 <struct_property> ::= <stored_property>
                 #       | <computed_property>
+                    | <initializer>
+                    | <member_function>
 
 <stored_property> ::= <mutable_stored_property> | <immutable_stored_property>
 
 <mutable_stored_property> ::= "var" <stored_property_body>
 <immutable_stored_property> ::= "val" <stored_property_body>
 <stored_property_body> ::= <identifier> ":" <type>
+
+<initializer> =:: "init" <function_value_parameters> <function_body>
+
+<member_function> =:: <modifiers>? "fun" <identifire> <type_parameters>? <function_value_parameters> (":" <type>)? <type_constraints>? <function_body>?
 
 <var_decl> ::= <value>
         | <variable>
@@ -183,7 +189,8 @@
                    | <indexing_suffix>
                    | <navigation_suffix>
 
-<indexing_suffix> ::=
+<indexing_suffix> ::= "[" <expr> ("," <expr>)* ","? "]"
+
 <navigation_suffix> ::= <member_access_operator> <identifier>
 
 <member_access_operator> ::= "." || "?."

@@ -1,6 +1,7 @@
 use crate::ast::block::Block;
 use crate::ast::decl::{
-    Decl, FunSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, VarSyntax,
+    Decl, FunSyntax, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax,
+    StructSyntax, VarSyntax,
 };
 use crate::ast::expr::Expr;
 use crate::ast::fun::arg_def::ArgDef;
@@ -8,11 +9,13 @@ use crate::ast::fun::body_def::FunBody;
 use crate::ast::type_name::{TypeName, TypeParam};
 use crate::parser::nom::expression::expr;
 use crate::parser::nom::keywords::{
-    fun_keyword, struct_keyword, val_keyword, var_keyword, where_keyword,
+    fun_keyword, init_keyword, struct_keyword, val_keyword, var_keyword, where_keyword,
 };
-use crate::parser::nom::lexical_structure::{identifier, whitespace0, whitespace1};
+use crate::parser::nom::lexical_structure::{
+    eol, identifier, whitespace0, whitespace1, whitespace_without_eol0,
+};
 use crate::parser::nom::stmts;
-use crate::parser::nom::type_::type_;
+use crate::parser::nom::type_::{type_, type_parameters};
 use nom::branch::alt;
 use nom::character::complete::char;
 use nom::combinator::{map, opt};
@@ -30,7 +33,7 @@ pub fn struct_decl(s: &str) -> IResult<&str, Decl> {
     map(struct_syntax, |struct_syntax| Decl::Struct(struct_syntax))(s)
 }
 
-// <struct_decl> ::= "struct" <identifier> "{" <struct_properties> "}"
+// <struct_decl> ::= "struct" <identifier> <type_parameters>? "{" <struct_properties> "}"
 pub fn struct_syntax(s: &str) -> IResult<&str, StructSyntax> {
     map(
         tuple((
@@ -38,24 +41,30 @@ pub fn struct_syntax(s: &str) -> IResult<&str, StructSyntax> {
             whitespace1,
             identifier,
             whitespace0,
+            opt(type_parameters),
+            whitespace0,
             char('{'),
             whitespace0,
             struct_properties,
             whitespace0,
             char('}'),
         )),
-        |(_, _, name, _, _, _, properties, _, _)| StructSyntax { name, properties },
+        |(_, _, name, _, params, _, _, _, properties, _, _)| StructSyntax {
+            name,
+            type_params: params,
+            properties,
+        },
     )(s)
 }
 
-// <struct_properties> ::= (<struct_property> ("," <struct_property>)* ","?)?
+// <struct_properties> ::= (<struct_property> ("\n" <struct_property>)* "\n"?)?
 pub fn struct_properties(s: &str) -> IResult<&str, Vec<StructPropertySyntax>> {
     map(
         opt(tuple((
             struct_property,
-            whitespace0,
-            many0(tuple((char(','), whitespace0, struct_property))),
-            opt(tuple((char(','), whitespace0))),
+            whitespace_without_eol0,
+            many0(tuple((eol, whitespace0, struct_property))),
+            opt(tuple((eol, whitespace0))),
         ))),
         |o| match o {
             None => vec![],
@@ -69,8 +78,9 @@ pub fn struct_properties(s: &str) -> IResult<&str, Vec<StructPropertySyntax>> {
 }
 
 // <struct_property> ::= <stored_property>
+//                     | <initializer>
 pub fn struct_property(s: &str) -> IResult<&str, StructPropertySyntax> {
-    stored_property(s)
+    alt((stored_property, initializer, member_function))(s)
 }
 
 // <stored_property> ::= <mutable_stored_property> | <immutable_stored_property>
@@ -120,6 +130,49 @@ pub fn stored_property_body(s: &str) -> IResult<&str, (String, char, TypeName)> 
     )(s)
 }
 
+// <initializer> =:: "init" <function_value_parameters> <function_body>
+pub fn initializer(s: &str) -> IResult<&str, StructPropertySyntax> {
+    map(
+        tuple((
+            init_keyword,
+            whitespace0,
+            function_value_parameters,
+            whitespace0,
+            function_body,
+        )),
+        |(_, _, args, _, body)| StructPropertySyntax::Init(InitializerSyntax { args, body }),
+    )(s)
+}
+
+// <member_function> =:: <modifiers>? "fun" <identifire> <type_parameters>? <function_value_parameters> (":" <type>)? <type_constraints>? <function_body>?
+pub fn member_function(s: &str) -> IResult<&str, StructPropertySyntax> {
+    map(
+        tuple((
+            fun_keyword,
+            whitespace1,
+            identifier,
+            opt(type_parameters),
+            function_value_parameters,
+            whitespace0,
+            opt(tuple((char(':'), whitespace0, type_))),
+            whitespace0,
+            opt(type_constraints),
+            whitespace0,
+            opt(function_body),
+        )),
+        |(f, _, name, type_params, args, _, return_type, _, t_constraints, _, body)| {
+            StructPropertySyntax::Method(MethodSyntax {
+                // modifiers: vec![],
+                name: name,
+                type_params,
+                args,
+                return_type: return_type.map(|(_, _, t)| t),
+                body: body,
+            })
+        },
+    )(s)
+}
+
 //endregion
 
 //region func
@@ -130,7 +183,7 @@ pub fn function_decl(s: &str) -> IResult<&str, Decl> {
             fun_keyword,
             whitespace1,
             identifier,
-            // opt(type_parameters),
+            opt(type_parameters),
             function_value_parameters,
             whitespace0,
             opt(tuple((char(':'), whitespace0, type_))),
@@ -139,10 +192,11 @@ pub fn function_decl(s: &str) -> IResult<&str, Decl> {
             whitespace0,
             opt(function_body),
         )),
-        |(f, _, name, /* type_params, */ args, _, return_type, _, t_constraints, _, body)| {
+        |(f, _, name, type_params, args, _, return_type, _, t_constraints, _, body)| {
             Decl::Fun(FunSyntax {
                 modifiers: vec![],
                 name: name,
+                type_params,
                 arg_defs: args,
                 return_type: return_type.map(|(_, _, t)| t),
                 body: body,
@@ -226,7 +280,7 @@ pub fn type_constraint(s: &str) -> IResult<&str, TypeParam> {
     map(tuple((identifier, char(':'), type_)), |(id, _, typ)| {
         TypeParam {
             name: id,
-            type_constraints: vec![typ],
+            type_constraints: Some(typ),
         }
     })(s)
 }
@@ -304,7 +358,8 @@ pub fn var_body(s: &str) -> IResult<&str, (String, Option<TypeName>, Expr)> {
 mod test {
     use crate::ast::block::Block;
     use crate::ast::decl::{
-        Decl, FunSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, VarSyntax,
+        Decl, FunSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax,
+        VarSyntax,
     };
     use crate::ast::expr::{Expr, NameExprSyntax};
     use crate::ast::fun::arg_def::ArgDef;
@@ -313,16 +368,16 @@ mod test {
     use crate::ast::stmt::Stmt;
     use crate::ast::type_name::TypeName;
     use crate::parser::nom::declaration::{
-        block, function_body, function_decl, stored_property, struct_properties, struct_syntax,
-        var_decl,
+        block, function_body, function_decl, member_function, stored_property, struct_properties,
+        struct_syntax, var_decl,
     };
 
     #[test]
     fn test_struct_properties() {
         assert_eq!(
             struct_properties(
-                r"val a: Int64,
-                 val b: Int64,
+                r"val a: Int64
+                 val b: Int64
             "
             ),
             Ok((
@@ -333,7 +388,7 @@ mod test {
                         name: "a".to_string(),
                         type_: TypeName {
                             name: "Int64".to_string(),
-                            type_params: vec![]
+                            type_args: None
                         }
                     }),
                     StructPropertySyntax::StoredProperty(StoredPropertySyntax {
@@ -341,7 +396,7 @@ mod test {
                         name: "b".to_string(),
                         type_: TypeName {
                             name: "Int64".to_string(),
-                            type_params: vec![]
+                            type_args: None
                         }
                     }),
                 ]
@@ -360,7 +415,7 @@ mod test {
                     name: "a".to_string(),
                     type_: TypeName {
                         name: "Int64".to_string(),
-                        type_params: vec![]
+                        type_args: None
                     }
                 })
             ))
@@ -374,7 +429,7 @@ mod test {
                     name: "a".to_string(),
                     type_: TypeName {
                         name: "Int64".to_string(),
-                        type_params: vec![]
+                        type_args: None
                     }
                 })
             ))
@@ -386,22 +441,43 @@ mod test {
         assert_eq!(
             struct_syntax(
                 r##"struct A {
-        var a: String,
+        var a: String
         }"##
             ),
             Ok((
                 "",
                 StructSyntax {
                     name: "A".to_string(),
+                    type_params: None,
                     properties: vec![StructPropertySyntax::StoredProperty(StoredPropertySyntax {
                         is_mut: true,
                         name: "a".to_string(),
                         type_: TypeName {
                             name: "String".to_string(),
-                            type_params: vec![]
+                            type_args: None
                         }
                     })]
                 }
+            ))
+        )
+    }
+
+    #[test]
+    fn test_member_function() {
+        assert_eq!(
+            member_function("fun function() {}"),
+            Ok((
+                "",
+                StructPropertySyntax::Method(MethodSyntax {
+                    // modifiers: vec![],
+                    name: "function".to_string(),
+                    type_params: None,
+                    args: vec![],
+                    return_type: None,
+                    body: Some(FunBody::Block {
+                        block: Block { body: vec![] }
+                    }),
+                })
             ))
         )
     }
@@ -419,7 +495,7 @@ mod test {
                 "",
                 Block {
                     body: vec![Stmt::Expr {
-                        expr: Expr::Literal(Literal::IntegerLiteral {
+                        expr: Expr::Literal(Literal::Integer {
                             value: "1".to_string()
                         })
                     }]
@@ -437,11 +513,11 @@ mod test {
                 Block {
                     body: vec![Stmt::Expr {
                         expr: Expr::BinOp {
-                            left: Box::new(Expr::Literal(Literal::IntegerLiteral {
+                            left: Box::new(Expr::Literal(Literal::Integer {
                                 value: "1".to_string()
                             })),
                             kind: "+".to_string(),
-                            right: Box::new(Expr::Literal(Literal::IntegerLiteral {
+                            right: Box::new(Expr::Literal(Literal::Integer {
                                 value: "1".to_string()
                             })),
                         }
@@ -463,7 +539,7 @@ mod test {
                 "",
                 Block {
                     body: vec![Stmt::Expr {
-                        expr: Expr::Literal(Literal::IntegerLiteral {
+                        expr: Expr::Literal(Literal::Integer {
                             value: "1".to_string()
                         })
                     }]
@@ -509,6 +585,7 @@ mod test {
                 Decl::Fun(FunSyntax {
                     modifiers: vec![],
                     name: "function".to_string(),
+                    type_params: None,
                     arg_defs: vec![],
                     return_type: None,
                     body: Some(FunBody::Block {
@@ -528,17 +605,18 @@ mod test {
                 Decl::Fun(FunSyntax {
                     modifiers: vec![],
                     name: "puts".to_string(),
+                    type_params: None,
                     arg_defs: vec![ArgDef {
                         label: "_".to_string(),
                         name: "item".to_string(),
                         type_name: TypeName {
                             name: "String".to_string(),
-                            type_params: vec![]
+                            type_args: None
                         }
                     }],
                     return_type: Some(TypeName {
                         name: "Unit".to_string(),
-                        type_params: vec![]
+                        type_args: None
                     }),
                     body: None,
                 })
@@ -557,9 +635,9 @@ mod test {
                     name: "a".to_string(),
                     type_: Some(TypeName {
                         name: "Int".to_string(),
-                        type_params: vec![]
+                        type_args: None
                     }),
-                    value: Expr::Literal(Literal::IntegerLiteral {
+                    value: Expr::Literal(Literal::Integer {
                         value: "1".to_string()
                     })
                 })
@@ -577,7 +655,7 @@ mod test {
                     is_mut: false,
                     name: "a".to_string(),
                     type_: None,
-                    value: Expr::Literal(Literal::IntegerLiteral {
+                    value: Expr::Literal(Literal::Integer {
                         value: "1".to_string()
                     })
                 })

@@ -1,6 +1,7 @@
-use crate::parser::parser::{parse_from_file, parse_from_string};
+use crate::parser::parser::{parse_from_file_path, parse_from_file_path_str};
 
 use crate::ast::file::WizFile;
+use crate::high_level_ir::type_resolver::{ResolverResult, TypeResolver};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::Ast2HLIR;
 use crate::llvm_ir::codegen::{CodeGen, MLContext};
@@ -12,73 +13,76 @@ use inkwell::context::Context;
 use inkwell::OptimizationLevel;
 use std::collections::HashMap;
 use std::error::Error;
-use std::fs::read_to_string;
 use std::path::Path;
+use std::process::exit;
 
 mod ast;
+mod constants;
 mod high_level_ir;
 mod llvm_ir;
 mod middle_level_ir;
 mod parser;
 mod utils;
 
+fn get_builtin_syntax() -> Vec<WizFile> {
+    let builtin_dir = std::fs::read_dir(Path::new("../builtin")).unwrap();
+    builtin_dir
+        .flatten()
+        .map(|p| p.path())
+        .filter(|path| path.ends_with("builtin.ll.wiz"))
+        .map(|path| parse_from_file_path(path.as_path()))
+        .flatten()
+        .collect()
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     let app = App::new("wiz")
-        .arg(Arg::with_name("input").required(true))
-        .arg(
-            Arg::with_name("output")
-                .short("o")
-                .takes_value(true)
-                .default_value("out.ll"),
-        );
+        .arg(Arg::with_name("input").required(true).multiple(true))
+        .arg(Arg::with_name("output").short("o").takes_value(true));
 
     let matches = app.get_matches();
-    let input = matches.value_of("input").unwrap();
-    let output = matches.value_of("output").unwrap();
+    let inputs = matches.values_of_lossy("input").unwrap();
+    let output = matches.value_of("output");
 
-    let mut module_name = "main";
-    let context = Context::create();
-    let module = context.create_module(module_name);
-    let execution_engine = module.create_jit_execution_engine(OptimizationLevel::None)?;
-    let mut codegen = CodeGen {
-        context: &context,
-        module,
-        builder: context.create_builder(),
-        execution_engine,
-        ml_context: MLContext {
-            struct_environment: StackedHashMap::from(HashMap::new()),
-            local_environments: StackedHashMap::from(HashMap::new()),
-            current_function: None,
-        },
-    };
+    let builtin_syntax = get_builtin_syntax();
 
     let mut ast2hlir = Ast2HLIR::new();
 
-    let builtin_dir = std::fs::read_dir(Path::new("../builtin")).unwrap();
-    let mut builtin_syntax: Vec<WizFile> = vec![];
-    for path in builtin_dir {
-        let path = path.unwrap().path();
-        if path.ends_with("builtin.ll.wiz") {
-            println!("{:?}", &path);
-            let builtin = parse_from_string(read_to_string(path).unwrap());
-            builtin_syntax.push(builtin.clone());
-            println!("{:?}", &builtin);
-            ast2hlir.preload_types(builtin);
-        }
+    for builtin in builtin_syntax.iter() {
+        ast2hlir.preload_types(builtin.clone());
     }
-
-    let file = std::fs::File::open(Path::new(input));
-    let ast_file = parse_from_file(file.unwrap()).unwrap();
 
     let builtin_hlir: Vec<TypedFile> = builtin_syntax
         .into_iter()
-        .map(|w| ast2hlir.file(w.syntax))
+        .map(|w| ast2hlir.file(w))
         .collect();
 
-    ast2hlir.preload_types(ast_file.clone());
-    let hlfile = ast2hlir.file(ast_file.syntax);
+    let ast_files: Vec<WizFile> = inputs
+        .iter()
+        .map(|s| parse_from_file_path_str(s))
+        .flatten()
+        .collect();
 
-    println!("{:?}", &hlfile);
+    for ast_file in ast_files.iter() {
+        ast2hlir.preload_types(ast_file.clone());
+    }
+
+    let hlfiles: Vec<TypedFile> = ast_files.into_iter().map(|f| ast2hlir.file(f)).collect();
+
+    let type_resolver = TypeResolver::new();
+
+    for hlir in builtin_hlir.iter() {
+        type_resolver.preload(hlir.clone());
+    }
+
+    for hlir in hlfiles.iter() {
+        type_resolver.preload(hlir.clone());
+    }
+
+    let hlfiles = hlfiles
+        .into_iter()
+        .map(|f| type_resolver.file(f))
+        .collect::<ResolverResult<Vec<TypedFile>>>()?;
 
     let mut hlir2mlir = HLIR2MLIR::new();
 
@@ -87,15 +91,50 @@ fn main() -> Result<(), Box<dyn Error>> {
         .map(|w| hlir2mlir.file(w))
         .collect();
 
-    let ml = hlir2mlir.file(hlfile);
+    let mlfiles: Vec<MLFile> = hlfiles.into_iter().map(|f| hlir2mlir.file(f)).collect();
 
-    for m in builtin_mlir {
-        codegen.file(m);
+    for mlfile in mlfiles {
+        let module_name = &mlfile.name;
+        let context = Context::create();
+        let module = context.create_module(module_name);
+        let execution_engine = module.create_jit_execution_engine(OptimizationLevel::None)?;
+        let mut codegen = CodeGen {
+            context: &context,
+            module,
+            builder: context.create_builder(),
+            execution_engine,
+            ml_context: MLContext {
+                struct_environment: StackedHashMap::from(HashMap::new()),
+                local_environments: StackedHashMap::from(HashMap::new()),
+                current_function: None,
+            },
+        };
+
+        for m in builtin_mlir.iter() {
+            codegen.file(m.clone());
+        }
+
+        println!("{:?}", &mlfile);
+
+        let output = if let Some(output) = output {
+            if inputs.len() == 1 {
+                String::from(output)
+            } else {
+                eprintln!("multiple file detected, can not use -o option");
+                exit(-1)
+            }
+        } else {
+            let mut output_path = Path::new(&mlfile.name).to_path_buf();
+            output_path.set_extension("ll");
+            String::from(output_path.to_str().unwrap())
+        };
+
+        codegen.file(mlfile.clone());
+
+        println!("Output Path -> {:?}", output);
+
+        codegen.print_to_file(Path::new(&output))?;
     }
-    println!("{:?}", &ml);
-
-    codegen.file(ml);
-    let _ = codegen.print_to_file(Path::new(output));
 
     Ok(())
 }

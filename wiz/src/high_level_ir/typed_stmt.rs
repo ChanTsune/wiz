@@ -14,11 +14,19 @@ pub enum TypedStmt {
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum TypedAssignmentStmt {
     Assignment(TypedAssignment),
+    AssignmentAndOperation(TypedAssignmentAndOperation),
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct TypedAssignment {
     pub(crate) target: TypedExpr,
+    pub(crate) value: TypedExpr,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct TypedAssignmentAndOperation {
+    pub(crate) target: TypedExpr,
+    pub(crate) operator: String,
     pub(crate) value: TypedExpr,
 }
 

@@ -1,6 +1,7 @@
 use crate::ast::block::Block;
 use crate::ast::expr::{
-    CallArg, CallExprSyntax, Expr, Lambda, NameExprSyntax, PostfixSuffix, ReturnSyntax,
+    CallArg, CallExprSyntax, Expr, LambdaSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax,
+    SubscriptSyntax,
 };
 use crate::ast::literal::Literal;
 use crate::ast::stmt::Stmt;
@@ -21,7 +22,7 @@ use nom::sequence::tuple;
 use nom::IResult;
 
 pub fn integer_literal(s: &str) -> IResult<&str, Literal> {
-    map(digit1, |n: &str| Literal::IntegerLiteral {
+    map(digit1, |n: &str| Literal::Integer {
         value: n.to_string(),
     })(s)
 }
@@ -29,7 +30,7 @@ pub fn integer_literal(s: &str) -> IResult<&str, Literal> {
 pub fn string_literal(s: &str) -> IResult<&str, Literal> {
     map(
         tuple((char('"'), many0(none_of("\"")), char('"'))),
-        |(a, b, c)| Literal::StringLiteral {
+        |(a, b, c)| Literal::String {
             value: b.into_iter().collect(),
         },
     )(s)
@@ -127,7 +128,10 @@ pub fn postfix_expr(s: &str) -> IResult<&str, Expr> {
                     args,
                     tailing_lambda,
                 }),
-                PostfixSuffix::IndexingSuffix => e,
+                PostfixSuffix::IndexingSuffix { indexes } => Expr::Subscript(SubscriptSyntax {
+                    target: Box::new(e),
+                    idx_or_keys: indexes,
+                }),
                 PostfixSuffix::NavigationSuffix { is_safe, name } => Expr::Member {
                     target: Box::new(e),
                     name,
@@ -157,9 +161,7 @@ pub fn postfix_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
             PostfixSuffix::TypeArgumentSuffix { types: type_names }
         }),
         call_suffix,
-        // map(index_suffix, || {
-        //
-        // }),
+        indexing_suffix,
         navigation_suffix,
     ))(s)
 }
@@ -180,9 +182,28 @@ pub fn postfix_operator(s: &str) -> IResult<&str, String> {
     map(char('!'), |c| c.to_string())(s)
 }
 
-// pub fn indexing_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
-//
-// }
+// <indexing_suffix> ::= "[" <expr> ("," <expr>)* ","? "]"
+pub fn indexing_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
+    map(
+        tuple((
+            char('['),
+            whitespace0,
+            expr,
+            whitespace0,
+            many0(tuple((char(','), whitespace0, expr))),
+            whitespace0,
+            opt(char(',')),
+            whitespace0,
+            char(']'),
+        )),
+        |(_, _, ex, _, exs, _, _, _, _)| {
+            let mut es = vec![ex];
+            let mut e = exs.into_iter().map(|(_, _, e)| e).collect();
+            es.append(&mut e);
+            PostfixSuffix::IndexingSuffix { indexes: es }
+        },
+    )(s)
+}
 
 pub fn prefix_expr(s: &str) -> IResult<&str, Expr> {
     map(
@@ -373,7 +394,7 @@ pub fn value_argument(s: &str) -> IResult<&str, CallArg> {
 /*
 <annotated_lambda> ::= <label>? <lambda_literal>
 */
-pub fn annotated_lambda(s: &str) -> IResult<&str, Lambda> {
+pub fn annotated_lambda(s: &str) -> IResult<&str, LambdaSyntax> {
     map(
         tuple((
             opt(label), // TODO: label
@@ -383,9 +404,9 @@ pub fn annotated_lambda(s: &str) -> IResult<&str, Lambda> {
     )(s)
 }
 
-pub fn lambda_literal(s: &str) -> IResult<&str, Lambda> {
+pub fn lambda_literal(s: &str) -> IResult<&str, LambdaSyntax> {
     map(tuple((char('{'), stmts, char('}'))), |(_, stms, _)| {
-        Lambda { stmts: stms }
+        LambdaSyntax { stmts: stms }
     })(s)
 }
 
@@ -667,10 +688,10 @@ mod tests {
         CallArg, CallExprSyntax, Expr, NameExprSyntax, PostfixSuffix, ReturnSyntax,
     };
     use crate::ast::literal::Literal;
-    use crate::ast::literal::Literal::{IntegerLiteral, StringLiteral};
+    use crate::ast::literal::Literal::Integer;
     use crate::parser::nom::expression::{
-        disjunction_expr, expr, integer_literal, postfix_suffix, return_expr, string_literal,
-        value_arguments,
+        disjunction_expr, expr, indexing_suffix, integer_literal, postfix_suffix, return_expr,
+        string_literal, value_arguments,
     };
 
     #[test]
@@ -679,7 +700,7 @@ mod tests {
             integer_literal("1"),
             Ok((
                 "",
-                IntegerLiteral {
+                Integer {
                     value: "1".to_string()
                 }
             ))
@@ -688,7 +709,7 @@ mod tests {
             integer_literal("12"),
             Ok((
                 "",
-                IntegerLiteral {
+                Integer {
                     value: "12".to_string()
                 }
             ))
@@ -701,7 +722,7 @@ mod tests {
             string_literal("\"\""),
             Ok((
                 "",
-                StringLiteral {
+                Literal::String {
                     value: "".to_string()
                 }
             ))
@@ -716,16 +737,16 @@ mod tests {
                 "",
                 BinOp {
                     left: Box::from(BinOp {
-                        left: Box::from(Expr::Literal(Literal::IntegerLiteral {
+                        left: Box::from(Expr::Literal(Literal::Integer {
                             value: "1".parse().unwrap()
                         })),
                         kind: "||".parse().unwrap(),
-                        right: Box::from(Expr::Literal(Literal::IntegerLiteral {
+                        right: Box::from(Expr::Literal(Literal::Integer {
                             value: "2".parse().unwrap()
                         }))
                     }),
                     kind: "||".parse().unwrap(),
-                    right: Box::from(Expr::Literal(Literal::IntegerLiteral {
+                    right: Box::from(Expr::Literal(Literal::Integer {
                         value: "3".parse().unwrap()
                     }))
                 }
@@ -746,7 +767,7 @@ mod tests {
                 "",
                 vec![CallArg {
                     label: None,
-                    arg: Box::from(Expr::Literal(Literal::StringLiteral {
+                    arg: Box::from(Expr::Literal(Literal::String {
                         value: "Hello, World".parse().unwrap()
                     })),
                     is_vararg: false
@@ -798,7 +819,7 @@ mod tests {
                     })),
                     args: vec![CallArg {
                         label: None,
-                        arg: Box::from(Expr::Literal(Literal::StringLiteral {
+                        arg: Box::from(Expr::Literal(Literal::String {
                             value: "Hello, World".parse().unwrap()
                         })),
                         is_vararg: false
@@ -821,7 +842,7 @@ mod tests {
                     })),
                     args: vec![CallArg {
                         label: Some(String::from("string")),
-                        arg: Box::from(Expr::Literal(Literal::StringLiteral {
+                        arg: Box::from(Expr::Literal(Literal::String {
                             value: "Hello, World".parse().unwrap()
                         })),
                         is_vararg: false
@@ -896,5 +917,52 @@ mod tests {
                 }
             ))
         )
+    }
+
+    #[test]
+    fn test_index_suffix() {
+        assert_eq!(
+            indexing_suffix("[a]"),
+            Ok((
+                "",
+                PostfixSuffix::IndexingSuffix {
+                    indexes: vec![Expr::Name(NameExprSyntax {
+                        name: "a".to_string()
+                    }),]
+                }
+            ))
+        );
+        assert_eq!(
+            indexing_suffix("[a, b]"),
+            Ok((
+                "",
+                PostfixSuffix::IndexingSuffix {
+                    indexes: vec![
+                        Expr::Name(NameExprSyntax {
+                            name: "a".to_string()
+                        }),
+                        Expr::Name(NameExprSyntax {
+                            name: "b".to_string()
+                        }),
+                    ]
+                }
+            ))
+        );
+        assert_eq!(
+            indexing_suffix("[a, b, ]"),
+            Ok((
+                "",
+                PostfixSuffix::IndexingSuffix {
+                    indexes: vec![
+                        Expr::Name(NameExprSyntax {
+                            name: "a".to_string()
+                        }),
+                        Expr::Name(NameExprSyntax {
+                            name: "b".to_string()
+                        }),
+                    ]
+                }
+            ))
+        );
     }
 }
