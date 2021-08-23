@@ -1,6 +1,7 @@
 use crate::high_level_ir::typed_stmt::TypedBlock;
 use crate::high_level_ir::typed_type::TypedType;
 use std::fmt;
+use crate::high_level_ir::typed_decl::TypedStruct;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum TypedExpr {
@@ -18,7 +19,7 @@ pub enum TypedExpr {
         kind: String,
         type_: Option<TypedType>,
     },
-    Subscript,
+    Subscript(TypedSubscript),
     Member(TypedInstanceMember),
     StaticMember(TypedStaticMember),
     List,
@@ -38,6 +39,13 @@ pub enum TypedExpr {
 pub struct TypedName {
     pub(crate) name: String,
     pub(crate) type_: Option<TypedType>,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct TypedSubscript {
+    pub(crate) target: Box<TypedExpr>,
+    pub(crate) indexes: Vec<TypedExpr>,
+    pub(crate) type_: Option<TypedType>
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -109,7 +117,7 @@ impl TypedExpr {
                 kind,
                 type_,
             } => type_.clone(),
-            TypedExpr::Subscript => None,
+            TypedExpr::Subscript(s) => s.type_.clone(),
             TypedExpr::Member(m) => m.type_.clone(),
             TypedExpr::StaticMember(sm) => sm.type_.clone(),
             TypedExpr::List => None,

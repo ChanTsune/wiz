@@ -3,7 +3,7 @@ use crate::ast::decl::{
     Decl, FunSyntax, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax,
     StructSyntax, VarSyntax,
 };
-use crate::ast::expr::{CallExprSyntax, Expr, NameExprSyntax, ReturnSyntax};
+use crate::ast::expr::{CallExprSyntax, Expr, NameExprSyntax, ReturnSyntax, SubscriptSyntax};
 use crate::ast::file::{FileSyntax, WizFile};
 use crate::ast::fun::arg_def::ArgDef;
 use crate::ast::fun::body_def::FunBody;
@@ -15,10 +15,7 @@ use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedFun, TypedFunBody, TypedInitializer,
     TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{
-    TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName,
-    TypedReturn, TypedStaticMember,
-};
+use crate::high_level_ir::typed_expr::{TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn, TypedStaticMember, TypedSubscript};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedForStmt,
@@ -171,6 +168,33 @@ impl Ast2HLIRContext {
             }
         }
     }
+
+    fn resolve_subscript(&self, target_type: Option<TypedType>, indexes: Vec<Option<TypedType>>) -> Option<TypedType> {
+        match target_type {
+            Some(TypedType::Value(v)) => {
+                if v.name == UNSAFE_POINTER {
+                    if indexes.len() == 1 {
+                        let t = v.type_args.unwrap()[0].clone();
+                        Some(t)
+                    } else {
+                        eprintln!("{:?} is not support subscript by {:?}", v, indexes);
+                        exit(-1)
+                    }
+                } else {
+                    eprintln!("{:?} is not support subscript by {:?}", v, indexes);
+                    exit(-1)
+                }
+            }
+            Some(a) => {
+                eprintln!("{:?} is not support subscript by {:?}", a, indexes);
+                exit(-1)
+            }
+            None => {
+                eprintln!("Can not resolve subscript. {:?}[{:?}]", target_type, indexes);
+                exit(-1)
+            }
+        }
+    }
 }
 
 pub struct Ast2HLIR {
@@ -285,6 +309,7 @@ impl Ast2HLIR {
     fn resolve_member_type(&self, t: &TypedType, member_name: String) -> Option<TypedType> {
         match t {
             TypedType::Value(t) => {
+                println!("env :: {:?}", self.context.struct_environment);
                 let s = self.context.struct_environment.get(&t.name)?;
                 for p in s.stored_properties.iter() {
                     if p.name == member_name {
@@ -723,7 +748,7 @@ impl Ast2HLIR {
                     type_: type_,
                 }
             }
-            Expr::Subscript { .. } => TypedExpr::Subscript,
+            Expr::Subscript(s) => TypedExpr::Subscript(self.subscript_syntax(s)),
             Expr::Member {
                 target,
                 name,
@@ -795,6 +820,19 @@ impl Ast2HLIR {
                 name: t.name,
                 type_args: None,
             })),
+        }
+    }
+
+    pub fn subscript_syntax(&mut self, s: SubscriptSyntax) -> TypedSubscript {
+        let target = Box::new(self.expr(*s.target));
+        println!("target -> {:?}", target);
+        let indexes: Vec<TypedExpr> = s.idx_or_keys.into_iter().map(|i|{self.expr(i)}).collect();
+        println!("indexes -> {:?}", indexes);
+        // let type_ = self.context.resolve_subscript(target.type_(), indexes.iter().map(|i|i.type_()).collect());
+        TypedSubscript {
+            target,
+            indexes,
+            type_: None
         }
     }
 
