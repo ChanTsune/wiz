@@ -2,7 +2,10 @@ use crate::constants::UNSAFE_POINTER;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn, TypedStaticMember, TypedSubscript};
+use crate::high_level_ir::typed_expr::{
+    TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn,
+    TypedStaticMember, TypedSubscript,
+};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
 use crate::high_level_ir::typed_type::{TypedFunctionType, TypedType, TypedValueType};
@@ -396,10 +399,12 @@ impl HLIR2MLIR {
     pub fn subscript(&mut self, s: TypedSubscript) -> MLExpr {
         MLExpr::Call(MLCall {
             target: Box::new(self.expr(*s.target)),
-            args: s.indexes.into_iter().map(|i|{
-                MLCallArg { arg: self.expr(i) }
-            }).collect(),
-            type_: self.type_(s.type_.unwrap())
+            args: s
+                .indexes
+                .into_iter()
+                .map(|i| MLCallArg { arg: self.expr(i) })
+                .collect(),
+            type_: self.type_(s.type_.unwrap()),
         })
     }
 

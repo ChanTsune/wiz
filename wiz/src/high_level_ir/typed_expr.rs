@@ -1,7 +1,7 @@
+use crate::high_level_ir::typed_decl::TypedStruct;
 use crate::high_level_ir::typed_stmt::TypedBlock;
 use crate::high_level_ir::typed_type::TypedType;
 use std::fmt;
-use crate::high_level_ir::typed_decl::TypedStruct;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum TypedExpr {
@@ -45,7 +45,7 @@ pub struct TypedName {
 pub struct TypedSubscript {
     pub(crate) target: Box<TypedExpr>,
     pub(crate) indexes: Vec<TypedExpr>,
-    pub(crate) type_: Option<TypedType>
+    pub(crate) type_: Option<TypedType>,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
