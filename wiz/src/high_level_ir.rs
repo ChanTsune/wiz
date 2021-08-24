@@ -15,10 +15,7 @@ use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedFun, TypedFunBody, TypedInitializer,
     TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{
-    TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName,
-    TypedReturn, TypedStaticMember, TypedSubscript,
-};
+use crate::high_level_ir::typed_expr::{TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn, TypedStaticMember, TypedSubscript, TypedBinOp};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedForStmt,
@@ -737,12 +734,12 @@ impl Ast2HLIR {
                 let left = Box::new(self.expr(*left));
                 let right = Box::new(self.expr(*right));
                 let type_ = self.resolve_by_binop(&left.type_(), &kind, &right.type_());
-                TypedExpr::BinOp {
+                TypedExpr::BinOp(TypedBinOp {
                     left: left,
                     kind: kind,
                     right: right,
                     type_: type_,
-                }
+                })
             }
             Expr::UnaryOp {
                 target,
