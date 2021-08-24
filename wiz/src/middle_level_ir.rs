@@ -2,7 +2,10 @@ use crate::constants::UNSAFE_POINTER;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn, TypedStaticMember, TypedSubscript, TypedBinOp};
+use crate::high_level_ir::typed_expr::{
+    TypedBinOp, TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName,
+    TypedReturn, TypedStaticMember, TypedSubscript,
+};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
 use crate::high_level_ir::typed_type::{TypedFunctionType, TypedType, TypedValueType};
@@ -153,7 +156,7 @@ impl HLIR2MLIR {
             },
             TypedAssignmentStmt::AssignmentAndOperation(a) => {
                 let target = self.expr(a.target.clone());
-                let value = TypedExpr::BinOp( TypedBinOp{
+                let value = TypedExpr::BinOp(TypedBinOp {
                     left: Box::new(a.target.clone()),
                     kind: a.operator,
                     right: Box::new(a.value),

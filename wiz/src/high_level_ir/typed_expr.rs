@@ -56,8 +56,8 @@ pub enum TypedLiteral {
 pub struct TypedBinOp {
     pub(crate) left: Box<TypedExpr>,
     pub(crate) kind: String,
-    pub(crate)right: Box<TypedExpr>,
-    pub(crate)type_: Option<TypedType>,
+    pub(crate) right: Box<TypedExpr>,
+    pub(crate) type_: Option<TypedType>,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
