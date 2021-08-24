@@ -51,7 +51,10 @@ pub fn as_keyword(s: &str) -> IResult<&str, &str> {
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::nom::keywords::{else_keyword, fun_keyword, if_keyword, init_keyword, return_keyword, struct_keyword, val_keyword, var_keyword, where_keyword, while_keyword, use_keyword, as_keyword};
+    use crate::parser::nom::keywords::{
+        as_keyword, else_keyword, fun_keyword, if_keyword, init_keyword, return_keyword,
+        struct_keyword, use_keyword, val_keyword, var_keyword, where_keyword, while_keyword,
+    };
 
     #[test]
     fn test_struct_keyword() {
