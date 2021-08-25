@@ -69,14 +69,14 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let hlfiles: Vec<TypedFile> = ast_files.into_iter().map(|f| ast2hlir.file(f)).collect();
 
-    let type_resolver = TypeResolver::new();
+    let mut type_resolver = TypeResolver::new();
 
     for hlir in builtin_hlir.iter() {
-        type_resolver.preload(hlir.clone());
+        type_resolver.preload_file(hlir.clone());
     }
 
     for hlir in hlfiles.iter() {
-        type_resolver.preload(hlir.clone());
+        type_resolver.preload_file(hlir.clone());
     }
 
     let hlfiles = hlfiles

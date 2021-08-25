@@ -1,4 +1,4 @@
-use crate::high_level_ir::typed_decl::{TypedDecl, TypedFun};
+use crate::high_level_ir::typed_decl::{TypedDecl, TypedFun, TypedVar};
 use crate::high_level_ir::typed_expr::TypedExpr;
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::TypedStmt;
@@ -26,6 +26,18 @@ struct ResolverStruct {
 }
 
 impl ResolverStruct {
+
+    pub fn new() -> Self {
+        Self {
+            stored_properties: Default::default(),
+            computed_properties: Default::default(),
+            member_functions: Default::default(),
+            static_functions: Default::default(),
+            conformed_protocols: Default::default(),
+            type_params: None
+        }
+    }
+
     pub fn is_generic(&self) -> bool {
         self.type_params != None
     }
@@ -40,46 +52,69 @@ struct NameSpace {
     values: HashMap<String, TypedType>,
 }
 
+impl NameSpace {
+    fn new() -> Self {
+        Self {
+            children: Default::default(),
+            types: Default::default(),
+            structs: Default::default(),
+            functions: Default::default(),
+            values: Default::default()
+        }
+    }
+}
+
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
-enum ResolverOperators {
-    Subscript {
+struct ResolverSubscript {
         target: TypedType,
         indexes: Vec<TypedType>,
         return_type: TypedType,
-    },
-    Binary {
+    }
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+struct ResolverBinary {
         right: TypedType,
         left: TypedType,
         return_type: TypedType,
-    },
-    Unary {
+    }
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+struct ResolverUnary {
         value: TypedType,
         return_type: TypedType,
-    },
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
-enum ResolverOperator {
-    Subscript,
-    BinaryAdd,
-    BinarySub,
-    BinaryMul,
-    BinaryDiv,
-    BinaryMod,
+enum BinaryOperator {
+    Add,
+    Sub,
+    Mul,
+    Div,
+    Mod,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 struct ResolverContext {
-    name_space: HashMap<String, NameSpace>,
-    operators: HashMap<ResolverOperator, Vec<ResolverOperators>>,
+    name_space: NameSpace,
+    binary_operators: HashMap<BinaryOperator, Vec<ResolverBinary>>,
+    subscripts: Vec<ResolverSubscript>,
+    current_namespace: Vec<String>,
 }
 
 impl ResolverContext {
     fn new() -> Self {
         Self {
-            name_space: Default::default(),
-            operators: Default::default(),
+            name_space: NameSpace::new(),
+            binary_operators: Default::default(),
+            subscripts: vec![],
+            current_namespace: vec![]
         }
+    }
+
+    fn push_name_space(&mut self, name: String) {
+        self.current_namespace.push(name);
+    }
+
+    fn pop_name_space(&mut self) {
+        self.current_namespace.pop();
     }
 }
 
@@ -112,7 +147,28 @@ impl TypeResolver {
         }
     }
 
-    pub fn preload(&self, f: TypedFile) {}
+    pub fn preload_file(&mut self, f: TypedFile) {
+        self.context.current_namespace.push(f.name);
+        for d in f.body {
+            self.preload_decl(d);
+        }
+        self.context.current_namespace.pop();
+    }
+
+    fn preload_decl(&mut self, d: TypedDecl) {
+        let mut env = &mut self.context.name_space;
+        match d {
+            TypedDecl::Var(v) => {
+                // env.values.insert(name, t);
+            }
+            TypedDecl::Fun(_) => {}
+            TypedDecl::Struct(_) => {}
+            TypedDecl::Class => {}
+            TypedDecl::Enum => {}
+            TypedDecl::Protocol => {}
+            TypedDecl::Extension => {}
+        }
+    }
 
     pub fn file(&self, f: TypedFile) -> ResolverResult<TypedFile> {
         ResolverResult::Ok(TypedFile {
@@ -134,6 +190,38 @@ impl TypeResolver {
             TypedDecl::Enum => TypedDecl::Enum,
             TypedDecl::Protocol => TypedDecl::Protocol,
             TypedDecl::Extension => TypedDecl::Extension,
+        })
+    }
+
+    pub fn typed_var(&self, t: TypedVar) -> ResolverResult<TypedVar> {
+        ResolverResult::Ok(TypedVar {
+            is_mut: t.is_mut,
+            name: t.name,
+            type_: t.type_,
+            value: self.expr(t.value)?
+        })
+    }
+
+    pub fn expr(&self, e: TypedExpr) -> ResolverResult<TypedExpr> {
+        ResolverResult::Ok(match e {
+            TypedExpr::Name(n) => {TypedExpr::Name(n)}
+            TypedExpr::Literal(l) => {TypedExpr::Literal(l)}
+            TypedExpr::BinOp(b) => {TypedExpr::BinOp(b)}
+            TypedExpr::UnaryOp(u) => {TypedExpr::UnaryOp(u)}
+            TypedExpr::Subscript(s) => {TypedExpr::Subscript(s)}
+            TypedExpr::Member(m) => {TypedExpr::Member(m)}
+            TypedExpr::StaticMember(s) => {TypedExpr::StaticMember(s)}
+            TypedExpr::List => {TypedExpr::List}
+            TypedExpr::Tuple => {TypedExpr::Tuple }
+            TypedExpr::Dict => {TypedExpr::Dict}
+            TypedExpr::StringBuilder => {TypedExpr::StringBuilder}
+            TypedExpr::Call(c) => {TypedExpr::Call(c)}
+            TypedExpr::If(i) => {TypedExpr::If(i)}
+            TypedExpr::When => {TypedExpr::When }
+            TypedExpr::Lambda => {TypedExpr::Lambda }
+            TypedExpr::Return(r) => {TypedExpr::Return(r)}
+            TypedExpr::TypeCast => {TypedExpr::TypeCast }
+            TypedExpr::Type(t) => {TypedExpr::Type(t)}
         })
     }
 
