@@ -127,6 +127,12 @@ pub struct ResolverError {
     message: String,
 }
 
+impl From<&str> for ResolverError {
+    fn from(message: &str) -> Self {
+        Self { message: String::from(message)  }
+    }
+}
+
 impl Display for ResolverError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.write_str("ResolverError: ")?;
@@ -146,19 +152,21 @@ impl TypeResolver {
         }
     }
 
-    pub fn preload_file(&mut self, f: TypedFile) {
+    pub fn preload_file(&mut self, f: TypedFile) -> ResolverResult<()> {
         self.context.current_namespace.push(f.name);
         for d in f.body {
             self.preload_decl(d);
         }
         self.context.current_namespace.pop();
+        ResolverResult::Ok(())
     }
 
-    fn preload_decl(&mut self, d: TypedDecl) {
-        let mut env = &mut self.context.name_space;
+    fn preload_decl(&mut self, d: TypedDecl) -> ResolverResult<()>{
         match d {
             TypedDecl::Var(v) => {
-                // env.values.insert(name, t);
+                let v = self.typed_var(v)?;
+                let mut env = &mut self.context.name_space;
+                env.values.insert(v.name, v.type_.ok_or(ResolverError::from("Cannot resolve variable type"))?);
             }
             TypedDecl::Fun(_) => {}
             TypedDecl::Struct(_) => {}
@@ -167,6 +175,7 @@ impl TypeResolver {
             TypedDecl::Protocol => {}
             TypedDecl::Extension => {}
         }
+        ResolverResult::Ok(())
     }
 
     pub fn file(&self, f: TypedFile) -> ResolverResult<TypedFile> {
