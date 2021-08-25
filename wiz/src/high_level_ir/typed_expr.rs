@@ -8,12 +8,7 @@ pub enum TypedExpr {
     Name(TypedName),
     Literal(TypedLiteral),
     BinOp(TypedBinOp),
-    UnaryOp {
-        target: Box<TypedExpr>,
-        prefix: bool,
-        kind: String,
-        type_: Option<TypedType>,
-    },
+    UnaryOp(TypedUnaryOp),
     Subscript(TypedSubscript),
     Member(TypedInstanceMember),
     StaticMember(TypedStaticMember),
@@ -57,6 +52,14 @@ pub struct TypedBinOp {
     pub(crate) left: Box<TypedExpr>,
     pub(crate) kind: String,
     pub(crate) right: Box<TypedExpr>,
+    pub(crate) type_: Option<TypedType>,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct TypedUnaryOp {
+    pub(crate) target: Box<TypedExpr>,
+    pub(crate) prefix: bool,
+    pub(crate) kind: String,
     pub(crate) type_: Option<TypedType>,
 }
 
@@ -109,12 +112,7 @@ impl TypedExpr {
             TypedExpr::Name(name) => name.type_.clone(),
             TypedExpr::Literal(l) => Some(l.type_()),
             TypedExpr::BinOp(b) => b.type_.clone(),
-            TypedExpr::UnaryOp {
-                target,
-                prefix,
-                kind,
-                type_,
-            } => type_.clone(),
+            TypedExpr::UnaryOp(u) => u.type_.clone(),
             TypedExpr::Subscript(s) => s.type_.clone(),
             TypedExpr::Member(m) => m.type_.clone(),
             TypedExpr::StaticMember(sm) => sm.type_.clone(),
