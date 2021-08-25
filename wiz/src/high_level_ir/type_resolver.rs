@@ -26,7 +26,6 @@ struct ResolverStruct {
 }
 
 impl ResolverStruct {
-
     pub fn new() -> Self {
         Self {
             stored_properties: Default::default(),
@@ -34,7 +33,7 @@ impl ResolverStruct {
             member_functions: Default::default(),
             static_functions: Default::default(),
             conformed_protocols: Default::default(),
-            type_params: None
+            type_params: None,
         }
     }
 
@@ -59,27 +58,27 @@ impl NameSpace {
             types: Default::default(),
             structs: Default::default(),
             functions: Default::default(),
-            values: Default::default()
+            values: Default::default(),
         }
     }
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 struct ResolverSubscript {
-        target: TypedType,
-        indexes: Vec<TypedType>,
-        return_type: TypedType,
-    }
+    target: TypedType,
+    indexes: Vec<TypedType>,
+    return_type: TypedType,
+}
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 struct ResolverBinary {
-        right: TypedType,
-        left: TypedType,
-        return_type: TypedType,
-    }
+    right: TypedType,
+    left: TypedType,
+    return_type: TypedType,
+}
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 struct ResolverUnary {
-        value: TypedType,
-        return_type: TypedType,
+    value: TypedType,
+    return_type: TypedType,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
@@ -105,7 +104,7 @@ impl ResolverContext {
             name_space: NameSpace::new(),
             binary_operators: Default::default(),
             subscripts: vec![],
-            current_namespace: vec![]
+            current_namespace: vec![],
         }
     }
 
@@ -198,30 +197,30 @@ impl TypeResolver {
             is_mut: t.is_mut,
             name: t.name,
             type_: t.type_,
-            value: self.expr(t.value)?
+            value: self.expr(t.value)?,
         })
     }
 
     pub fn expr(&self, e: TypedExpr) -> ResolverResult<TypedExpr> {
         ResolverResult::Ok(match e {
-            TypedExpr::Name(n) => {TypedExpr::Name(n)}
-            TypedExpr::Literal(l) => {TypedExpr::Literal(l)}
-            TypedExpr::BinOp(b) => {TypedExpr::BinOp(b)}
-            TypedExpr::UnaryOp(u) => {TypedExpr::UnaryOp(u)}
-            TypedExpr::Subscript(s) => {TypedExpr::Subscript(s)}
-            TypedExpr::Member(m) => {TypedExpr::Member(m)}
-            TypedExpr::StaticMember(s) => {TypedExpr::StaticMember(s)}
-            TypedExpr::List => {TypedExpr::List}
-            TypedExpr::Tuple => {TypedExpr::Tuple }
-            TypedExpr::Dict => {TypedExpr::Dict}
-            TypedExpr::StringBuilder => {TypedExpr::StringBuilder}
-            TypedExpr::Call(c) => {TypedExpr::Call(c)}
-            TypedExpr::If(i) => {TypedExpr::If(i)}
-            TypedExpr::When => {TypedExpr::When }
-            TypedExpr::Lambda => {TypedExpr::Lambda }
-            TypedExpr::Return(r) => {TypedExpr::Return(r)}
-            TypedExpr::TypeCast => {TypedExpr::TypeCast }
-            TypedExpr::Type(t) => {TypedExpr::Type(t)}
+            TypedExpr::Name(n) => TypedExpr::Name(n),
+            TypedExpr::Literal(l) => TypedExpr::Literal(l),
+            TypedExpr::BinOp(b) => TypedExpr::BinOp(b),
+            TypedExpr::UnaryOp(u) => TypedExpr::UnaryOp(u),
+            TypedExpr::Subscript(s) => TypedExpr::Subscript(s),
+            TypedExpr::Member(m) => TypedExpr::Member(m),
+            TypedExpr::StaticMember(s) => TypedExpr::StaticMember(s),
+            TypedExpr::List => TypedExpr::List,
+            TypedExpr::Tuple => TypedExpr::Tuple,
+            TypedExpr::Dict => TypedExpr::Dict,
+            TypedExpr::StringBuilder => TypedExpr::StringBuilder,
+            TypedExpr::Call(c) => TypedExpr::Call(c),
+            TypedExpr::If(i) => TypedExpr::If(i),
+            TypedExpr::When => TypedExpr::When,
+            TypedExpr::Lambda => TypedExpr::Lambda,
+            TypedExpr::Return(r) => TypedExpr::Return(r),
+            TypedExpr::TypeCast => TypedExpr::TypeCast,
+            TypedExpr::Type(t) => TypedExpr::Type(t),
         })
     }
 
