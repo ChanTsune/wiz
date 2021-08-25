@@ -129,7 +129,9 @@ pub struct ResolverError {
 
 impl From<&str> for ResolverError {
     fn from(message: &str) -> Self {
-        Self { message: String::from(message)  }
+        Self {
+            message: String::from(message),
+        }
     }
 }
 
@@ -161,12 +163,16 @@ impl TypeResolver {
         ResolverResult::Ok(())
     }
 
-    fn preload_decl(&mut self, d: TypedDecl) -> ResolverResult<()>{
+    fn preload_decl(&mut self, d: TypedDecl) -> ResolverResult<()> {
         match d {
             TypedDecl::Var(v) => {
                 let v = self.typed_var(v)?;
                 let mut env = &mut self.context.name_space;
-                env.values.insert(v.name, v.type_.ok_or(ResolverError::from("Cannot resolve variable type"))?);
+                env.values.insert(
+                    v.name,
+                    v.type_
+                        .ok_or(ResolverError::from("Cannot resolve variable type"))?,
+                );
             }
             TypedDecl::Fun(_) => {}
             TypedDecl::Struct(_) => {}
