@@ -137,9 +137,9 @@ impl ResolverContext {
     }
 
     pub fn get_current_namespace_mut(&mut self) -> Option<&mut NameSpace> {
-        self.name_space.get_child_mut(self.current_namespace.clone())
+        self.name_space
+            .get_child_mut(self.current_namespace.clone())
     }
-
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -184,7 +184,10 @@ impl TypeResolver {
         for d in f.body {
             match d {
                 TypedDecl::Struct(s) => {
-                    let ns = self.context.get_current_namespace_mut().ok_or(ResolverError::from("Context NameSpace Error"))?;
+                    let ns = self
+                        .context
+                        .get_current_namespace_mut()
+                        .ok_or(ResolverError::from("Context NameSpace Error"))?;
                     ns.types.insert(s.name, ResolverStruct::new());
                 }
                 TypedDecl::Class => {}
