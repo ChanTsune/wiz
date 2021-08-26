@@ -1,6 +1,6 @@
-use std::fmt::{Display, Formatter};
-use std::fmt;
 use std::error::Error;
+use std::fmt;
+use std::fmt::{Display, Formatter};
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct ResolverError {
