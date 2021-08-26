@@ -1,3 +1,5 @@
+mod error;
+
 use crate::high_level_ir::typed_decl::{TypedDecl, TypedFun, TypedVar};
 use crate::high_level_ir::typed_expr::TypedExpr;
 use crate::high_level_ir::typed_file::TypedFile;
@@ -7,6 +9,7 @@ use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::fmt;
 use std::fmt::{Display, Formatter};
+use crate::high_level_ir::type_resolver::error::ResolverError;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 struct ResolverTypeParam {
@@ -147,28 +150,6 @@ pub(crate) struct TypeResolver {
     context: ResolverContext,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
-pub struct ResolverError {
-    message: String,
-}
-
-impl From<&str> for ResolverError {
-    fn from(message: &str) -> Self {
-        Self {
-            message: String::from(message),
-        }
-    }
-}
-
-impl Display for ResolverError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        f.write_str("ResolverError: ")?;
-        f.write_str(&self.message)?;
-        f.write_str("\n")
-    }
-}
-
-impl Error for ResolverError {}
 
 pub type ResolverResult<T> = Result<T, ResolverError>;
 
