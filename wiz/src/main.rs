@@ -72,6 +72,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut type_resolver = TypeResolver::new();
 
     for hlir in builtin_hlir.iter() {
+        type_resolver.detect_type(hlir.clone());
+    }
+
+    for hlir in hlfiles.iter() {
+        type_resolver.detect_type(hlir.clone());
+    }
+
+    for hlir in builtin_hlir.iter() {
         type_resolver.preload_file(hlir.clone());
     }
 

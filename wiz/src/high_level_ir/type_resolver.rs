@@ -61,6 +61,26 @@ impl NameSpace {
             values: Default::default(),
         }
     }
+
+    fn get_child_mut(&mut self, mut ns: Vec<String>) -> Option<&mut NameSpace> {
+        if ns.is_empty() {
+            Some(self)
+        } else {
+            let n = ns.remove(0);
+            let m = self.children.get_mut(&*n)?;
+            m.get_child_mut(ns)
+        }
+    }
+
+    fn set_child(&mut self, mut ns: Vec<String>) {
+        if !ns.is_empty() {
+            let n = &ns.remove(0);
+            if !self.children.contains_key(n) {
+                self.children.insert(n.clone(), NameSpace::new());
+            };
+            self.children.get_mut(n).unwrap().set_child(ns);
+        }
+    }
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -108,13 +128,18 @@ impl ResolverContext {
         }
     }
 
-    fn push_name_space(&mut self, name: String) {
+    pub fn push_name_space(&mut self, name: String) {
         self.current_namespace.push(name);
     }
 
-    fn pop_name_space(&mut self) {
+    pub fn pop_name_space(&mut self) {
         self.current_namespace.pop();
     }
+
+    pub fn get_current_namespace_mut(&mut self) -> Option<&mut NameSpace> {
+        self.name_space.get_child_mut(self.current_namespace.clone())
+    }
+
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -154,12 +179,30 @@ impl TypeResolver {
         }
     }
 
-    pub fn preload_file(&mut self, f: TypedFile) -> ResolverResult<()> {
-        self.context.current_namespace.push(f.name);
+    pub fn detect_type(&mut self, f: TypedFile) -> ResolverResult<()> {
+        self.context.push_name_space(f.name);
         for d in f.body {
-            self.preload_decl(d);
+            match d {
+                TypedDecl::Struct(s) => {
+                    let ns = self.context.get_current_namespace_mut().ok_or(ResolverError::from("Context NameSpace Error"))?;
+                    ns.types.insert(s.name, ResolverStruct::new());
+                }
+                TypedDecl::Class => {}
+                TypedDecl::Enum => {}
+                TypedDecl::Protocol => {}
+                _ => {}
+            }
         }
-        self.context.current_namespace.pop();
+        self.context.pop_name_space();
+        ResolverResult::Ok(())
+    }
+
+    pub fn preload_file(&mut self, f: TypedFile) -> ResolverResult<()> {
+        self.context.push_name_space(f.name);
+        for d in f.body {
+            self.preload_decl(d)?;
+        }
+        self.context.pop_name_space();
         ResolverResult::Ok(())
     }
 
