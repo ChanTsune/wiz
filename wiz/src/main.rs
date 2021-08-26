@@ -1,7 +1,7 @@
 use crate::parser::parser::{parse_from_file_path, parse_from_file_path_str};
 
 use crate::ast::file::WizFile;
-use crate::high_level_ir::type_resolver::{ResolverResult, TypeResolver};
+use crate::high_level_ir::type_resolver::{ TypeResolver};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::Ast2HLIR;
 use crate::llvm_ir::codegen::{CodeGen, MLContext};
@@ -15,6 +15,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::path::Path;
 use std::process::exit;
+use crate::high_level_ir::type_resolver::result::ResolverResult;
 
 mod ast;
 mod constants;

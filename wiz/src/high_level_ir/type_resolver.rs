@@ -1,4 +1,5 @@
-mod error;
+pub mod error;
+pub mod result;
 
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::typed_decl::{TypedDecl, TypedFun, TypedVar};
@@ -10,6 +11,7 @@ use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::fmt;
 use std::fmt::{Display, Formatter};
+use crate::high_level_ir::type_resolver::result::ResolverResult;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 struct ResolverTypeParam {
@@ -149,8 +151,6 @@ impl ResolverContext {
 pub(crate) struct TypeResolver {
     context: ResolverContext,
 }
-
-pub type ResolverResult<T> = Result<T, ResolverError>;
 
 impl TypeResolver {
     pub fn new() -> Self {
