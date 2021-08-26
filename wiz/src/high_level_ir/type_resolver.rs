@@ -4,7 +4,7 @@ pub mod result;
 
 use crate::high_level_ir::type_resolver::context::{ResolverContext, ResolverStruct};
 use crate::high_level_ir::type_resolver::error::ResolverError;
-use crate::high_level_ir::type_resolver::result::ResolverResult;
+use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_decl::{TypedDecl, TypedFun, TypedVar};
 use crate::high_level_ir::typed_expr::TypedExpr;
 use crate::high_level_ir::typed_file::TypedFile;
@@ -27,7 +27,7 @@ impl TypeResolver {
         }
     }
 
-    pub fn detect_type(&mut self, f: TypedFile) -> ResolverResult<()> {
+    pub fn detect_type(&mut self, f: TypedFile) -> Result<()> {
         self.context.push_name_space(f.name);
         for d in f.body {
             match d {
@@ -45,19 +45,19 @@ impl TypeResolver {
             }
         }
         self.context.pop_name_space();
-        ResolverResult::Ok(())
+        Result::Ok(())
     }
 
-    pub fn preload_file(&mut self, f: TypedFile) -> ResolverResult<()> {
+    pub fn preload_file(&mut self, f: TypedFile) -> Result<()> {
         self.context.push_name_space(f.name);
         for d in f.body {
             self.preload_decl(d)?;
         }
         self.context.pop_name_space();
-        ResolverResult::Ok(())
+        Result::Ok(())
     }
 
-    fn preload_decl(&mut self, d: TypedDecl) -> ResolverResult<()> {
+    fn preload_decl(&mut self, d: TypedDecl) -> Result<()> {
         match d {
             TypedDecl::Var(v) => {
                 let v = self.typed_var(v)?;
@@ -78,22 +78,22 @@ impl TypeResolver {
             TypedDecl::Protocol => {}
             TypedDecl::Extension => {}
         }
-        ResolverResult::Ok(())
+        Result::Ok(())
     }
 
-    pub fn file(&self, f: TypedFile) -> ResolverResult<TypedFile> {
-        ResolverResult::Ok(TypedFile {
+    pub fn file(&self, f: TypedFile) -> Result<TypedFile> {
+        Result::Ok(TypedFile {
             name: f.name,
             body: f
                 .body
                 .into_iter()
                 .map(|s| self.decl(s))
-                .collect::<ResolverResult<Vec<TypedDecl>>>()?,
+                .collect::<Result<Vec<TypedDecl>>>()?,
         })
     }
 
-    pub fn decl(&self, d: TypedDecl) -> ResolverResult<TypedDecl> {
-        ResolverResult::Ok(match d {
+    pub fn decl(&self, d: TypedDecl) -> Result<TypedDecl> {
+        Result::Ok(match d {
             TypedDecl::Var(v) => TypedDecl::Var(v),
             TypedDecl::Fun(f) => TypedDecl::Fun(f),
             TypedDecl::Struct(s) => TypedDecl::Struct(s),
@@ -104,8 +104,8 @@ impl TypeResolver {
         })
     }
 
-    pub fn typed_var(&self, t: TypedVar) -> ResolverResult<TypedVar> {
-        ResolverResult::Ok(TypedVar {
+    pub fn typed_var(&self, t: TypedVar) -> Result<TypedVar> {
+        Result::Ok(TypedVar {
             is_mut: t.is_mut,
             name: t.name,
             type_: t.type_,
@@ -113,8 +113,8 @@ impl TypeResolver {
         })
     }
 
-    pub fn expr(&self, e: TypedExpr) -> ResolverResult<TypedExpr> {
-        ResolverResult::Ok(match e {
+    pub fn expr(&self, e: TypedExpr) -> Result<TypedExpr> {
+        Result::Ok(match e {
             TypedExpr::Name(n) => TypedExpr::Name(n),
             TypedExpr::Literal(l) => TypedExpr::Literal(l),
             TypedExpr::BinOp(b) => TypedExpr::BinOp(b),
@@ -136,8 +136,8 @@ impl TypeResolver {
         })
     }
 
-    pub fn stmt(&self, s: TypedStmt) -> ResolverResult<TypedStmt> {
-        ResolverResult::Ok(match s {
+    pub fn stmt(&self, s: TypedStmt) -> Result<TypedStmt> {
+        Result::Ok(match s {
             TypedStmt::Expr(e) => TypedStmt::Expr(e),
             TypedStmt::Decl(d) => TypedStmt::Decl(d),
             TypedStmt::Assignment(a) => TypedStmt::Assignment(a),

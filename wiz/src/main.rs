@@ -1,7 +1,7 @@
 use crate::parser::parser::{parse_from_file_path, parse_from_file_path_str};
 
 use crate::ast::file::WizFile;
-use crate::high_level_ir::type_resolver::result::ResolverResult;
+use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::Ast2HLIR;
@@ -16,6 +16,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::path::Path;
 use std::process::exit;
+use std::result;
 
 mod ast;
 mod constants;
@@ -36,7 +37,7 @@ fn get_builtin_syntax() -> Vec<WizFile> {
         .collect()
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> result::Result<(), Box<dyn Error>> {
     let app = App::new("wiz")
         .arg(Arg::with_name("input").required(true).multiple(true))
         .arg(Arg::with_name("output").short("o").takes_value(true));
@@ -91,7 +92,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let hlfiles = hlfiles
         .into_iter()
         .map(|f| type_resolver.file(f))
-        .collect::<ResolverResult<Vec<TypedFile>>>()?;
+        .collect::<Result<Vec<TypedFile>>>()?;
 
     let mut hlir2mlir = HLIR2MLIR::new();
 
