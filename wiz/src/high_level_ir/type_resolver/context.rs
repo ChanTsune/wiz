@@ -1,5 +1,5 @@
-use std::collections::{HashMap, HashSet};
 use crate::high_level_ir::typed_type::TypedType;
+use std::collections::{HashMap, HashSet};
 use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]

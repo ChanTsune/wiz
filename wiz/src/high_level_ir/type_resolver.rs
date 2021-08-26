@@ -2,6 +2,7 @@ pub mod context;
 pub mod error;
 pub mod result;
 
+use crate::high_level_ir::type_resolver::context::{ResolverContext, ResolverStruct};
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::ResolverResult;
 use crate::high_level_ir::typed_decl::{TypedDecl, TypedFun, TypedVar};
@@ -13,8 +14,6 @@ use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::fmt;
 use std::fmt::{Display, Formatter};
-use crate::high_level_ir::type_resolver::context::{ResolverContext, ResolverStruct};
-
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub(crate) struct TypeResolver {
@@ -62,7 +61,10 @@ impl TypeResolver {
         match d {
             TypedDecl::Var(v) => {
                 let v = self.typed_var(v)?;
-                let namespace = self.context.get_current_namespace_mut().ok_or(ResolverError::from("NameSpace not exist"))?;
+                let namespace = self
+                    .context
+                    .get_current_namespace_mut()
+                    .ok_or(ResolverError::from("NameSpace not exist"))?;
                 namespace.values.insert(
                     v.name,
                     v.type_
