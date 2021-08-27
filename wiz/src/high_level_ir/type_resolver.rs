@@ -134,8 +134,8 @@ impl TypeResolver {
 
     pub fn stmt(&self, s: TypedStmt) -> Result<TypedStmt> {
         Result::Ok(match s {
-            TypedStmt::Expr(e) => TypedStmt::Expr(e),
-            TypedStmt::Decl(d) => TypedStmt::Decl(d),
+            TypedStmt::Expr(e) => TypedStmt::Expr(self.expr(e)?),
+            TypedStmt::Decl(d) => TypedStmt::Decl(self.decl(d)?),
             TypedStmt::Assignment(a) => TypedStmt::Assignment(a),
             TypedStmt::Loop(l) => TypedStmt::Loop(l),
         })
