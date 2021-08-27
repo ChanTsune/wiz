@@ -145,8 +145,13 @@ mod test {
     #[test]
     fn test_name_space() {
         let mut name_space = NameSpace::new();
-        name_space.values.insert(String::from("Int64"), TypedType::int64());
+        name_space
+            .values
+            .insert(String::from("Int64"), TypedType::int64());
         name_space.set_child(vec![String::from("builtin")]);
-        assert_eq!(name_space.get_child_mut(vec![String::from("builtin")]), Some(&mut NameSpace::new()))
+        assert_eq!(
+            name_space.get_child_mut(vec![String::from("builtin")]),
+            Some(&mut NameSpace::new())
+        )
     }
 }
