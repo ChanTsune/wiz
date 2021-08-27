@@ -1,4 +1,3 @@
-use crate::high_level_ir::typed_decl::TypedStruct;
 use crate::high_level_ir::typed_stmt::TypedBlock;
 use crate::high_level_ir::typed_type::TypedType;
 use std::fmt;

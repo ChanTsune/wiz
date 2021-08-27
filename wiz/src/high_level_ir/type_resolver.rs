@@ -5,15 +5,11 @@ pub mod result;
 use crate::high_level_ir::type_resolver::context::{ResolverContext, ResolverStruct};
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
-use crate::high_level_ir::typed_decl::{TypedDecl, TypedFun, TypedVar};
+use crate::high_level_ir::typed_decl::{TypedDecl, TypedVar};
 use crate::high_level_ir::typed_expr::TypedExpr;
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::TypedStmt;
-use crate::high_level_ir::typed_type::TypedType;
-use std::collections::{HashMap, HashSet};
-use std::error::Error;
 use std::fmt;
-use std::fmt::{Display, Formatter};
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub(crate) struct TypeResolver {
