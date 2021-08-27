@@ -95,4 +95,10 @@ impl TypedType {
     pub fn string() -> TypedType {
         Self::builtin("String")
     }
+
+    pub fn builtin_types() -> Vec<TypedType> {
+        vec![Self::noting(), Self::unit(), Self::int8(), Self::int16(), Self::int32(), Self::int64(),
+            Self::uint8(), Self::uint16(), Self::uint32(), Self::uint64(),
+            Self::float(), Self::double(), Self::bool(), Self::string()]
+    }
 }
