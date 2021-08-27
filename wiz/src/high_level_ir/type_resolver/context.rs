@@ -116,8 +116,17 @@ impl NameSpace {
 
 impl ResolverContext {
     pub(crate) fn new() -> Self {
+        let mut ns = NameSpace::new();
+        for t in TypedType::builtin_types() {
+            match &t {
+                TypedType::Value(v) => {
+                    ns.types.insert(v.name.clone(), ResolverStruct::new());
+                }
+                TypedType::Function(_) => {}
+            };
+        };
         Self {
-            name_space: NameSpace::new(),
+            name_space: ns,
             binary_operators: Default::default(),
             subscripts: vec![],
             current_namespace: vec![],
