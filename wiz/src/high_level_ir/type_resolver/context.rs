@@ -124,7 +124,7 @@ impl ResolverContext {
                 }
                 TypedType::Function(_) => {}
             };
-        };
+        }
         Self {
             name_space: ns,
             binary_operators: Default::default(),
