@@ -137,3 +137,16 @@ impl ResolverContext {
             .get_child_mut(self.current_namespace.clone())
     }
 }
+
+mod test {
+    use crate::high_level_ir::type_resolver::context::NameSpace;
+    use crate::high_level_ir::typed_type::TypedType;
+
+    #[test]
+    fn test_name_space() {
+        let mut name_space = NameSpace::new();
+        name_space.values.insert(String::from("Int64"), TypedType::int64());
+        name_space.set_child(vec![String::from("builtin")]);
+        assert_eq!(name_space.get_child_mut(vec![String::from("builtin")]), Some(&mut NameSpace::new()))
+    }
+}
