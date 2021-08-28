@@ -11,7 +11,10 @@ use crate::ast::literal::Literal;
 use crate::ast::stmt::{AssignmentStmt, LoopStmt, Stmt};
 use crate::ast::type_name::{TypeName, TypeParam};
 use crate::constants::UNSAFE_POINTER;
-use crate::high_level_ir::typed_decl::{TypedArgDef, TypedComputedProperty, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedVar, TypedValueArgDef};
+use crate::high_level_ir::typed_decl::{
+    TypedArgDef, TypedComputedProperty, TypedDecl, TypedFun, TypedFunBody, TypedInitializer,
+    TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedValueArgDef, TypedVar,
+};
 use crate::high_level_ir::typed_expr::{
     TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral,
     TypedName, TypedReturn, TypedStaticMember, TypedSubscript, TypedUnaryOp,
@@ -454,16 +457,12 @@ impl Ast2HLIR {
 
     pub fn arg_def(&self, a: ArgDef) -> TypedArgDef {
         match a {
-            ArgDef::Value(a) => {
-                TypedArgDef::Value (TypedValueArgDef {
-                    label: a.label,
-                    name: a.name,
-                    type_: self.context.resolve_type(Some(a.type_name)).unwrap(),
-                })
-            }
-            ArgDef::Self_ => {
-                TypedArgDef::Self_(None)
-            }
+            ArgDef::Value(a) => TypedArgDef::Value(TypedValueArgDef {
+                label: a.label,
+                name: a.name,
+                type_: self.context.resolve_type(Some(a.type_name)).unwrap(),
+            }),
+            ArgDef::Self_ => TypedArgDef::Self_(None),
         }
     }
 
@@ -603,11 +602,13 @@ impl Ast2HLIR {
         let args: Vec<TypedArgDef> = s
             .stored_properties
             .iter()
-            .map(|p| TypedArgDef::Value (TypedValueArgDef {
-                label: p.name.clone(),
-                name: p.name.clone(),
-                type_: p.type_.clone(),
-            }))
+            .map(|p| {
+                TypedArgDef::Value(TypedValueArgDef {
+                    label: p.name.clone(),
+                    name: p.name.clone(),
+                    type_: p.type_.clone(),
+                })
+            })
             .collect();
         if s.init.is_empty() {
             let struct_type = TypedValueType {
