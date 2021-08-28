@@ -5,11 +5,13 @@ pub mod result;
 use crate::high_level_ir::type_resolver::context::{ResolverContext, ResolverStruct};
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
-use crate::high_level_ir::typed_decl::{TypedDecl, TypedVar};
-use crate::high_level_ir::typed_expr::TypedExpr;
+use crate::high_level_ir::typed_decl::{TypedDecl, TypedVar, TypedFun, TypedFunBody};
+use crate::high_level_ir::typed_expr::{TypedExpr, TypedSubscript};
 use crate::high_level_ir::typed_file::TypedFile;
-use crate::high_level_ir::typed_stmt::TypedStmt;
+use crate::high_level_ir::typed_stmt::{TypedStmt, TypedBlock};
 use std::fmt;
+use crate::high_level_ir::typed_type::TypedType;
+use crate::constants::UNSAFE_POINTER;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub(crate) struct TypeResolver {
@@ -90,8 +92,8 @@ impl TypeResolver {
 
     pub fn decl(&self, d: TypedDecl) -> Result<TypedDecl> {
         Result::Ok(match d {
-            TypedDecl::Var(v) => TypedDecl::Var(v),
-            TypedDecl::Fun(f) => TypedDecl::Fun(f),
+            TypedDecl::Var(v) => TypedDecl::Var(self.typed_var(v)?),
+            TypedDecl::Fun(f) => TypedDecl::Fun(self.typed_fun(f)?),
             TypedDecl::Struct(s) => TypedDecl::Struct(s),
             TypedDecl::Class => TypedDecl::Class,
             TypedDecl::Enum => TypedDecl::Enum,
@@ -109,13 +111,46 @@ impl TypeResolver {
         })
     }
 
+    pub fn typed_fun(&self, f: TypedFun) -> Result<TypedFun> {
+        Result::Ok(TypedFun {
+            modifiers: f.modifiers,
+            name: f.name,
+            type_params: f.type_params, // TODO
+            arg_defs: f.arg_defs, // TODO
+            body: match f.body {
+                Some(b) => {
+                    Some(self.typed_fun_body(b)?)
+                }
+                None => {None}
+            } ,
+            return_type: f.return_type // TODO
+        })
+    }
+
+    fn typed_fun_body(&self, b: TypedFunBody) -> Result<TypedFunBody> {
+        Result::Ok(match b {
+            TypedFunBody::Expr(e) => {
+                TypedFunBody::Expr(self.expr(e)?)
+            }
+            TypedFunBody::Block(b) => {
+                TypedFunBody::Block(self.typed_block(b)?)
+            }
+        })
+    }
+
+    fn typed_block(&self, b: TypedBlock) -> Result<TypedBlock> {
+        Result::Ok(TypedBlock {
+            body: b.body.into_iter().map(|s|self.stmt(s)).collect::<Result<Vec<TypedStmt>>>()?
+        })
+    }
+
     pub fn expr(&self, e: TypedExpr) -> Result<TypedExpr> {
         Result::Ok(match e {
             TypedExpr::Name(n) => TypedExpr::Name(n),
             TypedExpr::Literal(l) => TypedExpr::Literal(l),
             TypedExpr::BinOp(b) => TypedExpr::BinOp(b),
             TypedExpr::UnaryOp(u) => TypedExpr::UnaryOp(u),
-            TypedExpr::Subscript(s) => TypedExpr::Subscript(s),
+            TypedExpr::Subscript(s) => TypedExpr::Subscript(self.typed_subscript(s)?),
             TypedExpr::Member(m) => TypedExpr::Member(m),
             TypedExpr::StaticMember(s) => TypedExpr::StaticMember(s),
             TypedExpr::List => TypedExpr::List,
@@ -129,6 +164,28 @@ impl TypeResolver {
             TypedExpr::Return(r) => TypedExpr::Return(r),
             TypedExpr::TypeCast => TypedExpr::TypeCast,
             TypedExpr::Type(t) => TypedExpr::Type(t),
+        })
+    }
+
+    pub fn typed_subscript(&self, s: TypedSubscript) -> Result<TypedSubscript> {
+        let target = self.expr(*s.target)?;
+        if let TypedType::Value(v) = target.type_().unwrap() {
+            if v.name == UNSAFE_POINTER {
+                if let Some(mut ags) = v.type_args {
+                    if ags.len() == 1 {
+                        return Result::Ok(TypedSubscript {
+                            target: Box::new(target),
+                            indexes: s.indexes.into_iter().map(|i|{self.expr(i)}).collect::<Result<Vec<TypedExpr>>>()?,
+                            type_: Some(ags.remove(0))
+                        })
+                    }
+                }
+            }
+        }
+        Result::Ok(TypedSubscript {
+            target: Box::new(target),
+            indexes: s.indexes.into_iter().map(|i|{self.expr(i)}).collect::<Result<Vec<TypedExpr>>>()?,
+            type_: s.type_
         })
     }
 
