@@ -6,7 +6,7 @@ use crate::constants::UNSAFE_POINTER;
 use crate::high_level_ir::type_resolver::context::{ResolverContext, ResolverStruct};
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
-use crate::high_level_ir::typed_decl::{TypedDecl, TypedFun, TypedFunBody, TypedVar};
+use crate::high_level_ir::typed_decl::{TypedDecl, TypedFun, TypedFunBody, TypedVar, TypedStruct};
 use crate::high_level_ir::typed_expr::{TypedExpr, TypedSubscript};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{TypedBlock, TypedStmt};
@@ -94,7 +94,7 @@ impl TypeResolver {
         Result::Ok(match d {
             TypedDecl::Var(v) => TypedDecl::Var(self.typed_var(v)?),
             TypedDecl::Fun(f) => TypedDecl::Fun(self.typed_fun(f)?),
-            TypedDecl::Struct(s) => TypedDecl::Struct(s),
+            TypedDecl::Struct(s) => TypedDecl::Struct(self.typed_struct(s)?),
             TypedDecl::Class => TypedDecl::Class,
             TypedDecl::Enum => TypedDecl::Enum,
             TypedDecl::Protocol => TypedDecl::Protocol,
@@ -122,6 +122,18 @@ impl TypeResolver {
                 None => None,
             },
             return_type: f.return_type, // TODO
+        })
+    }
+
+    pub fn typed_struct(&self, s: TypedStruct) -> Result<TypedStruct> {
+        Result::Ok(TypedStruct {
+            name: s.name,
+            type_params: s.type_params,
+            init: s.init, // TODO
+            stored_properties: s.stored_properties, // TODO
+            computed_properties: s.computed_properties, // TODO
+            member_functions: s.member_functions, // TODO
+            static_function: s.static_function // TODO
         })
     }
 
