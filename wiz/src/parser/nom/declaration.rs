@@ -613,7 +613,7 @@ mod test {
                     modifiers: vec![],
                     name: "puts".to_string(),
                     type_params: None,
-                    arg_defs: vec![ArgDef::Value ( ValueArgDef{
+                    arg_defs: vec![ArgDef::Value(ValueArgDef {
                         label: "_".to_string(),
                         name: "item".to_string(),
                         type_name: TypeName {
