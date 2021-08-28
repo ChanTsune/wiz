@@ -369,7 +369,7 @@ mod test {
         VarSyntax,
     };
     use crate::ast::expr::{Expr, NameExprSyntax};
-    use crate::ast::fun::arg_def::ArgDef;
+    use crate::ast::fun::arg_def::{ArgDef, ValueArgDef};
     use crate::ast::fun::body_def::FunBody;
     use crate::ast::literal::Literal;
     use crate::ast::stmt::Stmt;
@@ -613,14 +613,14 @@ mod test {
                     modifiers: vec![],
                     name: "puts".to_string(),
                     type_params: None,
-                    arg_defs: vec![ArgDef {
+                    arg_defs: vec![ArgDef::Value ( ValueArgDef{
                         label: "_".to_string(),
                         name: "item".to_string(),
                         type_name: TypeName {
                             name: "String".to_string(),
                             type_args: None
                         }
-                    }],
+                    })],
                     return_type: Some(TypeName {
                         name: "Unit".to_string(),
                         type_args: None
