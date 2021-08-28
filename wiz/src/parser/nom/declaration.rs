@@ -4,13 +4,11 @@ use crate::ast::decl::{
     StructSyntax, VarSyntax,
 };
 use crate::ast::expr::Expr;
-use crate::ast::fun::arg_def::ArgDef;
+use crate::ast::fun::arg_def::{ArgDef, ValueArgDef};
 use crate::ast::fun::body_def::FunBody;
 use crate::ast::type_name::{TypeName, TypeParam};
 use crate::parser::nom::expression::expr;
-use crate::parser::nom::keywords::{
-    fun_keyword, init_keyword, struct_keyword, val_keyword, var_keyword, where_keyword,
-};
+use crate::parser::nom::keywords::{fun_keyword, init_keyword, struct_keyword, val_keyword, var_keyword, where_keyword, self_keyword};
 use crate::parser::nom::lexical_structure::{
     eol, identifier, whitespace0, whitespace1, whitespace_without_eol0,
 };
@@ -230,24 +228,30 @@ pub fn function_value_parameters(s: &str) -> IResult<&str, Vec<ArgDef>> {
     )(s)
 }
 
+// <function_value_parameter> ::= (<function_value_label> <function_value_name> ":" <type> ("=" <expr>)?) | "self"
 pub fn function_value_parameter(s: &str) -> IResult<&str, ArgDef> {
-    map(
-        tuple((
-            whitespace0,
-            function_value_label,
-            whitespace1,
-            function_value_name,
-            whitespace0,
-            char(':'),
-            whitespace0,
-            type_,
-        )),
-        |(_, label, _, name, _, _, _, typ)| ArgDef {
-            label: label,
-            name: name,
-            type_name: typ,
-        },
-    )(s)
+    alt((
+        map(
+            tuple((
+                whitespace0,
+                function_value_label,
+                whitespace1,
+                function_value_name,
+                whitespace0,
+                char(':'),
+                whitespace0,
+                type_,
+            )),
+            |(_, label, _, name, _, _, _, typ)| ArgDef::Value (ValueArgDef {
+                label: label,
+                name: name,
+                type_name: typ,
+            }),
+        ),
+        map(self_keyword, |_|{
+            ArgDef::Self_
+        })
+        ))(s)
 }
 
 pub fn function_value_label(s: &str) -> IResult<&str, String> {

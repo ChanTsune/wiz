@@ -90,7 +90,7 @@ impl HLIR2MLIR {
             arguments: t
                 .arguments
                 .into_iter()
-                .map(|a| match self.type_(a.type_) {
+                .map(|a| match self.type_(a.type_().unwrap()) {
                     MLType::Value(v) => v,
                     MLType::Function(_) => exit(-9),
                 })
@@ -482,8 +482,8 @@ impl HLIR2MLIR {
 
     pub fn arg_def(&self, e: TypedArgDef) -> MLArgDef {
         MLArgDef {
-            name: e.name,
-            type_: self.type_(e.type_),
+            name: e.name(),
+            type_: self.type_(e.type_().unwrap()),
         }
     }
 
