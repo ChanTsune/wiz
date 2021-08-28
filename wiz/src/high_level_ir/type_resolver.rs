@@ -2,16 +2,16 @@ pub mod context;
 pub mod error;
 pub mod result;
 
+use crate::constants::UNSAFE_POINTER;
 use crate::high_level_ir::type_resolver::context::{ResolverContext, ResolverStruct};
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
-use crate::high_level_ir::typed_decl::{TypedDecl, TypedVar, TypedFun, TypedFunBody};
+use crate::high_level_ir::typed_decl::{TypedDecl, TypedFun, TypedFunBody, TypedVar};
 use crate::high_level_ir::typed_expr::{TypedExpr, TypedSubscript};
 use crate::high_level_ir::typed_file::TypedFile;
-use crate::high_level_ir::typed_stmt::{TypedStmt, TypedBlock};
-use std::fmt;
+use crate::high_level_ir::typed_stmt::{TypedBlock, TypedStmt};
 use crate::high_level_ir::typed_type::TypedType;
-use crate::constants::UNSAFE_POINTER;
+use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub(crate) struct TypeResolver {
@@ -116,31 +116,29 @@ impl TypeResolver {
             modifiers: f.modifiers,
             name: f.name,
             type_params: f.type_params, // TODO
-            arg_defs: f.arg_defs, // TODO
+            arg_defs: f.arg_defs,       // TODO
             body: match f.body {
-                Some(b) => {
-                    Some(self.typed_fun_body(b)?)
-                }
-                None => {None}
-            } ,
-            return_type: f.return_type // TODO
+                Some(b) => Some(self.typed_fun_body(b)?),
+                None => None,
+            },
+            return_type: f.return_type, // TODO
         })
     }
 
     fn typed_fun_body(&self, b: TypedFunBody) -> Result<TypedFunBody> {
         Result::Ok(match b {
-            TypedFunBody::Expr(e) => {
-                TypedFunBody::Expr(self.expr(e)?)
-            }
-            TypedFunBody::Block(b) => {
-                TypedFunBody::Block(self.typed_block(b)?)
-            }
+            TypedFunBody::Expr(e) => TypedFunBody::Expr(self.expr(e)?),
+            TypedFunBody::Block(b) => TypedFunBody::Block(self.typed_block(b)?),
         })
     }
 
     fn typed_block(&self, b: TypedBlock) -> Result<TypedBlock> {
         Result::Ok(TypedBlock {
-            body: b.body.into_iter().map(|s|self.stmt(s)).collect::<Result<Vec<TypedStmt>>>()?
+            body: b
+                .body
+                .into_iter()
+                .map(|s| self.stmt(s))
+                .collect::<Result<Vec<TypedStmt>>>()?,
         })
     }
 
@@ -175,17 +173,25 @@ impl TypeResolver {
                     if ags.len() == 1 {
                         return Result::Ok(TypedSubscript {
                             target: Box::new(target),
-                            indexes: s.indexes.into_iter().map(|i|{self.expr(i)}).collect::<Result<Vec<TypedExpr>>>()?,
-                            type_: Some(ags.remove(0))
-                        })
+                            indexes: s
+                                .indexes
+                                .into_iter()
+                                .map(|i| self.expr(i))
+                                .collect::<Result<Vec<TypedExpr>>>()?,
+                            type_: Some(ags.remove(0)),
+                        });
                     }
                 }
             }
         }
         Result::Ok(TypedSubscript {
             target: Box::new(target),
-            indexes: s.indexes.into_iter().map(|i|{self.expr(i)}).collect::<Result<Vec<TypedExpr>>>()?,
-            type_: s.type_
+            indexes: s
+                .indexes
+                .into_iter()
+                .map(|i| self.expr(i))
+                .collect::<Result<Vec<TypedExpr>>>()?,
+            type_: s.type_,
         })
     }
 
