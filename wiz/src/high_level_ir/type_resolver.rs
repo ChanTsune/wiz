@@ -6,7 +6,7 @@ use crate::constants::UNSAFE_POINTER;
 use crate::high_level_ir::type_resolver::context::{ResolverContext, ResolverStruct};
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
-use crate::high_level_ir::typed_decl::{TypedDecl, TypedFun, TypedFunBody, TypedVar, TypedStruct};
+use crate::high_level_ir::typed_decl::{TypedDecl, TypedFun, TypedFunBody, TypedStruct, TypedVar};
 use crate::high_level_ir::typed_expr::{TypedExpr, TypedSubscript};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{TypedBlock, TypedStmt};
@@ -129,11 +129,11 @@ impl TypeResolver {
         Result::Ok(TypedStruct {
             name: s.name,
             type_params: s.type_params,
-            init: s.init, // TODO
-            stored_properties: s.stored_properties, // TODO
+            init: s.init,                               // TODO
+            stored_properties: s.stored_properties,     // TODO
             computed_properties: s.computed_properties, // TODO
-            member_functions: s.member_functions, // TODO
-            static_function: s.static_function // TODO
+            member_functions: s.member_functions,       // TODO
+            static_function: s.static_function,         // TODO
         })
     }
 
