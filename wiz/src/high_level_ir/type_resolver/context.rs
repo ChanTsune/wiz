@@ -159,6 +159,22 @@ impl ResolverContext {
     pub fn clear_current_type(&mut self) {
         self.current_type = None
     }
+
+    pub fn resolve_member_type(&self, t: TypedType, name: String) -> Option<TypedType> {
+        match t {
+            TypedType::Value(v) => {
+                match self.name_space.types.get(&v.name) {
+                    Some(rs) => {
+                        rs.stored_properties.get(&name).map(|it|{it.clone()})
+                    }
+                    None => {None}
+                }
+            }
+            TypedType::Function(_) => {
+                None
+            }
+        }
+    }
 }
 
 mod test {

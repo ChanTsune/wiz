@@ -6,10 +6,8 @@ use crate::constants::UNSAFE_POINTER;
 use crate::high_level_ir::type_resolver::context::{ResolverContext, ResolverStruct};
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
-use crate::high_level_ir::typed_decl::{
-    TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct, TypedVar,
-};
-use crate::high_level_ir::typed_expr::{TypedExpr, TypedSubscript};
+use crate::high_level_ir::typed_decl::{TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct, TypedVar, TypedArgDef};
+use crate::high_level_ir::typed_expr::{TypedExpr, TypedSubscript, TypedInstanceMember, TypedCall, TypedCallArg, TypedBinOp, TypedIf};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{TypedBlock, TypedStmt};
 use crate::high_level_ir::typed_type::{Package, TypedType, TypedValueType};
@@ -107,7 +105,7 @@ impl TypeResolver {
         })
     }
 
-    pub fn typed_var(&self, t: TypedVar) -> Result<TypedVar> {
+    pub fn typed_var(&mut self, t: TypedVar) -> Result<TypedVar> {
         Result::Ok(TypedVar {
             is_mut: t.is_mut,
             name: t.name,
@@ -241,21 +239,21 @@ impl TypeResolver {
         })
     }
 
-    pub fn expr(&self, e: TypedExpr) -> Result<TypedExpr> {
+    pub fn expr(&mut self, e: TypedExpr) -> Result<TypedExpr> {
         Result::Ok(match e {
             TypedExpr::Name(n) => TypedExpr::Name(n),
             TypedExpr::Literal(l) => TypedExpr::Literal(l),
-            TypedExpr::BinOp(b) => TypedExpr::BinOp(b),
+            TypedExpr::BinOp(b) => TypedExpr::BinOp(self.typed_binop(b)?),
             TypedExpr::UnaryOp(u) => TypedExpr::UnaryOp(u),
             TypedExpr::Subscript(s) => TypedExpr::Subscript(self.typed_subscript(s)?),
-            TypedExpr::Member(m) => TypedExpr::Member(m),
+            TypedExpr::Member(m) => TypedExpr::Member(self.typed_instance_member(m)?),
             TypedExpr::StaticMember(s) => TypedExpr::StaticMember(s),
             TypedExpr::List => TypedExpr::List,
             TypedExpr::Tuple => TypedExpr::Tuple,
             TypedExpr::Dict => TypedExpr::Dict,
             TypedExpr::StringBuilder => TypedExpr::StringBuilder,
-            TypedExpr::Call(c) => TypedExpr::Call(c),
-            TypedExpr::If(i) => TypedExpr::If(i),
+            TypedExpr::Call(c) => TypedExpr::Call(self.typed_call(c)?),
+            TypedExpr::If(i) => TypedExpr::If(self.typed_if(i)?),
             TypedExpr::When => TypedExpr::When,
             TypedExpr::Lambda => TypedExpr::Lambda,
             TypedExpr::Return(r) => TypedExpr::Return(r),
@@ -264,7 +262,34 @@ impl TypeResolver {
         })
     }
 
-    pub fn typed_subscript(&self, s: TypedSubscript) -> Result<TypedSubscript> {
+    pub fn typed_binop(&mut self, b: TypedBinOp) -> Result<TypedBinOp> {
+        Result::Ok(TypedBinOp {
+            left: Box::new(self.expr(*b.left)?),
+            kind: b.kind,
+            right: Box::new(self.expr(*b.right)?),
+            type_: b.type_
+        })
+    }
+
+    pub fn typed_instance_member(&mut self, m: TypedInstanceMember) -> Result<TypedInstanceMember> {
+        let target = self.expr(*m.target)?;
+        let type_ = self.context.resolve_member_type(target.type_().unwrap(), m.name.clone());
+        Result::Ok(TypedInstanceMember {
+            target: Box::new(target),
+            name: m.name,
+            is_safe: m.is_safe,
+            type_: match m.type_ {
+                Some(t) => {
+                    Some(t)
+                }
+                None => {
+                    type_
+                }
+            }
+        })
+    }
+
+    pub fn typed_subscript(&mut self, s: TypedSubscript) -> Result<TypedSubscript> {
         let target = self.expr(*s.target)?;
         if let TypedType::Value(v) = target.type_().unwrap() {
             if v.name == UNSAFE_POINTER {
@@ -291,6 +316,33 @@ impl TypeResolver {
                 .map(|i| self.expr(i))
                 .collect::<Result<Vec<TypedExpr>>>()?,
             type_: s.type_,
+        })
+    }
+
+    pub fn typed_call(&mut self, c: TypedCall) -> Result<TypedCall> {
+        Result::Ok(TypedCall {
+            target: Box::new(self.expr(*c.target)?),
+            args: c.args.into_iter().map(|c|{
+                self.typed_call_arg(c)
+            }).collect::<Result<Vec<TypedCallArg>>>()?,
+            type_: c.type_
+        })
+    }
+
+    pub fn typed_call_arg(&mut self, a: TypedCallArg) -> Result<TypedCallArg> {
+        Result::Ok(TypedCallArg {
+            label: a.label,
+            arg: Box::new(self.expr(*a.arg)?),
+            is_vararg: a.is_vararg
+        })
+    }
+
+    pub fn typed_if(&mut self, i: TypedIf) -> Result<TypedIf> {
+        Result::Ok(TypedIf {
+            condition: Box::new(self.expr(*i.condition)?),
+            body: self.typed_block(i.body)?,
+            else_body: None,
+            type_: None
         })
     }
 
