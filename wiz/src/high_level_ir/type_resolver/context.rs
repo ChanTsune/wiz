@@ -62,7 +62,7 @@ pub struct ResolverContext {
     binary_operators: HashMap<BinaryOperator, Vec<ResolverBinary>>,
     subscripts: Vec<ResolverSubscript>,
     current_namespace: Vec<String>,
-    current_type: Option<TypedType>
+    current_type: Option<TypedType>,
 }
 
 impl ResolverStruct {
@@ -129,7 +129,7 @@ impl ResolverContext {
             binary_operators: Default::default(),
             subscripts: vec![],
             current_namespace: vec![],
-            current_type: None
+            current_type: None,
         }
     }
 
