@@ -132,17 +132,24 @@ impl TypeResolver {
         let TypedStruct {
             name,
             type_params,
-            init,// TODO
-            stored_properties,// TODO
-            computed_properties,// TODO
-            member_functions,// TODO
-            static_function// TODO
+            init,                // TODO
+            stored_properties,   // TODO
+            computed_properties, // TODO
+            member_functions,    // TODO
+            static_function,     // TODO
         } = s;
-        let ns = self.context.get_current_namespace_mut().ok_or(ResolverError::from("NameSpace not exist"))?;
-        let rs = ns.types.get_mut(&*name).ok_or(ResolverError::from("Struct not exist"))?;
+        let ns = self
+            .context
+            .get_current_namespace_mut()
+            .ok_or(ResolverError::from("NameSpace not exist"))?;
+        let rs = ns
+            .types
+            .get_mut(&*name)
+            .ok_or(ResolverError::from("Struct not exist"))?;
         for sp in stored_properties.iter() {
-            rs.stored_properties.insert(sp.name.clone(), sp.type_.clone());
-        };
+            rs.stored_properties
+                .insert(sp.name.clone(), sp.type_.clone());
+        }
         self.context.push_name_space(name.clone());
         self.context.pop_name_space();
         Result::Ok(TypedStruct {
