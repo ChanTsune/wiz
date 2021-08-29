@@ -162,17 +162,11 @@ impl ResolverContext {
 
     pub fn resolve_member_type(&self, t: TypedType, name: String) -> Option<TypedType> {
         match t {
-            TypedType::Value(v) => {
-                match self.name_space.types.get(&v.name) {
-                    Some(rs) => {
-                        rs.stored_properties.get(&name).map(|it|{it.clone()})
-                    }
-                    None => {None}
-                }
-            }
-            TypedType::Function(_) => {
-                None
-            }
+            TypedType::Value(v) => match self.name_space.types.get(&v.name) {
+                Some(rs) => rs.stored_properties.get(&name).map(|it| it.clone()),
+                None => None,
+            },
+            TypedType::Function(_) => None,
         }
     }
 }

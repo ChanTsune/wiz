@@ -6,8 +6,12 @@ use crate::constants::UNSAFE_POINTER;
 use crate::high_level_ir::type_resolver::context::{ResolverContext, ResolverStruct};
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
-use crate::high_level_ir::typed_decl::{TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct, TypedVar, TypedArgDef};
-use crate::high_level_ir::typed_expr::{TypedExpr, TypedSubscript, TypedInstanceMember, TypedCall, TypedCallArg, TypedBinOp, TypedIf};
+use crate::high_level_ir::typed_decl::{
+    TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct, TypedVar,
+};
+use crate::high_level_ir::typed_expr::{
+    TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedSubscript,
+};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{TypedBlock, TypedStmt};
 use crate::high_level_ir::typed_type::{Package, TypedType, TypedValueType};
@@ -267,25 +271,23 @@ impl TypeResolver {
             left: Box::new(self.expr(*b.left)?),
             kind: b.kind,
             right: Box::new(self.expr(*b.right)?),
-            type_: b.type_
+            type_: b.type_,
         })
     }
 
     pub fn typed_instance_member(&mut self, m: TypedInstanceMember) -> Result<TypedInstanceMember> {
         let target = self.expr(*m.target)?;
-        let type_ = self.context.resolve_member_type(target.type_().unwrap(), m.name.clone());
+        let type_ = self
+            .context
+            .resolve_member_type(target.type_().unwrap(), m.name.clone());
         Result::Ok(TypedInstanceMember {
             target: Box::new(target),
             name: m.name,
             is_safe: m.is_safe,
             type_: match m.type_ {
-                Some(t) => {
-                    Some(t)
-                }
-                None => {
-                    type_
-                }
-            }
+                Some(t) => Some(t),
+                None => type_,
+            },
         })
     }
 
@@ -322,10 +324,12 @@ impl TypeResolver {
     pub fn typed_call(&mut self, c: TypedCall) -> Result<TypedCall> {
         Result::Ok(TypedCall {
             target: Box::new(self.expr(*c.target)?),
-            args: c.args.into_iter().map(|c|{
-                self.typed_call_arg(c)
-            }).collect::<Result<Vec<TypedCallArg>>>()?,
-            type_: c.type_
+            args: c
+                .args
+                .into_iter()
+                .map(|c| self.typed_call_arg(c))
+                .collect::<Result<Vec<TypedCallArg>>>()?,
+            type_: c.type_,
         })
     }
 
@@ -333,7 +337,7 @@ impl TypeResolver {
         Result::Ok(TypedCallArg {
             label: a.label,
             arg: Box::new(self.expr(*a.arg)?),
-            is_vararg: a.is_vararg
+            is_vararg: a.is_vararg,
         })
     }
 
@@ -342,7 +346,7 @@ impl TypeResolver {
             condition: Box::new(self.expr(*i.condition)?),
             body: self.typed_block(i.body)?,
             else_body: None,
-            type_: None
+            type_: None,
         })
     }
 
