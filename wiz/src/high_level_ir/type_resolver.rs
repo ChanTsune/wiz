@@ -6,13 +6,11 @@ use crate::constants::UNSAFE_POINTER;
 use crate::high_level_ir::type_resolver::context::{ResolverContext, ResolverStruct};
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
-use crate::high_level_ir::typed_decl::{
-    TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct, TypedVar,
-};
+use crate::high_level_ir::typed_decl::{TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct, TypedVar, TypedArgDef};
 use crate::high_level_ir::typed_expr::{TypedExpr, TypedSubscript};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{TypedBlock, TypedStmt};
-use crate::high_level_ir::typed_type::TypedType;
+use crate::high_level_ir::typed_type::{TypedType, TypedValueType, Package};
 use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -164,6 +162,11 @@ impl TypeResolver {
             rs.static_functions.insert(sf.name.clone(), sf.type_());
         }
         self.context.push_name_space(name.clone());
+        self.context.set_current_type(TypedType::Value(TypedValueType {
+            package: Package { names: vec![] },
+            name: name.clone(),
+            type_args: None
+        })); // TODO
         let init = init.into_iter().collect();
         let stored_properties = stored_properties.into_iter().collect();
         let computed_properties = computed_properties.into_iter().collect();
@@ -172,6 +175,7 @@ impl TypeResolver {
             .map(|m| self.typed_member_function(m))
             .collect::<Result<Vec<TypedMemberFunction>>>()?;
         let static_function = static_function.into_iter().collect();
+        self.context.clear_current_type();
         self.context.pop_name_space();
         Result::Ok(TypedStruct {
             name,
@@ -186,9 +190,18 @@ impl TypeResolver {
 
     fn typed_member_function(&mut self, mf: TypedMemberFunction) -> Result<TypedMemberFunction> {
         self.context.push_name_space(mf.name.clone());
+        let self_type = self.context.get_current_type();
+        let ns = self.context.get_current_namespace_mut().ok_or(ResolverError::from("NameSpace not exist"))?;
         let result = Result::Ok(TypedMemberFunction {
             name: mf.name,
-            args: mf.args.into_iter().collect(),
+            args: mf.args.into_iter().map(|a|{
+                ns.values.insert(a.name(), a.type_()
+                    .unwrap_or(self_type.clone().ok_or(
+                        ResolverError::from("Can not resolve `self`")
+                    )?)
+                );
+                Result::Ok(a)
+            }).collect::<Result<Vec<TypedArgDef>>>()?,
             type_params: mf.type_params,
             body: self.typed_fun_body(mf.body)?,
             return_type: mf.return_type,

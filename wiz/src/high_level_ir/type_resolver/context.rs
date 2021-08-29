@@ -62,6 +62,7 @@ pub struct ResolverContext {
     binary_operators: HashMap<BinaryOperator, Vec<ResolverBinary>>,
     subscripts: Vec<ResolverSubscript>,
     current_namespace: Vec<String>,
+    current_type: Option<TypedType>
 }
 
 impl ResolverStruct {
@@ -128,6 +129,7 @@ impl ResolverContext {
             binary_operators: Default::default(),
             subscripts: vec![],
             current_namespace: vec![],
+            current_type: None
         }
     }
 
@@ -144,6 +146,18 @@ impl ResolverContext {
         println!("NS => {:?}", self.current_namespace);
         self.name_space
             .get_child_mut(self.current_namespace.clone())
+    }
+
+    pub fn get_current_type(&self) -> Option<TypedType> {
+        self.current_type.clone()
+    }
+
+    pub fn set_current_type(&mut self, t: TypedType) {
+        self.current_type = Some(t)
+    }
+
+    pub fn clear_current_type(&mut self) {
+        self.current_type = None
     }
 }
 
