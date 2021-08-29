@@ -79,18 +79,21 @@ impl TypeResolver {
         Result::Ok(())
     }
 
-    pub fn file(&self, f: TypedFile) -> Result<TypedFile> {
-        Result::Ok(TypedFile {
+    pub fn file(&mut self, f: TypedFile) -> Result<TypedFile> {
+        self.context.push_name_space(f.name.clone());
+        let result = Result::Ok(TypedFile {
             name: f.name,
             body: f
                 .body
                 .into_iter()
                 .map(|s| self.decl(s))
                 .collect::<Result<Vec<TypedDecl>>>()?,
-        })
+        });
+        self.context.pop_name_space();
+        result
     }
 
-    pub fn decl(&self, d: TypedDecl) -> Result<TypedDecl> {
+    pub fn decl(&mut self, d: TypedDecl) -> Result<TypedDecl> {
         Result::Ok(match d {
             TypedDecl::Var(v) => TypedDecl::Var(self.typed_var(v)?),
             TypedDecl::Fun(f) => TypedDecl::Fun(self.typed_fun(f)?),
@@ -111,7 +114,7 @@ impl TypeResolver {
         })
     }
 
-    pub fn typed_fun(&self, f: TypedFun) -> Result<TypedFun> {
+    pub fn typed_fun(&mut self, f: TypedFun) -> Result<TypedFun> {
         Result::Ok(TypedFun {
             modifiers: f.modifiers,
             name: f.name,
@@ -125,26 +128,42 @@ impl TypeResolver {
         })
     }
 
-    pub fn typed_struct(&self, s: TypedStruct) -> Result<TypedStruct> {
+    pub fn typed_struct(&mut self, s: TypedStruct) -> Result<TypedStruct> {
+        let TypedStruct {
+            name,
+            type_params,
+            init,// TODO
+            stored_properties,// TODO
+            computed_properties,// TODO
+            member_functions,// TODO
+            static_function// TODO
+        } = s;
+        let ns = self.context.get_current_namespace_mut().ok_or(ResolverError::from("NameSpace not exist"))?;
+        let rs = ns.types.get_mut(&*name).ok_or(ResolverError::from("Struct not exist"))?;
+        for sp in stored_properties.iter() {
+            rs.stored_properties.insert(sp.name.clone(), sp.type_.clone());
+        };
+        self.context.push_name_space(name.clone());
+        self.context.pop_name_space();
         Result::Ok(TypedStruct {
-            name: s.name,
-            type_params: s.type_params,
-            init: s.init,                               // TODO
-            stored_properties: s.stored_properties,     // TODO
-            computed_properties: s.computed_properties, // TODO
-            member_functions: s.member_functions,       // TODO
-            static_function: s.static_function,         // TODO
+            name,
+            type_params,
+            init,
+            stored_properties,
+            computed_properties,
+            member_functions,
+            static_function,
         })
     }
 
-    fn typed_fun_body(&self, b: TypedFunBody) -> Result<TypedFunBody> {
+    fn typed_fun_body(&mut self, b: TypedFunBody) -> Result<TypedFunBody> {
         Result::Ok(match b {
             TypedFunBody::Expr(e) => TypedFunBody::Expr(self.expr(e)?),
             TypedFunBody::Block(b) => TypedFunBody::Block(self.typed_block(b)?),
         })
     }
 
-    fn typed_block(&self, b: TypedBlock) -> Result<TypedBlock> {
+    fn typed_block(&mut self, b: TypedBlock) -> Result<TypedBlock> {
         Result::Ok(TypedBlock {
             body: b
                 .body
@@ -207,7 +226,7 @@ impl TypeResolver {
         })
     }
 
-    pub fn stmt(&self, s: TypedStmt) -> Result<TypedStmt> {
+    pub fn stmt(&mut self, s: TypedStmt) -> Result<TypedStmt> {
         Result::Ok(match s {
             TypedStmt::Expr(e) => TypedStmt::Expr(self.expr(e)?),
             TypedStmt::Decl(d) => TypedStmt::Decl(self.decl(d)?),

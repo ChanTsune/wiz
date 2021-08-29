@@ -3,27 +3,26 @@ use std::collections::{HashMap, HashSet};
 use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
-struct ResolverTypeParam {
+pub(crate) struct ResolverTypeParam {
     type_constraints: Vec<String>,
     type_params: Option<HashMap<String, ResolverTypeParam>>,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct ResolverStruct {
-    stored_properties: HashMap<String, TypedType>,
-    // initializers: Vec<>,
-    computed_properties: HashMap<String, TypedType>,
-    member_functions: HashMap<String, TypedType>,
-    static_functions: HashMap<String, TypedType>,
-    conformed_protocols: HashSet<String>,
-    type_params: Option<HashMap<String, ResolverTypeParam>>,
+    pub(crate) stored_properties: HashMap<String, TypedType>,
+    // pub(crate) initializers: Vec<>,
+    pub(crate) computed_properties: HashMap<String, TypedType>,
+    pub(crate) member_functions: HashMap<String, TypedType>,
+    pub(crate) static_functions: HashMap<String, TypedType>,
+    pub(crate) conformed_protocols: HashSet<String>,
+    pub(crate) type_params: Option<HashMap<String, ResolverTypeParam>>,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct NameSpace {
     pub(crate) children: HashMap<String, NameSpace>,
     pub(crate) types: HashMap<String, ResolverStruct>,
-    pub(crate) structs: HashMap<String, TypedType>,
     pub(crate) functions: HashMap<String, TypedType>,
     pub(crate) values: HashMap<String, TypedType>,
 }
@@ -87,7 +86,6 @@ impl NameSpace {
         Self {
             children: Default::default(),
             types: Default::default(),
-            structs: Default::default(),
             functions: Default::default(),
             values: Default::default(),
         }
@@ -135,6 +133,7 @@ impl ResolverContext {
 
     pub fn push_name_space(&mut self, name: String) {
         self.current_namespace.push(name);
+        self.name_space.set_child(self.current_namespace.clone());
     }
 
     pub fn pop_name_space(&mut self) {
@@ -142,6 +141,7 @@ impl ResolverContext {
     }
 
     pub fn get_current_namespace_mut(&mut self) -> Option<&mut NameSpace> {
+        println!("NS => {:?}", self.current_namespace);
         self.name_space
             .get_child_mut(self.current_namespace.clone())
     }
