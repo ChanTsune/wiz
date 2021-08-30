@@ -33,6 +33,7 @@ use std::collections::HashMap;
 use std::fmt;
 use std::option::Option::Some;
 use std::process::exit;
+use crate::utils::path_string_to_page_name;
 
 pub mod type_resolver;
 pub mod typed_decl;
@@ -343,7 +344,7 @@ impl Ast2HLIR {
 
     pub fn file(&mut self, f: WizFile) -> TypedFile {
         TypedFile {
-            name: f.name,
+            name: path_string_to_page_name(f.name),
             body: self.file_syntax(f.syntax),
         }
     }
