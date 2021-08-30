@@ -27,13 +27,13 @@ use crate::high_level_ir::typed_stmt::{
 use crate::high_level_ir::typed_type::{
     Package, TypedFunctionType, TypedType, TypedTypeParam, TypedValueType,
 };
+use crate::utils::path_string_to_page_name;
 use crate::utils::stacked_hash_map::StackedHashMap;
 use either::Either;
 use std::collections::HashMap;
 use std::fmt;
 use std::option::Option::Some;
 use std::process::exit;
-use crate::utils::path_string_to_page_name;
 
 pub mod type_resolver;
 pub mod typed_decl;
