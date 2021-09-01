@@ -174,7 +174,7 @@ impl ResolverContext {
                     Some(rs) => rs.stored_properties.get(&name).map(|it| it.clone()),
                     None => None,
                 }
-            },
+            }
             TypedType::Function(_) => None,
         }
     }
@@ -187,7 +187,7 @@ impl ResolverContext {
                 return Some(t.clone());
             }
             if cns.is_empty() {
-                break
+                break;
             }
             cns.pop();
         }
