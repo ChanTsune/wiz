@@ -9,7 +9,10 @@ use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedSubscript, TypedName};
+use crate::high_level_ir::typed_expr::{
+    TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedName,
+    TypedSubscript,
+};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{TypedBlock, TypedStmt};
 use crate::high_level_ir::typed_type::{Package, TypedType, TypedValueType};
@@ -122,11 +125,16 @@ impl TypeResolver {
             modifiers: f.modifiers,
             name: f.name,
             type_params: f.type_params, // TODO
-            arg_defs: f.arg_defs.into_iter().map(|a|{
-                let ns = self.context.get_current_namespace_mut()?;
-                ns.values.insert(a.name(), a.type_()?);
-                Some(a)
-            }).collect::<Option<Vec<TypedArgDef>>>().ok_or(ResolverError::from("NameSpace not exist"))?,
+            arg_defs: f
+                .arg_defs
+                .into_iter()
+                .map(|a| {
+                    let ns = self.context.get_current_namespace_mut()?;
+                    ns.values.insert(a.name(), a.type_()?);
+                    Some(a)
+                })
+                .collect::<Option<Vec<TypedArgDef>>>()
+                .ok_or(ResolverError::from("NameSpace not exist"))?,
             body: match f.body {
                 Some(b) => Some(self.typed_fun_body(b)?),
                 None => None,
@@ -172,7 +180,9 @@ impl TypeResolver {
         }
         self.context
             .set_current_type(TypedType::Value(TypedValueType {
-                package: Package { names: self.context.current_namespace.clone() },
+                package: Package {
+                    names: self.context.current_namespace.clone(),
+                },
                 name: name.clone(),
                 type_args: None,
             }));
