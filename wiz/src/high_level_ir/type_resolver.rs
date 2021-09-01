@@ -9,9 +9,7 @@ use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{
-    TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedSubscript,
-};
+use crate::high_level_ir::typed_expr::{TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedSubscript, TypedName};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{TypedBlock, TypedStmt};
 use crate::high_level_ir::typed_type::{Package, TypedType, TypedValueType};
@@ -119,17 +117,24 @@ impl TypeResolver {
     }
 
     pub fn typed_fun(&mut self, f: TypedFun) -> Result<TypedFun> {
-        Result::Ok(TypedFun {
+        self.context.push_name_space(f.name.clone());
+        let result = Result::Ok(TypedFun {
             modifiers: f.modifiers,
             name: f.name,
             type_params: f.type_params, // TODO
-            arg_defs: f.arg_defs,       // TODO
+            arg_defs: f.arg_defs.into_iter().map(|a|{
+                let ns = self.context.get_current_namespace_mut()?;
+                ns.values.insert(a.name(), a.type_()?);
+                Some(a)
+            }).collect::<Option<Vec<TypedArgDef>>>().ok_or(ResolverError::from("NameSpace not exist"))?,
             body: match f.body {
                 Some(b) => Some(self.typed_fun_body(b)?),
                 None => None,
             },
             return_type: f.return_type, // TODO
-        })
+        });
+        self.context.pop_name_space();
+        result
     }
 
     pub fn typed_struct(&mut self, s: TypedStruct) -> Result<TypedStruct> {
@@ -165,13 +170,13 @@ impl TypeResolver {
         for sf in static_function.iter() {
             rs.static_functions.insert(sf.name.clone(), sf.type_());
         }
-        self.context.push_name_space(name.clone());
         self.context
             .set_current_type(TypedType::Value(TypedValueType {
-                package: Package { names: vec![] },
+                package: Package { names: self.context.current_namespace.clone() },
                 name: name.clone(),
                 type_args: None,
-            })); // TODO
+            }));
+        self.context.push_name_space(name.clone());
         let init = init.into_iter().collect();
         let stored_properties = stored_properties.into_iter().collect();
         let computed_properties = computed_properties.into_iter().collect();
