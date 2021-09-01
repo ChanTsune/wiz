@@ -61,7 +61,7 @@ pub struct ResolverContext {
     name_space: NameSpace,
     binary_operators: HashMap<BinaryOperator, Vec<ResolverBinary>>,
     subscripts: Vec<ResolverSubscript>,
-    current_namespace: Vec<String>,
+    pub(crate) current_namespace: Vec<String>,
     current_type: Option<TypedType>,
 }
 
@@ -148,6 +148,10 @@ impl ResolverContext {
             .get_child_mut(self.current_namespace.clone())
     }
 
+    pub fn get_namespace_mut(&mut self, ns: Vec<String>) -> Option<&mut NameSpace> {
+        self.name_space.get_child_mut(ns)
+    }
+
     pub fn get_current_type(&self) -> Option<TypedType> {
         self.current_type.clone()
     }
@@ -160,14 +164,34 @@ impl ResolverContext {
         self.current_type = None
     }
 
-    pub fn resolve_member_type(&self, t: TypedType, name: String) -> Option<TypedType> {
+    pub fn resolve_member_type(&mut self, t: TypedType, name: String) -> Option<TypedType> {
+        println!("++{:?}++{:?}++", t, name);
         match t {
-            TypedType::Value(v) => match self.name_space.types.get(&v.name) {
-                Some(rs) => rs.stored_properties.get(&name).map(|it| it.clone()),
-                None => None,
+            TypedType::Value(v) => {
+                let ns = self.get_namespace_mut(v.package.names)?;
+                println!("ns => {:?}", ns);
+                match ns.types.get(&v.name) {
+                    Some(rs) => rs.stored_properties.get(&name).map(|it| it.clone()),
+                    None => None,
+                }
             },
             TypedType::Function(_) => None,
         }
+    }
+
+    pub fn resolve_name_type(&mut self, name: String) -> Option<TypedType> {
+        let mut cns = self.current_namespace.clone();
+        loop {
+            let ns = self.get_namespace_mut(cns.clone())?;
+            if let Some(t) = ns.values.get(&name) {
+                return Some(t.clone());
+            }
+            if cns.is_empty() {
+                break
+            }
+            cns.pop();
+        }
+        None
     }
 }
 
