@@ -123,7 +123,8 @@ impl TypeResolver {
             .ok_or(ResolverError::from("NameSpace not exist"))?;
         namespace.values.insert(
             v.name.clone(),
-            v.type_.clone()
+            v.type_
+                .clone()
                 .ok_or(ResolverError::from("Cannot resolve variable type"))?,
         );
         Result::Ok(v)
