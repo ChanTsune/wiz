@@ -111,12 +111,22 @@ impl TypeResolver {
     }
 
     pub fn typed_var(&mut self, t: TypedVar) -> Result<TypedVar> {
-        Result::Ok(TypedVar {
+        let v = TypedVar {
             is_mut: t.is_mut,
             name: t.name,
             type_: t.type_,
             value: self.expr(t.value)?,
-        })
+        };
+        let namespace = self
+            .context
+            .get_current_namespace_mut()
+            .ok_or(ResolverError::from("NameSpace not exist"))?;
+        namespace.values.insert(
+            v.name.clone(),
+            v.type_.clone()
+                .ok_or(ResolverError::from("Cannot resolve variable type"))?,
+        );
+        Result::Ok(v)
     }
 
     pub fn typed_fun(&mut self, f: TypedFun) -> Result<TypedFun> {
