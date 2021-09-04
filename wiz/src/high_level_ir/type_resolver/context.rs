@@ -23,7 +23,6 @@ pub struct ResolverStruct {
 pub struct NameSpace {
     pub(crate) children: HashMap<String, NameSpace>,
     pub(crate) types: HashMap<String, ResolverStruct>,
-    pub(crate) functions: HashMap<String, TypedType>,
     pub(crate) values: HashMap<String, TypedType>,
 }
 
@@ -87,7 +86,6 @@ impl NameSpace {
         Self {
             children: Default::default(),
             types: Default::default(),
-            functions: Default::default(),
             values: Default::default(),
         }
     }
@@ -165,7 +163,6 @@ impl ResolverContext {
     }
 
     pub fn resolve_member_type(&mut self, t: TypedType, name: String) -> Option<TypedType> {
-        println!("++{:?}++{:?}++", t, name);
         match t {
             TypedType::Value(v) => {
                 let ns = self.get_namespace_mut(v.package.names)?;
