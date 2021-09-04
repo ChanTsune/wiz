@@ -52,11 +52,16 @@ impl TypeResolver {
     }
 
     pub fn preload_file(&mut self, f: TypedFile) -> Result<()> {
-        self.context.push_name_space(f.name);
+        let name = f.name.clone();
+        if name != String::from("builtin.ll") {
+            self.context.push_name_space(f.name.clone());
+        };
         for d in f.body {
             self.preload_decl(d)?;
         }
-        self.context.pop_name_space();
+        if name != String::from("builtin.ll") {
+            self.context.pop_name_space();
+        };
         Result::Ok(())
     }
 
@@ -74,7 +79,17 @@ impl TypeResolver {
                         .ok_or(ResolverError::from("Cannot resolve variable type"))?,
                 );
             }
-            TypedDecl::Fun(_) => {}
+            TypedDecl::Fun(f) => {
+                let fun = self.preload_fun(f)?;
+                let namespace = self
+                    .context
+                    .get_current_namespace_mut()
+                    .ok_or(ResolverError::from("NameSpace not exist"))?;
+                namespace.values.insert(
+                    fun.name.clone(),
+                    fun.type_()
+                );
+            }
             TypedDecl::Struct(_) => {}
             TypedDecl::Class => {}
             TypedDecl::Enum => {}
@@ -84,8 +99,23 @@ impl TypeResolver {
         Result::Ok(())
     }
 
+    pub fn preload_fun(&mut self, f: TypedFun) -> Result<TypedFun> {
+        let fun = TypedFun {
+            modifiers: f.modifiers,
+            name: f.name,
+            type_params: f.type_params, // TODO
+            arg_defs: f.arg_defs,
+            body: None,
+            return_type: f.return_type, // TODO
+        };
+        Result::Ok(fun)
+    }
+
     pub fn file(&mut self, f: TypedFile) -> Result<TypedFile> {
-        self.context.push_name_space(f.name.clone());
+        let name = f.name.clone();
+        if name != String::from("builtin.ll") {
+            self.context.push_name_space(f.name.clone());
+        };
         let result = Result::Ok(TypedFile {
             name: f.name,
             body: f
@@ -94,7 +124,9 @@ impl TypeResolver {
                 .map(|s| self.decl(s))
                 .collect::<Result<Vec<TypedDecl>>>()?,
         });
-        self.context.pop_name_space();
+        if name != String::from("builtin.ll") {
+            self.context.pop_name_space();
+        };
         result
     }
 
@@ -132,7 +164,7 @@ impl TypeResolver {
 
     pub fn typed_fun(&mut self, f: TypedFun) -> Result<TypedFun> {
         self.context.push_name_space(f.name.clone());
-        let result = Result::Ok(TypedFun {
+        let fun = TypedFun {
             modifiers: f.modifiers,
             name: f.name,
             type_params: f.type_params, // TODO
@@ -151,8 +183,13 @@ impl TypeResolver {
                 None => None,
             },
             return_type: f.return_type, // TODO
-        });
+        };
+        let fun_name = fun.name.clone();
+        let fun_type = fun.type_();
+        let result = Result::Ok(fun);
         self.context.pop_name_space();
+        let ns = self.context.get_current_namespace_mut().ok_or(ResolverError::from("NameSpace not exist"))?;
+        ns.values.insert(fun_name, fun_type);
         result
     }
 
@@ -271,7 +308,7 @@ impl TypeResolver {
 
     pub fn expr(&mut self, e: TypedExpr) -> Result<TypedExpr> {
         Result::Ok(match e {
-            TypedExpr::Name(n) => TypedExpr::Name(n),
+            TypedExpr::Name(n) => TypedExpr::Name(self.typed_name(n)?),
             TypedExpr::Literal(l) => TypedExpr::Literal(l),
             TypedExpr::BinOp(b) => TypedExpr::BinOp(self.typed_binop(b)?),
             TypedExpr::UnaryOp(u) => TypedExpr::UnaryOp(u),
@@ -289,6 +326,13 @@ impl TypeResolver {
             TypedExpr::Return(r) => TypedExpr::Return(r),
             TypedExpr::TypeCast => TypedExpr::TypeCast,
             TypedExpr::Type(t) => TypedExpr::Type(t),
+        })
+    }
+
+    pub fn typed_name(&mut self, n: TypedName) -> Result<TypedName> {
+        Result::Ok(TypedName {
+            type_: self.context.resolve_name_type(n.name.clone()),
+            name: n.name,
         })
     }
 
