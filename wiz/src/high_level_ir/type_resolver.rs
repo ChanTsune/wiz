@@ -85,10 +85,7 @@ impl TypeResolver {
                     .context
                     .get_current_namespace_mut()
                     .ok_or(ResolverError::from("NameSpace not exist"))?;
-                namespace.values.insert(
-                    fun.name.clone(),
-                    fun.type_()
-                );
+                namespace.values.insert(fun.name.clone(), fun.type_());
             }
             TypedDecl::Struct(_) => {}
             TypedDecl::Class => {}
@@ -188,7 +185,10 @@ impl TypeResolver {
         let fun_type = fun.type_();
         let result = Result::Ok(fun);
         self.context.pop_name_space();
-        let ns = self.context.get_current_namespace_mut().ok_or(ResolverError::from("NameSpace not exist"))?;
+        let ns = self
+            .context
+            .get_current_namespace_mut()
+            .ok_or(ResolverError::from("NameSpace not exist"))?;
         ns.values.insert(fun_name, fun_type);
         result
     }
