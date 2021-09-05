@@ -338,7 +338,10 @@ impl HLIR2MLIR {
                     "<=" => MLBinopKind::LessThanEqual,
                     "<" => MLBinopKind::LessThan,
                     "!=" => MLBinopKind::NotEqual,
-                    _ => exit(-1),
+                    _ => {
+                        eprintln!("Unknown operator '{:?}'", kind);
+                        exit(-1)
+                    },
                 },
                 right: Box::new(self.expr(*right)),
                 type_: self.type_(type_.unwrap()),
