@@ -25,6 +25,7 @@ mod llvm_ir;
 mod middle_level_ir;
 mod parser;
 mod utils;
+mod ext;
 
 fn get_builtin_syntax() -> Vec<WizFile> {
     let builtin_dir = std::fs::read_dir(Path::new("../builtin")).unwrap();

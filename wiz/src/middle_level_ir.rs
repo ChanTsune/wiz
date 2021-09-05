@@ -21,6 +21,7 @@ use crate::middle_level_ir::ml_type::{MLFunctionType, MLType, MLValueType};
 use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::HashMap;
 use std::process::exit;
+use crate::ext::string::StringExt;
 
 pub mod ml_decl;
 pub mod ml_expr;
@@ -158,7 +159,7 @@ impl HLIR2MLIR {
                 let target = self.expr(a.target.clone());
                 let value = TypedExpr::BinOp(TypedBinOp {
                     left: Box::new(a.target.clone()),
-                    kind: a.operator,
+                    kind: a.operator.remove_first(),
                     right: Box::new(a.value),
                     type_: a.target.type_(),
                 });
