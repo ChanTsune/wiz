@@ -14,7 +14,9 @@ use crate::high_level_ir::typed_expr::{
     TypedSubscript,
 };
 use crate::high_level_ir::typed_file::TypedFile;
-use crate::high_level_ir::typed_stmt::{TypedBlock, TypedStmt, TypedAssignmentStmt, TypedAssignment, TypedAssignmentAndOperation};
+use crate::high_level_ir::typed_stmt::{
+    TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedStmt,
+};
 use crate::high_level_ir::typed_type::{Package, TypedType, TypedValueType};
 use std::fmt;
 
@@ -438,23 +440,30 @@ impl TypeResolver {
 
     pub fn assignment_stmt(&mut self, a: TypedAssignmentStmt) -> Result<TypedAssignmentStmt> {
         Result::Ok(match a {
-            TypedAssignmentStmt::Assignment(a) => {TypedAssignmentStmt::Assignment(self.typed_assignment(a)?)}
-            TypedAssignmentStmt::AssignmentAndOperation(a) => {TypedAssignmentStmt::AssignmentAndOperation(self.typed_assignment_and_operation(a)?)}
+            TypedAssignmentStmt::Assignment(a) => {
+                TypedAssignmentStmt::Assignment(self.typed_assignment(a)?)
+            }
+            TypedAssignmentStmt::AssignmentAndOperation(a) => {
+                TypedAssignmentStmt::AssignmentAndOperation(self.typed_assignment_and_operation(a)?)
+            }
         })
     }
 
     pub fn typed_assignment(&mut self, a: TypedAssignment) -> Result<TypedAssignment> {
         Result::Ok(TypedAssignment {
             target: self.expr(a.target)?,
-            value: self.expr(a.value)?
+            value: self.expr(a.value)?,
         })
     }
 
-    pub fn typed_assignment_and_operation(&mut self, a: TypedAssignmentAndOperation) -> Result<TypedAssignmentAndOperation> {
+    pub fn typed_assignment_and_operation(
+        &mut self,
+        a: TypedAssignmentAndOperation,
+    ) -> Result<TypedAssignmentAndOperation> {
         Result::Ok(TypedAssignmentAndOperation {
             target: self.expr(a.target)?,
             operator: a.operator, // TODO
-            value: self.expr(a.value)?
+            value: self.expr(a.value)?,
         })
     }
 }
