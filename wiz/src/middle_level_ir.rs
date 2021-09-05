@@ -341,7 +341,7 @@ impl HLIR2MLIR {
                     _ => {
                         eprintln!("Unknown operator '{:?}'", kind);
                         exit(-1)
-                    },
+                    }
                 },
                 right: Box::new(self.expr(*right)),
                 type_: self.type_(type_.unwrap()),
