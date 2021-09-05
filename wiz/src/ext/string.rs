@@ -1,4 +1,3 @@
-
 pub(crate) trait StringExt {
     fn remove_first(&self) -> String;
 }
