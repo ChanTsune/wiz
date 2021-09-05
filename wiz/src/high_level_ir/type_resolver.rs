@@ -415,8 +415,8 @@ impl TypeResolver {
         let condition = Box::new(self.expr(*i.condition)?);
         let body = self.typed_block(i.body)?;
         let else_body = match i.else_body {
-            Some(b) => {Some(self.typed_block(b)?)}
-            None => {None}
+            Some(b) => Some(self.typed_block(b)?),
+            None => None,
         };
         let type_ = i.type_;
         Result::Ok(TypedIf {
