@@ -9,7 +9,10 @@ use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedName, TypedSubscript, TypedReturn};
+use crate::high_level_ir::typed_expr::{
+    TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedName,
+    TypedReturn, TypedSubscript,
+};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedStmt,
@@ -428,13 +431,13 @@ impl TypeResolver {
 
     pub fn typed_return(&mut self, r: TypedReturn) -> Result<TypedReturn> {
         let value = match r.value {
-            Some(v) => {Some(Box::new(self.expr(*v)?))}
-            None => {None}
+            Some(v) => Some(Box::new(self.expr(*v)?)),
+            None => None,
         };
         Result::Ok(TypedReturn {
             type_: match &value {
-                Some(v) => {v.type_()}
-                None => {None}
+                Some(v) => v.type_(),
+                None => None,
             },
             value: value,
         })
