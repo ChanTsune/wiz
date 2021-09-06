@@ -9,10 +9,7 @@ use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{
-    TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedName,
-    TypedSubscript,
-};
+use crate::high_level_ir::typed_expr::{TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedName, TypedSubscript, TypedReturn};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedStmt,
@@ -325,7 +322,7 @@ impl TypeResolver {
             TypedExpr::If(i) => TypedExpr::If(self.typed_if(i)?),
             TypedExpr::When => TypedExpr::When,
             TypedExpr::Lambda => TypedExpr::Lambda,
-            TypedExpr::Return(r) => TypedExpr::Return(r),
+            TypedExpr::Return(r) => TypedExpr::Return(self.typed_return(r)?),
             TypedExpr::TypeCast => TypedExpr::TypeCast,
             TypedExpr::Type(t) => TypedExpr::Type(t),
         })
@@ -426,6 +423,20 @@ impl TypeResolver {
             body,
             else_body,
             type_,
+        })
+    }
+
+    pub fn typed_return(&mut self, r: TypedReturn) -> Result<TypedReturn> {
+        let value = match r.value {
+            Some(v) => {Some(Box::new(self.expr(*v)?))}
+            None => {None}
+        };
+        Result::Ok(TypedReturn {
+            type_: match &value {
+                Some(v) => {v.type_()}
+                None => {None}
+            },
+            value: value,
         })
     }
 
