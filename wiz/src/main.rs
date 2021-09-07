@@ -1,7 +1,8 @@
 use crate::parser::parser::{parse_from_file_path, parse_from_file_path_str};
 
 use crate::ast::file::WizFile;
-use crate::high_level_ir::type_resolver::{ResolverResult, TypeResolver};
+use crate::high_level_ir::type_resolver::result::Result;
+use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::Ast2HLIR;
 use crate::llvm_ir::codegen::{CodeGen, MLContext};
@@ -15,9 +16,11 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::path::Path;
 use std::process::exit;
+use std::result;
 
 mod ast;
 mod constants;
+mod ext;
 mod high_level_ir;
 mod llvm_ir;
 mod middle_level_ir;
@@ -35,7 +38,7 @@ fn get_builtin_syntax() -> Vec<WizFile> {
         .collect()
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> result::Result<(), Box<dyn Error>> {
     let app = App::new("wiz")
         .arg(Arg::with_name("input").required(true).multiple(true))
         .arg(Arg::with_name("output").short("o").takes_value(true));
@@ -69,20 +72,28 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let hlfiles: Vec<TypedFile> = ast_files.into_iter().map(|f| ast2hlir.file(f)).collect();
 
-    let type_resolver = TypeResolver::new();
+    let mut type_resolver = TypeResolver::new();
 
     for hlir in builtin_hlir.iter() {
-        type_resolver.preload(hlir.clone());
+        type_resolver.detect_type(hlir.clone())?;
     }
 
     for hlir in hlfiles.iter() {
-        type_resolver.preload(hlir.clone());
+        type_resolver.detect_type(hlir.clone())?;
+    }
+
+    for hlir in builtin_hlir.iter() {
+        type_resolver.preload_file(hlir.clone())?;
+    }
+
+    for hlir in hlfiles.iter() {
+        type_resolver.preload_file(hlir.clone())?;
     }
 
     let hlfiles = hlfiles
         .into_iter()
         .map(|f| type_resolver.file(f))
-        .collect::<ResolverResult<Vec<TypedFile>>>()?;
+        .collect::<Result<Vec<TypedFile>>>()?;
 
     let mut hlir2mlir = HLIR2MLIR::new();
 

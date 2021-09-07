@@ -13,11 +13,11 @@ use crate::ast::type_name::{TypeName, TypeParam};
 use crate::constants::UNSAFE_POINTER;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedFun, TypedFunBody, TypedInitializer,
-    TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedVar,
+    TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedValueArgDef, TypedVar,
 };
 use crate::high_level_ir::typed_expr::{
-    TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName,
-    TypedReturn, TypedStaticMember, TypedSubscript,
+    TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral,
+    TypedName, TypedReturn, TypedStaticMember, TypedSubscript, TypedUnaryOp,
 };
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{
@@ -27,6 +27,7 @@ use crate::high_level_ir::typed_stmt::{
 use crate::high_level_ir::typed_type::{
     Package, TypedFunctionType, TypedType, TypedTypeParam, TypedValueType,
 };
+use crate::utils::path_string_to_page_name;
 use crate::utils::stacked_hash_map::StackedHashMap;
 use either::Either;
 use std::collections::HashMap;
@@ -343,7 +344,7 @@ impl Ast2HLIR {
 
     pub fn file(&mut self, f: WizFile) -> TypedFile {
         TypedFile {
-            name: f.name,
+            name: path_string_to_page_name(f.name),
             body: self.file_syntax(f.syntax),
         }
     }
@@ -456,10 +457,13 @@ impl Ast2HLIR {
     }
 
     pub fn arg_def(&self, a: ArgDef) -> TypedArgDef {
-        TypedArgDef {
-            label: a.label,
-            name: a.name,
-            type_: self.context.resolve_type(Some(a.type_name)).unwrap(),
+        match a {
+            ArgDef::Value(a) => TypedArgDef::Value(TypedValueArgDef {
+                label: a.label,
+                name: a.name,
+                type_: self.context.resolve_type(Some(a.type_name)).unwrap(),
+            }),
+            ArgDef::Self_ => TypedArgDef::Self_(None),
         }
     }
 
@@ -475,7 +479,7 @@ impl Ast2HLIR {
         let args: Vec<TypedArgDef> = f.arg_defs.into_iter().map(|a| self.arg_def(a)).collect();
         self.context.push();
         for arg in args.iter() {
-            self.context.put_name(arg.name.clone(), &arg.type_)
+            self.context.put_name(arg.name(), &arg.type_().unwrap())
         }
         let body = match f.body {
             None => None,
@@ -599,10 +603,12 @@ impl Ast2HLIR {
         let args: Vec<TypedArgDef> = s
             .stored_properties
             .iter()
-            .map(|p| TypedArgDef {
-                label: p.name.clone(),
-                name: p.name.clone(),
-                type_: p.type_.clone(),
+            .map(|p| {
+                TypedArgDef::Value(TypedValueArgDef {
+                    label: p.name.clone(),
+                    name: p.name.clone(),
+                    type_: p.type_.clone(),
+                })
             })
             .collect();
         if s.init.is_empty() {
@@ -737,12 +743,12 @@ impl Ast2HLIR {
                 let left = Box::new(self.expr(*left));
                 let right = Box::new(self.expr(*right));
                 let type_ = self.resolve_by_binop(&left.type_(), &kind, &right.type_());
-                TypedExpr::BinOp {
+                TypedExpr::BinOp(TypedBinOp {
                     left: left,
                     kind: kind,
                     right: right,
                     type_: type_,
-                }
+                })
             }
             Expr::UnaryOp {
                 target,
@@ -751,12 +757,12 @@ impl Ast2HLIR {
             } => {
                 let target = self.expr(*target);
                 let type_ = self.resolve_by_unaryop(&target.type_(), &kind);
-                TypedExpr::UnaryOp {
+                TypedExpr::UnaryOp(TypedUnaryOp {
                     target: Box::new(target),
                     prefix: prefix,
                     kind: kind,
                     type_: type_,
-                }
+                })
             }
             Expr::Subscript(s) => TypedExpr::Subscript(self.subscript_syntax(s)),
             Expr::Member {

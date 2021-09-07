@@ -13,6 +13,7 @@ module wiz
          | Enum(enum enum)
          | Protocol(protocol protocol)
          | Extension(extension extension)
+         | Use(use use)
 
     stmt = DeclStmt(decl decl)
          | ExprStmt(expr expr)
@@ -27,6 +28,12 @@ module wiz
     protocol = Protocol(type_name name, decl* fun)
 
     extension = Extension(type_name target, type_name* protocol_names, fun* functions)
+
+    use = Use(package_name package_name alias? alias)
+
+    package_name = PackageName(string* name)
+
+    alias = Alias(string name)
 
     block = Block(stmt* stmts)
 

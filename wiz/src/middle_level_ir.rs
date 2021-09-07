@@ -1,10 +1,11 @@
 use crate::constants::UNSAFE_POINTER;
+use crate::ext::string::StringExt;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct, TypedVar,
 };
 use crate::high_level_ir::typed_expr::{
-    TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn,
-    TypedStaticMember, TypedSubscript,
+    TypedBinOp, TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName,
+    TypedReturn, TypedStaticMember, TypedSubscript,
 };
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
@@ -90,7 +91,7 @@ impl HLIR2MLIR {
             arguments: t
                 .arguments
                 .into_iter()
-                .map(|a| match self.type_(a.type_) {
+                .map(|a| match self.type_(a.type_().unwrap()) {
                     MLType::Value(v) => v,
                     MLType::Function(_) => exit(-9),
                 })
@@ -156,12 +157,12 @@ impl HLIR2MLIR {
             },
             TypedAssignmentStmt::AssignmentAndOperation(a) => {
                 let target = self.expr(a.target.clone());
-                let value = TypedExpr::BinOp {
+                let value = TypedExpr::BinOp(TypedBinOp {
                     left: Box::new(a.target.clone()),
-                    kind: a.operator,
+                    kind: a.operator.remove_last(),
                     right: Box::new(a.value),
                     type_: a.target.type_(),
-                };
+                });
                 MLAssignmentStmt {
                     target: target,
                     value: self.expr(value),
@@ -319,12 +320,12 @@ impl HLIR2MLIR {
         match e {
             TypedExpr::Name(name) => MLExpr::Name(self.name(name)),
             TypedExpr::Literal(l) => MLExpr::Literal(self.literal(l)),
-            TypedExpr::BinOp {
+            TypedExpr::BinOp(TypedBinOp {
                 left,
                 kind,
                 right,
                 type_,
-            } => MLExpr::PrimitiveBinOp(MLBinOp {
+            }) => MLExpr::PrimitiveBinOp(MLBinOp {
                 left: Box::new(self.expr(*left)),
                 kind: match &*kind {
                     "+" => MLBinopKind::Plus,
@@ -338,7 +339,10 @@ impl HLIR2MLIR {
                     "<=" => MLBinopKind::LessThanEqual,
                     "<" => MLBinopKind::LessThan,
                     "!=" => MLBinopKind::NotEqual,
-                    _ => exit(-1),
+                    _ => {
+                        eprintln!("Unknown operator '{:?}'", kind);
+                        exit(-1)
+                    }
                 },
                 right: Box::new(self.expr(*right)),
                 type_: self.type_(type_.unwrap()),
@@ -482,8 +486,8 @@ impl HLIR2MLIR {
 
     pub fn arg_def(&self, e: TypedArgDef) -> MLArgDef {
         MLArgDef {
-            name: e.name,
-            type_: self.type_(e.type_),
+            name: e.name(),
+            type_: self.type_(e.type_().unwrap()),
         }
     }
 

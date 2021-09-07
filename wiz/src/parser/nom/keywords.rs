@@ -41,11 +41,24 @@ pub fn init_keyword(s: &str) -> IResult<&str, &str> {
     tag("init")(s)
 }
 
+pub fn use_keyword(s: &str) -> IResult<&str, &str> {
+    tag("use")(s)
+}
+
+pub fn as_keyword(s: &str) -> IResult<&str, &str> {
+    tag("as")(s)
+}
+
+pub fn self_keyword(s: &str) -> IResult<&str, &str> {
+    tag("self")(s)
+}
+
 #[cfg(test)]
 mod tests {
     use crate::parser::nom::keywords::{
-        else_keyword, fun_keyword, if_keyword, init_keyword, return_keyword, struct_keyword,
-        val_keyword, var_keyword, where_keyword, while_keyword,
+        as_keyword, else_keyword, fun_keyword, if_keyword, init_keyword, return_keyword,
+        self_keyword, struct_keyword, use_keyword, val_keyword, var_keyword, where_keyword,
+        while_keyword,
     };
 
     #[test]
@@ -96,5 +109,20 @@ mod tests {
     #[test]
     fn test_init_keyword() {
         assert_eq!(init_keyword("init"), Ok(("", "init")))
+    }
+
+    #[test]
+    fn test_use_keyword() {
+        assert_eq!(use_keyword("use"), Ok(("", "use")))
+    }
+
+    #[test]
+    fn test_as_keyword() {
+        assert_eq!(as_keyword("as"), Ok(("", "as")))
+    }
+
+    #[test]
+    fn test_self_keyword() {
+        assert_eq!(self_keyword("self"), Ok(("", "self")))
     }
 }

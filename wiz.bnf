@@ -8,6 +8,7 @@
         #  | <enum_decl>
         #  | <protocol_decl>
         #  | <extension_decl>
+         | <use>
 
 <struct_decl> ::= "struct" <identifier> <type_parameters>? "{" <struct_properties> "}"
 
@@ -49,7 +50,7 @@
 
 <function_value_parameters> ::= "(" (<function_value_parameter> ("," <function_value_parameter>)* ","?)? ")"
 
-<function_value_parameter> ::= <function_value_label> <function_value_name> ":" <type> ("=" <expr>)?
+<function_value_parameter> ::= (<function_value_label> <function_value_name> ":" <type> ("=" <expr>)?) | "self"
 
 <function_value_label> ::= <identifier>
 <function_value_name> ::= <identifier>
@@ -69,6 +70,10 @@
 
 <arg_label> ::= <identifire>
 <arg_name> ::= <identifire> 
+
+<use> ::= <package_name> ("as" <identifier>)?
+
+<package_name> ::= <identifier> ("." <identifier>)*
 
 <block> ::= "{" <stmts> "}"
 

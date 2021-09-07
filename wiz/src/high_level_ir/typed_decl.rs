@@ -33,7 +33,34 @@ pub struct TypedFun {
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
-pub struct TypedArgDef {
+pub enum TypedArgDef {
+    Value(TypedValueArgDef),
+    Self_(Option<TypedType>),
+}
+
+impl TypedArgDef {
+    pub(crate) fn label(&self) -> String {
+        match self {
+            TypedArgDef::Value(v) => v.name.clone(),
+            TypedArgDef::Self_(_) => String::from("_"),
+        }
+    }
+    pub(crate) fn name(&self) -> String {
+        match self {
+            TypedArgDef::Value(v) => v.name.clone(),
+            TypedArgDef::Self_(_) => String::from("self"),
+        }
+    }
+    pub(crate) fn type_(&self) -> Option<TypedType> {
+        match self {
+            TypedArgDef::Value(v) => Some(v.type_.clone()),
+            TypedArgDef::Self_(_) => None,
+        }
+    }
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
+pub struct TypedValueArgDef {
     pub(crate) label: String,
     pub(crate) name: String,
     pub(crate) type_: TypedType,

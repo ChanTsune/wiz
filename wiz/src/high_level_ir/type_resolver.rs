@@ -1,109 +1,29 @@
-use crate::high_level_ir::typed_decl::{TypedDecl, TypedFun};
-use crate::high_level_ir::typed_expr::TypedExpr;
+pub mod context;
+pub mod error;
+pub mod result;
+
+use crate::constants::UNSAFE_POINTER;
+use crate::high_level_ir::type_resolver::context::{ResolverContext, ResolverStruct};
+use crate::high_level_ir::type_resolver::error::ResolverError;
+use crate::high_level_ir::type_resolver::result::Result;
+use crate::high_level_ir::typed_decl::{
+    TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct, TypedVar,
+};
+use crate::high_level_ir::typed_expr::{
+    TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedName,
+    TypedReturn, TypedSubscript,
+};
 use crate::high_level_ir::typed_file::TypedFile;
-use crate::high_level_ir::typed_stmt::TypedStmt;
-use crate::high_level_ir::typed_type::TypedType;
-use std::collections::{HashMap, HashSet};
-use std::error::Error;
+use crate::high_level_ir::typed_stmt::{
+    TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedStmt,
+};
+use crate::high_level_ir::typed_type::{Package, TypedType, TypedValueType};
 use std::fmt;
-use std::fmt::{Display, Formatter};
-
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
-struct ResolverTypeParam {
-    type_constraints: Vec<String>,
-    type_params: Option<HashMap<String, ResolverTypeParam>>,
-}
-
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
-struct ResolverStruct {
-    stored_properties: HashMap<String, TypedType>,
-    // initializers: Vec<>,
-    computed_properties: HashMap<String, TypedType>,
-    member_functions: HashMap<String, TypedType>,
-    static_functions: HashMap<String, TypedType>,
-    conformed_protocols: HashSet<String>,
-    type_params: Option<HashMap<String, ResolverTypeParam>>,
-}
-
-impl ResolverStruct {
-    pub fn is_generic(&self) -> bool {
-        self.type_params != None
-    }
-}
-
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
-struct NameSpace {
-    children: HashMap<String, NameSpace>,
-    types: HashMap<String, ResolverStruct>,
-    structs: HashMap<String, TypedType>,
-    functions: HashMap<String, TypedType>,
-    values: HashMap<String, TypedType>,
-}
-
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
-enum ResolverOperators {
-    Subscript {
-        target: TypedType,
-        indexes: Vec<TypedType>,
-        return_type: TypedType,
-    },
-    Binary {
-        right: TypedType,
-        left: TypedType,
-        return_type: TypedType,
-    },
-    Unary {
-        value: TypedType,
-        return_type: TypedType,
-    },
-}
-
-#[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
-enum ResolverOperator {
-    Subscript,
-    BinaryAdd,
-    BinarySub,
-    BinaryMul,
-    BinaryDiv,
-    BinaryMod,
-}
-
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
-struct ResolverContext {
-    name_space: HashMap<String, NameSpace>,
-    operators: HashMap<ResolverOperator, Vec<ResolverOperators>>,
-}
-
-impl ResolverContext {
-    fn new() -> Self {
-        Self {
-            name_space: Default::default(),
-            operators: Default::default(),
-        }
-    }
-}
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub(crate) struct TypeResolver {
     context: ResolverContext,
 }
-
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
-pub struct ResolverError {
-    message: String,
-}
-
-impl Display for ResolverError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        f.write_str("ResolverError: ")?;
-        f.write_str(&self.message)?;
-        f.write_str("\n")
-    }
-}
-
-impl Error for ResolverError {}
-
-pub type ResolverResult<T> = Result<T, ResolverError>;
 
 impl TypeResolver {
     pub fn new() -> Self {
@@ -112,24 +32,108 @@ impl TypeResolver {
         }
     }
 
-    pub fn preload(&self, f: TypedFile) {}
+    pub fn detect_type(&mut self, f: TypedFile) -> Result<()> {
+        self.context.push_name_space(f.name);
+        for d in f.body {
+            match d {
+                TypedDecl::Struct(s) => {
+                    let ns = self
+                        .context
+                        .get_current_namespace_mut()
+                        .ok_or(ResolverError::from("Context NameSpace Error"))?;
+                    ns.types.insert(s.name, ResolverStruct::new());
+                }
+                TypedDecl::Class => {}
+                TypedDecl::Enum => {}
+                TypedDecl::Protocol => {}
+                _ => {}
+            }
+        }
+        self.context.pop_name_space();
+        Result::Ok(())
+    }
 
-    pub fn file(&self, f: TypedFile) -> ResolverResult<TypedFile> {
-        ResolverResult::Ok(TypedFile {
+    pub fn preload_file(&mut self, f: TypedFile) -> Result<()> {
+        let name = f.name.clone();
+        if name != String::from("builtin.ll") {
+            self.context.push_name_space(f.name.clone());
+        };
+        for d in f.body {
+            self.preload_decl(d)?;
+        }
+        if name != String::from("builtin.ll") {
+            self.context.pop_name_space();
+        };
+        Result::Ok(())
+    }
+
+    fn preload_decl(&mut self, d: TypedDecl) -> Result<()> {
+        match d {
+            TypedDecl::Var(v) => {
+                let v = self.typed_var(v)?;
+                let namespace = self
+                    .context
+                    .get_current_namespace_mut()
+                    .ok_or(ResolverError::from("NameSpace not exist"))?;
+                namespace.values.insert(
+                    v.name,
+                    v.type_
+                        .ok_or(ResolverError::from("Cannot resolve variable type"))?,
+                );
+            }
+            TypedDecl::Fun(f) => {
+                let fun = self.preload_fun(f)?;
+                let namespace = self
+                    .context
+                    .get_current_namespace_mut()
+                    .ok_or(ResolverError::from("NameSpace not exist"))?;
+                namespace.values.insert(fun.name.clone(), fun.type_());
+            }
+            TypedDecl::Struct(_) => {}
+            TypedDecl::Class => {}
+            TypedDecl::Enum => {}
+            TypedDecl::Protocol => {}
+            TypedDecl::Extension => {}
+        }
+        Result::Ok(())
+    }
+
+    pub fn preload_fun(&mut self, f: TypedFun) -> Result<TypedFun> {
+        let fun = TypedFun {
+            modifiers: f.modifiers,
+            name: f.name,
+            type_params: f.type_params, // TODO
+            arg_defs: f.arg_defs,
+            body: None,
+            return_type: f.return_type, // TODO
+        };
+        Result::Ok(fun)
+    }
+
+    pub fn file(&mut self, f: TypedFile) -> Result<TypedFile> {
+        let name = f.name.clone();
+        if name != String::from("builtin.ll") {
+            self.context.push_name_space(f.name.clone());
+        };
+        let result = Result::Ok(TypedFile {
             name: f.name,
             body: f
                 .body
                 .into_iter()
                 .map(|s| self.decl(s))
-                .collect::<ResolverResult<Vec<TypedDecl>>>()?,
-        })
+                .collect::<Result<Vec<TypedDecl>>>()?,
+        });
+        if name != String::from("builtin.ll") {
+            self.context.pop_name_space();
+        };
+        result
     }
 
-    pub fn decl(&self, d: TypedDecl) -> ResolverResult<TypedDecl> {
-        ResolverResult::Ok(match d {
-            TypedDecl::Var(v) => TypedDecl::Var(v),
-            TypedDecl::Fun(f) => TypedDecl::Fun(f),
-            TypedDecl::Struct(s) => TypedDecl::Struct(s),
+    pub fn decl(&mut self, d: TypedDecl) -> Result<TypedDecl> {
+        Result::Ok(match d {
+            TypedDecl::Var(v) => TypedDecl::Var(self.typed_var(v)?),
+            TypedDecl::Fun(f) => TypedDecl::Fun(self.typed_fun(f)?),
+            TypedDecl::Struct(s) => TypedDecl::Struct(self.typed_struct(s)?),
             TypedDecl::Class => TypedDecl::Class,
             TypedDecl::Enum => TypedDecl::Enum,
             TypedDecl::Protocol => TypedDecl::Protocol,
@@ -137,12 +141,343 @@ impl TypeResolver {
         })
     }
 
-    pub fn stmt(&self, s: TypedStmt) -> ResolverResult<TypedStmt> {
-        ResolverResult::Ok(match s {
-            TypedStmt::Expr(e) => TypedStmt::Expr(e),
-            TypedStmt::Decl(d) => TypedStmt::Decl(d),
-            TypedStmt::Assignment(a) => TypedStmt::Assignment(a),
+    pub fn typed_var(&mut self, t: TypedVar) -> Result<TypedVar> {
+        let v = TypedVar {
+            is_mut: t.is_mut,
+            name: t.name,
+            type_: t.type_,
+            value: self.expr(t.value)?,
+        };
+        let namespace = self
+            .context
+            .get_current_namespace_mut()
+            .ok_or(ResolverError::from("NameSpace not exist"))?;
+        namespace.values.insert(
+            v.name.clone(),
+            v.type_
+                .clone()
+                .ok_or(ResolverError::from("Cannot resolve variable type"))?,
+        );
+        Result::Ok(v)
+    }
+
+    pub fn typed_fun(&mut self, f: TypedFun) -> Result<TypedFun> {
+        self.context.push_name_space(f.name.clone());
+        let fun = TypedFun {
+            modifiers: f.modifiers,
+            name: f.name,
+            type_params: f.type_params, // TODO
+            arg_defs: f
+                .arg_defs
+                .into_iter()
+                .map(|a| {
+                    let ns = self.context.get_current_namespace_mut()?;
+                    ns.values.insert(a.name(), a.type_()?);
+                    Some(a)
+                })
+                .collect::<Option<Vec<TypedArgDef>>>()
+                .ok_or(ResolverError::from("NameSpace not exist"))?,
+            body: match f.body {
+                Some(b) => Some(self.typed_fun_body(b)?),
+                None => None,
+            },
+            return_type: f.return_type, // TODO
+        };
+        let fun_name = fun.name.clone();
+        let fun_type = fun.type_();
+        let result = Result::Ok(fun);
+        self.context.pop_name_space();
+        let ns = self
+            .context
+            .get_current_namespace_mut()
+            .ok_or(ResolverError::from("NameSpace not exist"))?;
+        ns.values.insert(fun_name, fun_type);
+        result
+    }
+
+    pub fn typed_struct(&mut self, s: TypedStruct) -> Result<TypedStruct> {
+        let TypedStruct {
+            name,
+            type_params,
+            init,                // TODO
+            stored_properties,   // TODO
+            computed_properties, // TODO
+            member_functions,    // TODO
+            static_function,     // TODO
+        } = s;
+        let ns = self
+            .context
+            .get_current_namespace_mut()
+            .ok_or(ResolverError::from("NameSpace not exist"))?;
+        let rs = ns
+            .types
+            .get_mut(&*name)
+            .ok_or(ResolverError::from("Struct not exist"))?;
+        for sp in stored_properties.iter() {
+            rs.stored_properties
+                .insert(sp.name.clone(), sp.type_.clone());
+        }
+        for cp in computed_properties.iter() {
+            rs.computed_properties
+                .insert(cp.name.clone(), cp.type_.clone());
+        }
+        for mf in member_functions.iter() {
+            rs.member_functions
+                .insert(mf.name.clone(), mf.type_.clone());
+        }
+        for sf in static_function.iter() {
+            rs.static_functions.insert(sf.name.clone(), sf.type_());
+        }
+        self.context
+            .set_current_type(TypedType::Value(TypedValueType {
+                package: Package {
+                    names: self.context.current_namespace.clone(),
+                },
+                name: name.clone(),
+                type_args: None,
+            }));
+        self.context.push_name_space(name.clone());
+        let init = init.into_iter().collect();
+        let stored_properties = stored_properties.into_iter().collect();
+        let computed_properties = computed_properties.into_iter().collect();
+        let member_functions = member_functions
+            .into_iter()
+            .map(|m| self.typed_member_function(m))
+            .collect::<Result<Vec<TypedMemberFunction>>>()?;
+        let static_function = static_function.into_iter().collect();
+        self.context.clear_current_type();
+        self.context.pop_name_space();
+        Result::Ok(TypedStruct {
+            name,
+            type_params,
+            init,
+            stored_properties,
+            computed_properties,
+            member_functions,
+            static_function,
+        })
+    }
+
+    fn typed_member_function(&mut self, mf: TypedMemberFunction) -> Result<TypedMemberFunction> {
+        self.context.push_name_space(mf.name.clone());
+        let self_type = self.context.get_current_type();
+        let ns = self
+            .context
+            .get_current_namespace_mut()
+            .ok_or(ResolverError::from("NameSpace not exist"))?;
+        let result = Result::Ok(TypedMemberFunction {
+            name: mf.name,
+            args: mf
+                .args
+                .into_iter()
+                .map(|a| {
+                    ns.values.insert(
+                        a.name(),
+                        a.type_().unwrap_or(
+                            self_type
+                                .clone()
+                                .ok_or(ResolverError::from("Can not resolve `self`"))?,
+                        ),
+                    );
+                    Result::Ok(a)
+                })
+                .collect::<Result<Vec<TypedArgDef>>>()?,
+            type_params: mf.type_params,
+            body: self.typed_fun_body(mf.body)?,
+            return_type: mf.return_type,
+            type_: mf.type_,
+        });
+        self.context.pop_name_space();
+        result
+    }
+
+    fn typed_fun_body(&mut self, b: TypedFunBody) -> Result<TypedFunBody> {
+        Result::Ok(match b {
+            TypedFunBody::Expr(e) => TypedFunBody::Expr(self.expr(e)?),
+            TypedFunBody::Block(b) => TypedFunBody::Block(self.typed_block(b)?),
+        })
+    }
+
+    fn typed_block(&mut self, b: TypedBlock) -> Result<TypedBlock> {
+        Result::Ok(TypedBlock {
+            body: b
+                .body
+                .into_iter()
+                .map(|s| self.stmt(s))
+                .collect::<Result<Vec<TypedStmt>>>()?,
+        })
+    }
+
+    pub fn expr(&mut self, e: TypedExpr) -> Result<TypedExpr> {
+        Result::Ok(match e {
+            TypedExpr::Name(n) => TypedExpr::Name(self.typed_name(n)?),
+            TypedExpr::Literal(l) => TypedExpr::Literal(l),
+            TypedExpr::BinOp(b) => TypedExpr::BinOp(self.typed_binop(b)?),
+            TypedExpr::UnaryOp(u) => TypedExpr::UnaryOp(u),
+            TypedExpr::Subscript(s) => TypedExpr::Subscript(self.typed_subscript(s)?),
+            TypedExpr::Member(m) => TypedExpr::Member(self.typed_instance_member(m)?),
+            TypedExpr::StaticMember(s) => TypedExpr::StaticMember(s),
+            TypedExpr::List => TypedExpr::List,
+            TypedExpr::Tuple => TypedExpr::Tuple,
+            TypedExpr::Dict => TypedExpr::Dict,
+            TypedExpr::StringBuilder => TypedExpr::StringBuilder,
+            TypedExpr::Call(c) => TypedExpr::Call(self.typed_call(c)?),
+            TypedExpr::If(i) => TypedExpr::If(self.typed_if(i)?),
+            TypedExpr::When => TypedExpr::When,
+            TypedExpr::Lambda => TypedExpr::Lambda,
+            TypedExpr::Return(r) => TypedExpr::Return(self.typed_return(r)?),
+            TypedExpr::TypeCast => TypedExpr::TypeCast,
+            TypedExpr::Type(t) => TypedExpr::Type(t),
+        })
+    }
+
+    pub fn typed_name(&mut self, n: TypedName) -> Result<TypedName> {
+        Result::Ok(TypedName {
+            type_: self.context.resolve_name_type(n.name.clone()),
+            name: n.name,
+        })
+    }
+
+    pub fn typed_binop(&mut self, b: TypedBinOp) -> Result<TypedBinOp> {
+        Result::Ok(TypedBinOp {
+            left: Box::new(self.expr(*b.left)?),
+            kind: b.kind,
+            right: Box::new(self.expr(*b.right)?),
+            type_: b.type_,
+        })
+    }
+
+    pub fn typed_instance_member(&mut self, m: TypedInstanceMember) -> Result<TypedInstanceMember> {
+        let target = self.expr(*m.target)?;
+        let type_ = self
+            .context
+            .resolve_member_type(target.type_().unwrap(), m.name.clone());
+        Result::Ok(TypedInstanceMember {
+            target: Box::new(target),
+            name: m.name,
+            is_safe: m.is_safe,
+            type_: match m.type_ {
+                Some(t) => Some(t),
+                None => type_,
+            },
+        })
+    }
+
+    pub fn typed_subscript(&mut self, s: TypedSubscript) -> Result<TypedSubscript> {
+        let target = self.expr(*s.target)?;
+        if let TypedType::Value(v) = target.type_().unwrap() {
+            if v.name == UNSAFE_POINTER {
+                if let Some(mut ags) = v.type_args {
+                    if ags.len() == 1 {
+                        return Result::Ok(TypedSubscript {
+                            target: Box::new(target),
+                            indexes: s
+                                .indexes
+                                .into_iter()
+                                .map(|i| self.expr(i))
+                                .collect::<Result<Vec<TypedExpr>>>()?,
+                            type_: Some(ags.remove(0)),
+                        });
+                    }
+                }
+            }
+        }
+        Result::Ok(TypedSubscript {
+            target: Box::new(target),
+            indexes: s
+                .indexes
+                .into_iter()
+                .map(|i| self.expr(i))
+                .collect::<Result<Vec<TypedExpr>>>()?,
+            type_: s.type_,
+        })
+    }
+
+    pub fn typed_call(&mut self, c: TypedCall) -> Result<TypedCall> {
+        Result::Ok(TypedCall {
+            target: Box::new(self.expr(*c.target)?),
+            args: c
+                .args
+                .into_iter()
+                .map(|c| self.typed_call_arg(c))
+                .collect::<Result<Vec<TypedCallArg>>>()?,
+            type_: c.type_,
+        })
+    }
+
+    pub fn typed_call_arg(&mut self, a: TypedCallArg) -> Result<TypedCallArg> {
+        Result::Ok(TypedCallArg {
+            label: a.label,
+            arg: Box::new(self.expr(*a.arg)?),
+            is_vararg: a.is_vararg,
+        })
+    }
+
+    pub fn typed_if(&mut self, i: TypedIf) -> Result<TypedIf> {
+        let condition = Box::new(self.expr(*i.condition)?);
+        let body = self.typed_block(i.body)?;
+        let else_body = match i.else_body {
+            Some(b) => Some(self.typed_block(b)?),
+            None => None,
+        };
+        let type_ = i.type_;
+        Result::Ok(TypedIf {
+            condition,
+            body,
+            else_body,
+            type_,
+        })
+    }
+
+    pub fn typed_return(&mut self, r: TypedReturn) -> Result<TypedReturn> {
+        let value = match r.value {
+            Some(v) => Some(Box::new(self.expr(*v)?)),
+            None => None,
+        };
+        Result::Ok(TypedReturn {
+            type_: match &value {
+                Some(v) => v.type_(),
+                None => None,
+            },
+            value: value,
+        })
+    }
+
+    pub fn stmt(&mut self, s: TypedStmt) -> Result<TypedStmt> {
+        Result::Ok(match s {
+            TypedStmt::Expr(e) => TypedStmt::Expr(self.expr(e)?),
+            TypedStmt::Decl(d) => TypedStmt::Decl(self.decl(d)?),
+            TypedStmt::Assignment(a) => TypedStmt::Assignment(self.assignment_stmt(a)?),
             TypedStmt::Loop(l) => TypedStmt::Loop(l),
+        })
+    }
+
+    pub fn assignment_stmt(&mut self, a: TypedAssignmentStmt) -> Result<TypedAssignmentStmt> {
+        Result::Ok(match a {
+            TypedAssignmentStmt::Assignment(a) => {
+                TypedAssignmentStmt::Assignment(self.typed_assignment(a)?)
+            }
+            TypedAssignmentStmt::AssignmentAndOperation(a) => {
+                TypedAssignmentStmt::AssignmentAndOperation(self.typed_assignment_and_operation(a)?)
+            }
+        })
+    }
+
+    pub fn typed_assignment(&mut self, a: TypedAssignment) -> Result<TypedAssignment> {
+        Result::Ok(TypedAssignment {
+            target: self.expr(a.target)?,
+            value: self.expr(a.value)?,
+        })
+    }
+
+    pub fn typed_assignment_and_operation(
+        &mut self,
+        a: TypedAssignmentAndOperation,
+    ) -> Result<TypedAssignmentAndOperation> {
+        Result::Ok(TypedAssignmentAndOperation {
+            target: self.expr(a.target)?,
+            operator: a.operator, // TODO
+            value: self.expr(a.value)?,
         })
     }
 }

@@ -1,4 +1,3 @@
-use crate::high_level_ir::typed_decl::TypedStruct;
 use crate::high_level_ir::typed_stmt::TypedBlock;
 use crate::high_level_ir::typed_type::TypedType;
 use std::fmt;
@@ -7,18 +6,8 @@ use std::fmt;
 pub enum TypedExpr {
     Name(TypedName),
     Literal(TypedLiteral),
-    BinOp {
-        left: Box<TypedExpr>,
-        kind: String,
-        right: Box<TypedExpr>,
-        type_: Option<TypedType>,
-    },
-    UnaryOp {
-        target: Box<TypedExpr>,
-        prefix: bool,
-        kind: String,
-        type_: Option<TypedType>,
-    },
+    BinOp(TypedBinOp),
+    UnaryOp(TypedUnaryOp),
     Subscript(TypedSubscript),
     Member(TypedInstanceMember),
     StaticMember(TypedStaticMember),
@@ -55,6 +44,22 @@ pub enum TypedLiteral {
     String { value: String, type_: TypedType },
     Boolean { value: String, type_: TypedType },
     NullLiteral { type_: TypedType },
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct TypedBinOp {
+    pub(crate) left: Box<TypedExpr>,
+    pub(crate) kind: String,
+    pub(crate) right: Box<TypedExpr>,
+    pub(crate) type_: Option<TypedType>,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct TypedUnaryOp {
+    pub(crate) target: Box<TypedExpr>,
+    pub(crate) prefix: bool,
+    pub(crate) kind: String,
+    pub(crate) type_: Option<TypedType>,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -105,18 +110,8 @@ impl TypedExpr {
         match self {
             TypedExpr::Name(name) => name.type_.clone(),
             TypedExpr::Literal(l) => Some(l.type_()),
-            TypedExpr::BinOp {
-                left,
-                kind,
-                right,
-                type_,
-            } => type_.clone(),
-            TypedExpr::UnaryOp {
-                target,
-                prefix,
-                kind,
-                type_,
-            } => type_.clone(),
+            TypedExpr::BinOp(b) => b.type_.clone(),
+            TypedExpr::UnaryOp(u) => u.type_.clone(),
             TypedExpr::Subscript(s) => s.type_.clone(),
             TypedExpr::Member(m) => m.type_.clone(),
             TypedExpr::StaticMember(sm) => sm.type_.clone(),
