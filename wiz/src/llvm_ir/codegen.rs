@@ -367,10 +367,23 @@ impl<'ctx> CodeGen<'ctx> {
         let field_index = self
             .get_struct_field_index_by_name(m.target.type_(), m.name)
             .unwrap();
-        let target = self.expr(*m.target);
+        let target =
+        match self.expr(*m.target) {
+            AnyValueEnum::PointerValue(p) => {p}
+            AnyValueEnum::StructValue(_) => {
+                eprintln!("never execution branch executed.");
+                eprintln!("struct member can not access directly.");
+                exit(-2)
+            }
+            _ => {
+                eprintln!("never execution branch executed.");
+                exit(-2)
+            }
+        };
+
         let ep = self
             .builder
-            .build_struct_gep(target.into_pointer_value(), field_index, "struct_gep")
+            .build_struct_gep(target, field_index, "struct_gep")
             .unwrap();
         ep.as_any_value_enum()
     }
@@ -543,7 +556,7 @@ impl<'ctx> CodeGen<'ctx> {
             })
             .collect();
         let return_type = self.ml_type_to_type(return_type.into_value_type());
-        if let Some(body) = body {
+        let result = if let Some(body) = body {
             self.ml_context.push_environment();
             let func = match return_type {
                 // AnyTypeEnum::ArrayType(_) => {}
@@ -642,7 +655,8 @@ impl<'ctx> CodeGen<'ctx> {
                 }
             };
             AnyValueEnum::from(func)
-        }
+        };
+        result
     }
 
     pub fn struct_(&mut self, s: MLStruct) -> AnyValueEnum<'ctx> {
