@@ -367,9 +367,8 @@ impl<'ctx> CodeGen<'ctx> {
         let field_index = self
             .get_struct_field_index_by_name(m.target.type_(), m.name)
             .unwrap();
-        let target =
-        match self.expr(*m.target) {
-            AnyValueEnum::PointerValue(p) => {p}
+        let target = match self.expr(*m.target) {
+            AnyValueEnum::PointerValue(p) => p,
             AnyValueEnum::StructValue(_) => {
                 eprintln!("never execution branch executed.");
                 eprintln!("struct member can not access directly.");
