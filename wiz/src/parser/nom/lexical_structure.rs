@@ -26,7 +26,7 @@ pub fn whitespace1(s: &str) -> IResult<&str, String> {
             |(w1, c, w2)| String::from(w1) + &*c.unwrap_or(String::new()) + w2,
         ),
         comment,
-        ))(s)
+    ))(s)
 }
 pub fn whitespace_without_eol0(s: &str) -> IResult<&str, String> {
     map(
@@ -97,9 +97,7 @@ pub fn line_comment(input: &str) -> IResult<&str, String> {
     map(
         tuple((line_comment_start, many0(anychar), opt(eol))),
         |(s, c, e)| {
-            s.to_string()
-                + &*String::from_iter(c)
-                + &*e.map(|c| c.to_string()).unwrap_or_default()
+            s.to_string() + &*String::from_iter(c) + &*e.map(|c| c.to_string()).unwrap_or_default()
         },
     )(input)
 }
@@ -161,7 +159,9 @@ pub fn eol(s: &str) -> IResult<&str, char> {
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::nom::lexical_structure::{comment, eol, identifier, whitespace0, whitespace1};
+    use crate::parser::nom::lexical_structure::{
+        comment, eol, identifier, whitespace0, whitespace1,
+    };
     use nom::error;
     use nom::error::ErrorKind;
     use nom::Err;
@@ -199,10 +199,7 @@ mod tests {
             comment("// code comment"),
             Ok(("", String::from("// code comment")))
         );
-        assert_eq!(
-            comment("//"),
-            Ok(("", String::from("//")))
-        );
+        assert_eq!(comment("//"), Ok(("", String::from("//"))));
         assert_eq!(
             comment("// code comment\n"),
             Ok(("", String::from("// code comment\n")))
