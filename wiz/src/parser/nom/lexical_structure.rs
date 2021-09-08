@@ -17,13 +17,16 @@ pub fn whitespace0(s: &str) -> IResult<&str, String> {
 }
 
 pub fn whitespace1(s: &str) -> IResult<&str, String> {
-    map(
-        alt((
-            tuple((_whitespace0, opt(comment), _whitespace1)),
-            tuple((_whitespace1, opt(comment), _whitespace0)),
-        )),
-        |(w1, c, w2)| String::from(w1) + &*c.unwrap_or(String::new()) + w2,
-    )(s)
+    alt((
+        map(
+            alt((
+                tuple((_whitespace0, opt(comment), _whitespace1)),
+                tuple((_whitespace1, opt(comment), _whitespace0)),
+            )),
+            |(w1, c, w2)| String::from(w1) + &*c.unwrap_or(String::new()) + w2,
+        ),
+        comment,
+        ))(s)
 }
 pub fn whitespace_without_eol0(s: &str) -> IResult<&str, String> {
     map(
@@ -86,17 +89,17 @@ where
     )
 }
 
-pub fn line_comment_start(s: &str) -> IResult<&str, &str> {
+fn line_comment_start(s: &str) -> IResult<&str, &str> {
     tag("//")(s)
 }
 
 pub fn line_comment(input: &str) -> IResult<&str, String> {
     map(
-        tuple((line_comment_start, many0(anychar), opt(char('\n')))),
+        tuple((line_comment_start, many0(anychar), opt(eol))),
         |(s, c, e)| {
             s.to_string()
                 + &*String::from_iter(c)
-                + &*e.map(|c| c.to_string()).unwrap_or("".parse().unwrap())
+                + &*e.map(|c| c.to_string()).unwrap_or_default()
         },
     )(input)
 }
@@ -111,8 +114,8 @@ fn inline_comment_end(input: &str) -> IResult<&str, &str> {
 
 pub fn inline_comment(input: &str) -> IResult<&str, String> {
     map(
-        permutation((inline_comment_start, is_not("*/"), inline_comment_end)),
-        |(a, b, c)| a.to_string() + b + c,
+        permutation((inline_comment_start, opt(is_not("*/")), inline_comment_end)),
+        |(a, b, c)| a.to_string() + b.unwrap_or_default() + c,
     )(input)
 }
 
@@ -158,7 +161,7 @@ pub fn eol(s: &str) -> IResult<&str, char> {
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::nom::lexical_structure::{comment, eol, identifier};
+    use crate::parser::nom::lexical_structure::{comment, eol, identifier, whitespace0, whitespace1};
     use nom::error;
     use nom::error::ErrorKind;
     use nom::Err;
@@ -189,16 +192,28 @@ mod tests {
             }))
         );
     }
+
     #[test]
     fn test_comment() {
         assert_eq!(
             comment("// code comment"),
             Ok(("", String::from("// code comment")))
-        )
+        );
+        assert_eq!(
+            comment("//"),
+            Ok(("", String::from("//")))
+        );
+        assert_eq!(
+            comment("// code comment\n"),
+            Ok(("", String::from("// code comment\n")))
+        );
     }
+
     #[test]
     fn test_inline_comment() {
-        assert_eq!(comment("/* a */"), Ok(("", String::from("/* a */"))))
+        assert_eq!(comment("/* a */"), Ok(("", String::from("/* a */"))));
+        assert_eq!(comment("/**/"), Ok(("", String::from("/**/"))));
+        assert_eq!(comment("/*\n*/"), Ok(("", String::from("/*\n*/"))));
     }
 
     #[test]
