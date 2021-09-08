@@ -229,4 +229,41 @@ mod tests {
         assert_eq!(whitespace1(" "), Ok(("", String::from(" "))));
         assert_eq!(whitespace1("        "), Ok(("", String::from("        "))))
     }
+
+    #[test]
+    fn test_whitespace0_with_comment() {
+        assert_eq!(
+            whitespace0("// code comment"),
+            Ok(("", String::from("// code comment")))
+        );
+        assert_eq!(
+            whitespace0("//"),
+            Ok(("", String::from("//")))
+        );
+        assert_eq!(
+            whitespace0("// code comment\n"),
+            Ok(("", String::from("// code comment\n")))
+        );
+        assert_eq!(whitespace0("/* a */"), Ok(("", String::from("/* a */"))));
+        assert_eq!(whitespace0("/**/"), Ok(("", String::from("/**/"))));
+    }
+
+    #[test]
+    fn test_whitespace1_with_comment() {
+        assert_eq!(
+            whitespace1("// code comment"),
+            Ok(("", String::from("// code comment")))
+        );
+        assert_eq!(
+            whitespace1("//"),
+            Ok(("", String::from("//")))
+        );
+        assert_eq!(
+            whitespace1("// code comment\n"),
+            Ok(("", String::from("// code comment\n")))
+        );
+        assert_eq!(whitespace1("/* a */"), Ok(("", String::from("/* a */"))));
+        assert_eq!(whitespace1("/**/"), Ok(("", String::from("/**/"))));
+    }
+
 }
