@@ -236,10 +236,7 @@ mod tests {
             whitespace0("// code comment"),
             Ok(("", String::from("// code comment")))
         );
-        assert_eq!(
-            whitespace0("//"),
-            Ok(("", String::from("//")))
-        );
+        assert_eq!(whitespace0("//"), Ok(("", String::from("//"))));
         assert_eq!(
             whitespace0("// code comment\n"),
             Ok(("", String::from("// code comment\n")))
@@ -254,10 +251,7 @@ mod tests {
             whitespace1("// code comment"),
             Ok(("", String::from("// code comment")))
         );
-        assert_eq!(
-            whitespace1("//"),
-            Ok(("", String::from("//")))
-        );
+        assert_eq!(whitespace1("//"), Ok(("", String::from("//"))));
         assert_eq!(
             whitespace1("// code comment\n"),
             Ok(("", String::from("// code comment\n")))
@@ -265,5 +259,4 @@ mod tests {
         assert_eq!(whitespace1("/* a */"), Ok(("", String::from("/* a */"))));
         assert_eq!(whitespace1("/**/"), Ok(("", String::from("/**/"))));
     }
-
 }
