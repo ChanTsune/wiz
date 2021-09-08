@@ -220,4 +220,17 @@ mod tests {
     fn test_eol() {
         assert_eq!(eol("\n"), Ok(("", '\n')))
     }
+
+    #[test]
+    fn test_whitespace0() {
+        assert_eq!(whitespace0(""), Ok(("", String::from(""))));
+        assert_eq!(whitespace0("        "), Ok(("",String::from("        "))))
+    }
+
+    #[test]
+    fn test_whitespace1() {
+        assert_eq!(whitespace1(" "), Ok(("", String::from(" "))));
+        assert_eq!(whitespace1("        "), Ok(("",String::from("        "))))
+    }
+
 }
