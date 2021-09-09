@@ -221,10 +221,13 @@ impl<'ctx> CodeGen<'ctx> {
                 }
             }
             AnyValueEnum::PointerValue(p) => {
-                println!("{:?}", p);
+                eprintln!("Call Pointer {:?}", p);
                 exit(-12)
             }
-            _ => exit(-12),
+            a => {
+                eprintln!("Unknown Call {:?}", a);
+                exit(-12)
+            }
         }
     }
 
