@@ -12,7 +12,7 @@ use std::iter::FromIterator;
 pub fn whitespace0(s: &str) -> IResult<&str, String> {
     map(
         tuple((_whitespace0, opt(comment), _whitespace0)),
-        |(w1, c, w2)| String::from(w1) + &*c.unwrap_or(String::new()) + w2,
+        |(w1, c, w2)| String::from(w1) + &*c.unwrap_or_default() + w2,
     )(s)
 }
 
@@ -23,7 +23,7 @@ pub fn whitespace1(s: &str) -> IResult<&str, String> {
                 tuple((_whitespace0, opt(comment), _whitespace1)),
                 tuple((_whitespace1, opt(comment), _whitespace0)),
             )),
-            |(w1, c, w2)| String::from(w1) + &*c.unwrap_or(String::new()) + w2,
+            |(w1, c, w2)| String::from(w1) + &*c.unwrap_or_default() + w2,
         ),
         comment,
     ))(s)
@@ -35,7 +35,7 @@ pub fn whitespace_without_eol0(s: &str) -> IResult<&str, String> {
             opt(comment),
             _whitespace_without_eol0,
         )),
-        |(w1, c, w2)| String::from(w1) + &*c.unwrap_or(String::new()) + w2,
+        |(w1, c, w2)| String::from(w1) + &*c.unwrap_or_default() + w2,
     )(s)
 }
 
@@ -131,7 +131,7 @@ pub fn identifier_character(s: &str) -> IResult<&str, char> {
 pub fn identifier_characters(s: &str) -> IResult<&str, String> {
     map(
         tuple((identifier_character, opt(identifier_characters))),
-        |(c, ops)| c.to_string() + &*ops.unwrap_or("".to_string()),
+        |(c, ops)| c.to_string() + &*ops.unwrap_or_default(),
     )(s)
 }
 
@@ -144,11 +144,11 @@ pub fn identifier(s: &str) -> IResult<&str, String> {
                 opt(identifier_characters),
                 map(char('`'), |r| r.to_string()),
             )),
-            |(a, b, c, d)| a + &*b + &*c.unwrap_or("".to_string()) + &*d,
+            |(a, b, c, d)| a + &*b + &*c.unwrap_or_default() + &*d,
         ),
         map(
             tuple((identifier_head, opt(identifier_characters))),
-            |(a, b)| a.to_string() + &*b.unwrap_or("".to_string()),
+            |(a, b)| a.to_string() + &*b.unwrap_or_default(),
         ),
     ))(s)
 }
