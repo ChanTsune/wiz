@@ -81,8 +81,29 @@ impl HLIR2MLIR {
             }
         } else {
             let mut pkg = t.package.names;
-            pkg.push(t.name);
-            MLValueType::Struct(pkg.join("::"))
+            if pkg.is_empty() {
+                match &*t.name {
+                    "Unit" |
+                    "Int8" | "UInt8" |
+                    "Int16" | "UInt16" |
+                    "Int32" | "UInt32" |
+                    "Int64" | "UInt64" |
+                    "Bool" |
+                    "Float" |
+                    "Double" |
+                    "String"
+                         => {
+                        MLValueType::Primitive(t.name)
+                    }
+                    other => {
+                        pkg.push(String::from(other));
+                        MLValueType::Struct(pkg.join("::"))
+                    }
+                }
+            } else {
+                pkg.push(t.name);
+                MLValueType::Struct(pkg.join("::"))
+            }
         }
     }
 

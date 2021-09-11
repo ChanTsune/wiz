@@ -85,7 +85,7 @@ impl<'ctx> CodeGen<'ctx> {
                         Some(i) => Some(i as u32),
                     },
                 },
-                MLValueType::Pointer(p) => {
+                p => {
                     eprintln!("Invalid type '{:?}'", p);
                     None
                 }
@@ -119,7 +119,7 @@ impl<'ctx> CodeGen<'ctx> {
                 let i: u64 = value.parse().unwrap();
                 let type_ = type_.into_value_type();
                 let int_type = match type_ {
-                    MLValueType::Struct(name) => match &*name {
+                    MLValueType::Primitive(name) => match &*name {
                         "Int8" | "UInt8" => self.context.i8_type(),
                         "Int16" | "UInt16" => self.context.i16_type(),
                         "Int32" | "UInt32" => self.context.i32_type(),
@@ -129,7 +129,7 @@ impl<'ctx> CodeGen<'ctx> {
                             exit(-1)
                         }
                     },
-                    MLValueType::Pointer(p) => {
+                    p => {
                         eprintln!("Invalid MLIR Literal {:?}", p);
                         exit(-1)
                     }
@@ -140,7 +140,7 @@ impl<'ctx> CodeGen<'ctx> {
                 let f: f64 = value.parse().unwrap();
                 let type_ = type_.into_value_type();
                 let float_type = match type_ {
-                    MLValueType::Struct(name) => match &*name {
+                    MLValueType::Primitive(name) => match &*name {
                         "Float" => self.context.f32_type(),
                         "Double" => self.context.f64_type(),
                         _ => {
@@ -148,7 +148,7 @@ impl<'ctx> CodeGen<'ctx> {
                             exit(-1)
                         }
                     },
-                    MLValueType::Pointer(p) => {
+                    p => {
                         eprintln!("Invalid MLIR Literal {:?}", p);
                         exit(-1)
                     }
@@ -180,7 +180,7 @@ impl<'ctx> CodeGen<'ctx> {
                 let type_ = type_.into_value_type();
                 let struct_type = self.module.get_struct_type(&*match type_ {
                     MLValueType::Struct(name) => name,
-                    MLValueType::Pointer(p) => {
+                    p=> {
                         eprintln!("Invalid Struct Literal p");
                         exit(-1)
                     }
@@ -195,7 +195,7 @@ impl<'ctx> CodeGen<'ctx> {
         let target = self.expr(*c.target);
         println!("{:?}", &(c.args));
         let args = c.args.into_iter().map(|arg| {
-            if let MLValueType::Struct(name) = arg.arg.type_().into_value_type() {
+            if let MLValueType::Primitive(name) = arg.arg.type_().into_value_type() {
                 if name != String::from("String") {
                     let e = self.expr(arg.arg);
                     self.load_if_pointer_value(e)
@@ -747,7 +747,7 @@ impl<'ctx> CodeGen<'ctx> {
     fn ml_type_to_type(&self, ml_type: MLValueType) -> AnyTypeEnum<'ctx> {
         println!("{:?}", ml_type);
         match ml_type {
-            MLValueType::Struct(name) => match &*name {
+            MLValueType::Primitive(name) => match &*name {
                 "Unit" => AnyTypeEnum::from(self.context.void_type()),
                 "Int8" | "UInt8" => AnyTypeEnum::from(self.context.i8_type()),
                 "Int16" | "UInt16" => AnyTypeEnum::from(self.context.i16_type()),
@@ -759,8 +759,12 @@ impl<'ctx> CodeGen<'ctx> {
                 "String" => {
                     AnyTypeEnum::from(self.context.i8_type().ptr_type(AddressSpace::Generic))
                 }
-                t => AnyTypeEnum::from(self.module.get_struct_type(t).unwrap()),
+                t => {
+                    eprintln!("Invalid Primitive Type {}", t);
+                    exit(-1)
+                }
             },
+            MLValueType::Struct(t) =>AnyTypeEnum::from(self.module.get_struct_type(&*t).unwrap()),
             MLValueType::Pointer(p) => BasicTypeEnum::try_from(self.ml_type_to_type(*p))
                 .unwrap()
                 .ptr_type(AddressSpace::Generic)
