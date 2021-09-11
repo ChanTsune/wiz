@@ -82,7 +82,7 @@ impl HLIR2MLIR {
         } else {
             let mut pkg = t.package.names;
             pkg.push(t.name);
-            MLValueType::Name(pkg.join("::"))
+            MLValueType::Struct(pkg.join("::"))
         }
     }
 
@@ -249,7 +249,7 @@ impl HLIR2MLIR {
                 })
                 .collect(),
         };
-        let value_type = MLValueType::Name(struct_.name.clone());
+        let value_type = MLValueType::Struct(struct_.name.clone());
         self.add_struct(value_type.clone(), struct_.clone());
 
         let mut init: Vec<MLFun> = init
