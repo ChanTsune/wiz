@@ -1,9 +1,9 @@
+use crate::middle_level_ir::format::Formatter;
 use crate::middle_level_ir::ml_expr::MLExpr;
+use crate::middle_level_ir::ml_node::MLNode;
 use crate::middle_level_ir::ml_stmt::MLStmt;
 use crate::middle_level_ir::ml_type::MLType;
 use std::fmt;
-use crate::middle_level_ir::ml_node::MLNode;
-use crate::middle_level_ir::format::Formatter;
 use std::fmt::Write;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -56,20 +56,16 @@ pub struct MLField {
 impl MLNode for MLDecl {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            MLDecl::Var(v) => {v.fmt(f)}
-            MLDecl::Fun(fun) => {fun.fmt(f)}
-            MLDecl::Struct(s) => {s.fmt(f)}
+            MLDecl::Var(v) => v.fmt(f),
+            MLDecl::Fun(fun) => fun.fmt(f),
+            MLDecl::Struct(s) => s.fmt(f),
         }
     }
 }
 
 impl MLNode for MLVar {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        f.write_str(if self.is_mute {
-            "var"
-        } else {
-            "val"
-        })?;
+        f.write_str(if self.is_mute { "var" } else { "val" })?;
         f.write_char(' ')?;
         f.write_str(&*self.name)?;
         f.write_char(':')?;
@@ -84,22 +80,18 @@ impl MLNode for MLFun {
         for modifier in self.modifiers.iter() {
             f.write_str(modifier)?;
             f.write_char(' ')?;
-        };
+        }
         f.write_str("fun ")?;
         f.write_str(&*self.name)?;
         f.write_char('(')?;
         for arg_def in self.arg_defs.iter() {
             arg_def.fmt(f)?;
-        };
+        }
         f.write_str("):")?;
         self.return_type.fmt(f)?;
         match &self.body {
-            Some(b) => {
-                b.fmt(f)
-            }
-            None => {
-                fmt::Result::Ok(())
-            }
+            Some(b) => b.fmt(f),
+            None => fmt::Result::Ok(()),
         }
     }
 }
@@ -129,7 +121,7 @@ impl MLNode for MLStruct {
         for field in self.fields.iter() {
             field.fmt(f)?;
             f.write_str(";\n")?;
-        };
+        }
         f.write_str("};")
     }
 }

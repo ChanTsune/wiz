@@ -23,13 +23,13 @@ use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::HashMap;
 use std::process::exit;
 
+pub mod format;
 pub mod ml_decl;
 pub mod ml_expr;
 pub mod ml_file;
+pub mod ml_node;
 pub mod ml_stmt;
 pub mod ml_type;
-pub mod ml_node;
-pub mod format;
 
 struct HLIR2MLIRContext {
     generic_structs: StackedHashMap<String, TypedStruct>,

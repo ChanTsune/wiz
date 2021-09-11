@@ -1,10 +1,10 @@
+use crate::middle_level_ir::format::Formatter;
+use crate::middle_level_ir::ml_node::MLNode;
 use crate::middle_level_ir::ml_stmt::MLBlock;
 use crate::middle_level_ir::ml_type::MLType;
 use std::fmt;
-use std::process::exit;
-use crate::middle_level_ir::ml_node::MLNode;
-use crate::middle_level_ir::format::Formatter;
 use std::fmt::Write;
+use std::process::exit;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum MLExpr {
@@ -155,16 +155,16 @@ impl MLReturn {
 impl MLNode for MLExpr {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            MLExpr::Name(n) => {n.fmt(f)}
-            MLExpr::Literal(l) => {l.fmt(f)}
-            MLExpr::Call(c) => {c.fmt(f)}
-            MLExpr::PrimitiveBinOp(b) => {b.fmt(f)}
-            MLExpr::PrimitiveUnaryOp(u) => {u.fmt(f)}
-            MLExpr::Member(m) => {m.fmt(f)}
-            MLExpr::If(i) => {i.fmt(f)}
-            MLExpr::When => {fmt::Result::Err(Default::default()) }
-            MLExpr::Return(r) => {r.fmt(f)}
-            MLExpr::TypeCast => {fmt::Result::Err(Default::default())}
+            MLExpr::Name(n) => n.fmt(f),
+            MLExpr::Literal(l) => l.fmt(f),
+            MLExpr::Call(c) => c.fmt(f),
+            MLExpr::PrimitiveBinOp(b) => b.fmt(f),
+            MLExpr::PrimitiveUnaryOp(u) => u.fmt(f),
+            MLExpr::Member(m) => m.fmt(f),
+            MLExpr::If(i) => i.fmt(f),
+            MLExpr::When => fmt::Result::Err(Default::default()),
+            MLExpr::Return(r) => r.fmt(f),
+            MLExpr::TypeCast => fmt::Result::Err(Default::default()),
         }
     }
 }
@@ -195,15 +195,9 @@ impl MLNode for MLLiteral {
                 f.write_str(value)?;
                 f.write_char('"')
             }
-            MLLiteral::Boolean { value, type_ } => {
-                f.write_str(value)
-            }
-            MLLiteral::Null { type_ } => {
-                fmt::Result::Err(Default::default())
-            }
-            MLLiteral::Struct { type_ } => {
-                type_.fmt(f)
-            }
+            MLLiteral::Boolean { value, type_ } => f.write_str(value),
+            MLLiteral::Null { type_ } => fmt::Result::Err(Default::default()),
+            MLLiteral::Struct { type_ } => type_.fmt(f),
         }
     }
 }
@@ -215,7 +209,7 @@ impl MLNode for MLCall {
         for arg in self.args.iter() {
             arg.fmt(f)?;
             f.write_char(',')?;
-        };
+        }
         f.write_str("):")?;
         self.type_.fmt(f)
     }
@@ -230,21 +224,19 @@ impl MLNode for MLCallArg {
 impl MLNode for MLBinOp {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         self.left.fmt(f)?;
-        f.write_str(
-            match self.kind {
-                MLBinopKind::Plus => {"+"}
-                MLBinopKind::Minus => {"-"}
-                MLBinopKind::Mul => {"*"}
-                MLBinopKind::Div => {"/"}
-                MLBinopKind::Mod => {"%"}
-                MLBinopKind::Equal => {"=="}
-                MLBinopKind::GrateThanEqual => {"<="}
-                MLBinopKind::GrateThan => {"<"}
-                MLBinopKind::LessThanEqual => {">="}
-                MLBinopKind::LessThan => {">"}
-                MLBinopKind::NotEqual => {"!="}
-            }
-        )?;
+        f.write_str(match self.kind {
+            MLBinopKind::Plus => "+",
+            MLBinopKind::Minus => "-",
+            MLBinopKind::Mul => "*",
+            MLBinopKind::Div => "/",
+            MLBinopKind::Mod => "%",
+            MLBinopKind::Equal => "==",
+            MLBinopKind::GrateThanEqual => "<=",
+            MLBinopKind::GrateThan => "<",
+            MLBinopKind::LessThanEqual => ">=",
+            MLBinopKind::LessThan => ">",
+            MLBinopKind::NotEqual => "!=",
+        })?;
         self.right.fmt(f)?;
         f.write_char(':')?;
         self.type_.fmt(f)
@@ -253,10 +245,10 @@ impl MLNode for MLBinOp {
 
 impl MLNode for MLUnaryOp {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        f.write_str(        match self.kind {
-            MLUnaryOpKind::Negative => {"-"}
-            MLUnaryOpKind::Positive => {"+"}
-            MLUnaryOpKind::Not => {"!"}
+        f.write_str(match self.kind {
+            MLUnaryOpKind::Negative => "-",
+            MLUnaryOpKind::Positive => "+",
+            MLUnaryOpKind::Not => "!",
         })?;
         self.target.fmt(f)?;
         f.write_char(':')?;
@@ -289,7 +281,6 @@ impl MLNode for MLIf {
             None => {}
         };
         fmt::Result::Ok(())
-
     }
 }
 
@@ -297,7 +288,9 @@ impl MLNode for MLReturn {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.write_str("return ")?;
         match &self.value {
-            Some(v) => {v.fmt(f)?;}
+            Some(v) => {
+                v.fmt(f)?;
+            }
             None => {}
         };
         f.write_char(':')?;

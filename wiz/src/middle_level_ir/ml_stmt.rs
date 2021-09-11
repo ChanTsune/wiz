@@ -1,8 +1,8 @@
+use crate::middle_level_ir::format::Formatter;
 use crate::middle_level_ir::ml_decl::MLDecl;
 use crate::middle_level_ir::ml_expr::MLExpr;
-use std::fmt;
 use crate::middle_level_ir::ml_node::MLNode;
-use crate::middle_level_ir::format::Formatter;
+use std::fmt;
 use std::fmt::Write;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -33,10 +33,10 @@ pub struct MLBlock {
 impl MLNode for MLStmt {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            MLStmt::Expr(e) => {e.fmt(f)}
-            MLStmt::Decl(d) => {d.fmt(f)}
-            MLStmt::Assignment(a) => {a.fmt(f)}
-            MLStmt::Loop(l) => {l.fmt(f)}
+            MLStmt::Expr(e) => e.fmt(f),
+            MLStmt::Decl(d) => d.fmt(f),
+            MLStmt::Assignment(a) => a.fmt(f),
+            MLStmt::Loop(l) => l.fmt(f),
         }
     }
 }
@@ -64,7 +64,7 @@ impl MLNode for MLBlock {
         for stmt in self.body.iter() {
             stmt.fmt(f)?;
             f.write_char('\n')?;
-        };
+        }
         f.write_char('}')
     }
 }

@@ -1,6 +1,6 @@
 use crate::middle_level_ir::ml_decl::MLDecl;
-use std::fmt;
 use crate::middle_level_ir::ml_node::MLNode;
+use std::fmt;
 use std::fmt::Write;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -24,7 +24,7 @@ impl MLNode for MLFile {
         for stmt in self.body.iter() {
             stmt.fmt(f)?;
             f.write_char('\n')?;
-        };
+        }
         f.indent_level_down();
         fmt::Result::Ok(())
     }

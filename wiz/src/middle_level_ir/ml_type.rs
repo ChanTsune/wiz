@@ -1,6 +1,6 @@
-use std::fmt;
-use crate::middle_level_ir::ml_node::MLNode;
 use crate::middle_level_ir::format::Formatter;
+use crate::middle_level_ir::ml_node::MLNode;
+use std::fmt;
 use std::fmt::Write;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
@@ -46,8 +46,8 @@ impl MLType {
 impl MLNode for MLType {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            MLType::Value(v) => {v.fmt(f)}
-            MLType::Function(fun) => {fun.fmt(f)}
+            MLType::Value(v) => v.fmt(f),
+            MLType::Function(fun) => fun.fmt(f),
         }
     }
 }
@@ -64,7 +64,7 @@ impl MLNode for MLFunctionType {
         for argument in self.arguments.iter() {
             argument.fmt(f)?;
             f.write_str(",")?;
-        };
+        }
         f.write_char(')')?;
         f.write_str(" -> ")?;
         self.return_type.fmt(f)
