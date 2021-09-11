@@ -1,4 +1,7 @@
 use std::fmt;
+use crate::middle_level_ir::ml_node::MLNode;
+use crate::middle_level_ir::format::Formatter;
+use std::fmt::Write;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
 pub enum MLType {
@@ -37,5 +40,33 @@ impl MLType {
                 panic!("can not cast to MLValueType")
             }
         }
+    }
+}
+
+impl MLNode for MLType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            MLType::Value(v) => {v.fmt(f)}
+            MLType::Function(fun) => {fun.fmt(f)}
+        }
+    }
+}
+
+impl MLNode for MLValueType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.write_str(&*self.name())
+    }
+}
+
+impl MLNode for MLFunctionType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.write_char('(')?;
+        for argument in self.arguments.iter() {
+            argument.fmt(f)?;
+            f.write_str(",")?;
+        };
+        f.write_char(')')?;
+        f.write_str(" -> ")?;
+        self.return_type.fmt(f)
     }
 }
