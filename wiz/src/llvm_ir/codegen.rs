@@ -180,7 +180,7 @@ impl<'ctx> CodeGen<'ctx> {
                 let type_ = type_.into_value_type();
                 let struct_type = self.module.get_struct_type(&*match type_ {
                     MLValueType::Struct(name) => name,
-                    p=> {
+                    p => {
                         eprintln!("Invalid Struct Literal p");
                         exit(-1)
                     }
@@ -764,7 +764,7 @@ impl<'ctx> CodeGen<'ctx> {
                     exit(-1)
                 }
             },
-            MLValueType::Struct(t) =>AnyTypeEnum::from(self.module.get_struct_type(&*t).unwrap()),
+            MLValueType::Struct(t) => AnyTypeEnum::from(self.module.get_struct_type(&*t).unwrap()),
             MLValueType::Pointer(p) => BasicTypeEnum::try_from(self.ml_type_to_type(*p))
                 .unwrap()
                 .ptr_type(AddressSpace::Generic)

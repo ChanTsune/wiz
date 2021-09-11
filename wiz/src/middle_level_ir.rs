@@ -83,16 +83,8 @@ impl HLIR2MLIR {
             let mut pkg = t.package.names;
             if pkg.is_empty() {
                 match &*t.name {
-                    "Unit" |
-                    "Int8" | "UInt8" |
-                    "Int16" | "UInt16" |
-                    "Int32" | "UInt32" |
-                    "Int64" | "UInt64" |
-                    "Bool" |
-                    "Float" |
-                    "Double" |
-                    "String"
-                         => {
+                    "Unit" | "Int8" | "UInt8" | "Int16" | "UInt16" | "Int32" | "UInt32"
+                    | "Int64" | "UInt64" | "Bool" | "Float" | "Double" | "String" => {
                         MLValueType::Primitive(t.name)
                     }
                     other => {
