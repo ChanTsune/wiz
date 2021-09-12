@@ -98,7 +98,6 @@ impl<'ctx> CodeGen<'ctx> {
     }
 
     pub fn expr(&mut self, e: MLExpr) -> AnyValueEnum<'ctx> {
-        println!("{:?}", e);
         match e {
             MLExpr::Name(n) => self.get_from_environment(n.name).unwrap(),
             MLExpr::Literal(literal) => self.literal(literal),
@@ -499,7 +498,6 @@ impl<'ctx> CodeGen<'ctx> {
     }
 
     pub fn decl(&mut self, d: MLDecl) -> AnyValueEnum<'ctx> {
-        println!("{:?}", &d);
         match d {
             MLDecl::Var(v) => self.var(v),
             MLDecl::Fun(f) => self.fun(f),
@@ -553,7 +551,6 @@ impl<'ctx> CodeGen<'ctx> {
                 self.ml_type_to_type(a.into_value_type())
             })
             .map(|a| {
-                println!("{:?}", &a);
                 BasicTypeEnum::try_from(a).unwrap()
             })
             .collect();
@@ -661,7 +658,6 @@ impl<'ctx> CodeGen<'ctx> {
 
     pub fn assignment_stmt(&mut self, assignment: MLAssignmentStmt) -> AnyValueEnum<'ctx> {
         let value = self.expr(assignment.value);
-        println!("assignment target {:?}", &assignment.target);
         match value {
             AnyValueEnum::IntValue(i) => {
                 let target = self.expr(assignment.target);
