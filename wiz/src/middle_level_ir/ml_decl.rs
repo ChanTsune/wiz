@@ -113,11 +113,13 @@ impl MLNode for MLArgDef {
 
 impl MLNode for MLFunBody {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        f.write_str("{\n")?;
+        f.write_str(" {\n")?;
+        f.indent_level_up();
         for stmt in self.body.iter() {
             stmt.fmt(f)?;
             f.write_char('\n')?;
         }
+        f.indent_level_down();
         f.write_char('}')
     }
 }

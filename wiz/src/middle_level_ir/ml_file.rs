@@ -30,7 +30,7 @@ impl MLNode for MLFile {
 }
 
 mod tests {
-    use crate::middle_level_ir::ml_decl::{MLArgDef, MLDecl, MLField, MLFun, MLStruct};
+    use crate::middle_level_ir::ml_decl::{MLArgDef, MLDecl, MLField, MLFun, MLStruct, MLFunBody};
     use crate::middle_level_ir::ml_file::MLFile;
     use crate::middle_level_ir::ml_type::{MLType, MLValueType};
 
@@ -109,12 +109,14 @@ mod tests {
                     },
                 ],
                 return_type: MLType::Value(MLValueType::Primitive(String::from("Unit"))),
-                body: None,
+                body: Some(MLFunBody {
+                    body: vec![]
+                }),
             })],
         };
         assert_eq!(
             ml_file.to_string(),
-            String::from("fun a(b:Int64, c:Int64):Unit;\n")
+            String::from("fun a(b:Int64, c:Int64):Unit {\n};\n")
         )
     }
 }
