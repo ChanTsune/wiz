@@ -205,7 +205,7 @@ impl MLNode for MLLiteral {
 impl MLNode for MLCall {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         self.target.fmt(f)?;
-        f.write_char(')')?;
+        f.write_char('(')?;
         for arg in self.args.iter() {
             arg.fmt(f)?;
             f.write_char(',')?;
