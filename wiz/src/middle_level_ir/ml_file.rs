@@ -14,7 +14,7 @@ impl ToString for MLFile {
     fn to_string(&self) -> String {
         let mut buf = String::new();
         let mut formatter = Formatter::new(&mut buf);
-        self.fmt(&mut formatter);
+        let _ = self.fmt(&mut formatter);
         buf
     }
 }
