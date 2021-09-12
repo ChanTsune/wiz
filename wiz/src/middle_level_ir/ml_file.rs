@@ -69,7 +69,7 @@ mod tests {
         };
         assert_eq!(
             ml_file.to_string(),
-            String::from("struct T {\n    i:Int64;\n};\n")
+            String::from("struct T {\n    i:Int64,\n};\n")
         );
     }
 

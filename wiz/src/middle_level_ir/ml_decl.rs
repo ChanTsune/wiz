@@ -132,7 +132,7 @@ impl MLNode for MLStruct {
         f.indent_level_up();
         for field in self.fields.iter() {
             field.fmt(f)?;
-            f.write_str(";\n")?;
+            f.write_str(",\n")?;
         }
         f.indent_level_down();
         f.write_str("};")
