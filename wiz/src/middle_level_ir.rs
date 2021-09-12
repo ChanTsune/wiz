@@ -278,7 +278,7 @@ impl HLIR2MLIR {
                         is_mute: true,
                         name: String::from("self"),
                         value: MLExpr::Literal(MLLiteral::Struct {
-                            type_: type_.clone(),
+                            type_: type_.clone().into_value_type(),
                         }),
                         type_: type_.clone(),
                     })),
@@ -362,7 +362,7 @@ impl HLIR2MLIR {
                 right: Box::new(self.expr(*right)),
                 type_: self.type_(type_.unwrap()),
             }),
-            TypedExpr::UnaryOp { .. } => exit(-1),
+            TypedExpr::UnaryOp { .. } => { exit(-2) },
             TypedExpr::Subscript(s) => self.subscript(s),
             TypedExpr::Member(m) => self.member(m),
             TypedExpr::StaticMember(sm) => self.static_member(sm),
@@ -394,22 +394,22 @@ impl HLIR2MLIR {
         match l {
             TypedLiteral::Integer { value, type_ } => MLLiteral::Integer {
                 value: value,
-                type_: self.type_(type_),
+                type_: self.type_(type_).into_value_type(),
             },
             TypedLiteral::FloatingPoint { value, type_ } => MLLiteral::FloatingPoint {
                 value: value,
-                type_: self.type_(type_),
+                type_: self.type_(type_).into_value_type(),
             },
             TypedLiteral::String { value, type_ } => MLLiteral::String {
                 value: value,
-                type_: self.type_(type_),
+                type_: self.type_(type_).into_value_type(),
             },
             TypedLiteral::Boolean { value, type_ } => MLLiteral::Boolean {
                 value: value,
-                type_: self.type_(type_),
+                type_: self.type_(type_).into_value_type(),
             },
             TypedLiteral::NullLiteral { type_ } => MLLiteral::Null {
-                type_: self.type_(type_),
+                type_: self.type_(type_).into_value_type(),
             },
         }
     }

@@ -116,7 +116,6 @@ impl<'ctx> CodeGen<'ctx> {
         match l {
             MLLiteral::Integer { value, type_ } => {
                 let i: u64 = value.parse().unwrap();
-                let type_ = type_.into_value_type();
                 let int_type = match type_ {
                     MLValueType::Primitive(name) => match &*name {
                         "Int8" | "UInt8" => self.context.i8_type(),
@@ -137,7 +136,6 @@ impl<'ctx> CodeGen<'ctx> {
             }
             MLLiteral::FloatingPoint { value, type_ } => {
                 let f: f64 = value.parse().unwrap();
-                let type_ = type_.into_value_type();
                 let float_type = match type_ {
                     MLValueType::Primitive(name) => match &*name {
                         "Float" => self.context.f32_type(),
@@ -176,7 +174,6 @@ impl<'ctx> CodeGen<'ctx> {
                 exit(-2)
             }
             MLLiteral::Struct { type_ } => {
-                let type_ = type_.into_value_type();
                 let struct_type = self.module.get_struct_type(&*match type_ {
                     MLValueType::Struct(name) => name,
                     p => {

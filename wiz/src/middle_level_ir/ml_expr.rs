@@ -1,7 +1,7 @@
 use crate::middle_level_ir::format::Formatter;
 use crate::middle_level_ir::ml_node::MLNode;
 use crate::middle_level_ir::ml_stmt::MLBlock;
-use crate::middle_level_ir::ml_type::MLType;
+use crate::middle_level_ir::ml_type::{MLType, MLValueType};
 use std::fmt;
 use std::fmt::Write;
 use std::process::exit;
@@ -28,12 +28,12 @@ pub struct MLName {
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum MLLiteral {
-    Integer { value: String, type_: MLType },
-    FloatingPoint { value: String, type_: MLType },
-    String { value: String, type_: MLType },
-    Boolean { value: String, type_: MLType },
-    Null { type_: MLType },
-    Struct { type_: MLType },
+    Integer { value: String, type_: MLValueType },
+    FloatingPoint { value: String, type_: MLValueType },
+    String { value: String, type_: MLValueType },
+    Boolean { value: String, type_: MLValueType },
+    Null { type_: MLValueType },
+    Struct { type_: MLValueType },
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -110,7 +110,7 @@ impl MLExpr {
     pub fn type_(&self) -> MLType {
         match self {
             MLExpr::Name(n) => n.type_.clone(),
-            MLExpr::Literal(l) => l.type_(),
+            MLExpr::Literal(l) => MLType::Value(l.type_()),
             MLExpr::Call(c) => c.type_.clone(),
             MLExpr::PrimitiveBinOp(b) => b.type_.clone(),
             MLExpr::PrimitiveUnaryOp(b) => b.type_.clone(),
@@ -124,7 +124,7 @@ impl MLExpr {
 }
 
 impl MLLiteral {
-    pub fn type_(&self) -> MLType {
+    pub fn type_(&self) -> MLValueType {
         match self {
             MLLiteral::Integer { value, type_ } => type_.clone(),
             MLLiteral::FloatingPoint { value, type_ } => type_.clone(),
