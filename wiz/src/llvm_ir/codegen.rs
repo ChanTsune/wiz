@@ -192,7 +192,6 @@ impl<'ctx> CodeGen<'ctx> {
 
     pub fn call(&mut self, c: MLCall) -> AnyValueEnum<'ctx> {
         let target = self.expr(*c.target);
-        println!("{:?}", &(c.args));
         let args = c.args.into_iter().map(|arg| {
             if let MLValueType::Primitive(name) = arg.arg.type_().into_value_type() {
                 if name != String::from("String") {
@@ -739,7 +738,6 @@ impl<'ctx> CodeGen<'ctx> {
     }
 
     fn ml_type_to_type(&self, ml_type: MLValueType) -> AnyTypeEnum<'ctx> {
-        println!("{:?}", ml_type);
         match ml_type {
             MLValueType::Primitive(name) => match &*name {
                 "Unit" => AnyTypeEnum::from(self.context.void_type()),
