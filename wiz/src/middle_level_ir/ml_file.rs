@@ -21,8 +21,8 @@ impl ToString for MLFile {
 
 impl MLNode for MLFile {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        for stmt in self.body.iter() {
-            stmt.fmt(f)?;
+        for decl in self.body.iter() {
+            decl.fmt(f)?;
             f.write_char('\n')?;
         }
         fmt::Result::Ok(())
@@ -74,7 +74,7 @@ mod tests {
     }
 
     #[test]
-    fn test_ml_file_to_string_function_empty() {
+    fn test_ml_file_to_string_function_no_body() {
         let ml_file = MLFile {
             name: "test".to_string(),
             body: vec![MLDecl::Fun(MLFun {
@@ -92,7 +92,7 @@ mod tests {
     }
 
     #[test]
-    fn test_ml_file_to_string_function() {
+    fn test_ml_file_to_string_function_empty_body() {
         let ml_file = MLFile {
             name: "test".to_string(),
             body: vec![MLDecl::Fun(MLFun {
