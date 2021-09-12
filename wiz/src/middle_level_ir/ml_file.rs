@@ -98,17 +98,23 @@ mod tests {
             body: vec![MLDecl::Fun(MLFun {
                 modifiers: vec![],
                 name: "a".to_string(),
-                arg_defs: vec![MLArgDef {
-                    name: "b".to_string(),
-                    type_: MLType::Value(MLValueType::Primitive(String::from("Int64")))
-                },MLArgDef {
-                    name: "c".to_string(),
-                    type_: MLType::Value(MLValueType::Primitive(String::from("Int64")))
-                }],
+                arg_defs: vec![
+                    MLArgDef {
+                        name: "b".to_string(),
+                        type_: MLType::Value(MLValueType::Primitive(String::from("Int64"))),
+                    },
+                    MLArgDef {
+                        name: "c".to_string(),
+                        type_: MLType::Value(MLValueType::Primitive(String::from("Int64"))),
+                    },
+                ],
                 return_type: MLType::Value(MLValueType::Primitive(String::from("Unit"))),
-                body: None
-            })]
+                body: None,
+            })],
         };
-        assert_eq!(ml_file.to_string(), String::from("fun a(b:Int64,c:Int64):Unit;\n"))
+        assert_eq!(
+            ml_file.to_string(),
+            String::from("fun a(b:Int64,c:Int64):Unit;\n")
+        )
     }
 }
