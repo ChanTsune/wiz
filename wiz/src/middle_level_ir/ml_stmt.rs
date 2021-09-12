@@ -53,7 +53,7 @@ impl MLNode for MLLoopStmt {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.write_str("while (")?;
         self.condition.fmt(f)?;
-        f.write_str(")")?;
+        f.write_str(") ")?;
         self.block.fmt(f)
     }
 }
@@ -61,10 +61,12 @@ impl MLNode for MLLoopStmt {
 impl MLNode for MLBlock {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.write_str("{\n")?;
+        f.indent_level_up();
         for stmt in self.body.iter() {
             stmt.fmt(f)?;
-            f.write_char('\n')?;
+            f.write_str(";\n")?;
         }
+        f.indent_level_down();
         f.write_char('}')
     }
 }

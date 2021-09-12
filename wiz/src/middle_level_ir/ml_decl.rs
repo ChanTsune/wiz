@@ -117,7 +117,7 @@ impl MLNode for MLFunBody {
         f.indent_level_up();
         for stmt in self.body.iter() {
             stmt.fmt(f)?;
-            f.write_char('\n')?;
+            f.write_str(";\n")?;
         }
         f.indent_level_down();
         f.write_char('}')

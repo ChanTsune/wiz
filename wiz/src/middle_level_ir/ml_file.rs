@@ -33,6 +33,8 @@ mod tests {
     use crate::middle_level_ir::ml_decl::{MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct};
     use crate::middle_level_ir::ml_file::MLFile;
     use crate::middle_level_ir::ml_type::{MLType, MLValueType};
+    use crate::middle_level_ir::ml_stmt::MLStmt;
+    use crate::middle_level_ir::ml_expr::{MLExpr, MLReturn, MLName};
 
     #[test]
     fn test_ml_file_to_string_empty() {
@@ -115,6 +117,34 @@ mod tests {
         assert_eq!(
             ml_file.to_string(),
             String::from("fun a(b:Int64, c:Int64):Unit {\n};\n")
+        )
+    }
+
+    #[test]
+    fn test_ml_file_to_string_function() {
+        let ml_file = MLFile {
+            name: "test".to_string(),
+            body: vec![MLDecl::Fun(MLFun {
+                modifiers: vec![],
+                name: "a".to_string(),
+                arg_defs: vec![
+                    MLArgDef {
+                        name: "b".to_string(),
+                        type_: MLType::Value(MLValueType::Primitive(String::from("Int64"))),
+                    },
+                ],
+                return_type: MLType::Value(MLValueType::Primitive(String::from("Int64"))),
+                body: Some(MLFunBody {
+                    body: vec![MLStmt::Expr(MLExpr::Return(MLReturn {
+                        value: Some(Box::new(MLExpr::Name(MLName { name: "b".to_string(), type_: MLType::Value(MLValueType::Primitive(String::from("Int64"))) }))),
+                        type_: MLType::Value(MLValueType::Primitive(String::from("Int64")))
+                    }))]
+                }),
+            })],
+        };
+        assert_eq!(
+            ml_file.to_string(),
+            String::from("fun a(b:Int64):Int64 {\n    return b;\n};\n")
         )
     }
 }

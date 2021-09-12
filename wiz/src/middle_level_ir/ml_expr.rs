@@ -171,9 +171,7 @@ impl MLNode for MLExpr {
 
 impl MLNode for MLName {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        f.write_str(&*self.name)?;
-        f.write_char(':')?;
-        self.type_.fmt(f)
+        f.write_str(&*self.name)
     }
 }
 
@@ -181,14 +179,10 @@ impl MLNode for MLLiteral {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             MLLiteral::Integer { value, type_ } => {
-                f.write_str(value)?;
-                f.write_char(':')?;
-                type_.fmt(f)
+                f.write_str(value)
             }
             MLLiteral::FloatingPoint { value, type_ } => {
-                f.write_str(value)?;
-                f.write_char(':')?;
-                type_.fmt(f)
+                f.write_str(value)
             }
             MLLiteral::String { value, type_ } => {
                 f.write_char('"')?;
@@ -197,7 +191,10 @@ impl MLNode for MLLiteral {
             }
             MLLiteral::Boolean { value, type_ } => f.write_str(value),
             MLLiteral::Null { type_ } => fmt::Result::Err(Default::default()),
-            MLLiteral::Struct { type_ } => type_.fmt(f),
+            MLLiteral::Struct { type_ } => {
+                type_.fmt(f)?;
+                f.write_str(" { }")
+            },
         }
     }
 }
@@ -206,12 +203,14 @@ impl MLNode for MLCall {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         self.target.fmt(f)?;
         f.write_char('(')?;
-        for arg in self.args.iter() {
+        for (c, arg) in self.args.iter().enumerate() {
             arg.fmt(f)?;
-            f.write_char(',')?;
+            let s = self.args.len() - 1;
+            if s != c {
+                f.write_str(", ")?;
+            }
         }
-        f.write_str("):")?;
-        self.type_.fmt(f)
+        f.write_str(")")
     }
 }
 
@@ -224,6 +223,7 @@ impl MLNode for MLCallArg {
 impl MLNode for MLBinOp {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         self.left.fmt(f)?;
+        f.write_char(' ')?;
         f.write_str(match self.kind {
             MLBinopKind::Plus => "+",
             MLBinopKind::Minus => "-",
@@ -237,9 +237,8 @@ impl MLNode for MLBinOp {
             MLBinopKind::LessThan => ">",
             MLBinopKind::NotEqual => "!=",
         })?;
-        self.right.fmt(f)?;
-        f.write_char(':')?;
-        self.type_.fmt(f)
+        f.write_char(' ')?;
+        self.right.fmt(f)
     }
 }
 
@@ -250,9 +249,7 @@ impl MLNode for MLUnaryOp {
             MLUnaryOpKind::Positive => "+",
             MLUnaryOpKind::Not => "!",
         })?;
-        self.target.fmt(f)?;
-        f.write_char(':')?;
-        self.type_.fmt(f)
+        self.target.fmt(f)
     }
 }
 
@@ -260,9 +257,7 @@ impl MLNode for MLMember {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         self.target.fmt(f)?;
         f.write_char('.')?;
-        f.write_str(&*self.name)?;
-        f.write_char(':')?;
-        self.type_.fmt(f)
+        f.write_str(&*self.name)
     }
 }
 
@@ -270,13 +265,12 @@ impl MLNode for MLIf {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.write_str("if (")?;
         self.condition.fmt(f)?;
-        f.write_char(')')?;
+        f.write_str(") ")?;
         self.body.fmt(f)?;
         match &self.else_body {
             Some(b) => {
+                f.write_str(" else ")?;
                 b.fmt(f)?;
-                f.write_str(":")?;
-                self.type_.fmt(f)?;
             }
             None => {}
         };
@@ -289,11 +283,11 @@ impl MLNode for MLReturn {
         f.write_str("return ")?;
         match &self.value {
             Some(v) => {
-                v.fmt(f)?;
+                v.fmt(f)
             }
-            None => {}
-        };
-        f.write_char(':')?;
-        self.type_.fmt(f)
+            None => {
+                fmt::Result::Ok(())
+            }
+        }
     }
 }
