@@ -84,8 +84,12 @@ impl MLNode for MLFun {
         f.write_str("fun ")?;
         f.write_str(&*self.name)?;
         f.write_char('(')?;
-        for arg_def in self.arg_defs.iter() {
+        let s = self.arg_defs.len() - 1;
+        for (c, arg_def) in self.arg_defs.iter().enumerate() {
             arg_def.fmt(f)?;
+            if c != s {
+                f.write_char(',')?;
+            }
         }
         f.write_str("):")?;
         self.return_type.fmt(f)?;
