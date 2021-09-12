@@ -104,6 +104,11 @@ fn main() -> result::Result<(), Box<dyn Error>> {
 
     let mlfiles: Vec<MLFile> = hlfiles.into_iter().map(|f| hlir2mlir.file(f)).collect();
 
+    for m in mlfiles.iter() {
+        println!("==== {} ====", m.name);
+        println!("{}", m.to_string());
+    }
+
     for mlfile in mlfiles {
         let module_name = &mlfile.name;
         let context = Context::create();
