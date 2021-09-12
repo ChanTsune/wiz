@@ -90,15 +90,17 @@ impl MLNode for MLFun {
         f.write_str("):")?;
         self.return_type.fmt(f)?;
         match &self.body {
-            Some(b) => b.fmt(f),
-            None => fmt::Result::Ok(()),
-        }
+            Some(b) => { b.fmt(f)?; }
+            None => { },
+        };
+        f.write_char(';')
     }
 }
 
 impl MLNode for MLArgDef {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.write_str(&*self.name)?;
+        f.write_char(':')?;
         self.type_.fmt(f)
     }
 }

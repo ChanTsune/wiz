@@ -30,7 +30,7 @@ impl MLNode for MLFile {
 }
 
 mod tests {
-    use crate::middle_level_ir::ml_decl::{MLDecl, MLField, MLStruct};
+    use crate::middle_level_ir::ml_decl::{MLDecl, MLField, MLStruct, MLFun, MLArgDef};
     use crate::middle_level_ir::ml_file::MLFile;
     use crate::middle_level_ir::ml_type::{MLType, MLValueType};
 
@@ -71,5 +71,23 @@ mod tests {
             ml_file.to_string(),
             String::from("struct T {\n    i:Int64;\n};\n")
         );
+    }
+
+    #[test]
+    fn test_ml_file_to_string_function_empty() {
+        let ml_file = MLFile {
+            name: "test".to_string(),
+            body: vec![MLDecl::Fun(MLFun {
+                modifiers: vec![],
+                name: "a".to_string(),
+                arg_defs: vec![MLArgDef {
+                    name: "b".to_string(),
+                    type_: MLType::Value(MLValueType::Primitive(String::from("Int64")))
+                }],
+                return_type: MLType::Value(MLValueType::Primitive(String::from("Unit"))),
+                body: None
+            })]
+        };
+        assert_eq!(ml_file.to_string(), String::from("fun a(b:Int64):Unit;\n"))
     }
 }
