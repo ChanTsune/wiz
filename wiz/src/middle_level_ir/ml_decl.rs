@@ -90,8 +90,10 @@ impl MLNode for MLFun {
         f.write_str("):")?;
         self.return_type.fmt(f)?;
         match &self.body {
-            Some(b) => { b.fmt(f)?; }
-            None => { },
+            Some(b) => {
+                b.fmt(f)?;
+            }
+            None => {}
         };
         f.write_char(';')
     }
