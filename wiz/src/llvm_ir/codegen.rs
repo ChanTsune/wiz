@@ -550,9 +550,7 @@ impl<'ctx> CodeGen<'ctx> {
                 let a = a.type_.clone();
                 self.ml_type_to_type(a.into_value_type())
             })
-            .map(|a| {
-                BasicTypeEnum::try_from(a).unwrap()
-            })
+            .map(|a| BasicTypeEnum::try_from(a).unwrap())
             .collect();
         let return_type = self.ml_type_to_type(return_type.into_value_type());
         let result = if let Some(body) = body {
