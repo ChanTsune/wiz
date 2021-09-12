@@ -284,7 +284,6 @@ impl Ast2HLIR {
                 }
                 Decl::Struct(s) => {
                     let s = self.struct_syntax(s);
-                    println!("Struct {:?}", &s);
                     self.context.put_type(&s)
                 }
                 Decl::Class {} => {}
@@ -413,7 +412,6 @@ impl Ast2HLIR {
     }
 
     pub fn var_syntax(&mut self, v: VarSyntax) -> TypedVar {
-        println!("{:?}", &v.value);
         let expr = self.expr(v.value);
         let type_ = match (v.type_, expr.type_()) {
             (Some(tn), Some(expr_type)) => {
@@ -475,7 +473,6 @@ impl Ast2HLIR {
     }
 
     pub fn fun_syntax(&mut self, f: FunSyntax) -> TypedFun {
-        println!("{:?}", &f);
         let args: Vec<TypedArgDef> = f.arg_defs.into_iter().map(|a| self.arg_def(a)).collect();
         self.context.push();
         for arg in args.iter() {
