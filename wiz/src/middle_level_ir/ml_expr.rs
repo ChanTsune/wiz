@@ -271,7 +271,7 @@ impl MLNode for MLIf {
         f.write_str("if (")?;
         self.condition.fmt(f)?;
         f.write_char(')')?;
-        self.body.fmt(f);
+        self.body.fmt(f)?;
         match &self.else_body {
             Some(b) => {
                 b.fmt(f)?;
