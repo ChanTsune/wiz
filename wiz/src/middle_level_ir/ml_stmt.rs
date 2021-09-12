@@ -51,7 +51,7 @@ impl MLNode for MLAssignmentStmt {
 
 impl MLNode for MLLoopStmt {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        f.write_str("for (")?;
+        f.write_str("while (")?;
         self.condition.fmt(f)?;
         f.write_str(")")?;
         self.block.fmt(f)
