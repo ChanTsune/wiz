@@ -384,7 +384,6 @@ impl HLIR2MLIR {
     }
 
     pub fn name(&self, n: TypedName) -> MLName {
-        println!("MLIR => name :: {:?}", &n);
         MLName {
             name: n.name,
             type_: self.type_(n.type_.unwrap()),
