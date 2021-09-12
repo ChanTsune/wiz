@@ -141,7 +141,6 @@ impl ResolverContext {
     }
 
     pub fn get_current_namespace_mut(&mut self) -> Option<&mut NameSpace> {
-        println!("NS => {:?}", self.current_namespace);
         self.name_space
             .get_child_mut(self.current_namespace.clone())
     }
