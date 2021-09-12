@@ -31,10 +31,10 @@ impl MLNode for MLFile {
 
 mod tests {
     use crate::middle_level_ir::ml_decl::{MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct};
+    use crate::middle_level_ir::ml_expr::{MLExpr, MLName, MLReturn};
     use crate::middle_level_ir::ml_file::MLFile;
-    use crate::middle_level_ir::ml_type::{MLType, MLValueType};
     use crate::middle_level_ir::ml_stmt::MLStmt;
-    use crate::middle_level_ir::ml_expr::{MLExpr, MLReturn, MLName};
+    use crate::middle_level_ir::ml_type::{MLType, MLValueType};
 
     #[test]
     fn test_ml_file_to_string_empty() {
@@ -127,18 +127,19 @@ mod tests {
             body: vec![MLDecl::Fun(MLFun {
                 modifiers: vec![],
                 name: "a".to_string(),
-                arg_defs: vec![
-                    MLArgDef {
-                        name: "b".to_string(),
-                        type_: MLType::Value(MLValueType::Primitive(String::from("Int64"))),
-                    },
-                ],
+                arg_defs: vec![MLArgDef {
+                    name: "b".to_string(),
+                    type_: MLType::Value(MLValueType::Primitive(String::from("Int64"))),
+                }],
                 return_type: MLType::Value(MLValueType::Primitive(String::from("Int64"))),
                 body: Some(MLFunBody {
                     body: vec![MLStmt::Expr(MLExpr::Return(MLReturn {
-                        value: Some(Box::new(MLExpr::Name(MLName { name: "b".to_string(), type_: MLType::Value(MLValueType::Primitive(String::from("Int64"))) }))),
-                        type_: MLType::Value(MLValueType::Primitive(String::from("Int64")))
-                    }))]
+                        value: Some(Box::new(MLExpr::Name(MLName {
+                            name: "b".to_string(),
+                            type_: MLType::Value(MLValueType::Primitive(String::from("Int64"))),
+                        }))),
+                        type_: MLType::Value(MLValueType::Primitive(String::from("Int64"))),
+                    }))],
                 }),
             })],
         };

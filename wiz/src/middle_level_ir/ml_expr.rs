@@ -178,12 +178,8 @@ impl MLNode for MLName {
 impl MLNode for MLLiteral {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            MLLiteral::Integer { value, type_ } => {
-                f.write_str(value)
-            }
-            MLLiteral::FloatingPoint { value, type_ } => {
-                f.write_str(value)
-            }
+            MLLiteral::Integer { value, type_ } => f.write_str(value),
+            MLLiteral::FloatingPoint { value, type_ } => f.write_str(value),
             MLLiteral::String { value, type_ } => {
                 f.write_char('"')?;
                 f.write_str(value)?;
@@ -194,7 +190,7 @@ impl MLNode for MLLiteral {
             MLLiteral::Struct { type_ } => {
                 type_.fmt(f)?;
                 f.write_str(" { }")
-            },
+            }
         }
     }
 }
@@ -282,12 +278,8 @@ impl MLNode for MLReturn {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.write_str("return ")?;
         match &self.value {
-            Some(v) => {
-                v.fmt(f)
-            }
-            None => {
-                fmt::Result::Ok(())
-            }
+            Some(v) => v.fmt(f),
+            None => fmt::Result::Ok(()),
         }
     }
 }
