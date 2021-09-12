@@ -39,7 +39,7 @@ impl<'a> Write for Formatter<'a> {
     }
 
     fn write_char(&mut self, c: char) -> Result {
-        if c == '\n' && self.prev_char != '\n' {
+        if c != '\n' && self.prev_char == '\n' {
             self.buf
                 .write_str(&*" ".repeat(self.indent_level * self.indent_size))?;
         };
