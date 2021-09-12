@@ -116,12 +116,15 @@ impl MLNode for MLFunBody {
 
 impl MLNode for MLStruct {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        f.write_str("struct {\n")?;
+        f.write_str("struct ")?;
         f.write_str(&*self.name)?;
+        f.write_str(" {\n")?;
+        f.indent_level_up();
         for field in self.fields.iter() {
             field.fmt(f)?;
             f.write_str(";\n")?;
         }
+        f.indent_level_down();
         f.write_str("};")
     }
 }
