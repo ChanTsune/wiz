@@ -114,7 +114,7 @@ mod tests {
         };
         assert_eq!(
             ml_file.to_string(),
-            String::from("fun a(b:Int64,c:Int64):Unit;\n")
+            String::from("fun a(b:Int64, c:Int64):Unit;\n")
         )
     }
 }
