@@ -754,7 +754,7 @@ impl<'ctx> CodeGen<'ctx> {
                 }
             },
             MLValueType::Struct(t) => AnyTypeEnum::from(self.module.get_struct_type(&*t).unwrap()),
-            MLValueType::Pointer(p) => BasicTypeEnum::try_from(self.ml_type_to_type(*p))
+            MLValueType::Pointer(p)|MLValueType::Reference(p) => BasicTypeEnum::try_from(self.ml_type_to_type(*p))
                 .unwrap()
                 .ptr_type(AddressSpace::Generic)
                 .as_any_type_enum(),
