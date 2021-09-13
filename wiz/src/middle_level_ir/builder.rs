@@ -1,8 +1,7 @@
-use std::collections::HashMap;
-use crate::middle_level_ir::ml_decl::{MLFun, MLVar, MLStruct, MLArgDef, MLDecl};
-use crate::middle_level_ir::ml_type::MLType;
+use crate::middle_level_ir::ml_decl::{MLArgDef, MLDecl, MLFun, MLStruct, MLVar};
 use crate::middle_level_ir::ml_file::MLFile;
-
+use crate::middle_level_ir::ml_type::MLType;
+use std::collections::HashMap;
 
 pub struct MLIRModule {
     name: String,
@@ -12,24 +11,31 @@ pub struct MLIRModule {
 }
 
 impl MLIRModule {
-
     pub fn new(name: String) -> Self {
         Self {
             name,
             functions: Default::default(),
             variables: Default::default(),
-            structs: Default::default()
+            structs: Default::default(),
         }
     }
 
-    pub fn create_function(&mut self, name: String, args: Vec<MLArgDef>, return_type: MLType) -> Option<&mut MLFun> {
-        self.functions.insert(name.clone(), MLFun {
-            modifiers: vec![],
-            name: name.clone(),
-            arg_defs: args,
-            return_type,
-            body: None
-        })?;
+    pub fn create_function(
+        &mut self,
+        name: String,
+        args: Vec<MLArgDef>,
+        return_type: MLType,
+    ) -> Option<&mut MLFun> {
+        self.functions.insert(
+            name.clone(),
+            MLFun {
+                modifiers: vec![],
+                name: name.clone(),
+                arg_defs: args,
+                return_type,
+                body: None,
+            },
+        )?;
         self.functions.get_mut(&*name)
     }
 
@@ -46,9 +52,13 @@ impl MLIRModule {
     pub fn to_mlir_file(self) -> MLFile {
         MLFile {
             name: self.name,
-            body:         self.structs.into_values().map(|v| MLDecl::Struct(v)).chain(
-                self.variables.into_values().map(|v| MLDecl::Var(v))
-            ).chain(self.functions.into_values().map(|v| MLDecl::Fun(v))).collect()
+            body: self
+                .structs
+                .into_values()
+                .map(|v| MLDecl::Struct(v))
+                .chain(self.variables.into_values().map(|v| MLDecl::Var(v)))
+                .chain(self.functions.into_values().map(|v| MLDecl::Fun(v)))
+                .collect(),
         }
     }
 }
