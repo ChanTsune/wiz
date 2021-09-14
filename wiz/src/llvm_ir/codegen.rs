@@ -609,23 +609,13 @@ impl<'ctx> CodeGen<'ctx> {
         } else {
             let fn_type = match return_type {
                 // AnyTypeEnum::ArrayType(_) => {}
-                AnyTypeEnum::FloatType(float_type) => {
-                    float_type.fn_type(&args, false)
-                }
+                AnyTypeEnum::FloatType(float_type) => float_type.fn_type(&args, false),
                 // AnyTypeEnum::FunctionType(_) => {}
-                AnyTypeEnum::IntType(int_type) => {
-                    int_type.fn_type(&args, false)
-                }
-                AnyTypeEnum::PointerType(ptr_type) => {
-                    ptr_type.fn_type(&args, false)
-                }
-                AnyTypeEnum::StructType(struct_type) => {
-                    struct_type.fn_type(&args, false)
-                }
+                AnyTypeEnum::IntType(int_type) => int_type.fn_type(&args, false),
+                AnyTypeEnum::PointerType(ptr_type) => ptr_type.fn_type(&args, false),
+                AnyTypeEnum::StructType(struct_type) => struct_type.fn_type(&args, false),
                 // AnyTypeEnum::VectorType(_) => {}
-                AnyTypeEnum::VoidType(void_type) => {
-                    void_type.fn_type(&args, false)
-                }
+                AnyTypeEnum::VoidType(void_type) => void_type.fn_type(&args, false),
                 _ => {
                     println!("Return type Error");
                     exit(-1)
