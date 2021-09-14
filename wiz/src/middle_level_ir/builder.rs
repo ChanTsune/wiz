@@ -1,6 +1,6 @@
 use crate::middle_level_ir::ml_decl::{MLArgDef, MLDecl, MLFun, MLStruct, MLVar};
 use crate::middle_level_ir::ml_file::MLFile;
-use crate::middle_level_ir::ml_type::MLType;
+use crate::middle_level_ir::ml_type::{MLType, MLValueType};
 use std::collections::HashMap;
 
 pub struct MLIRModule {
@@ -24,7 +24,7 @@ impl MLIRModule {
         &mut self,
         name: String,
         args: Vec<MLArgDef>,
-        return_type: MLType,
+        return_type: MLValueType,
     ) -> Option<&mut MLFun> {
         self.functions.insert(
             name.clone(),

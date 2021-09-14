@@ -2,7 +2,7 @@ use crate::middle_level_ir::format::Formatter;
 use crate::middle_level_ir::ml_expr::MLExpr;
 use crate::middle_level_ir::ml_node::MLNode;
 use crate::middle_level_ir::ml_stmt::MLStmt;
-use crate::middle_level_ir::ml_type::MLType;
+use crate::middle_level_ir::ml_type::{MLType, MLValueType};
 use std::fmt;
 use std::fmt::Write;
 
@@ -26,14 +26,14 @@ pub struct MLFun {
     pub(crate) modifiers: Vec<String>,
     pub(crate) name: String,
     pub(crate) arg_defs: Vec<MLArgDef>,
-    pub(crate) return_type: MLType,
+    pub(crate) return_type: MLValueType,
     pub(crate) body: Option<MLFunBody>,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct MLArgDef {
     pub(crate) name: String,
-    pub(crate) type_: MLType,
+    pub(crate) type_: MLValueType,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]

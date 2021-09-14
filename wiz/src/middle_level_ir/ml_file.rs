@@ -84,9 +84,9 @@ mod tests {
                 name: "a".to_string(),
                 arg_defs: vec![MLArgDef {
                     name: "b".to_string(),
-                    type_: MLType::Value(MLValueType::Primitive(String::from("Int64"))),
+                    type_: MLValueType::Primitive(String::from("Int64")),
                 }],
-                return_type: MLType::Value(MLValueType::Primitive(String::from("Unit"))),
+                return_type: MLValueType::Primitive(String::from("Unit")),
                 body: None,
             })],
         };
@@ -103,14 +103,14 @@ mod tests {
                 arg_defs: vec![
                     MLArgDef {
                         name: "b".to_string(),
-                        type_: MLType::Value(MLValueType::Primitive(String::from("Int64"))),
+                        type_: MLValueType::Primitive(String::from("Int64")),
                     },
                     MLArgDef {
                         name: "c".to_string(),
-                        type_: MLType::Value(MLValueType::Primitive(String::from("Int64"))),
+                        type_: MLValueType::Primitive(String::from("Int64")),
                     },
                 ],
-                return_type: MLType::Value(MLValueType::Primitive(String::from("Unit"))),
+                return_type: MLValueType::Primitive(String::from("Unit")),
                 body: Some(MLFunBody { body: vec![] }),
             })],
         };
@@ -129,9 +129,9 @@ mod tests {
                 name: "a".to_string(),
                 arg_defs: vec![MLArgDef {
                     name: "b".to_string(),
-                    type_: MLType::Value(MLValueType::Primitive(String::from("Int64"))),
+                    type_: MLValueType::Primitive(String::from("Int64")),
                 }],
-                return_type: MLType::Value(MLValueType::Primitive(String::from("Int64"))),
+                return_type: MLValueType::Primitive(String::from("Int64")),
                 body: Some(MLFunBody {
                     body: vec![MLStmt::Expr(MLExpr::Return(MLReturn {
                         value: Some(Box::new(MLExpr::Name(MLName {

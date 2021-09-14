@@ -241,7 +241,7 @@ impl HLIR2MLIR {
             modifiers,
             name,
             arg_defs: args,
-            return_type: self.type_(return_type),
+            return_type: self.type_(return_type).into_value_type(),
             body: body.map(|b| self.fun_body(b)),
         }
     }
@@ -296,7 +296,7 @@ impl HLIR2MLIR {
                     modifiers: vec![],
                     name: name.clone() + "#init",
                     arg_defs: i.args.into_iter().map(|a| self.arg_def(a)).collect(),
-                    return_type: type_,
+                    return_type: type_.into_value_type(),
                     body: Some(MLFunBody { body }),
                 }
             })
@@ -315,14 +315,14 @@ impl HLIR2MLIR {
                 let mut a = args.into_iter().map(|a| self.arg_def(a)).collect();
                 let mut args = vec![MLArgDef {
                     name: String::from("self"),
-                    type_: MLType::Value(value_type.clone()),
+                    type_: value_type.clone(),
                 }];
                 args.append(&mut a);
                 MLFun {
                     modifiers: vec![],
                     name: name.clone() + "::" + &fname,
                     arg_defs: args,
-                    return_type: self.type_(return_type),
+                    return_type: self.type_(return_type).into_value_type(),
                     body: Some(self.fun_body(body)),
                 }
             })
@@ -528,7 +528,7 @@ impl HLIR2MLIR {
     pub fn arg_def(&self, e: TypedArgDef) -> MLArgDef {
         MLArgDef {
             name: e.name(),
-            type_: self.type_(e.type_().unwrap()),
+            type_: self.type_(e.type_().unwrap()).into_value_type(),
         }
     }
 

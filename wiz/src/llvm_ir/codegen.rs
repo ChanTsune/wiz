@@ -569,11 +569,11 @@ impl<'ctx> CodeGen<'ctx> {
             .iter()
             .map(|a| {
                 let a = a.type_.clone();
-                self.ml_type_to_type(a.into_value_type())
+                self.ml_type_to_type(a)
             })
             .map(|a| BasicTypeEnum::try_from(a).unwrap())
             .collect();
-        let return_type = self.ml_type_to_type(return_type.into_value_type());
+        let return_type = self.ml_type_to_type(return_type);
         let result = if let Some(body) = body {
             self.ml_context.push_environment();
             let is_void_type = return_type.is_void_type();
