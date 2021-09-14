@@ -1,5 +1,8 @@
 use crate::middle_level_ir::ml_decl::{MLDecl, MLFun, MLStruct, MLVar};
-use crate::middle_level_ir::ml_expr::{MLBinOp, MLBinopKind, MLCall, MLExpr, MLIf, MLLiteral, MLMember, MLReturn, MLUnaryOp, MLSubscript};
+use crate::middle_level_ir::ml_expr::{
+    MLBinOp, MLBinopKind, MLCall, MLExpr, MLIf, MLLiteral, MLMember, MLReturn, MLSubscript,
+    MLUnaryOp,
+};
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
 use crate::middle_level_ir::ml_type::{MLType, MLValueType};
@@ -370,8 +373,9 @@ impl<'ctx> CodeGen<'ctx> {
             // AnyValueEnum::PhiValue(_) => {}
             // AnyValueEnum::FunctionValue(_) => {}
             AnyValueEnum::PointerValue(p) => unsafe {
-                p.const_in_bounds_gep(&[index.into_int_value()]).as_any_value_enum()
-            }
+                p.const_in_bounds_gep(&[index.into_int_value()])
+                    .as_any_value_enum()
+            },
             // AnyValueEnum::StructValue(_) => {}
             // AnyValueEnum::VectorValue(_) => {}
             // AnyValueEnum::InstructionValue(_) => {}

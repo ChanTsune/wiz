@@ -122,7 +122,7 @@ impl MLExpr {
             MLExpr::Call(c) => c.type_.clone(),
             MLExpr::PrimitiveBinOp(b) => b.type_.clone(),
             MLExpr::PrimitiveUnaryOp(b) => b.type_.clone(),
-            MLExpr::PrimitiveSubscript(p) => {p.type_.clone()}
+            MLExpr::PrimitiveSubscript(p) => p.type_.clone(),
             MLExpr::Member(f) => f.type_.clone(),
             MLExpr::If(i) => i.type_.clone(),
             MLExpr::When => exit(-9),

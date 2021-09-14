@@ -13,7 +13,10 @@ use crate::high_level_ir::typed_type::{TypedFunctionType, TypedType, TypedValueT
 use crate::middle_level_ir::ml_decl::{
     MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar,
 };
-use crate::middle_level_ir::ml_expr::{MLBinOp, MLBinopKind, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLMember, MLName, MLReturn, MLSubscript};
+use crate::middle_level_ir::ml_expr::{
+    MLBinOp, MLBinopKind, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLMember, MLName, MLReturn,
+    MLSubscript,
+};
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
 use crate::middle_level_ir::ml_type::{MLFunctionType, MLType, MLValueType};
@@ -422,7 +425,7 @@ impl HLIR2MLIR {
                         MLExpr::PrimitiveSubscript(MLSubscript {
                             target: Box::new(self.expr(*s.target)),
                             index: Box::new(self.expr(s.indexes[0].clone())),
-                            type_: self.type_(v.type_args.unwrap()[0].clone())
+                            type_: self.type_(v.type_args.unwrap()[0].clone()),
                         })
                     } else {
                         self.subscript_for_user_defined(s)
