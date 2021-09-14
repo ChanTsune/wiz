@@ -607,46 +607,33 @@ impl<'ctx> CodeGen<'ctx> {
             self.ml_context.pop_environment();
             AnyValueEnum::from(function)
         } else {
-            let func = match return_type {
+            let fn_type = match return_type {
                 // AnyTypeEnum::ArrayType(_) => {}
                 AnyTypeEnum::FloatType(float_type) => {
-                    let fn_type = float_type.fn_type(&args, false);
-                    let f = self.module.add_function(&*name, fn_type, None);
-                    self.ml_context.current_function = Some(f);
-                    f
+                    float_type.fn_type(&args, false)
                 }
                 // AnyTypeEnum::FunctionType(_) => {}
                 AnyTypeEnum::IntType(int_type) => {
-                    let fn_type = int_type.fn_type(&args, false);
-                    let f = self.module.add_function(&*name, fn_type, None);
-                    self.ml_context.current_function = Some(f);
-                    f
+                    int_type.fn_type(&args, false)
                 }
                 AnyTypeEnum::PointerType(ptr_type) => {
-                    let fn_type = ptr_type.fn_type(&args, false);
-                    let f = self.module.add_function(&*name, fn_type, None);
-                    self.ml_context.current_function = Some(f);
-                    f
+                    ptr_type.fn_type(&args, false)
                 }
                 AnyTypeEnum::StructType(struct_type) => {
-                    let fn_type = struct_type.fn_type(&args, false);
-                    let f = self.module.add_function(&*name, fn_type, None);
-                    self.ml_context.current_function = Some(f);
-                    f
+                    struct_type.fn_type(&args, false)
                 }
                 // AnyTypeEnum::VectorType(_) => {}
                 AnyTypeEnum::VoidType(void_type) => {
-                    let fn_type = void_type.fn_type(&args, false);
-                    let f = self.module.add_function(&*name, fn_type, None);
-                    self.ml_context.current_function = Some(f);
-                    f
+                    void_type.fn_type(&args, false)
                 }
                 _ => {
                     println!("Return type Error");
                     exit(-1)
                 }
             };
-            AnyValueEnum::from(func)
+            let f = self.module.add_function(&*name, fn_type, None);
+            self.ml_context.current_function = Some(f);
+            AnyValueEnum::from(f)
         };
         result
     }
