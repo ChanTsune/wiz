@@ -1,5 +1,6 @@
 use crate::high_level_ir::typed_decl::TypedArgDef;
 use std::fmt;
+use crate::constants::UNSAFE_POINTER;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
 pub struct Package {
@@ -113,5 +114,18 @@ impl TypedType {
             Self::bool(),
             Self::string(),
         ]
+    }
+
+    pub fn is_primitive(&self) -> bool {
+        Self::builtin_types().contains(self)
+    }
+
+    pub fn is_pointer_type(&self) -> bool {
+        match self {
+            TypedType::Value(v) => {
+                v.name == UNSAFE_POINTER
+            }
+            TypedType::Function(_) => {false}
+        }
     }
 }

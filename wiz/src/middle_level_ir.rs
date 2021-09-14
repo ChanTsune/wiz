@@ -13,9 +13,7 @@ use crate::high_level_ir::typed_type::{TypedFunctionType, TypedType, TypedValueT
 use crate::middle_level_ir::ml_decl::{
     MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar,
 };
-use crate::middle_level_ir::ml_expr::{
-    MLBinOp, MLBinopKind, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLMember, MLName, MLReturn,
-};
+use crate::middle_level_ir::ml_expr::{MLBinOp, MLBinopKind, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLMember, MLName, MLReturn, MLSubscript};
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
 use crate::middle_level_ir::ml_type::{MLFunctionType, MLType, MLValueType};
@@ -416,6 +414,31 @@ impl HLIR2MLIR {
     }
 
     pub fn subscript(&mut self, s: TypedSubscript) -> MLExpr {
+        let t = s.target.type_().unwrap();
+        if t.is_pointer_type() && s.indexes.len() == 1 {
+            match t {
+                TypedType::Value(v) => {
+                    if v.type_args.as_ref().unwrap()[0].is_primitive() {
+                        MLExpr::PrimitiveSubscript(MLSubscript {
+                            target: Box::new(self.expr(*s.target)),
+                            index: Box::new(self.expr(s.indexes[0].clone())),
+                            type_: self.type_(v.type_args.unwrap()[0].clone())
+                        })
+                    } else {
+                        self.subscript_for_user_defined(s)
+                    }
+                }
+                TypedType::Function(_) => {
+                    eprintln!("function pointer detected");
+                    exit(-1)
+                }
+            }
+        } else {
+            self.subscript_for_user_defined(s)
+        }
+    }
+
+    fn subscript_for_user_defined(&mut self, s: TypedSubscript) -> MLExpr {
         MLExpr::Call(MLCall {
             target: Box::new(self.expr(*s.target)),
             args: s

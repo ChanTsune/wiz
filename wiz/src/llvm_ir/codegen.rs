@@ -1,7 +1,5 @@
 use crate::middle_level_ir::ml_decl::{MLDecl, MLFun, MLStruct, MLVar};
-use crate::middle_level_ir::ml_expr::{
-    MLBinOp, MLBinopKind, MLCall, MLExpr, MLIf, MLLiteral, MLMember, MLReturn, MLUnaryOp,
-};
+use crate::middle_level_ir::ml_expr::{MLBinOp, MLBinopKind, MLCall, MLExpr, MLIf, MLLiteral, MLMember, MLReturn, MLUnaryOp, MLSubscript};
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
 use crate::middle_level_ir::ml_type::{MLType, MLValueType};
@@ -103,6 +101,7 @@ impl<'ctx> CodeGen<'ctx> {
             MLExpr::Literal(literal) => self.literal(literal),
             MLExpr::PrimitiveBinOp(b) => self.binop(b),
             MLExpr::PrimitiveUnaryOp(u) => self.unaryop(u),
+            MLExpr::PrimitiveSubscript(s) => self.subscript(s),
             MLExpr::Call(c) => self.call(c),
             MLExpr::Member(m) => self.member(m),
             MLExpr::If(i) => self.if_expr(i),
@@ -359,6 +358,28 @@ impl<'ctx> CodeGen<'ctx> {
     pub fn unaryop(&self, u: MLUnaryOp) -> AnyValueEnum<'ctx> {
         println!("Unsupported unaryop {:?}", &u);
         exit(-1)
+    }
+
+    pub fn subscript(&mut self, s: MLSubscript) -> AnyValueEnum<'ctx> {
+        let target = self.expr(*s.target);
+        let index = self.expr(*s.index);
+        match target {
+            // AnyValueEnum::ArrayValue(_) => {}
+            // AnyValueEnum::IntValue(_) => {}
+            // AnyValueEnum::FloatValue(_) => {}
+            // AnyValueEnum::PhiValue(_) => {}
+            // AnyValueEnum::FunctionValue(_) => {}
+            AnyValueEnum::PointerValue(p) => unsafe {
+                p.const_in_bounds_gep(&[index.into_int_value()]).as_any_value_enum()
+            }
+            // AnyValueEnum::StructValue(_) => {}
+            // AnyValueEnum::VectorValue(_) => {}
+            // AnyValueEnum::InstructionValue(_) => {}
+            t => {
+                eprintln!("unsupported subscript {:?}", t);
+                exit(-1)
+            }
+        }
     }
 
     pub fn member(&mut self, m: MLMember) -> AnyValueEnum<'ctx> {

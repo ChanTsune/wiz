@@ -13,6 +13,7 @@ pub enum MLExpr {
     Call(MLCall),
     PrimitiveBinOp(MLBinOp),
     PrimitiveUnaryOp(MLUnaryOp),
+    PrimitiveSubscript(MLSubscript),
     Member(MLMember),
     If(MLIf),
     When,
@@ -94,6 +95,13 @@ pub enum MLUnaryOpKind {
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct MLSubscript {
+    pub(crate) target: Box<MLExpr>,
+    pub(crate) index: Box<MLExpr>,
+    pub(crate) type_: MLType,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct MLMember {
     pub(crate) target: Box<MLExpr>,
     pub(crate) name: String,
@@ -114,6 +122,7 @@ impl MLExpr {
             MLExpr::Call(c) => c.type_.clone(),
             MLExpr::PrimitiveBinOp(b) => b.type_.clone(),
             MLExpr::PrimitiveUnaryOp(b) => b.type_.clone(),
+            MLExpr::PrimitiveSubscript(p) => {p.type_.clone()}
             MLExpr::Member(f) => f.type_.clone(),
             MLExpr::If(i) => i.type_.clone(),
             MLExpr::When => exit(-9),
@@ -160,6 +169,7 @@ impl MLNode for MLExpr {
             MLExpr::Call(c) => c.fmt(f),
             MLExpr::PrimitiveBinOp(b) => b.fmt(f),
             MLExpr::PrimitiveUnaryOp(u) => u.fmt(f),
+            MLExpr::PrimitiveSubscript(p) => p.fmt(f),
             MLExpr::Member(m) => m.fmt(f),
             MLExpr::If(i) => i.fmt(f),
             MLExpr::When => fmt::Result::Err(Default::default()),
@@ -246,6 +256,15 @@ impl MLNode for MLUnaryOp {
             MLUnaryOpKind::Not => "!",
         })?;
         self.target.fmt(f)
+    }
+}
+
+impl MLNode for MLSubscript {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        self.target.fmt(f)?;
+        f.write_char('[')?;
+        self.index.fmt(f)?;
+        f.write_char(']')
     }
 }
 
