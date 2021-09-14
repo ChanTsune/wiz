@@ -26,6 +26,13 @@ impl MLValueType {
             MLValueType::Reference(r) => String::from("&") + &*r.name(),
         }
     }
+
+    pub(crate) fn is_struct(&self) -> bool {
+        match self {
+            MLValueType::Struct(_) => {true}
+            _ => false
+        }
+    }
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
