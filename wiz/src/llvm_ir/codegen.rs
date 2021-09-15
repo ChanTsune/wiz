@@ -556,7 +556,7 @@ impl<'ctx> CodeGen<'ctx> {
             t => {
                 eprintln!("undefined root executed {:?}", t);
                 exit(-14)
-            },
+            }
         }
     }
 
