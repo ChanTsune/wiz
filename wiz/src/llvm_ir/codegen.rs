@@ -553,7 +553,10 @@ impl<'ctx> CodeGen<'ctx> {
                 self.set_to_environment(name, ptr.as_any_value_enum());
                 self.builder.build_store(ptr, s).as_any_value_enum()
             }
-            _ => exit(-14),
+            t => {
+                eprintln!("undefined root executed {:?}", t);
+                exit(-14)
+            },
         }
     }
 
