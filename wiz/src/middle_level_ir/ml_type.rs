@@ -28,10 +28,7 @@ impl MLValueType {
     }
 
     pub(crate) fn is_struct(&self) -> bool {
-        match self {
-            MLValueType::Struct(_) => true,
-            _ => false,
-        }
+        matches!(self, MLValueType::Struct(_))
     }
 }
 
