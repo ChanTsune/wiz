@@ -509,7 +509,7 @@ impl<'ctx> CodeGen<'ctx> {
         AnyValueEnum::from(i64_type.const_int(0, false))
     }
 
-    pub fn load_if_pointer_value(&self, v: AnyValueEnum<'ctx>) -> AnyValueEnum<'ctx> {
+    fn load_if_pointer_value(&self, v: AnyValueEnum<'ctx>) -> AnyValueEnum<'ctx> {
         if v.is_pointer_value() {
             let p = v.into_pointer_value();
             self.builder.build_load(p, "v").as_any_value_enum()
