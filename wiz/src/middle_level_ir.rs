@@ -396,7 +396,7 @@ impl HLIR2MLIR {
             kind,
             right,
             type_,
-        }   = b;
+        } = b;
         MLBinOp {
             left: Box::new(self.expr(*left)),
             kind: match &*kind {
