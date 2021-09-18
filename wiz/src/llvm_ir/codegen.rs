@@ -206,25 +206,14 @@ impl<'ctx> CodeGen<'ctx> {
         let args: Vec<BasicValueEnum> = args
             .filter_map(|arg| BasicValueEnum::try_from(arg).ok())
             .collect();
-        match target {
-            AnyValueEnum::FunctionValue(function) => {
-                let bv = self
-                    .builder
-                    .build_call(function, &args, "f_call")
-                    .try_as_basic_value();
-                match bv {
-                    Either::Left(vb) => AnyValueEnum::from(vb),
-                    Either::Right(iv) => AnyValueEnum::from(iv),
-                }
-            }
-            AnyValueEnum::PointerValue(p) => {
-                eprintln!("Call Pointer {:?}", p);
-                exit(-12)
-            }
-            a => {
-                eprintln!("Unknown Call {:?}", a);
-                exit(-12)
-            }
+        let function = target.into_function_value();
+        let bv = self
+            .builder
+            .build_call(function, &args, "f_call")
+            .try_as_basic_value();
+        match bv {
+            Either::Left(vb) => AnyValueEnum::from(vb),
+            Either::Right(iv) => AnyValueEnum::from(iv),
         }
     }
 
