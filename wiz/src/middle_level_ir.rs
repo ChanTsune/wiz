@@ -337,33 +337,7 @@ impl HLIR2MLIR {
         match e {
             TypedExpr::Name(name) => MLExpr::Name(self.name(name)),
             TypedExpr::Literal(l) => MLExpr::Literal(self.literal(l)),
-            TypedExpr::BinOp(TypedBinOp {
-                left,
-                kind,
-                right,
-                type_,
-            }) => MLExpr::PrimitiveBinOp(MLBinOp {
-                left: Box::new(self.expr(*left)),
-                kind: match &*kind {
-                    "+" => MLBinopKind::Plus,
-                    "-" => MLBinopKind::Minus,
-                    "*" => MLBinopKind::Mul,
-                    "/" => MLBinopKind::Div,
-                    "%" => MLBinopKind::Mod,
-                    "==" => MLBinopKind::Equal,
-                    ">=" => MLBinopKind::GrateThanEqual,
-                    ">" => MLBinopKind::GrateThan,
-                    "<=" => MLBinopKind::LessThanEqual,
-                    "<" => MLBinopKind::LessThan,
-                    "!=" => MLBinopKind::NotEqual,
-                    _ => {
-                        eprintln!("Unknown operator '{:?}'", kind);
-                        exit(-1)
-                    }
-                },
-                right: Box::new(self.expr(*right)),
-                type_: self.type_(type_.unwrap()),
-            }),
+            TypedExpr::BinOp(b) => MLExpr::PrimitiveBinOp(self.binop(b)),
             TypedExpr::UnaryOp { .. } => exit(-2),
             TypedExpr::Subscript(s) => self.subscript(s),
             TypedExpr::Member(m) => self.member(m),
@@ -413,6 +387,37 @@ impl HLIR2MLIR {
             TypedLiteral::NullLiteral { type_ } => MLLiteral::Null {
                 type_: self.type_(type_).into_value_type(),
             },
+        }
+    }
+
+    pub fn binop(&mut self, b: TypedBinOp) -> MLBinOp {
+        let TypedBinOp {
+            left,
+            kind,
+            right,
+            type_,
+        }   = b;
+        MLBinOp {
+            left: Box::new(self.expr(*left)),
+            kind: match &*kind {
+                "+" => MLBinopKind::Plus,
+                "-" => MLBinopKind::Minus,
+                "*" => MLBinopKind::Mul,
+                "/" => MLBinopKind::Div,
+                "%" => MLBinopKind::Mod,
+                "==" => MLBinopKind::Equal,
+                ">=" => MLBinopKind::GrateThanEqual,
+                ">" => MLBinopKind::GrateThan,
+                "<=" => MLBinopKind::LessThanEqual,
+                "<" => MLBinopKind::LessThan,
+                "!=" => MLBinopKind::NotEqual,
+                _ => {
+                    eprintln!("Unknown operator '{:?}'", kind);
+                    exit(-1)
+                }
+            },
+            right: Box::new(self.expr(*right)),
+            type_: self.type_(type_.unwrap()),
         }
     }
 
