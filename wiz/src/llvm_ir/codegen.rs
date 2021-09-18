@@ -487,8 +487,9 @@ impl<'ctx> CodeGen<'ctx> {
 
     pub fn block(&mut self, b: MLBlock) -> AnyValueEnum<'ctx> {
         let i64_type = self.context.i64_type(); // Void
-        let last_index = b.body.len() - 1;
+        let len = b.body.len();
         for (i, stmt) in b.body.into_iter().enumerate() {
+            let last_index = len - 1;
             if i == last_index {
                 return self.stmt(stmt);
             } else {
