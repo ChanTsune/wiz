@@ -410,7 +410,7 @@ impl<'ctx> CodeGen<'ctx> {
                     .append_basic_block(self.ml_context.current_function.unwrap(), "if");
                 let after_if_block = self
                     .context
-                    .append_basic_block(self.ml_context.current_function.unwrap(), "else");
+                    .append_basic_block(self.ml_context.current_function.unwrap(), "after_if");
                 let cond = self.expr(*condition);
                 self.builder.build_conditional_branch(
                     cond.into_int_value(),
@@ -421,6 +421,7 @@ impl<'ctx> CodeGen<'ctx> {
                 for stmt in body.body {
                     self.stmt(stmt);
                 }
+                self.builder.build_unconditional_branch(after_if_block);
                 self.builder.position_at_end(after_if_block);
 
                 self.context
