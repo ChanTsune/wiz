@@ -3,14 +3,14 @@ use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_type::{MLType, MLValueType};
 use std::collections::HashMap;
 
-pub struct MLIRModule {
+pub struct MLIRModuleBuilder {
     name: String,
     functions: HashMap<String, MLFun>,
     variables: HashMap<String, MLVar>,
     structs: HashMap<String, MLStruct>,
 }
 
-impl MLIRModule {
+impl MLIRModuleBuilder {
     pub fn new(name: String) -> Self {
         Self {
             name,
