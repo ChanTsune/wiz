@@ -510,7 +510,8 @@ mod tests {
         );
     }
 
-    fn test_binop() {
+    #[test]
+    fn test_return_integer_literal() {
         let file = TypedFile {
             name: "test".to_string(),
             body: vec![TypedDecl::Fun(TypedFun {
