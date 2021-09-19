@@ -43,7 +43,7 @@ impl MLType {
         match self {
             MLType::Value(v) => v,
             MLType::Function(f) => {
-                panic!("can not cast to MLValueType")
+                panic!("can not cast to MLValueType => {:?}", f)
             }
         }
     }
