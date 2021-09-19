@@ -11,6 +11,7 @@ pub struct Package {
 pub enum TypedType {
     Value(TypedValueType),
     Function(Box<TypedFunctionType>),
+    Type(TypedValueType)
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
@@ -163,7 +164,7 @@ impl TypedType {
     pub fn is_pointer_type(&self) -> bool {
         match self {
             TypedType::Value(v) => v.name == UNSAFE_POINTER,
-            TypedType::Function(_) => false,
+            _ => false,
         }
     }
 }

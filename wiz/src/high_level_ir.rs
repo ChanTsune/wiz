@@ -340,7 +340,7 @@ impl Ast2HLIR {
                 }
                 None
             }
-            TypedType::Function(_) => None,
+            _ => None,
         }
     }
 

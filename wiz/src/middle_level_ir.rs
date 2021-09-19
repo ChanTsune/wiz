@@ -71,6 +71,7 @@ impl HLIR2MLIR {
         match t {
             TypedType::Value(t) => MLType::Value(self.value_type(t)),
             TypedType::Function(f) => MLType::Function(self.function_type(*f)),
+            _ => panic!("Invalid Type convert  {:?}", t)
         }
     }
 
@@ -436,7 +437,7 @@ impl HLIR2MLIR {
                         self.subscript_for_user_defined(s)
                     }
                 }
-                TypedType::Function(_) => {
+                _ => {
                     eprintln!("function pointer detected");
                     exit(-1)
                 }

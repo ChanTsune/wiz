@@ -133,7 +133,7 @@ impl ResolverContext {
                 TypedType::Value(v) => {
                     ns.types.insert(v.name.clone(), ResolverStruct::new());
                 }
-                TypedType::Function(_) => {}
+                _ => {}
             };
         }
         let mut bo = HashMap::new();
@@ -191,7 +191,7 @@ impl ResolverContext {
                     None => None,
                 }
             }
-            TypedType::Function(_) => None,
+            _ => todo!("dose not impl"),
         }
     }
 
@@ -254,7 +254,7 @@ impl ResolverContext {
                         }));
                     };
                 }
-                TypedType::Function(_) => {
+                _ => {
                     todo!("Dose not impl")
                 }
             }
