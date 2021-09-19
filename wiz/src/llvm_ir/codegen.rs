@@ -474,10 +474,7 @@ impl<'ctx> CodeGen<'ctx> {
                     let n = self.expr(*e);
                     Some(self.builder.build_load(n.into_pointer_value(), "v"))
                 }
-                _ => match BasicValueEnum::try_from(self.expr(*e)) {
-                    Ok(b) => Some(b),
-                    Err(_) => None,
-                },
+                _ => Some(BasicValueEnum::try_from(self.expr(*e)).unwrap()),
             },
             None => None,
         };
