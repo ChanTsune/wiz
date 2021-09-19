@@ -216,12 +216,17 @@ impl ResolverContext {
         kind: &str,
         right: TypedType,
     ) -> Result<TypedType> {
-        let op_kind = BinaryOperator::from(kind);
-        let key = (op_kind, left, right);
-        self.binary_operators
-            .get(&key)
-            .map(|t| t.clone())
-            .ok_or(ResolverError::from(format!("{:?} is not defined.", key)))
+        match kind {
+            "<"| "<=" | ">"|">=" | "==" | "!=" => Result::Ok(TypedType::bool()),
+            _ => {
+                let op_kind = BinaryOperator::from(kind);
+                let key = (op_kind, left, right);
+                self.binary_operators
+                    .get(&key)
+                    .map(|t| t.clone())
+                    .ok_or(ResolverError::from(format!("{:?} is not defined.", key)))
+            }
+        }
     }
 }
 

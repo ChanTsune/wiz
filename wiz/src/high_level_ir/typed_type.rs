@@ -144,6 +144,22 @@ impl TypedType {
         Self::builtin_types().contains(self)
     }
 
+    pub fn is_floating_point(&self) -> bool {
+        Self::floating_point_types().contains(self)
+    }
+
+    pub fn is_signed_integer(&self) -> bool {
+        Self::signed_integer_types().contains(self)
+    }
+
+    pub fn is_unsigned_integer(&self) -> bool {
+        Self::unsigned_integer_types().contains(self)
+    }
+
+    pub fn is_integer(&self) -> bool {
+        Self::integer_types().contains(self)
+    }
+
     pub fn is_pointer_type(&self) -> bool {
         match self {
             TypedType::Value(v) => v.name == UNSAFE_POINTER,
