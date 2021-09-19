@@ -198,7 +198,9 @@ impl ResolverContext {
     pub fn resolve_name_type(&mut self, name: String) -> Result<TypedType> {
         let mut cns = self.current_namespace.clone();
         loop {
-            let ns = self.get_namespace_mut(cns.clone()).ok_or(ResolverError::from("name space error"))?;
+            let ns = self
+                .get_namespace_mut(cns.clone())
+                .ok_or(ResolverError::from("name space error"))?;
             if let Some(t) = ns.values.get(&name) {
                 return Result::Ok(t.clone());
             }
@@ -207,7 +209,10 @@ impl ResolverContext {
             }
             cns.pop();
         }
-        Result::Err(ResolverError::from(format!("Cannot resolve name {:?}", name)))
+        Result::Err(ResolverError::from(format!(
+            "Cannot resolve name {:?}",
+            name
+        )))
     }
 
     pub fn resolve_binop_type(
