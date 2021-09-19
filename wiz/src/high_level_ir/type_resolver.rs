@@ -776,7 +776,7 @@ mod tests {
                             type_: Some(TypedType::int64())
                         }))]
                     })),
-                    return_type: TypedType::int64()
+                    return_type: Some(TypedType::int64())
                 })]
             })
         );
