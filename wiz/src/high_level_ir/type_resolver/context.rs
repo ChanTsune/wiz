@@ -1,6 +1,8 @@
 use crate::high_level_ir::typed_type::TypedType;
 use std::collections::{HashMap, HashSet};
 use std::fmt;
+use crate::high_level_ir::type_resolver::result::Result;
+use crate::high_level_ir::type_resolver::error::ResolverError;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub(crate) struct ResolverTypeParam {
@@ -34,13 +36,6 @@ struct ResolverSubscript {
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
-struct ResolverBinary {
-    right: TypedType,
-    left: TypedType,
-    return_type: TypedType,
-}
-
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
 struct ResolverUnary {
     value: TypedType,
     return_type: TypedType,
@@ -55,10 +50,35 @@ enum BinaryOperator {
     Mod,
 }
 
+impl From<&str> for BinaryOperator {
+    fn from(op: &str) -> Self {
+        match op {
+            "+" => Self::Add,
+            "-" => Self::Sub,
+            "*" => Self::Mul,
+            "/" => Self::Div,
+            "%" => Self::Mod,
+            _ => panic!("Undefined op kind {:?}", op)
+        }
+    }
+}
+
+impl BinaryOperator {
+    fn all() -> Vec<BinaryOperator> {
+        vec![
+            Self:: Add,
+            Self:: Sub,
+            Self:: Mul,
+            Self:: Div,
+            Self:: Mod,
+        ]
+    }
+}
+
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct ResolverContext {
     name_space: NameSpace,
-    binary_operators: HashMap<BinaryOperator, Vec<ResolverBinary>>,
+    binary_operators: HashMap<(BinaryOperator, TypedType, TypedType), TypedType>,
     subscripts: Vec<ResolverSubscript>,
     pub(crate) current_namespace: Vec<String>,
     current_type: Option<TypedType>,
@@ -122,9 +142,15 @@ impl ResolverContext {
                 TypedType::Function(_) => {}
             };
         }
+        let mut bo = HashMap::new();
+        for op in BinaryOperator::all() {
+            for t in TypedType::integer_types() {
+                bo.insert((op.clone(), t.clone(), t.clone()),t);
+            }
+        }
         Self {
             name_space: ns,
-            binary_operators: Default::default(),
+            binary_operators: bo,
             subscripts: vec![],
             current_namespace: vec![],
             current_type: None,
@@ -188,6 +214,12 @@ impl ResolverContext {
             cns.pop();
         }
         None
+    }
+
+    pub fn resolve_binop_type(&self, left: TypedType, kind: &str, right: TypedType) -> Result<TypedType> {
+        let op_kind = BinaryOperator::from(kind);
+        let key = (op_kind, left, right);
+        self.binary_operators.get(&key).map(|t|t.clone()).ok_or(ResolverError::from(format!("{:?} is not defined.", key)))
     }
 }
 
