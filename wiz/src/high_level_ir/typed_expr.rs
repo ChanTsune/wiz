@@ -154,4 +154,24 @@ impl TypedLiteral {
             TypedLiteral::NullLiteral { type_ } => type_.clone(),
         }
     }
+
+    pub fn is_integer(&self) -> bool {
+        matches!(self, TypedLiteral::Integer { .. })
+    }
+
+    pub fn is_floating_point(&self) -> bool {
+        matches!(self, TypedLiteral::FloatingPoint {..})
+    }
+
+    pub fn is_string(&self) -> bool {
+        matches!(self, TypedLiteral::String {..})
+    }
+
+    pub fn is_boolean(&self) -> bool {
+        matches!(self, TypedLiteral::Boolean {..})
+    }
+
+    pub fn is_null(&self) -> bool {
+        matches!(self, TypedLiteral::NullLiteral {..})
+    }
 }
