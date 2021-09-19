@@ -520,6 +520,7 @@ mod tests {
             body: vec![],
         };
         let mut resolver = TypeResolver::new();
+        let _ = resolver.detect_type(file.clone());
         let _ = resolver.preload_file(file.clone());
         let f = resolver.file(file);
 
@@ -554,6 +555,7 @@ mod tests {
             })],
         };
         let mut resolver = TypeResolver::new();
+        let _ = resolver.detect_type(file.clone());
         let _ = resolver.preload_file(file.clone());
         let f = resolver.file(file);
 
