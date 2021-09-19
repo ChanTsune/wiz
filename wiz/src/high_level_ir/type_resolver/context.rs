@@ -1,6 +1,6 @@
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
-use crate::high_level_ir::typed_type::{TypedType, TypedValueType, Package};
+use crate::high_level_ir::typed_type::{Package, TypedType, TypedValueType};
 use std::collections::{HashMap, HashSet};
 use std::fmt;
 
@@ -250,18 +250,23 @@ impl ResolverContext {
                         return Result::Ok(TypedType::Value(TypedValueType {
                             package: Package { names: cns.clone() },
                             name: v.name.clone(),
-                            type_args: None
-                        }))
+                            type_args: None,
+                        }));
                     };
                 }
-                TypedType::Function(_) => {todo!("Dose not impl")}
+                TypedType::Function(_) => {
+                    todo!("Dose not impl")
+                }
             }
             if cns.is_empty() {
                 break;
             }
             cns.pop();
         }
-        Result::Err(ResolverError::from(format!("Type {:?} dose not exist", typ)))
+        Result::Err(ResolverError::from(format!(
+            "Type {:?} dose not exist",
+            typ
+        )))
     }
 }
 
