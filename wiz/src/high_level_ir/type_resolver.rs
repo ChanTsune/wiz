@@ -6,13 +6,8 @@ use crate::constants::UNSAFE_POINTER;
 use crate::high_level_ir::type_resolver::context::{ResolverContext, ResolverStruct};
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
-use crate::high_level_ir::typed_decl::{
-    TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct, TypedVar,
-};
-use crate::high_level_ir::typed_expr::{
-    TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedName,
-    TypedReturn, TypedSubscript,
-};
+use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct, TypedVar, TypedValueArgDef};
+use crate::high_level_ir::typed_expr::{TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedName, TypedReturn, TypedSubscript, TypedLiteral};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedStmt,
@@ -101,13 +96,14 @@ impl TypeResolver {
     }
 
     pub fn preload_fun(&mut self, f: TypedFun) -> Result<TypedFun> {
+        let return_type = self.typed_function_return_type(&f)?;
         let fun = TypedFun {
             modifiers: f.modifiers,
             name: f.name,
             type_params: f.type_params, // TODO
             arg_defs: f.arg_defs,
             body: None,
-            return_type: f.return_type, // TODO
+            return_type: Some(return_type),
         };
         Result::Ok(fun)
     }
@@ -185,8 +181,26 @@ impl TypeResolver {
         Result::Ok(v)
     }
 
+    fn typed_function_return_type(&mut self, f: &TypedFun) -> Result<TypedType> {
+        match &f.return_type {
+            None => {match &f.body {
+                None => {
+                    Result::Err(ResolverError::from(format!("abstract function {:?} must be define type", f.name)))
+                }
+                Some(TypedFunBody::Block(_)) => {
+                    Result::Ok(TypedType::unit())
+                }
+                Some(TypedFunBody::Expr(e)) => {
+                    self.expr(e.clone())?.type_().ok_or(ResolverError::from(format!("Can not resolve expr type at function {:?}", f.name)))
+                }
+            }}
+            Some(b) => { self.context.full_type_name(b.clone()) }
+        }
+    }
+
     pub fn typed_fun(&mut self, f: TypedFun) -> Result<TypedFun> {
         self.context.push_name_space(f.name.clone());
+        let return_type = self.typed_function_return_type(&f)?;
         let fun = TypedFun {
             modifiers: f.modifiers,
             name: f.name,
@@ -205,7 +219,7 @@ impl TypeResolver {
                 Some(b) => Some(self.typed_fun_body(b)?),
                 None => None,
             },
-            return_type: f.return_type, // TODO
+            return_type: Some(return_type),
         };
         let fun_name = fun.name.clone();
         let fun_type = fun.type_();
@@ -659,6 +673,44 @@ mod tests {
                             }))]
                         })),
                         return_type: Some(TypedType::unit())
+                    })
+                ],
+            })
+        );
+    }
+
+    #[test]
+    fn test_expr_function() {
+        let file = TypedFile {
+            name: "test".to_string(),
+            body: vec![
+                TypedDecl::Fun(TypedFun {
+                    modifiers: vec![],
+                    name: "function".to_string(),
+                    type_params: None,
+                    arg_defs: vec![],
+                    body: Some(TypedFunBody::Expr(TypedExpr::Literal(TypedLiteral::Integer { value: "1".to_string(), type_: Some(TypedType::int64()) }))),
+                    return_type: None
+                })
+            ],
+        };
+        let mut resolver = TypeResolver::new();
+        let _ = resolver.detect_type(file.clone());
+        let _ = resolver.preload_file(file.clone());
+        let f = resolver.file(file);
+
+        assert_eq!(
+            f,
+            Result::Ok(TypedFile {
+                name: "test".to_string(),
+                body: vec![
+                    TypedDecl::Fun(TypedFun {
+                        modifiers: vec![],
+                        name: "function".to_string(),
+                        type_params: None,
+                        arg_defs: vec![],
+                        body: Some(TypedFunBody::Expr(TypedExpr::Literal(TypedLiteral::Integer { value: "1".to_string(), type_: Some(TypedType::int64()) }))),
+                        return_type: Some(TypedType::int64())
                     })
                 ],
             })
