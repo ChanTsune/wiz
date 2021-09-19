@@ -217,7 +217,7 @@ impl ResolverContext {
         right: TypedType,
     ) -> Result<TypedType> {
         match kind {
-            "<"| "<=" | ">"|">=" | "==" | "!=" => Result::Ok(TypedType::bool()),
+            "<" | "<=" | ">" | ">=" | "==" | "!=" => Result::Ok(TypedType::bool()),
             _ => {
                 let op_kind = BinaryOperator::from(kind);
                 let key = (op_kind, left, right);
