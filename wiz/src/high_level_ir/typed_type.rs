@@ -11,7 +11,7 @@ pub struct Package {
 pub enum TypedType {
     Value(TypedValueType),
     Function(Box<TypedFunctionType>),
-    Type(TypedValueType)
+    Type(TypedValueType),
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
