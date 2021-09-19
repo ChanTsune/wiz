@@ -15,9 +15,7 @@ impl From<&str> for ResolverError {
 
 impl From<String> for ResolverError {
     fn from(message: String) -> Self {
-        Self {
-            message
-        }
+        Self { message }
     }
 }
 
