@@ -142,11 +142,31 @@ impl TypeResolver {
     }
 
     pub fn typed_var(&mut self, t: TypedVar) -> Result<TypedVar> {
+        let value = self.expr(t.value)?;
+        let v_type = match (t.type_, value.type_()) {
+            (Some(vt), Some(et)) => {
+                if vt != et {
+                    Result::Err(ResolverError::from(format!("Type unmatched {:?} != {:?}", vt, et)))
+                } else {
+                    Result::Ok(et)
+                }
+            }
+            (Some(vt), None) => {
+                eprintln!("maybe invalid type ...");
+                Result::Ok(vt)
+            }
+            (None, Some(et)) => {
+                Result::Ok(et)
+            }
+            (None, None) => {
+                Result::Err(ResolverError::from(format!("Can not resolve var type {:?}", value)))
+            }
+        }?;
         let v = TypedVar {
             is_mut: t.is_mut,
             name: t.name,
-            type_: t.type_,
-            value: self.expr(t.value)?,
+            type_: Some(v_type),
+            value,
         };
         let namespace = self
             .context
