@@ -32,10 +32,16 @@ pub struct TypedTypeParam {
     pub(crate) type_constraint: Vec<TypedType>,
 }
 
+impl Package {
+    fn global() -> Self {
+        Self { names: vec![] }
+    }
+}
+
 impl TypedType {
     fn builtin(name: &str) -> TypedType {
         TypedType::Value(TypedValueType {
-            package: Package { names: vec![] },
+            package: Package::global(),
             name: String::from(name),
             type_args: None,
         })
