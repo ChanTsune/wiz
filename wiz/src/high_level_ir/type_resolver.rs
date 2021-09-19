@@ -400,15 +400,12 @@ impl TypeResolver {
         let target = self.expr(*m.target)?;
         let type_ = self
             .context
-            .resolve_member_type(target.type_().unwrap(), m.name.clone());
+            .resolve_member_type(target.type_().unwrap(), m.name.clone())?;
         Result::Ok(TypedInstanceMember {
             target: Box::new(target),
             name: m.name,
             is_safe: m.is_safe,
-            type_: match m.type_ {
-                Some(t) => Some(t),
-                None => type_,
-            },
+            type_: Some(type_),
         })
     }
 

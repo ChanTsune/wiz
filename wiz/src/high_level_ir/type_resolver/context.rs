@@ -181,15 +181,13 @@ impl ResolverContext {
         self.current_type = None
     }
 
-    pub fn resolve_member_type(&mut self, t: TypedType, name: String) -> Option<TypedType> {
-        match t {
+    pub fn resolve_member_type(&mut self, t: TypedType, name: String) -> Result<TypedType> {
+        match &t {
             TypedType::Value(v) => {
-                let ns = self.get_namespace_mut(v.package.names)?;
+                let ns = self.get_namespace_mut(v.package.names.clone()).ok_or(ResolverError::from("NameSpace dose not exist."))?;
                 println!("ns => {:?}", ns);
-                match ns.types.get(&v.name) {
-                    Some(rs) => rs.stored_properties.get(&name).map(|it| it.clone()),
-                    None => None,
-                }
+                let rs = ns.types.get(&v.name).ok_or(ResolverError::from(format!("Can not resolve type {:?}", t)))?;
+                rs.stored_properties.get(&name).map(|it| it.clone()).ok_or(ResolverError::from(format!("{:?} not has {:?}", t, name)))
             }
             _ => todo!("dose not impl"),
         }
