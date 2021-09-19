@@ -87,7 +87,9 @@ impl TypeResolver {
                     .context
                     .get_current_namespace_mut()
                     .ok_or(ResolverError::from("NameSpace not exist"))?;
-                namespace.values.insert(fun.name.clone(), fun.type_().unwrap());
+                namespace
+                    .values
+                    .insert(fun.name.clone(), fun.type_().unwrap());
             }
             TypedDecl::Struct(_) => {}
             TypedDecl::Class => {}
@@ -248,7 +250,8 @@ impl TypeResolver {
                 .insert(mf.name.clone(), mf.type_.clone());
         }
         for sf in static_function.iter() {
-            rs.static_functions.insert(sf.name.clone(), sf.type_().unwrap());
+            rs.static_functions
+                .insert(sf.name.clone(), sf.type_().unwrap());
         }
         self.context
             .set_current_type(TypedType::Value(TypedValueType {

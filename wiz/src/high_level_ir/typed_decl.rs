@@ -113,7 +113,7 @@ pub struct TypedMemberFunction {
 
 impl TypedFun {
     pub fn type_(&self) -> Option<TypedType> {
-        self.return_type.clone().map(|return_type|{
+        self.return_type.clone().map(|return_type| {
             TypedType::Function(Box::new(TypedFunctionType {
                 arguments: self.arg_defs.clone(),
                 return_type,
