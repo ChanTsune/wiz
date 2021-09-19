@@ -355,7 +355,7 @@ impl TypeResolver {
 
     pub fn typed_name(&mut self, n: TypedName) -> Result<TypedName> {
         Result::Ok(TypedName {
-            type_: self.context.resolve_name_type(n.name.clone()),
+            type_: Some(self.context.resolve_name_type(n.name.clone())?),
             name: n.name,
         })
     }
