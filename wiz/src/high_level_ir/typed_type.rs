@@ -104,12 +104,7 @@ impl TypedType {
     }
 
     pub fn signed_integer_types() -> Vec<TypedType> {
-        vec![
-            Self::int8(),
-            Self::int16(),
-            Self::int32(),
-            Self::int64(),
-        ]
+        vec![Self::int8(), Self::int16(), Self::int32(), Self::int64()]
     }
 
     pub fn unsigned_integer_types() -> Vec<TypedType> {
@@ -122,27 +117,27 @@ impl TypedType {
     }
 
     pub fn integer_types() -> Vec<TypedType> {
-        Self::signed_integer_types().into_iter().chain(Self::unsigned_integer_types()).collect()
+        Self::signed_integer_types()
+            .into_iter()
+            .chain(Self::unsigned_integer_types())
+            .collect()
     }
 
     pub fn floating_point_types() -> Vec<TypedType> {
-        vec![
-            Self::float(),
-            Self::double(),
-        ]
+        vec![Self::float(), Self::double()]
     }
 
     pub fn builtin_types() -> Vec<TypedType> {
-        Self::integer_types().into_iter().chain(
-            Self::floating_point_types()
-        ).chain(
-            vec![
+        Self::integer_types()
+            .into_iter()
+            .chain(Self::floating_point_types())
+            .chain(vec![
                 Self::noting(),
                 Self::unit(),
                 Self::bool(),
                 Self::string(),
-            ]
-        ).collect()
+            ])
+            .collect()
     }
 
     pub fn is_primitive(&self) -> bool {
