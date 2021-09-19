@@ -1,6 +1,6 @@
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
-use crate::high_level_ir::typed_type::TypedType;
+use crate::high_level_ir::typed_type::{TypedType, TypedValueType, Package};
 use std::collections::{HashMap, HashSet};
 use std::fmt;
 
@@ -232,6 +232,36 @@ impl ResolverContext {
                     .ok_or(ResolverError::from(format!("{:?} is not defined.", key)))
             }
         }
+    }
+
+    pub fn full_type_name(&mut self, typ: TypedType) -> Result<TypedType> {
+        // TODO: change impl
+        if typ.is_primitive() {
+            return Result::Ok(typ);
+        };
+        let mut cns = self.current_namespace.clone();
+        loop {
+            let ns = self
+                .get_namespace_mut(cns.clone())
+                .ok_or(ResolverError::from("name space error"))?;
+            match &typ {
+                TypedType::Value(v) => {
+                    if let Some(_) = ns.types.get(&v.name) {
+                        return Result::Ok(TypedType::Value(TypedValueType {
+                            package: Package { names: cns.clone() },
+                            name: v.name.clone(),
+                            type_args: None
+                        }))
+                    };
+                }
+                TypedType::Function(_) => {todo!("Dose not impl")}
+            }
+            if cns.is_empty() {
+                break;
+            }
+            cns.pop();
+        }
+        Result::Err(ResolverError::from(format!("Type {:?} dose not exist", typ)))
     }
 }
 
