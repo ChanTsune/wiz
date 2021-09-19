@@ -485,23 +485,29 @@ impl TypeResolver {
 #[cfg(test)]
 mod tests {
     use crate::high_level_ir::type_resolver::TypeResolver;
-    use crate::high_level_ir::typed_file::TypedFile;
     use crate::high_level_ir::typed_decl::{TypedDecl, TypedFun, TypedFunBody};
-    use crate::high_level_ir::typed_type::{TypedType, TypedValueType, Package};
+    use crate::high_level_ir::typed_expr::{TypedExpr, TypedLiteral, TypedReturn};
+    use crate::high_level_ir::typed_file::TypedFile;
     use crate::high_level_ir::typed_stmt::{TypedBlock, TypedStmt};
-    use crate::high_level_ir::typed_expr::{TypedExpr, TypedReturn, TypedLiteral};
+    use crate::high_level_ir::typed_type::{Package, TypedType, TypedValueType};
 
     #[test]
     fn test_empty() {
         let file = TypedFile {
             name: "test".to_string(),
-            body: vec![]
+            body: vec![],
         };
         let mut resolver = TypeResolver::new();
         let _ = resolver.preload_file(file.clone());
         let f = resolver.file(file);
 
-        assert_eq!(f, Result::Ok(TypedFile { name: "test".to_string(), body: vec![] }));
+        assert_eq!(
+            f,
+            Result::Ok(TypedFile {
+                name: "test".to_string(),
+                body: vec![]
+            })
+        );
     }
 
     fn test_binop() {
@@ -513,25 +519,44 @@ mod tests {
                 type_params: None,
                 arg_defs: vec![],
                 body: Option::from(TypedFunBody::Block(TypedBlock {
-                    body: vec![TypedStmt::Expr(TypedExpr::Return(TypedReturn { value: Option::Some(Box::new(TypedExpr::Literal(TypedLiteral::Integer { value: "1".to_string(), type_: TypedType::int64() }) )), type_: None}))]
+                    body: vec![TypedStmt::Expr(TypedExpr::Return(TypedReturn {
+                        value: Option::Some(Box::new(TypedExpr::Literal(TypedLiteral::Integer {
+                            value: "1".to_string(),
+                            type_: TypedType::int64(),
+                        }))),
+                        type_: None,
+                    }))],
                 })),
-                return_type: TypedType::int64()
-            })]
+                return_type: TypedType::int64(),
+            })],
         };
         let mut resolver = TypeResolver::new();
         let _ = resolver.preload_file(file.clone());
         let f = resolver.file(file);
 
-        assert_eq!(f, Result::Ok(TypedFile { name: "test".to_string(),             body: vec![TypedDecl::Fun(TypedFun {
-            modifiers: vec![],
-            name: "sample".to_string(),
-            type_params: None,
-            arg_defs: vec![],
-            body: Option::from(TypedFunBody::Block(TypedBlock {
-                body: vec![TypedStmt::Expr(TypedExpr::Return(TypedReturn { value: Option::Some(Box::new(TypedExpr::Literal(TypedLiteral::Integer { value: "1".to_string(), type_: TypedType::int64() }) )), type_: Some(TypedType::int64())}))]
-            })),
-            return_type: TypedType::int64()
-        })]
-        }));
+        assert_eq!(
+            f,
+            Result::Ok(TypedFile {
+                name: "test".to_string(),
+                body: vec![TypedDecl::Fun(TypedFun {
+                    modifiers: vec![],
+                    name: "sample".to_string(),
+                    type_params: None,
+                    arg_defs: vec![],
+                    body: Option::from(TypedFunBody::Block(TypedBlock {
+                        body: vec![TypedStmt::Expr(TypedExpr::Return(TypedReturn {
+                            value: Option::Some(Box::new(TypedExpr::Literal(
+                                TypedLiteral::Integer {
+                                    value: "1".to_string(),
+                                    type_: TypedType::int64()
+                                }
+                            ))),
+                            type_: Some(TypedType::int64())
+                        }))]
+                    })),
+                    return_type: TypedType::int64()
+                })]
+            })
+        );
     }
 }
