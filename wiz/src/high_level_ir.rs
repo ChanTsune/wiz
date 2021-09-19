@@ -333,7 +333,10 @@ impl Ast2HLIR {
                 }
                 // TODO: change resolve method
                 if member_name == "init" {
-                    return Some(TypedType::Function(Box::new(TypedFunctionType { arguments: vec![], return_type: TypedType::Value(t.clone()) })));
+                    return Some(TypedType::Function(Box::new(TypedFunctionType {
+                        arguments: vec![],
+                        return_type: TypedType::Value(t.clone()),
+                    })));
                 }
                 None
             }
