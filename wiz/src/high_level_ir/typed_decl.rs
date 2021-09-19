@@ -29,7 +29,7 @@ pub struct TypedFun {
     pub(crate) type_params: Option<Vec<TypedTypeParam>>,
     pub(crate) arg_defs: Vec<TypedArgDef>,
     pub(crate) body: Option<TypedFunBody>,
-    pub(crate) return_type: TypedType,
+    pub(crate) return_type: Option<TypedType>,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
@@ -112,10 +112,12 @@ pub struct TypedMemberFunction {
 }
 
 impl TypedFun {
-    pub fn type_(&self) -> TypedType {
-        TypedType::Function(Box::new(TypedFunctionType {
-            arguments: self.arg_defs.clone(),
-            return_type: self.return_type.clone(),
-        }))
+    pub fn type_(&self) -> Option<TypedType> {
+        self.return_type.clone().map(|return_type|{
+            TypedType::Function(Box::new(TypedFunctionType {
+                arguments: self.arg_defs.clone(),
+                return_type,
+            }))
+        })
     }
 }

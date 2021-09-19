@@ -87,7 +87,7 @@ impl TypeResolver {
                     .context
                     .get_current_namespace_mut()
                     .ok_or(ResolverError::from("NameSpace not exist"))?;
-                namespace.values.insert(fun.name.clone(), fun.type_());
+                namespace.values.insert(fun.name.clone(), fun.type_().unwrap());
             }
             TypedDecl::Struct(_) => {}
             TypedDecl::Class => {}
@@ -213,7 +213,7 @@ impl TypeResolver {
             .context
             .get_current_namespace_mut()
             .ok_or(ResolverError::from("NameSpace not exist"))?;
-        ns.values.insert(fun_name, fun_type);
+        ns.values.insert(fun_name, fun_type.unwrap());
         result
     }
 
@@ -248,7 +248,7 @@ impl TypeResolver {
                 .insert(mf.name.clone(), mf.type_.clone());
         }
         for sf in static_function.iter() {
-            rs.static_functions.insert(sf.name.clone(), sf.type_());
+            rs.static_functions.insert(sf.name.clone(), sf.type_().unwrap());
         }
         self.context
             .set_current_type(TypedType::Value(TypedValueType {
@@ -589,7 +589,7 @@ mod tests {
                             }),
                         }))],
                     })),
-                    return_type: TypedType::unit(),
+                    return_type: Some(TypedType::unit()),
                 }),
             ],
         };
@@ -655,7 +655,7 @@ mod tests {
                                 })
                             }))]
                         })),
-                        return_type: TypedType::unit()
+                        return_type: Some(TypedType::unit())
                     })
                 ],
             })
@@ -680,7 +680,7 @@ mod tests {
                         type_: None,
                     }))],
                 })),
-                return_type: TypedType::int64(),
+                return_type: Some(TypedType::int64()),
             })],
         };
         let mut resolver = TypeResolver::new();

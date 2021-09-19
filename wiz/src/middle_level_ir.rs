@@ -241,7 +241,7 @@ impl HLIR2MLIR {
             modifiers,
             name,
             arg_defs: args,
-            return_type: self.type_(return_type).into_value_type(),
+            return_type: self.type_(return_type.unwrap()).into_value_type(),
             body: body.map(|b| self.fun_body(b)),
         }
     }
