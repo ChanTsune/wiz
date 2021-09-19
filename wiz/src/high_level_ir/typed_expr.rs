@@ -39,11 +39,11 @@ pub struct TypedSubscript {
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum TypedLiteral {
-    Integer { value: String, type_: TypedType },
-    FloatingPoint { value: String, type_: TypedType },
-    String { value: String, type_: TypedType },
-    Boolean { value: String, type_: TypedType },
-    NullLiteral { type_: TypedType },
+    Integer { value: String, type_: Option<TypedType> },
+    FloatingPoint { value: String, type_: Option<TypedType> },
+    String { value: String, type_: Option<TypedType> },
+    Boolean { value: String, type_: Option<TypedType> },
+    NullLiteral { type_: Option<TypedType> },
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -109,7 +109,7 @@ impl TypedExpr {
     pub fn type_(&self) -> Option<TypedType> {
         match self {
             TypedExpr::Name(name) => name.type_.clone(),
-            TypedExpr::Literal(l) => Some(l.type_()),
+            TypedExpr::Literal(l) => l.type_(),
             TypedExpr::BinOp(b) => b.type_.clone(),
             TypedExpr::UnaryOp(u) => u.type_.clone(),
             TypedExpr::Subscript(s) => s.type_.clone(),
@@ -131,7 +131,7 @@ impl TypedExpr {
 }
 
 impl TypedLiteral {
-    pub fn type_(&self) -> TypedType {
+    pub fn type_(&self) -> Option<TypedType> {
         match self {
             TypedLiteral::Integer { value, type_ } => type_.clone(),
             TypedLiteral::FloatingPoint { value, type_ } => type_.clone(),

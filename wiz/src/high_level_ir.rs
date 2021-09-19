@@ -712,28 +712,24 @@ impl Ast2HLIR {
             Expr::Literal(literal) => match literal {
                 Literal::Integer { value } => TypedExpr::Literal(TypedLiteral::Integer {
                     value,
-                    type_: TypedType::int64(),
+                    type_: Some(TypedType::int64()),
                 }),
                 Literal::FloatingPoint { value } => {
                     TypedExpr::Literal(TypedLiteral::FloatingPoint {
                         value,
-                        type_: TypedType::double(),
+                        type_: Some(TypedType::double()),
                     })
                 }
                 Literal::String { value } => TypedExpr::Literal(TypedLiteral::String {
                     value,
-                    type_: TypedType::string(),
+                    type_: Some(TypedType::string()),
                 }),
                 Literal::Boolean { value } => TypedExpr::Literal(TypedLiteral::Boolean {
                     value,
-                    type_: TypedType::bool(),
+                    type_: Some(TypedType::bool()),
                 }),
                 Literal::Null => TypedExpr::Literal(TypedLiteral::NullLiteral {
-                    type_: TypedType::Value(TypedValueType {
-                        package: Package { names: vec![] },
-                        name: "Option".to_string(),
-                        type_args: None,
-                    }),
+                    type_: None,
                 }),
             },
             Expr::BinOp { left, kind, right } => {

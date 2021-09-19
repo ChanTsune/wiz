@@ -370,22 +370,22 @@ impl HLIR2MLIR {
         match l {
             TypedLiteral::Integer { value, type_ } => MLLiteral::Integer {
                 value: value,
-                type_: self.type_(type_).into_value_type(),
+                type_: self.type_(type_.unwrap()).into_value_type(),
             },
             TypedLiteral::FloatingPoint { value, type_ } => MLLiteral::FloatingPoint {
                 value: value,
-                type_: self.type_(type_).into_value_type(),
+                type_: self.type_(type_.unwrap()).into_value_type(),
             },
             TypedLiteral::String { value, type_ } => MLLiteral::String {
                 value: value,
-                type_: self.type_(type_).into_value_type(),
+                type_: self.type_(type_.unwrap()).into_value_type(),
             },
             TypedLiteral::Boolean { value, type_ } => MLLiteral::Boolean {
                 value: value,
-                type_: self.type_(type_).into_value_type(),
+                type_: self.type_(type_.unwrap()).into_value_type(),
             },
             TypedLiteral::NullLiteral { type_ } => MLLiteral::Null {
-                type_: self.type_(type_).into_value_type(),
+                type_: self.type_(type_.unwrap()).into_value_type(),
             },
         }
     }
