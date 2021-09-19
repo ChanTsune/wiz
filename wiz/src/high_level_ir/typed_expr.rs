@@ -39,11 +39,25 @@ pub struct TypedSubscript {
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum TypedLiteral {
-    Integer { value: String, type_: Option<TypedType> },
-    FloatingPoint { value: String, type_: Option<TypedType> },
-    String { value: String, type_: Option<TypedType> },
-    Boolean { value: String, type_: Option<TypedType> },
-    NullLiteral { type_: Option<TypedType> },
+    Integer {
+        value: String,
+        type_: Option<TypedType>,
+    },
+    FloatingPoint {
+        value: String,
+        type_: Option<TypedType>,
+    },
+    String {
+        value: String,
+        type_: Option<TypedType>,
+    },
+    Boolean {
+        value: String,
+        type_: Option<TypedType>,
+    },
+    NullLiteral {
+        type_: Option<TypedType>,
+    },
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]

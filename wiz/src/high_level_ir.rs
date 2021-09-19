@@ -728,9 +728,7 @@ impl Ast2HLIR {
                     value,
                     type_: Some(TypedType::bool()),
                 }),
-                Literal::Null => TypedExpr::Literal(TypedLiteral::NullLiteral {
-                    type_: None,
-                }),
+                Literal::Null => TypedExpr::Literal(TypedLiteral::NullLiteral { type_: None }),
             },
             Expr::BinOp { left, kind, right } => {
                 let left = Box::new(self.expr(*left));
