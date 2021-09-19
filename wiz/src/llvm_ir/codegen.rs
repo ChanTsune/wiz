@@ -362,8 +362,8 @@ impl<'ctx> CodeGen<'ctx> {
             // AnyValueEnum::PhiValue(_) => {}
             // AnyValueEnum::FunctionValue(_) => {}
             AnyValueEnum::PointerValue(p) => unsafe {
-                p.const_in_bounds_gep(&[index.into_int_value()])
-                    .as_any_value_enum()
+                let i = self.builder.build_in_bounds_gep(p, &[index.into_int_value()], "idx");
+                i.as_any_value_enum()
             },
             // AnyValueEnum::StructValue(_) => {}
             // AnyValueEnum::VectorValue(_) => {}
