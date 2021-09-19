@@ -146,7 +146,10 @@ impl TypeResolver {
         let v_type = match (t.type_, value.type_()) {
             (Some(vt), Some(et)) => {
                 if vt != et {
-                    Result::Err(ResolverError::from(format!("Type unmatched {:?} != {:?}", vt, et)))
+                    Result::Err(ResolverError::from(format!(
+                        "Type unmatched {:?} != {:?}",
+                        vt, et
+                    )))
                 } else {
                     Result::Ok(et)
                 }
@@ -155,12 +158,11 @@ impl TypeResolver {
                 eprintln!("maybe invalid type ...");
                 Result::Ok(vt)
             }
-            (None, Some(et)) => {
-                Result::Ok(et)
-            }
-            (None, None) => {
-                Result::Err(ResolverError::from(format!("Can not resolve var type {:?}", value)))
-            }
+            (None, Some(et)) => Result::Ok(et),
+            (None, None) => Result::Err(ResolverError::from(format!(
+                "Can not resolve var type {:?}",
+                value
+            ))),
         }?;
         let v = TypedVar {
             is_mut: t.is_mut,
