@@ -1,8 +1,8 @@
+use crate::high_level_ir::type_resolver::error::ResolverError;
+use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_type::TypedType;
 use std::collections::{HashMap, HashSet};
 use std::fmt;
-use crate::high_level_ir::type_resolver::result::Result;
-use crate::high_level_ir::type_resolver::error::ResolverError;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub(crate) struct ResolverTypeParam {
@@ -58,20 +58,14 @@ impl From<&str> for BinaryOperator {
             "*" => Self::Mul,
             "/" => Self::Div,
             "%" => Self::Mod,
-            _ => panic!("Undefined op kind {:?}", op)
+            _ => panic!("Undefined op kind {:?}", op),
         }
     }
 }
 
 impl BinaryOperator {
     fn all() -> Vec<BinaryOperator> {
-        vec![
-            Self:: Add,
-            Self:: Sub,
-            Self:: Mul,
-            Self:: Div,
-            Self:: Mod,
-        ]
+        vec![Self::Add, Self::Sub, Self::Mul, Self::Div, Self::Mod]
     }
 }
 
@@ -145,7 +139,7 @@ impl ResolverContext {
         let mut bo = HashMap::new();
         for op in BinaryOperator::all() {
             for t in TypedType::integer_types() {
-                bo.insert((op.clone(), t.clone(), t.clone()),t);
+                bo.insert((op.clone(), t.clone(), t.clone()), t);
             }
         }
         Self {
@@ -216,10 +210,18 @@ impl ResolverContext {
         None
     }
 
-    pub fn resolve_binop_type(&self, left: TypedType, kind: &str, right: TypedType) -> Result<TypedType> {
+    pub fn resolve_binop_type(
+        &self,
+        left: TypedType,
+        kind: &str,
+        right: TypedType,
+    ) -> Result<TypedType> {
         let op_kind = BinaryOperator::from(kind);
         let key = (op_kind, left, right);
-        self.binary_operators.get(&key).map(|t|t.clone()).ok_or(ResolverError::from(format!("{:?} is not defined.", key)))
+        self.binary_operators
+            .get(&key)
+            .map(|t| t.clone())
+            .ok_or(ResolverError::from(format!("{:?} is not defined.", key)))
     }
 }
 
