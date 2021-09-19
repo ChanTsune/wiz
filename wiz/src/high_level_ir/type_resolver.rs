@@ -523,7 +523,7 @@ mod tests {
                     body: vec![TypedStmt::Expr(TypedExpr::Return(TypedReturn {
                         value: Option::Some(Box::new(TypedExpr::Literal(TypedLiteral::Integer {
                             value: "1".to_string(),
-                            type_: TypedType::int64(),
+                            type_: Some(TypedType::int64())
                         }))),
                         type_: None,
                     }))],
@@ -549,7 +549,7 @@ mod tests {
                             value: Option::Some(Box::new(TypedExpr::Literal(
                                 TypedLiteral::Integer {
                                     value: "1".to_string(),
-                                    type_: TypedType::int64()
+                                    type_: Some(TypedType::int64())
                                 }
                             ))),
                             type_: Some(TypedType::int64())
