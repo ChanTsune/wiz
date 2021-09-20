@@ -420,18 +420,6 @@ impl Ast2HLIR {
 
         let return_type = self.context.resolve_type(f.return_type);
 
-        let return_type = match return_type {
-            None => match &body {
-                Some(TypedFunBody::Expr(e)) => e.type_().unwrap(),
-                Some(TypedFunBody::Block(b)) => TypedType::unit(),
-                None => {
-                    eprintln!("Can not resolve type...");
-                    exit(-1)
-                }
-            },
-            Some(t) => t,
-        };
-
         let f = TypedFun {
             modifiers: f.modifiers,
             name: f.name,
@@ -452,9 +440,9 @@ impl Ast2HLIR {
             }),
             arg_defs: args,
             body: body,
+            return_type: return_type,
         };
         self.context.pop();
-        self.context.put_name(f.name.clone(), &f.type_().unwrap());
         f
     }
 
