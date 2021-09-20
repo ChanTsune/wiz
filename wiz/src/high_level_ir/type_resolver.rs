@@ -391,30 +391,53 @@ impl TypeResolver {
         let left = self.expr(*b.left)?;
         let right = self.expr(*b.right)?;
         let (left, right) = match (left, right) {
-            (TypedExpr::Literal(TypedLiteral::Integer { value: left_value, type_: left_type }),
-                TypedExpr::Literal(TypedLiteral::Integer { value: right_value, type_: right_type })) => {
-                (
-                    TypedExpr::Literal(TypedLiteral::Integer { value: left_value, type_: left_type }),
-                    TypedExpr::Literal(TypedLiteral::Integer { value: right_value, type_: right_type })
-                )
-            }
+            (
+                TypedExpr::Literal(TypedLiteral::Integer {
+                    value: left_value,
+                    type_: left_type,
+                }),
+                TypedExpr::Literal(TypedLiteral::Integer {
+                    value: right_value,
+                    type_: right_type,
+                }),
+            ) => (
+                TypedExpr::Literal(TypedLiteral::Integer {
+                    value: left_value,
+                    type_: left_type,
+                }),
+                TypedExpr::Literal(TypedLiteral::Integer {
+                    value: right_value,
+                    type_: right_type,
+                }),
+            ),
             (left, TypedExpr::Literal(TypedLiteral::Integer { value, type_ })) => {
                 let left_type = left.type_();
                 let is_integer = match &left_type {
-                    None => {false}
-                    Some(t) => {
-                        t.is_integer()
-                    }
+                    None => false,
+                    Some(t) => t.is_integer(),
                 };
                 if is_integer {
-                    (left, TypedExpr::Literal(TypedLiteral::Integer { value, type_: left_type }))
+                    (
+                        left,
+                        TypedExpr::Literal(TypedLiteral::Integer {
+                            value,
+                            type_: left_type,
+                        }),
+                    )
                 } else {
-                    (left, TypedExpr::Literal(TypedLiteral::Integer { value, type_ }))
+                    (
+                        left,
+                        TypedExpr::Literal(TypedLiteral::Integer { value, type_ }),
+                    )
                 }
             }
-            (left, right) => { (left, right) }
+            (left, right) => (left, right),
         };
-        let type_ = self.context.resolve_binop_type(left.type_().unwrap(), &*b.kind, right.type_().unwrap())?;
+        let type_ = self.context.resolve_binop_type(
+            left.type_().unwrap(),
+            &*b.kind,
+            right.type_().unwrap(),
+        )?;
         Result::Ok(TypedBinOp {
             left: Box::new(left),
             kind: b.kind,
@@ -916,7 +939,7 @@ mod tests {
                         right: Box::new(TypedExpr::Literal(TypedLiteral::Integer {
                             value: "2".to_string(),
                             type_: Some(TypedType::int64()),
-                        }))
+                        })),
                     }))],
                 })),
                 return_type: Some(TypedType::unit()),
