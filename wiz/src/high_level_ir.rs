@@ -61,7 +61,6 @@ struct Ast2HLIRContext {
 
 #[derive(fmt::Debug, Clone)]
 enum Ast2HLIRName {
-    Type(Ast2HLIRType),
     Name(TypedType),
 }
 
@@ -101,17 +100,22 @@ impl Ast2HLIRContext {
                     .collect()
             }),
         };
-        self.name_environment
-            .insert(name.clone(), Ast2HLIRName::Type(t));
         self.struct_environment.insert(name, s.clone());
     }
 
     fn resolve_type(&self, type_name: Option<TypeName>) -> Option<TypedType> {
-        let t = if let Some(type_name) = &type_name {
-            match self.name_environment.get(&type_name.name) {
-                Some(Ast2HLIRName::Type(y)) => Some(y.clone()),
-                _ => None,
-            }
+        let t: Option<Ast2HLIRType> = if let Some(type_name) = &type_name {
+            Some(Ast2HLIRType {
+                name: type_name.name.clone(),
+                type_params: type_name.type_args.clone().map(|a|{
+                    a.into_iter().map(|t|{
+                        Ast2HLIRTypeParam {
+                            name: t.name,
+                            type_constraints: vec![]
+                        }
+                    }).collect()
+                })
+            })
         } else {
             None
         };
@@ -213,39 +217,7 @@ pub struct Ast2HLIR {
 
 impl Ast2HLIR {
     pub fn new() -> Self {
-        let builtin_types = vec![
-            String::from("Int8"),
-            String::from("Int16"),
-            String::from("Int32"),
-            String::from("Int64"),
-            String::from("UInt8"),
-            String::from("UInt16"),
-            String::from("UInt32"),
-            String::from("UInt64"),
-            String::from("String"),
-            String::from("Noting"),
-            String::from("Unit"),
-        ];
         let mut names = HashMap::new();
-        for t in builtin_types.into_iter() {
-            names.insert(
-                t.clone(),
-                Ast2HLIRName::Type(Ast2HLIRType {
-                    name: t,
-                    type_params: None,
-                }),
-            );
-        }
-        names.insert(
-            String::from(UNSAFE_POINTER),
-            Ast2HLIRName::Type(Ast2HLIRType {
-                name: String::from(UNSAFE_POINTER),
-                type_params: Some(vec![Ast2HLIRTypeParam {
-                    name: "T".to_string(),
-                    type_constraints: vec![],
-                }]),
-            }),
-        );
         Ast2HLIR {
             context: Ast2HLIRContext {
                 name_environment: StackedHashMap::from(names),
