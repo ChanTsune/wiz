@@ -297,7 +297,8 @@ impl ResolverContext {
     }
 }
 
-mod test {
+#[cfg(test)]
+mod tests {
     use crate::high_level_ir::type_resolver::context::NameSpace;
     use crate::high_level_ir::typed_type::TypedType;
 
