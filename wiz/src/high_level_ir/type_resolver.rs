@@ -219,17 +219,19 @@ impl TypeResolver {
                 .into_iter()
                 .map(|a| {
                     let a = match a {
-                        TypedArgDef::Value(a) => {
-                            TypedArgDef::Value(TypedValueArgDef {
-                                label: a.label,
-                                name: a.name,
-                                type_: self.context.full_type_name(a.type_)?
-                            })
-                        }
+                        TypedArgDef::Value(a) => TypedArgDef::Value(TypedValueArgDef {
+                            label: a.label,
+                            name: a.name,
+                            type_: self.context.full_type_name(a.type_)?,
+                        }),
                         TypedArgDef::Self_(s) => TypedArgDef::Self_(s),
                     };
                     let ns = self.context.get_current_namespace_mut()?;
-                    ns.values.insert(a.name(), a.type_().ok_or(ResolverError::from("Can not resolve 'self type'"))?);
+                    ns.values.insert(
+                        a.name(),
+                        a.type_()
+                            .ok_or(ResolverError::from("Can not resolve 'self type'"))?,
+                    );
                     Result::Ok(a)
                 })
                 .collect::<Result<Vec<TypedArgDef>>>()?,
