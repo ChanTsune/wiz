@@ -6,10 +6,7 @@ use crate::constants::UNSAFE_POINTER;
 use crate::high_level_ir::type_resolver::context::{ResolverContext, ResolverStruct};
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
-use crate::high_level_ir::typed_decl::{
-    TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct,
-    TypedValueArgDef, TypedVar,
-};
+use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct, TypedValueArgDef, TypedVar, TypedInitializer};
 use crate::high_level_ir::typed_expr::{
     TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral,
     TypedName, TypedReturn, TypedSubscript,
@@ -207,6 +204,17 @@ impl TypeResolver {
         }
     }
 
+    fn typed_arg_def(&mut self, a: TypedArgDef) -> Result<TypedArgDef> {
+        Result::Ok(match a {
+            TypedArgDef::Value(a) => TypedArgDef::Value(TypedValueArgDef {
+                label: a.label,
+                name: a.name,
+                type_: self.context.full_type_name(a.type_)?,
+            }),
+            TypedArgDef::Self_(s) => TypedArgDef::Self_(s),
+        })
+    }
+
     pub fn typed_fun(&mut self, f: TypedFun) -> Result<TypedFun> {
         self.context.push_name_space(f.name.clone());
         let return_type = self.typed_function_return_type(&f)?;
@@ -218,14 +226,7 @@ impl TypeResolver {
                 .arg_defs
                 .into_iter()
                 .map(|a| {
-                    let a = match a {
-                        TypedArgDef::Value(a) => TypedArgDef::Value(TypedValueArgDef {
-                            label: a.label,
-                            name: a.name,
-                            type_: self.context.full_type_name(a.type_)?,
-                        }),
-                        TypedArgDef::Self_(s) => TypedArgDef::Self_(s),
-                    };
+                    let a = self.typed_arg_def(a)?;
                     let ns = self.context.get_current_namespace_mut()?;
                     ns.values.insert(
                         a.name(),
@@ -300,7 +301,7 @@ impl TypeResolver {
         }
         self.context.set_current_type(this_type);
         self.context.push_name_space(name.clone());
-        let init = init.into_iter().collect();
+        let init = init.into_iter().map(|i|self.typed_initializer(i)).collect::<Result<Vec<TypedInitializer>>>()?;
         let stored_properties = stored_properties.into_iter().collect();
         let computed_properties = computed_properties.into_iter().collect();
         let member_functions = member_functions
@@ -318,6 +319,30 @@ impl TypeResolver {
             computed_properties,
             member_functions,
             static_function,
+        })
+    }
+
+    fn typed_initializer(&mut self, i: TypedInitializer) -> Result<TypedInitializer> {
+        let self_type =                 self.context.get_current_type();
+        let ns = self.context.get_current_namespace_mut()?;
+        ns.values.insert(
+            String::from("self"),
+                self_type.ok_or(ResolverError::from("Can not resolve 'self type'"))?,
+        );
+        Result::Ok(TypedInitializer {
+            args: i.args.into_iter()
+                .map(|a| {
+                    let a = self.typed_arg_def(a)?;
+                    let ns = self.context.get_current_namespace_mut()?;
+                    ns.values.insert(
+                        a.name(),
+                        a.type_()
+                            .ok_or(ResolverError::from("Can not resolve 'self type'"))?,
+                    );
+                    Result::Ok(a)
+                })
+                .collect::<Result<Vec<TypedArgDef>>>()?,
+            body: self.typed_fun_body(i.body)?
         })
     }
 
@@ -608,7 +633,7 @@ mod tests {
         TypedName, TypedReturn,
     };
     use crate::high_level_ir::typed_file::TypedFile;
-    use crate::high_level_ir::typed_stmt::{TypedBlock, TypedStmt};
+    use crate::high_level_ir::typed_stmt::{TypedBlock, TypedStmt, TypedAssignmentStmt, TypedAssignment};
     use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
     use crate::high_level_ir::Ast2HLIR;
     use crate::parser::parser::parse_from_string;
@@ -640,63 +665,22 @@ mod tests {
 
     #[test]
     fn test_unsafe_pointer() {
-        let file = TypedFile {
-            name: "test".to_string(),
-            body: vec![
-                TypedDecl::Struct(TypedStruct {
-                    name: "A".to_string(),
-                    type_params: None,
-                    init: vec![TypedInitializer {
-                        args: vec![],
-                        body: TypedFunBody::Block(TypedBlock { body: vec![] }),
-                    }],
-                    stored_properties: vec![TypedStoredProperty {
-                        name: "a".to_string(),
-                        type_: TypedType::Value(TypedValueType {
-                            package: Package::global(),
-                            name: String::from(UNSAFE_POINTER),
-                            type_args: Some(vec![TypedType::uint8()]),
-                        }),
-                    }],
-                    computed_properties: vec![],
-                    member_functions: vec![],
-                    static_function: vec![],
-                }),
-                TypedDecl::Fun(TypedFun {
-                    modifiers: vec![],
-                    name: "function".to_string(),
-                    type_params: None,
-                    arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
-                        label: "_".to_string(),
-                        name: "a".to_string(),
-                        type_: TypedType::Value(TypedValueType {
-                            package: Package {
-                                names: vec![String::from("test")],
-                            },
-                            name: "A".to_string(),
-                            type_args: None,
-                        }),
-                    })],
-                    body: Option::Some(TypedFunBody::Block(TypedBlock {
-                        body: vec![TypedStmt::Decl(TypedDecl::Var(TypedVar {
-                            is_mut: false,
-                            name: "a".to_string(),
-                            type_: None,
-                            value: TypedExpr::Member(TypedInstanceMember {
-                                target: Box::new(TypedExpr::Name(TypedName {
-                                    name: "a".to_string(),
-                                    type_: None,
-                                })),
-                                name: "a".to_string(),
-                                is_safe: false,
-                                type_: None,
-                            }),
-                        }))],
-                    })),
-                    return_type: Some(TypedType::unit()),
-                }),
-            ],
-        };
+        let source = r"
+        struct A {
+            val a: UnsafePointer<UInt8>
+        }
+        fun function(_ a: A): Unit {
+            val a = a.a
+        }
+        ";
+
+        let ast = parse_from_string(String::from(source)).unwrap();
+
+        let mut ast2hlir = Ast2HLIR::new();
+
+        let mut file = ast2hlir.file(ast);
+        file.name = String::from("test");
+
         let mut resolver = TypeResolver::new();
         let _ = resolver.detect_type(&file);
         let _ = resolver.preload_file(file.clone());
@@ -711,8 +695,46 @@ mod tests {
                         name: "A".to_string(),
                         type_params: None,
                         init: vec![TypedInitializer {
-                            args: vec![],
-                            body: TypedFunBody::Block(TypedBlock { body: vec![] })
+                            args: vec![TypedArgDef::Value(TypedValueArgDef {
+                                label: "a".to_string(),
+                                name: "a".to_string(),
+                                type_: TypedType::Value(TypedValueType {
+                                    package: Package::global(),
+                                    name: String::from(UNSAFE_POINTER),
+                                    type_args: Some(vec![TypedType::uint8()])
+                                })
+                            })],
+                            body: TypedFunBody::Block(TypedBlock { body: vec![
+                                TypedStmt::Assignment(TypedAssignmentStmt::Assignment(TypedAssignment {
+                                    target: TypedExpr::Member(TypedInstanceMember {
+                                        target: Box::new(TypedExpr::Name(TypedName {
+                                            name: "self".to_string(),
+                                            type_: Some(TypedType::Value(TypedValueType {
+                                                package: Package {
+                                                    names: vec![String::from("test")]
+                                                },
+                                                name: "A".to_string(),
+                                                type_args: None
+                                            }))
+                                        })),
+                                        name: "a".to_string(),
+                                        is_safe: false,
+                                        type_: Some(TypedType::Value(TypedValueType {
+                                            package: Package::global(),
+                                            name: String::from(UNSAFE_POINTER),
+                                            type_args: Some(vec![TypedType::uint8()])
+                                        }))
+                                    }),
+                                    value: TypedExpr::Name(TypedName {
+                                        name: "a".to_string(),
+                                        type_: Some(TypedType::Value(TypedValueType {
+                                            package: Package::global(),
+                                            name: String::from(UNSAFE_POINTER),
+                                            type_args: Some(vec![TypedType::uint8()])
+                                        }))
+                                    })
+                                }))
+                            ] })
                         }],
                         stored_properties: vec![TypedStoredProperty {
                             name: "a".to_string(),

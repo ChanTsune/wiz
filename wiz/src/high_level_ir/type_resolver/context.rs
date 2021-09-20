@@ -277,7 +277,7 @@ impl ResolverContext {
                         return Result::Ok(TypedType::Value(TypedValueType {
                             package: Package { names: cns.clone() },
                             name: v.name.clone(),
-                            type_args: None,
+                            type_args: v.type_args.clone(),
                         }));
                     };
                 }
