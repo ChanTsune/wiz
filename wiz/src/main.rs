@@ -75,11 +75,11 @@ fn main() -> result::Result<(), Box<dyn Error>> {
     let mut type_resolver = TypeResolver::new();
 
     for hlir in builtin_hlir.iter() {
-        type_resolver.detect_type(hlir.clone())?;
+        type_resolver.detect_type(hlir)?;
     }
 
     for hlir in hlfiles.iter() {
-        type_resolver.detect_type(hlir.clone())?;
+        type_resolver.detect_type(hlir)?;
     }
 
     for hlir in builtin_hlir.iter() {

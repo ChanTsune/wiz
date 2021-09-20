@@ -33,13 +33,13 @@ impl TypeResolver {
         }
     }
 
-    pub fn detect_type(&mut self, f: TypedFile) -> Result<()> {
-        self.context.push_name_space(f.name);
-        for d in f.body {
+    pub fn detect_type(&mut self, f: &TypedFile) -> Result<()> {
+        self.context.push_name_space(f.name.clone());
+        let ns = self.context.get_current_namespace_mut()?;
+        for d in f.body.iter() {
             match d {
                 TypedDecl::Struct(s) => {
-                    let ns = self.context.get_current_namespace_mut()?;
-                    ns.types.insert(s.name, ResolverStruct::new());
+                    ns.types.insert(s.name.clone(), ResolverStruct::new());
                 }
                 TypedDecl::Class => {}
                 TypedDecl::Enum => {}
@@ -571,9 +571,7 @@ mod tests {
         TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedStoredProperty,
         TypedStruct, TypedValueArgDef, TypedVar,
     };
-    use crate::high_level_ir::typed_expr::{
-        TypedBinOp, TypedCall, TypedExpr, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn,
-    };
+    use crate::high_level_ir::typed_expr::{TypedBinOp, TypedCall, TypedExpr, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn, TypedCallArg};
     use crate::high_level_ir::typed_file::TypedFile;
     use crate::high_level_ir::typed_stmt::{TypedBlock, TypedStmt};
     use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
@@ -585,7 +583,7 @@ mod tests {
             body: vec![],
         };
         let mut resolver = TypeResolver::new();
-        let _ = resolver.detect_type(file.clone());
+        let _ = resolver.detect_type(&file);
         let _ = resolver.preload_file(file.clone());
         let f = resolver.file(file);
 
@@ -654,7 +652,7 @@ mod tests {
             ],
         };
         let mut resolver = TypeResolver::new();
-        let _ = resolver.detect_type(file.clone());
+        let _ = resolver.detect_type(&file);
         let _ = resolver.preload_file(file.clone());
         let f = resolver.file(file);
 
@@ -741,7 +739,7 @@ mod tests {
             })],
         };
         let mut resolver = TypeResolver::new();
-        let _ = resolver.detect_type(file.clone());
+        let _ = resolver.detect_type(&file);
         let _ = resolver.preload_file(file.clone());
         let f = resolver.file(file);
 
@@ -804,7 +802,7 @@ mod tests {
             ],
         };
         let mut resolver = TypeResolver::new();
-        let _ = resolver.detect_type(file.clone());
+        let _ = resolver.detect_type(&file);
         let _ = resolver.preload_file(file.clone());
         let f = resolver.file(file);
 
@@ -873,7 +871,7 @@ mod tests {
             })],
         };
         let mut resolver = TypeResolver::new();
-        let _ = resolver.detect_type(file.clone());
+        let _ = resolver.detect_type(&file);
         let _ = resolver.preload_file(file.clone());
         let f = resolver.file(file);
 
@@ -930,7 +928,7 @@ mod tests {
             })],
         };
         let mut resolver = TypeResolver::new();
-        let _ = resolver.detect_type(file.clone());
+        let _ = resolver.detect_type(&file);
         let _ = resolver.preload_file(file.clone());
         let f = resolver.file(file);
 
