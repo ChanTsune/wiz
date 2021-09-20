@@ -51,10 +51,6 @@ fn main() -> result::Result<(), Box<dyn Error>> {
 
     let mut ast2hlir = Ast2HLIR::new();
 
-    for builtin in builtin_syntax.iter() {
-        ast2hlir.preload_types(builtin.clone());
-    }
-
     let builtin_hlir: Vec<TypedFile> = builtin_syntax
         .into_iter()
         .map(|w| ast2hlir.file(w))
@@ -65,10 +61,6 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         .map(|s| parse_from_file_path_str(s))
         .flatten()
         .collect();
-
-    for ast_file in ast_files.iter() {
-        ast2hlir.preload_types(ast_file.clone());
-    }
 
     let hlfiles: Vec<TypedFile> = ast_files.into_iter().map(|f| ast2hlir.file(f)).collect();
 

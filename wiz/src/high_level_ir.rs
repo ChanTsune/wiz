@@ -254,45 +254,6 @@ impl Ast2HLIR {
         }
     }
 
-    pub fn preload_types(&mut self, ast: WizFile) {
-        for decl in ast.syntax.body {
-            match decl {
-                Decl::Var(v) => {
-                    let var = self.var_syntax(v);
-                    self.context.put_name(var.name, &var.type_.unwrap())
-                }
-                Decl::Fun(f) => {
-                    let return_type = match f.body {
-                        Some(FunBody::Block { .. }) => {
-                            if let Some(r) = f.return_type {
-                                self.context.resolve_type(Some(r)).unwrap()
-                            } else {
-                                TypedType::unit()
-                            }
-                        }
-                        Some(FunBody::Expr { expr }) => self.expr(expr).type_().unwrap(),
-                        None => TypedType::unit(),
-                    };
-                    self.context.put_name(
-                        f.name,
-                        &TypedType::Function(Box::new(TypedFunctionType {
-                            arguments: f.arg_defs.into_iter().map(|a| self.arg_def(a)).collect(),
-                            return_type: return_type,
-                        })),
-                    )
-                }
-                Decl::Struct(s) => {
-                    let s = self.struct_syntax(s);
-                    self.context.put_type(&s)
-                }
-                Decl::Class {} => {}
-                Decl::Enum {} => {}
-                Decl::Protocol {} => {}
-                Decl::Extension {} => {}
-            }
-        }
-    }
-
     fn resolve_by_binop(
         &self,
         left_type: &Option<TypedType>,
