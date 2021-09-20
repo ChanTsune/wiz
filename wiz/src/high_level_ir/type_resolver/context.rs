@@ -4,6 +4,7 @@ use crate::high_level_ir::typed_decl::TypedArgDef;
 use crate::high_level_ir::typed_type::{Package, TypedType, TypedValueType};
 use std::collections::{HashMap, HashSet};
 use std::fmt;
+use crate::constants::UNSAFE_POINTER;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub(crate) struct ResolverTypeParam {
@@ -128,6 +129,13 @@ impl NameSpace {
 impl ResolverContext {
     pub(crate) fn new() -> Self {
         let mut ns = NameSpace::new();
+
+        let mut rs_for_pointer = ResolverStruct::new();
+        let mut tp_map_for_pointer = HashMap::new();
+        tp_map_for_pointer.insert(String::from("T"), ResolverTypeParam { type_constraints: vec![], type_params: None });
+        rs_for_pointer.type_params = Some(tp_map_for_pointer);
+        ns.types.insert(String::from(UNSAFE_POINTER), rs_for_pointer);
+
         for t in TypedType::builtin_types() {
             match &t {
                 TypedType::Value(v) => {

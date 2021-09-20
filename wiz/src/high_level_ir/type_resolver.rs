@@ -598,6 +598,7 @@ mod tests {
     use crate::high_level_ir::typed_file::TypedFile;
     use crate::high_level_ir::typed_stmt::{TypedBlock, TypedStmt};
     use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
+    use crate::constants::UNSAFE_POINTER;
 
     #[test]
     fn test_empty() {
@@ -615,6 +616,146 @@ mod tests {
             Result::Ok(TypedFile {
                 name: "test".to_string(),
                 body: vec![]
+            })
+        );
+    }
+
+    #[test]
+    fn test_unsafe_pointer() {
+        let file = TypedFile {
+            name: "test".to_string(),
+            body: vec![
+                TypedDecl::Struct(TypedStruct {
+                    name: "A".to_string(),
+                    type_params: None,
+                    init: vec![TypedInitializer {
+                        args: vec![],
+                        body: TypedFunBody::Block(TypedBlock { body: vec![] }),
+                    }],
+                    stored_properties: vec![TypedStoredProperty {
+                        name: "a".to_string(),
+                        type_: TypedType::Value(TypedValueType {
+                            package: Package::global(),
+                            name: String::from(UNSAFE_POINTER),
+                            type_args: Some(vec![TypedType::uint8()])
+                        })
+                    }],
+                    computed_properties: vec![],
+                    member_functions: vec![],
+                    static_function: vec![],
+                }),
+                TypedDecl::Fun(TypedFun {
+                    modifiers: vec![],
+                    name: "function".to_string(),
+                    type_params: None,
+                    arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
+                        label: "_".to_string(),
+                        name: "a".to_string(),
+                        type_: TypedType::Value(TypedValueType {
+                            package: Package {
+                                names: vec![String::from("test")],
+                            },
+                            name: "A".to_string(),
+                            type_args: None,
+                        }),
+                    })],
+                    body: Option::Some(TypedFunBody::Block(TypedBlock {
+                        body: vec![TypedStmt::Decl(TypedDecl::Var(TypedVar {
+                            is_mut: false,
+                            name: "a".to_string(),
+                            type_: None,
+                            value: TypedExpr::Member(TypedInstanceMember {
+                                target: Box::new(TypedExpr::Name(TypedName {
+                                    name: "a".to_string(),
+                                    type_: None,
+                                })),
+                                name: "a".to_string(),
+                                is_safe: false,
+                                type_: None,
+                            }),
+                        }))],
+                    })),
+                    return_type: Some(TypedType::unit()),
+                }),
+            ],
+        };
+        let mut resolver = TypeResolver::new();
+        let _ = resolver.detect_type(&file);
+        let _ = resolver.preload_file(file.clone());
+        let f = resolver.file(file);
+
+        assert_eq!(
+            f,
+            Result::Ok(TypedFile {
+                name: "test".to_string(),
+                body: vec![
+                    TypedDecl::Struct(TypedStruct {
+                        name: "A".to_string(),
+                        type_params: None,
+                        init: vec![TypedInitializer {
+                            args: vec![],
+                            body: TypedFunBody::Block(TypedBlock { body: vec![] })
+                        }],
+                        stored_properties: vec![TypedStoredProperty {
+                            name: "a".to_string(),
+                            type_: TypedType::Value(TypedValueType {
+                                package: Package::global(),
+                                name: String::from(UNSAFE_POINTER),
+                                type_args: Some(vec![TypedType::uint8()])
+                            })
+                        }],
+                        computed_properties: vec![],
+                        member_functions: vec![],
+                        static_function: vec![]
+                    }),
+                    TypedDecl::Fun(TypedFun {
+                        modifiers: vec![],
+                        name: "function".to_string(),
+                        type_params: None,
+                        arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
+                            label: "_".to_string(),
+                            name: "a".to_string(),
+                            type_: TypedType::Value(TypedValueType {
+                                package: Package {
+                                    names: vec![String::from("test")]
+                                },
+                                name: "A".to_string(),
+                                type_args: None
+                            })
+                        })],
+                        body: Option::Some(TypedFunBody::Block(TypedBlock {
+                            body: vec![TypedStmt::Decl(TypedDecl::Var(TypedVar {
+                                is_mut: false,
+                                name: "a".to_string(),
+                                type_: Some(TypedType::Value(TypedValueType {
+                                    package: Package::global(),
+                                    name: String::from(UNSAFE_POINTER),
+                                    type_args: Some(vec![TypedType::uint8()])
+                                })),
+                                value: TypedExpr::Member(TypedInstanceMember {
+                                    target: Box::new(TypedExpr::Name(TypedName {
+                                        name: "a".to_string(),
+                                        type_: Some(TypedType::Value(TypedValueType {
+                                            package: Package {
+                                                names: vec![String::from("test")]
+                                            },
+                                            name: "A".to_string(),
+                                            type_args: None
+                                        }))
+                                    })),
+                                    name: "a".to_string(),
+                                    is_safe: false,
+                                    type_: Some(TypedType::Value(TypedValueType {
+                                        package: Package::global(),
+                                        name: String::from(UNSAFE_POINTER),
+                                        type_args: Some(vec![TypedType::uint8()])
+                                    }))
+                                })
+                            }))]
+                        })),
+                        return_type: Some(TypedType::unit())
+                    })
+                ],
             })
         );
     }
