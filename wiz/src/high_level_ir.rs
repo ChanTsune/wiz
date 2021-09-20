@@ -268,14 +268,6 @@ impl Ast2HLIR {
         }
     }
 
-    fn resolve_by_unaryop(
-        &self,
-        target_type: &Option<TypedType>,
-        kind: &String,
-    ) -> Option<TypedType> {
-        None
-    }
-
     pub fn file(&mut self, f: WizFile) -> TypedFile {
         TypedFile {
             name: path_string_to_page_name(f.name),
@@ -666,12 +658,11 @@ impl Ast2HLIR {
                 kind,
             } => {
                 let target = self.expr(*target);
-                let type_ = self.resolve_by_unaryop(&target.type_(), &kind);
                 TypedExpr::UnaryOp(TypedUnaryOp {
                     target: Box::new(target),
                     prefix: prefix,
                     kind: kind,
-                    type_: type_,
+                    type_: None,
                 })
             }
             Expr::Subscript(s) => TypedExpr::Subscript(self.subscript_syntax(s)),
