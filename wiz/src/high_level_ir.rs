@@ -276,34 +276,6 @@ impl Ast2HLIR {
         None
     }
 
-    fn resolve_member_type(&self, t: &TypedType, member_name: String) -> Option<TypedType> {
-        match t {
-            TypedType::Value(t) => {
-                println!("env :: {:?}", self.context.struct_environment);
-                let s = self.context.struct_environment.get(&t.name)?;
-                for p in s.stored_properties.iter() {
-                    if p.name == member_name {
-                        return Some(p.type_.clone());
-                    }
-                }
-                for p in s.computed_properties.iter() {
-                    if p.name == member_name {
-                        return Some(p.type_.clone());
-                    }
-                }
-                // TODO: change resolve method
-                if member_name == "init" {
-                    return Some(TypedType::Function(Box::new(TypedFunctionType {
-                        arguments: vec![],
-                        return_type: TypedType::Value(t.clone()),
-                    })));
-                }
-                None
-            }
-            _ => None,
-        }
-    }
-
     pub fn file(&mut self, f: WizFile) -> TypedFile {
         TypedFile {
             name: path_string_to_page_name(f.name),
@@ -721,14 +693,11 @@ impl Ast2HLIR {
                 is_safe,
             } => {
                 let target = self.expr(*target);
-                println!("target Expr -> {:?}", target);
-                let target_type = target.type_().unwrap();
-                let type_ = self.resolve_member_type(&target_type, name.clone());
                 TypedExpr::Member(TypedInstanceMember {
                     target: Box::new(target),
                     name,
                     is_safe,
-                    type_,
+                    type_: None,
                 })
             }
             Expr::List { .. } => TypedExpr::List,
