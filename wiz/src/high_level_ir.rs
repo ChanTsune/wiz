@@ -254,20 +254,6 @@ impl Ast2HLIR {
         }
     }
 
-    fn resolve_by_binop(
-        &self,
-        left_type: &Option<TypedType>,
-        kind: &String,
-        right_type: &Option<TypedType>,
-    ) -> Option<TypedType> {
-        match (left_type, right_type) {
-            (Some(l), Some(r)) => Some(l.clone()),
-            (Some(l), None) => Some(l.clone()),
-            (None, Some(r)) => Some(r.clone()),
-            (_, _) => None,
-        }
-    }
-
     pub fn file(&mut self, f: WizFile) -> TypedFile {
         TypedFile {
             name: path_string_to_page_name(f.name),
@@ -644,12 +630,11 @@ impl Ast2HLIR {
             Expr::BinOp { left, kind, right } => {
                 let left = Box::new(self.expr(*left));
                 let right = Box::new(self.expr(*right));
-                let type_ = self.resolve_by_binop(&left.type_(), &kind, &right.type_());
                 TypedExpr::BinOp(TypedBinOp {
                     left: left,
                     kind: kind,
                     right: right,
-                    type_: type_,
+                    type_: None,
                 })
             }
             Expr::UnaryOp {
