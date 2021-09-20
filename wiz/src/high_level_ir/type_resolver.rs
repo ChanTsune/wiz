@@ -219,16 +219,12 @@ impl TypeResolver {
                 .into_iter()
                 .map(|a| {
                     let a = match a {
-                        TypedArgDef::Value(a) => {
-                            TypedArgDef::Value(TypedValueArgDef {
-                                label: a.label,
-                                name: a.name,
-                                type_: self.context.full_type_name(a.type_).ok()?
-                            })
-                        }
-                        TypedArgDef::Self_(s) => {
-                            TypedArgDef::Self_(s)
-                        }
+                        TypedArgDef::Value(a) => TypedArgDef::Value(TypedValueArgDef {
+                            label: a.label,
+                            name: a.name,
+                            type_: self.context.full_type_name(a.type_).ok()?,
+                        }),
+                        TypedArgDef::Self_(s) => TypedArgDef::Self_(s),
                     };
                     let ns = self.context.get_current_namespace_mut().ok()?;
                     ns.values.insert(a.name(), a.type_()?);
