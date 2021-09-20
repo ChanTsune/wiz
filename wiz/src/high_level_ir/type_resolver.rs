@@ -467,14 +467,23 @@ impl TypeResolver {
     }
 
     pub fn typed_call(&mut self, c: TypedCall) -> Result<TypedCall> {
+        let target = Box::new(self.expr(*c.target)?);
+        let c_type = match target.type_().unwrap() {
+            TypedType::Value(v)|TypedType::Type(v) => {
+                Result::Err(ResolverError::from(format!("{:?} is not callable.", v)))
+            }
+            TypedType::Function(f) => {
+                Result::Ok(f.return_type)
+            }
+        }?;
         Result::Ok(TypedCall {
-            target: Box::new(self.expr(*c.target)?),
+            target,
             args: c
                 .args
                 .into_iter()
                 .map(|c| self.typed_call_arg(c))
                 .collect::<Result<Vec<TypedCallArg>>>()?,
-            type_: c.type_,
+            type_: Some(c_type),
         })
     }
 
@@ -562,12 +571,10 @@ mod tests {
         TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedStoredProperty,
         TypedStruct, TypedValueArgDef, TypedVar,
     };
-    use crate::high_level_ir::typed_expr::{
-        TypedBinOp, TypedExpr, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn,
-    };
+    use crate::high_level_ir::typed_expr::{TypedBinOp, TypedExpr, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn, TypedCall};
     use crate::high_level_ir::typed_file::TypedFile;
     use crate::high_level_ir::typed_stmt::{TypedBlock, TypedStmt};
-    use crate::high_level_ir::typed_type::{Package, TypedType, TypedValueType};
+    use crate::high_level_ir::typed_type::{Package, TypedType, TypedValueType, TypedFunctionType};
 
     #[test]
     fn test_empty() {
@@ -753,6 +760,86 @@ mod tests {
                     ))),
                     return_type: Some(TypedType::int64())
                 })],
+            })
+        );
+    }
+
+    #[test]
+    fn test_function_call() {
+        let file = TypedFile {
+            name: "test".to_string(),
+            body: vec![
+                TypedDecl::Fun(TypedFun {
+                modifiers: vec![],
+                name: "target_function".to_string(),
+                type_params: None,
+                arg_defs: vec![],
+                body: Some(TypedFunBody::Expr(TypedExpr::Literal(
+                    TypedLiteral::Integer {
+                        value: "1".to_string(),
+                        type_: Some(TypedType::int64()),
+                    },
+                ))),
+                return_type: None,
+            }),
+                TypedDecl::Fun(TypedFun {
+                    modifiers: vec![],
+                    name: "main".to_string(),
+                    type_params: None,
+                    arg_defs: vec![],
+                    body: Some(TypedFunBody::Block(TypedBlock {
+                        body: vec![
+                            TypedStmt::Expr(TypedExpr::Call(TypedCall {
+                                target: Box::new(TypedExpr::Name(TypedName { name: "target_function".to_string(), type_: None })),
+                                args: vec![],
+                                type_: None
+                            }))
+                        ]
+                    })),
+                    return_type: None
+                })
+            ],
+        };
+        let mut resolver = TypeResolver::new();
+        let _ = resolver.detect_type(file.clone());
+        let _ = resolver.preload_file(file.clone());
+        let f = resolver.file(file);
+
+        assert_eq!(
+            f,
+            Result::Ok(TypedFile {
+                name: "test".to_string(),
+                body: vec![
+                    TypedDecl::Fun(TypedFun {
+                        modifiers: vec![],
+                        name: "target_function".to_string(),
+                        type_params: None,
+                        arg_defs: vec![],
+                        body: Some(TypedFunBody::Expr(TypedExpr::Literal(
+                            TypedLiteral::Integer {
+                                value: "1".to_string(),
+                                type_: Some(TypedType::int64()),
+                            },
+                        ))),
+                        return_type: Some(TypedType::int64()),
+                    }),
+                    TypedDecl::Fun(TypedFun {
+                        modifiers: vec![],
+                        name: "main".to_string(),
+                        type_params: None,
+                        arg_defs: vec![],
+                        body: Some(TypedFunBody::Block(TypedBlock {
+                            body: vec![
+                                TypedStmt::Expr(TypedExpr::Call(TypedCall {
+                                    target: Box::new(TypedExpr::Name(TypedName { name: "target_function".to_string(), type_: Some(TypedType::Function(Box::new(TypedFunctionType { arguments: vec![], return_type: TypedType::int64() }))) })),
+                                    args: vec![],
+                                    type_: Some(TypedType::int64())
+                                }))
+                            ]
+                        })),
+                        return_type: Some(TypedType::unit())
+                    })
+                ],
             })
         );
     }
