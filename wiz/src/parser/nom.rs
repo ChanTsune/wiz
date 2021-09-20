@@ -150,20 +150,27 @@ pub fn stmts(s: &str) -> IResult<&str, Vec<Stmt>> {
 }
 
 pub fn file(s: &str) -> IResult<&str, FileSyntax> {
-    map(tuple((whitespace0,many0(tuple((whitespace0, decl, whitespace0))),whitespace0)), |(_, decls,_)| {
-        FileSyntax {
+    map(
+        tuple((
+            whitespace0,
+            many0(tuple((whitespace0, decl, whitespace0))),
+            whitespace0,
+        )),
+        |(_, decls, _)| FileSyntax {
             body: decls.into_iter().map(|(_, f, _)| f).collect(),
-        }
-    })(s)
+        },
+    )(s)
 }
 
 mod tests {
     use crate::ast::block::Block;
     use crate::ast::expr::{Expr, NameExprSyntax};
+    use crate::ast::file::FileSyntax;
     use crate::ast::literal::Literal;
     use crate::ast::stmt::{AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt};
-    use crate::parser::nom::{assignable_expr, assignment_stmt, directly_assignable_expr, while_stmt, file};
-    use crate::ast::file::FileSyntax;
+    use crate::parser::nom::{
+        assignable_expr, assignment_stmt, directly_assignable_expr, file, while_stmt,
+    };
 
     #[test]
     fn test_while_stmt_with_bracket() {
