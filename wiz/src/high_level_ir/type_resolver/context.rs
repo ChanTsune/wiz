@@ -1,9 +1,9 @@
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
+use crate::high_level_ir::typed_decl::TypedArgDef;
 use crate::high_level_ir::typed_type::{Package, TypedType, TypedValueType};
 use std::collections::{HashMap, HashSet};
 use std::fmt;
-use crate::high_level_ir::typed_decl::TypedArgDef;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub(crate) struct ResolverTypeParam {
@@ -202,8 +202,9 @@ impl ResolverContext {
                     .types
                     .get(&v.name)
                     .ok_or(ResolverError::from(format!("Can not resolve type {:?}", t)))?;
-                rs.static_functions.get(&name)
-                    .map(|it|it.clone())
+                rs.static_functions
+                    .get(&name)
+                    .map(|it| it.clone())
                     .ok_or(ResolverError::from(format!("{:?} not has {:?}", t, name)))
             }
             _ => todo!("dose not impl"),
