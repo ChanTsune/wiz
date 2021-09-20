@@ -376,7 +376,6 @@ impl TypeResolver {
             TypedExpr::Lambda => TypedExpr::Lambda,
             TypedExpr::Return(r) => TypedExpr::Return(self.typed_return(r)?),
             TypedExpr::TypeCast => TypedExpr::TypeCast,
-            TypedExpr::Type(t) => TypedExpr::Type(t),
         })
     }
 

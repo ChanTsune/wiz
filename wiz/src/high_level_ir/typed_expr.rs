@@ -21,7 +21,6 @@ pub enum TypedExpr {
     Lambda,
     Return(TypedReturn),
     TypeCast,
-    Type(TypedType),
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -139,7 +138,6 @@ impl TypedExpr {
             TypedExpr::Lambda => None,
             TypedExpr::Return(r) => r.type_.clone(),
             TypedExpr::TypeCast => None,
-            TypedExpr::Type(_) => None,
         }
     }
 }

@@ -353,10 +353,6 @@ impl HLIR2MLIR {
             TypedExpr::Lambda => exit(-1),
             TypedExpr::Return(r) => MLExpr::Return(self.return_expr(r)),
             TypedExpr::TypeCast => exit(-1),
-            TypedExpr::Type(t) => {
-                eprintln!("Never execution branch executed!! => {:?}", t);
-                exit(-1)
-            }
         }
     }
 

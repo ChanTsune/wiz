@@ -708,10 +708,7 @@ impl Ast2HLIR {
 
     pub fn expr(&mut self, e: Expr) -> TypedExpr {
         match e {
-            Expr::Name(n) => match self.name_syntax(n) {
-                Either::Left(name) => TypedExpr::Name(name),
-                Either::Right(n) => TypedExpr::Type(n),
-            },
+            Expr::Name(n) => TypedExpr::Name(self.name_syntax(n).unwrap()),
             Expr::Literal(literal) => match literal {
                 Literal::Integer { value } => TypedExpr::Literal(TypedLiteral::Integer {
                     value,
@@ -766,14 +763,6 @@ impl Ast2HLIR {
             } => {
                 let target = self.expr(*target);
                 println!("target Expr -> {:?}", target);
-                if let TypedExpr::Type(target) = target {
-                    let type_ = self.resolve_member_type(&target, name.clone());
-                    TypedExpr::StaticMember(TypedStaticMember {
-                        target: target,
-                        name: name,
-                        type_: type_,
-                    })
-                } else {
                     let target_type = target.type_().unwrap();
                     let type_ = self.resolve_member_type(&target_type, name.clone());
                     TypedExpr::Member(TypedInstanceMember {
@@ -782,7 +771,6 @@ impl Ast2HLIR {
                         is_safe,
                         type_,
                     })
-                }
             }
             Expr::List { .. } => TypedExpr::List,
             Expr::Tuple { .. } => TypedExpr::Tuple,
@@ -814,22 +802,14 @@ impl Ast2HLIR {
         }
     }
 
-    pub fn name_syntax(&self, n: NameExprSyntax) -> Either<TypedName, TypedType> {
+    pub fn name_syntax(&self, n: NameExprSyntax) -> Option<TypedName> {
         let NameExprSyntax { name } = n;
         match self.context.resolve_name(name.clone()) {
-            None => Either::Left(TypedName {
-                name: name,
-                type_: None,
+            None => None,
+            Some(_) => Some(TypedName {
+                name,
+                type_: None
             }),
-            Some(Ast2HLIRName::Name(t)) => Either::Left(TypedName {
-                name: name,
-                type_: Some(t),
-            }),
-            Some(Ast2HLIRName::Type(t)) => Either::Right(TypedType::Value(TypedValueType {
-                package: Package { names: vec![] },
-                name: t.name,
-                type_args: None,
-            })),
         }
     }
 
