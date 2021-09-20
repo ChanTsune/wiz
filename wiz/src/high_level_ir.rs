@@ -326,43 +326,10 @@ impl Ast2HLIR {
 
     pub fn var_syntax(&mut self, v: VarSyntax) -> TypedVar {
         let expr = self.expr(v.value);
-        let type_ = match (v.type_, expr.type_()) {
-            (Some(tn), Some(expr_type)) => {
-                let var_type = self.context.resolve_type(Some(tn.clone()));
-                if let Some(var_type) = var_type {
-                    if var_type == expr_type {
-                        expr_type
-                    } else {
-                        eprintln!(
-                            "Type miss match error => {:?} and {:?}",
-                            var_type, expr_type
-                        );
-                        exit(-1);
-                    }
-                } else {
-                    eprintln!("Can not resolve type {:?} error =>", tn);
-                    exit(-1)
-                }
-            }
-            (Some(t), None) => {
-                if let Some(tt) = self.context.resolve_type(Some(t.clone())) {
-                    tt
-                } else {
-                    eprintln!("Can not resolve type {:?} error =>", t);
-                    exit(-1)
-                }
-            }
-            (None, Some(t)) => t,
-            (None, None) => {
-                eprintln!("Can not resolve type error");
-                exit(-1)
-            }
-        };
-        self.context.put_name(v.name.clone(), &type_);
         TypedVar {
             is_mut: v.is_mut,
             name: v.name,
-            type_: Some(type_),
+            type_: None,
             value: expr,
         }
     }
