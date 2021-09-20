@@ -161,18 +161,12 @@ impl ResolverContext {
     }
 
     pub fn get_current_namespace_mut(&mut self) -> Result<&mut NameSpace> {
-        self.name_space
-            .get_child_mut(self.current_namespace.clone())
-            .ok_or(ResolverError::from(format!(
-                "NameSpace {:?} not exist",
-                self.current_namespace
-            )))
+        self.get_namespace_mut(self.current_namespace.clone())
     }
 
     pub fn get_namespace_mut(&mut self, ns: Vec<String>) -> Result<&mut NameSpace> {
-        self.name_space
-            .get_child_mut(ns.clone())
-            .ok_or(ResolverError::from(format!("NameSpace {:?} not exist", ns)))
+        let msg = format!("NameSpace {:?} not exist", ns);
+        self.name_space.get_child_mut(ns).ok_or(ResolverError::from(msg))
     }
 
     pub fn get_current_type(&self) -> Option<TypedType> {
