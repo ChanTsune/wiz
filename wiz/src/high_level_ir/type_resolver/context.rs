@@ -162,11 +162,17 @@ impl ResolverContext {
 
     pub fn get_current_namespace_mut(&mut self) -> Result<&mut NameSpace> {
         self.name_space
-            .get_child_mut(self.current_namespace.clone()).ok_or(ResolverError::from(format!("NameSpace {:?} not exist", self.current_namespace)))
+            .get_child_mut(self.current_namespace.clone())
+            .ok_or(ResolverError::from(format!(
+                "NameSpace {:?} not exist",
+                self.current_namespace
+            )))
     }
 
     pub fn get_namespace_mut(&mut self, ns: Vec<String>) -> Result<&mut NameSpace> {
-        self.name_space.get_child_mut(ns.clone()).ok_or(ResolverError::from(format!("NameSpace {:?} not exist", ns)))
+        self.name_space
+            .get_child_mut(ns.clone())
+            .ok_or(ResolverError::from(format!("NameSpace {:?} not exist", ns)))
     }
 
     pub fn get_current_type(&self) -> Option<TypedType> {
@@ -184,8 +190,7 @@ impl ResolverContext {
     pub fn resolve_member_type(&mut self, t: TypedType, name: String) -> Result<TypedType> {
         match &t {
             TypedType::Value(v) => {
-                let ns = self
-                    .get_namespace_mut(v.package.names.clone())?;
+                let ns = self.get_namespace_mut(v.package.names.clone())?;
                 println!("ns => {:?}", ns);
                 let rs = ns
                     .types
@@ -203,8 +208,7 @@ impl ResolverContext {
     pub fn resolve_name_type(&mut self, name: String) -> Result<TypedType> {
         let mut cns = self.current_namespace.clone();
         loop {
-            let ns = self
-                .get_namespace_mut(cns.clone())?;
+            let ns = self.get_namespace_mut(cns.clone())?;
             if let Some(t) = ns.values.get(&name) {
                 return Result::Ok(t.clone());
             }
@@ -245,8 +249,7 @@ impl ResolverContext {
         };
         let mut cns = self.current_namespace.clone();
         loop {
-            let ns = self
-                .get_namespace_mut(cns.clone())?;
+            let ns = self.get_namespace_mut(cns.clone())?;
             match &typ {
                 TypedType::Value(v) => {
                     if let Some(_) = ns.types.get(&v.name) {

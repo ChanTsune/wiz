@@ -38,9 +38,7 @@ impl TypeResolver {
         for d in f.body {
             match d {
                 TypedDecl::Struct(s) => {
-                    let ns = self
-                        .context
-                        .get_current_namespace_mut()?;
+                    let ns = self.context.get_current_namespace_mut()?;
                     ns.types.insert(s.name, ResolverStruct::new());
                 }
                 TypedDecl::Class => {}
@@ -71,9 +69,7 @@ impl TypeResolver {
         match d {
             TypedDecl::Var(v) => {
                 let v = self.typed_var(v)?;
-                let namespace = self
-                    .context
-                    .get_current_namespace_mut()?;
+                let namespace = self.context.get_current_namespace_mut()?;
                 namespace.values.insert(
                     v.name,
                     v.type_
@@ -82,9 +78,7 @@ impl TypeResolver {
             }
             TypedDecl::Fun(f) => {
                 let fun = self.preload_fun(f)?;
-                let namespace = self
-                    .context
-                    .get_current_namespace_mut()?;
+                let namespace = self.context.get_current_namespace_mut()?;
                 namespace
                     .values
                     .insert(fun.name.clone(), fun.type_().unwrap());
@@ -171,9 +165,7 @@ impl TypeResolver {
             type_: Some(v_type),
             value,
         };
-        let namespace = self
-            .context
-            .get_current_namespace_mut()?;
+        let namespace = self.context.get_current_namespace_mut()?;
         namespace.values.insert(
             v.name.clone(),
             v.type_
@@ -231,9 +223,7 @@ impl TypeResolver {
         let fun_type = fun.type_();
         let result = Result::Ok(fun);
         self.context.pop_name_space();
-        let ns = self
-            .context
-            .get_current_namespace_mut()?;
+        let ns = self.context.get_current_namespace_mut()?;
         ns.values.insert(fun_name, fun_type.unwrap());
         result
     }
@@ -248,9 +238,7 @@ impl TypeResolver {
             member_functions,    // TODO
             static_function,     // TODO
         } = s;
-        let ns = self
-            .context
-            .get_current_namespace_mut()?;
+        let ns = self.context.get_current_namespace_mut()?;
         let rs = ns
             .types
             .get_mut(&*name)
@@ -304,9 +292,7 @@ impl TypeResolver {
     fn typed_member_function(&mut self, mf: TypedMemberFunction) -> Result<TypedMemberFunction> {
         self.context.push_name_space(mf.name.clone());
         let self_type = self.context.get_current_type();
-        let ns = self
-            .context
-            .get_current_namespace_mut()?;
+        let ns = self.context.get_current_namespace_mut()?;
         let result = Result::Ok(TypedMemberFunction {
             name: mf.name,
             args: mf
