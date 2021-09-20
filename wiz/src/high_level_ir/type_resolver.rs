@@ -606,7 +606,7 @@ mod tests {
     fn test_empty() {
         let source = "";
 
-        let ast = parse_from_string(String::from(source));
+        let ast = parse_from_string(String::from(source)).unwrap();
 
         let mut ast2hlir = Ast2HLIR::new();
 
