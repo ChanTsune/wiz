@@ -40,8 +40,7 @@ impl TypeResolver {
                 TypedDecl::Struct(s) => {
                     let ns = self
                         .context
-                        .get_current_namespace_mut()
-                        .ok_or(ResolverError::from("Context NameSpace Error"))?;
+                        .get_current_namespace_mut()?;
                     ns.types.insert(s.name, ResolverStruct::new());
                 }
                 TypedDecl::Class => {}
@@ -74,8 +73,7 @@ impl TypeResolver {
                 let v = self.typed_var(v)?;
                 let namespace = self
                     .context
-                    .get_current_namespace_mut()
-                    .ok_or(ResolverError::from("NameSpace not exist"))?;
+                    .get_current_namespace_mut()?;
                 namespace.values.insert(
                     v.name,
                     v.type_
@@ -86,8 +84,7 @@ impl TypeResolver {
                 let fun = self.preload_fun(f)?;
                 let namespace = self
                     .context
-                    .get_current_namespace_mut()
-                    .ok_or(ResolverError::from("NameSpace not exist"))?;
+                    .get_current_namespace_mut()?;
                 namespace
                     .values
                     .insert(fun.name.clone(), fun.type_().unwrap());
@@ -176,8 +173,7 @@ impl TypeResolver {
         };
         let namespace = self
             .context
-            .get_current_namespace_mut()
-            .ok_or(ResolverError::from("NameSpace not exist"))?;
+            .get_current_namespace_mut()?;
         namespace.values.insert(
             v.name.clone(),
             v.type_
@@ -237,8 +233,7 @@ impl TypeResolver {
         self.context.pop_name_space();
         let ns = self
             .context
-            .get_current_namespace_mut()
-            .ok_or(ResolverError::from("NameSpace not exist"))?;
+            .get_current_namespace_mut()?;
         ns.values.insert(fun_name, fun_type.unwrap());
         result
     }
@@ -255,8 +250,7 @@ impl TypeResolver {
         } = s;
         let ns = self
             .context
-            .get_current_namespace_mut()
-            .ok_or(ResolverError::from("NameSpace not exist"))?;
+            .get_current_namespace_mut()?;
         let rs = ns
             .types
             .get_mut(&*name)
@@ -312,8 +306,7 @@ impl TypeResolver {
         let self_type = self.context.get_current_type();
         let ns = self
             .context
-            .get_current_namespace_mut()
-            .ok_or(ResolverError::from("NameSpace not exist"))?;
+            .get_current_namespace_mut()?;
         let result = Result::Ok(TypedMemberFunction {
             name: mf.name,
             args: mf
