@@ -226,9 +226,7 @@ impl TypeResolver {
                                 type_: self.context.full_type_name(a.type_)?
                             })
                         }
-                        TypedArgDef::Self_(s) => {
-                            TypedArgDef::Self_(s)
-                        }
+                        TypedArgDef::Self_(s) => TypedArgDef::Self_(s),
                     };
                     let ns = self.context.get_current_namespace_mut()?;
                     ns.values.insert(a.name(), a.type_().ok_or(ResolverError::from("Can not resolve 'self type'"))?);
