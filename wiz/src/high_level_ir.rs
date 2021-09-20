@@ -29,7 +29,6 @@ use crate::high_level_ir::typed_type::{
 };
 use crate::utils::path_string_to_page_name;
 use crate::utils::stacked_hash_map::StackedHashMap;
-use either::Either;
 use std::collections::HashMap;
 use std::fmt;
 use std::option::Option::Some;
