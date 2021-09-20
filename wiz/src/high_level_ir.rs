@@ -763,14 +763,14 @@ impl Ast2HLIR {
             } => {
                 let target = self.expr(*target);
                 println!("target Expr -> {:?}", target);
-                    let target_type = target.type_().unwrap();
-                    let type_ = self.resolve_member_type(&target_type, name.clone());
-                    TypedExpr::Member(TypedInstanceMember {
-                        target: Box::new(target),
-                        name,
-                        is_safe,
-                        type_,
-                    })
+                let target_type = target.type_().unwrap();
+                let type_ = self.resolve_member_type(&target_type, name.clone());
+                TypedExpr::Member(TypedInstanceMember {
+                    target: Box::new(target),
+                    name,
+                    is_safe,
+                    type_,
+                })
             }
             Expr::List { .. } => TypedExpr::List,
             Expr::Tuple { .. } => TypedExpr::Tuple,
@@ -806,10 +806,7 @@ impl Ast2HLIR {
         let NameExprSyntax { name } = n;
         match self.context.resolve_name(name.clone()) {
             None => None,
-            Some(_) => Some(TypedName {
-                name,
-                type_: None
-            }),
+            Some(_) => Some(TypedName { name, type_: None }),
         }
     }
 
