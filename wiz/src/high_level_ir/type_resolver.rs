@@ -223,19 +223,18 @@ impl TypeResolver {
                             TypedArgDef::Value(TypedValueArgDef {
                                 label: a.label,
                                 name: a.name,
-                                type_: self.context.full_type_name(a.type_).ok()?
+                                type_: self.context.full_type_name(a.type_)?
                             })
                         }
                         TypedArgDef::Self_(s) => {
                             TypedArgDef::Self_(s)
                         }
                     };
-                    let ns = self.context.get_current_namespace_mut().ok()?;
-                    ns.values.insert(a.name(), a.type_()?);
-                    Some(a)
+                    let ns = self.context.get_current_namespace_mut()?;
+                    ns.values.insert(a.name(), a.type_().ok_or(ResolverError::from("Can not resolve 'self type'"))?);
+                    Result::Ok(a)
                 })
-                .collect::<Option<Vec<TypedArgDef>>>()
-                .ok_or(ResolverError::from("NameSpace not exist"))?,
+                .collect::<Result<Vec<TypedArgDef>>>()?,
             body: match f.body {
                 Some(b) => Some(self.typed_fun_body(b)?),
                 None => None,
