@@ -519,7 +519,6 @@ impl Ast2HLIR {
             }),
             arg_defs: args,
             body: body,
-            return_type: Some(return_type),
         };
         self.context.pop();
         self.context.put_name(f.name.clone(), &f.type_().unwrap());

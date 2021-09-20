@@ -599,13 +599,20 @@ mod tests {
     use crate::high_level_ir::typed_file::TypedFile;
     use crate::high_level_ir::typed_stmt::{TypedBlock, TypedStmt};
     use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
+    use crate::high_level_ir::Ast2HLIR;
+    use crate::parser::parser::parse_from_string;
 
     #[test]
     fn test_empty() {
-        let file = TypedFile {
-            name: "test".to_string(),
-            body: vec![],
-        };
+        let source = "";
+
+        let ast = parse_from_string(String::from(source));
+
+        let mut ast2hlir = Ast2HLIR::new();
+
+        let mut file = ast2hlir.file(ast);
+        file.name = String::from("test");
+
         let mut resolver = TypeResolver::new();
         let _ = resolver.detect_type(&file);
         let _ = resolver.preload_file(file.clone());
