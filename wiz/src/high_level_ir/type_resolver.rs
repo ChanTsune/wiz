@@ -571,7 +571,10 @@ mod tests {
         TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedStoredProperty,
         TypedStruct, TypedValueArgDef, TypedVar,
     };
-    use crate::high_level_ir::typed_expr::{TypedBinOp, TypedCall, TypedExpr, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn, TypedCallArg};
+    use crate::high_level_ir::typed_expr::{
+        TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedInstanceMember, TypedLiteral,
+        TypedName, TypedReturn,
+    };
     use crate::high_level_ir::typed_file::TypedFile;
     use crate::high_level_ir::typed_stmt::{TypedBlock, TypedStmt};
     use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
