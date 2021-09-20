@@ -1,7 +1,7 @@
-use std::error::Error;
-use std::fmt::{Debug, Formatter, Display};
-use std::io;
 use nom::Err;
+use std::error::Error;
+use std::fmt::{Debug, Display, Formatter};
+use std::io;
 
 #[derive(Debug)]
 pub enum ParseError {
@@ -12,19 +12,13 @@ pub enum ParseError {
 impl Display for ParseError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            ParseError::ParseError(e) => {
-                f.write_str(e)
-            }
-            ParseError::IOError(e) => {
-                f.write_str(&e.to_string())
-            }
+            ParseError::ParseError(e) => f.write_str(e),
+            ParseError::IOError(e) => f.write_str(&e.to_string()),
         }
     }
 }
 
-impl Error for ParseError {
-
-}
+impl Error for ParseError {}
 
 impl From<String> for ParseError {
     fn from(str: String) -> Self {
