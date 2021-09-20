@@ -221,7 +221,9 @@ mod tests {
     #[test]
     fn test_whitespace0() {
         assert_eq!(whitespace0(""), Ok(("", String::from(""))));
-        assert_eq!(whitespace0("        "), Ok(("", String::from("        "))))
+        assert_eq!(whitespace0("\n"), Ok(("", String::from("\n"))));
+        assert_eq!(whitespace0(" \n "), Ok(("", String::from(" \n "))));
+        assert_eq!(whitespace0("        "), Ok(("", String::from("        "))));
     }
 
     #[test]
