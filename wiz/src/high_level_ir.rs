@@ -107,14 +107,14 @@ impl Ast2HLIRContext {
         let t: Option<Ast2HLIRType> = if let Some(type_name) = &type_name {
             Some(Ast2HLIRType {
                 name: type_name.name.clone(),
-                type_params: type_name.type_args.clone().map(|a|{
-                    a.into_iter().map(|t|{
-                        Ast2HLIRTypeParam {
+                type_params: type_name.type_args.clone().map(|a| {
+                    a.into_iter()
+                        .map(|t| Ast2HLIRTypeParam {
                             name: t.name,
-                            type_constraints: vec![]
-                        }
-                    }).collect()
-                })
+                            type_constraints: vec![],
+                        })
+                        .collect()
+                }),
             })
         } else {
             None
