@@ -388,11 +388,38 @@ impl TypeResolver {
     }
 
     pub fn typed_binop(&mut self, b: TypedBinOp) -> Result<TypedBinOp> {
+        let left = self.expr(*b.left)?;
+        let right = self.expr(*b.right)?;
+        let (left, right) = match (left, right) {
+            (TypedExpr::Literal(TypedLiteral::Integer { value: left_value, type_: left_type }),
+                TypedExpr::Literal(TypedLiteral::Integer { value: right_value, type_: right_type })) => {
+                (
+                    TypedExpr::Literal(TypedLiteral::Integer { value: left_value, type_: left_type }),
+                    TypedExpr::Literal(TypedLiteral::Integer { value: right_value, type_: right_type })
+                )
+            }
+            (left, TypedExpr::Literal(TypedLiteral::Integer { value, type_ })) => {
+                let left_type = left.type_();
+                let is_integer = match &left_type {
+                    None => {false}
+                    Some(t) => {
+                        t.is_integer()
+                    }
+                };
+                if is_integer {
+                    (left, TypedExpr::Literal(TypedLiteral::Integer { value, type_: left_type }))
+                } else {
+                    (left, TypedExpr::Literal(TypedLiteral::Integer { value, type_ }))
+                }
+            }
+            (left, right) => { (left, right) }
+        };
+        let type_ = self.context.resolve_binop_type(left.type_().unwrap(), &*b.kind, right.type_().unwrap())?;
         Result::Ok(TypedBinOp {
-            left: Box::new(self.expr(*b.left)?),
+            left: Box::new(left),
             kind: b.kind,
-            right: Box::new(self.expr(*b.right)?),
-            type_: b.type_,
+            right: Box::new(right),
+            type_: Some(type_),
         })
     }
 
@@ -777,6 +804,66 @@ mod tests {
                         }))]
                     })),
                     return_type: Some(TypedType::int64())
+                })]
+            })
+        );
+    }
+
+    #[test]
+    fn test_binop() {
+        let file = TypedFile {
+            name: "test".to_string(),
+            body: vec![TypedDecl::Fun(TypedFun {
+                modifiers: vec![],
+                name: "sample".to_string(),
+                type_params: None,
+                arg_defs: vec![],
+                body: Option::from(TypedFunBody::Block(TypedBlock {
+                    body: vec![TypedStmt::Expr(TypedExpr::BinOp(TypedBinOp {
+                        left: Box::new(TypedExpr::Literal(TypedLiteral::Integer {
+                            value: "1".to_string(),
+                            type_: Some(TypedType::int64()),
+                        })),
+                        kind: "+".to_string(),
+                        type_: None,
+                        right: Box::new(TypedExpr::Literal(TypedLiteral::Integer {
+                            value: "2".to_string(),
+                            type_: Some(TypedType::int64()),
+                        }))
+                    }))],
+                })),
+                return_type: Some(TypedType::unit()),
+            })],
+        };
+        let mut resolver = TypeResolver::new();
+        let _ = resolver.detect_type(file.clone());
+        let _ = resolver.preload_file(file.clone());
+        let f = resolver.file(file);
+
+        assert_eq!(
+            f,
+            Result::Ok(TypedFile {
+                name: "test".to_string(),
+                body: vec![TypedDecl::Fun(TypedFun {
+                    modifiers: vec![],
+                    name: "sample".to_string(),
+                    type_params: None,
+                    arg_defs: vec![],
+                    body: Option::from(TypedFunBody::Block(TypedBlock {
+                        body: vec![TypedStmt::Expr(TypedExpr::BinOp(TypedBinOp {
+                            left: Box::new(TypedExpr::Literal(TypedLiteral::Integer {
+                                value: "1".to_string(),
+                                type_: Some(TypedType::int64()),
+                            })),
+                            kind: "+".to_string(),
+                            right: Box::new(TypedExpr::Literal(TypedLiteral::Integer {
+                                value: "2".to_string(),
+                                type_: Some(TypedType::int64()),
+                            })),
+                            type_: Some(TypedType::int64()),
+                        }))],
+                    })),
+                    return_type: Some(TypedType::unit())
                 })]
             })
         );
