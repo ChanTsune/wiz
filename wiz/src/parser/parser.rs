@@ -1,11 +1,11 @@
 use crate::ast::file::WizFile;
+use crate::parser::error::ParseError;
 use crate::parser::nom::file;
 use std::fs::{read_to_string, File};
 use std::io;
 use std::io::Read;
 use std::path::Path;
 use std::process::exit;
-use crate::parser::error::ParseError;
 
 type Result<T> = core::result::Result<T, ParseError>;
 
@@ -15,16 +15,12 @@ pub fn parse_from_string(string: String) -> Result<WizFile> {
             if !s.is_empty() {
                 return Result::Err(ParseError::ParseError(String::from(format!("{}", s))));
             }
-            Result::Ok(
-                WizFile {
-                    name: String::new(),
-                    syntax: f,
-                }
-            )
+            Result::Ok(WizFile {
+                name: String::new(),
+                syntax: f,
+            })
         }
-        Err(_) => {
-            Result::Err(ParseError::from(String::new()))
-        },
+        Err(_) => Result::Err(ParseError::from(String::new())),
     };
 }
 
