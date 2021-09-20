@@ -6,7 +6,10 @@ use crate::constants::UNSAFE_POINTER;
 use crate::high_level_ir::type_resolver::context::{ResolverContext, ResolverStruct};
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
-use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct, TypedValueArgDef, TypedVar, TypedInitializer};
+use crate::high_level_ir::typed_decl::{
+    TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedMemberFunction,
+    TypedStruct, TypedValueArgDef, TypedVar,
+};
 use crate::high_level_ir::typed_expr::{
     TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral,
     TypedName, TypedReturn, TypedSubscript,
@@ -301,7 +304,10 @@ impl TypeResolver {
         }
         self.context.set_current_type(this_type);
         self.context.push_name_space(name.clone());
-        let init = init.into_iter().map(|i|self.typed_initializer(i)).collect::<Result<Vec<TypedInitializer>>>()?;
+        let init = init
+            .into_iter()
+            .map(|i| self.typed_initializer(i))
+            .collect::<Result<Vec<TypedInitializer>>>()?;
         let stored_properties = stored_properties.into_iter().collect();
         let computed_properties = computed_properties.into_iter().collect();
         let member_functions = member_functions
@@ -323,14 +329,16 @@ impl TypeResolver {
     }
 
     fn typed_initializer(&mut self, i: TypedInitializer) -> Result<TypedInitializer> {
-        let self_type =                 self.context.get_current_type();
+        let self_type = self.context.get_current_type();
         let ns = self.context.get_current_namespace_mut()?;
         ns.values.insert(
             String::from("self"),
-                self_type.ok_or(ResolverError::from("Can not resolve 'self type'"))?,
+            self_type.ok_or(ResolverError::from("Can not resolve 'self type'"))?,
         );
         Result::Ok(TypedInitializer {
-            args: i.args.into_iter()
+            args: i
+                .args
+                .into_iter()
                 .map(|a| {
                     let a = self.typed_arg_def(a)?;
                     let ns = self.context.get_current_namespace_mut()?;
@@ -342,7 +350,7 @@ impl TypeResolver {
                     Result::Ok(a)
                 })
                 .collect::<Result<Vec<TypedArgDef>>>()?,
-            body: self.typed_fun_body(i.body)?
+            body: self.typed_fun_body(i.body)?,
         })
     }
 
@@ -633,7 +641,9 @@ mod tests {
         TypedName, TypedReturn,
     };
     use crate::high_level_ir::typed_file::TypedFile;
-    use crate::high_level_ir::typed_stmt::{TypedBlock, TypedStmt, TypedAssignmentStmt, TypedAssignment};
+    use crate::high_level_ir::typed_stmt::{
+        TypedAssignment, TypedAssignmentStmt, TypedBlock, TypedStmt,
+    };
     use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
     use crate::high_level_ir::Ast2HLIR;
     use crate::parser::parser::parse_from_string;
@@ -704,37 +714,39 @@ mod tests {
                                     type_args: Some(vec![TypedType::uint8()])
                                 })
                             })],
-                            body: TypedFunBody::Block(TypedBlock { body: vec![
-                                TypedStmt::Assignment(TypedAssignmentStmt::Assignment(TypedAssignment {
-                                    target: TypedExpr::Member(TypedInstanceMember {
-                                        target: Box::new(TypedExpr::Name(TypedName {
-                                            name: "self".to_string(),
+                            body: TypedFunBody::Block(TypedBlock {
+                                body: vec![TypedStmt::Assignment(TypedAssignmentStmt::Assignment(
+                                    TypedAssignment {
+                                        target: TypedExpr::Member(TypedInstanceMember {
+                                            target: Box::new(TypedExpr::Name(TypedName {
+                                                name: "self".to_string(),
+                                                type_: Some(TypedType::Value(TypedValueType {
+                                                    package: Package {
+                                                        names: vec![String::from("test")]
+                                                    },
+                                                    name: "A".to_string(),
+                                                    type_args: None
+                                                }))
+                                            })),
+                                            name: "a".to_string(),
+                                            is_safe: false,
                                             type_: Some(TypedType::Value(TypedValueType {
-                                                package: Package {
-                                                    names: vec![String::from("test")]
-                                                },
-                                                name: "A".to_string(),
-                                                type_args: None
+                                                package: Package::global(),
+                                                name: String::from(UNSAFE_POINTER),
+                                                type_args: Some(vec![TypedType::uint8()])
                                             }))
-                                        })),
-                                        name: "a".to_string(),
-                                        is_safe: false,
-                                        type_: Some(TypedType::Value(TypedValueType {
-                                            package: Package::global(),
-                                            name: String::from(UNSAFE_POINTER),
-                                            type_args: Some(vec![TypedType::uint8()])
-                                        }))
-                                    }),
-                                    value: TypedExpr::Name(TypedName {
-                                        name: "a".to_string(),
-                                        type_: Some(TypedType::Value(TypedValueType {
-                                            package: Package::global(),
-                                            name: String::from(UNSAFE_POINTER),
-                                            type_args: Some(vec![TypedType::uint8()])
-                                        }))
-                                    })
-                                }))
-                            ] })
+                                        }),
+                                        value: TypedExpr::Name(TypedName {
+                                            name: "a".to_string(),
+                                            type_: Some(TypedType::Value(TypedValueType {
+                                                package: Package::global(),
+                                                name: String::from(UNSAFE_POINTER),
+                                                type_args: Some(vec![TypedType::uint8()])
+                                            }))
+                                        })
+                                    }
+                                ))]
+                            })
                         }],
                         stored_properties: vec![TypedStoredProperty {
                             name: "a".to_string(),
