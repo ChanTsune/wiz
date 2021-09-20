@@ -586,6 +586,7 @@ impl TypeResolver {
 
 #[cfg(test)]
 mod tests {
+    use crate::constants::UNSAFE_POINTER;
     use crate::high_level_ir::type_resolver::TypeResolver;
     use crate::high_level_ir::typed_decl::{
         TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedStoredProperty,
@@ -598,7 +599,6 @@ mod tests {
     use crate::high_level_ir::typed_file::TypedFile;
     use crate::high_level_ir::typed_stmt::{TypedBlock, TypedStmt};
     use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
-    use crate::constants::UNSAFE_POINTER;
 
     #[test]
     fn test_empty() {
@@ -637,8 +637,8 @@ mod tests {
                         type_: TypedType::Value(TypedValueType {
                             package: Package::global(),
                             name: String::from(UNSAFE_POINTER),
-                            type_args: Some(vec![TypedType::uint8()])
-                        })
+                            type_args: Some(vec![TypedType::uint8()]),
+                        }),
                     }],
                     computed_properties: vec![],
                     member_functions: vec![],
