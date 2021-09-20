@@ -707,7 +707,7 @@ impl Ast2HLIR {
 
     pub fn expr(&mut self, e: Expr) -> TypedExpr {
         match e {
-            Expr::Name(n) => TypedExpr::Name(self.name_syntax(n).unwrap()),
+            Expr::Name(n) => TypedExpr::Name(self.name_syntax(n)),
             Expr::Literal(literal) => match literal {
                 Literal::Integer { value } => TypedExpr::Literal(TypedLiteral::Integer {
                     value,
@@ -801,12 +801,9 @@ impl Ast2HLIR {
         }
     }
 
-    pub fn name_syntax(&self, n: NameExprSyntax) -> Option<TypedName> {
+    pub fn name_syntax(&self, n: NameExprSyntax) -> TypedName {
         let NameExprSyntax { name } = n;
-        match self.context.resolve_name(name.clone()) {
-            None => None,
-            Some(_) => Some(TypedName { name, type_: None }),
-        }
+        TypedName { name, type_: None }
     }
 
     pub fn subscript_syntax(&mut self, s: SubscriptSyntax) -> TypedSubscript {
