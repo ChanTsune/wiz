@@ -3,6 +3,7 @@ use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_type::{Package, TypedType, TypedValueType};
 use std::collections::{HashMap, HashSet};
 use std::fmt;
+use crate::high_level_ir::typed_decl::TypedArgDef;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub(crate) struct ResolverTypeParam {
@@ -13,7 +14,6 @@ pub(crate) struct ResolverTypeParam {
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct ResolverStruct {
     pub(crate) stored_properties: HashMap<String, TypedType>,
-    // pub(crate) initializers: Vec<>,
     pub(crate) computed_properties: HashMap<String, TypedType>,
     pub(crate) member_functions: HashMap<String, TypedType>,
     pub(crate) static_functions: HashMap<String, TypedType>,
@@ -187,7 +187,6 @@ impl ResolverContext {
         match &t {
             TypedType::Value(v) => {
                 let ns = self.get_namespace_mut(v.package.names.clone())?;
-                println!("ns => {:?}", ns);
                 let rs = ns
                     .types
                     .get(&v.name)
@@ -195,6 +194,16 @@ impl ResolverContext {
                 rs.stored_properties
                     .get(&name)
                     .map(|it| it.clone())
+                    .ok_or(ResolverError::from(format!("{:?} not has {:?}", t, name)))
+            }
+            TypedType::Type(v) => {
+                let ns = self.get_namespace_mut(v.package.names.clone())?;
+                let rs = ns
+                    .types
+                    .get(&v.name)
+                    .ok_or(ResolverError::from(format!("Can not resolve type {:?}", t)))?;
+                rs.static_functions.get(&name)
+                    .map(|it|it.clone())
                     .ok_or(ResolverError::from(format!("{:?} not has {:?}", t, name)))
             }
             _ => todo!("dose not impl"),
