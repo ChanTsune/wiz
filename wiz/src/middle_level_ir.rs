@@ -36,7 +36,7 @@ pub mod ml_type;
 struct HLIR2MLIRContext {
     generic_structs: StackedHashMap<String, TypedStruct>,
     structs: HashMap<MLValueType, MLStruct>,
-    current_name_space: Vec<String>
+    current_name_space: Vec<String>,
 }
 
 pub struct HLIR2MLIR {
@@ -48,7 +48,7 @@ impl HLIR2MLIRContext {
         Self {
             generic_structs: StackedHashMap::from(HashMap::new()),
             structs: HashMap::new(),
-            current_name_space: vec![]
+            current_name_space: vec![],
         }
     }
 
