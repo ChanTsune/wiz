@@ -1165,12 +1165,10 @@ mod tests {
                         name: "i".to_string(),
                         type_: TypedType::int32()
                     })],
-                    body: Some(TypedFunBody::Expr(TypedExpr::Name(
-                        TypedName {
-                            name: "i".to_string(),
-                            type_: Some(TypedType::int32())
-                        }
-                    ))),
+                    body: Some(TypedFunBody::Expr(TypedExpr::Name(TypedName {
+                        name: "i".to_string(),
+                        type_: Some(TypedType::int32())
+                    }))),
                     return_type: Some(TypedType::int32())
                 })],
             })
