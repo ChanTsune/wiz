@@ -104,15 +104,27 @@ impl TypeResolver {
     }
 
     pub fn preload_fun(&mut self, f: TypedFun) -> Result<TypedFun> {
+        self.context.push_name_space(f.name.clone());
+        let arg_defs = f.arg_defs.iter().map(|a|{
+            let a = self.typed_arg_def(a.clone())?;
+            let ns = self.context.get_current_namespace_mut()?;
+            ns.values.insert(
+                a.name(),
+                a.type_()
+                    .ok_or(ResolverError::from("Can not resolve 'self type'"))?,
+            );
+            Result::Ok(a)
+        }).collect::<Result<Vec<TypedArgDef>>>()?;
         let return_type = self.typed_function_return_type(&f)?;
         let fun = TypedFun {
             modifiers: f.modifiers,
             name: f.name,
             type_params: f.type_params, // TODO
-            arg_defs: f.arg_defs,
+            arg_defs,
             body: None,
             return_type: Some(return_type),
         };
+        self.context.pop_name_space();
         Result::Ok(fun)
     }
 
@@ -220,25 +232,26 @@ impl TypeResolver {
 
     pub fn typed_fun(&mut self, f: TypedFun) -> Result<TypedFun> {
         self.context.push_name_space(f.name.clone());
+        let arg_defs = f
+            .arg_defs
+            .iter()
+            .map(|a| {
+                let a = self.typed_arg_def(a.clone())?;
+                let ns = self.context.get_current_namespace_mut()?;
+                ns.values.insert(
+                    a.name(),
+                    a.type_()
+                        .ok_or(ResolverError::from("Can not resolve 'self type'"))?,
+                );
+                Result::Ok(a)
+            })
+            .collect::<Result<Vec<TypedArgDef>>>()?;
         let return_type = self.typed_function_return_type(&f)?;
         let fun = TypedFun {
             modifiers: f.modifiers,
             name: f.name,
             type_params: f.type_params, // TODO
-            arg_defs: f
-                .arg_defs
-                .into_iter()
-                .map(|a| {
-                    let a = self.typed_arg_def(a)?;
-                    let ns = self.context.get_current_namespace_mut()?;
-                    ns.values.insert(
-                        a.name(),
-                        a.type_()
-                            .ok_or(ResolverError::from("Can not resolve 'self type'"))?,
-                    );
-                    Result::Ok(a)
-                })
-                .collect::<Result<Vec<TypedArgDef>>>()?,
+            arg_defs,
             body: match f.body {
                 Some(b) => Some(self.typed_fun_body(b)?),
                 None => None,
