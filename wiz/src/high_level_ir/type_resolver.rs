@@ -426,7 +426,6 @@ impl TypeResolver {
             TypedExpr::UnaryOp(u) => TypedExpr::UnaryOp(u),
             TypedExpr::Subscript(s) => TypedExpr::Subscript(self.typed_subscript(s)?),
             TypedExpr::Member(m) => TypedExpr::Member(self.typed_instance_member(m)?),
-            TypedExpr::StaticMember(s) => TypedExpr::StaticMember(s),
             TypedExpr::List => TypedExpr::List,
             TypedExpr::Tuple => TypedExpr::Tuple,
             TypedExpr::Dict => TypedExpr::Dict,
