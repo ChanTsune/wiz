@@ -1134,6 +1134,48 @@ mod tests {
     }
 
     #[test]
+    fn test_expr_function_with_arg() {
+        let source = r"
+        fun function(_ i:Int32) = i
+        ";
+        let ast = parse_from_string(String::from(source)).unwrap();
+
+        let mut ast2hlir = Ast2HLIR::new();
+
+        let mut file = ast2hlir.file(ast);
+        file.name = String::from("test");
+
+        let mut resolver = TypeResolver::new();
+        let _ = resolver.detect_type(&file);
+        let _ = resolver.preload_file(file.clone());
+        let f = resolver.file(file);
+
+        assert_eq!(
+            f,
+            Result::Ok(TypedFile {
+                name: "test".to_string(),
+                body: vec![TypedDecl::Fun(TypedFun {
+                    modifiers: vec![],
+                    name: "function".to_string(),
+                    type_params: None,
+                    arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
+                        label: "_".to_string(),
+                        name: "i".to_string(),
+                        type_: TypedType::int32()
+                    })],
+                    body: Some(TypedFunBody::Expr(TypedExpr::Name(
+                        TypedName {
+                            name: "i".to_string(),
+                            type_: Some(TypedType::int32())
+                        }
+                    ))),
+                    return_type: Some(TypedType::int32())
+                })],
+            })
+        );
+    }
+
+    #[test]
     fn test_function_call() {
         let file = TypedFile {
             name: "test".to_string(),
