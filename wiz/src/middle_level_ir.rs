@@ -36,6 +36,7 @@ pub mod ml_type;
 struct HLIR2MLIRContext {
     generic_structs: StackedHashMap<String, TypedStruct>,
     structs: HashMap<MLValueType, MLStruct>,
+    current_name_space: Vec<String>
 }
 
 pub struct HLIR2MLIR {
@@ -47,7 +48,16 @@ impl HLIR2MLIRContext {
         Self {
             generic_structs: StackedHashMap::from(HashMap::new()),
             structs: HashMap::new(),
+            current_name_space: vec![]
         }
+    }
+
+    pub(crate) fn push_name_space(&mut self, name: String) {
+        self.current_name_space.push(name)
+    }
+
+    pub(crate) fn pop_name_space(&mut self) {
+        self.current_name_space.pop();
     }
 }
 
@@ -148,10 +158,13 @@ impl HLIR2MLIR {
     }
 
     pub fn file(&mut self, f: TypedFile) -> MLFile {
-        MLFile {
+        self.context.push_name_space(f.name.clone());
+        let f = MLFile {
             name: f.name,
             body: f.body.into_iter().map(|d| self.decl(d)).flatten().collect(),
-        }
+        };
+        self.context.pop_name_space();
+        f
     }
 
     pub fn stmt(&mut self, s: TypedStmt) -> Vec<MLStmt> {
@@ -257,8 +270,10 @@ impl HLIR2MLIR {
             member_functions,
             static_function,
         } = s;
+        let mut ns = self.context.current_name_space.clone();
+        ns.push(name.clone());
         let struct_ = MLStruct {
-            name: name.clone(),
+            name: ns.join("::"),
             fields: stored_properties
                 .into_iter()
                 .map(|p| MLField {
