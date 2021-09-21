@@ -1133,23 +1133,17 @@ mod tests {
     }
 
     #[test]
-    fn test_expr_function() {
-        let file = TypedFile {
-            name: "test".to_string(),
-            body: vec![TypedDecl::Fun(TypedFun {
-                modifiers: vec![],
-                name: "function".to_string(),
-                type_params: None,
-                arg_defs: vec![],
-                body: Some(TypedFunBody::Expr(TypedExpr::Literal(
-                    TypedLiteral::Integer {
-                        value: "1".to_string(),
-                        type_: Some(TypedType::int64()),
-                    },
-                ))),
-                return_type: None,
-            })],
-        };
+    fn test_expr_function_with_no_arg() {
+        let source = r"
+        fun function() = 1
+        ";
+        let ast = parse_from_string(String::from(source)).unwrap();
+
+        let mut ast2hlir = Ast2HLIR::new();
+
+        let mut file = ast2hlir.file(ast);
+        file.name = String::from("test");
+
         let mut resolver = TypeResolver::new();
         let _ = resolver.detect_type(&file);
         let _ = resolver.preload_file(file.clone());
