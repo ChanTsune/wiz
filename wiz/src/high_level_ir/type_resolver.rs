@@ -865,29 +865,31 @@ mod tests {
                                 name: "a".to_string(),
                                 type_: TypedType::int64()
                             })],
-                            body: TypedFunBody::Block(TypedBlock { body: vec![
-                                TypedStmt::Assignment(TypedAssignmentStmt::Assignment(TypedAssignment {
-                                    target: TypedExpr::Member(TypedInstanceMember {
-                                        target: Box::new(TypedExpr::Name(TypedName {
-                                            name: "self".to_string(),
-                                            type_: Some(TypedType::Value(TypedValueType {
-                                                package: Package {
-                                                    names: vec![String::from("test")]
-                                                },
-                                                name: "A".to_string(),
-                                                type_args: None
-                                            }))
-                                        })),
-                                        name: "a".to_string(),
-                                        is_safe: false,
-                                        type_: Some(TypedType::int64())
-                                    }),
-                                    value: TypedExpr::Name(TypedName {
-                                        name: "a".to_string(),
-                                        type_: Some(TypedType::int64())
-                                    })
-                                }))
-                            ] })
+                            body: TypedFunBody::Block(TypedBlock {
+                                body: vec![TypedStmt::Assignment(TypedAssignmentStmt::Assignment(
+                                    TypedAssignment {
+                                        target: TypedExpr::Member(TypedInstanceMember {
+                                            target: Box::new(TypedExpr::Name(TypedName {
+                                                name: "self".to_string(),
+                                                type_: Some(TypedType::Value(TypedValueType {
+                                                    package: Package {
+                                                        names: vec![String::from("test")]
+                                                    },
+                                                    name: "A".to_string(),
+                                                    type_args: None
+                                                }))
+                                            })),
+                                            name: "a".to_string(),
+                                            is_safe: false,
+                                            type_: Some(TypedType::int64())
+                                        }),
+                                        value: TypedExpr::Name(TypedName {
+                                            name: "a".to_string(),
+                                            type_: Some(TypedType::int64())
+                                        })
+                                    }
+                                ))]
+                            })
                         }],
                         stored_properties: vec![TypedStoredProperty {
                             name: "a".to_string(),
