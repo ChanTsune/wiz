@@ -1,4 +1,3 @@
-use nom::Err;
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
 use std::io;

@@ -2,10 +2,8 @@ use crate::ast::file::WizFile;
 use crate::parser::error::ParseError;
 use crate::parser::nom::file;
 use std::fs::{read_to_string, File};
-use std::io;
 use std::io::Read;
 use std::path::Path;
-use std::process::exit;
 
 type Result<T> = core::result::Result<T, ParseError>;
 

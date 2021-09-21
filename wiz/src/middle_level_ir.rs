@@ -5,7 +5,7 @@ use crate::high_level_ir::typed_decl::{
 };
 use crate::high_level_ir::typed_expr::{
     TypedBinOp, TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName,
-    TypedReturn, TypedStaticMember, TypedSubscript,
+    TypedReturn, TypedSubscript,
 };
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
