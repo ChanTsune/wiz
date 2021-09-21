@@ -831,59 +831,21 @@ mod tests {
 
     #[test]
     fn test_struct_member() {
-        let file = TypedFile {
-            name: "test".to_string(),
-            body: vec![
-                TypedDecl::Struct(TypedStruct {
-                    name: "A".to_string(),
-                    type_params: None,
-                    init: vec![TypedInitializer {
-                        args: vec![],
-                        body: TypedFunBody::Block(TypedBlock { body: vec![] }),
-                    }],
-                    stored_properties: vec![TypedStoredProperty {
-                        name: "a".to_string(),
-                        type_: TypedType::int64(),
-                    }],
-                    computed_properties: vec![],
-                    member_functions: vec![],
-                    static_function: vec![],
-                }),
-                TypedDecl::Fun(TypedFun {
-                    modifiers: vec![],
-                    name: "function".to_string(),
-                    type_params: None,
-                    arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
-                        label: "_".to_string(),
-                        name: "a".to_string(),
-                        type_: TypedType::Value(TypedValueType {
-                            package: Package {
-                                names: vec![String::from("test")],
-                            },
-                            name: "A".to_string(),
-                            type_args: None,
-                        }),
-                    })],
-                    body: Option::Some(TypedFunBody::Block(TypedBlock {
-                        body: vec![TypedStmt::Decl(TypedDecl::Var(TypedVar {
-                            is_mut: false,
-                            name: "a".to_string(),
-                            type_: None,
-                            value: TypedExpr::Member(TypedInstanceMember {
-                                target: Box::new(TypedExpr::Name(TypedName {
-                                    name: "a".to_string(),
-                                    type_: None,
-                                })),
-                                name: "a".to_string(),
-                                is_safe: false,
-                                type_: None,
-                            }),
-                        }))],
-                    })),
-                    return_type: Some(TypedType::unit()),
-                }),
-            ],
-        };
+        let source = r"
+        struct A {
+            val a: Int64
+        }
+        fun function(_ a: A) {
+            val a = a.a
+        }
+        ";
+        let ast = parse_from_string(String::from(source)).unwrap();
+
+        let mut ast2hlir = Ast2HLIR::new();
+
+        let mut file = ast2hlir.file(ast);
+        file.name = String::from("test");
+
         let mut resolver = TypeResolver::new();
         let _ = resolver.detect_type(&file);
         let _ = resolver.preload_file(file.clone());
@@ -898,8 +860,34 @@ mod tests {
                         name: "A".to_string(),
                         type_params: None,
                         init: vec![TypedInitializer {
-                            args: vec![],
-                            body: TypedFunBody::Block(TypedBlock { body: vec![] })
+                            args: vec![TypedArgDef::Value(TypedValueArgDef {
+                                label: "a".to_string(),
+                                name: "a".to_string(),
+                                type_: TypedType::int64()
+                            })],
+                            body: TypedFunBody::Block(TypedBlock { body: vec![
+                                TypedStmt::Assignment(TypedAssignmentStmt::Assignment(TypedAssignment {
+                                    target: TypedExpr::Member(TypedInstanceMember {
+                                        target: Box::new(TypedExpr::Name(TypedName {
+                                            name: "self".to_string(),
+                                            type_: Some(TypedType::Value(TypedValueType {
+                                                package: Package {
+                                                    names: vec![String::from("test")]
+                                                },
+                                                name: "A".to_string(),
+                                                type_args: None
+                                            }))
+                                        })),
+                                        name: "a".to_string(),
+                                        is_safe: false,
+                                        type_: Some(TypedType::int64())
+                                    }),
+                                    value: TypedExpr::Name(TypedName {
+                                        name: "a".to_string(),
+                                        type_: Some(TypedType::int64())
+                                    })
+                                }))
+                            ] })
                         }],
                         stored_properties: vec![TypedStoredProperty {
                             name: "a".to_string(),
