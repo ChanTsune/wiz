@@ -154,7 +154,7 @@ impl<'ctx> CodeGen<'ctx> {
                 };
                 float_type.const_float(f).as_any_value_enum()
             }
-            MLLiteral::String { value, type_:_ } => unsafe {
+            MLLiteral::String { value, type_: _ } => unsafe {
                 let str = self
                     .builder
                     .build_global_string(value.as_ref(), value.as_str());
@@ -164,7 +164,7 @@ impl<'ctx> CodeGen<'ctx> {
                         .build_bitcast(str.as_pointer_value(), i8_ptr_type, value.as_str());
                 str.as_any_value_enum()
             },
-            MLLiteral::Boolean { value, type_:_ } => {
+            MLLiteral::Boolean { value, type_: _ } => {
                 let b: bool = value.parse().unwrap();
                 let bool_type = self.context.bool_type();
                 bool_type

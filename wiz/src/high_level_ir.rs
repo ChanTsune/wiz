@@ -23,9 +23,7 @@ use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedForStmt,
     TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
 };
-use crate::high_level_ir::typed_type::{
-    Package, TypedType, TypedTypeParam, TypedValueType,
-};
+use crate::high_level_ir::typed_type::{Package, TypedType, TypedTypeParam, TypedValueType};
 use crate::utils::path_string_to_page_name;
 use std::option::Option::Some;
 
