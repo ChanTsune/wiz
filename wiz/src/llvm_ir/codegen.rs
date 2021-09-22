@@ -196,7 +196,7 @@ impl<'ctx> CodeGen<'ctx> {
                 if name != String::from("String") {
                     let t = arg.type_().into_value_type();
                     let e = self.expr(arg.arg);
-                    self.load_if_pointer_value(e,&t)
+                    self.load_if_pointer_value(e, &t)
                 } else {
                     self.expr(arg.arg)
                 }
@@ -516,7 +516,11 @@ impl<'ctx> CodeGen<'ctx> {
         AnyValueEnum::from(i64_type.const_int(0, false))
     }
 
-    fn load_if_pointer_value(&self, v: AnyValueEnum<'ctx>, typ: &MLValueType) -> AnyValueEnum<'ctx> {
+    fn load_if_pointer_value(
+        &self,
+        v: AnyValueEnum<'ctx>,
+        typ: &MLValueType,
+    ) -> AnyValueEnum<'ctx> {
         if Self::need_load(v.get_type(), typ) {
             let p = v.into_pointer_value();
             self.builder.build_load(p, "v").as_any_value_enum()
@@ -527,17 +531,14 @@ impl<'ctx> CodeGen<'ctx> {
 
     fn need_load(may_be_pointer: AnyTypeEnum<'ctx>, request_type: &MLValueType) -> bool {
         match may_be_pointer {
-            AnyTypeEnum::PointerType(p) => {
-                match request_type {
-                    MLValueType::Primitive(prim) => {true}
-                    MLValueType::Struct(s) => {true}
-                    MLValueType::Pointer(r)|
-                    MLValueType::Reference(r) => {
-                        Self::need_load(p.get_element_type(), r)
-                    }
+            AnyTypeEnum::PointerType(p) => match request_type {
+                MLValueType::Primitive(prim) => true,
+                MLValueType::Struct(s) => true,
+                MLValueType::Pointer(r) | MLValueType::Reference(r) => {
+                    Self::need_load(p.get_element_type(), r)
                 }
-            }
-            _ => false
+            },
+            _ => false,
         }
     }
 
