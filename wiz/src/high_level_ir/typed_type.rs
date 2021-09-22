@@ -104,6 +104,14 @@ impl TypedType {
         Self::builtin("String")
     }
 
+    pub fn unsafe_pointer(typ: TypedType) -> TypedType {
+        TypedType::Value(TypedValueType {
+            package: Package::global(),
+            name: UNSAFE_POINTER.to_string(),
+            type_args: Some(vec![typ])
+        })
+    }
+
     pub fn signed_integer_types() -> Vec<TypedType> {
         vec![Self::int8(), Self::int16(), Self::int32(), Self::int64()]
     }

@@ -685,10 +685,7 @@ mod tests {
         TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedStoredProperty,
         TypedStruct, TypedValueArgDef, TypedVar,
     };
-    use crate::high_level_ir::typed_expr::{
-        TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedInstanceMember, TypedLiteral,
-        TypedName, TypedReturn,
-    };
+    use crate::high_level_ir::typed_expr::{TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn, TypedSubscript};
     use crate::high_level_ir::typed_file::TypedFile;
     use crate::high_level_ir::typed_stmt::{
         TypedAssignment, TypedAssignmentStmt, TypedBlock, TypedStmt,
@@ -1358,6 +1355,47 @@ mod tests {
                         }))],
                     })),
                     return_type: Some(TypedType::unit())
+                })]
+            })
+        );
+    }
+
+    #[test]
+    fn test_subscript() {
+        let source = r"
+        fun get_first(_ p:UnsafePointer<UInt8>) = p[0]
+        ";
+        let ast = parse_from_string(String::from(source)).unwrap();
+
+        let mut ast2hlir = Ast2HLIR::new();
+
+        let mut file = ast2hlir.file(ast);
+        file.name = String::from("test");
+
+        let mut resolver = TypeResolver::new();
+        let _ = resolver.detect_type(&file);
+        let _ = resolver.preload_file(file.clone());
+        let f = resolver.file(file);
+
+        assert_eq!(
+            f,
+            Result::Ok(TypedFile {
+                name: "test".to_string(),
+                body: vec![TypedDecl::Fun(TypedFun {
+                    modifiers: vec![],
+                    name: "get_first".to_string(),
+                    type_params: None,
+                    arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
+                        label: "_".to_string(),
+                        name: "p".to_string(),
+                        type_: TypedType::unsafe_pointer(TypedType::uint8())
+                    })],
+                    body: Option::from(TypedFunBody::Expr(TypedExpr::Subscript(TypedSubscript {
+                        target: Box::new(TypedExpr::Name(TypedName { name: "p".to_string(), type_: Some(TypedType::unsafe_pointer(TypedType::uint8())) })),
+                        indexes: vec![TypedExpr::Literal(TypedLiteral::Integer { value: "0".to_string(), type_: Some(TypedType::int64()) })],
+                        type_: Some(TypedType::uint8())
+                    }))),
+                    return_type: Some(TypedType::uint8())
                 })]
             })
         );
