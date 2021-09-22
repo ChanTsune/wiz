@@ -24,11 +24,10 @@ use crate::high_level_ir::typed_stmt::{
     TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
 };
 use crate::high_level_ir::typed_type::{
-    Package, TypedFunctionType, TypedType, TypedTypeParam, TypedValueType,
+    Package, TypedType, TypedTypeParam, TypedValueType,
 };
 use crate::utils::path_string_to_page_name;
 use std::option::Option::Some;
-use std::process::exit;
 
 pub mod type_resolver;
 pub mod typed_decl;
