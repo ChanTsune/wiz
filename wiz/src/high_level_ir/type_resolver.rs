@@ -1324,30 +1324,18 @@ mod tests {
 
     #[test]
     fn test_binop() {
-        let file = TypedFile {
-            name: "test".to_string(),
-            body: vec![TypedDecl::Fun(TypedFun {
-                modifiers: vec![],
-                name: "sample".to_string(),
-                type_params: None,
-                arg_defs: vec![],
-                body: Option::from(TypedFunBody::Block(TypedBlock {
-                    body: vec![TypedStmt::Expr(TypedExpr::BinOp(TypedBinOp {
-                        left: Box::new(TypedExpr::Literal(TypedLiteral::Integer {
-                            value: "1".to_string(),
-                            type_: Some(TypedType::int64()),
-                        })),
-                        kind: "+".to_string(),
-                        type_: None,
-                        right: Box::new(TypedExpr::Literal(TypedLiteral::Integer {
-                            value: "2".to_string(),
-                            type_: Some(TypedType::int64()),
-                        })),
-                    }))],
-                })),
-                return_type: Some(TypedType::unit()),
-            })],
-        };
+        let source = r"
+        fun sample() {
+            1 + 2
+        }
+        ";
+        let ast = parse_from_string(String::from(source)).unwrap();
+
+        let mut ast2hlir = Ast2HLIR::new();
+
+        let mut file = ast2hlir.file(ast);
+        file.name = String::from("test");
+
         let mut resolver = TypeResolver::new();
         let _ = resolver.detect_type(&file);
         let _ = resolver.preload_file(file.clone());
