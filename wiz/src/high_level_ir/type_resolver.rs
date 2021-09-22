@@ -685,7 +685,10 @@ mod tests {
         TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedStoredProperty,
         TypedStruct, TypedValueArgDef, TypedVar,
     };
-    use crate::high_level_ir::typed_expr::{TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn, TypedSubscript};
+    use crate::high_level_ir::typed_expr::{
+        TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedInstanceMember, TypedLiteral,
+        TypedName, TypedReturn, TypedSubscript,
+    };
     use crate::high_level_ir::typed_file::TypedFile;
     use crate::high_level_ir::typed_stmt::{
         TypedAssignment, TypedAssignmentStmt, TypedBlock, TypedStmt,
@@ -1391,8 +1394,14 @@ mod tests {
                         type_: TypedType::unsafe_pointer(TypedType::uint8())
                     })],
                     body: Option::from(TypedFunBody::Expr(TypedExpr::Subscript(TypedSubscript {
-                        target: Box::new(TypedExpr::Name(TypedName { name: "p".to_string(), type_: Some(TypedType::unsafe_pointer(TypedType::uint8())) })),
-                        indexes: vec![TypedExpr::Literal(TypedLiteral::Integer { value: "0".to_string(), type_: Some(TypedType::int64()) })],
+                        target: Box::new(TypedExpr::Name(TypedName {
+                            name: "p".to_string(),
+                            type_: Some(TypedType::unsafe_pointer(TypedType::uint8()))
+                        })),
+                        indexes: vec![TypedExpr::Literal(TypedLiteral::Integer {
+                            value: "0".to_string(),
+                            type_: Some(TypedType::int64())
+                        })],
                         type_: Some(TypedType::uint8())
                     }))),
                     return_type: Some(TypedType::uint8())

@@ -108,7 +108,7 @@ impl TypedType {
         TypedType::Value(TypedValueType {
             package: Package::global(),
             name: UNSAFE_POINTER.to_string(),
-            type_args: Some(vec![typ])
+            type_args: Some(vec![typ]),
         })
     }
 
