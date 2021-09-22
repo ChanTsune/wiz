@@ -170,8 +170,8 @@ impl Ast2HLIR {
             arg_defs: args,
             body: body,
             return_type: match f.return_type {
-                Some(type_name) => {Some(self.type_(type_name))}
-                None => {None}
+                Some(type_name) => Some(self.type_(type_name)),
+                None => None,
             },
         }
     }
@@ -453,10 +453,7 @@ impl Ast2HLIR {
             Some(v) => v.type_(),
             None => None,
         };
-        TypedReturn {
-            value,
-            type_: t,
-        }
+        TypedReturn { value, type_: t }
     }
 
     pub fn block(&mut self, block: Block) -> TypedBlock {

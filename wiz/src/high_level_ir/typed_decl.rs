@@ -124,13 +124,11 @@ impl TypedFun {
 impl TypedMemberFunction {
     pub(crate) fn type_(&self) -> Option<TypedType> {
         match &self.return_type {
-            Some(return_type) => {
-                Some(TypedType::Function(Box::new(TypedFunctionType {
-                    arguments: self.args.clone(),
-                    return_type: return_type.clone()
-                })))
-            }
-            None => {None}
+            Some(return_type) => Some(TypedType::Function(Box::new(TypedFunctionType {
+                arguments: self.args.clone(),
+                return_type: return_type.clone(),
+            }))),
+            None => None,
         }
     }
 }

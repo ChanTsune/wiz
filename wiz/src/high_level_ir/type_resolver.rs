@@ -395,8 +395,8 @@ impl TypeResolver {
                 .collect::<Result<Vec<TypedArgDef>>>()?,
             type_params: mf.type_params,
             body: match mf.body {
-                None => {None}
-                Some(body) => {Some(self.typed_fun_body(body)?)}
+                None => None,
+                Some(body) => Some(self.typed_fun_body(body)?),
             },
             return_type: mf.return_type,
         });
