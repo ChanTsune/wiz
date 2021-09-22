@@ -162,6 +162,7 @@ pub fn file(s: &str) -> IResult<&str, FileSyntax> {
     )(s)
 }
 
+#[cfg(test)]
 mod tests {
     use crate::ast::block::Block;
     use crate::ast::expr::{Expr, NameExprSyntax};

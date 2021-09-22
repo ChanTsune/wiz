@@ -29,6 +29,7 @@ impl MLNode for MLFile {
     }
 }
 
+#[cfg(test)]
 mod tests {
     use crate::middle_level_ir::ml_decl::{MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct};
     use crate::middle_level_ir::ml_expr::{MLExpr, MLName, MLReturn};
