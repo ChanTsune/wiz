@@ -92,6 +92,8 @@ pub enum MLUnaryOpKind {
     Negative,
     Positive,
     Not,
+    Ref,
+    DeRef,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -254,6 +256,8 @@ impl MLNode for MLUnaryOp {
             MLUnaryOpKind::Negative => "-",
             MLUnaryOpKind::Positive => "+",
             MLUnaryOpKind::Not => "!",
+            MLUnaryOpKind::Ref => "&",
+            MLUnaryOpKind::DeRef => "*",
         })?;
         self.target.fmt(f)
     }
