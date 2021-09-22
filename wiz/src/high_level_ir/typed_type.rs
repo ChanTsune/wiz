@@ -167,4 +167,8 @@ impl TypedType {
             _ => false,
         }
     }
+
+    pub fn is_boolean(&self) -> bool {
+        Self::bool().eq(self)
+    }
 }

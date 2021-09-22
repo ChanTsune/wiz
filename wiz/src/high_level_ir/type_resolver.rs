@@ -15,9 +15,7 @@ use crate::high_level_ir::typed_expr::{
     TypedName, TypedReturn, TypedSubscript,
 };
 use crate::high_level_ir::typed_file::TypedFile;
-use crate::high_level_ir::typed_stmt::{
-    TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedStmt,
-};
+use crate::high_level_ir::typed_stmt::{TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedStmt, TypedLoopStmt, TypedForStmt, TypedWhileLoopStmt};
 use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
 use std::fmt;
 
@@ -610,7 +608,7 @@ impl TypeResolver {
             TypedStmt::Expr(e) => TypedStmt::Expr(self.expr(e)?),
             TypedStmt::Decl(d) => TypedStmt::Decl(self.decl(d)?),
             TypedStmt::Assignment(a) => TypedStmt::Assignment(self.assignment_stmt(a)?),
-            TypedStmt::Loop(l) => TypedStmt::Loop(l),
+            TypedStmt::Loop(l) => TypedStmt::Loop(self.typed_loop_stmt(l)?),
         })
     }
 
@@ -640,6 +638,39 @@ impl TypeResolver {
             target: self.expr(a.target)?,
             operator: a.operator, // TODO
             value: self.expr(a.value)?,
+        })
+    }
+
+    pub fn typed_loop_stmt(&mut self, l: TypedLoopStmt) -> Result<TypedLoopStmt> {
+        Result::Ok(        match l {
+            TypedLoopStmt::While(w) => {TypedLoopStmt::While(self.typed_while_loop_stmt(w)?)}
+            TypedLoopStmt::For(f) => {TypedLoopStmt::For(self.typed_for_loop_stmt(f)?)}
+        }
+        )
+    }
+
+    pub fn typed_while_loop_stmt(&mut self, w: TypedWhileLoopStmt) -> Result<TypedWhileLoopStmt> {
+        let TypedWhileLoopStmt {
+            condition, block
+        } = w;
+        let condition = self.expr(condition)?;
+        if !condition.type_().unwrap().is_boolean() {
+            return Result::Err(ResolverError::from("while loop condition must be boolean"))
+        };
+        Result::Ok(TypedWhileLoopStmt {
+            condition,
+            block: self.typed_block(block)?
+        })
+    }
+
+    pub fn typed_for_loop_stmt(&mut self, f: TypedForStmt) -> Result<TypedForStmt> {
+        let TypedForStmt {
+            values, iterator, block
+        } = f;
+        Result::Ok(TypedForStmt {
+            values: values,
+            iterator: self.expr(iterator)?,
+            block: self.typed_block(block)?
         })
     }
 }
