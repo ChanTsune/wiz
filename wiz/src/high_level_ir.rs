@@ -27,9 +27,6 @@ use crate::high_level_ir::typed_type::{
     Package, TypedFunctionType, TypedType, TypedTypeParam, TypedValueType,
 };
 use crate::utils::path_string_to_page_name;
-use crate::utils::stacked_hash_map::StackedHashMap;
-use std::collections::HashMap;
-use std::fmt;
 use std::option::Option::Some;
 use std::process::exit;
 
@@ -39,142 +36,6 @@ pub mod typed_expr;
 pub mod typed_file;
 pub mod typed_stmt;
 pub mod typed_type;
-
-#[derive(fmt::Debug, Clone)]
-struct Ast2HLIRTypeParam {
-    name: String,
-    type_constraints: Vec<String>,
-}
-
-#[derive(fmt::Debug, Clone)]
-struct Ast2HLIRType {
-    name: String,
-    type_params: Option<Vec<Ast2HLIRTypeParam>>,
-}
-
-#[derive(fmt::Debug, Clone)]
-struct Ast2HLIRContext {
-    name_environment: StackedHashMap<String, Ast2HLIRName>,
-    struct_environment: StackedHashMap<String, TypedStruct>,
-}
-
-#[derive(fmt::Debug, Clone)]
-enum Ast2HLIRName {
-    Name(TypedType),
-}
-
-impl Ast2HLIRContext {
-    pub(crate) fn push(&mut self) {
-        self.name_environment.push(HashMap::new());
-        self.struct_environment.push(HashMap::new());
-    }
-
-    pub(crate) fn pop(&mut self) {
-        self.name_environment.pop();
-        self.struct_environment.pop();
-    }
-
-    pub(crate) fn resolve_name(&self, name: String) -> Option<Ast2HLIRName> {
-        let v = self.name_environment.get(&name)?;
-        Some(v.clone())
-    }
-
-    pub(crate) fn put_name(&mut self, name: String, type_: &TypedType) {
-        self.name_environment
-            .insert(name, Ast2HLIRName::Name(type_.clone()));
-    }
-
-    fn put_type(&mut self, s: &TypedStruct) {
-        let name = s.name.clone();
-        let t = Ast2HLIRType {
-            name: name.clone(),
-            type_params: s.type_params.as_ref().map(|v| {
-                v.iter()
-                    .map(|tp| {
-                        Ast2HLIRTypeParam {
-                            name: tp.name.clone(),
-                            type_constraints: vec![], // TODO: Type constraint
-                        }
-                    })
-                    .collect()
-            }),
-        };
-        self.struct_environment.insert(name, s.clone());
-    }
-
-    fn resolve_type(&self, type_name: Option<TypeName>) -> Option<TypedType> {
-        let t: Option<Ast2HLIRType> = if let Some(type_name) = &type_name {
-            Some(Ast2HLIRType {
-                name: type_name.name.clone(),
-                type_params: type_name.type_args.clone().map(|a| {
-                    a.into_iter()
-                        .map(|t| Ast2HLIRTypeParam {
-                            name: t.name,
-                            type_constraints: vec![],
-                        })
-                        .collect()
-                }),
-            })
-        } else {
-            None
-        };
-        match (&t, &type_name) {
-            (None, None) => {
-                eprintln!("Unresolved type {:?}.", type_name);
-                None
-            }
-            (None, Some(t)) => {
-                eprintln!("Unresolved type {:?}.", t);
-                None
-            }
-            (Some(a2ht), Some(t)) => match (&a2ht.type_params, &t.type_args) {
-                (None, None) => Some(TypedType::Value(TypedValueType {
-                    package: Package { names: vec![] },
-                    name: a2ht.name.clone(),
-                    type_args: None,
-                })),
-                (None, Some(args)) => {
-                    eprintln!(
-                        "{:?} is not take type args. but passed {:?}",
-                        a2ht.name, args
-                    );
-                    None
-                }
-                (Some(_), None) => {
-                    eprintln!("{:?} is take type args. but not passed", a2ht.name);
-                    None
-                }
-                (Some(params), Some(args)) => {
-                    if params.len() != args.len() {
-                        eprintln!(
-                            "{:?} take {} type arguments. but {} given",
-                            a2ht.name,
-                            params.len(),
-                            args.len()
-                        );
-                        None
-                    } else {
-                        Some(TypedType::Value(TypedValueType {
-                            package: Package { names: vec![] },
-                            name: a2ht.name.clone(),
-                            type_args: Some(
-                                params
-                                    .into_iter()
-                                    .zip(args)
-                                    .map(|(p, t)| self.resolve_type(Some(t.clone())).unwrap())
-                                    .collect(),
-                            ),
-                        }))
-                    }
-                }
-            },
-            _ => {
-                eprintln!("Never execution branch executed!!");
-                exit(-1)
-            }
-        }
-    }
-}
 
 pub struct Ast2HLIR;
 
@@ -439,35 +300,13 @@ impl Ast2HLIR {
 
         let rt = return_type.map(|r| self.type_(r));
         let fb = body.map(|b| self.fun_body(b));
-        let (return_type, body) = match (rt, fb) {
-            (Some(rt), Some(TypedFunBody::Expr(fb))) => {
-                if rt != fb.type_().unwrap() {
-                    eprintln!("Type miss match error");
-                    exit(-1)
-                } else {
-                    (rt, TypedFunBody::Expr(fb))
-                }
-            }
-            (Some(rt), Some(TypedFunBody::Block(fb))) => (rt, TypedFunBody::Block(fb)),
-            (Some(rt), None) => exit(-1),
-            (None, Some(TypedFunBody::Expr(fb))) => (fb.type_().unwrap(), TypedFunBody::Expr(fb)),
-            (None, Some(TypedFunBody::Block(fb))) => (TypedType::unit(), TypedFunBody::Block(fb)),
-            (None, None) => {
-                eprintln!("Error fun body and return type must be specify.");
-                exit(-1)
-            }
-        };
         TypedMemberFunction {
             name: name,
             args: args.into_iter().map(|a| self.arg_def(a)).collect(),
             type_params: type_params
                 .map(|tps| tps.into_iter().map(|p| self.type_param(p)).collect()),
-            body: body,
-            return_type: return_type.clone(),
-            type_: TypedType::Function(Box::new(TypedFunctionType {
-                arguments: vec![],
-                return_type: return_type,
-            })),
+            body: fb,
+            return_type: rt,
         }
     }
 

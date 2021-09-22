@@ -305,7 +305,7 @@ impl TypeResolver {
         }
         for mf in member_functions.iter() {
             rs.member_functions
-                .insert(mf.name.clone(), mf.type_.clone());
+                .insert(mf.name.clone(), mf.type_().unwrap());
         }
         for sf in static_function.iter() {
             rs.static_functions
@@ -394,9 +394,11 @@ impl TypeResolver {
                 })
                 .collect::<Result<Vec<TypedArgDef>>>()?,
             type_params: mf.type_params,
-            body: self.typed_fun_body(mf.body)?,
+            body: match mf.body {
+                None => {None}
+                Some(body) => {Some(self.typed_fun_body(body)?)}
+            },
             return_type: mf.return_type,
-            type_: mf.type_,
         });
         self.context.pop_name_space();
         result

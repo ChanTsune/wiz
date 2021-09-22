@@ -326,7 +326,6 @@ impl HLIR2MLIR {
                     type_params,
                     body,
                     return_type,
-                    type_,
                 } = mf;
                 let mut a = args.into_iter().map(|a| self.arg_def(a)).collect();
                 let mut args = vec![MLArgDef {
@@ -338,8 +337,11 @@ impl HLIR2MLIR {
                     modifiers: vec![],
                     name: name.clone() + "::" + &fname,
                     arg_defs: args,
-                    return_type: self.type_(return_type).into_value_type(),
-                    body: Some(self.fun_body(body)),
+                    return_type: self.type_(return_type.unwrap()).into_value_type(),
+                    body: match body {
+                        None => {None}
+                        Some(body) => {Some(self.fun_body(body))}
+                    },
                 }
             })
             .collect();
