@@ -17,7 +17,7 @@ use crate::high_level_ir::typed_decl::{
 };
 use crate::high_level_ir::typed_expr::{
     TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral,
-    TypedName, TypedReturn, TypedStaticMember, TypedSubscript, TypedUnaryOp,
+    TypedName, TypedReturn, TypedSubscript, TypedUnaryOp,
 };
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{
@@ -29,7 +29,6 @@ use crate::high_level_ir::typed_type::{
 };
 use crate::utils::path_string_to_page_name;
 use crate::utils::stacked_hash_map::StackedHashMap;
-use either::Either;
 use std::collections::HashMap;
 use std::fmt;
 use std::option::Option::Some;
@@ -62,7 +61,6 @@ struct Ast2HLIRContext {
 
 #[derive(fmt::Debug, Clone)]
 enum Ast2HLIRName {
-    Type(Ast2HLIRType),
     Name(TypedType),
 }
 
@@ -102,17 +100,22 @@ impl Ast2HLIRContext {
                     .collect()
             }),
         };
-        self.name_environment
-            .insert(name.clone(), Ast2HLIRName::Type(t));
         self.struct_environment.insert(name, s.clone());
     }
 
     fn resolve_type(&self, type_name: Option<TypeName>) -> Option<TypedType> {
-        let t = if let Some(type_name) = &type_name {
-            match self.name_environment.get(&type_name.name) {
-                Some(Ast2HLIRName::Type(y)) => Some(y.clone()),
-                _ => None,
-            }
+        let t: Option<Ast2HLIRType> = if let Some(type_name) = &type_name {
+            Some(Ast2HLIRType {
+                name: type_name.name.clone(),
+                type_params: type_name.type_args.clone().map(|a| {
+                    a.into_iter()
+                        .map(|t| Ast2HLIRTypeParam {
+                            name: t.name,
+                            type_constraints: vec![],
+                        })
+                        .collect()
+                }),
+            })
         } else {
             None
         };
@@ -214,131 +217,12 @@ pub struct Ast2HLIR {
 
 impl Ast2HLIR {
     pub fn new() -> Self {
-        let builtin_types = vec![
-            String::from("Int8"),
-            String::from("Int16"),
-            String::from("Int32"),
-            String::from("Int64"),
-            String::from("UInt8"),
-            String::from("UInt16"),
-            String::from("UInt32"),
-            String::from("UInt64"),
-            String::from("String"),
-            String::from("Noting"),
-            String::from("Unit"),
-        ];
         let mut names = HashMap::new();
-        for t in builtin_types.into_iter() {
-            names.insert(
-                t.clone(),
-                Ast2HLIRName::Type(Ast2HLIRType {
-                    name: t,
-                    type_params: None,
-                }),
-            );
-        }
-        names.insert(
-            String::from(UNSAFE_POINTER),
-            Ast2HLIRName::Type(Ast2HLIRType {
-                name: String::from(UNSAFE_POINTER),
-                type_params: Some(vec![Ast2HLIRTypeParam {
-                    name: "T".to_string(),
-                    type_constraints: vec![],
-                }]),
-            }),
-        );
         Ast2HLIR {
             context: Ast2HLIRContext {
                 name_environment: StackedHashMap::from(names),
                 struct_environment: StackedHashMap::from(HashMap::new()),
             },
-        }
-    }
-
-    pub fn preload_types(&mut self, ast: WizFile) {
-        for decl in ast.syntax.body {
-            match decl {
-                Decl::Var(v) => {
-                    let var = self.var_syntax(v);
-                    self.context.put_name(var.name, &var.type_.unwrap())
-                }
-                Decl::Fun(f) => {
-                    let return_type = match f.body {
-                        Some(FunBody::Block { .. }) => {
-                            if let Some(r) = f.return_type {
-                                self.context.resolve_type(Some(r)).unwrap()
-                            } else {
-                                TypedType::unit()
-                            }
-                        }
-                        Some(FunBody::Expr { expr }) => self.expr(expr).type_().unwrap(),
-                        None => TypedType::unit(),
-                    };
-                    self.context.put_name(
-                        f.name,
-                        &TypedType::Function(Box::new(TypedFunctionType {
-                            arguments: f.arg_defs.into_iter().map(|a| self.arg_def(a)).collect(),
-                            return_type: return_type,
-                        })),
-                    )
-                }
-                Decl::Struct(s) => {
-                    let s = self.struct_syntax(s);
-                    println!("Struct {:?}", &s);
-                    self.context.put_type(&s)
-                }
-                Decl::Class {} => {}
-                Decl::Enum {} => {}
-                Decl::Protocol {} => {}
-                Decl::Extension {} => {}
-            }
-        }
-    }
-
-    fn resolve_by_binop(
-        &self,
-        left_type: &Option<TypedType>,
-        kind: &String,
-        right_type: &Option<TypedType>,
-    ) -> Option<TypedType> {
-        match (left_type, right_type) {
-            (Some(l), Some(r)) => Some(l.clone()),
-            (Some(l), None) => Some(l.clone()),
-            (None, Some(r)) => Some(r.clone()),
-            (_, _) => None,
-        }
-    }
-
-    fn resolve_by_unaryop(
-        &self,
-        target_type: &Option<TypedType>,
-        kind: &String,
-    ) -> Option<TypedType> {
-        None
-    }
-
-    fn resolve_member_type(&self, t: &TypedType, member_name: String) -> Option<TypedType> {
-        match t {
-            TypedType::Value(t) => {
-                println!("env :: {:?}", self.context.struct_environment);
-                let s = self.context.struct_environment.get(&t.name)?;
-                for p in s.stored_properties.iter() {
-                    if p.name == member_name {
-                        return Some(p.type_.clone());
-                    }
-                }
-                for p in s.computed_properties.iter() {
-                    if p.name == member_name {
-                        return Some(p.type_.clone());
-                    }
-                }
-                // TODO: change resolve method
-                if member_name == "init" {
-                    return Some(TypedType::Value(t.clone()));
-                }
-                None
-            }
-            TypedType::Function(_) => None,
         }
     }
 
@@ -413,45 +297,11 @@ impl Ast2HLIR {
     }
 
     pub fn var_syntax(&mut self, v: VarSyntax) -> TypedVar {
-        println!("{:?}", &v.value);
         let expr = self.expr(v.value);
-        let type_ = match (v.type_, expr.type_()) {
-            (Some(tn), Some(expr_type)) => {
-                let var_type = self.context.resolve_type(Some(tn.clone()));
-                if let Some(var_type) = var_type {
-                    if var_type == expr_type {
-                        expr_type
-                    } else {
-                        eprintln!(
-                            "Type miss match error => {:?} and {:?}",
-                            var_type, expr_type
-                        );
-                        exit(-1);
-                    }
-                } else {
-                    eprintln!("Can not resolve type {:?} error =>", tn);
-                    exit(-1)
-                }
-            }
-            (Some(t), None) => {
-                if let Some(tt) = self.context.resolve_type(Some(t.clone())) {
-                    tt
-                } else {
-                    eprintln!("Can not resolve type {:?} error =>", t);
-                    exit(-1)
-                }
-            }
-            (None, Some(t)) => t,
-            (None, None) => {
-                eprintln!("Can not resolve type error");
-                exit(-1)
-            }
-        };
-        self.context.put_name(v.name.clone(), &type_);
         TypedVar {
             is_mut: v.is_mut,
             name: v.name,
-            type_: Some(type_),
+            type_: None,
             value: expr,
         }
     }
@@ -475,7 +325,6 @@ impl Ast2HLIR {
     }
 
     pub fn fun_syntax(&mut self, f: FunSyntax) -> TypedFun {
-        println!("{:?}", &f);
         let args: Vec<TypedArgDef> = f.arg_defs.into_iter().map(|a| self.arg_def(a)).collect();
         self.context.push();
         for arg in args.iter() {
@@ -487,18 +336,6 @@ impl Ast2HLIR {
         };
 
         let return_type = self.context.resolve_type(f.return_type);
-
-        let return_type = match return_type {
-            None => match &body {
-                Some(TypedFunBody::Expr(e)) => e.type_().unwrap(),
-                Some(TypedFunBody::Block(b)) => TypedType::unit(),
-                None => {
-                    eprintln!("Can not resolve type...");
-                    exit(-1)
-                }
-            },
-            Some(t) => t,
-        };
 
         let f = TypedFun {
             modifiers: f.modifiers,
@@ -523,7 +360,6 @@ impl Ast2HLIR {
             return_type: return_type,
         };
         self.context.pop();
-        self.context.put_name(f.name.clone(), &f.type_());
         f
     }
 
@@ -708,46 +544,36 @@ impl Ast2HLIR {
 
     pub fn expr(&mut self, e: Expr) -> TypedExpr {
         match e {
-            Expr::Name(n) => match self.name_syntax(n) {
-                Either::Left(name) => TypedExpr::Name(name),
-                Either::Right(n) => TypedExpr::Type(n),
-            },
+            Expr::Name(n) => TypedExpr::Name(self.name_syntax(n)),
             Expr::Literal(literal) => match literal {
                 Literal::Integer { value } => TypedExpr::Literal(TypedLiteral::Integer {
                     value,
-                    type_: TypedType::int64(),
+                    type_: Some(TypedType::int64()),
                 }),
                 Literal::FloatingPoint { value } => {
                     TypedExpr::Literal(TypedLiteral::FloatingPoint {
                         value,
-                        type_: TypedType::double(),
+                        type_: Some(TypedType::double()),
                     })
                 }
                 Literal::String { value } => TypedExpr::Literal(TypedLiteral::String {
                     value,
-                    type_: TypedType::string(),
+                    type_: Some(TypedType::string()),
                 }),
                 Literal::Boolean { value } => TypedExpr::Literal(TypedLiteral::Boolean {
                     value,
-                    type_: TypedType::bool(),
+                    type_: Some(TypedType::bool()),
                 }),
-                Literal::Null => TypedExpr::Literal(TypedLiteral::NullLiteral {
-                    type_: TypedType::Value(TypedValueType {
-                        package: Package { names: vec![] },
-                        name: "Option".to_string(),
-                        type_args: None,
-                    }),
-                }),
+                Literal::Null => TypedExpr::Literal(TypedLiteral::NullLiteral { type_: None }),
             },
             Expr::BinOp { left, kind, right } => {
                 let left = Box::new(self.expr(*left));
                 let right = Box::new(self.expr(*right));
-                let type_ = self.resolve_by_binop(&left.type_(), &kind, &right.type_());
                 TypedExpr::BinOp(TypedBinOp {
                     left: left,
                     kind: kind,
                     right: right,
-                    type_: type_,
+                    type_: None,
                 })
             }
             Expr::UnaryOp {
@@ -756,12 +582,11 @@ impl Ast2HLIR {
                 kind,
             } => {
                 let target = self.expr(*target);
-                let type_ = self.resolve_by_unaryop(&target.type_(), &kind);
                 TypedExpr::UnaryOp(TypedUnaryOp {
                     target: Box::new(target),
                     prefix: prefix,
                     kind: kind,
-                    type_: type_,
+                    type_: None,
                 })
             }
             Expr::Subscript(s) => TypedExpr::Subscript(self.subscript_syntax(s)),
@@ -771,24 +596,12 @@ impl Ast2HLIR {
                 is_safe,
             } => {
                 let target = self.expr(*target);
-                println!("target Expr -> {:?}", target);
-                if let TypedExpr::Type(target) = target {
-                    let type_ = self.resolve_member_type(&target, name.clone());
-                    TypedExpr::StaticMember(TypedStaticMember {
-                        target: target,
-                        name: name,
-                        type_: type_,
-                    })
-                } else {
-                    let target_type = target.type_().unwrap();
-                    let type_ = self.resolve_member_type(&target_type, name.clone());
-                    TypedExpr::Member(TypedInstanceMember {
-                        target: Box::new(target),
-                        name,
-                        is_safe,
-                        type_,
-                    })
-                }
+                TypedExpr::Member(TypedInstanceMember {
+                    target: Box::new(target),
+                    name,
+                    is_safe,
+                    type_: None,
+                })
             }
             Expr::List { .. } => TypedExpr::List,
             Expr::Tuple { .. } => TypedExpr::Tuple,
@@ -820,23 +633,9 @@ impl Ast2HLIR {
         }
     }
 
-    pub fn name_syntax(&self, n: NameExprSyntax) -> Either<TypedName, TypedType> {
+    pub fn name_syntax(&self, n: NameExprSyntax) -> TypedName {
         let NameExprSyntax { name } = n;
-        match self.context.resolve_name(name.clone()) {
-            None => Either::Left(TypedName {
-                name: name,
-                type_: None,
-            }),
-            Some(Ast2HLIRName::Name(t)) => Either::Left(TypedName {
-                name: name,
-                type_: Some(t),
-            }),
-            Some(Ast2HLIRName::Type(t)) => Either::Right(TypedType::Value(TypedValueType {
-                package: Package { names: vec![] },
-                name: t.name,
-                type_args: None,
-            })),
-        }
+        TypedName { name, type_: None }
     }
 
     pub fn subscript_syntax(&mut self, s: SubscriptSyntax) -> TypedSubscript {

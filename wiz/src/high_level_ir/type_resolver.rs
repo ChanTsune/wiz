@@ -7,17 +7,19 @@ use crate::high_level_ir::type_resolver::context::{ResolverContext, ResolverStru
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_decl::{
-    TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct, TypedVar,
+    TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedMemberFunction,
+    TypedStruct, TypedValueArgDef, TypedVar,
 };
 use crate::high_level_ir::typed_expr::{
-    TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedName,
-    TypedReturn, TypedSubscript,
+    TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral,
+    TypedName, TypedReturn, TypedSubscript,
 };
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{
-    TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedStmt,
+    TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedForStmt,
+    TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
 };
-use crate::high_level_ir::typed_type::{Package, TypedType, TypedValueType};
+use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
 use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -32,16 +34,24 @@ impl TypeResolver {
         }
     }
 
-    pub fn detect_type(&mut self, f: TypedFile) -> Result<()> {
-        self.context.push_name_space(f.name);
-        for d in f.body {
+    pub fn detect_type(&mut self, f: &TypedFile) -> Result<()> {
+        self.context.push_name_space(f.name.clone());
+        let current_namespace = self.context.current_namespace.clone();
+        let ns = self.context.get_current_namespace_mut()?;
+        for d in f.body.iter() {
             match d {
                 TypedDecl::Struct(s) => {
-                    let ns = self
-                        .context
-                        .get_current_namespace_mut()
-                        .ok_or(ResolverError::from("Context NameSpace Error"))?;
-                    ns.types.insert(s.name, ResolverStruct::new());
+                    ns.types.insert(s.name.clone(), ResolverStruct::new());
+                    ns.values.insert(
+                        s.name.clone(),
+                        TypedType::Type(TypedValueType {
+                            package: Package {
+                                names: current_namespace.clone(),
+                            },
+                            name: s.name.clone(),
+                            type_args: None,
+                        }),
+                    );
                 }
                 TypedDecl::Class => {}
                 TypedDecl::Enum => {}
@@ -71,10 +81,7 @@ impl TypeResolver {
         match d {
             TypedDecl::Var(v) => {
                 let v = self.typed_var(v)?;
-                let namespace = self
-                    .context
-                    .get_current_namespace_mut()
-                    .ok_or(ResolverError::from("NameSpace not exist"))?;
+                let namespace = self.context.get_current_namespace_mut()?;
                 namespace.values.insert(
                     v.name,
                     v.type_
@@ -83,11 +90,10 @@ impl TypeResolver {
             }
             TypedDecl::Fun(f) => {
                 let fun = self.preload_fun(f)?;
-                let namespace = self
-                    .context
-                    .get_current_namespace_mut()
-                    .ok_or(ResolverError::from("NameSpace not exist"))?;
-                namespace.values.insert(fun.name.clone(), fun.type_());
+                let namespace = self.context.get_current_namespace_mut()?;
+                namespace
+                    .values
+                    .insert(fun.name.clone(), fun.type_().unwrap());
             }
             TypedDecl::Struct(_) => {}
             TypedDecl::Class => {}
@@ -99,14 +105,31 @@ impl TypeResolver {
     }
 
     pub fn preload_fun(&mut self, f: TypedFun) -> Result<TypedFun> {
+        self.context.push_name_space(f.name.clone());
+        let arg_defs = f
+            .arg_defs
+            .iter()
+            .map(|a| {
+                let a = self.typed_arg_def(a.clone())?;
+                let ns = self.context.get_current_namespace_mut()?;
+                ns.values.insert(
+                    a.name(),
+                    a.type_()
+                        .ok_or(ResolverError::from("Can not resolve 'self type'"))?,
+                );
+                Result::Ok(a)
+            })
+            .collect::<Result<Vec<TypedArgDef>>>()?;
+        let return_type = self.typed_function_return_type(&f)?;
         let fun = TypedFun {
             modifiers: f.modifiers,
             name: f.name,
             type_params: f.type_params, // TODO
-            arg_defs: f.arg_defs,
+            arg_defs,
             body: None,
-            return_type: f.return_type, // TODO
+            return_type: Some(return_type),
         };
+        self.context.pop_name_space();
         Result::Ok(fun)
     }
 
@@ -142,16 +165,35 @@ impl TypeResolver {
     }
 
     pub fn typed_var(&mut self, t: TypedVar) -> Result<TypedVar> {
+        let value = self.expr(t.value)?;
+        let v_type = match (t.type_, value.type_()) {
+            (Some(vt), Some(et)) => {
+                if vt != et {
+                    Result::Err(ResolverError::from(format!(
+                        "Type unmatched {:?} != {:?}",
+                        vt, et
+                    )))
+                } else {
+                    Result::Ok(et)
+                }
+            }
+            (Some(vt), None) => {
+                eprintln!("maybe invalid type ...");
+                Result::Ok(vt)
+            }
+            (None, Some(et)) => Result::Ok(et),
+            (None, None) => Result::Err(ResolverError::from(format!(
+                "Can not resolve var type {:?}",
+                value
+            ))),
+        }?;
         let v = TypedVar {
             is_mut: t.is_mut,
             name: t.name,
-            type_: t.type_,
-            value: self.expr(t.value)?,
+            type_: Some(v_type),
+            value,
         };
-        let namespace = self
-            .context
-            .get_current_namespace_mut()
-            .ok_or(ResolverError::from("NameSpace not exist"))?;
+        let namespace = self.context.get_current_namespace_mut()?;
         namespace.values.insert(
             v.name.clone(),
             v.type_
@@ -161,37 +203,72 @@ impl TypeResolver {
         Result::Ok(v)
     }
 
+    fn typed_function_return_type(&mut self, f: &TypedFun) -> Result<TypedType> {
+        match &f.return_type {
+            None => match &f.body {
+                None => Result::Err(ResolverError::from(format!(
+                    "abstract function {:?} must be define type",
+                    f.name
+                ))),
+                Some(TypedFunBody::Block(_)) => Result::Ok(TypedType::unit()),
+                Some(TypedFunBody::Expr(e)) => {
+                    self.expr(e.clone())?
+                        .type_()
+                        .ok_or(ResolverError::from(format!(
+                            "Can not resolve expr type at function {:?}",
+                            f.name
+                        )))
+                }
+            },
+            Some(b) => self.context.full_type_name(b.clone()),
+        }
+    }
+
+    fn typed_arg_def(&mut self, a: TypedArgDef) -> Result<TypedArgDef> {
+        Result::Ok(match a {
+            TypedArgDef::Value(a) => TypedArgDef::Value(TypedValueArgDef {
+                label: a.label,
+                name: a.name,
+                type_: self.context.full_type_name(a.type_)?,
+            }),
+            TypedArgDef::Self_(s) => TypedArgDef::Self_(s),
+        })
+    }
+
     pub fn typed_fun(&mut self, f: TypedFun) -> Result<TypedFun> {
         self.context.push_name_space(f.name.clone());
+        let arg_defs = f
+            .arg_defs
+            .iter()
+            .map(|a| {
+                let a = self.typed_arg_def(a.clone())?;
+                let ns = self.context.get_current_namespace_mut()?;
+                ns.values.insert(
+                    a.name(),
+                    a.type_()
+                        .ok_or(ResolverError::from("Can not resolve 'self type'"))?,
+                );
+                Result::Ok(a)
+            })
+            .collect::<Result<Vec<TypedArgDef>>>()?;
+        let return_type = self.typed_function_return_type(&f)?;
         let fun = TypedFun {
             modifiers: f.modifiers,
             name: f.name,
             type_params: f.type_params, // TODO
-            arg_defs: f
-                .arg_defs
-                .into_iter()
-                .map(|a| {
-                    let ns = self.context.get_current_namespace_mut()?;
-                    ns.values.insert(a.name(), a.type_()?);
-                    Some(a)
-                })
-                .collect::<Option<Vec<TypedArgDef>>>()
-                .ok_or(ResolverError::from("NameSpace not exist"))?,
+            arg_defs,
             body: match f.body {
                 Some(b) => Some(self.typed_fun_body(b)?),
                 None => None,
             },
-            return_type: f.return_type, // TODO
+            return_type: Some(return_type),
         };
         let fun_name = fun.name.clone();
         let fun_type = fun.type_();
         let result = Result::Ok(fun);
         self.context.pop_name_space();
-        let ns = self
-            .context
-            .get_current_namespace_mut()
-            .ok_or(ResolverError::from("NameSpace not exist"))?;
-        ns.values.insert(fun_name, fun_type);
+        let ns = self.context.get_current_namespace_mut()?;
+        ns.values.insert(fun_name, fun_type.unwrap());
         result
     }
 
@@ -205,14 +282,19 @@ impl TypeResolver {
             member_functions,    // TODO
             static_function,     // TODO
         } = s;
-        let ns = self
-            .context
-            .get_current_namespace_mut()
-            .ok_or(ResolverError::from("NameSpace not exist"))?;
-        let rs = ns
-            .types
-            .get_mut(&*name)
-            .ok_or(ResolverError::from("Struct not exist"))?;
+        let current_namespace = self.context.current_namespace.clone();
+        let ns = self.context.get_current_namespace_mut()?;
+        let this_type = TypedType::Value(TypedValueType {
+            package: Package {
+                names: current_namespace,
+            },
+            name: name.clone(),
+            type_args: None,
+        });
+        let rs = ns.types.get_mut(&*name).ok_or(ResolverError::from(format!(
+            "Struct {:?} not exist. Maybe before preload",
+            name
+        )))?;
         for sp in stored_properties.iter() {
             rs.stored_properties
                 .insert(sp.name.clone(), sp.type_.clone());
@@ -226,18 +308,24 @@ impl TypeResolver {
                 .insert(mf.name.clone(), mf.type_.clone());
         }
         for sf in static_function.iter() {
-            rs.static_functions.insert(sf.name.clone(), sf.type_());
+            rs.static_functions
+                .insert(sf.name.clone(), sf.type_().unwrap());
         }
-        self.context
-            .set_current_type(TypedType::Value(TypedValueType {
-                package: Package {
-                    names: self.context.current_namespace.clone(),
-                },
-                name: name.clone(),
-                type_args: None,
-            }));
+        for ini in init.iter() {
+            rs.static_functions.insert(
+                String::from("init"),
+                TypedType::Function(Box::new(TypedFunctionType {
+                    arguments: ini.args.clone(),
+                    return_type: this_type.clone(),
+                })),
+            );
+        }
+        self.context.set_current_type(this_type);
         self.context.push_name_space(name.clone());
-        let init = init.into_iter().collect();
+        let init = init
+            .into_iter()
+            .map(|i| self.typed_initializer(i))
+            .collect::<Result<Vec<TypedInitializer>>>()?;
         let stored_properties = stored_properties.into_iter().collect();
         let computed_properties = computed_properties.into_iter().collect();
         let member_functions = member_functions
@@ -258,13 +346,36 @@ impl TypeResolver {
         })
     }
 
+    fn typed_initializer(&mut self, i: TypedInitializer) -> Result<TypedInitializer> {
+        let self_type = self.context.get_current_type();
+        let ns = self.context.get_current_namespace_mut()?;
+        ns.values.insert(
+            String::from("self"),
+            self_type.ok_or(ResolverError::from("Can not resolve 'self type'"))?,
+        );
+        Result::Ok(TypedInitializer {
+            args: i
+                .args
+                .into_iter()
+                .map(|a| {
+                    let a = self.typed_arg_def(a)?;
+                    let ns = self.context.get_current_namespace_mut()?;
+                    ns.values.insert(
+                        a.name(),
+                        a.type_()
+                            .ok_or(ResolverError::from("Can not resolve 'self type'"))?,
+                    );
+                    Result::Ok(a)
+                })
+                .collect::<Result<Vec<TypedArgDef>>>()?,
+            body: self.typed_fun_body(i.body)?,
+        })
+    }
+
     fn typed_member_function(&mut self, mf: TypedMemberFunction) -> Result<TypedMemberFunction> {
         self.context.push_name_space(mf.name.clone());
         let self_type = self.context.get_current_type();
-        let ns = self
-            .context
-            .get_current_namespace_mut()
-            .ok_or(ResolverError::from("NameSpace not exist"))?;
+        let ns = self.context.get_current_namespace_mut()?;
         let result = Result::Ok(TypedMemberFunction {
             name: mf.name,
             args: mf
@@ -316,7 +427,6 @@ impl TypeResolver {
             TypedExpr::UnaryOp(u) => TypedExpr::UnaryOp(u),
             TypedExpr::Subscript(s) => TypedExpr::Subscript(self.typed_subscript(s)?),
             TypedExpr::Member(m) => TypedExpr::Member(self.typed_instance_member(m)?),
-            TypedExpr::StaticMember(s) => TypedExpr::StaticMember(s),
             TypedExpr::List => TypedExpr::List,
             TypedExpr::Tuple => TypedExpr::Tuple,
             TypedExpr::Dict => TypedExpr::Dict,
@@ -327,23 +437,72 @@ impl TypeResolver {
             TypedExpr::Lambda => TypedExpr::Lambda,
             TypedExpr::Return(r) => TypedExpr::Return(self.typed_return(r)?),
             TypedExpr::TypeCast => TypedExpr::TypeCast,
-            TypedExpr::Type(t) => TypedExpr::Type(t),
         })
     }
 
     pub fn typed_name(&mut self, n: TypedName) -> Result<TypedName> {
         Result::Ok(TypedName {
-            type_: self.context.resolve_name_type(n.name.clone()),
+            type_: Some(self.context.resolve_name_type(n.name.clone())?),
             name: n.name,
         })
     }
 
     pub fn typed_binop(&mut self, b: TypedBinOp) -> Result<TypedBinOp> {
+        let left = self.expr(*b.left)?;
+        let right = self.expr(*b.right)?;
+        let (left, right) = match (left, right) {
+            (
+                TypedExpr::Literal(TypedLiteral::Integer {
+                    value: left_value,
+                    type_: left_type,
+                }),
+                TypedExpr::Literal(TypedLiteral::Integer {
+                    value: right_value,
+                    type_: right_type,
+                }),
+            ) => (
+                TypedExpr::Literal(TypedLiteral::Integer {
+                    value: left_value,
+                    type_: left_type,
+                }),
+                TypedExpr::Literal(TypedLiteral::Integer {
+                    value: right_value,
+                    type_: right_type,
+                }),
+            ),
+            (left, TypedExpr::Literal(TypedLiteral::Integer { value, type_ })) => {
+                let left_type = left.type_();
+                let is_integer = match &left_type {
+                    None => false,
+                    Some(t) => t.is_integer(),
+                };
+                if is_integer {
+                    (
+                        left,
+                        TypedExpr::Literal(TypedLiteral::Integer {
+                            value,
+                            type_: left_type,
+                        }),
+                    )
+                } else {
+                    (
+                        left,
+                        TypedExpr::Literal(TypedLiteral::Integer { value, type_ }),
+                    )
+                }
+            }
+            (left, right) => (left, right),
+        };
+        let type_ = self.context.resolve_binop_type(
+            left.type_().unwrap(),
+            &*b.kind,
+            right.type_().unwrap(),
+        )?;
         Result::Ok(TypedBinOp {
-            left: Box::new(self.expr(*b.left)?),
+            left: Box::new(left),
             kind: b.kind,
-            right: Box::new(self.expr(*b.right)?),
-            type_: b.type_,
+            right: Box::new(right),
+            type_: Some(type_),
         })
     }
 
@@ -351,15 +510,12 @@ impl TypeResolver {
         let target = self.expr(*m.target)?;
         let type_ = self
             .context
-            .resolve_member_type(target.type_().unwrap(), m.name.clone());
+            .resolve_member_type(target.type_().unwrap(), m.name.clone())?;
         Result::Ok(TypedInstanceMember {
             target: Box::new(target),
             name: m.name,
             is_safe: m.is_safe,
-            type_: match m.type_ {
-                Some(t) => Some(t),
-                None => type_,
-            },
+            type_: Some(type_),
         })
     }
 
@@ -394,14 +550,21 @@ impl TypeResolver {
     }
 
     pub fn typed_call(&mut self, c: TypedCall) -> Result<TypedCall> {
+        let target = Box::new(self.expr(*c.target)?);
+        let c_type = match target.type_().unwrap() {
+            TypedType::Value(v) | TypedType::Type(v) => {
+                Result::Err(ResolverError::from(format!("{:?} is not callable.", v)))
+            }
+            TypedType::Function(f) => Result::Ok(f.return_type),
+        }?;
         Result::Ok(TypedCall {
-            target: Box::new(self.expr(*c.target)?),
+            target,
             args: c
                 .args
                 .into_iter()
                 .map(|c| self.typed_call_arg(c))
                 .collect::<Result<Vec<TypedCallArg>>>()?,
-            type_: c.type_,
+            type_: Some(c_type),
         })
     }
 
@@ -448,7 +611,7 @@ impl TypeResolver {
             TypedStmt::Expr(e) => TypedStmt::Expr(self.expr(e)?),
             TypedStmt::Decl(d) => TypedStmt::Decl(self.decl(d)?),
             TypedStmt::Assignment(a) => TypedStmt::Assignment(self.assignment_stmt(a)?),
-            TypedStmt::Loop(l) => TypedStmt::Loop(l),
+            TypedStmt::Loop(l) => TypedStmt::Loop(self.typed_loop_stmt(l)?),
         })
     }
 
@@ -479,5 +642,724 @@ impl TypeResolver {
             operator: a.operator, // TODO
             value: self.expr(a.value)?,
         })
+    }
+
+    pub fn typed_loop_stmt(&mut self, l: TypedLoopStmt) -> Result<TypedLoopStmt> {
+        Result::Ok(match l {
+            TypedLoopStmt::While(w) => TypedLoopStmt::While(self.typed_while_loop_stmt(w)?),
+            TypedLoopStmt::For(f) => TypedLoopStmt::For(self.typed_for_loop_stmt(f)?),
+        })
+    }
+
+    pub fn typed_while_loop_stmt(&mut self, w: TypedWhileLoopStmt) -> Result<TypedWhileLoopStmt> {
+        let TypedWhileLoopStmt { condition, block } = w;
+        let condition = self.expr(condition)?;
+        if !condition.type_().unwrap().is_boolean() {
+            return Result::Err(ResolverError::from("while loop condition must be boolean"));
+        };
+        Result::Ok(TypedWhileLoopStmt {
+            condition,
+            block: self.typed_block(block)?,
+        })
+    }
+
+    pub fn typed_for_loop_stmt(&mut self, f: TypedForStmt) -> Result<TypedForStmt> {
+        let TypedForStmt {
+            values,
+            iterator,
+            block,
+        } = f;
+        Result::Ok(TypedForStmt {
+            values: values,
+            iterator: self.expr(iterator)?,
+            block: self.typed_block(block)?,
+        })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::constants::UNSAFE_POINTER;
+    use crate::high_level_ir::type_resolver::TypeResolver;
+    use crate::high_level_ir::typed_decl::{
+        TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedStoredProperty,
+        TypedStruct, TypedValueArgDef, TypedVar,
+    };
+    use crate::high_level_ir::typed_expr::{
+        TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedInstanceMember, TypedLiteral,
+        TypedName, TypedReturn,
+    };
+    use crate::high_level_ir::typed_file::TypedFile;
+    use crate::high_level_ir::typed_stmt::{
+        TypedAssignment, TypedAssignmentStmt, TypedBlock, TypedStmt,
+    };
+    use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
+    use crate::high_level_ir::Ast2HLIR;
+    use crate::parser::parser::parse_from_string;
+
+    #[test]
+    fn test_empty() {
+        let source = "";
+
+        let ast = parse_from_string(String::from(source)).unwrap();
+
+        let mut ast2hlir = Ast2HLIR::new();
+
+        let mut file = ast2hlir.file(ast);
+        file.name = String::from("test");
+
+        let mut resolver = TypeResolver::new();
+        let _ = resolver.detect_type(&file);
+        let _ = resolver.preload_file(file.clone());
+        let f = resolver.file(file);
+
+        assert_eq!(
+            f,
+            Result::Ok(TypedFile {
+                name: "test".to_string(),
+                body: vec![]
+            })
+        );
+    }
+
+    #[test]
+    fn test_unsafe_pointer() {
+        let source = r"
+        struct A {
+            val a: UnsafePointer<UInt8>
+        }
+        fun function(_ a: A): Unit {
+            val a = a.a
+        }
+        ";
+
+        let ast = parse_from_string(String::from(source)).unwrap();
+
+        let mut ast2hlir = Ast2HLIR::new();
+
+        let mut file = ast2hlir.file(ast);
+        file.name = String::from("test");
+
+        let mut resolver = TypeResolver::new();
+        let _ = resolver.detect_type(&file);
+        let _ = resolver.preload_file(file.clone());
+        let f = resolver.file(file);
+
+        assert_eq!(
+            f,
+            Result::Ok(TypedFile {
+                name: "test".to_string(),
+                body: vec![
+                    TypedDecl::Struct(TypedStruct {
+                        name: "A".to_string(),
+                        type_params: None,
+                        init: vec![TypedInitializer {
+                            args: vec![TypedArgDef::Value(TypedValueArgDef {
+                                label: "a".to_string(),
+                                name: "a".to_string(),
+                                type_: TypedType::Value(TypedValueType {
+                                    package: Package::global(),
+                                    name: String::from(UNSAFE_POINTER),
+                                    type_args: Some(vec![TypedType::uint8()])
+                                })
+                            })],
+                            body: TypedFunBody::Block(TypedBlock {
+                                body: vec![TypedStmt::Assignment(TypedAssignmentStmt::Assignment(
+                                    TypedAssignment {
+                                        target: TypedExpr::Member(TypedInstanceMember {
+                                            target: Box::new(TypedExpr::Name(TypedName {
+                                                name: "self".to_string(),
+                                                type_: Some(TypedType::Value(TypedValueType {
+                                                    package: Package {
+                                                        names: vec![String::from("test")]
+                                                    },
+                                                    name: "A".to_string(),
+                                                    type_args: None
+                                                }))
+                                            })),
+                                            name: "a".to_string(),
+                                            is_safe: false,
+                                            type_: Some(TypedType::Value(TypedValueType {
+                                                package: Package::global(),
+                                                name: String::from(UNSAFE_POINTER),
+                                                type_args: Some(vec![TypedType::uint8()])
+                                            }))
+                                        }),
+                                        value: TypedExpr::Name(TypedName {
+                                            name: "a".to_string(),
+                                            type_: Some(TypedType::Value(TypedValueType {
+                                                package: Package::global(),
+                                                name: String::from(UNSAFE_POINTER),
+                                                type_args: Some(vec![TypedType::uint8()])
+                                            }))
+                                        })
+                                    }
+                                ))]
+                            })
+                        }],
+                        stored_properties: vec![TypedStoredProperty {
+                            name: "a".to_string(),
+                            type_: TypedType::Value(TypedValueType {
+                                package: Package::global(),
+                                name: String::from(UNSAFE_POINTER),
+                                type_args: Some(vec![TypedType::uint8()])
+                            })
+                        }],
+                        computed_properties: vec![],
+                        member_functions: vec![],
+                        static_function: vec![]
+                    }),
+                    TypedDecl::Fun(TypedFun {
+                        modifiers: vec![],
+                        name: "function".to_string(),
+                        type_params: None,
+                        arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
+                            label: "_".to_string(),
+                            name: "a".to_string(),
+                            type_: TypedType::Value(TypedValueType {
+                                package: Package {
+                                    names: vec![String::from("test")]
+                                },
+                                name: "A".to_string(),
+                                type_args: None
+                            })
+                        })],
+                        body: Option::Some(TypedFunBody::Block(TypedBlock {
+                            body: vec![TypedStmt::Decl(TypedDecl::Var(TypedVar {
+                                is_mut: false,
+                                name: "a".to_string(),
+                                type_: Some(TypedType::Value(TypedValueType {
+                                    package: Package::global(),
+                                    name: String::from(UNSAFE_POINTER),
+                                    type_args: Some(vec![TypedType::uint8()])
+                                })),
+                                value: TypedExpr::Member(TypedInstanceMember {
+                                    target: Box::new(TypedExpr::Name(TypedName {
+                                        name: "a".to_string(),
+                                        type_: Some(TypedType::Value(TypedValueType {
+                                            package: Package {
+                                                names: vec![String::from("test")]
+                                            },
+                                            name: "A".to_string(),
+                                            type_args: None
+                                        }))
+                                    })),
+                                    name: "a".to_string(),
+                                    is_safe: false,
+                                    type_: Some(TypedType::Value(TypedValueType {
+                                        package: Package::global(),
+                                        name: String::from(UNSAFE_POINTER),
+                                        type_args: Some(vec![TypedType::uint8()])
+                                    }))
+                                })
+                            }))]
+                        })),
+                        return_type: Some(TypedType::unit())
+                    })
+                ],
+            })
+        );
+    }
+
+    #[test]
+    fn test_struct_member() {
+        let source = r"
+        struct A {
+            val a: Int64
+        }
+        fun function(_ a: A) {
+            val a = a.a
+        }
+        ";
+        let ast = parse_from_string(String::from(source)).unwrap();
+
+        let mut ast2hlir = Ast2HLIR::new();
+
+        let mut file = ast2hlir.file(ast);
+        file.name = String::from("test");
+
+        let mut resolver = TypeResolver::new();
+        let _ = resolver.detect_type(&file);
+        let _ = resolver.preload_file(file.clone());
+        let f = resolver.file(file);
+
+        assert_eq!(
+            f,
+            Result::Ok(TypedFile {
+                name: "test".to_string(),
+                body: vec![
+                    TypedDecl::Struct(TypedStruct {
+                        name: "A".to_string(),
+                        type_params: None,
+                        init: vec![TypedInitializer {
+                            args: vec![TypedArgDef::Value(TypedValueArgDef {
+                                label: "a".to_string(),
+                                name: "a".to_string(),
+                                type_: TypedType::int64()
+                            })],
+                            body: TypedFunBody::Block(TypedBlock {
+                                body: vec![TypedStmt::Assignment(TypedAssignmentStmt::Assignment(
+                                    TypedAssignment {
+                                        target: TypedExpr::Member(TypedInstanceMember {
+                                            target: Box::new(TypedExpr::Name(TypedName {
+                                                name: "self".to_string(),
+                                                type_: Some(TypedType::Value(TypedValueType {
+                                                    package: Package {
+                                                        names: vec![String::from("test")]
+                                                    },
+                                                    name: "A".to_string(),
+                                                    type_args: None
+                                                }))
+                                            })),
+                                            name: "a".to_string(),
+                                            is_safe: false,
+                                            type_: Some(TypedType::int64())
+                                        }),
+                                        value: TypedExpr::Name(TypedName {
+                                            name: "a".to_string(),
+                                            type_: Some(TypedType::int64())
+                                        })
+                                    }
+                                ))]
+                            })
+                        }],
+                        stored_properties: vec![TypedStoredProperty {
+                            name: "a".to_string(),
+                            type_: TypedType::int64()
+                        }],
+                        computed_properties: vec![],
+                        member_functions: vec![],
+                        static_function: vec![]
+                    }),
+                    TypedDecl::Fun(TypedFun {
+                        modifiers: vec![],
+                        name: "function".to_string(),
+                        type_params: None,
+                        arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
+                            label: "_".to_string(),
+                            name: "a".to_string(),
+                            type_: TypedType::Value(TypedValueType {
+                                package: Package {
+                                    names: vec![String::from("test")]
+                                },
+                                name: "A".to_string(),
+                                type_args: None
+                            })
+                        })],
+                        body: Option::Some(TypedFunBody::Block(TypedBlock {
+                            body: vec![TypedStmt::Decl(TypedDecl::Var(TypedVar {
+                                is_mut: false,
+                                name: "a".to_string(),
+                                type_: Some(TypedType::int64()),
+                                value: TypedExpr::Member(TypedInstanceMember {
+                                    target: Box::new(TypedExpr::Name(TypedName {
+                                        name: "a".to_string(),
+                                        type_: Some(TypedType::Value(TypedValueType {
+                                            package: Package {
+                                                names: vec![String::from("test")]
+                                            },
+                                            name: "A".to_string(),
+                                            type_args: None
+                                        }))
+                                    })),
+                                    name: "a".to_string(),
+                                    is_safe: false,
+                                    type_: Some(TypedType::int64())
+                                })
+                            }))]
+                        })),
+                        return_type: Some(TypedType::unit())
+                    })
+                ],
+            })
+        );
+    }
+
+    #[test]
+    fn test_struct_init() {
+        let source = r"
+        struct A {
+            val a: Int64
+        }
+        fun function(_ a: A) {
+            val a = A.init(a:1)
+        }
+        ";
+        let ast = parse_from_string(String::from(source)).unwrap();
+
+        let mut ast2hlir = Ast2HLIR::new();
+
+        let mut file = ast2hlir.file(ast);
+        file.name = String::from("test");
+
+        let mut resolver = TypeResolver::new();
+        let _ = resolver.detect_type(&file);
+        let _ = resolver.preload_file(file.clone());
+        let f = resolver.file(file);
+
+        assert_eq!(
+            f,
+            Result::Ok(TypedFile {
+                name: "test".to_string(),
+                body: vec![
+                    TypedDecl::Struct(TypedStruct {
+                        name: "A".to_string(),
+                        type_params: None,
+                        init: vec![TypedInitializer {
+                            args: vec![TypedArgDef::Value(TypedValueArgDef {
+                                label: "a".to_string(),
+                                name: "a".to_string(),
+                                type_: TypedType::int64()
+                            })],
+                            body: TypedFunBody::Block(TypedBlock {
+                                body: vec![TypedStmt::Assignment(TypedAssignmentStmt::Assignment(
+                                    TypedAssignment {
+                                        target: TypedExpr::Member(TypedInstanceMember {
+                                            target: Box::new(TypedExpr::Name(TypedName {
+                                                name: "self".to_string(),
+                                                type_: Some(TypedType::Value(TypedValueType {
+                                                    package: Package {
+                                                        names: vec![String::from("test")]
+                                                    },
+                                                    name: "A".to_string(),
+                                                    type_args: None
+                                                }))
+                                            })),
+                                            name: "a".to_string(),
+                                            is_safe: false,
+                                            type_: Some(TypedType::int64())
+                                        }),
+                                        value: TypedExpr::Name(TypedName {
+                                            name: "a".to_string(),
+                                            type_: Some(TypedType::int64())
+                                        })
+                                    }
+                                ))]
+                            })
+                        }],
+                        stored_properties: vec![TypedStoredProperty {
+                            name: "a".to_string(),
+                            type_: TypedType::int64(),
+                        }],
+                        computed_properties: vec![],
+                        member_functions: vec![],
+                        static_function: vec![],
+                    }),
+                    TypedDecl::Fun(TypedFun {
+                        modifiers: vec![],
+                        name: "function".to_string(),
+                        type_params: None,
+                        arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
+                            label: "_".to_string(),
+                            name: "a".to_string(),
+                            type_: TypedType::Value(TypedValueType {
+                                package: Package {
+                                    names: vec![String::from("test")],
+                                },
+                                name: "A".to_string(),
+                                type_args: None,
+                            }),
+                        })],
+                        body: Option::Some(TypedFunBody::Block(TypedBlock {
+                            body: vec![TypedStmt::Decl(TypedDecl::Var(TypedVar {
+                                is_mut: false,
+                                name: "a".to_string(),
+                                type_: Some(TypedType::Value(TypedValueType {
+                                    package: Package {
+                                        names: vec![String::from("test")]
+                                    },
+                                    name: "A".to_string(),
+                                    type_args: None
+                                })),
+                                value: TypedExpr::Call(TypedCall {
+                                    target: Box::new(TypedExpr::Member(TypedInstanceMember {
+                                        target: Box::new(TypedExpr::Name(TypedName {
+                                            name: "A".to_string(),
+                                            type_: Some(TypedType::Type(TypedValueType {
+                                                package: Package {
+                                                    names: vec![String::from("test")]
+                                                },
+                                                name: "A".to_string(),
+                                                type_args: None
+                                            })),
+                                        })),
+                                        name: "init".to_string(),
+                                        is_safe: false,
+                                        type_: Some(TypedType::Function(Box::new(
+                                            TypedFunctionType {
+                                                arguments: vec![TypedArgDef::Value(
+                                                    TypedValueArgDef {
+                                                        label: "a".to_string(),
+                                                        name: "a".to_string(),
+                                                        type_: TypedType::int64()
+                                                    }
+                                                )],
+                                                return_type: TypedType::Value(TypedValueType {
+                                                    package: Package {
+                                                        names: vec![String::from("test")]
+                                                    },
+                                                    name: "A".to_string(),
+                                                    type_args: None
+                                                })
+                                            }
+                                        ))),
+                                    })),
+                                    args: vec![TypedCallArg {
+                                        label: Some(String::from("a")),
+                                        arg: Box::new(TypedExpr::Literal(TypedLiteral::Integer {
+                                            value: "1".to_string(),
+                                            type_: Some(TypedType::int64())
+                                        })),
+                                        is_vararg: false
+                                    }],
+                                    type_: Some(TypedType::Value(TypedValueType {
+                                        package: Package {
+                                            names: vec![String::from("test")]
+                                        },
+                                        name: "A".to_string(),
+                                        type_args: None
+                                    }))
+                                }),
+                            }))],
+                        })),
+                        return_type: Some(TypedType::unit()),
+                    }),
+                ],
+            })
+        );
+    }
+
+    #[test]
+    fn test_expr_function_with_no_arg() {
+        let source = r"
+        fun function() = 1
+        ";
+        let ast = parse_from_string(String::from(source)).unwrap();
+
+        let mut ast2hlir = Ast2HLIR::new();
+
+        let mut file = ast2hlir.file(ast);
+        file.name = String::from("test");
+
+        let mut resolver = TypeResolver::new();
+        let _ = resolver.detect_type(&file);
+        let _ = resolver.preload_file(file.clone());
+        let f = resolver.file(file);
+
+        assert_eq!(
+            f,
+            Result::Ok(TypedFile {
+                name: "test".to_string(),
+                body: vec![TypedDecl::Fun(TypedFun {
+                    modifiers: vec![],
+                    name: "function".to_string(),
+                    type_params: None,
+                    arg_defs: vec![],
+                    body: Some(TypedFunBody::Expr(TypedExpr::Literal(
+                        TypedLiteral::Integer {
+                            value: "1".to_string(),
+                            type_: Some(TypedType::int64())
+                        }
+                    ))),
+                    return_type: Some(TypedType::int64())
+                })],
+            })
+        );
+    }
+
+    #[test]
+    fn test_expr_function_with_arg() {
+        let source = r"
+        fun function(_ i:Int32) = i
+        ";
+        let ast = parse_from_string(String::from(source)).unwrap();
+
+        let mut ast2hlir = Ast2HLIR::new();
+
+        let mut file = ast2hlir.file(ast);
+        file.name = String::from("test");
+
+        let mut resolver = TypeResolver::new();
+        let _ = resolver.detect_type(&file);
+        let _ = resolver.preload_file(file.clone());
+        let f = resolver.file(file);
+
+        assert_eq!(
+            f,
+            Result::Ok(TypedFile {
+                name: "test".to_string(),
+                body: vec![TypedDecl::Fun(TypedFun {
+                    modifiers: vec![],
+                    name: "function".to_string(),
+                    type_params: None,
+                    arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
+                        label: "_".to_string(),
+                        name: "i".to_string(),
+                        type_: TypedType::int32()
+                    })],
+                    body: Some(TypedFunBody::Expr(TypedExpr::Name(TypedName {
+                        name: "i".to_string(),
+                        type_: Some(TypedType::int32())
+                    }))),
+                    return_type: Some(TypedType::int32())
+                })],
+            })
+        );
+    }
+
+    #[test]
+    fn test_function_call() {
+        let source = r"
+        fun target_function() = 1
+        fun main() {
+            target_function()
+        }
+        ";
+        let ast = parse_from_string(String::from(source)).unwrap();
+
+        let mut ast2hlir = Ast2HLIR::new();
+
+        let mut file = ast2hlir.file(ast);
+        file.name = String::from("test");
+
+        let mut resolver = TypeResolver::new();
+        let _ = resolver.detect_type(&file);
+        let _ = resolver.preload_file(file.clone());
+        let f = resolver.file(file);
+
+        assert_eq!(
+            f,
+            Result::Ok(TypedFile {
+                name: "test".to_string(),
+                body: vec![
+                    TypedDecl::Fun(TypedFun {
+                        modifiers: vec![],
+                        name: "target_function".to_string(),
+                        type_params: None,
+                        arg_defs: vec![],
+                        body: Some(TypedFunBody::Expr(TypedExpr::Literal(
+                            TypedLiteral::Integer {
+                                value: "1".to_string(),
+                                type_: Some(TypedType::int64()),
+                            },
+                        ))),
+                        return_type: Some(TypedType::int64()),
+                    }),
+                    TypedDecl::Fun(TypedFun {
+                        modifiers: vec![],
+                        name: "main".to_string(),
+                        type_params: None,
+                        arg_defs: vec![],
+                        body: Some(TypedFunBody::Block(TypedBlock {
+                            body: vec![TypedStmt::Expr(TypedExpr::Call(TypedCall {
+                                target: Box::new(TypedExpr::Name(TypedName {
+                                    name: "target_function".to_string(),
+                                    type_: Some(TypedType::Function(Box::new(TypedFunctionType {
+                                        arguments: vec![],
+                                        return_type: TypedType::int64()
+                                    })))
+                                })),
+                                args: vec![],
+                                type_: Some(TypedType::int64())
+                            }))]
+                        })),
+                        return_type: Some(TypedType::unit())
+                    })
+                ],
+            })
+        );
+    }
+
+    #[test]
+    fn test_return_integer_literal() {
+        let source = r"
+        fun sample(): Int64 {
+            return 1
+        }
+        ";
+        let ast = parse_from_string(String::from(source)).unwrap();
+
+        let mut ast2hlir = Ast2HLIR::new();
+
+        let mut file = ast2hlir.file(ast);
+        file.name = String::from("test");
+
+        let mut resolver = TypeResolver::new();
+        let _ = resolver.detect_type(&file);
+        let _ = resolver.preload_file(file.clone());
+        let f = resolver.file(file);
+
+        assert_eq!(
+            f,
+            Result::Ok(TypedFile {
+                name: "test".to_string(),
+                body: vec![TypedDecl::Fun(TypedFun {
+                    modifiers: vec![],
+                    name: "sample".to_string(),
+                    type_params: None,
+                    arg_defs: vec![],
+                    body: Option::from(TypedFunBody::Block(TypedBlock {
+                        body: vec![TypedStmt::Expr(TypedExpr::Return(TypedReturn {
+                            value: Option::Some(Box::new(TypedExpr::Literal(
+                                TypedLiteral::Integer {
+                                    value: "1".to_string(),
+                                    type_: Some(TypedType::int64())
+                                }
+                            ))),
+                            type_: Some(TypedType::int64())
+                        }))]
+                    })),
+                    return_type: Some(TypedType::int64())
+                })]
+            })
+        );
+    }
+
+    #[test]
+    fn test_binop() {
+        let source = r"
+        fun sample() {
+            1 + 2
+        }
+        ";
+        let ast = parse_from_string(String::from(source)).unwrap();
+
+        let mut ast2hlir = Ast2HLIR::new();
+
+        let mut file = ast2hlir.file(ast);
+        file.name = String::from("test");
+
+        let mut resolver = TypeResolver::new();
+        let _ = resolver.detect_type(&file);
+        let _ = resolver.preload_file(file.clone());
+        let f = resolver.file(file);
+
+        assert_eq!(
+            f,
+            Result::Ok(TypedFile {
+                name: "test".to_string(),
+                body: vec![TypedDecl::Fun(TypedFun {
+                    modifiers: vec![],
+                    name: "sample".to_string(),
+                    type_params: None,
+                    arg_defs: vec![],
+                    body: Option::from(TypedFunBody::Block(TypedBlock {
+                        body: vec![TypedStmt::Expr(TypedExpr::BinOp(TypedBinOp {
+                            left: Box::new(TypedExpr::Literal(TypedLiteral::Integer {
+                                value: "1".to_string(),
+                                type_: Some(TypedType::int64()),
+                            })),
+                            kind: "+".to_string(),
+                            right: Box::new(TypedExpr::Literal(TypedLiteral::Integer {
+                                value: "2".to_string(),
+                                type_: Some(TypedType::int64()),
+                            })),
+                            type_: Some(TypedType::int64()),
+                        }))],
+                    })),
+                    return_type: Some(TypedType::unit())
+                })]
+            })
+        );
     }
 }

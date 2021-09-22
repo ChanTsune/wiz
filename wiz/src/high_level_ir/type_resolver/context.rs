@@ -1,4 +1,7 @@
-use crate::high_level_ir::typed_type::TypedType;
+use crate::constants::UNSAFE_POINTER;
+use crate::high_level_ir::type_resolver::error::ResolverError;
+use crate::high_level_ir::type_resolver::result::Result;
+use crate::high_level_ir::typed_type::{Package, TypedType, TypedValueType};
 use std::collections::{HashMap, HashSet};
 use std::fmt;
 
@@ -11,7 +14,6 @@ pub(crate) struct ResolverTypeParam {
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct ResolverStruct {
     pub(crate) stored_properties: HashMap<String, TypedType>,
-    // pub(crate) initializers: Vec<>,
     pub(crate) computed_properties: HashMap<String, TypedType>,
     pub(crate) member_functions: HashMap<String, TypedType>,
     pub(crate) static_functions: HashMap<String, TypedType>,
@@ -34,13 +36,6 @@ struct ResolverSubscript {
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
-struct ResolverBinary {
-    right: TypedType,
-    left: TypedType,
-    return_type: TypedType,
-}
-
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
 struct ResolverUnary {
     value: TypedType,
     return_type: TypedType,
@@ -55,10 +50,29 @@ enum BinaryOperator {
     Mod,
 }
 
+impl From<&str> for BinaryOperator {
+    fn from(op: &str) -> Self {
+        match op {
+            "+" => Self::Add,
+            "-" => Self::Sub,
+            "*" => Self::Mul,
+            "/" => Self::Div,
+            "%" => Self::Mod,
+            _ => panic!("Undefined op kind {:?}", op),
+        }
+    }
+}
+
+impl BinaryOperator {
+    fn all() -> Vec<BinaryOperator> {
+        vec![Self::Add, Self::Sub, Self::Mul, Self::Div, Self::Mod]
+    }
+}
+
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct ResolverContext {
     name_space: NameSpace,
-    binary_operators: HashMap<BinaryOperator, Vec<ResolverBinary>>,
+    binary_operators: HashMap<(BinaryOperator, TypedType, TypedType), TypedType>,
     subscripts: Vec<ResolverSubscript>,
     pub(crate) current_namespace: Vec<String>,
     current_type: Option<TypedType>,
@@ -114,17 +128,37 @@ impl NameSpace {
 impl ResolverContext {
     pub(crate) fn new() -> Self {
         let mut ns = NameSpace::new();
+
+        let mut rs_for_pointer = ResolverStruct::new();
+        let mut tp_map_for_pointer = HashMap::new();
+        tp_map_for_pointer.insert(
+            String::from("T"),
+            ResolverTypeParam {
+                type_constraints: vec![],
+                type_params: None,
+            },
+        );
+        rs_for_pointer.type_params = Some(tp_map_for_pointer);
+        ns.types
+            .insert(String::from(UNSAFE_POINTER), rs_for_pointer);
+
         for t in TypedType::builtin_types() {
             match &t {
                 TypedType::Value(v) => {
                     ns.types.insert(v.name.clone(), ResolverStruct::new());
                 }
-                TypedType::Function(_) => {}
+                _ => {}
             };
+        }
+        let mut bo = HashMap::new();
+        for op in BinaryOperator::all() {
+            for t in TypedType::integer_types() {
+                bo.insert((op.clone(), t.clone(), t.clone()), t);
+            }
         }
         Self {
             name_space: ns,
-            binary_operators: Default::default(),
+            binary_operators: bo,
             subscripts: vec![],
             current_namespace: vec![],
             current_type: None,
@@ -140,14 +174,15 @@ impl ResolverContext {
         self.current_namespace.pop();
     }
 
-    pub fn get_current_namespace_mut(&mut self) -> Option<&mut NameSpace> {
-        println!("NS => {:?}", self.current_namespace);
-        self.name_space
-            .get_child_mut(self.current_namespace.clone())
+    pub fn get_current_namespace_mut(&mut self) -> Result<&mut NameSpace> {
+        self.get_namespace_mut(self.current_namespace.clone())
     }
 
-    pub fn get_namespace_mut(&mut self, ns: Vec<String>) -> Option<&mut NameSpace> {
-        self.name_space.get_child_mut(ns)
+    pub fn get_namespace_mut(&mut self, ns: Vec<String>) -> Result<&mut NameSpace> {
+        let msg = format!("NameSpace {:?} not exist", ns);
+        self.name_space
+            .get_child_mut(ns)
+            .ok_or(ResolverError::from(msg))
     }
 
     pub fn get_current_type(&self) -> Option<TypedType> {
@@ -162,37 +197,107 @@ impl ResolverContext {
         self.current_type = None
     }
 
-    pub fn resolve_member_type(&mut self, t: TypedType, name: String) -> Option<TypedType> {
-        match t {
+    pub fn resolve_member_type(&mut self, t: TypedType, name: String) -> Result<TypedType> {
+        match &t {
             TypedType::Value(v) => {
-                let ns = self.get_namespace_mut(v.package.names)?;
-                println!("ns => {:?}", ns);
-                match ns.types.get(&v.name) {
-                    Some(rs) => rs.stored_properties.get(&name).map(|it| it.clone()),
-                    None => None,
-                }
+                let ns = self.get_namespace_mut(v.package.names.clone())?;
+                let rs = ns
+                    .types
+                    .get(&v.name)
+                    .ok_or(ResolverError::from(format!("Can not resolve type {:?}", t)))?;
+                rs.stored_properties
+                    .get(&name)
+                    .map(|it| it.clone())
+                    .ok_or(ResolverError::from(format!("{:?} not has {:?}", t, name)))
             }
-            TypedType::Function(_) => None,
+            TypedType::Type(v) => {
+                let ns = self.get_namespace_mut(v.package.names.clone())?;
+                let rs = ns
+                    .types
+                    .get(&v.name)
+                    .ok_or(ResolverError::from(format!("Can not resolve type {:?}", t)))?;
+                rs.static_functions
+                    .get(&name)
+                    .map(|it| it.clone())
+                    .ok_or(ResolverError::from(format!("{:?} not has {:?}", t, name)))
+            }
+            _ => todo!("dose not impl"),
         }
     }
 
-    pub fn resolve_name_type(&mut self, name: String) -> Option<TypedType> {
+    pub fn resolve_name_type(&mut self, name: String) -> Result<TypedType> {
         let mut cns = self.current_namespace.clone();
         loop {
             let ns = self.get_namespace_mut(cns.clone())?;
             if let Some(t) = ns.values.get(&name) {
-                return Some(t.clone());
+                return Result::Ok(t.clone());
             }
             if cns.is_empty() {
                 break;
             }
             cns.pop();
         }
-        None
+        Result::Err(ResolverError::from(format!(
+            "Cannot resolve name {:?}",
+            name
+        )))
+    }
+
+    pub fn resolve_binop_type(
+        &self,
+        left: TypedType,
+        kind: &str,
+        right: TypedType,
+    ) -> Result<TypedType> {
+        match kind {
+            "<" | "<=" | ">" | ">=" | "==" | "!=" => Result::Ok(TypedType::bool()),
+            _ => {
+                let op_kind = BinaryOperator::from(kind);
+                let key = (op_kind, left, right);
+                self.binary_operators
+                    .get(&key)
+                    .map(|t| t.clone())
+                    .ok_or(ResolverError::from(format!("{:?} is not defined.", key)))
+            }
+        }
+    }
+
+    pub fn full_type_name(&mut self, typ: TypedType) -> Result<TypedType> {
+        // TODO: change impl
+        if typ.is_primitive() {
+            return Result::Ok(typ);
+        };
+        let mut cns = self.current_namespace.clone();
+        loop {
+            let ns = self.get_namespace_mut(cns.clone())?;
+            match &typ {
+                TypedType::Value(v) => {
+                    if let Some(_) = ns.types.get(&v.name) {
+                        return Result::Ok(TypedType::Value(TypedValueType {
+                            package: Package { names: cns.clone() },
+                            name: v.name.clone(),
+                            type_args: v.type_args.clone(),
+                        }));
+                    };
+                }
+                _ => {
+                    todo!("Dose not impl")
+                }
+            }
+            if cns.is_empty() {
+                break;
+            }
+            cns.pop();
+        }
+        Result::Err(ResolverError::from(format!(
+            "Type {:?} dose not exist",
+            typ
+        )))
     }
 }
 
-mod test {
+#[cfg(test)]
+mod tests {
     use crate::high_level_ir::type_resolver::context::NameSpace;
     use crate::high_level_ir::typed_type::TypedType;
 

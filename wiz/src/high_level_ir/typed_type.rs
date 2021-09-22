@@ -1,3 +1,4 @@
+use crate::constants::UNSAFE_POINTER;
 use crate::high_level_ir::typed_decl::TypedArgDef;
 use std::fmt;
 
@@ -10,6 +11,7 @@ pub struct Package {
 pub enum TypedType {
     Value(TypedValueType),
     Function(Box<TypedFunctionType>),
+    Type(TypedValueType),
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
@@ -31,10 +33,16 @@ pub struct TypedTypeParam {
     pub(crate) type_constraint: Vec<TypedType>,
 }
 
+impl Package {
+    pub(crate) fn global() -> Self {
+        Self { names: vec![] }
+    }
+}
+
 impl TypedType {
     fn builtin(name: &str) -> TypedType {
         TypedType::Value(TypedValueType {
-            package: Package { names: vec![] },
+            package: Package::global(),
             name: String::from(name),
             type_args: None,
         })
@@ -96,22 +104,71 @@ impl TypedType {
         Self::builtin("String")
     }
 
-    pub fn builtin_types() -> Vec<TypedType> {
+    pub fn signed_integer_types() -> Vec<TypedType> {
+        vec![Self::int8(), Self::int16(), Self::int32(), Self::int64()]
+    }
+
+    pub fn unsigned_integer_types() -> Vec<TypedType> {
         vec![
-            Self::noting(),
-            Self::unit(),
-            Self::int8(),
-            Self::int16(),
-            Self::int32(),
-            Self::int64(),
             Self::uint8(),
             Self::uint16(),
             Self::uint32(),
             Self::uint64(),
-            Self::float(),
-            Self::double(),
-            Self::bool(),
-            Self::string(),
         ]
+    }
+
+    pub fn integer_types() -> Vec<TypedType> {
+        Self::signed_integer_types()
+            .into_iter()
+            .chain(Self::unsigned_integer_types())
+            .collect()
+    }
+
+    pub fn floating_point_types() -> Vec<TypedType> {
+        vec![Self::float(), Self::double()]
+    }
+
+    pub fn builtin_types() -> Vec<TypedType> {
+        Self::integer_types()
+            .into_iter()
+            .chain(Self::floating_point_types())
+            .chain(vec![
+                Self::noting(),
+                Self::unit(),
+                Self::bool(),
+                Self::string(),
+            ])
+            .collect()
+    }
+
+    pub fn is_primitive(&self) -> bool {
+        Self::builtin_types().contains(self)
+    }
+
+    pub fn is_floating_point(&self) -> bool {
+        Self::floating_point_types().contains(self)
+    }
+
+    pub fn is_signed_integer(&self) -> bool {
+        Self::signed_integer_types().contains(self)
+    }
+
+    pub fn is_unsigned_integer(&self) -> bool {
+        Self::unsigned_integer_types().contains(self)
+    }
+
+    pub fn is_integer(&self) -> bool {
+        Self::integer_types().contains(self)
+    }
+
+    pub fn is_pointer_type(&self) -> bool {
+        match self {
+            TypedType::Value(v) => v.name == UNSAFE_POINTER,
+            _ => false,
+        }
+    }
+
+    pub fn is_boolean(&self) -> bool {
+        Self::bool().eq(self)
     }
 }

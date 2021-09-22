@@ -150,20 +150,27 @@ pub fn stmts(s: &str) -> IResult<&str, Vec<Stmt>> {
 }
 
 pub fn file(s: &str) -> IResult<&str, FileSyntax> {
-    map(many0(tuple((whitespace0, decl, whitespace0))), |decls| {
-        FileSyntax {
+    map(
+        tuple((
+            whitespace0,
+            many0(tuple((whitespace0, decl, whitespace0))),
+            whitespace0,
+        )),
+        |(_, decls, _)| FileSyntax {
             body: decls.into_iter().map(|(_, f, _)| f).collect(),
-        }
-    })(s)
+        },
+    )(s)
 }
 
+#[cfg(test)]
 mod tests {
     use crate::ast::block::Block;
     use crate::ast::expr::{Expr, NameExprSyntax};
+    use crate::ast::file::FileSyntax;
     use crate::ast::literal::Literal;
     use crate::ast::stmt::{AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt};
     use crate::parser::nom::{
-        assignable_expr, assignment_stmt, directly_assignable_expr, while_stmt,
+        assignable_expr, assignment_stmt, directly_assignable_expr, file, while_stmt,
     };
 
     #[test]
@@ -348,5 +355,12 @@ mod tests {
                 }))
             ))
         )
+    }
+
+    #[test]
+    fn test_file_empty() {
+        assert_eq!(file(""), Ok(("", FileSyntax { body: vec![] })));
+        assert_eq!(file("\n"), Ok(("", FileSyntax { body: vec![] })));
+        assert_eq!(file(" "), Ok(("", FileSyntax { body: vec![] })));
     }
 }

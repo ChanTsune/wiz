@@ -10,7 +10,6 @@ pub enum TypedExpr {
     UnaryOp(TypedUnaryOp),
     Subscript(TypedSubscript),
     Member(TypedInstanceMember),
-    StaticMember(TypedStaticMember),
     List,
     Tuple,
     Dict,
@@ -21,7 +20,6 @@ pub enum TypedExpr {
     Lambda,
     Return(TypedReturn),
     TypeCast,
-    Type(TypedType),
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -39,11 +37,25 @@ pub struct TypedSubscript {
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum TypedLiteral {
-    Integer { value: String, type_: TypedType },
-    FloatingPoint { value: String, type_: TypedType },
-    String { value: String, type_: TypedType },
-    Boolean { value: String, type_: TypedType },
-    NullLiteral { type_: TypedType },
+    Integer {
+        value: String,
+        type_: Option<TypedType>,
+    },
+    FloatingPoint {
+        value: String,
+        type_: Option<TypedType>,
+    },
+    String {
+        value: String,
+        type_: Option<TypedType>,
+    },
+    Boolean {
+        value: String,
+        type_: Option<TypedType>,
+    },
+    NullLiteral {
+        type_: Option<TypedType>,
+    },
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -109,12 +121,11 @@ impl TypedExpr {
     pub fn type_(&self) -> Option<TypedType> {
         match self {
             TypedExpr::Name(name) => name.type_.clone(),
-            TypedExpr::Literal(l) => Some(l.type_()),
+            TypedExpr::Literal(l) => l.type_(),
             TypedExpr::BinOp(b) => b.type_.clone(),
             TypedExpr::UnaryOp(u) => u.type_.clone(),
             TypedExpr::Subscript(s) => s.type_.clone(),
             TypedExpr::Member(m) => m.type_.clone(),
-            TypedExpr::StaticMember(sm) => sm.type_.clone(),
             TypedExpr::List => None,
             TypedExpr::Tuple => None,
             TypedExpr::Dict => None,
@@ -125,13 +136,12 @@ impl TypedExpr {
             TypedExpr::Lambda => None,
             TypedExpr::Return(r) => r.type_.clone(),
             TypedExpr::TypeCast => None,
-            TypedExpr::Type(_) => None,
         }
     }
 }
 
 impl TypedLiteral {
-    pub fn type_(&self) -> TypedType {
+    pub fn type_(&self) -> Option<TypedType> {
         match self {
             TypedLiteral::Integer { value, type_ } => type_.clone(),
             TypedLiteral::FloatingPoint { value, type_ } => type_.clone(),
@@ -139,5 +149,25 @@ impl TypedLiteral {
             TypedLiteral::Boolean { value, type_ } => type_.clone(),
             TypedLiteral::NullLiteral { type_ } => type_.clone(),
         }
+    }
+
+    pub fn is_integer(&self) -> bool {
+        matches!(self, TypedLiteral::Integer { .. })
+    }
+
+    pub fn is_floating_point(&self) -> bool {
+        matches!(self, TypedLiteral::FloatingPoint { .. })
+    }
+
+    pub fn is_string(&self) -> bool {
+        matches!(self, TypedLiteral::String { .. })
+    }
+
+    pub fn is_boolean(&self) -> bool {
+        matches!(self, TypedLiteral::Boolean { .. })
+    }
+
+    pub fn is_null(&self) -> bool {
+        matches!(self, TypedLiteral::NullLiteral { .. })
     }
 }

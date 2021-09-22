@@ -11,7 +11,8 @@ pub(crate) fn path_string_to_page_name(path: String) -> String {
         .to_string()
 }
 
-mod test {
+#[cfg(test)]
+mod tests {
     use crate::utils::path_string_to_page_name;
 
     #[test]

@@ -5,7 +5,7 @@ use crate::high_level_ir::typed_decl::{
 };
 use crate::high_level_ir::typed_expr::{
     TypedBinOp, TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName,
-    TypedReturn, TypedStaticMember, TypedSubscript,
+    TypedReturn, TypedSubscript,
 };
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
@@ -15,6 +15,7 @@ use crate::middle_level_ir::ml_decl::{
 };
 use crate::middle_level_ir::ml_expr::{
     MLBinOp, MLBinopKind, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLMember, MLName, MLReturn,
+    MLSubscript,
 };
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
@@ -23,15 +24,19 @@ use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::HashMap;
 use std::process::exit;
 
+pub mod builder;
+pub mod format;
 pub mod ml_decl;
 pub mod ml_expr;
 pub mod ml_file;
+pub mod ml_node;
 pub mod ml_stmt;
 pub mod ml_type;
 
 struct HLIR2MLIRContext {
     generic_structs: StackedHashMap<String, TypedStruct>,
     structs: HashMap<MLValueType, MLStruct>,
+    current_name_space: Vec<String>,
 }
 
 pub struct HLIR2MLIR {
@@ -43,7 +48,16 @@ impl HLIR2MLIRContext {
         Self {
             generic_structs: StackedHashMap::from(HashMap::new()),
             structs: HashMap::new(),
+            current_name_space: vec![],
         }
+    }
+
+    pub(crate) fn push_name_space(&mut self, name: String) {
+        self.current_name_space.push(name)
+    }
+
+    pub(crate) fn pop_name_space(&mut self) {
+        self.current_name_space.pop();
     }
 }
 
@@ -67,6 +81,7 @@ impl HLIR2MLIR {
         match t {
             TypedType::Value(t) => MLType::Value(self.value_type(t)),
             TypedType::Function(f) => MLType::Function(self.function_type(*f)),
+            _ => panic!("Invalid Type convert  {:?}", t),
         }
     }
 
@@ -81,8 +96,21 @@ impl HLIR2MLIR {
             }
         } else {
             let mut pkg = t.package.names;
-            pkg.push(t.name);
-            MLValueType::Name(pkg.join("::"))
+            if pkg.is_empty() {
+                match &*t.name {
+                    "Unit" | "Int8" | "UInt8" | "Int16" | "UInt16" | "Int32" | "UInt32"
+                    | "Int64" | "UInt64" | "Bool" | "Float" | "Double" | "String" => {
+                        MLValueType::Primitive(t.name)
+                    }
+                    other => {
+                        pkg.push(String::from(other));
+                        MLValueType::Struct(pkg.join("::"))
+                    }
+                }
+            } else {
+                pkg.push(t.name);
+                MLValueType::Struct(pkg.join("::"))
+            }
         }
     }
 
@@ -130,10 +158,13 @@ impl HLIR2MLIR {
     }
 
     pub fn file(&mut self, f: TypedFile) -> MLFile {
-        MLFile {
+        self.context.push_name_space(f.name.clone());
+        let f = MLFile {
             name: f.name,
             body: f.body.into_iter().map(|d| self.decl(d)).flatten().collect(),
-        }
+        };
+        self.context.pop_name_space();
+        f
     }
 
     pub fn stmt(&mut self, s: TypedStmt) -> Vec<MLStmt> {
@@ -224,7 +255,7 @@ impl HLIR2MLIR {
             modifiers,
             name,
             arg_defs: args,
-            return_type: self.type_(return_type),
+            return_type: self.type_(return_type.unwrap()).into_value_type(),
             body: body.map(|b| self.fun_body(b)),
         }
     }
@@ -239,8 +270,10 @@ impl HLIR2MLIR {
             member_functions,
             static_function,
         } = s;
+        let mut ns = self.context.current_name_space.clone();
+        ns.push(name.clone());
         let struct_ = MLStruct {
-            name: name.clone(),
+            name: ns.join("::"),
             fields: stored_properties
                 .into_iter()
                 .map(|p| MLField {
@@ -249,7 +282,7 @@ impl HLIR2MLIR {
                 })
                 .collect(),
         };
-        let value_type = MLValueType::Name(struct_.name.clone());
+        let value_type = MLValueType::Struct(struct_.name.clone());
         self.add_struct(value_type.clone(), struct_.clone());
 
         let mut init: Vec<MLFun> = init
@@ -263,7 +296,7 @@ impl HLIR2MLIR {
                         is_mute: true,
                         name: String::from("self"),
                         value: MLExpr::Literal(MLLiteral::Struct {
-                            type_: type_.clone(),
+                            type_: type_.clone().into_value_type(),
                         }),
                         type_: type_.clone(),
                     })),
@@ -279,7 +312,7 @@ impl HLIR2MLIR {
                     modifiers: vec![],
                     name: name.clone() + "#init",
                     arg_defs: i.args.into_iter().map(|a| self.arg_def(a)).collect(),
-                    return_type: type_,
+                    return_type: type_.into_value_type(),
                     body: Some(MLFunBody { body }),
                 }
             })
@@ -298,14 +331,14 @@ impl HLIR2MLIR {
                 let mut a = args.into_iter().map(|a| self.arg_def(a)).collect();
                 let mut args = vec![MLArgDef {
                     name: String::from("self"),
-                    type_: MLType::Value(value_type.clone()),
+                    type_: value_type.clone(),
                 }];
                 args.append(&mut a);
                 MLFun {
                     modifiers: vec![],
                     name: name.clone() + "::" + &fname,
                     arg_defs: args,
-                    return_type: self.type_(return_type),
+                    return_type: self.type_(return_type).into_value_type(),
                     body: Some(self.fun_body(body)),
                 }
             })
@@ -320,37 +353,10 @@ impl HLIR2MLIR {
         match e {
             TypedExpr::Name(name) => MLExpr::Name(self.name(name)),
             TypedExpr::Literal(l) => MLExpr::Literal(self.literal(l)),
-            TypedExpr::BinOp(TypedBinOp {
-                left,
-                kind,
-                right,
-                type_,
-            }) => MLExpr::PrimitiveBinOp(MLBinOp {
-                left: Box::new(self.expr(*left)),
-                kind: match &*kind {
-                    "+" => MLBinopKind::Plus,
-                    "-" => MLBinopKind::Minus,
-                    "*" => MLBinopKind::Mul,
-                    "/" => MLBinopKind::Div,
-                    "%" => MLBinopKind::Mod,
-                    "==" => MLBinopKind::Equal,
-                    ">=" => MLBinopKind::GrateThanEqual,
-                    ">" => MLBinopKind::GrateThan,
-                    "<=" => MLBinopKind::LessThanEqual,
-                    "<" => MLBinopKind::LessThan,
-                    "!=" => MLBinopKind::NotEqual,
-                    _ => {
-                        eprintln!("Unknown operator '{:?}'", kind);
-                        exit(-1)
-                    }
-                },
-                right: Box::new(self.expr(*right)),
-                type_: self.type_(type_.unwrap()),
-            }),
-            TypedExpr::UnaryOp { .. } => exit(-1),
+            TypedExpr::BinOp(b) => MLExpr::PrimitiveBinOp(self.binop(b)),
+            TypedExpr::UnaryOp { .. } => exit(-2),
             TypedExpr::Subscript(s) => self.subscript(s),
             TypedExpr::Member(m) => self.member(m),
-            TypedExpr::StaticMember(sm) => self.static_member(sm),
             TypedExpr::List => exit(-1),
             TypedExpr::Tuple => exit(-1),
             TypedExpr::Dict => exit(-1),
@@ -361,15 +367,10 @@ impl HLIR2MLIR {
             TypedExpr::Lambda => exit(-1),
             TypedExpr::Return(r) => MLExpr::Return(self.return_expr(r)),
             TypedExpr::TypeCast => exit(-1),
-            TypedExpr::Type(t) => {
-                eprintln!("Never execution branch executed!! => {:?}", t);
-                exit(-1)
-            }
         }
     }
 
     pub fn name(&self, n: TypedName) -> MLName {
-        println!("MLIR => name :: {:?}", &n);
         MLName {
             name: n.name,
             type_: self.type_(n.type_.unwrap()),
@@ -380,27 +381,83 @@ impl HLIR2MLIR {
         match l {
             TypedLiteral::Integer { value, type_ } => MLLiteral::Integer {
                 value: value,
-                type_: self.type_(type_),
+                type_: self.type_(type_.unwrap()).into_value_type(),
             },
             TypedLiteral::FloatingPoint { value, type_ } => MLLiteral::FloatingPoint {
                 value: value,
-                type_: self.type_(type_),
+                type_: self.type_(type_.unwrap()).into_value_type(),
             },
             TypedLiteral::String { value, type_ } => MLLiteral::String {
                 value: value,
-                type_: self.type_(type_),
+                type_: self.type_(type_.unwrap()).into_value_type(),
             },
             TypedLiteral::Boolean { value, type_ } => MLLiteral::Boolean {
                 value: value,
-                type_: self.type_(type_),
+                type_: self.type_(type_.unwrap()).into_value_type(),
             },
             TypedLiteral::NullLiteral { type_ } => MLLiteral::Null {
-                type_: self.type_(type_),
+                type_: self.type_(type_.unwrap()).into_value_type(),
             },
         }
     }
 
+    pub fn binop(&mut self, b: TypedBinOp) -> MLBinOp {
+        let TypedBinOp {
+            left,
+            kind,
+            right,
+            type_,
+        } = b;
+        MLBinOp {
+            left: Box::new(self.expr(*left)),
+            kind: match &*kind {
+                "+" => MLBinopKind::Plus,
+                "-" => MLBinopKind::Minus,
+                "*" => MLBinopKind::Mul,
+                "/" => MLBinopKind::Div,
+                "%" => MLBinopKind::Mod,
+                "==" => MLBinopKind::Equal,
+                ">=" => MLBinopKind::GrateThanEqual,
+                ">" => MLBinopKind::GrateThan,
+                "<=" => MLBinopKind::LessThanEqual,
+                "<" => MLBinopKind::LessThan,
+                "!=" => MLBinopKind::NotEqual,
+                _ => {
+                    eprintln!("Unknown operator '{:?}'", kind);
+                    exit(-1)
+                }
+            },
+            right: Box::new(self.expr(*right)),
+            type_: self.type_(type_.unwrap()),
+        }
+    }
+
     pub fn subscript(&mut self, s: TypedSubscript) -> MLExpr {
+        let t = s.target.type_().unwrap();
+        if t.is_pointer_type() && s.indexes.len() == 1 {
+            match t {
+                TypedType::Value(v) => {
+                    if v.type_args.as_ref().unwrap()[0].is_primitive() {
+                        MLExpr::PrimitiveSubscript(MLSubscript {
+                            target: Box::new(self.expr(*s.target)),
+                            index: Box::new(self.expr(s.indexes[0].clone())),
+                            type_: self.type_(v.type_args.unwrap()[0].clone()),
+                        })
+                    } else {
+                        self.subscript_for_user_defined(s)
+                    }
+                }
+                _ => {
+                    eprintln!("function pointer detected");
+                    exit(-1)
+                }
+            }
+        } else {
+            self.subscript_for_user_defined(s)
+        }
+    }
+
+    fn subscript_for_user_defined(&mut self, s: TypedSubscript) -> MLExpr {
         MLExpr::Call(MLCall {
             target: Box::new(self.expr(*s.target)),
             args: s
@@ -419,35 +476,41 @@ impl HLIR2MLIR {
             is_safe,
             type_,
         } = m;
-        let target = self.expr(*target);
-        let struct_ = self.get_struct(&target.type_());
-        let type_ = self.type_(type_.unwrap());
-        let is_stored = struct_.fields.iter().any(|f| f.name == name);
-        if is_stored {
-            MLExpr::Member(MLMember {
-                target: Box::new(target),
-                name,
-                type_,
-            })
-        } else {
-            MLExpr::Call(MLCall {
-                target: Box::new(MLExpr::Name(MLName {
-                    name: target.type_().into_value_type().name() + "." + &*name,
-                    type_: type_.clone(),
-                })),
-                args: vec![],
-                type_: type_,
-            })
+        match target.type_().unwrap() {
+            TypedType::Value(_) => {
+                let target = self.expr(*target);
+                let struct_ = self.get_struct(&target.type_());
+                let type_ = self.type_(type_.unwrap());
+                let is_stored = struct_.fields.iter().any(|f| f.name == name);
+                if is_stored {
+                    MLExpr::Member(MLMember {
+                        target: Box::new(target),
+                        name,
+                        type_,
+                    })
+                } else {
+                    MLExpr::Call(MLCall {
+                        target: Box::new(MLExpr::Name(MLName {
+                            name: target.type_().into_value_type().name() + "." + &*name,
+                            type_: type_.clone(),
+                        })),
+                        args: vec![],
+                        type_: type_,
+                    })
+                }
+            }
+            TypedType::Function(f) => {
+                todo!("Member function access => {:?}", f)
+            }
+            TypedType::Type(t) => {
+                let type_ = self.type_(type_.unwrap());
+                MLExpr::Name(MLName {
+                    name: t.name + "#" + &*name,
+                    type_,
+                })
+            }
         }
         // else field as function call etc...
-    }
-
-    pub fn static_member(&self, sm: TypedStaticMember) -> MLExpr {
-        let type_name = self.type_(sm.target).into_value_type().name();
-        MLExpr::Name(MLName {
-            name: type_name + "#" + &*sm.name,
-            type_: self.type_(sm.type_.unwrap()),
-        })
     }
 
     pub fn call(&mut self, c: TypedCall) -> MLCall {
@@ -487,7 +550,7 @@ impl HLIR2MLIR {
     pub fn arg_def(&self, e: TypedArgDef) -> MLArgDef {
         MLArgDef {
             name: e.name(),
-            type_: self.type_(e.type_().unwrap()),
+            type_: self.type_(e.type_().unwrap()).into_value_type(),
         }
     }
 

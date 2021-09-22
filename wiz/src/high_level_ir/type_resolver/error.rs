@@ -9,9 +9,13 @@ pub struct ResolverError {
 
 impl From<&str> for ResolverError {
     fn from(message: &str) -> Self {
-        Self {
-            message: String::from(message),
-        }
+        Self::from(String::from(message))
+    }
+}
+
+impl From<String> for ResolverError {
+    fn from(message: String) -> Self {
+        Self { message }
     }
 }
 

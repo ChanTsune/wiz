@@ -1,6 +1,7 @@
 use crate::middle_level_ir::ml_decl::{MLDecl, MLFun, MLStruct, MLVar};
 use crate::middle_level_ir::ml_expr::{
-    MLBinOp, MLBinopKind, MLCall, MLExpr, MLIf, MLLiteral, MLMember, MLReturn, MLUnaryOp,
+    MLBinOp, MLBinopKind, MLCall, MLExpr, MLIf, MLLiteral, MLMember, MLReturn, MLSubscript,
+    MLUnaryOp,
 };
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
@@ -72,7 +73,7 @@ impl<'ctx> CodeGen<'ctx> {
     fn get_struct_field_index_by_name(&self, m: MLType, n: String) -> Option<u32> {
         match m {
             MLType::Value(m) => match m {
-                MLValueType::Name(type_name) => match self.ml_context.get_struct(&type_name) {
+                MLValueType::Struct(type_name) => match self.ml_context.get_struct(&type_name) {
                     None => {
                         eprintln!("Type {:?} dose not defined.", type_name);
                         None
@@ -85,7 +86,7 @@ impl<'ctx> CodeGen<'ctx> {
                         Some(i) => Some(i as u32),
                     },
                 },
-                MLValueType::Pointer(p) => {
+                p => {
                     eprintln!("Invalid type '{:?}'", p);
                     None
                 }
@@ -98,12 +99,12 @@ impl<'ctx> CodeGen<'ctx> {
     }
 
     pub fn expr(&mut self, e: MLExpr) -> AnyValueEnum<'ctx> {
-        println!("{:?}", e);
         match e {
             MLExpr::Name(n) => self.get_from_environment(n.name).unwrap(),
             MLExpr::Literal(literal) => self.literal(literal),
             MLExpr::PrimitiveBinOp(b) => self.binop(b),
             MLExpr::PrimitiveUnaryOp(u) => self.unaryop(u),
+            MLExpr::PrimitiveSubscript(s) => self.subscript(s),
             MLExpr::Call(c) => self.call(c),
             MLExpr::Member(m) => self.member(m),
             MLExpr::If(i) => self.if_expr(i),
@@ -117,9 +118,8 @@ impl<'ctx> CodeGen<'ctx> {
         match l {
             MLLiteral::Integer { value, type_ } => {
                 let i: u64 = value.parse().unwrap();
-                let type_ = type_.into_value_type();
                 let int_type = match type_ {
-                    MLValueType::Name(name) => match &*name {
+                    MLValueType::Primitive(name) => match &*name {
                         "Int8" | "UInt8" => self.context.i8_type(),
                         "Int16" | "UInt16" => self.context.i16_type(),
                         "Int32" | "UInt32" => self.context.i32_type(),
@@ -129,7 +129,7 @@ impl<'ctx> CodeGen<'ctx> {
                             exit(-1)
                         }
                     },
-                    MLValueType::Pointer(p) => {
+                    p => {
                         eprintln!("Invalid MLIR Literal {:?}", p);
                         exit(-1)
                     }
@@ -138,9 +138,8 @@ impl<'ctx> CodeGen<'ctx> {
             }
             MLLiteral::FloatingPoint { value, type_ } => {
                 let f: f64 = value.parse().unwrap();
-                let type_ = type_.into_value_type();
                 let float_type = match type_ {
-                    MLValueType::Name(name) => match &*name {
+                    MLValueType::Primitive(name) => match &*name {
                         "Float" => self.context.f32_type(),
                         "Double" => self.context.f64_type(),
                         _ => {
@@ -148,7 +147,7 @@ impl<'ctx> CodeGen<'ctx> {
                             exit(-1)
                         }
                     },
-                    MLValueType::Pointer(p) => {
+                    p => {
                         eprintln!("Invalid MLIR Literal {:?}", p);
                         exit(-1)
                     }
@@ -177,10 +176,9 @@ impl<'ctx> CodeGen<'ctx> {
                 exit(-2)
             }
             MLLiteral::Struct { type_ } => {
-                let type_ = type_.into_value_type();
                 let struct_type = self.module.get_struct_type(&*match type_ {
-                    MLValueType::Name(name) => name,
-                    MLValueType::Pointer(p) => {
+                    MLValueType::Struct(name) => name,
+                    p => {
                         eprintln!("Invalid Struct Literal p");
                         exit(-1)
                     }
@@ -193,15 +191,19 @@ impl<'ctx> CodeGen<'ctx> {
 
     pub fn call(&mut self, c: MLCall) -> AnyValueEnum<'ctx> {
         let target = self.expr(*c.target);
-        println!("{:?}", &(c.args));
         let args = c.args.into_iter().map(|arg| {
-            if let MLValueType::Name(name) = arg.arg.type_().into_value_type() {
+            if let MLValueType::Primitive(name) = arg.arg.type_().into_value_type() {
                 if name != String::from("String") {
+                    let t = arg.type_().into_value_type();
                     let e = self.expr(arg.arg);
-                    self.load_if_pointer_value(e)
+                    self.load_if_pointer_value(e, &t)
                 } else {
                     self.expr(arg.arg)
                 }
+            } else if let MLValueType::Pointer(p) = arg.arg.type_().into_value_type() {
+                let t = arg.type_().into_value_type();
+                let e = self.expr(arg.arg);
+                self.load_if_pointer_value(e, &t)
             } else {
                 self.expr(arg.arg)
             }
@@ -209,30 +211,24 @@ impl<'ctx> CodeGen<'ctx> {
         let args: Vec<BasicValueEnum> = args
             .filter_map(|arg| BasicValueEnum::try_from(arg).ok())
             .collect();
-        match target {
-            AnyValueEnum::FunctionValue(function) => {
-                let bv = self
-                    .builder
-                    .build_call(function, &args, "f_call")
-                    .try_as_basic_value();
-                match bv {
-                    Either::Left(vb) => AnyValueEnum::from(vb),
-                    Either::Right(iv) => AnyValueEnum::from(iv),
-                }
-            }
-            AnyValueEnum::PointerValue(p) => {
-                println!("{:?}", p);
-                exit(-12)
-            }
-            _ => exit(-12),
+        let function = target.into_function_value();
+        let bv = self
+            .builder
+            .build_call(function, &args, "f_call")
+            .try_as_basic_value();
+        match bv {
+            Either::Left(vb) => AnyValueEnum::from(vb),
+            Either::Right(iv) => AnyValueEnum::from(iv),
         }
     }
 
     pub fn binop(&mut self, b: MLBinOp) -> AnyValueEnum<'ctx> {
+        let l_type = b.left.type_().into_value_type();
+        let r_type = b.right.type_().into_value_type();
         let lft = self.expr(*b.left);
         let rit = self.expr(*b.right);
-        let lft = self.load_if_pointer_value(lft);
-        let rit = self.load_if_pointer_value(rit);
+        let lft = self.load_if_pointer_value(lft, &l_type);
+        let rit = self.load_if_pointer_value(rit, &r_type);
 
         match (lft, rit) {
             (AnyValueEnum::IntValue(left), AnyValueEnum::IntValue(right)) => match b.kind {
@@ -363,14 +359,55 @@ impl<'ctx> CodeGen<'ctx> {
         exit(-1)
     }
 
+    pub fn subscript(&mut self, s: MLSubscript) -> AnyValueEnum<'ctx> {
+        let i_type = s.index.type_().into_value_type();
+        let t_type = s.target.type_().into_value_type();
+        let target = self.expr(*s.target);
+        let target = self.load_if_pointer_value(target, &t_type);
+        let index = self.expr(*s.index);
+        let index = self.load_if_pointer_value(index, &i_type);
+        match target {
+            // AnyValueEnum::ArrayValue(_) => {}
+            // AnyValueEnum::IntValue(_) => {}
+            // AnyValueEnum::FloatValue(_) => {}
+            // AnyValueEnum::PhiValue(_) => {}
+            // AnyValueEnum::FunctionValue(_) => {}
+            AnyValueEnum::PointerValue(p) => unsafe {
+                let i = self
+                    .builder
+                    .build_in_bounds_gep(p, &[index.into_int_value()], "idx");
+                i.as_any_value_enum()
+            },
+            // AnyValueEnum::StructValue(_) => {}
+            // AnyValueEnum::VectorValue(_) => {}
+            // AnyValueEnum::InstructionValue(_) => {}
+            t => {
+                eprintln!("unsupported subscript {:?}", t);
+                exit(-1)
+            }
+        }
+    }
+
     pub fn member(&mut self, m: MLMember) -> AnyValueEnum<'ctx> {
         let field_index = self
             .get_struct_field_index_by_name(m.target.type_(), m.name)
             .unwrap();
-        let target = self.expr(*m.target);
+        let target = match self.expr(*m.target) {
+            AnyValueEnum::PointerValue(p) => p,
+            AnyValueEnum::StructValue(_) => {
+                eprintln!("never execution branch executed.");
+                eprintln!("struct member can not access directly.");
+                exit(-2)
+            }
+            _ => {
+                eprintln!("never execution branch executed.");
+                exit(-2)
+            }
+        };
+
         let ep = self
             .builder
-            .build_struct_gep(target.into_pointer_value(), field_index, "struct_gep")
+            .build_struct_gep(target, field_index, "struct_gep")
             .unwrap();
         ep.as_any_value_enum()
     }
@@ -386,7 +423,7 @@ impl<'ctx> CodeGen<'ctx> {
                     .append_basic_block(self.ml_context.current_function.unwrap(), "if");
                 let after_if_block = self
                     .context
-                    .append_basic_block(self.ml_context.current_function.unwrap(), "else");
+                    .append_basic_block(self.ml_context.current_function.unwrap(), "after_if");
                 let cond = self.expr(*condition);
                 self.builder.build_conditional_branch(
                     cond.into_int_value(),
@@ -397,6 +434,7 @@ impl<'ctx> CodeGen<'ctx> {
                 for stmt in body.body {
                     self.stmt(stmt);
                 }
+                self.builder.build_unconditional_branch(after_if_block);
                 self.builder.position_at_end(after_if_block);
 
                 self.context
@@ -447,10 +485,13 @@ impl<'ctx> CodeGen<'ctx> {
                     let n = self.expr(*e);
                     Some(self.builder.build_load(n.into_pointer_value(), "v"))
                 }
-                _ => match BasicValueEnum::try_from(self.expr(*e)) {
-                    Ok(b) => Some(b),
-                    Err(_) => None,
-                },
+                MLExpr::PrimitiveSubscript(_) => {
+                    let s_type = e.type_().into_value_type();
+                    let s = self.expr(*e);
+                    let s = self.load_if_pointer_value(s, &s_type);
+                    Some(BasicValueEnum::try_from(s).unwrap())
+                }
+                _ => Some(BasicValueEnum::try_from(self.expr(*e)).unwrap()),
             },
             None => None,
         };
@@ -463,8 +504,9 @@ impl<'ctx> CodeGen<'ctx> {
 
     pub fn block(&mut self, b: MLBlock) -> AnyValueEnum<'ctx> {
         let i64_type = self.context.i64_type(); // Void
-        let last_index = b.body.len() - 1;
+        let len = b.body.len();
         for (i, stmt) in b.body.into_iter().enumerate() {
+            let last_index = len - 1;
             if i == last_index {
                 return self.stmt(stmt);
             } else {
@@ -474,8 +516,12 @@ impl<'ctx> CodeGen<'ctx> {
         AnyValueEnum::from(i64_type.const_int(0, false))
     }
 
-    pub fn load_if_pointer_value(&self, v: AnyValueEnum<'ctx>) -> AnyValueEnum<'ctx> {
-        if v.is_pointer_value() {
+    fn load_if_pointer_value(
+        &self,
+        v: AnyValueEnum<'ctx>,
+        typ: &MLValueType,
+    ) -> AnyValueEnum<'ctx> {
+        if Self::need_load(v.get_type(), typ) {
             let p = v.into_pointer_value();
             self.builder.build_load(p, "v").as_any_value_enum()
         } else {
@@ -483,8 +529,20 @@ impl<'ctx> CodeGen<'ctx> {
         }
     }
 
+    fn need_load(may_be_pointer: AnyTypeEnum<'ctx>, request_type: &MLValueType) -> bool {
+        match may_be_pointer {
+            AnyTypeEnum::PointerType(p) => match request_type {
+                MLValueType::Primitive(prim) => true,
+                MLValueType::Struct(s) => true,
+                MLValueType::Pointer(r) | MLValueType::Reference(r) => {
+                    Self::need_load(p.get_element_type(), r)
+                }
+            },
+            _ => false,
+        }
+    }
+
     pub fn decl(&mut self, d: MLDecl) -> AnyValueEnum<'ctx> {
-        println!("{:?}", &d);
         match d {
             MLDecl::Var(v) => self.var(v),
             MLDecl::Fun(f) => self.fun(f),
@@ -499,7 +557,9 @@ impl<'ctx> CodeGen<'ctx> {
             type_,
             value,
         } = v;
+        let v_type = type_.clone().into_value_type();
         let value = self.expr(value);
+        let value = self.load_if_pointer_value(value, &v_type);
         match value {
             AnyValueEnum::IntValue(i) => {
                 let int_type = i.get_type();
@@ -519,7 +579,10 @@ impl<'ctx> CodeGen<'ctx> {
                 self.set_to_environment(name, ptr.as_any_value_enum());
                 self.builder.build_store(ptr, s).as_any_value_enum()
             }
-            _ => exit(-14),
+            t => {
+                eprintln!("undefined root executed {:?}", t);
+                exit(-14)
+            }
         }
     }
 
@@ -531,118 +594,73 @@ impl<'ctx> CodeGen<'ctx> {
             return_type,
             body,
         } = f;
+        let return_type = self.ml_type_to_type(return_type);
         let args: Vec<BasicTypeEnum<'ctx>> = arg_defs
             .iter()
             .map(|a| {
                 let a = a.type_.clone();
-                self.ml_type_to_type(a.into_value_type())
+                let a = self.ml_type_to_type(a);
+                if a.is_struct_type() {
+                    let a = a.into_struct_type().ptr_type(AddressSpace::Generic);
+                    a.as_any_type_enum()
+                } else {
+                    a
+                }
             })
-            .map(|a| {
-                println!("{:?}", &a);
-                BasicTypeEnum::try_from(a).unwrap()
-            })
+            .map(|a| BasicTypeEnum::try_from(a).unwrap())
             .collect();
-        let return_type = self.ml_type_to_type(return_type.into_value_type());
-        if let Some(body) = body {
+        let result = if let Some(body) = body {
             self.ml_context.push_environment();
-            let func = match return_type {
+            let is_void_type = return_type.is_void_type();
+            let fn_type = match return_type {
                 // AnyTypeEnum::ArrayType(_) => {}
-                // AnyTypeEnum::FloatType(_) => {}
+                AnyTypeEnum::FloatType(float_type) => float_type.fn_type(&args, false),
                 // AnyTypeEnum::FunctionType(_) => {}
-                AnyTypeEnum::IntType(int_type) => {
-                    let fn_type = int_type.fn_type(&args, false);
-                    let function = self.module.add_function(&*name, fn_type, None);
-                    for (v, a) in function.get_params().iter().zip(arg_defs) {
-                        self.set_to_environment(a.name, v.as_any_value_enum());
-                    }
-                    self.ml_context.current_function = Some(function);
-                    let basic_block = self.context.append_basic_block(function, "entry");
-                    self.builder.position_at_end(basic_block);
-                    for stmt in body.body {
-                        self.stmt(stmt);
-                    }
-                    function
-                }
-                // AnyTypeEnum::PointerType(_) => {}
-                AnyTypeEnum::StructType(struct_type) => {
-                    let fn_type = struct_type.fn_type(&args, false);
-                    let function = self.module.add_function(&*name, fn_type, None);
-                    for (v, a) in function.get_params().iter().zip(arg_defs) {
-                        self.set_to_environment(a.name, v.as_any_value_enum());
-                    }
-                    self.ml_context.current_function = Some(function);
-                    let basic_block = self.context.append_basic_block(function, "entry");
-                    self.builder.position_at_end(basic_block);
-                    for stmt in body.body {
-                        self.stmt(stmt);
-                    }
-                    function
-                }
+                AnyTypeEnum::IntType(int_type) => int_type.fn_type(&args, false),
+                AnyTypeEnum::PointerType(pointer_type) => pointer_type.fn_type(&args, false),
+                AnyTypeEnum::StructType(struct_type) => struct_type.fn_type(&args, false),
                 // AnyTypeEnum::VectorType(_) => {}
-                AnyTypeEnum::VoidType(void_type) => {
-                    let fn_type = void_type.fn_type(&args, false);
-                    let function = self.module.add_function(&*name, fn_type, None);
-                    for (v, a) in function.get_params().iter().zip(arg_defs) {
-                        self.set_to_environment(a.name, v.as_any_value_enum());
-                    }
-                    self.ml_context.current_function = Some(function);
-                    let basic_block = self.context.append_basic_block(function, "entry");
-                    self.builder.position_at_end(basic_block);
-                    for stmt in body.body {
-                        self.stmt(stmt);
-                    }
-                    self.builder.build_return(None);
-                    function
-                }
+                AnyTypeEnum::VoidType(void_type) => void_type.fn_type(&args, false),
                 _ => {
                     println!("Return Type Error.");
                     exit(-1)
                 }
             };
+            let function = self.module.add_function(&*name, fn_type, None);
+            for (v, a) in function.get_params().iter().zip(arg_defs) {
+                self.set_to_environment(a.name, v.as_any_value_enum());
+            }
+            self.ml_context.current_function = Some(function);
+            let basic_block = self.context.append_basic_block(function, "entry");
+            self.builder.position_at_end(basic_block);
+            for stmt in body.body {
+                self.stmt(stmt);
+            }
+            if is_void_type {
+                self.builder.build_return(None);
+            };
             self.ml_context.pop_environment();
-            AnyValueEnum::from(func)
+            AnyValueEnum::from(function)
         } else {
-            let func = match return_type {
+            let fn_type = match return_type {
                 // AnyTypeEnum::ArrayType(_) => {}
-                AnyTypeEnum::FloatType(float_type) => {
-                    let fn_type = float_type.fn_type(&args, false);
-                    let f = self.module.add_function(&*name, fn_type, None);
-                    self.ml_context.current_function = Some(f);
-                    f
-                }
+                AnyTypeEnum::FloatType(float_type) => float_type.fn_type(&args, false),
                 // AnyTypeEnum::FunctionType(_) => {}
-                AnyTypeEnum::IntType(int_type) => {
-                    let fn_type = int_type.fn_type(&args, false);
-                    let f = self.module.add_function(&*name, fn_type, None);
-                    self.ml_context.current_function = Some(f);
-                    f
-                }
-                AnyTypeEnum::PointerType(ptr_type) => {
-                    let fn_type = ptr_type.fn_type(&args, false);
-                    let f = self.module.add_function(&*name, fn_type, None);
-                    self.ml_context.current_function = Some(f);
-                    f
-                }
-                AnyTypeEnum::StructType(struct_type) => {
-                    let fn_type = struct_type.fn_type(&args, false);
-                    let f = self.module.add_function(&*name, fn_type, None);
-                    self.ml_context.current_function = Some(f);
-                    f
-                }
+                AnyTypeEnum::IntType(int_type) => int_type.fn_type(&args, false),
+                AnyTypeEnum::PointerType(ptr_type) => ptr_type.fn_type(&args, false),
+                AnyTypeEnum::StructType(struct_type) => struct_type.fn_type(&args, false),
                 // AnyTypeEnum::VectorType(_) => {}
-                AnyTypeEnum::VoidType(void_type) => {
-                    let fn_type = void_type.fn_type(&args, false);
-                    let f = self.module.add_function(&*name, fn_type, None);
-                    self.ml_context.current_function = Some(f);
-                    f
-                }
+                AnyTypeEnum::VoidType(void_type) => void_type.fn_type(&args, false),
                 _ => {
                     println!("Return type Error");
                     exit(-1)
                 }
             };
-            AnyValueEnum::from(func)
-        }
+            let f = self.module.add_function(&*name, fn_type, None);
+            self.ml_context.current_function = Some(f);
+            AnyValueEnum::from(f)
+        };
+        result
     }
 
     pub fn struct_(&mut self, s: MLStruct) -> AnyValueEnum<'ctx> {
@@ -670,8 +688,11 @@ impl<'ctx> CodeGen<'ctx> {
     }
 
     pub fn assignment_stmt(&mut self, assignment: MLAssignmentStmt) -> AnyValueEnum<'ctx> {
+        // TODO: replace to ↓
+        // let a_type = assignment.value.type_().into_value_type();
+        let a_type = assignment.target.type_().into_value_type();
         let value = self.expr(assignment.value);
-        println!("assignment target {:?}", &assignment.target);
+        let value = self.load_if_pointer_value(value, &a_type);
         match value {
             AnyValueEnum::IntValue(i) => {
                 let target = self.expr(assignment.target);
@@ -755,9 +776,8 @@ impl<'ctx> CodeGen<'ctx> {
     }
 
     fn ml_type_to_type(&self, ml_type: MLValueType) -> AnyTypeEnum<'ctx> {
-        println!("{:?}", ml_type);
         match ml_type {
-            MLValueType::Name(name) => match &*name {
+            MLValueType::Primitive(name) => match &*name {
                 "Unit" => AnyTypeEnum::from(self.context.void_type()),
                 "Int8" | "UInt8" => AnyTypeEnum::from(self.context.i8_type()),
                 "Int16" | "UInt16" => AnyTypeEnum::from(self.context.i16_type()),
@@ -769,12 +789,18 @@ impl<'ctx> CodeGen<'ctx> {
                 "String" => {
                     AnyTypeEnum::from(self.context.i8_type().ptr_type(AddressSpace::Generic))
                 }
-                t => AnyTypeEnum::from(self.module.get_struct_type(t).unwrap()),
+                t => {
+                    eprintln!("Invalid Primitive Type {}", t);
+                    exit(-1)
+                }
             },
-            MLValueType::Pointer(p) => BasicTypeEnum::try_from(self.ml_type_to_type(*p))
-                .unwrap()
-                .ptr_type(AddressSpace::Generic)
-                .as_any_type_enum(),
+            MLValueType::Struct(t) => AnyTypeEnum::from(self.module.get_struct_type(&*t).unwrap()),
+            MLValueType::Pointer(p) | MLValueType::Reference(p) => {
+                BasicTypeEnum::try_from(self.ml_type_to_type(*p))
+                    .unwrap()
+                    .ptr_type(AddressSpace::Generic)
+                    .as_any_type_enum()
+            }
         }
     }
 }

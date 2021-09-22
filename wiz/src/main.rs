@@ -51,10 +51,6 @@ fn main() -> result::Result<(), Box<dyn Error>> {
 
     let mut ast2hlir = Ast2HLIR::new();
 
-    for builtin in builtin_syntax.iter() {
-        ast2hlir.preload_types(builtin.clone());
-    }
-
     let builtin_hlir: Vec<TypedFile> = builtin_syntax
         .into_iter()
         .map(|w| ast2hlir.file(w))
@@ -66,20 +62,16 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         .flatten()
         .collect();
 
-    for ast_file in ast_files.iter() {
-        ast2hlir.preload_types(ast_file.clone());
-    }
-
     let hlfiles: Vec<TypedFile> = ast_files.into_iter().map(|f| ast2hlir.file(f)).collect();
 
     let mut type_resolver = TypeResolver::new();
 
     for hlir in builtin_hlir.iter() {
-        type_resolver.detect_type(hlir.clone())?;
+        type_resolver.detect_type(hlir)?;
     }
 
     for hlir in hlfiles.iter() {
-        type_resolver.detect_type(hlir.clone())?;
+        type_resolver.detect_type(hlir)?;
     }
 
     for hlir in builtin_hlir.iter() {
@@ -103,6 +95,11 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         .collect();
 
     let mlfiles: Vec<MLFile> = hlfiles.into_iter().map(|f| hlir2mlir.file(f)).collect();
+
+    for m in mlfiles.iter() {
+        println!("==== {} ====", m.name);
+        println!("{}", m.to_string());
+    }
 
     for mlfile in mlfiles {
         let module_name = &mlfile.name;
