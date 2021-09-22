@@ -194,11 +194,16 @@ impl<'ctx> CodeGen<'ctx> {
         let args = c.args.into_iter().map(|arg| {
             if let MLValueType::Primitive(name) = arg.arg.type_().into_value_type() {
                 if name != String::from("String") {
+                    let t = arg.type_().into_value_type();
                     let e = self.expr(arg.arg);
-                    self.load_if_pointer_value(e)
+                    self.load_if_pointer_value(e,&t)
                 } else {
                     self.expr(arg.arg)
                 }
+            } else if let MLValueType::Pointer(p) = arg.arg.type_().into_value_type() {
+                let t = arg.type_().into_value_type();
+                let e = self.expr(arg.arg);
+                self.load_if_pointer_value(e, &t)
             } else {
                 self.expr(arg.arg)
             }
@@ -218,10 +223,12 @@ impl<'ctx> CodeGen<'ctx> {
     }
 
     pub fn binop(&mut self, b: MLBinOp) -> AnyValueEnum<'ctx> {
+        let l_type = b.left.type_().into_value_type();
+        let r_type = b.right.type_().into_value_type();
         let lft = self.expr(*b.left);
         let rit = self.expr(*b.right);
-        let lft = self.load_if_pointer_value(lft);
-        let rit = self.load_if_pointer_value(rit);
+        let lft = self.load_if_pointer_value(lft, &l_type);
+        let rit = self.load_if_pointer_value(rit, &r_type);
 
         match (lft, rit) {
             (AnyValueEnum::IntValue(left), AnyValueEnum::IntValue(right)) => match b.kind {
@@ -353,8 +360,12 @@ impl<'ctx> CodeGen<'ctx> {
     }
 
     pub fn subscript(&mut self, s: MLSubscript) -> AnyValueEnum<'ctx> {
+        let i_type = s.index.type_().into_value_type();
+        let t_type = s.target.type_().into_value_type();
         let target = self.expr(*s.target);
+        let target = self.load_if_pointer_value(target, &t_type);
         let index = self.expr(*s.index);
+        let index = self.load_if_pointer_value(index, &i_type);
         match target {
             // AnyValueEnum::ArrayValue(_) => {}
             // AnyValueEnum::IntValue(_) => {}
@@ -474,6 +485,12 @@ impl<'ctx> CodeGen<'ctx> {
                     let n = self.expr(*e);
                     Some(self.builder.build_load(n.into_pointer_value(), "v"))
                 }
+                MLExpr::PrimitiveSubscript(_) => {
+                    let s_type = e.type_().into_value_type();
+                    let s = self.expr(*e);
+                    let s = self.load_if_pointer_value(s, &s_type);
+                    Some(BasicValueEnum::try_from(s).unwrap())
+                }
                 _ => Some(BasicValueEnum::try_from(self.expr(*e)).unwrap()),
             },
             None => None,
@@ -499,12 +516,28 @@ impl<'ctx> CodeGen<'ctx> {
         AnyValueEnum::from(i64_type.const_int(0, false))
     }
 
-    fn load_if_pointer_value(&self, v: AnyValueEnum<'ctx>) -> AnyValueEnum<'ctx> {
-        if v.is_pointer_value() {
+    fn load_if_pointer_value(&self, v: AnyValueEnum<'ctx>, typ: &MLValueType) -> AnyValueEnum<'ctx> {
+        if Self::need_load(v.get_type(), typ) {
             let p = v.into_pointer_value();
             self.builder.build_load(p, "v").as_any_value_enum()
         } else {
             v
+        }
+    }
+
+    fn need_load(may_be_pointer: AnyTypeEnum<'ctx>, request_type: &MLValueType) -> bool {
+        match may_be_pointer {
+            AnyTypeEnum::PointerType(p) => {
+                match request_type {
+                    MLValueType::Primitive(prim) => {true}
+                    MLValueType::Struct(s) => {true}
+                    MLValueType::Pointer(r)|
+                    MLValueType::Reference(r) => {
+                        Self::need_load(p.get_element_type(), r)
+                    }
+                }
+            }
+            _ => false
         }
     }
 
@@ -523,7 +556,9 @@ impl<'ctx> CodeGen<'ctx> {
             type_,
             value,
         } = v;
+        let v_type = type_.clone().into_value_type();
         let value = self.expr(value);
+        let value = self.load_if_pointer_value(value, &v_type);
         match value {
             AnyValueEnum::IntValue(i) => {
                 let int_type = i.get_type();
@@ -563,7 +598,13 @@ impl<'ctx> CodeGen<'ctx> {
             .iter()
             .map(|a| {
                 let a = a.type_.clone();
-                self.ml_type_to_type(a)
+                let a = self.ml_type_to_type(a);
+                if a.is_struct_type() {
+                    let a = a.into_struct_type().ptr_type(AddressSpace::Generic);
+                    a.as_any_type_enum()
+                } else {
+                    a
+                }
             })
             .map(|a| BasicTypeEnum::try_from(a).unwrap())
             .collect();
@@ -646,7 +687,11 @@ impl<'ctx> CodeGen<'ctx> {
     }
 
     pub fn assignment_stmt(&mut self, assignment: MLAssignmentStmt) -> AnyValueEnum<'ctx> {
+        // TODO: replace to ↓
+        // let a_type = assignment.value.type_().into_value_type();
+        let a_type = assignment.target.type_().into_value_type();
         let value = self.expr(assignment.value);
+        let value = self.load_if_pointer_value(value, &a_type);
         match value {
             AnyValueEnum::IntValue(i) => {
                 let target = self.expr(assignment.target);
