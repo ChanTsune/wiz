@@ -640,10 +640,7 @@ impl Ast2HLIR {
 
     pub fn subscript_syntax(&mut self, s: SubscriptSyntax) -> TypedSubscript {
         let target = Box::new(self.expr(*s.target));
-        println!("target -> {:?}", target);
         let indexes: Vec<TypedExpr> = s.idx_or_keys.into_iter().map(|i| self.expr(i)).collect();
-        println!("indexes -> {:?}", indexes);
-        // let type_ = self.context.resolve_subscript(target.type_(), indexes.iter().map(|i|i.type_()).collect());
         TypedSubscript {
             target,
             indexes,
