@@ -476,25 +476,39 @@ impl HLIR2MLIR {
             is_safe,
             type_,
         } = m;
-        let target = self.expr(*target);
-        let struct_ = self.get_struct(&target.type_());
-        let type_ = self.type_(type_.unwrap());
-        let is_stored = struct_.fields.iter().any(|f| f.name == name);
-        if is_stored {
-            MLExpr::Member(MLMember {
-                target: Box::new(target),
-                name,
-                type_,
-            })
-        } else {
-            MLExpr::Call(MLCall {
-                target: Box::new(MLExpr::Name(MLName {
-                    name: target.type_().into_value_type().name() + "." + &*name,
-                    type_: type_.clone(),
-                })),
-                args: vec![],
-                type_: type_,
-            })
+        match target.type_().unwrap() {
+            TypedType::Value(_) => {
+                let target = self.expr(*target);
+                let struct_ = self.get_struct(&target.type_());
+                let type_ = self.type_(type_.unwrap());
+                let is_stored = struct_.fields.iter().any(|f| f.name == name);
+                if is_stored {
+                    MLExpr::Member(MLMember {
+                        target: Box::new(target),
+                        name,
+                        type_,
+                    })
+                } else {
+                    MLExpr::Call(MLCall {
+                        target: Box::new(MLExpr::Name(MLName {
+                            name: target.type_().into_value_type().name() + "." + &*name,
+                            type_: type_.clone(),
+                        })),
+                        args: vec![],
+                        type_: type_,
+                    })
+                }
+            }
+            TypedType::Function(f) => {
+                todo!("Member function access => {:?}", f)
+            }
+            TypedType::Type(t) => {
+                let type_ = self.type_(type_.unwrap());
+                MLExpr::Name(MLName {
+                    name: t.name + "#" + &*name,
+                    type_,
+                })
+            }
         }
         // else field as function call etc...
     }
