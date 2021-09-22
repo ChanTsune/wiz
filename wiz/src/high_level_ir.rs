@@ -10,7 +10,6 @@ use crate::ast::fun::body_def::FunBody;
 use crate::ast::literal::Literal;
 use crate::ast::stmt::{AssignmentStmt, LoopStmt, Stmt};
 use crate::ast::type_name::{TypeName, TypeParam};
-use crate::constants::UNSAFE_POINTER;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedFun, TypedFunBody, TypedInitializer,
     TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedValueArgDef, TypedVar,
@@ -175,55 +174,13 @@ impl Ast2HLIRContext {
             }
         }
     }
-
-    fn resolve_subscript(
-        &self,
-        target_type: Option<TypedType>,
-        indexes: Vec<Option<TypedType>>,
-    ) -> Option<TypedType> {
-        match target_type {
-            Some(TypedType::Value(v)) => {
-                if v.name == UNSAFE_POINTER {
-                    if indexes.len() == 1 {
-                        let t = v.type_args.unwrap()[0].clone();
-                        Some(t)
-                    } else {
-                        eprintln!("{:?} is not support subscript by {:?}", v, indexes);
-                        exit(-1)
-                    }
-                } else {
-                    eprintln!("{:?} is not support subscript by {:?}", v, indexes);
-                    exit(-1)
-                }
-            }
-            Some(a) => {
-                eprintln!("{:?} is not support subscript by {:?}", a, indexes);
-                exit(-1)
-            }
-            None => {
-                eprintln!(
-                    "Can not resolve subscript. {:?}[{:?}]",
-                    target_type, indexes
-                );
-                exit(-1)
-            }
-        }
-    }
 }
 
-pub struct Ast2HLIR {
-    context: Ast2HLIRContext,
-}
+pub struct Ast2HLIR;
 
 impl Ast2HLIR {
     pub fn new() -> Self {
-        let mut names = HashMap::new();
-        Ast2HLIR {
-            context: Ast2HLIRContext {
-                name_environment: StackedHashMap::from(names),
-                struct_environment: StackedHashMap::from(HashMap::new()),
-            },
-        }
+        Self {}
     }
 
     pub fn file(&mut self, f: WizFile) -> TypedFile {
@@ -266,16 +223,16 @@ impl Ast2HLIR {
         match l {
             LoopStmt::While { condition, block } => TypedLoopStmt::While(TypedWhileLoopStmt {
                 condition: self.expr(condition),
-                block: self.block_with_env(block),
+                block: self.block(block),
             }),
             LoopStmt::For {
                 values,
                 iterator,
                 block,
             } => TypedLoopStmt::For(TypedForStmt {
-                values: values,
+                values,
                 iterator: self.expr(iterator),
-                block: self.block_with_env(block),
+                block: self.block(block),
             }),
         }
     }
@@ -311,7 +268,7 @@ impl Ast2HLIR {
             ArgDef::Value(a) => TypedArgDef::Value(TypedValueArgDef {
                 label: a.label,
                 name: a.name,
-                type_: self.context.resolve_type(Some(a.type_name)).unwrap(),
+                type_: self.type_(a.type_name),
             }),
             ArgDef::Self_ => TypedArgDef::Self_(None),
         }
@@ -326,18 +283,12 @@ impl Ast2HLIR {
 
     pub fn fun_syntax(&mut self, f: FunSyntax) -> TypedFun {
         let args: Vec<TypedArgDef> = f.arg_defs.into_iter().map(|a| self.arg_def(a)).collect();
-        self.context.push();
-        for arg in args.iter() {
-            self.context.put_name(arg.name(), &arg.type_().unwrap())
-        }
         let body = match f.body {
             None => None,
             Some(b) => Some(self.fun_body(b)),
         };
 
-        let return_type = self.context.resolve_type(f.return_type);
-
-        let f = TypedFun {
+        TypedFun {
             modifiers: f.modifiers,
             name: f.name,
             type_params: f.type_params.map(|v| {
@@ -357,15 +308,16 @@ impl Ast2HLIR {
             }),
             arg_defs: args,
             body: body,
-            return_type: return_type,
-        };
-        self.context.pop();
-        f
+            return_type: match f.return_type {
+                Some(type_name) => {Some(self.type_(type_name))}
+                None => {None}
+            },
+        }
     }
 
     pub fn type_(&self, tn: TypeName) -> TypedType {
         TypedType::Value(TypedValueType {
-            package: Package { names: vec![] },
+            package: Package::global(),
             name: tn.name,
             type_args: tn
                 .type_args
@@ -381,28 +333,6 @@ impl Ast2HLIR {
     }
 
     pub fn struct_syntax(&mut self, s: StructSyntax) -> TypedStruct {
-        self.context.push();
-        if let Some(type_params) = &s.type_params {
-            for type_param in type_params.iter() {
-                self.context.put_type(&TypedStruct {
-                    name: type_param.name.clone(),
-                    type_params: None,
-                    init: vec![],
-                    stored_properties: vec![],
-                    computed_properties: vec![],
-                    member_functions: vec![],
-                    static_function: vec![],
-                });
-            }
-        };
-        self.context.put_name(
-            String::from("self"),
-            &TypedType::Value(TypedValueType {
-                package: Package { names: vec![] },
-                name: s.name.to_string(),
-                type_args: None,
-            }),
-        );
         let mut stored_properties: Vec<TypedStoredProperty> = vec![];
         let mut computed_properties: Vec<TypedComputedProperty> = vec![];
         let mut initializers: Vec<TypedInitializer> = vec![];
@@ -421,7 +351,6 @@ impl Ast2HLIR {
                 }
             };
         }
-        self.context.pop();
         TypedStruct {
             name: s.name,
             type_params: s
@@ -488,7 +417,7 @@ impl Ast2HLIR {
     pub fn stored_property_syntax(&self, p: StoredPropertySyntax) -> TypedStoredProperty {
         TypedStoredProperty {
             name: p.name,
-            type_: self.context.resolve_type(Some(p.type_)).unwrap(),
+            type_: self.type_(p.type_),
         }
     }
 
@@ -613,7 +542,7 @@ impl Ast2HLIR {
                 body,
                 else_body,
             } => {
-                let block = self.block_with_env(body);
+                let block = self.block(body);
                 let type_ = if else_body == None {
                     TypedType::noting()
                 } else {
@@ -622,7 +551,7 @@ impl Ast2HLIR {
                 TypedExpr::If(TypedIf {
                     condition: Box::new(self.expr(*condition)),
                     body: block,
-                    else_body: else_body.map(|b| self.block_with_env(b)),
+                    else_body: else_body.map(|b| self.block(b)),
                     type_: Some(type_),
                 })
             }
@@ -672,14 +601,10 @@ impl Ast2HLIR {
                 },
             )
         }
-        // TODO: resolve call type
-        let e = self.expr(*target);
-        let return_type = e.type_();
-
         TypedCall {
-            target: Box::new(e),
+            target: Box::new(self.expr(*target)),
             args: args,
-            type_: return_type,
+            type_: None,
         }
     }
 
@@ -690,7 +615,7 @@ impl Ast2HLIR {
             None => None,
         };
         TypedReturn {
-            value: value,
+            value,
             type_: t,
         }
     }
@@ -699,12 +624,5 @@ impl Ast2HLIR {
         TypedBlock {
             body: block.body.into_iter().map(|s| self.stmt(s)).collect(),
         }
-    }
-
-    pub fn block_with_env(&mut self, block: Block) -> TypedBlock {
-        self.context.push();
-        let b = self.block(block);
-        self.context.pop();
-        b
     }
 }
