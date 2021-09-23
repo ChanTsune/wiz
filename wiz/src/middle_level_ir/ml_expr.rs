@@ -113,7 +113,7 @@ pub struct MLMember {
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct MLReturn {
     pub(crate) value: Option<Box<MLExpr>>,
-    pub(crate) type_: MLType,
+    pub(crate) type_: MLValueType,
 }
 
 impl MLExpr {
@@ -128,7 +128,7 @@ impl MLExpr {
             MLExpr::Member(f) => f.type_.clone(),
             MLExpr::If(i) => i.type_.clone(),
             MLExpr::When => exit(-9),
-            MLExpr::Return(r) => r.type_.clone(),
+            MLExpr::Return(r) => MLType::Value(r.type_.clone()),
             MLExpr::TypeCast => exit(-9),
         }
     }
@@ -158,7 +158,7 @@ impl MLReturn {
         let type_ = expr.type_();
         MLReturn {
             value: Some(Box::new(expr)),
-            type_: type_,
+            type_: type_.into_value_type(),
         }
     }
 }

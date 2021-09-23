@@ -306,7 +306,7 @@ impl HLIR2MLIR {
                         name: String::from("self"),
                         type_: type_.clone(),
                     }))),
-                    type_: type_.clone(),
+                    type_: type_.clone().into_value_type(),
                 })));
                 MLFun {
                     modifiers: vec![],
@@ -547,7 +547,7 @@ impl HLIR2MLIR {
     pub fn return_expr(&mut self, r: TypedReturn) -> MLReturn {
         MLReturn {
             value: r.value.map(|v| Box::new(self.expr(*v))),
-            type_: self.type_(r.type_.unwrap()),
+            type_: self.type_(r.type_.unwrap()).into_value_type(),
         }
     }
 
