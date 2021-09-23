@@ -100,7 +100,7 @@ pub enum MLUnaryOpKind {
 pub struct MLSubscript {
     pub(crate) target: Box<MLExpr>,
     pub(crate) index: Box<MLExpr>,
-    pub(crate) type_: MLType,
+    pub(crate) type_: MLValueType,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -124,7 +124,7 @@ impl MLExpr {
             MLExpr::Call(c) => c.type_.clone(),
             MLExpr::PrimitiveBinOp(b) => MLType::Value(b.type_.clone()),
             MLExpr::PrimitiveUnaryOp(b) => MLType::Value(b.type_.clone()),
-            MLExpr::PrimitiveSubscript(p) => p.type_.clone(),
+            MLExpr::PrimitiveSubscript(p) => MLType::Value(p.type_.clone()),
             MLExpr::Member(f) => f.type_.clone(),
             MLExpr::If(i) => i.type_.clone(),
             MLExpr::When => exit(-9),
