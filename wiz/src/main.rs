@@ -62,8 +62,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
     let ast_files: Vec<WizFile> = inputs
         .iter()
         .map(|s| parse_from_file_path_str(s))
-        .flatten()
-        .collect();
+        .collect::<parser::parser::Result<Vec<WizFile>>>()?;
 
     let hlfiles: Vec<TypedFile> = ast_files.into_iter().map(|f| ast2hlir.file(f)).collect();
 

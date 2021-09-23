@@ -5,7 +5,7 @@ use std::fs::{read_to_string, File};
 use std::io::Read;
 use std::path::Path;
 
-type Result<T> = core::result::Result<T, ParseError>;
+pub(crate) type Result<T> = core::result::Result<T, ParseError>;
 
 pub fn parse_from_string(string: String) -> Result<WizFile> {
     return match file(&*string) {
