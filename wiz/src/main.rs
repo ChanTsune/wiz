@@ -11,14 +11,14 @@ use crate::middle_level_ir::HLIR2MLIR;
 use crate::utils::stacked_hash_map::StackedHashMap;
 use clap::{App, Arg};
 use inkwell::context::Context;
+use inkwell::execution_engine::JitFunction;
 use inkwell::OptimizationLevel;
 use std::collections::HashMap;
 use std::error::Error;
+use std::option::Option::Some;
 use std::path::Path;
 use std::process::exit;
 use std::result;
-use inkwell::execution_engine::JitFunction;
-use std::option::Option::Some;
 
 mod ast;
 mod constants;
@@ -148,10 +148,10 @@ fn main() -> result::Result<(), Box<dyn Error>> {
 
         codegen.print_to_file(Path::new(&output))?;
 
-        if let Some(fun_name) =
-        matches.value_of("execute") {
+        if let Some(fun_name) = matches.value_of("execute") {
             unsafe {
-                let main: JitFunction<MainFunc> = codegen.execution_engine.get_function(fun_name)?;
+                let main: JitFunction<MainFunc> =
+                    codegen.execution_engine.get_function(fun_name)?;
                 let _ = main.call();
             }
         }
