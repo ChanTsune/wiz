@@ -1,4 +1,4 @@
-use crate::middle_level_ir::ml_decl::{MLArgDef, MLDecl, MLFun, MLStruct, MLVar};
+use crate::middle_level_ir::ml_decl::{MLArgDef, MLDecl, MLFun, MLStruct, MLVar, MLField};
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_type::MLValueType;
 use std::collections::HashMap;
@@ -26,27 +26,41 @@ impl MLIRModuleBuilder {
         args: Vec<MLArgDef>,
         return_type: MLValueType,
     ) -> Option<&mut MLFun> {
-        self.functions.insert(
-            name.clone(),
-            MLFun {
-                modifiers: vec![],
-                name: name.clone(),
-                arg_defs: args,
-                return_type,
-                body: None,
-            },
-        )?;
-        self.functions.get_mut(&*name)
+        self.add_function(            MLFun {
+            modifiers: vec![],
+            name: name.clone(),
+            arg_defs: args,
+            return_type,
+            body: None,
+        }
+        )
     }
 
     pub fn add_function(&mut self, fun: MLFun) -> Option<&mut MLFun> {
         let name = fun.name.clone();
         self.functions.insert(name.clone(), fun)?;
-        self.functions.get_mut(&*name)
+        self.get_function(&name)
     }
 
     pub fn get_function(&mut self, name: &String) -> Option<&mut MLFun> {
         self.functions.get_mut(name)
+    }
+
+    pub fn create_struct(&mut self, name: String, fields: Vec<MLField>) -> Option<&mut MLStruct> {
+        self.add_struct(MLStruct {
+            name,
+            fields
+        })
+    }
+
+    pub fn add_struct(&mut self, s: MLStruct) -> Option<&mut MLStruct> {
+        let name = s.name.clone();
+        self.structs.insert(name.clone(), s)?;
+        self.get_struct(&name)
+    }
+
+    pub fn get_struct(&mut self, name: &String) -> Option<&mut MLStruct> {
+        self.structs.get_mut(name)
     }
 
     pub fn to_mlir_file(self) -> MLFile {
