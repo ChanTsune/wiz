@@ -4,6 +4,7 @@ use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_type::MLValueType;
 use std::collections::HashMap;
 
+#[derive(Clone)]
 pub struct MLIRModuleBuilder {
     functions: HashMap<String, MLFun>,
     variables: HashMap<String, MLVar>,

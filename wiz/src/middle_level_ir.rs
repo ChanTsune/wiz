@@ -173,7 +173,15 @@ impl HLIR2MLIR {
             TypedStmt::Decl(d) => self
                 .decl(d)
                 .into_iter()
-                .map(|dc| MLStmt::Decl(dc))
+                .map(|dc| match dc {
+                    MLDecl::Var(v) => MLStmt::Var(v),
+                    MLDecl::Fun(_) => {
+                        todo!("local function")
+                    }
+                    MLDecl::Struct(_) => {
+                        todo!("local struct")
+                    }
+                })
                 .collect(),
             TypedStmt::Assignment(a) => vec![MLStmt::Assignment(self.assignment(a))],
             TypedStmt::Loop(l) => vec![MLStmt::Loop(self.loop_stmt(l))],
@@ -292,14 +300,14 @@ impl HLIR2MLIR {
                 let mut body = self.fun_body(i.body).body;
                 body.insert(
                     0,
-                    MLStmt::Decl(MLDecl::Var(MLVar {
+                    MLStmt::Var(MLVar {
                         is_mute: true,
                         name: String::from("self"),
                         value: MLExpr::Literal(MLLiteral::Struct {
                             type_: type_.clone().into_value_type(),
                         }),
                         type_: type_.clone(),
-                    })),
+                    }),
                 );
                 body.push(MLStmt::Expr(MLExpr::Return(MLReturn {
                     value: Some(Box::new(MLExpr::Name(MLName {
