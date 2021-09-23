@@ -173,17 +173,13 @@ impl HLIR2MLIR {
             TypedStmt::Decl(d) => self
                 .decl(d)
                 .into_iter()
-                .map(|dc| {
-                    match dc {
-                        MLDecl::Var(v) => {
-                            MLStmt::Decl(v)
-                        }
-                        MLDecl::Fun(_) => {
-                            todo!("local function")
-                        }
-                        MLDecl::Struct(_) => {
-                            todo!("local struct")
-                        }
+                .map(|dc| match dc {
+                    MLDecl::Var(v) => MLStmt::Decl(v),
+                    MLDecl::Fun(_) => {
+                        todo!("local function")
+                    }
+                    MLDecl::Struct(_) => {
+                        todo!("local struct")
                     }
                 })
                 .collect(),
