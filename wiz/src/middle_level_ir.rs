@@ -174,7 +174,7 @@ impl HLIR2MLIR {
                 .decl(d)
                 .into_iter()
                 .map(|dc| match dc {
-                    MLDecl::Var(v) => MLStmt::Decl(v),
+                    MLDecl::Var(v) => MLStmt::Var(v),
                     MLDecl::Fun(_) => {
                         todo!("local function")
                     }
@@ -300,7 +300,7 @@ impl HLIR2MLIR {
                 let mut body = self.fun_body(i.body).body;
                 body.insert(
                     0,
-                    MLStmt::Decl(MLVar {
+                    MLStmt::Var(MLVar {
                         is_mute: true,
                         name: String::from("self"),
                         value: MLExpr::Literal(MLLiteral::Struct {

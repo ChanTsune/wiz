@@ -120,8 +120,6 @@ fn main() -> result::Result<(), Box<dyn Error>> {
             codegen.file(m.clone());
         }
 
-        println!("{:?}", &mlfile);
-
         let output = if let Some(output) = output {
             if inputs.len() == 1 {
                 String::from(output)
