@@ -1318,6 +1318,51 @@ mod tests {
     }
 
     #[test]
+    fn test_return_floating_point_literal() {
+        let source = r"
+        fun sample(): Double {
+            return 0.5
+        }
+        ";
+        let ast = parse_from_string(String::from(source)).unwrap();
+
+        let mut ast2hlir = Ast2HLIR::new();
+
+        let mut file = ast2hlir.file(ast);
+        file.name = String::from("test");
+
+        let mut resolver = TypeResolver::new();
+        let _ = resolver.detect_type(&file);
+        let _ = resolver.preload_file(file.clone());
+        let f = resolver.file(file);
+
+        assert_eq!(
+            f,
+            Result::Ok(TypedFile {
+                name: "test".to_string(),
+                body: vec![TypedDecl::Fun(TypedFun {
+                    modifiers: vec![],
+                    name: "sample".to_string(),
+                    type_params: None,
+                    arg_defs: vec![],
+                    body: Option::from(TypedFunBody::Block(TypedBlock {
+                        body: vec![TypedStmt::Expr(TypedExpr::Return(TypedReturn {
+                            value: Option::Some(Box::new(TypedExpr::Literal(
+                                TypedLiteral::FloatingPoint {
+                                    value: "0.5".to_string(),
+                                    type_: Some(TypedType::double())
+                                }
+                            ))),
+                            type_: Some(TypedType::double())
+                        }))]
+                    })),
+                    return_type: Some(TypedType::double())
+                })]
+            })
+        );
+    }
+
+    #[test]
     fn test_binop() {
         let source = r"
         fun sample() {
