@@ -2,6 +2,7 @@ use crate::middle_level_ir::ml_decl::{MLArgDef, MLDecl, MLField, MLFun, MLStruct
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_type::MLValueType;
 use std::collections::HashMap;
+use crate::middle_level_ir::ml_expr::MLExpr;
 
 pub struct MLIRModuleBuilder {
     name: String,
@@ -57,6 +58,25 @@ impl MLIRModuleBuilder {
 
     pub fn get_struct(&mut self, name: &String) -> Option<&mut MLStruct> {
         self.structs.get_mut(name)
+    }
+
+    pub fn create_var(&mut self, name: String, value: MLExpr) -> Option<&mut MLVar> {
+        self.add_var(MLVar {
+            is_mute: false,
+            name,
+            type_: value.type_(),
+            value
+        })
+    }
+
+    pub fn add_var(&mut self, var: MLVar) -> Option<&mut MLVar> {
+        let name = var.name.clone();
+        self.variables.insert(name.clone(), var)?;
+        self.get_var(&name)
+    }
+
+    pub fn get_var(&mut self, name: &String) -> Option<&mut MLVar> {
+        self.variables.get_mut(name)
     }
 
     pub fn to_mlir_file(self) -> MLFile {
