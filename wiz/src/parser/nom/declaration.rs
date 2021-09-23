@@ -237,10 +237,7 @@ pub fn function_value_parameter(s: &str) -> IResult<&str, ArgDef> {
         map(
             tuple((
                 whitespace0,
-                opt(tuple((
-                    function_value_label,
-                    whitespace1,
-                    ))),
+                opt(tuple((function_value_label, whitespace1))),
                 function_value_name,
                 whitespace0,
                 char(':'),
@@ -250,8 +247,8 @@ pub fn function_value_parameter(s: &str) -> IResult<&str, ArgDef> {
             |(_, label, name, _, _, _, typ)| {
                 ArgDef::Value(ValueArgDef {
                     label: match label {
-                        None => { name.clone() }
-                        Some((label, _)) => {label}
+                        None => name.clone(),
+                        Some((label, _)) => label,
                     },
                     name: name,
                     type_name: typ,
