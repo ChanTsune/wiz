@@ -1,5 +1,5 @@
 use crate::middle_level_ir::format::Formatter;
-use crate::middle_level_ir::ml_decl::{MLVar};
+use crate::middle_level_ir::ml_decl::MLVar;
 use crate::middle_level_ir::ml_expr::MLExpr;
 use crate::middle_level_ir::ml_node::MLNode;
 use std::fmt;
