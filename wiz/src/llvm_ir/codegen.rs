@@ -27,7 +27,7 @@ pub(crate) struct MLContext<'ctx> {
     pub(crate) current_function: Option<FunctionValue<'ctx>>,
 }
 
-impl <'ctx> MLContext<'ctx> {
+impl<'ctx> MLContext<'ctx> {
     pub(crate) fn new() -> Self {
         Self {
             struct_environment: StackedHashMap::from(HashMap::new()),
