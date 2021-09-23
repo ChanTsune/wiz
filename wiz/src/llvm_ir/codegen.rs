@@ -532,8 +532,7 @@ impl<'ctx> CodeGen<'ctx> {
     fn need_load(may_be_pointer: AnyTypeEnum<'ctx>, request_type: &MLValueType) -> bool {
         match may_be_pointer {
             AnyTypeEnum::PointerType(p) => match request_type {
-                MLValueType::Primitive(_)|
-                MLValueType::Struct(_) => true,
+                MLValueType::Primitive(_) | MLValueType::Struct(_) => true,
                 MLValueType::Pointer(r) | MLValueType::Reference(r) => {
                     Self::need_load(p.get_element_type(), r)
                 }
