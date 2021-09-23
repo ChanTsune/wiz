@@ -17,6 +17,8 @@ use std::error::Error;
 use std::path::Path;
 use std::process::exit;
 use std::result;
+use inkwell::execution_engine::JitFunction;
+use std::option::Option::Some;
 
 mod ast;
 mod constants;
@@ -26,6 +28,8 @@ mod llvm_ir;
 mod middle_level_ir;
 mod parser;
 mod utils;
+
+type MainFunc = unsafe extern "C" fn() -> u8;
 
 fn get_builtin_syntax() -> Vec<WizFile> {
     let builtin_dir = std::fs::read_dir(Path::new("../builtin")).unwrap();
@@ -41,7 +45,8 @@ fn get_builtin_syntax() -> Vec<WizFile> {
 fn main() -> result::Result<(), Box<dyn Error>> {
     let app = App::new("wiz")
         .arg(Arg::with_name("input").required(true).multiple(true))
-        .arg(Arg::with_name("output").short("o").takes_value(true));
+        .arg(Arg::with_name("output").short("o").takes_value(true))
+        .arg(Arg::with_name("execute").short("e").takes_value(true));
 
     let matches = app.get_matches();
     let inputs = matches.values_of_lossy("input").unwrap();
@@ -142,6 +147,14 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         println!("Output Path -> {:?}", output);
 
         codegen.print_to_file(Path::new(&output))?;
+
+        if let Some(fun_name) =
+        matches.value_of("execute") {
+            unsafe {
+                let main: JitFunction<MainFunc> = codegen.execution_engine.get_function(fun_name)?;
+                let _ = main.call();
+            }
+        }
     }
 
     Ok(())
