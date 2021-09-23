@@ -62,7 +62,7 @@ pub struct MLBinOp {
     pub(crate) left: Box<MLExpr>,
     pub(crate) kind: MLBinopKind,
     pub(crate) right: Box<MLExpr>,
-    pub(crate) type_: MLType,
+    pub(crate) type_: MLValueType,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -84,7 +84,7 @@ pub enum MLBinopKind {
 pub struct MLUnaryOp {
     pub(crate) target: Box<MLExpr>,
     pub(crate) kind: MLUnaryOpKind,
-    pub(crate) type_: MLType,
+    pub(crate) type_: MLValueType,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -122,8 +122,8 @@ impl MLExpr {
             MLExpr::Name(n) => n.type_.clone(),
             MLExpr::Literal(l) => MLType::Value(l.type_()),
             MLExpr::Call(c) => c.type_.clone(),
-            MLExpr::PrimitiveBinOp(b) => b.type_.clone(),
-            MLExpr::PrimitiveUnaryOp(b) => b.type_.clone(),
+            MLExpr::PrimitiveBinOp(b) => MLType::Value(b.type_.clone()),
+            MLExpr::PrimitiveUnaryOp(b) => MLType::Value(b.type_.clone()),
             MLExpr::PrimitiveSubscript(p) => p.type_.clone(),
             MLExpr::Member(f) => f.type_.clone(),
             MLExpr::If(i) => i.type_.clone(),

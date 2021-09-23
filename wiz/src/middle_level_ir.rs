@@ -430,7 +430,7 @@ impl HLIR2MLIR {
                 }
             },
             right: Box::new(self.expr(*right)),
-            type_: self.type_(type_.unwrap()),
+            type_: self.type_(type_.unwrap()).into_value_type(),
         }
     }
 
