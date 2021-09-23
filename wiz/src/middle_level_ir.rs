@@ -443,7 +443,9 @@ impl HLIR2MLIR {
                         MLExpr::PrimitiveSubscript(MLSubscript {
                             target: Box::new(self.expr(*s.target)),
                             index: Box::new(self.expr(s.indexes[0].clone())),
-                            type_: self.type_(v.type_args.unwrap()[0].clone()).into_value_type(),
+                            type_: self
+                                .type_(v.type_args.unwrap()[0].clone())
+                                .into_value_type(),
                         })
                     } else {
                         self.subscript_for_user_defined(s)
