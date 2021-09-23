@@ -237,17 +237,19 @@ pub fn function_value_parameter(s: &str) -> IResult<&str, ArgDef> {
         map(
             tuple((
                 whitespace0,
-                function_value_label,
-                whitespace1,
+                opt(tuple((function_value_label, whitespace1))),
                 function_value_name,
                 whitespace0,
                 char(':'),
                 whitespace0,
                 type_,
             )),
-            |(_, label, _, name, _, _, _, typ)| {
+            |(_, label, name, _, _, _, typ)| {
                 ArgDef::Value(ValueArgDef {
-                    label: label,
+                    label: match label {
+                        None => name.clone(),
+                        Some((label, _)) => label,
+                    },
                     name: name,
                     type_name: typ,
                 })
@@ -615,6 +617,34 @@ mod test {
                     type_params: None,
                     arg_defs: vec![ArgDef::Value(ValueArgDef {
                         label: "_".to_string(),
+                        name: "item".to_string(),
+                        type_name: TypeName {
+                            name: "String".to_string(),
+                            type_args: None
+                        }
+                    })],
+                    return_type: Some(TypeName {
+                        name: "Unit".to_string(),
+                        type_args: None
+                    }),
+                    body: None,
+                })
+            ))
+        )
+    }
+
+    #[test]
+    fn test_function_short_label() {
+        assert_eq!(
+            function_decl("fun puts(item: String): Unit"),
+            Ok((
+                "",
+                Decl::Fun(FunSyntax {
+                    modifiers: vec![],
+                    name: "puts".to_string(),
+                    type_params: None,
+                    arg_defs: vec![ArgDef::Value(ValueArgDef {
+                        label: "item".to_string(),
                         name: "item".to_string(),
                         type_name: TypeName {
                             name: "String".to_string(),
