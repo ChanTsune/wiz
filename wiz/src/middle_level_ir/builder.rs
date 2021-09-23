@@ -1,8 +1,8 @@
 use crate::middle_level_ir::ml_decl::{MLArgDef, MLDecl, MLField, MLFun, MLStruct, MLVar};
+use crate::middle_level_ir::ml_expr::MLExpr;
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_type::MLValueType;
 use std::collections::HashMap;
-use crate::middle_level_ir::ml_expr::MLExpr;
 
 pub struct MLIRModuleBuilder {
     name: String,
@@ -65,7 +65,7 @@ impl MLIRModuleBuilder {
             is_mute: false,
             name,
             type_: value.type_(),
-            value
+            value,
         })
     }
 
