@@ -27,6 +27,14 @@ pub fn integer_literal(s: &str) -> IResult<&str, Literal> {
     })(s)
 }
 
+pub fn floating_point_literal(s: &str) -> IResult<&str, Literal> {
+    map(tuple((digit1, char('.'), digit1)), |(i, d, f):(&str, char, &str)|{
+        Literal::FloatingPoint {
+            value: String::from(i) + &*d.to_string() + f
+        }
+    })(s)
+}
+
 pub fn string_literal(s: &str) -> IResult<&str, Literal> {
     map(
         tuple((char('"'), many0(none_of("\"")), char('"'))),
@@ -41,7 +49,7 @@ pub fn prefix_operator(s: &str) -> IResult<&str, String> {
 }
 
 pub fn literal_expr(s: &str) -> IResult<&str, Expr> {
-    map(alt((integer_literal, string_literal)), |l| Expr::Literal(l))(s)
+    map(alt((floating_point_literal,integer_literal, string_literal)), |l| Expr::Literal(l))(s)
 }
 
 pub fn name_expr(s: &str) -> IResult<&str, Expr> {
@@ -688,11 +696,7 @@ mod tests {
         CallArg, CallExprSyntax, Expr, NameExprSyntax, PostfixSuffix, ReturnSyntax,
     };
     use crate::ast::literal::Literal;
-    use crate::ast::literal::Literal::Integer;
-    use crate::parser::nom::expression::{
-        disjunction_expr, expr, indexing_suffix, integer_literal, postfix_suffix, return_expr,
-        string_literal, value_arguments,
-    };
+    use crate::parser::nom::expression::{disjunction_expr, expr, indexing_suffix, integer_literal, postfix_suffix, return_expr, string_literal, value_arguments, floating_point_literal};
 
     #[test]
     fn test_numeric() {
@@ -700,7 +704,7 @@ mod tests {
             integer_literal("1"),
             Ok((
                 "",
-                Integer {
+                Literal::Integer {
                     value: "1".to_string()
                 }
             ))
@@ -709,11 +713,18 @@ mod tests {
             integer_literal("12"),
             Ok((
                 "",
-                Integer {
+                Literal::Integer {
                     value: "12".to_string()
                 }
             ))
         );
+    }
+
+    #[test]
+    fn test_floating_point_literal() {
+        assert_eq!(floating_point_literal("1.0"), Ok(("", Literal::FloatingPoint { value: "1.0".to_string() })));
+        assert_eq!(floating_point_literal("12.0"), Ok(("", Literal::FloatingPoint { value: "12.0".to_string() })));
+        assert_eq!(floating_point_literal("13847.03478"), Ok(("", Literal::FloatingPoint { value: "13847.03478".to_string() })));
     }
 
     #[test]
