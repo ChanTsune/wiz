@@ -1,4 +1,4 @@
-use crate::middle_level_ir::ml_decl::{MLArgDef, MLDecl, MLFun, MLStruct, MLVar, MLField};
+use crate::middle_level_ir::ml_decl::{MLArgDef, MLDecl, MLField, MLFun, MLStruct, MLVar};
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_type::MLValueType;
 use std::collections::HashMap;
@@ -26,14 +26,13 @@ impl MLIRModuleBuilder {
         args: Vec<MLArgDef>,
         return_type: MLValueType,
     ) -> Option<&mut MLFun> {
-        self.add_function(            MLFun {
+        self.add_function(MLFun {
             modifiers: vec![],
             name: name.clone(),
             arg_defs: args,
             return_type,
             body: None,
-        }
-        )
+        })
     }
 
     pub fn add_function(&mut self, fun: MLFun) -> Option<&mut MLFun> {
@@ -47,10 +46,7 @@ impl MLIRModuleBuilder {
     }
 
     pub fn create_struct(&mut self, name: String, fields: Vec<MLField>) -> Option<&mut MLStruct> {
-        self.add_struct(MLStruct {
-            name,
-            fields
-        })
+        self.add_struct(MLStruct { name, fields })
     }
 
     pub fn add_struct(&mut self, s: MLStruct) -> Option<&mut MLStruct> {
