@@ -137,10 +137,10 @@ impl MLExpr {
 impl MLLiteral {
     pub fn type_(&self) -> MLValueType {
         match self {
-            MLLiteral::Integer { value, type_ } => type_.clone(),
-            MLLiteral::FloatingPoint { value, type_ } => type_.clone(),
-            MLLiteral::String { value, type_ } => type_.clone(),
-            MLLiteral::Boolean { value, type_ } => type_.clone(),
+            MLLiteral::Integer { value:_, type_ } => type_.clone(),
+            MLLiteral::FloatingPoint { value:_, type_ } => type_.clone(),
+            MLLiteral::String { value:_, type_ } => type_.clone(),
+            MLLiteral::Boolean { value:_, type_ } => type_.clone(),
             MLLiteral::Null { type_ } => type_.clone(),
             MLLiteral::Struct { type_ } => type_.clone(),
         }
@@ -190,15 +190,15 @@ impl MLNode for MLName {
 impl MLNode for MLLiteral {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            MLLiteral::Integer { value, type_ } => f.write_str(value),
-            MLLiteral::FloatingPoint { value, type_ } => f.write_str(value),
-            MLLiteral::String { value, type_ } => {
+            MLLiteral::Integer { value, type_:_ } => f.write_str(value),
+            MLLiteral::FloatingPoint { value, type_:_ } => f.write_str(value),
+            MLLiteral::String { value, type_:_ } => {
                 f.write_char('"')?;
                 f.write_str(value)?;
                 f.write_char('"')
             }
-            MLLiteral::Boolean { value, type_ } => f.write_str(value),
-            MLLiteral::Null { type_ } => fmt::Result::Err(Default::default()),
+            MLLiteral::Boolean { value, type_:_ } => f.write_str(value),
+            MLLiteral::Null { type_:_ } => fmt::Result::Err(Default::default()),
             MLLiteral::Struct { type_ } => {
                 type_.fmt(f)?;
                 f.write_str(" { }")
