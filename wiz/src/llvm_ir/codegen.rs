@@ -28,6 +28,16 @@ pub(crate) struct MLContext<'ctx> {
 }
 
 impl<'ctx> MLContext<'ctx> {
+    pub(crate) fn new() -> Self {
+        Self {
+            struct_environment: StackedHashMap::from(HashMap::new()),
+            local_environments: StackedHashMap::from(HashMap::new()),
+            current_function: None,
+        }
+    }
+}
+
+impl<'ctx> MLContext<'ctx> {
     pub fn push_environment(&mut self) {
         self.struct_environment.push(HashMap::new());
         self.local_environments.push(HashMap::new());
@@ -154,7 +164,7 @@ impl<'ctx> CodeGen<'ctx> {
                 };
                 float_type.const_float(f).as_any_value_enum()
             }
-            MLLiteral::String { value, type_ } => unsafe {
+            MLLiteral::String { value, type_: _ } => unsafe {
                 let str = self
                     .builder
                     .build_global_string(value.as_ref(), value.as_str());
@@ -164,7 +174,7 @@ impl<'ctx> CodeGen<'ctx> {
                         .build_bitcast(str.as_pointer_value(), i8_ptr_type, value.as_str());
                 str.as_any_value_enum()
             },
-            MLLiteral::Boolean { value, type_ } => {
+            MLLiteral::Boolean { value, type_: _ } => {
                 let b: bool = value.parse().unwrap();
                 let bool_type = self.context.bool_type();
                 bool_type
@@ -179,7 +189,7 @@ impl<'ctx> CodeGen<'ctx> {
                 let struct_type = self.module.get_struct_type(&*match type_ {
                     MLValueType::Struct(name) => name,
                     p => {
-                        eprintln!("Invalid Struct Literal p");
+                        eprintln!("Invalid Struct Literal {:?}", p);
                         exit(-1)
                     }
                 });
@@ -532,8 +542,7 @@ impl<'ctx> CodeGen<'ctx> {
     fn need_load(may_be_pointer: AnyTypeEnum<'ctx>, request_type: &MLValueType) -> bool {
         match may_be_pointer {
             AnyTypeEnum::PointerType(p) => match request_type {
-                MLValueType::Primitive(prim) => true,
-                MLValueType::Struct(s) => true,
+                MLValueType::Primitive(_) | MLValueType::Struct(_) => true,
                 MLValueType::Pointer(r) | MLValueType::Reference(r) => {
                     Self::need_load(p.get_element_type(), r)
                 }
@@ -670,7 +679,7 @@ impl<'ctx> CodeGen<'ctx> {
             .fields
             .into_iter()
             .map(|f| {
-                let any_type = self.ml_type_to_type(f.type_.into_value_type());
+                let any_type = self.ml_type_to_type(f.type_);
                 BasicTypeEnum::try_from(any_type).unwrap()
             })
             .collect();

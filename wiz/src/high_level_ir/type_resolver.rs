@@ -305,7 +305,7 @@ impl TypeResolver {
         }
         for mf in member_functions.iter() {
             rs.member_functions
-                .insert(mf.name.clone(), mf.type_.clone());
+                .insert(mf.name.clone(), mf.type_().unwrap());
         }
         for sf in static_function.iter() {
             rs.static_functions
@@ -394,9 +394,11 @@ impl TypeResolver {
                 })
                 .collect::<Result<Vec<TypedArgDef>>>()?,
             type_params: mf.type_params,
-            body: self.typed_fun_body(mf.body)?,
+            body: match mf.body {
+                None => None,
+                Some(body) => Some(self.typed_fun_body(body)?),
+            },
             return_type: mf.return_type,
-            type_: mf.type_,
         });
         self.context.pop_name_space();
         result
@@ -687,7 +689,7 @@ mod tests {
     };
     use crate::high_level_ir::typed_expr::{
         TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedInstanceMember, TypedLiteral,
-        TypedName, TypedReturn,
+        TypedName, TypedReturn, TypedSubscript,
     };
     use crate::high_level_ir::typed_file::TypedFile;
     use crate::high_level_ir::typed_stmt::{
@@ -1316,6 +1318,51 @@ mod tests {
     }
 
     #[test]
+    fn test_return_floating_point_literal() {
+        let source = r"
+        fun sample(): Double {
+            return 0.5
+        }
+        ";
+        let ast = parse_from_string(String::from(source)).unwrap();
+
+        let mut ast2hlir = Ast2HLIR::new();
+
+        let mut file = ast2hlir.file(ast);
+        file.name = String::from("test");
+
+        let mut resolver = TypeResolver::new();
+        let _ = resolver.detect_type(&file);
+        let _ = resolver.preload_file(file.clone());
+        let f = resolver.file(file);
+
+        assert_eq!(
+            f,
+            Result::Ok(TypedFile {
+                name: "test".to_string(),
+                body: vec![TypedDecl::Fun(TypedFun {
+                    modifiers: vec![],
+                    name: "sample".to_string(),
+                    type_params: None,
+                    arg_defs: vec![],
+                    body: Option::from(TypedFunBody::Block(TypedBlock {
+                        body: vec![TypedStmt::Expr(TypedExpr::Return(TypedReturn {
+                            value: Option::Some(Box::new(TypedExpr::Literal(
+                                TypedLiteral::FloatingPoint {
+                                    value: "0.5".to_string(),
+                                    type_: Some(TypedType::double())
+                                }
+                            ))),
+                            type_: Some(TypedType::double())
+                        }))]
+                    })),
+                    return_type: Some(TypedType::double())
+                })]
+            })
+        );
+    }
+
+    #[test]
     fn test_binop() {
         let source = r"
         fun sample() {
@@ -1358,6 +1405,53 @@ mod tests {
                         }))],
                     })),
                     return_type: Some(TypedType::unit())
+                })]
+            })
+        );
+    }
+
+    #[test]
+    fn test_subscript() {
+        let source = r"
+        fun get_first(_ p:UnsafePointer<UInt8>) = p[0]
+        ";
+        let ast = parse_from_string(String::from(source)).unwrap();
+
+        let mut ast2hlir = Ast2HLIR::new();
+
+        let mut file = ast2hlir.file(ast);
+        file.name = String::from("test");
+
+        let mut resolver = TypeResolver::new();
+        let _ = resolver.detect_type(&file);
+        let _ = resolver.preload_file(file.clone());
+        let f = resolver.file(file);
+
+        assert_eq!(
+            f,
+            Result::Ok(TypedFile {
+                name: "test".to_string(),
+                body: vec![TypedDecl::Fun(TypedFun {
+                    modifiers: vec![],
+                    name: "get_first".to_string(),
+                    type_params: None,
+                    arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
+                        label: "_".to_string(),
+                        name: "p".to_string(),
+                        type_: TypedType::unsafe_pointer(TypedType::uint8())
+                    })],
+                    body: Option::from(TypedFunBody::Expr(TypedExpr::Subscript(TypedSubscript {
+                        target: Box::new(TypedExpr::Name(TypedName {
+                            name: "p".to_string(),
+                            type_: Some(TypedType::unsafe_pointer(TypedType::uint8()))
+                        })),
+                        indexes: vec![TypedExpr::Literal(TypedLiteral::Integer {
+                            value: "0".to_string(),
+                            type_: Some(TypedType::int64())
+                        })],
+                        type_: Some(TypedType::uint8())
+                    }))),
+                    return_type: Some(TypedType::uint8())
                 })]
             })
         );

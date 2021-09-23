@@ -50,7 +50,7 @@ pub struct MLStruct {
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct MLField {
     pub(crate) name: String,
-    pub(crate) type_: MLType,
+    pub(crate) type_: MLValueType,
 }
 
 impl MLNode for MLDecl {

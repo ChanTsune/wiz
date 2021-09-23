@@ -8,12 +8,12 @@ use crate::high_level_ir::Ast2HLIR;
 use crate::llvm_ir::codegen::{CodeGen, MLContext};
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::HLIR2MLIR;
-use crate::utils::stacked_hash_map::StackedHashMap;
 use clap::{App, Arg};
 use inkwell::context::Context;
+use inkwell::execution_engine::JitFunction;
 use inkwell::OptimizationLevel;
-use std::collections::HashMap;
 use std::error::Error;
+use std::option::Option::Some;
 use std::path::Path;
 use std::process::exit;
 use std::result;
@@ -26,6 +26,8 @@ mod llvm_ir;
 mod middle_level_ir;
 mod parser;
 mod utils;
+
+type MainFunc = unsafe extern "C" fn() -> u8;
 
 fn get_builtin_syntax() -> Vec<WizFile> {
     let builtin_dir = std::fs::read_dir(Path::new("../builtin")).unwrap();
@@ -41,7 +43,8 @@ fn get_builtin_syntax() -> Vec<WizFile> {
 fn main() -> result::Result<(), Box<dyn Error>> {
     let app = App::new("wiz")
         .arg(Arg::with_name("input").required(true).multiple(true))
-        .arg(Arg::with_name("output").short("o").takes_value(true));
+        .arg(Arg::with_name("output").short("o").takes_value(true))
+        .arg(Arg::with_name("execute").short("e").takes_value(true));
 
     let matches = app.get_matches();
     let inputs = matches.values_of_lossy("input").unwrap();
@@ -111,11 +114,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
             module,
             builder: context.create_builder(),
             execution_engine,
-            ml_context: MLContext {
-                struct_environment: StackedHashMap::from(HashMap::new()),
-                local_environments: StackedHashMap::from(HashMap::new()),
-                current_function: None,
-            },
+            ml_context: MLContext::new(),
         };
 
         for m in builtin_mlir.iter() {
@@ -142,6 +141,14 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         println!("Output Path -> {:?}", output);
 
         codegen.print_to_file(Path::new(&output))?;
+
+        if let Some(fun_name) = matches.value_of("execute") {
+            unsafe {
+                let main: JitFunction<MainFunc> =
+                    codegen.execution_engine.get_function(fun_name)?;
+                let _ = main.call();
+            }
+        }
     }
 
     Ok(())

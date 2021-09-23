@@ -149,7 +149,7 @@ impl HLIR2MLIR {
                     .iter()
                     .map(|p| MLField {
                         name: p.name.clone(),
-                        type_: self.type_(p.type_.clone()),
+                        type_: self.type_(p.type_.clone()).into_value_type(),
                     })
                     .collect(),
             },
@@ -278,7 +278,7 @@ impl HLIR2MLIR {
                 .into_iter()
                 .map(|p| MLField {
                     name: p.name,
-                    type_: self.type_(p.type_),
+                    type_: self.type_(p.type_).into_value_type(),
                 })
                 .collect(),
         };
@@ -306,7 +306,7 @@ impl HLIR2MLIR {
                         name: String::from("self"),
                         type_: type_.clone(),
                     }))),
-                    type_: type_.clone(),
+                    type_: type_.clone().into_value_type(),
                 })));
                 MLFun {
                     modifiers: vec![],
@@ -326,7 +326,6 @@ impl HLIR2MLIR {
                     type_params,
                     body,
                     return_type,
-                    type_,
                 } = mf;
                 let mut a = args.into_iter().map(|a| self.arg_def(a)).collect();
                 let mut args = vec![MLArgDef {
@@ -338,8 +337,11 @@ impl HLIR2MLIR {
                     modifiers: vec![],
                     name: name.clone() + "::" + &fname,
                     arg_defs: args,
-                    return_type: self.type_(return_type).into_value_type(),
-                    body: Some(self.fun_body(body)),
+                    return_type: self.type_(return_type.unwrap()).into_value_type(),
+                    body: match body {
+                        None => None,
+                        Some(body) => Some(self.fun_body(body)),
+                    },
                 }
             })
             .collect();
@@ -428,7 +430,7 @@ impl HLIR2MLIR {
                 }
             },
             right: Box::new(self.expr(*right)),
-            type_: self.type_(type_.unwrap()),
+            type_: self.type_(type_.unwrap()).into_value_type(),
         }
     }
 
@@ -441,7 +443,9 @@ impl HLIR2MLIR {
                         MLExpr::PrimitiveSubscript(MLSubscript {
                             target: Box::new(self.expr(*s.target)),
                             index: Box::new(self.expr(s.indexes[0].clone())),
-                            type_: self.type_(v.type_args.unwrap()[0].clone()),
+                            type_: self
+                                .type_(v.type_args.unwrap()[0].clone())
+                                .into_value_type(),
                         })
                     } else {
                         self.subscript_for_user_defined(s)
@@ -543,7 +547,7 @@ impl HLIR2MLIR {
     pub fn return_expr(&mut self, r: TypedReturn) -> MLReturn {
         MLReturn {
             value: r.value.map(|v| Box::new(self.expr(*v))),
-            type_: self.type_(r.type_.unwrap()),
+            type_: self.type_(r.type_.unwrap()).into_value_type(),
         }
     }
 

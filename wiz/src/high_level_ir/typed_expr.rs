@@ -143,10 +143,10 @@ impl TypedExpr {
 impl TypedLiteral {
     pub fn type_(&self) -> Option<TypedType> {
         match self {
-            TypedLiteral::Integer { value, type_ } => type_.clone(),
-            TypedLiteral::FloatingPoint { value, type_ } => type_.clone(),
-            TypedLiteral::String { value, type_ } => type_.clone(),
-            TypedLiteral::Boolean { value, type_ } => type_.clone(),
+            TypedLiteral::Integer { value: _, type_ } => type_.clone(),
+            TypedLiteral::FloatingPoint { value: _, type_ } => type_.clone(),
+            TypedLiteral::String { value: _, type_ } => type_.clone(),
+            TypedLiteral::Boolean { value: _, type_ } => type_.clone(),
             TypedLiteral::NullLiteral { type_ } => type_.clone(),
         }
     }

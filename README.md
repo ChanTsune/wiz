@@ -1,5 +1,4 @@
-# wiz
-Wiz programming language
+# Wiz programming language
 
 ![wiz](./icon.svg)
 

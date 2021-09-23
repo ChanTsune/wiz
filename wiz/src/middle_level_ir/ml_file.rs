@@ -66,7 +66,7 @@ mod tests {
                 name: "T".to_string(),
                 fields: vec![MLField {
                     name: "i".to_string(),
-                    type_: MLType::Value(MLValueType::Primitive(String::from("Int64"))),
+                    type_: MLValueType::Primitive(String::from("Int64")),
                 }],
             })],
         };
@@ -139,7 +139,7 @@ mod tests {
                             name: "b".to_string(),
                             type_: MLType::Value(MLValueType::Primitive(String::from("Int64"))),
                         }))),
-                        type_: MLType::Value(MLValueType::Primitive(String::from("Int64"))),
+                        type_: MLValueType::Primitive(String::from("Int64")),
                     }))],
                 }),
             })],

@@ -62,7 +62,7 @@ pub struct MLBinOp {
     pub(crate) left: Box<MLExpr>,
     pub(crate) kind: MLBinopKind,
     pub(crate) right: Box<MLExpr>,
-    pub(crate) type_: MLType,
+    pub(crate) type_: MLValueType,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -84,7 +84,7 @@ pub enum MLBinopKind {
 pub struct MLUnaryOp {
     pub(crate) target: Box<MLExpr>,
     pub(crate) kind: MLUnaryOpKind,
-    pub(crate) type_: MLType,
+    pub(crate) type_: MLValueType,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -100,7 +100,7 @@ pub enum MLUnaryOpKind {
 pub struct MLSubscript {
     pub(crate) target: Box<MLExpr>,
     pub(crate) index: Box<MLExpr>,
-    pub(crate) type_: MLType,
+    pub(crate) type_: MLValueType,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -113,7 +113,7 @@ pub struct MLMember {
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct MLReturn {
     pub(crate) value: Option<Box<MLExpr>>,
-    pub(crate) type_: MLType,
+    pub(crate) type_: MLValueType,
 }
 
 impl MLExpr {
@@ -122,13 +122,13 @@ impl MLExpr {
             MLExpr::Name(n) => n.type_.clone(),
             MLExpr::Literal(l) => MLType::Value(l.type_()),
             MLExpr::Call(c) => c.type_.clone(),
-            MLExpr::PrimitiveBinOp(b) => b.type_.clone(),
-            MLExpr::PrimitiveUnaryOp(b) => b.type_.clone(),
-            MLExpr::PrimitiveSubscript(p) => p.type_.clone(),
+            MLExpr::PrimitiveBinOp(b) => MLType::Value(b.type_.clone()),
+            MLExpr::PrimitiveUnaryOp(b) => MLType::Value(b.type_.clone()),
+            MLExpr::PrimitiveSubscript(p) => MLType::Value(p.type_.clone()),
             MLExpr::Member(f) => f.type_.clone(),
             MLExpr::If(i) => i.type_.clone(),
             MLExpr::When => exit(-9),
-            MLExpr::Return(r) => r.type_.clone(),
+            MLExpr::Return(r) => MLType::Value(r.type_.clone()),
             MLExpr::TypeCast => exit(-9),
         }
     }
@@ -137,10 +137,10 @@ impl MLExpr {
 impl MLLiteral {
     pub fn type_(&self) -> MLValueType {
         match self {
-            MLLiteral::Integer { value, type_ } => type_.clone(),
-            MLLiteral::FloatingPoint { value, type_ } => type_.clone(),
-            MLLiteral::String { value, type_ } => type_.clone(),
-            MLLiteral::Boolean { value, type_ } => type_.clone(),
+            MLLiteral::Integer { value: _, type_ } => type_.clone(),
+            MLLiteral::FloatingPoint { value: _, type_ } => type_.clone(),
+            MLLiteral::String { value: _, type_ } => type_.clone(),
+            MLLiteral::Boolean { value: _, type_ } => type_.clone(),
             MLLiteral::Null { type_ } => type_.clone(),
             MLLiteral::Struct { type_ } => type_.clone(),
         }
@@ -158,7 +158,7 @@ impl MLReturn {
         let type_ = expr.type_();
         MLReturn {
             value: Some(Box::new(expr)),
-            type_: type_,
+            type_: type_.into_value_type(),
         }
     }
 }
@@ -190,15 +190,15 @@ impl MLNode for MLName {
 impl MLNode for MLLiteral {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            MLLiteral::Integer { value, type_ } => f.write_str(value),
-            MLLiteral::FloatingPoint { value, type_ } => f.write_str(value),
-            MLLiteral::String { value, type_ } => {
+            MLLiteral::Integer { value, type_: _ } => f.write_str(value),
+            MLLiteral::FloatingPoint { value, type_: _ } => f.write_str(value),
+            MLLiteral::String { value, type_: _ } => {
                 f.write_char('"')?;
                 f.write_str(value)?;
                 f.write_char('"')
             }
-            MLLiteral::Boolean { value, type_ } => f.write_str(value),
-            MLLiteral::Null { type_ } => fmt::Result::Err(Default::default()),
+            MLLiteral::Boolean { value, type_: _ } => f.write_str(value),
+            MLLiteral::Null { type_: _ } => fmt::Result::Err(Default::default()),
             MLLiteral::Struct { type_ } => {
                 type_.fmt(f)?;
                 f.write_str(" { }")

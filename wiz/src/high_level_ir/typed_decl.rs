@@ -106,9 +106,8 @@ pub struct TypedMemberFunction {
     pub(crate) name: String,
     pub(crate) args: Vec<TypedArgDef>,
     pub(crate) type_params: Option<Vec<TypedTypeParam>>,
-    pub(crate) body: TypedFunBody,
-    pub(crate) return_type: TypedType,
-    pub(crate) type_: TypedType,
+    pub(crate) body: Option<TypedFunBody>,
+    pub(crate) return_type: Option<TypedType>,
 }
 
 impl TypedFun {
@@ -119,5 +118,17 @@ impl TypedFun {
                 return_type,
             }))
         })
+    }
+}
+
+impl TypedMemberFunction {
+    pub(crate) fn type_(&self) -> Option<TypedType> {
+        match &self.return_type {
+            Some(return_type) => Some(TypedType::Function(Box::new(TypedFunctionType {
+                arguments: self.args.clone(),
+                return_type: return_type.clone(),
+            }))),
+            None => None,
+        }
     }
 }
