@@ -8,12 +8,10 @@ use crate::high_level_ir::Ast2HLIR;
 use crate::llvm_ir::codegen::{CodeGen, MLContext};
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::HLIR2MLIR;
-use crate::utils::stacked_hash_map::StackedHashMap;
 use clap::{App, Arg};
 use inkwell::context::Context;
 use inkwell::execution_engine::JitFunction;
 use inkwell::OptimizationLevel;
-use std::collections::HashMap;
 use std::error::Error;
 use std::option::Option::Some;
 use std::path::Path;
@@ -116,11 +114,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
             module,
             builder: context.create_builder(),
             execution_engine,
-            ml_context: MLContext {
-                struct_environment: StackedHashMap::from(HashMap::new()),
-                local_environments: StackedHashMap::from(HashMap::new()),
-                current_function: None,
-            },
+            ml_context: MLContext::new(),
         };
 
         for m in builtin_mlir.iter() {
