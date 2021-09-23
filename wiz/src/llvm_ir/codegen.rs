@@ -679,7 +679,7 @@ impl<'ctx> CodeGen<'ctx> {
             .fields
             .into_iter()
             .map(|f| {
-                let any_type = self.ml_type_to_type(f.type_.into_value_type());
+                let any_type = self.ml_type_to_type(f.type_);
                 BasicTypeEnum::try_from(any_type).unwrap()
             })
             .collect();

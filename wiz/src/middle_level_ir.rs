@@ -149,7 +149,7 @@ impl HLIR2MLIR {
                     .iter()
                     .map(|p| MLField {
                         name: p.name.clone(),
-                        type_: self.type_(p.type_.clone()),
+                        type_: self.type_(p.type_.clone()).into_value_type(),
                     })
                     .collect(),
             },
@@ -278,7 +278,7 @@ impl HLIR2MLIR {
                 .into_iter()
                 .map(|p| MLField {
                     name: p.name,
-                    type_: self.type_(p.type_),
+                    type_: self.type_(p.type_).into_value_type(),
                 })
                 .collect(),
         };
