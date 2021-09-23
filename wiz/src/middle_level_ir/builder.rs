@@ -5,16 +5,14 @@ use crate::middle_level_ir::ml_type::MLValueType;
 use std::collections::HashMap;
 
 pub struct MLIRModuleBuilder {
-    name: String,
     functions: HashMap<String, MLFun>,
     variables: HashMap<String, MLVar>,
     structs: HashMap<String, MLStruct>,
 }
 
 impl MLIRModuleBuilder {
-    pub fn new(name: String) -> Self {
+    pub fn new() -> Self {
         Self {
-            name,
             functions: Default::default(),
             variables: Default::default(),
             structs: Default::default(),
@@ -79,9 +77,9 @@ impl MLIRModuleBuilder {
         self.variables.get_mut(name)
     }
 
-    pub fn to_mlir_file(self) -> MLFile {
+    pub fn to_mlir_file(self, name: String) -> MLFile {
         MLFile {
-            name: self.name,
+            name,
             body: self
                 .structs
                 .into_values()
