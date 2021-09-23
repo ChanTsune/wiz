@@ -690,7 +690,7 @@ impl<'ctx> CodeGen<'ctx> {
     pub fn stmt(&mut self, s: MLStmt) -> AnyValueEnum<'ctx> {
         match s {
             MLStmt::Expr(expr) => self.expr(expr),
-            MLStmt::Decl(decl) => self.decl(decl),
+            MLStmt::Decl(decl) => self.var(decl),
             MLStmt::Assignment(a) => self.assignment_stmt(a),
             MLStmt::Loop(l) => self.loop_stmt(l),
         }

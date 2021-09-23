@@ -1,5 +1,5 @@
 use crate::middle_level_ir::format::Formatter;
-use crate::middle_level_ir::ml_decl::MLDecl;
+use crate::middle_level_ir::ml_decl::{MLDecl, MLVar};
 use crate::middle_level_ir::ml_expr::MLExpr;
 use crate::middle_level_ir::ml_node::MLNode;
 use std::fmt;
@@ -8,7 +8,7 @@ use std::fmt::Write;
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum MLStmt {
     Expr(MLExpr),
-    Decl(MLDecl),
+    Decl(MLVar),
     Assignment(MLAssignmentStmt),
     Loop(MLLoopStmt),
 }
