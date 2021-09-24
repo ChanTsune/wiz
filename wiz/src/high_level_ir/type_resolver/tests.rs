@@ -893,12 +893,10 @@ fn test_if() {
                                 is_mut: false,
                                 name: "p".to_string(),
                                 type_: Some(TypedType::int64()),
-                                value: TypedExpr::Literal(
-                                    TypedLiteral::Integer {
-                                        value: "1".to_string(),
-                                        type_: Some(TypedType::int64())
-                                    }
-                                )
+                                value: TypedExpr::Literal(TypedLiteral::Integer {
+                                    value: "1".to_string(),
+                                    type_: Some(TypedType::int64())
+                                })
                             }))]
                         },
                         type_: Some(TypedType::noting()),
@@ -910,4 +908,3 @@ fn test_if() {
         })
     );
 }
-
