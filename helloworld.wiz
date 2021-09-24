@@ -10,7 +10,7 @@ struct UInt8Vector {
 
     init() {
         self.capacity = 0
-        self.ptr = malloc(self.capacity)
+        self.ptr = malloc(0)
         self.length = 0
     }
 

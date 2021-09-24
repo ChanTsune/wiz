@@ -1,28 +1,33 @@
 use crate::parser::parser::{parse_from_file_path, parse_from_file_path_str};
 
 use crate::ast::file::WizFile;
-use crate::high_level_ir::type_resolver::{ResolverResult, TypeResolver};
+use crate::high_level_ir::type_resolver::result::Result;
+use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::Ast2HLIR;
 use crate::llvm_ir::codegen::{CodeGen, MLContext};
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::HLIR2MLIR;
-use crate::utils::stacked_hash_map::StackedHashMap;
 use clap::{App, Arg};
 use inkwell::context::Context;
+use inkwell::execution_engine::JitFunction;
 use inkwell::OptimizationLevel;
-use std::collections::HashMap;
 use std::error::Error;
+use std::option::Option::Some;
 use std::path::Path;
 use std::process::exit;
+use std::result;
 
 mod ast;
 mod constants;
+mod ext;
 mod high_level_ir;
 mod llvm_ir;
 mod middle_level_ir;
 mod parser;
 mod utils;
+
+type MainFunc = unsafe extern "C" fn() -> u8;
 
 fn get_builtin_syntax() -> Vec<WizFile> {
     let builtin_dir = std::fs::read_dir(Path::new("../builtin")).unwrap();
@@ -35,10 +40,11 @@ fn get_builtin_syntax() -> Vec<WizFile> {
         .collect()
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> result::Result<(), Box<dyn Error>> {
     let app = App::new("wiz")
         .arg(Arg::with_name("input").required(true).multiple(true))
-        .arg(Arg::with_name("output").short("o").takes_value(true));
+        .arg(Arg::with_name("output").short("o").takes_value(true))
+        .arg(Arg::with_name("execute").short("e").takes_value(true));
 
     let matches = app.get_matches();
     let inputs = matches.values_of_lossy("input").unwrap();
@@ -48,10 +54,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut ast2hlir = Ast2HLIR::new();
 
-    for builtin in builtin_syntax.iter() {
-        ast2hlir.preload_types(builtin.clone());
-    }
-
     let builtin_hlir: Vec<TypedFile> = builtin_syntax
         .into_iter()
         .map(|w| ast2hlir.file(w))
@@ -60,29 +62,32 @@ fn main() -> Result<(), Box<dyn Error>> {
     let ast_files: Vec<WizFile> = inputs
         .iter()
         .map(|s| parse_from_file_path_str(s))
-        .flatten()
-        .collect();
-
-    for ast_file in ast_files.iter() {
-        ast2hlir.preload_types(ast_file.clone());
-    }
+        .collect::<parser::parser::Result<Vec<WizFile>>>()?;
 
     let hlfiles: Vec<TypedFile> = ast_files.into_iter().map(|f| ast2hlir.file(f)).collect();
 
-    let type_resolver = TypeResolver::new();
+    let mut type_resolver = TypeResolver::new();
 
     for hlir in builtin_hlir.iter() {
-        type_resolver.preload(hlir.clone());
+        type_resolver.detect_type(hlir)?;
     }
 
     for hlir in hlfiles.iter() {
-        type_resolver.preload(hlir.clone());
+        type_resolver.detect_type(hlir)?;
+    }
+
+    for hlir in builtin_hlir.iter() {
+        type_resolver.preload_file(hlir.clone())?;
+    }
+
+    for hlir in hlfiles.iter() {
+        type_resolver.preload_file(hlir.clone())?;
     }
 
     let hlfiles = hlfiles
         .into_iter()
         .map(|f| type_resolver.file(f))
-        .collect::<ResolverResult<Vec<TypedFile>>>()?;
+        .collect::<Result<Vec<TypedFile>>>()?;
 
     let mut hlir2mlir = HLIR2MLIR::new();
 
@@ -92,6 +97,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         .collect();
 
     let mlfiles: Vec<MLFile> = hlfiles.into_iter().map(|f| hlir2mlir.file(f)).collect();
+
+    for m in mlfiles.iter() {
+        println!("==== {} ====", m.name);
+        println!("{}", m.to_string());
+    }
 
     for mlfile in mlfiles {
         let module_name = &mlfile.name;
@@ -103,18 +113,12 @@ fn main() -> Result<(), Box<dyn Error>> {
             module,
             builder: context.create_builder(),
             execution_engine,
-            ml_context: MLContext {
-                struct_environment: StackedHashMap::from(HashMap::new()),
-                local_environments: StackedHashMap::from(HashMap::new()),
-                current_function: None,
-            },
+            ml_context: MLContext::new(),
         };
 
         for m in builtin_mlir.iter() {
             codegen.file(m.clone());
         }
-
-        println!("{:?}", &mlfile);
 
         let output = if let Some(output) = output {
             if inputs.len() == 1 {
@@ -134,6 +138,14 @@ fn main() -> Result<(), Box<dyn Error>> {
         println!("Output Path -> {:?}", output);
 
         codegen.print_to_file(Path::new(&output))?;
+
+        if let Some(fun_name) = matches.value_of("execute") {
+            unsafe {
+                let main: JitFunction<MainFunc> =
+                    codegen.execution_engine.get_function(fun_name)?;
+                let _ = main.call();
+            }
+        }
     }
 
     Ok(())

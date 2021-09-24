@@ -29,11 +29,38 @@ pub struct TypedFun {
     pub(crate) type_params: Option<Vec<TypedTypeParam>>,
     pub(crate) arg_defs: Vec<TypedArgDef>,
     pub(crate) body: Option<TypedFunBody>,
-    pub(crate) return_type: TypedType,
+    pub(crate) return_type: Option<TypedType>,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
-pub struct TypedArgDef {
+pub enum TypedArgDef {
+    Value(TypedValueArgDef),
+    Self_(Option<TypedType>),
+}
+
+impl TypedArgDef {
+    pub(crate) fn label(&self) -> String {
+        match self {
+            TypedArgDef::Value(v) => v.name.clone(),
+            TypedArgDef::Self_(_) => String::from("_"),
+        }
+    }
+    pub(crate) fn name(&self) -> String {
+        match self {
+            TypedArgDef::Value(v) => v.name.clone(),
+            TypedArgDef::Self_(_) => String::from("self"),
+        }
+    }
+    pub(crate) fn type_(&self) -> Option<TypedType> {
+        match self {
+            TypedArgDef::Value(v) => Some(v.type_.clone()),
+            TypedArgDef::Self_(_) => None,
+        }
+    }
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
+pub struct TypedValueArgDef {
     pub(crate) label: String,
     pub(crate) name: String,
     pub(crate) type_: TypedType,
@@ -79,16 +106,29 @@ pub struct TypedMemberFunction {
     pub(crate) name: String,
     pub(crate) args: Vec<TypedArgDef>,
     pub(crate) type_params: Option<Vec<TypedTypeParam>>,
-    pub(crate) body: TypedFunBody,
-    pub(crate) return_type: TypedType,
-    pub(crate) type_: TypedType,
+    pub(crate) body: Option<TypedFunBody>,
+    pub(crate) return_type: Option<TypedType>,
 }
 
 impl TypedFun {
-    pub fn type_(&self) -> TypedType {
-        TypedType::Function(Box::new(TypedFunctionType {
-            arguments: self.arg_defs.clone(),
-            return_type: self.return_type.clone(),
-        }))
+    pub fn type_(&self) -> Option<TypedType> {
+        self.return_type.clone().map(|return_type| {
+            TypedType::Function(Box::new(TypedFunctionType {
+                arguments: self.arg_defs.clone(),
+                return_type,
+            }))
+        })
+    }
+}
+
+impl TypedMemberFunction {
+    pub(crate) fn type_(&self) -> Option<TypedType> {
+        match &self.return_type {
+            Some(return_type) => Some(TypedType::Function(Box::new(TypedFunctionType {
+                arguments: self.args.clone(),
+                return_type: return_type.clone(),
+            }))),
+            None => None,
+        }
     }
 }

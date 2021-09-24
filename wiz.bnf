@@ -50,7 +50,7 @@
 
 <function_value_parameters> ::= "(" (<function_value_parameter> ("," <function_value_parameter>)* ","?)? ")"
 
-<function_value_parameter> ::= <function_value_label> <function_value_name> ":" <type> ("=" <expr>)?
+<function_value_parameter> ::= (<function_value_label> <function_value_name> ":" <type> ("=" <expr>)?) | "self"
 
 <function_value_label> ::= <identifier>
 <function_value_name> ::= <identifier>

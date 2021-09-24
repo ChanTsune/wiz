@@ -121,7 +121,8 @@ pub fn type_parameter(s: &str) -> IResult<&str, TypeParam> {
     )(s)
 }
 
-mod test {
+#[cfg(test)]
+mod tests {
     use crate::ast::type_name::{TypeName, TypeParam};
     use crate::parser::nom::type_::type_parameter;
 

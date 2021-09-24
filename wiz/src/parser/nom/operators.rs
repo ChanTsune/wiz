@@ -18,7 +18,8 @@ pub fn assignment_operator(s: &str) -> IResult<&str, &str> {
     tag("=")(s)
 }
 
-mod test {
+#[cfg(test)]
+mod tests {
     use crate::parser::nom::operators::member_access_operator;
 
     #[test]
