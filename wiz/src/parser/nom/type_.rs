@@ -67,14 +67,10 @@ pub fn type_arguments(s: &str) -> IResult<&str, Vec<TypeName>> {
             char('>'),
         )),
         |(_, t, ts, _, _)| {
-            let mut t = vec![t];
-            t.append(
+            vec![t].into_iter().chain(
                 ts.into_iter()
                     .map(|(_, b)| b)
-                    .collect::<Vec<TypeName>>()
-                    .as_mut(),
-            );
-            t
+            ).collect()
         },
     )(s)
 }
@@ -94,14 +90,9 @@ pub fn type_parameters(s: &str) -> IResult<&str, Vec<TypeParam>> {
             char('>'),
         )),
         |(_, _, p1, _, pn, _, _, _, _)| {
-            let mut type_params = vec![p1];
-            type_params.append(
-                pn.into_iter()
-                    .map(|(_, _, p, _)| p)
-                    .collect::<Vec<TypeParam>>()
-                    .as_mut(),
-            );
-            type_params
+            vec![p1].into_iter().chain(pn.into_iter()
+                         .map(|(_, _, p, _)| p)
+            ).collect()
         },
     )(s)
 }
