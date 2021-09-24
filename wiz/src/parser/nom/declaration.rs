@@ -222,10 +222,10 @@ pub fn function_value_parameters(s: &str) -> IResult<&str, Vec<ArgDef>> {
             char(')'),
         )),
         |(_, args, _)| match args {
-            Some((a, mut ar, _)) => {
-                let mut t = vec![a];
-                t.append(&mut ar);
-                t
+            Some((a, ar, _)) => {
+                vec![a].into_iter().chain(
+                    ar
+                ).collect()
             }
             None => Vec::new(),
         },
