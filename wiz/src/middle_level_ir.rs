@@ -32,6 +32,8 @@ pub mod ml_file;
 pub mod ml_node;
 pub mod ml_stmt;
 pub mod ml_type;
+#[cfg(test)]
+mod tests;
 
 struct HLIR2MLIRContext {
     generic_structs: StackedHashMap<String, TypedStruct>,
