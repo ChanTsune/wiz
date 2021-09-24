@@ -208,8 +208,11 @@ pub fn indexing_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
             whitespace0,
             char(']'),
         )),
-        |(_, _, ex, _, exs, _, _, _, _)| {
-            PostfixSuffix::IndexingSuffix { indexes: vec![ex].into_iter().chain(exs.into_iter().map(|(_, _, e)| e)).collect() }
+        |(_, _, ex, _, exs, _, _, _, _)| PostfixSuffix::IndexingSuffix {
+            indexes: vec![ex]
+                .into_iter()
+                .chain(exs.into_iter().map(|(_, _, e)| e))
+                .collect(),
         },
     )(s)
 }
