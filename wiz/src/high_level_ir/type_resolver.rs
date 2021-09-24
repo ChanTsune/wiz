@@ -164,7 +164,7 @@ impl TypeResolver {
             TypedDecl::Enum => TypedDecl::Enum,
             TypedDecl::Protocol => TypedDecl::Protocol,
             TypedDecl::Extension => TypedDecl::Extension,
-            TypedDecl::Use => TypedDecl::Use
+            TypedDecl::Use => TypedDecl::Use,
         })
     }
 

@@ -22,7 +22,7 @@ pub enum Decl {
     Extension {
         // TODO
     },
-    Use(UseSyntax)
+    Use(UseSyntax),
 }
 
 impl Node for Decl {}
@@ -85,10 +85,10 @@ pub struct MethodSyntax {
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct UseSyntax {
     pub(crate) package_name: PackageName,
-    pub(crate) alias: Option<String>
+    pub(crate) alias: Option<String>,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct PackageName {
-    pub(crate) names: Vec<String>
+    pub(crate) names: Vec<String>,
 }

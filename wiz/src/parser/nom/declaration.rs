@@ -1,26 +1,32 @@
 use crate::ast::block::Block;
-use crate::ast::decl::{Decl, FunSyntax, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, VarSyntax, PackageName, UseSyntax};
+use crate::ast::decl::{
+    Decl, FunSyntax, InitializerSyntax, MethodSyntax, PackageName, StoredPropertySyntax,
+    StructPropertySyntax, StructSyntax, UseSyntax, VarSyntax,
+};
 use crate::ast::expr::Expr;
 use crate::ast::fun::arg_def::{ArgDef, ValueArgDef};
 use crate::ast::fun::body_def::FunBody;
 use crate::ast::type_name::{TypeName, TypeParam};
 use crate::parser::nom::expression::expr;
-use crate::parser::nom::keywords::{fun_keyword, init_keyword, self_keyword, struct_keyword, val_keyword, var_keyword, where_keyword, use_keyword, as_keyword};
+use crate::parser::nom::keywords::{
+    as_keyword, fun_keyword, init_keyword, self_keyword, struct_keyword, use_keyword, val_keyword,
+    var_keyword, where_keyword,
+};
 use crate::parser::nom::lexical_structure::{
     eol, identifier, whitespace0, whitespace1, whitespace_without_eol0,
 };
 use crate::parser::nom::stmts;
 use crate::parser::nom::type_::{type_, type_parameters};
 use nom::branch::alt;
+use nom::bytes::complete::tag;
 use nom::character::complete::char;
 use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
 use nom::IResult;
-use nom::bytes::complete::tag;
 
 pub fn decl(s: &str) -> IResult<&str, Decl> {
-    alt((use_decl,struct_decl, function_decl, var_decl))(s)
+    alt((use_decl, struct_decl, function_decl, var_decl))(s)
 }
 
 //region struct
@@ -360,34 +366,36 @@ pub fn var_body(s: &str) -> IResult<&str, (String, Option<TypeName>, Expr)> {
 
 //region use
 pub fn use_decl(s: &str) -> IResult<&str, Decl> {
-    map(use_syntax, |u|{
-        Decl::Use(u)
-    })(s)
+    map(use_syntax, |u| Decl::Use(u))(s)
 }
 
 // <use> ::= "use" <package_name> ("as" <identifier>)?
 pub fn use_syntax(s: &str) -> IResult<&str, UseSyntax> {
-    map(tuple((use_keyword, whitespace1, package_name, opt(tuple((
-        whitespace1, as_keyword, whitespace1, identifier
-        ))  ))), |(_, _, pkg, alias)|{
-        UseSyntax {
+    map(
+        tuple((
+            use_keyword,
+            whitespace1,
+            package_name,
+            opt(tuple((whitespace1, as_keyword, whitespace1, identifier))),
+        )),
+        |(_, _, pkg, alias)| UseSyntax {
             package_name: pkg,
-            alias: alias.map(|(_, _, _, a)|{
-                a
-            })
-        }
-    })(s)
+            alias: alias.map(|(_, _, _, a)| a),
+        },
+    )(s)
 }
 
 // <package_name> ::= <identifier> ("::" <identifier>)*
-pub fn package_name(s: &str) -> IResult<&str, PackageName>{
-    map(tuple((identifier, many0(tuple((tag("::"), identifier))))), |(i, is):(String, Vec<(&str, String)>)|{
-        PackageName {
-            names: vec![i].into_iter().chain(is.into_iter().map(|(_, i)|{
-                i
-            })).collect()
-        }
-    })(s)
+pub fn package_name(s: &str) -> IResult<&str, PackageName> {
+    map(
+        tuple((identifier, many0(tuple((tag("::"), identifier))))),
+        |(i, is): (String, Vec<(&str, String)>)| PackageName {
+            names: vec![i]
+                .into_iter()
+                .chain(is.into_iter().map(|(_, i)| i))
+                .collect(),
+        },
+    )(s)
 }
 
 //endregion
@@ -395,14 +403,20 @@ pub fn package_name(s: &str) -> IResult<&str, PackageName>{
 #[cfg(test)]
 mod test {
     use crate::ast::block::Block;
-    use crate::ast::decl::{Decl, FunSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, VarSyntax, PackageName, UseSyntax};
+    use crate::ast::decl::{
+        Decl, FunSyntax, MethodSyntax, PackageName, StoredPropertySyntax, StructPropertySyntax,
+        StructSyntax, UseSyntax, VarSyntax,
+    };
     use crate::ast::expr::{Expr, NameExprSyntax};
     use crate::ast::fun::arg_def::{ArgDef, ValueArgDef};
     use crate::ast::fun::body_def::FunBody;
     use crate::ast::literal::Literal;
     use crate::ast::stmt::Stmt;
     use crate::ast::type_name::TypeName;
-    use crate::parser::nom::declaration::{block, function_body, function_decl, member_function, stored_property, struct_properties, struct_syntax, var_decl, package_name, use_syntax};
+    use crate::parser::nom::declaration::{
+        block, function_body, function_decl, member_function, package_name, stored_property,
+        struct_properties, struct_syntax, use_syntax, var_decl,
+    };
 
     #[test]
     fn test_struct_properties() {
@@ -725,23 +739,51 @@ mod test {
 
     #[test]
     fn test_package_name() {
-        assert_eq!(package_name("abc"), Ok(("", PackageName {
-            names: vec![String::from("abc")]
-        })));
-        assert_eq!(package_name("abc::def"), Ok(("", PackageName {
-            names: vec![String::from("abc"), String::from("def")]
-        })));
+        assert_eq!(
+            package_name("abc"),
+            Ok((
+                "",
+                PackageName {
+                    names: vec![String::from("abc")]
+                }
+            ))
+        );
+        assert_eq!(
+            package_name("abc::def"),
+            Ok((
+                "",
+                PackageName {
+                    names: vec![String::from("abc"), String::from("def")]
+                }
+            ))
+        );
     }
 
     #[test]
     fn test_use() {
-        assert_eq!(use_syntax("use abc"), Ok(("", UseSyntax {
-            package_name: PackageName { names: vec![String::from("abc")] },
-            alias: None
-        })));
-        assert_eq!(use_syntax("use abc as def"), Ok(("", UseSyntax {
-            package_name: PackageName { names: vec![String::from("abc")] },
-            alias: Some(String::from("def"))
-        })));
+        assert_eq!(
+            use_syntax("use abc"),
+            Ok((
+                "",
+                UseSyntax {
+                    package_name: PackageName {
+                        names: vec![String::from("abc")]
+                    },
+                    alias: None
+                }
+            ))
+        );
+        assert_eq!(
+            use_syntax("use abc as def"),
+            Ok((
+                "",
+                UseSyntax {
+                    package_name: PackageName {
+                        names: vec![String::from("abc")]
+                    },
+                    alias: Some(String::from("def"))
+                }
+            ))
+        );
     }
 }
