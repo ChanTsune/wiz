@@ -4,7 +4,10 @@ use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedStoredProperty,
     TypedStruct, TypedValueArgDef, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn, TypedSubscript, TypedIf};
+use crate::high_level_ir::typed_expr::{
+    TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral,
+    TypedName, TypedReturn, TypedSubscript,
+};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentStmt, TypedBlock, TypedStmt,
@@ -801,23 +804,36 @@ fn test_if_else() {
                     body: vec![TypedStmt::Expr(TypedExpr::Return(TypedReturn {
                         value: Some(Box::new(TypedExpr::If(TypedIf {
                             condition: Box::new(TypedExpr::BinOp(TypedBinOp {
-                                left: Box::new(TypedExpr::Name(TypedName { name: "i".to_string(), type_: Some(TypedType::int64()) })),
+                                left: Box::new(TypedExpr::Name(TypedName {
+                                    name: "i".to_string(),
+                                    type_: Some(TypedType::int64())
+                                })),
                                 kind: "<=".to_string(),
-                                right: Box::new(TypedExpr::Literal(TypedLiteral::Integer { value: "0".to_string(), type_: Some(TypedType::int64()) })),
+                                right: Box::new(TypedExpr::Literal(TypedLiteral::Integer {
+                                    value: "0".to_string(),
+                                    type_: Some(TypedType::int64())
+                                })),
                                 type_: Some(TypedType::bool())
                             })),
                             body: TypedBlock {
-                                body: vec![TypedStmt::Expr(TypedExpr::Literal(TypedLiteral::Integer { value: "0".to_string(), type_: Some(TypedType::int64()) }))]
+                                body: vec![TypedStmt::Expr(TypedExpr::Literal(
+                                    TypedLiteral::Integer {
+                                        value: "0".to_string(),
+                                        type_: Some(TypedType::int64())
+                                    }
+                                ))]
                             },
                             type_: Some(TypedType::int64()),
                             else_body: Some(TypedBlock {
-                                body: vec![TypedStmt::Expr(TypedExpr::Name(TypedName { name: "i".to_string(), type_: Some(TypedType::int64()) }))]
+                                body: vec![TypedStmt::Expr(TypedExpr::Name(TypedName {
+                                    name: "i".to_string(),
+                                    type_: Some(TypedType::int64())
+                                }))]
                             })
                         }))),
                         type_: Some(TypedType::int64())
                     }))]
-                }
-                )),
+                })),
                 return_type: Some(TypedType::int64())
             })]
         })
