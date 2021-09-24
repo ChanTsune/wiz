@@ -296,7 +296,7 @@ impl HLIR2MLIR {
         let value_type = MLValueType::Struct(struct_.name.clone());
         self.add_struct(value_type.clone(), struct_.clone());
 
-        let mut init: Vec<MLFun> = init
+        let init: Vec<MLFun> = init
             .into_iter()
             .map(|i| {
                 let type_ = MLType::Value(value_type.clone());
@@ -328,7 +328,7 @@ impl HLIR2MLIR {
                 }
             })
             .collect();
-        let mut members: Vec<MLFun> = member_functions
+        let members: Vec<MLFun> = member_functions
             .into_iter()
             .map(|mf| {
                 let TypedMemberFunction {
