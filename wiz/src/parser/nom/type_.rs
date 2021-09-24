@@ -67,10 +67,10 @@ pub fn type_arguments(s: &str) -> IResult<&str, Vec<TypeName>> {
             char('>'),
         )),
         |(_, t, ts, _, _)| {
-            vec![t].into_iter().chain(
-                ts.into_iter()
-                    .map(|(_, b)| b)
-            ).collect()
+            vec![t]
+                .into_iter()
+                .chain(ts.into_iter().map(|(_, b)| b))
+                .collect()
         },
     )(s)
 }
@@ -90,9 +90,10 @@ pub fn type_parameters(s: &str) -> IResult<&str, Vec<TypeParam>> {
             char('>'),
         )),
         |(_, _, p1, _, pn, _, _, _, _)| {
-            vec![p1].into_iter().chain(pn.into_iter()
-                         .map(|(_, _, p, _)| p)
-            ).collect()
+            vec![p1]
+                .into_iter()
+                .chain(pn.into_iter().map(|(_, _, p, _)| p))
+                .collect()
         },
     )(s)
 }
