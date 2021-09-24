@@ -839,3 +839,75 @@ fn test_if_else() {
         })
     );
 }
+
+#[test]
+fn test_if() {
+    let source = r"
+        fun test_if(i:Int64) {
+            if i <= 0 {
+                val p = 1
+            }
+        }
+        ";
+    let ast = parse_from_string(String::from(source)).unwrap();
+
+    let mut ast2hlir = Ast2HLIR::new();
+
+    let mut file = ast2hlir.file(ast);
+    file.name = String::from("test");
+
+    let mut resolver = TypeResolver::new();
+    let _ = resolver.detect_type(&file);
+    let _ = resolver.preload_file(file.clone());
+    let f = resolver.file(file);
+
+    assert_eq!(
+        f,
+        Result::Ok(TypedFile {
+            name: "test".to_string(),
+            body: vec![TypedDecl::Fun(TypedFun {
+                modifiers: vec![],
+                name: "test_if".to_string(),
+                type_params: None,
+                arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
+                    label: "i".to_string(),
+                    name: "i".to_string(),
+                    type_: TypedType::int64()
+                })],
+                body: Option::from(TypedFunBody::Block(TypedBlock {
+                    body: vec![TypedStmt::Expr(TypedExpr::If(TypedIf {
+                        condition: Box::new(TypedExpr::BinOp(TypedBinOp {
+                            left: Box::new(TypedExpr::Name(TypedName {
+                                name: "i".to_string(),
+                                type_: Some(TypedType::int64())
+                            })),
+                            kind: "<=".to_string(),
+                            right: Box::new(TypedExpr::Literal(TypedLiteral::Integer {
+                                value: "0".to_string(),
+                                type_: Some(TypedType::int64())
+                            })),
+                            type_: Some(TypedType::bool())
+                        })),
+                        body: TypedBlock {
+                            body: vec![TypedStmt::Decl(TypedDecl::Var(TypedVar {
+                                is_mut: false,
+                                name: "p".to_string(),
+                                type_: Some(TypedType::int64()),
+                                value: TypedExpr::Literal(
+                                    TypedLiteral::Integer {
+                                        value: "1".to_string(),
+                                        type_: Some(TypedType::int64())
+                                    }
+                                )
+                            }))]
+                        },
+                        type_: Some(TypedType::noting()),
+                        else_body: None
+                    }))]
+                })),
+                return_type: Some(TypedType::unit())
+            })]
+        })
+    );
+}
+
