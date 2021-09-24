@@ -5,8 +5,8 @@ use crate::high_level_ir::typed_decl::{
     TypedStruct, TypedValueArgDef, TypedVar,
 };
 use crate::high_level_ir::typed_expr::{
-    TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedInstanceMember, TypedLiteral,
-    TypedName, TypedReturn, TypedSubscript,
+    TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedInstanceMember, TypedLiteral, TypedName,
+    TypedReturn, TypedSubscript,
 };
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{
@@ -404,24 +404,20 @@ fn test_struct_init() {
                                     })),
                                     name: "init".to_string(),
                                     is_safe: false,
-                                    type_: Some(TypedType::Function(Box::new(
-                                        TypedFunctionType {
-                                            arguments: vec![TypedArgDef::Value(
-                                                TypedValueArgDef {
-                                                    label: "a".to_string(),
-                                                    name: "a".to_string(),
-                                                    type_: TypedType::int64()
-                                                }
-                                            )],
-                                            return_type: TypedType::Value(TypedValueType {
-                                                package: Package {
-                                                    names: vec![String::from("test")]
-                                                },
-                                                name: "A".to_string(),
-                                                type_args: None
-                                            })
-                                        }
-                                    ))),
+                                    type_: Some(TypedType::Function(Box::new(TypedFunctionType {
+                                        arguments: vec![TypedArgDef::Value(TypedValueArgDef {
+                                            label: "a".to_string(),
+                                            name: "a".to_string(),
+                                            type_: TypedType::int64()
+                                        })],
+                                        return_type: TypedType::Value(TypedValueType {
+                                            package: Package {
+                                                names: vec![String::from("test")]
+                                            },
+                                            name: "A".to_string(),
+                                            type_args: None
+                                        })
+                                    }))),
                                 })),
                                 args: vec![TypedCallArg {
                                     label: Some(String::from("a")),
@@ -619,12 +615,10 @@ fn test_return_integer_literal() {
                 arg_defs: vec![],
                 body: Option::from(TypedFunBody::Block(TypedBlock {
                     body: vec![TypedStmt::Expr(TypedExpr::Return(TypedReturn {
-                        value: Option::Some(Box::new(TypedExpr::Literal(
-                            TypedLiteral::Integer {
-                                value: "1".to_string(),
-                                type_: Some(TypedType::int64())
-                            }
-                        ))),
+                        value: Option::Some(Box::new(TypedExpr::Literal(TypedLiteral::Integer {
+                            value: "1".to_string(),
+                            type_: Some(TypedType::int64())
+                        }))),
                         type_: Some(TypedType::int64())
                     }))]
                 })),
