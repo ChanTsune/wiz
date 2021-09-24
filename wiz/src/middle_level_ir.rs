@@ -228,10 +228,9 @@ impl HLIR2MLIR {
             TypedDecl::Fun(f) => vec![MLDecl::Fun(self.fun(f))],
             TypedDecl::Struct(s) => {
                 let (st, fns) = self.struct_(s);
-                let mut fns: Vec<MLDecl> = fns.into_iter().map(|f| MLDecl::Fun(f)).collect();
-                let mut r = vec![MLDecl::Struct(st)];
-                r.append(&mut fns);
-                r
+                vec![MLDecl::Struct(st)].into_iter().chain(
+                    fns.into_iter().map(|f| MLDecl::Fun(f))
+                ).collect()
             }
             TypedDecl::Class => exit(-1),
             TypedDecl::Enum => exit(-1),
@@ -338,12 +337,10 @@ impl HLIR2MLIR {
                     body,
                     return_type,
                 } = mf;
-                let mut a = args.into_iter().map(|a| self.arg_def(a)).collect();
-                let mut args = vec![MLArgDef {
+                let args = vec![MLArgDef {
                     name: String::from("self"),
                     type_: value_type.clone(),
-                }];
-                args.append(&mut a);
+                }].into_iter().chain(args.into_iter().map(|a| self.arg_def(a))).collect();
                 MLFun {
                     modifiers: vec![],
                     name: name.clone() + "::" + &fname,
@@ -356,10 +353,7 @@ impl HLIR2MLIR {
                 }
             })
             .collect();
-        let mut funs: Vec<MLFun> = vec![];
-        funs.append(&mut init);
-        funs.append(&mut members);
-        (struct_, funs)
+        (struct_, init.into_iter().chain(members).collect())
     }
 
     pub fn expr(&mut self, e: TypedExpr) -> MLExpr {
