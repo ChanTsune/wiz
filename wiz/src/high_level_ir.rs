@@ -108,6 +108,7 @@ impl Ast2HLIR {
             Decl::Enum { .. } => TypedDecl::Enum,
             Decl::Protocol { .. } => TypedDecl::Protocol,
             Decl::Extension { .. } => TypedDecl::Extension,
+            Decl::Use(_) => { TypedDecl::Use }
         }
     }
 

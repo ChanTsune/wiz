@@ -237,6 +237,7 @@ impl HLIR2MLIR {
             TypedDecl::Enum => exit(-1),
             TypedDecl::Protocol => exit(-1),
             TypedDecl::Extension => exit(-1),
+            TypedDecl::Use => exit(-1)
         }
     }
 

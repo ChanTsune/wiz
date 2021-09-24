@@ -12,6 +12,7 @@ pub enum TypedDecl {
     Enum,
     Protocol,
     Extension,
+    Use,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]

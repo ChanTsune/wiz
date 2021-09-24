@@ -71,9 +71,9 @@
 <arg_label> ::= <identifire>
 <arg_name> ::= <identifire> 
 
-<use> ::= <package_name> ("as" <identifier>)?
+<use> ::= "use" <package_name> ("as" <identifier>)?
 
-<package_name> ::= <identifier> ("." <identifier>)*
+<package_name> ::= <identifier> ("::" <identifier>)*
 
 <block> ::= "{" <stmts> "}"
 
