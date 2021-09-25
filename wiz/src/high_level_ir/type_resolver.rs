@@ -4,7 +4,6 @@ pub mod result;
 #[cfg(test)]
 mod tests;
 
-use crate::constants::UNSAFE_POINTER;
 use crate::high_level_ir::type_resolver::context::{ResolverContext, ResolverStruct};
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
