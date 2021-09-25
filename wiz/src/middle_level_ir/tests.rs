@@ -1,12 +1,12 @@
 use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::Ast2HLIR;
+use crate::middle_level_ir::ml_decl::{MLDecl, MLFun, MLFunBody};
+use crate::middle_level_ir::ml_expr::{MLExpr, MLLiteral, MLReturn};
 use crate::middle_level_ir::ml_file::MLFile;
+use crate::middle_level_ir::ml_stmt::MLStmt;
+use crate::middle_level_ir::ml_type::MLValueType;
 use crate::middle_level_ir::HLIR2MLIR;
 use crate::parser::parser::parse_from_string;
-use crate::middle_level_ir::ml_decl::{MLDecl, MLFun, MLFunBody};
-use crate::middle_level_ir::ml_type::MLValueType;
-use crate::middle_level_ir::ml_stmt::MLStmt;
-use crate::middle_level_ir::ml_expr::{MLExpr, MLReturn, MLLiteral};
 
 #[test]
 fn test_empty() {
