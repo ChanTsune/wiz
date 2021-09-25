@@ -326,8 +326,8 @@ impl Ast2HLIR {
                     value,
                     type_: Some(TypedType::string()),
                 }),
-                LiteralSyntax::Boolean { value } => TypedExpr::Literal(TypedLiteral::Boolean {
-                    value,
+                LiteralSyntax::Boolean(syntax) => TypedExpr::Literal(TypedLiteral::Boolean {
+                    value: syntax.token,
                     type_: Some(TypedType::bool()),
                 }),
                 LiteralSyntax::Null => {
