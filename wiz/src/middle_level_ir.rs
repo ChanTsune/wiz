@@ -1,4 +1,3 @@
-use crate::constants::UNSAFE_POINTER;
 use crate::ext::string::StringExt;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct, TypedVar,
@@ -88,7 +87,7 @@ impl HLIR2MLIR {
     }
 
     pub fn value_type(&self, t: TypedValueType) -> MLValueType {
-        if t.package.clone().unwrap().names.len() == 0 && t.name == UNSAFE_POINTER {
+        if t.is_unsafe_pointer() {
             match self.type_(t.type_args.unwrap()[0].clone()) {
                 MLType::Value(v) => MLValueType::Pointer(Box::new(v)),
                 MLType::Function(f) => {
