@@ -69,7 +69,7 @@ fn test_unsafe_pointer() {
             name: "test".to_string(),
             body: vec![
                 TypedDecl::Struct(TypedStruct {
-                    package: None,
+                    package: Some(Package::new(vec![String::from("test")])),
                     name: "A".to_string(),
                     type_params: None,
                     init: vec![TypedInitializer {
@@ -189,7 +189,7 @@ fn test_struct_member() {
             name: "test".to_string(),
             body: vec![
                 TypedDecl::Struct(TypedStruct {
-                    package: None,
+                    package: Some(Package::new(vec![String::from("test")])),
                     name: "A".to_string(),
                     type_params: None,
                     init: vec![TypedInitializer {
@@ -309,7 +309,7 @@ fn test_struct_init() {
             name: "test".to_string(),
             body: vec![
                 TypedDecl::Struct(TypedStruct {
-                    package: None,
+                    package: Some(Package::new(vec![String::from("test")])),
                     name: "A".to_string(),
                     type_params: None,
                     init: vec![TypedInitializer {

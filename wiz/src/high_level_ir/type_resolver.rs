@@ -282,7 +282,7 @@ impl TypeResolver {
 
     pub fn typed_struct(&mut self, s: TypedStruct) -> Result<TypedStruct> {
         let TypedStruct {
-            package,
+            package:_,
             name,
             type_params,
             init,                // TODO
@@ -345,7 +345,7 @@ impl TypeResolver {
         self.context.clear_current_type();
         self.context.pop_name_space();
         Result::Ok(TypedStruct {
-            package,
+            package: Some(Package::new(self.context.current_namespace.clone())),
             name,
             type_params,
             init,
