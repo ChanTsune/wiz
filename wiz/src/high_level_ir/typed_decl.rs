@@ -1,6 +1,6 @@
 use crate::high_level_ir::typed_expr::TypedExpr;
 use crate::high_level_ir::typed_stmt::TypedBlock;
-use crate::high_level_ir::typed_type::{TypedFunctionType, TypedType, TypedTypeParam, Package};
+use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedTypeParam};
 use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
