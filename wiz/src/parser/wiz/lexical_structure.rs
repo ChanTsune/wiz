@@ -1,15 +1,15 @@
 use crate::parser::wiz::character::{alphabet, digit, under_score};
+use crate::syntax::trivia::TriviaPiece;
 use nom::branch::{alt, permutation};
 use nom::bytes::complete::{is_not, tag};
 use nom::character::complete::{anychar, char};
 use nom::combinator::{map, opt};
 use nom::error::{ErrorKind, ParseError};
+use nom::lib::std::ops::RangeFrom;
 use nom::multi::{many0, many1};
 use nom::sequence::tuple;
-use nom::{AsChar, IResult, InputTakeAtPosition, InputIter, Slice, InputLength};
+use nom::{AsChar, IResult, InputIter, InputLength, InputTakeAtPosition, Slice};
 use std::iter::FromIterator;
-use crate::syntax::trivia::TriviaPiece;
-use nom::lib::std::ops::RangeFrom;
 
 pub fn whitespace0(s: &str) -> IResult<&str, String> {
     map(
@@ -164,22 +164,22 @@ where
 }
 
 pub fn newline<I>(s: I) -> IResult<I, TriviaPiece>
-    where
-        I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength,
-        <I as InputIter>::Item: AsChar,
+where
+    I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength,
+    <I as InputIter>::Item: AsChar,
 {
-    map(many1(eol), |l|{
-        TriviaPiece::Newlines(l.len() as i64)
-    })(s)
+    map(many1(eol), |l| TriviaPiece::Newlines(l.len() as i64))(s)
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::lexical_structure::{comment, eol, identifier, whitespace0, whitespace1, newline};
+    use crate::parser::wiz::lexical_structure::{
+        comment, eol, identifier, newline, whitespace0, whitespace1,
+    };
+    use crate::syntax::trivia::TriviaPiece;
     use nom::error;
     use nom::error::ErrorKind;
     use nom::Err;
-    use crate::syntax::trivia::TriviaPiece;
 
     #[test]
     fn test_identifier() {
