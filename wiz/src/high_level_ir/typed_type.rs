@@ -35,6 +35,13 @@ pub struct TypedTypeParam {
 }
 
 impl Package {
+
+    pub(crate) fn new(names: Vec<String>) -> Self {
+        Self {
+            names
+        }
+    }
+
     pub(crate) fn global() -> Self {
         Self { names: vec![] }
     }

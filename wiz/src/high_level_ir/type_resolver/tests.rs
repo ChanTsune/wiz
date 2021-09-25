@@ -113,7 +113,7 @@ fn test_unsafe_pointer() {
                     static_function: vec![]
                 }),
                 TypedDecl::Fun(TypedFun {
-                    package: None,
+                    package: Some(Package::new(vec![String::from("test")])),
                     modifiers: vec![],
                     name: "function".to_string(),
                     type_params: None,
@@ -230,7 +230,7 @@ fn test_struct_member() {
                     static_function: vec![]
                 }),
                 TypedDecl::Fun(TypedFun {
-                    package: None,
+                    package: Some(Package::new(vec![String::from("test")])),
                     modifiers: vec![],
                     name: "function".to_string(),
                     type_params: None,
@@ -347,7 +347,7 @@ fn test_struct_init() {
                     static_function: vec![],
                 }),
                 TypedDecl::Fun(TypedFun {
-                    package: None,
+                    package: Some(Package::new(vec![String::from("test")])),
                     modifiers: vec![],
                     name: "function".to_string(),
                     type_params: None,
@@ -450,7 +450,7 @@ fn test_expr_function_with_no_arg() {
         Result::Ok(TypedFile {
             name: "test".to_string(),
             body: vec![TypedDecl::Fun(TypedFun {
-                package: None,
+                package: Some(Package::new(vec![String::from("test")])),
                 modifiers: vec![],
                 name: "function".to_string(),
                 type_params: None,
@@ -489,7 +489,7 @@ fn test_expr_function_with_arg() {
         Result::Ok(TypedFile {
             name: "test".to_string(),
             body: vec![TypedDecl::Fun(TypedFun {
-                package: None,
+                package: Some(Package::new(vec![String::from("test")])),
                 modifiers: vec![],
                 name: "function".to_string(),
                 type_params: None,
@@ -534,7 +534,7 @@ fn test_function_call() {
             name: "test".to_string(),
             body: vec![
                 TypedDecl::Fun(TypedFun {
-                    package: None,
+                    package: Some(Package::new(vec![String::from("test")])),
                     modifiers: vec![],
                     name: "target_function".to_string(),
                     type_params: None,
@@ -548,7 +548,7 @@ fn test_function_call() {
                     return_type: Some(TypedType::int64()),
                 }),
                 TypedDecl::Fun(TypedFun {
-                    package: None,
+                    package: Some(Package::new(vec![String::from("test")])),
                     modifiers: vec![],
                     name: "main".to_string(),
                     type_params: None,
@@ -597,7 +597,7 @@ fn test_return_integer_literal() {
         Result::Ok(TypedFile {
             name: "test".to_string(),
             body: vec![TypedDecl::Fun(TypedFun {
-                package: None,
+                package: Some(Package::new(vec![String::from("test")])),
                 modifiers: vec![],
                 name: "sample".to_string(),
                 type_params: None,
@@ -641,7 +641,7 @@ fn test_return_floating_point_literal() {
         Result::Ok(TypedFile {
             name: "test".to_string(),
             body: vec![TypedDecl::Fun(TypedFun {
-                package: None,
+                package: Some(Package::new(vec![String::from("test")])),
                 modifiers: vec![],
                 name: "sample".to_string(),
                 type_params: None,
@@ -687,7 +687,7 @@ fn test_binop() {
         Result::Ok(TypedFile {
             name: "test".to_string(),
             body: vec![TypedDecl::Fun(TypedFun {
-                package: None,
+                package: Some(Package::new(vec![String::from("test")])),
                 modifiers: vec![],
                 name: "sample".to_string(),
                 type_params: None,
@@ -734,7 +734,7 @@ fn test_subscript() {
         Result::Ok(TypedFile {
             name: "test".to_string(),
             body: vec![TypedDecl::Fun(TypedFun {
-                package: None,
+                package: Some(Package::new(vec![String::from("test")])),
                 modifiers: vec![],
                 name: "get_first".to_string(),
                 type_params: None,
@@ -784,7 +784,7 @@ fn test_if_else() {
         Result::Ok(TypedFile {
             name: "test".to_string(),
             body: vec![TypedDecl::Fun(TypedFun {
-                package: None,
+                package: Some(Package::new(vec![String::from("test")])),
                 modifiers: vec![],
                 name: "test_if".to_string(),
                 type_params: None,
@@ -859,7 +859,7 @@ fn test_if() {
         Result::Ok(TypedFile {
             name: "test".to_string(),
             body: vec![TypedDecl::Fun(TypedFun {
-                package: None,
+                package: Some(Package::new(vec![String::from("test")])),
                 modifiers: vec![],
                 name: "test_if".to_string(),
                 type_params: None,

@@ -107,6 +107,7 @@ impl TypeResolver {
     }
 
     pub fn preload_fun(&mut self, f: TypedFun) -> Result<TypedFun> {
+        let c_name_space = self.context.current_namespace.clone();
         self.context.push_name_space(f.name.clone());
         let arg_defs = f
             .arg_defs
@@ -124,7 +125,7 @@ impl TypeResolver {
             .collect::<Result<Vec<TypedArgDef>>>()?;
         let return_type = self.typed_function_return_type(&f)?;
         let fun = TypedFun {
-            package: None,
+            package: Some(Package::new(c_name_space)),
             modifiers: f.modifiers,
             name: f.name,
             type_params: f.type_params, // TODO
@@ -241,6 +242,7 @@ impl TypeResolver {
     }
 
     pub fn typed_fun(&mut self, f: TypedFun) -> Result<TypedFun> {
+        let c_name_space = self.context.current_namespace.clone();
         self.context.push_name_space(f.name.clone());
         let arg_defs = f
             .arg_defs
@@ -258,7 +260,7 @@ impl TypeResolver {
             .collect::<Result<Vec<TypedArgDef>>>()?;
         let return_type = self.typed_function_return_type(&f)?;
         let fun = TypedFun {
-            package: None,
+            package: Some(Package::new(c_name_space)),
             modifiers: f.modifiers,
             name: f.name,
             type_params: f.type_params, // TODO
