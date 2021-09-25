@@ -255,6 +255,7 @@ impl Ast2HLIR {
                                 TypedAssignment {
                                     target: TypedExpr::Member(TypedInstanceMember {
                                         target: Box::new(TypedExpr::Name(TypedName {
+                                            package: None,
                                             name: "self".to_string(),
                                             type_: Some(TypedType::Value(struct_type.clone())),
                                         })),
@@ -263,6 +264,7 @@ impl Ast2HLIR {
                                         type_: Some(p.type_.clone()),
                                     }),
                                     value: TypedExpr::Name(TypedName {
+                                        package: None,
                                         name: p.name.clone(),
                                         type_: Some(p.type_.clone()),
                                     }),
@@ -406,7 +408,7 @@ impl Ast2HLIR {
 
     pub fn name_syntax(&self, n: NameExprSyntax) -> TypedName {
         let NameExprSyntax { name } = n;
-        TypedName { name, type_: None }
+        TypedName { package: None, name, type_: None }
     }
 
     pub fn subscript_syntax(&mut self, s: SubscriptSyntax) -> TypedSubscript {

@@ -48,6 +48,12 @@ impl Package {
     }
 }
 
+impl ToString for Package {
+    fn to_string(&self) -> String {
+        self.names.join("::")
+    }
+}
+
 impl TypedValueType {
     pub(crate) fn is_unsafe_pointer(&self) -> bool {
         self.name == UNSAFE_POINTER

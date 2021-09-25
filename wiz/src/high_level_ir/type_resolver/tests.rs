@@ -83,6 +83,7 @@ fn test_unsafe_pointer() {
                                 TypedAssignment {
                                     target: TypedExpr::Member(TypedInstanceMember {
                                         target: Box::new(TypedExpr::Name(TypedName {
+                                            package: None,
                                             name: "self".to_string(),
                                             type_: Some(TypedType::Value(TypedValueType {
                                                 package: Some(Package {
@@ -97,6 +98,7 @@ fn test_unsafe_pointer() {
                                         type_: Some(TypedType::unsafe_pointer(TypedType::uint8()))
                                     }),
                                     value: TypedExpr::Name(TypedName {
+                                        package: None,
                                         name: "a".to_string(),
                                         type_: Some(TypedType::unsafe_pointer(TypedType::uint8()))
                                     })
@@ -136,6 +138,7 @@ fn test_unsafe_pointer() {
                             type_: Some(TypedType::unsafe_pointer(TypedType::uint8())),
                             value: TypedExpr::Member(TypedInstanceMember {
                                 target: Box::new(TypedExpr::Name(TypedName {
+                                    package: None,
                                     name: "a".to_string(),
                                     type_: Some(TypedType::Value(TypedValueType {
                                         package: Some(Package {
@@ -200,6 +203,7 @@ fn test_struct_member() {
                                 TypedAssignment {
                                     target: TypedExpr::Member(TypedInstanceMember {
                                         target: Box::new(TypedExpr::Name(TypedName {
+                                            package: None,
                                             name: "self".to_string(),
                                             type_: Some(TypedType::Value(TypedValueType {
                                                 package: Some(Package {
@@ -214,6 +218,7 @@ fn test_struct_member() {
                                         type_: Some(TypedType::int64())
                                     }),
                                     value: TypedExpr::Name(TypedName {
+                                        package: None,
                                         name: "a".to_string(),
                                         type_: Some(TypedType::int64())
                                     })
@@ -253,6 +258,7 @@ fn test_struct_member() {
                             type_: Some(TypedType::int64()),
                             value: TypedExpr::Member(TypedInstanceMember {
                                 target: Box::new(TypedExpr::Name(TypedName {
+                                    package: None,
                                     name: "a".to_string(),
                                     type_: Some(TypedType::Value(TypedValueType {
                                         package: Some(Package {
@@ -317,6 +323,7 @@ fn test_struct_init() {
                                 TypedAssignment {
                                     target: TypedExpr::Member(TypedInstanceMember {
                                         target: Box::new(TypedExpr::Name(TypedName {
+                                            package: None,
                                             name: "self".to_string(),
                                             type_: Some(TypedType::Value(TypedValueType {
                                                 package: Some(Package {
@@ -331,6 +338,7 @@ fn test_struct_init() {
                                         type_: Some(TypedType::int64())
                                     }),
                                     value: TypedExpr::Name(TypedName {
+                                        package: None,
                                         name: "a".to_string(),
                                         type_: Some(TypedType::int64())
                                     })
@@ -377,6 +385,7 @@ fn test_struct_init() {
                             value: TypedExpr::Call(TypedCall {
                                 target: Box::new(TypedExpr::Member(TypedInstanceMember {
                                     target: Box::new(TypedExpr::Name(TypedName {
+                                        package: None,
                                         name: "A".to_string(),
                                         type_: Some(TypedType::Type(TypedValueType {
                                             package: Some(Package {
@@ -499,6 +508,7 @@ fn test_expr_function_with_arg() {
                     type_: TypedType::int32()
                 })],
                 body: Some(TypedFunBody::Expr(TypedExpr::Name(TypedName {
+                    package: None,
                     name: "i".to_string(),
                     type_: Some(TypedType::int32())
                 }))),
@@ -556,6 +566,7 @@ fn test_function_call() {
                     body: Some(TypedFunBody::Block(TypedBlock {
                         body: vec![TypedStmt::Expr(TypedExpr::Call(TypedCall {
                             target: Box::new(TypedExpr::Name(TypedName {
+                                package: None,
                                 name: "target_function".to_string(),
                                 type_: Some(TypedType::Function(Box::new(TypedFunctionType {
                                     arguments: vec![],
@@ -745,6 +756,7 @@ fn test_subscript() {
                 })],
                 body: Option::from(TypedFunBody::Expr(TypedExpr::Subscript(TypedSubscript {
                     target: Box::new(TypedExpr::Name(TypedName {
+                        package: None,
                         name: "p".to_string(),
                         type_: Some(TypedType::unsafe_pointer(TypedType::uint8()))
                     })),
@@ -798,6 +810,7 @@ fn test_if_else() {
                         value: Some(Box::new(TypedExpr::If(TypedIf {
                             condition: Box::new(TypedExpr::BinOp(TypedBinOp {
                                 left: Box::new(TypedExpr::Name(TypedName {
+                                    package: None,
                                     name: "i".to_string(),
                                     type_: Some(TypedType::int64())
                                 })),
@@ -819,6 +832,7 @@ fn test_if_else() {
                             type_: Some(TypedType::int64()),
                             else_body: Some(TypedBlock {
                                 body: vec![TypedStmt::Expr(TypedExpr::Name(TypedName {
+                                    package: None,
                                     name: "i".to_string(),
                                     type_: Some(TypedType::int64())
                                 }))]
@@ -872,6 +886,7 @@ fn test_if() {
                     body: vec![TypedStmt::Expr(TypedExpr::If(TypedIf {
                         condition: Box::new(TypedExpr::BinOp(TypedBinOp {
                             left: Box::new(TypedExpr::Name(TypedName {
+                                package: None,
                                 name: "i".to_string(),
                                 type_: Some(TypedType::int64())
                             })),
