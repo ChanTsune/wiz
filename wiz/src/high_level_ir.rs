@@ -408,7 +408,11 @@ impl Ast2HLIR {
 
     pub fn name_syntax(&self, n: NameExprSyntax) -> TypedName {
         let NameExprSyntax { name } = n;
-        TypedName { package: None, name, type_: None }
+        TypedName {
+            package: None,
+            name,
+            type_: None,
+        }
     }
 
     pub fn subscript_syntax(&mut self, s: SubscriptSyntax) -> TypedSubscript {

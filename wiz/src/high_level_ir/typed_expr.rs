@@ -1,5 +1,5 @@
 use crate::high_level_ir::typed_stmt::TypedBlock;
-use crate::high_level_ir::typed_type::{TypedType, Package};
+use crate::high_level_ir::typed_type::{Package, TypedType};
 use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
