@@ -26,7 +26,6 @@ pub enum TriviaPiece {
     GarbageText(String),
 }
 
-
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct Trivia {
     peaces: Vec<TriviaPiece>,
