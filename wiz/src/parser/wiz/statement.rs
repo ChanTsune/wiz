@@ -156,12 +156,14 @@ pub fn file(s: &str) -> IResult<&str, FileSyntax> {
 
 #[cfg(test)]
 mod tests {
+    use crate::parser::wiz::statement::{
+        assignable_expr, assignment_stmt, directly_assignable_expr, file, while_stmt,
+    };
     use crate::syntax::block::Block;
     use crate::syntax::expr::{Expr, NameExprSyntax};
     use crate::syntax::file::FileSyntax;
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::stmt::{AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt};
-    use crate::parser::wiz::statement::{while_stmt, directly_assignable_expr, assignable_expr, assignment_stmt, file};
 
     #[test]
     fn test_while_stmt_with_bracket() {

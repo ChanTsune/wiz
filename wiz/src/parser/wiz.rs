@@ -4,5 +4,5 @@ pub mod expression;
 pub mod keywords;
 pub mod lexical_structure;
 pub mod operators;
-pub mod type_;
 pub mod statement;
+pub mod type_;
