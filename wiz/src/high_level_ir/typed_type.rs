@@ -46,9 +46,12 @@ impl Package {
 
 impl TypedValueType {
     pub(crate) fn is_unsafe_pointer(&self) -> bool {
-        self.name == UNSAFE_POINTER && if let Some(pkg) = &self.package {
-            pkg.is_global()
-        } else { false }
+        self.name == UNSAFE_POINTER
+            && if let Some(pkg) = &self.package {
+                pkg.is_global()
+            } else {
+                false
+            }
     }
 }
 
