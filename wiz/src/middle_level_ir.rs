@@ -253,6 +253,7 @@ impl HLIR2MLIR {
 
     pub fn fun(&mut self, f: TypedFun) -> MLFun {
         let TypedFun {
+            package,
             modifiers,
             name,
             type_params,
@@ -273,6 +274,7 @@ impl HLIR2MLIR {
 
     pub fn struct_(&mut self, s: TypedStruct) -> (MLStruct, Vec<MLFun>) {
         let TypedStruct {
+            package,
             name,
             type_params,
             init,

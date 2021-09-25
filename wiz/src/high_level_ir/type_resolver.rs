@@ -125,6 +125,7 @@ impl TypeResolver {
             .collect::<Result<Vec<TypedArgDef>>>()?;
         let return_type = self.typed_function_return_type(&f)?;
         let fun = TypedFun {
+            package: None,
             modifiers: f.modifiers,
             name: f.name,
             type_params: f.type_params, // TODO
@@ -192,6 +193,7 @@ impl TypeResolver {
             ))),
         }?;
         let v = TypedVar {
+            package: None,
             is_mut: t.is_mut,
             name: t.name,
             type_: Some(v_type),
@@ -257,6 +259,7 @@ impl TypeResolver {
             .collect::<Result<Vec<TypedArgDef>>>()?;
         let return_type = self.typed_function_return_type(&f)?;
         let fun = TypedFun {
+            package: None,
             modifiers: f.modifiers,
             name: f.name,
             type_params: f.type_params, // TODO
@@ -278,6 +281,7 @@ impl TypeResolver {
 
     pub fn typed_struct(&mut self, s: TypedStruct) -> Result<TypedStruct> {
         let TypedStruct {
+            package,
             name,
             type_params,
             init,                // TODO
@@ -340,6 +344,7 @@ impl TypeResolver {
         self.context.clear_current_type();
         self.context.pop_name_space();
         Result::Ok(TypedStruct {
+            package,
             name,
             type_params,
             init,

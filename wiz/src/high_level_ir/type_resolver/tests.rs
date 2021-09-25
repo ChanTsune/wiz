@@ -70,6 +70,7 @@ fn test_unsafe_pointer() {
             name: "test".to_string(),
             body: vec![
                 TypedDecl::Struct(TypedStruct {
+                    package: None,
                     name: "A".to_string(),
                     type_params: None,
                     init: vec![TypedInitializer {
@@ -129,6 +130,7 @@ fn test_unsafe_pointer() {
                     static_function: vec![]
                 }),
                 TypedDecl::Fun(TypedFun {
+                    package: None,
                     modifiers: vec![],
                     name: "function".to_string(),
                     type_params: None,
@@ -145,6 +147,7 @@ fn test_unsafe_pointer() {
                     })],
                     body: Option::Some(TypedFunBody::Block(TypedBlock {
                         body: vec![TypedStmt::Decl(TypedDecl::Var(TypedVar {
+                            package: None,
                             is_mut: false,
                             name: "a".to_string(),
                             type_: Some(TypedType::Value(TypedValueType {
@@ -208,6 +211,7 @@ fn test_struct_member() {
             name: "test".to_string(),
             body: vec![
                 TypedDecl::Struct(TypedStruct {
+                    package: None,
                     name: "A".to_string(),
                     type_params: None,
                     init: vec![TypedInitializer {
@@ -251,6 +255,7 @@ fn test_struct_member() {
                     static_function: vec![]
                 }),
                 TypedDecl::Fun(TypedFun {
+                    package: None,
                     modifiers: vec![],
                     name: "function".to_string(),
                     type_params: None,
@@ -267,6 +272,7 @@ fn test_struct_member() {
                     })],
                     body: Option::Some(TypedFunBody::Block(TypedBlock {
                         body: vec![TypedStmt::Decl(TypedDecl::Var(TypedVar {
+                            package: None,
                             is_mut: false,
                             name: "a".to_string(),
                             type_: Some(TypedType::int64()),
@@ -322,6 +328,7 @@ fn test_struct_init() {
             name: "test".to_string(),
             body: vec![
                 TypedDecl::Struct(TypedStruct {
+                    package: None,
                     name: "A".to_string(),
                     type_params: None,
                     init: vec![TypedInitializer {
@@ -365,6 +372,7 @@ fn test_struct_init() {
                     static_function: vec![],
                 }),
                 TypedDecl::Fun(TypedFun {
+                    package: None,
                     modifiers: vec![],
                     name: "function".to_string(),
                     type_params: None,
@@ -381,6 +389,7 @@ fn test_struct_init() {
                     })],
                     body: Option::Some(TypedFunBody::Block(TypedBlock {
                         body: vec![TypedStmt::Decl(TypedDecl::Var(TypedVar {
+                            package: None,
                             is_mut: false,
                             name: "a".to_string(),
                             type_: Some(TypedType::Value(TypedValueType {
@@ -466,6 +475,7 @@ fn test_expr_function_with_no_arg() {
         Result::Ok(TypedFile {
             name: "test".to_string(),
             body: vec![TypedDecl::Fun(TypedFun {
+                package: None,
                 modifiers: vec![],
                 name: "function".to_string(),
                 type_params: None,
@@ -504,6 +514,7 @@ fn test_expr_function_with_arg() {
         Result::Ok(TypedFile {
             name: "test".to_string(),
             body: vec![TypedDecl::Fun(TypedFun {
+                package: None,
                 modifiers: vec![],
                 name: "function".to_string(),
                 type_params: None,
@@ -548,6 +559,7 @@ fn test_function_call() {
             name: "test".to_string(),
             body: vec![
                 TypedDecl::Fun(TypedFun {
+                    package: None,
                     modifiers: vec![],
                     name: "target_function".to_string(),
                     type_params: None,
@@ -561,6 +573,7 @@ fn test_function_call() {
                     return_type: Some(TypedType::int64()),
                 }),
                 TypedDecl::Fun(TypedFun {
+                    package: None,
                     modifiers: vec![],
                     name: "main".to_string(),
                     type_params: None,
@@ -609,6 +622,7 @@ fn test_return_integer_literal() {
         Result::Ok(TypedFile {
             name: "test".to_string(),
             body: vec![TypedDecl::Fun(TypedFun {
+                package: None,
                 modifiers: vec![],
                 name: "sample".to_string(),
                 type_params: None,
@@ -652,6 +666,7 @@ fn test_return_floating_point_literal() {
         Result::Ok(TypedFile {
             name: "test".to_string(),
             body: vec![TypedDecl::Fun(TypedFun {
+                package: None,
                 modifiers: vec![],
                 name: "sample".to_string(),
                 type_params: None,
@@ -697,6 +712,7 @@ fn test_binop() {
         Result::Ok(TypedFile {
             name: "test".to_string(),
             body: vec![TypedDecl::Fun(TypedFun {
+                package: None,
                 modifiers: vec![],
                 name: "sample".to_string(),
                 type_params: None,
@@ -743,6 +759,7 @@ fn test_subscript() {
         Result::Ok(TypedFile {
             name: "test".to_string(),
             body: vec![TypedDecl::Fun(TypedFun {
+                package: None,
                 modifiers: vec![],
                 name: "get_first".to_string(),
                 type_params: None,
@@ -792,6 +809,7 @@ fn test_if_else() {
         Result::Ok(TypedFile {
             name: "test".to_string(),
             body: vec![TypedDecl::Fun(TypedFun {
+                package: None,
                 modifiers: vec![],
                 name: "test_if".to_string(),
                 type_params: None,
@@ -866,6 +884,7 @@ fn test_if() {
         Result::Ok(TypedFile {
             name: "test".to_string(),
             body: vec![TypedDecl::Fun(TypedFun {
+                package: None,
                 modifiers: vec![],
                 name: "test_if".to_string(),
                 type_params: None,
@@ -890,6 +909,7 @@ fn test_if() {
                         })),
                         body: TypedBlock {
                             body: vec![TypedStmt::Decl(TypedDecl::Var(TypedVar {
+                                package: None,
                                 is_mut: false,
                                 name: "p".to_string(),
                                 type_: Some(TypedType::int64()),

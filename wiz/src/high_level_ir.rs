@@ -115,6 +115,7 @@ impl Ast2HLIR {
     pub fn var_syntax(&mut self, v: VarSyntax) -> TypedVar {
         let expr = self.expr(v.value);
         TypedVar {
+            package: None,
             is_mut: v.is_mut,
             name: v.name,
             type_: None,
@@ -148,6 +149,7 @@ impl Ast2HLIR {
         };
 
         TypedFun {
+            package: None,
             modifiers: f.modifiers,
             name: f.name,
             type_params: f.type_params.map(|v| {
@@ -211,6 +213,7 @@ impl Ast2HLIR {
             };
         }
         TypedStruct {
+            package: None,
             name: s.name,
             type_params: s
                 .type_params
