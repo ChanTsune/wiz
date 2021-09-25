@@ -78,7 +78,7 @@ fn test_unsafe_pointer() {
                             label: "a".to_string(),
                             name: "a".to_string(),
                             type_: TypedType::Value(TypedValueType {
-                                package: Package::global(),
+                                package: Some(Package::global()),
                                 name: String::from(UNSAFE_POINTER),
                                 type_args: Some(vec![TypedType::uint8()])
                             })
@@ -90,9 +90,9 @@ fn test_unsafe_pointer() {
                                         target: Box::new(TypedExpr::Name(TypedName {
                                             name: "self".to_string(),
                                             type_: Some(TypedType::Value(TypedValueType {
-                                                package: Package {
+                                                package: Some(Package {
                                                     names: vec![String::from("test")]
-                                                },
+                                                }),
                                                 name: "A".to_string(),
                                                 type_args: None
                                             }))
@@ -100,7 +100,7 @@ fn test_unsafe_pointer() {
                                         name: "a".to_string(),
                                         is_safe: false,
                                         type_: Some(TypedType::Value(TypedValueType {
-                                            package: Package::global(),
+                                            package: Some(Package::global()),
                                             name: String::from(UNSAFE_POINTER),
                                             type_args: Some(vec![TypedType::uint8()])
                                         }))
@@ -108,7 +108,7 @@ fn test_unsafe_pointer() {
                                     value: TypedExpr::Name(TypedName {
                                         name: "a".to_string(),
                                         type_: Some(TypedType::Value(TypedValueType {
-                                            package: Package::global(),
+                                            package: Some(Package::global()),
                                             name: String::from(UNSAFE_POINTER),
                                             type_args: Some(vec![TypedType::uint8()])
                                         }))
@@ -120,7 +120,7 @@ fn test_unsafe_pointer() {
                     stored_properties: vec![TypedStoredProperty {
                         name: "a".to_string(),
                         type_: TypedType::Value(TypedValueType {
-                            package: Package::global(),
+                            package: Some(Package::global()),
                             name: String::from(UNSAFE_POINTER),
                             type_args: Some(vec![TypedType::uint8()])
                         })
@@ -138,9 +138,9 @@ fn test_unsafe_pointer() {
                         label: "_".to_string(),
                         name: "a".to_string(),
                         type_: TypedType::Value(TypedValueType {
-                            package: Package {
+                            package: Some(Package {
                                 names: vec![String::from("test")]
-                            },
+                            }),
                             name: "A".to_string(),
                             type_args: None
                         })
@@ -151,7 +151,7 @@ fn test_unsafe_pointer() {
                             is_mut: false,
                             name: "a".to_string(),
                             type_: Some(TypedType::Value(TypedValueType {
-                                package: Package::global(),
+                                package: Some(Package::global()),
                                 name: String::from(UNSAFE_POINTER),
                                 type_args: Some(vec![TypedType::uint8()])
                             })),
@@ -159,9 +159,9 @@ fn test_unsafe_pointer() {
                                 target: Box::new(TypedExpr::Name(TypedName {
                                     name: "a".to_string(),
                                     type_: Some(TypedType::Value(TypedValueType {
-                                        package: Package {
+                                        package: Some(Package {
                                             names: vec![String::from("test")]
-                                        },
+                                        }),
                                         name: "A".to_string(),
                                         type_args: None
                                     }))
@@ -169,7 +169,7 @@ fn test_unsafe_pointer() {
                                 name: "a".to_string(),
                                 is_safe: false,
                                 type_: Some(TypedType::Value(TypedValueType {
-                                    package: Package::global(),
+                                    package: Some(Package::global()),
                                     name: String::from(UNSAFE_POINTER),
                                     type_args: Some(vec![TypedType::uint8()])
                                 }))
@@ -227,9 +227,9 @@ fn test_struct_member() {
                                         target: Box::new(TypedExpr::Name(TypedName {
                                             name: "self".to_string(),
                                             type_: Some(TypedType::Value(TypedValueType {
-                                                package: Package {
+                                                package: Some(Package {
                                                     names: vec![String::from("test")]
-                                                },
+                                                }),
                                                 name: "A".to_string(),
                                                 type_args: None
                                             }))
@@ -263,9 +263,9 @@ fn test_struct_member() {
                         label: "_".to_string(),
                         name: "a".to_string(),
                         type_: TypedType::Value(TypedValueType {
-                            package: Package {
+                            package: Some(Package {
                                 names: vec![String::from("test")]
-                            },
+                            }),
                             name: "A".to_string(),
                             type_args: None
                         })
@@ -280,9 +280,9 @@ fn test_struct_member() {
                                 target: Box::new(TypedExpr::Name(TypedName {
                                     name: "a".to_string(),
                                     type_: Some(TypedType::Value(TypedValueType {
-                                        package: Package {
+                                        package: Some(Package {
                                             names: vec![String::from("test")]
-                                        },
+                                        }),
                                         name: "A".to_string(),
                                         type_args: None
                                     }))
@@ -344,9 +344,9 @@ fn test_struct_init() {
                                         target: Box::new(TypedExpr::Name(TypedName {
                                             name: "self".to_string(),
                                             type_: Some(TypedType::Value(TypedValueType {
-                                                package: Package {
+                                                package: Some(Package {
                                                     names: vec![String::from("test")]
-                                                },
+                                                }),
                                                 name: "A".to_string(),
                                                 type_args: None
                                             }))
@@ -380,9 +380,9 @@ fn test_struct_init() {
                         label: "_".to_string(),
                         name: "a".to_string(),
                         type_: TypedType::Value(TypedValueType {
-                            package: Package {
+                            package: Some(Package {
                                 names: vec![String::from("test")],
-                            },
+                            }),
                             name: "A".to_string(),
                             type_args: None,
                         }),
@@ -393,9 +393,9 @@ fn test_struct_init() {
                             is_mut: false,
                             name: "a".to_string(),
                             type_: Some(TypedType::Value(TypedValueType {
-                                package: Package {
+                                package: Some(Package {
                                     names: vec![String::from("test")]
-                                },
+                                }),
                                 name: "A".to_string(),
                                 type_args: None
                             })),
@@ -404,9 +404,9 @@ fn test_struct_init() {
                                     target: Box::new(TypedExpr::Name(TypedName {
                                         name: "A".to_string(),
                                         type_: Some(TypedType::Type(TypedValueType {
-                                            package: Package {
+                                            package: Some(Package {
                                                 names: vec![String::from("test")]
-                                            },
+                                            }),
                                             name: "A".to_string(),
                                             type_args: None
                                         })),
@@ -420,9 +420,9 @@ fn test_struct_init() {
                                             type_: TypedType::int64()
                                         })],
                                         return_type: TypedType::Value(TypedValueType {
-                                            package: Package {
+                                            package: Some(Package {
                                                 names: vec![String::from("test")]
-                                            },
+                                            }),
                                             name: "A".to_string(),
                                             type_args: None
                                         })
@@ -437,9 +437,9 @@ fn test_struct_init() {
                                     is_vararg: false
                                 }],
                                 type_: Some(TypedType::Value(TypedValueType {
-                                    package: Package {
+                                    package: Some(Package {
                                         names: vec![String::from("test")]
-                                    },
+                                    }),
                                     name: "A".to_string(),
                                     type_args: None
                                 }))

@@ -16,7 +16,7 @@ pub enum TypedType {
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
 pub struct TypedValueType {
-    pub(crate) package: Package,
+    pub(crate) package: Option<Package>,
     pub(crate) name: String,
     pub(crate) type_args: Option<Vec<TypedType>>,
 }
@@ -42,7 +42,7 @@ impl Package {
 impl TypedType {
     fn builtin(name: &str) -> TypedType {
         TypedType::Value(TypedValueType {
-            package: Package::global(),
+            package: Some(Package::global()),
             name: String::from(name),
             type_args: None,
         })
@@ -106,7 +106,7 @@ impl TypedType {
 
     pub fn unsafe_pointer(typ: TypedType) -> TypedType {
         TypedType::Value(TypedValueType {
-            package: Package::global(),
+            package: Some(Package::global()),
             name: UNSAFE_POINTER.to_string(),
             type_args: Some(vec![typ]),
         })

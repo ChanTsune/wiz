@@ -88,7 +88,7 @@ impl HLIR2MLIR {
     }
 
     pub fn value_type(&self, t: TypedValueType) -> MLValueType {
-        if t.package.names.len() == 0 && t.name == UNSAFE_POINTER {
+        if t.package.clone().unwrap().names.len() == 0 && t.name == UNSAFE_POINTER {
             match self.type_(t.type_args.unwrap()[0].clone()) {
                 MLType::Value(v) => MLValueType::Pointer(Box::new(v)),
                 MLType::Function(f) => {
@@ -97,7 +97,7 @@ impl HLIR2MLIR {
                 }
             }
         } else {
-            let mut pkg = t.package.names;
+            let mut pkg = t.package.clone().unwrap().names;
             if pkg.is_empty() {
                 match &*t.name {
                     "Unit" | "Int8" | "UInt8" | "Int16" | "UInt16" | "Int32" | "UInt32"

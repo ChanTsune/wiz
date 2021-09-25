@@ -200,7 +200,7 @@ impl ResolverContext {
     pub fn resolve_member_type(&mut self, t: TypedType, name: String) -> Result<TypedType> {
         match &t {
             TypedType::Value(v) => {
-                let ns = self.get_namespace_mut(v.package.names.clone())?;
+                let ns = self.get_namespace_mut(v.package.clone().unwrap().names)?;
                 let rs = ns
                     .types
                     .get(&v.name)
@@ -211,7 +211,7 @@ impl ResolverContext {
                     .ok_or(ResolverError::from(format!("{:?} not has {:?}", t, name)))
             }
             TypedType::Type(v) => {
-                let ns = self.get_namespace_mut(v.package.names.clone())?;
+                let ns = self.get_namespace_mut(v.package.clone().unwrap().names)?;
                 let rs = ns
                     .types
                     .get(&v.name)
@@ -274,7 +274,7 @@ impl ResolverContext {
                 TypedType::Value(v) => {
                     if let Some(_) = ns.types.get(&v.name) {
                         return Result::Ok(TypedType::Value(TypedValueType {
-                            package: Package { names: cns.clone() },
+                            package: Some(Package { names: cns.clone() }),
                             name: v.name.clone(),
                             type_args: v.type_args.clone(),
                         }));

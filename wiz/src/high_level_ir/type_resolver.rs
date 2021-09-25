@@ -47,9 +47,9 @@ impl TypeResolver {
                     ns.values.insert(
                         s.name.clone(),
                         TypedType::Type(TypedValueType {
-                            package: Package {
+                            package: Some(Package {
                                 names: current_namespace.clone(),
-                            },
+                            }),
                             name: s.name.clone(),
                             type_args: None,
                         }),
@@ -293,9 +293,9 @@ impl TypeResolver {
         let current_namespace = self.context.current_namespace.clone();
         let ns = self.context.get_current_namespace_mut()?;
         let this_type = TypedType::Value(TypedValueType {
-            package: Package {
+            package: Some(Package {
                 names: current_namespace,
-            },
+            }),
             name: name.clone(),
             type_args: None,
         });

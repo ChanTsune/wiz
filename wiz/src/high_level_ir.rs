@@ -178,7 +178,7 @@ impl Ast2HLIR {
 
     pub fn type_(&self, tn: TypeName) -> TypedType {
         TypedType::Value(TypedValueType {
-            package: Package::global(),
+            package: Some(Package::global()),
             name: tn.name,
             type_args: tn
                 .type_args
@@ -240,7 +240,7 @@ impl Ast2HLIR {
             .collect();
         if s.init.is_empty() {
             let struct_type = TypedValueType {
-                package: Package { names: vec![] },
+                package: Some(Package::global()),
                 name: s.name.clone(),
                 type_args: None,
             };
