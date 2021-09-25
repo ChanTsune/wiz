@@ -7,7 +7,7 @@ use crate::ast::expr::{CallExprSyntax, Expr, NameExprSyntax, ReturnSyntax, Subsc
 use crate::ast::file::{FileSyntax, WizFile};
 use crate::ast::fun::arg_def::ArgDef;
 use crate::ast::fun::body_def::FunBody;
-use crate::ast::literal::Literal;
+use crate::ast::literal::LiteralSyntax;
 use crate::ast::stmt::{AssignmentStmt, LoopStmt, Stmt};
 use crate::ast::type_name::{TypeName, TypeParam};
 use crate::high_level_ir::typed_decl::{
@@ -312,25 +312,25 @@ impl Ast2HLIR {
         match e {
             Expr::Name(n) => TypedExpr::Name(self.name_syntax(n)),
             Expr::Literal(literal) => match literal {
-                Literal::Integer { value } => TypedExpr::Literal(TypedLiteral::Integer {
+                LiteralSyntax::Integer { value } => TypedExpr::Literal(TypedLiteral::Integer {
                     value,
                     type_: Some(TypedType::int64()),
                 }),
-                Literal::FloatingPoint { value } => {
+                LiteralSyntax::FloatingPoint { value } => {
                     TypedExpr::Literal(TypedLiteral::FloatingPoint {
                         value,
                         type_: Some(TypedType::double()),
                     })
                 }
-                Literal::String { value } => TypedExpr::Literal(TypedLiteral::String {
+                LiteralSyntax::String { value } => TypedExpr::Literal(TypedLiteral::String {
                     value,
                     type_: Some(TypedType::string()),
                 }),
-                Literal::Boolean { value } => TypedExpr::Literal(TypedLiteral::Boolean {
+                LiteralSyntax::Boolean { value } => TypedExpr::Literal(TypedLiteral::Boolean {
                     value,
                     type_: Some(TypedType::bool()),
                 }),
-                Literal::Null => TypedExpr::Literal(TypedLiteral::NullLiteral { type_: None }),
+                LiteralSyntax::Null => TypedExpr::Literal(TypedLiteral::NullLiteral { type_: None }),
             },
             Expr::BinOp { left, kind, right } => {
                 let left = Box::new(self.expr(*left));

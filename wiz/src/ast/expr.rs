@@ -1,5 +1,5 @@
 use crate::ast::block::Block;
-use crate::ast::literal::Literal;
+use crate::ast::literal::LiteralSyntax;
 use crate::ast::node::Node;
 use crate::ast::stmt::Stmt;
 use crate::ast::type_name::TypeName;
@@ -8,7 +8,7 @@ use std::fmt;
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum Expr {
     Name(NameExprSyntax),
-    Literal(Literal),
+    Literal(LiteralSyntax),
     BinOp {
         left: Box<Expr>,
         kind: String,

@@ -406,7 +406,7 @@ mod test {
     use crate::ast::expr::{Expr, NameExprSyntax};
     use crate::ast::fun::arg_def::{ArgDef, ValueArgDef};
     use crate::ast::fun::body_def::FunBody;
-    use crate::ast::literal::Literal;
+    use crate::ast::literal::LiteralSyntax;
     use crate::ast::stmt::Stmt;
     use crate::ast::type_name::TypeName;
     use crate::parser::nom::declaration::{
@@ -537,7 +537,7 @@ mod test {
                 "",
                 Block {
                     body: vec![Stmt::Expr {
-                        expr: Expr::Literal(Literal::Integer {
+                        expr: Expr::Literal(LiteralSyntax::Integer {
                             value: "1".to_string()
                         })
                     }]
@@ -555,11 +555,11 @@ mod test {
                 Block {
                     body: vec![Stmt::Expr {
                         expr: Expr::BinOp {
-                            left: Box::new(Expr::Literal(Literal::Integer {
+                            left: Box::new(Expr::Literal(LiteralSyntax::Integer {
                                 value: "1".to_string()
                             })),
                             kind: "+".to_string(),
-                            right: Box::new(Expr::Literal(Literal::Integer {
+                            right: Box::new(Expr::Literal(LiteralSyntax::Integer {
                                 value: "1".to_string()
                             })),
                         }
@@ -581,7 +581,7 @@ mod test {
                 "",
                 Block {
                     body: vec![Stmt::Expr {
-                        expr: Expr::Literal(Literal::Integer {
+                        expr: Expr::Literal(LiteralSyntax::Integer {
                             value: "1".to_string()
                         })
                     }]
@@ -707,7 +707,7 @@ mod test {
                         name: "Int".to_string(),
                         type_args: None
                     }),
-                    value: Expr::Literal(Literal::Integer {
+                    value: Expr::Literal(LiteralSyntax::Integer {
                         value: "1".to_string()
                     })
                 })
@@ -725,7 +725,7 @@ mod test {
                     is_mut: false,
                     name: "a".to_string(),
                     type_: None,
-                    value: Expr::Literal(Literal::Integer {
+                    value: Expr::Literal(LiteralSyntax::Integer {
                         value: "1".to_string()
                     })
                 })

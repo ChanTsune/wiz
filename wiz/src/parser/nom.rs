@@ -167,7 +167,7 @@ mod tests {
     use crate::ast::block::Block;
     use crate::ast::expr::{Expr, NameExprSyntax};
     use crate::ast::file::FileSyntax;
-    use crate::ast::literal::Literal;
+    use crate::ast::literal::LiteralSyntax;
     use crate::ast::stmt::{AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt};
     use crate::parser::nom::{
         assignable_expr, assignment_stmt, directly_assignable_expr, file, while_stmt,
@@ -204,7 +204,7 @@ mod tests {
                                         name: "a".to_string()
                                     })),
                                     kind: "+".to_string(),
-                                    right: Box::new(Expr::Literal(Literal::Integer {
+                                    right: Box::new(Expr::Literal(LiteralSyntax::Integer {
                                         value: "1".to_string()
                                     }))
                                 }
@@ -251,7 +251,7 @@ mod tests {
                                         name: "a".to_string()
                                     })),
                                     kind: "+".to_string(),
-                                    right: Box::new(Expr::Literal(Literal::Integer {
+                                    right: Box::new(Expr::Literal(LiteralSyntax::Integer {
                                         value: "1".to_string()
                                     }))
                                 }

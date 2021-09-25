@@ -2,7 +2,7 @@ use crate::ast::node::Node;
 use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
-pub enum Literal {
+pub enum LiteralSyntax {
     Integer { value: String },
     FloatingPoint { value: String },
     String { value: String },
@@ -10,4 +10,4 @@ pub enum Literal {
     Null,
 }
 
-impl Node for Literal {}
+impl Node for LiteralSyntax {}
