@@ -4,10 +4,12 @@ use nom::bytes::complete::{is_not, tag};
 use nom::character::complete::{anychar, char};
 use nom::combinator::{map, opt};
 use nom::error::{ErrorKind, ParseError};
-use nom::multi::many0;
+use nom::multi::{many0, many1};
 use nom::sequence::tuple;
-use nom::{AsChar, IResult, InputTakeAtPosition};
+use nom::{AsChar, IResult, InputTakeAtPosition, InputIter, Slice, InputLength};
 use std::iter::FromIterator;
+use crate::syntax::trivia::TriviaPiece;
+use nom::lib::std::ops::RangeFrom;
 
 pub fn whitespace0(s: &str) -> IResult<&str, String> {
     map(
@@ -153,18 +155,31 @@ pub fn identifier(s: &str) -> IResult<&str, String> {
     ))(s)
 }
 
-pub fn eol(s: &str) -> IResult<&str, char> {
+pub fn eol<I>(s: I) -> IResult<I, char>
+where
+    I: Slice<RangeFrom<usize>> + InputIter,
+    <I as InputIter>::Item: AsChar,
+{
     char('\n')(s)
+}
+
+pub fn newline<I>(s: I) -> IResult<I, TriviaPiece>
+    where
+        I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength,
+        <I as InputIter>::Item: AsChar,
+{
+    map(many1(eol), |l|{
+        TriviaPiece::Newlines(l.len() as i64)
+    })(s)
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::lexical_structure::{
-        comment, eol, identifier, whitespace0, whitespace1,
-    };
+    use crate::parser::wiz::lexical_structure::{comment, eol, identifier, whitespace0, whitespace1, newline};
     use nom::error;
     use nom::error::ErrorKind;
     use nom::Err;
+    use crate::syntax::trivia::TriviaPiece;
 
     #[test]
     fn test_identifier() {
@@ -260,5 +275,10 @@ mod tests {
         );
         assert_eq!(whitespace1("/* a */"), Ok(("", String::from("/* a */"))));
         assert_eq!(whitespace1("/**/"), Ok(("", String::from("/**/"))));
+    }
+
+    #[test]
+    fn test_newline() {
+        assert_eq!(newline("\n"), Ok(("", TriviaPiece::Newlines(1))))
     }
 }
