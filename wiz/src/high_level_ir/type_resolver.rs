@@ -532,8 +532,9 @@ impl TypeResolver {
 
     pub fn typed_subscript(&mut self, s: TypedSubscript) -> Result<TypedSubscript> {
         let target = self.expr(*s.target)?;
-        if let TypedType::Value(v) = target.type_().unwrap() {
-            if v.name == UNSAFE_POINTER {
+        let target_type = target.type_().unwrap();
+        if let TypedType::Value(v) = target_type {
+            if v.is_unsafe_pointer() {
                 if let Some(mut ags) = v.type_args {
                     if ags.len() == 1 {
                         return Result::Ok(TypedSubscript {

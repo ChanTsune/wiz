@@ -1,6 +1,7 @@
 use crate::constants::UNSAFE_POINTER;
 use crate::high_level_ir::typed_decl::TypedArgDef;
 use std::fmt;
+use std::option::Option::Some;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
 pub struct Package {
@@ -36,6 +37,18 @@ pub struct TypedTypeParam {
 impl Package {
     pub(crate) fn global() -> Self {
         Self { names: vec![] }
+    }
+
+    pub(crate) fn is_global(&self) -> bool {
+        self.names.is_empty()
+    }
+}
+
+impl TypedValueType {
+    pub(crate) fn is_unsafe_pointer(&self) -> bool {
+        self.name == UNSAFE_POINTER && if let Some(pkg) = &self.package {
+            pkg.is_global()
+        } else { false }
     }
 }
 
@@ -171,7 +184,7 @@ impl TypedType {
 
     pub fn is_pointer_type(&self) -> bool {
         match self {
-            TypedType::Value(v) => v.name == UNSAFE_POINTER,
+            TypedType::Value(v) => v.is_unsafe_pointer(),
             _ => false,
         }
     }

@@ -1,4 +1,3 @@
-use crate::constants::UNSAFE_POINTER;
 use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedStoredProperty,
@@ -77,11 +76,7 @@ fn test_unsafe_pointer() {
                         args: vec![TypedArgDef::Value(TypedValueArgDef {
                             label: "a".to_string(),
                             name: "a".to_string(),
-                            type_: TypedType::Value(TypedValueType {
-                                package: Some(Package::global()),
-                                name: String::from(UNSAFE_POINTER),
-                                type_args: Some(vec![TypedType::uint8()])
-                            })
+                            type_: TypedType::unsafe_pointer(TypedType::uint8())
                         })],
                         body: TypedFunBody::Block(TypedBlock {
                             body: vec![TypedStmt::Assignment(TypedAssignmentStmt::Assignment(
@@ -99,19 +94,11 @@ fn test_unsafe_pointer() {
                                         })),
                                         name: "a".to_string(),
                                         is_safe: false,
-                                        type_: Some(TypedType::Value(TypedValueType {
-                                            package: Some(Package::global()),
-                                            name: String::from(UNSAFE_POINTER),
-                                            type_args: Some(vec![TypedType::uint8()])
-                                        }))
+                                        type_: Some(TypedType::unsafe_pointer(TypedType::uint8()))
                                     }),
                                     value: TypedExpr::Name(TypedName {
                                         name: "a".to_string(),
-                                        type_: Some(TypedType::Value(TypedValueType {
-                                            package: Some(Package::global()),
-                                            name: String::from(UNSAFE_POINTER),
-                                            type_args: Some(vec![TypedType::uint8()])
-                                        }))
+                                        type_: Some(TypedType::unsafe_pointer(TypedType::uint8()))
                                     })
                                 }
                             ))]
@@ -119,11 +106,7 @@ fn test_unsafe_pointer() {
                     }],
                     stored_properties: vec![TypedStoredProperty {
                         name: "a".to_string(),
-                        type_: TypedType::Value(TypedValueType {
-                            package: Some(Package::global()),
-                            name: String::from(UNSAFE_POINTER),
-                            type_args: Some(vec![TypedType::uint8()])
-                        })
+                        type_: TypedType::unsafe_pointer(TypedType::uint8())
                     }],
                     computed_properties: vec![],
                     member_functions: vec![],
@@ -150,11 +133,7 @@ fn test_unsafe_pointer() {
                             package: None,
                             is_mut: false,
                             name: "a".to_string(),
-                            type_: Some(TypedType::Value(TypedValueType {
-                                package: Some(Package::global()),
-                                name: String::from(UNSAFE_POINTER),
-                                type_args: Some(vec![TypedType::uint8()])
-                            })),
+                            type_: Some(TypedType::unsafe_pointer(TypedType::uint8())),
                             value: TypedExpr::Member(TypedInstanceMember {
                                 target: Box::new(TypedExpr::Name(TypedName {
                                     name: "a".to_string(),
@@ -168,11 +147,7 @@ fn test_unsafe_pointer() {
                                 })),
                                 name: "a".to_string(),
                                 is_safe: false,
-                                type_: Some(TypedType::Value(TypedValueType {
-                                    package: Some(Package::global()),
-                                    name: String::from(UNSAFE_POINTER),
-                                    type_args: Some(vec![TypedType::uint8()])
-                                }))
+                                type_: Some(TypedType::unsafe_pointer(TypedType::uint8()))
                             })
                         }))]
                     })),
