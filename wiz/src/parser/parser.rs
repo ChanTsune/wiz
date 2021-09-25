@@ -1,11 +1,10 @@
 use crate::parser::error::ParseError;
+use crate::parser::result::Result;
 use crate::parser::wiz::file;
 use crate::syntax::file::WizFile;
-use crate::parser::result::Result;
 use std::fs::{read_to_string, File};
 use std::io::Read;
 use std::path::Path;
-
 
 pub fn parse_from_string(string: String) -> Result<WizFile> {
     return match file(&*string) {
