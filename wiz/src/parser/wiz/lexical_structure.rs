@@ -163,7 +163,7 @@ where
     char('\n')(s)
 }
 
-pub fn newline<I>(s: I) -> IResult<I, TriviaPiece>
+pub fn newlines<I>(s: I) -> IResult<I, TriviaPiece>
 where
     I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength,
     <I as InputIter>::Item: AsChar,
@@ -174,7 +174,7 @@ where
 #[cfg(test)]
 mod tests {
     use crate::parser::wiz::lexical_structure::{
-        comment, eol, identifier, newline, whitespace0, whitespace1,
+        comment, eol, identifier, newlines, whitespace0, whitespace1,
     };
     use crate::syntax::trivia::TriviaPiece;
     use nom::error;
@@ -279,6 +279,6 @@ mod tests {
 
     #[test]
     fn test_newline() {
-        assert_eq!(newline("\n"), Ok(("", TriviaPiece::Newlines(1))))
+        assert_eq!(newlines("\n"), Ok(("", TriviaPiece::Newlines(1))))
     }
 }
