@@ -14,7 +14,7 @@ use crate::high_level_ir::typed_stmt::{
 };
 use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
 use crate::high_level_ir::Ast2HLIR;
-use crate::parser::parser::parse_from_string;
+use crate::parser::wiz::parse_from_string;
 
 #[test]
 fn test_empty() {

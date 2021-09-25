@@ -1,4 +1,3 @@
-use crate::parser::parser::{parse_from_file_path, parse_from_file_path_str};
 
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::type_resolver::TypeResolver;
@@ -17,6 +16,7 @@ use std::option::Option::Some;
 use std::path::Path;
 use std::process::exit;
 use std::result;
+use crate::parser::wiz::{parse_from_file_path, parse_from_file_path_str};
 
 mod constants;
 mod ext;
