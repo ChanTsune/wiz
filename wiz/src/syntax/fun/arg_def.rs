@@ -1,4 +1,4 @@
-use crate::syntax::node::Node;
+use crate::syntax::node::SyntaxNode;
 use crate::syntax::type_name::TypeName;
 use std::fmt;
 
@@ -8,7 +8,7 @@ pub enum ArgDef {
     Self_,
 }
 
-impl Node for ArgDef {}
+impl SyntaxNode for ArgDef {}
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct ValueArgDef {

@@ -1,6 +1,6 @@
 use crate::syntax::block::Block;
 use crate::syntax::literal::LiteralSyntax;
-use crate::syntax::node::Node;
+use crate::syntax::node::SyntaxNode;
 use crate::syntax::stmt::Stmt;
 use crate::syntax::type_name::TypeName;
 use std::fmt;
@@ -55,7 +55,7 @@ pub enum Expr {
     },
 }
 
-impl Node for Expr {}
+impl SyntaxNode for Expr {}
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct NameExprSyntax {

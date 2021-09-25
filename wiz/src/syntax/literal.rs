@@ -1,4 +1,4 @@
-use crate::syntax::node::Node;
+use crate::syntax::node::SyntaxNode;
 use crate::syntax::token::TokenSyntax;
 use std::fmt;
 
@@ -11,4 +11,4 @@ pub enum LiteralSyntax {
     Null,
 }
 
-impl Node for LiteralSyntax {}
+impl SyntaxNode for LiteralSyntax {}

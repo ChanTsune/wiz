@@ -1,4 +1,4 @@
-use super::node::Node;
+use super::node::SyntaxNode;
 use crate::syntax::expr::Expr;
 use crate::syntax::fun::arg_def::ArgDef;
 use crate::syntax::fun::body_def::FunBody;
@@ -25,7 +25,7 @@ pub enum Decl {
     Use(UseSyntax),
 }
 
-impl Node for Decl {}
+impl SyntaxNode for Decl {}
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct VarSyntax {

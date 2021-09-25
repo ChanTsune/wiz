@@ -1,4 +1,4 @@
-use super::node::Node;
+use super::node::SyntaxNode;
 use crate::syntax::block::Block;
 use crate::syntax::decl::Decl;
 use crate::syntax::expr::Expr;
@@ -12,7 +12,7 @@ pub enum Stmt {
     Loop(LoopStmt),
 }
 
-impl Node for Stmt {}
+impl SyntaxNode for Stmt {}
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum AssignmentStmt {

@@ -1,3 +1,3 @@
-use std::fmt;
+use std::fmt::Debug;
 
-pub trait Node: fmt::Debug + Eq {}
+pub trait SyntaxNode: Debug + Eq + PartialEq + Clone {}
