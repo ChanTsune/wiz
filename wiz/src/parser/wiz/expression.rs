@@ -1,11 +1,11 @@
-use crate::ast::block::Block;
-use crate::ast::expr::{
+use crate::syntax::block::Block;
+use crate::syntax::expr::{
     CallArg, CallExprSyntax, Expr, LambdaSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax,
     SubscriptSyntax,
 };
-use crate::ast::literal::LiteralSyntax;
-use crate::ast::stmt::Stmt;
-use crate::ast::type_name::TypeName;
+use crate::syntax::literal::LiteralSyntax;
+use crate::syntax::stmt::Stmt;
+use crate::syntax::type_name::TypeName;
 use crate::parser::wiz::declaration::block;
 use crate::parser::wiz::keywords::{else_keyword, if_keyword, return_keyword};
 use crate::parser::wiz::lexical_structure::{
@@ -694,12 +694,12 @@ pub fn expr(s: &str) -> IResult<&str, Expr> {
 
 #[cfg(test)]
 mod tests {
-    use crate::ast::block::Block;
-    use crate::ast::expr::Expr::{BinOp, If};
-    use crate::ast::expr::{
+    use crate::syntax::block::Block;
+    use crate::syntax::expr::Expr::{BinOp, If};
+    use crate::syntax::expr::{
         CallArg, CallExprSyntax, Expr, NameExprSyntax, PostfixSuffix, ReturnSyntax,
     };
-    use crate::ast::literal::LiteralSyntax;
+    use crate::syntax::literal::LiteralSyntax;
     use crate::parser::wiz::expression::{
         disjunction_expr, expr, floating_point_literal, indexing_suffix, integer_literal,
         postfix_suffix, return_expr, string_literal, value_arguments,

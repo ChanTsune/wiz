@@ -1,4 +1,4 @@
-use crate::ast::trivia::Trivia;
+use crate::syntax::trivia::Trivia;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TokenSyntax {

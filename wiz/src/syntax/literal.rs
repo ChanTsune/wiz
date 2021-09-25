@@ -1,5 +1,5 @@
-use crate::ast::node::Node;
-use crate::ast::token::TokenSyntax;
+use crate::syntax::node::Node;
+use crate::syntax::token::TokenSyntax;
 use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]

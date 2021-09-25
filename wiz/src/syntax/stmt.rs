@@ -1,7 +1,7 @@
 use super::node::Node;
-use crate::ast::block::Block;
-use crate::ast::decl::Decl;
-use crate::ast::expr::Expr;
+use crate::syntax::block::Block;
+use crate::syntax::decl::Decl;
+use crate::syntax::expr::Expr;
 use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]

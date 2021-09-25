@@ -1,15 +1,15 @@
-use crate::ast::block::Block;
-use crate::ast::decl::{
+use crate::syntax::block::Block;
+use crate::syntax::decl::{
     Decl, FunSyntax, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax,
     StructSyntax, VarSyntax,
 };
-use crate::ast::expr::{CallExprSyntax, Expr, NameExprSyntax, ReturnSyntax, SubscriptSyntax};
-use crate::ast::file::{FileSyntax, WizFile};
-use crate::ast::fun::arg_def::ArgDef;
-use crate::ast::fun::body_def::FunBody;
-use crate::ast::literal::LiteralSyntax;
-use crate::ast::stmt::{AssignmentStmt, LoopStmt, Stmt};
-use crate::ast::type_name::{TypeName, TypeParam};
+use crate::syntax::expr::{CallExprSyntax, Expr, NameExprSyntax, ReturnSyntax, SubscriptSyntax};
+use crate::syntax::file::{FileSyntax, WizFile};
+use crate::syntax::fun::arg_def::ArgDef;
+use crate::syntax::fun::body_def::FunBody;
+use crate::syntax::literal::LiteralSyntax;
+use crate::syntax::stmt::{AssignmentStmt, LoopStmt, Stmt};
+use crate::syntax::type_name::{TypeName, TypeParam};
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedFun, TypedFunBody, TypedInitializer,
     TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedValueArgDef, TypedVar,

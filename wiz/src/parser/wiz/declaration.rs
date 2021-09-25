@@ -1,12 +1,12 @@
-use crate::ast::block::Block;
-use crate::ast::decl::{
+use crate::syntax::block::Block;
+use crate::syntax::decl::{
     Decl, FunSyntax, InitializerSyntax, MethodSyntax, PackageName, StoredPropertySyntax,
     StructPropertySyntax, StructSyntax, UseSyntax, VarSyntax,
 };
-use crate::ast::expr::Expr;
-use crate::ast::fun::arg_def::{ArgDef, ValueArgDef};
-use crate::ast::fun::body_def::FunBody;
-use crate::ast::type_name::{TypeName, TypeParam};
+use crate::syntax::expr::Expr;
+use crate::syntax::fun::arg_def::{ArgDef, ValueArgDef};
+use crate::syntax::fun::body_def::FunBody;
+use crate::syntax::type_name::{TypeName, TypeParam};
 use crate::parser::wiz::expression::expr;
 use crate::parser::wiz::keywords::{
     as_keyword, fun_keyword, init_keyword, self_keyword, struct_keyword, use_keyword, val_keyword,
@@ -398,17 +398,17 @@ pub fn package_name(s: &str) -> IResult<&str, PackageName> {
 
 #[cfg(test)]
 mod test {
-    use crate::ast::block::Block;
-    use crate::ast::decl::{
+    use crate::syntax::block::Block;
+    use crate::syntax::decl::{
         Decl, FunSyntax, MethodSyntax, PackageName, StoredPropertySyntax, StructPropertySyntax,
         StructSyntax, UseSyntax, VarSyntax,
     };
-    use crate::ast::expr::{Expr, NameExprSyntax};
-    use crate::ast::fun::arg_def::{ArgDef, ValueArgDef};
-    use crate::ast::fun::body_def::FunBody;
-    use crate::ast::literal::LiteralSyntax;
-    use crate::ast::stmt::Stmt;
-    use crate::ast::type_name::TypeName;
+    use crate::syntax::expr::{Expr, NameExprSyntax};
+    use crate::syntax::fun::arg_def::{ArgDef, ValueArgDef};
+    use crate::syntax::fun::body_def::FunBody;
+    use crate::syntax::literal::LiteralSyntax;
+    use crate::syntax::stmt::Stmt;
+    use crate::syntax::type_name::TypeName;
     use crate::parser::wiz::declaration::{
         block, function_body, function_decl, member_function, package_name, stored_property,
         struct_properties, struct_syntax, use_syntax, var_decl,

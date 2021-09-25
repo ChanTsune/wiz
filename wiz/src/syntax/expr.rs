@@ -1,8 +1,8 @@
-use crate::ast::block::Block;
-use crate::ast::literal::LiteralSyntax;
-use crate::ast::node::Node;
-use crate::ast::stmt::Stmt;
-use crate::ast::type_name::TypeName;
+use crate::syntax::block::Block;
+use crate::syntax::literal::LiteralSyntax;
+use crate::syntax::node::Node;
+use crate::syntax::stmt::Stmt;
+use crate::syntax::type_name::TypeName;
 use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]

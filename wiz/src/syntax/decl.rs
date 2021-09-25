@@ -1,8 +1,8 @@
 use super::node::Node;
-use crate::ast::expr::Expr;
-use crate::ast::fun::arg_def::ArgDef;
-use crate::ast::fun::body_def::FunBody;
-use crate::ast::type_name::{TypeName, TypeParam};
+use crate::syntax::expr::Expr;
+use crate::syntax::fun::arg_def::ArgDef;
+use crate::syntax::fun::body_def::FunBody;
+use crate::syntax::type_name::{TypeName, TypeParam};
 use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]

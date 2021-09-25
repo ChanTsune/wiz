@@ -1,6 +1,6 @@
 use crate::parser::parser::{parse_from_file_path, parse_from_file_path_str};
 
-use crate::ast::file::WizFile;
+use crate::syntax::file::WizFile;
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::typed_file::TypedFile;
@@ -18,7 +18,7 @@ use std::path::Path;
 use std::process::exit;
 use std::result;
 
-mod ast;
+mod syntax;
 mod constants;
 mod ext;
 mod high_level_ir;

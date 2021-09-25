@@ -1,4 +1,4 @@
-use crate::ast::node::Node;
+use crate::syntax::node::Node;
 use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]

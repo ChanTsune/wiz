@@ -1,4 +1,4 @@
-use crate::ast::file::WizFile;
+use crate::syntax::file::WizFile;
 use crate::parser::error::ParseError;
 use crate::parser::wiz::file;
 use std::fs::{read_to_string, File};

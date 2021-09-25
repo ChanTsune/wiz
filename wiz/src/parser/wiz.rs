@@ -6,9 +6,9 @@ pub mod lexical_structure;
 pub mod operators;
 pub mod type_;
 
-use crate::ast::expr::{Expr, NameExprSyntax};
-use crate::ast::file::FileSyntax;
-use crate::ast::stmt::{
+use crate::syntax::expr::{Expr, NameExprSyntax};
+use crate::syntax::file::FileSyntax;
+use crate::syntax::stmt::{
     AssignmentAndOperatorSyntax, AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt,
 };
 use crate::parser::wiz::declaration::{block, decl};
@@ -164,11 +164,11 @@ pub fn file(s: &str) -> IResult<&str, FileSyntax> {
 
 #[cfg(test)]
 mod tests {
-    use crate::ast::block::Block;
-    use crate::ast::expr::{Expr, NameExprSyntax};
-    use crate::ast::file::FileSyntax;
-    use crate::ast::literal::LiteralSyntax;
-    use crate::ast::stmt::{AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt};
+    use crate::syntax::block::Block;
+    use crate::syntax::expr::{Expr, NameExprSyntax};
+    use crate::syntax::file::FileSyntax;
+    use crate::syntax::literal::LiteralSyntax;
+    use crate::syntax::stmt::{AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt};
     use crate::parser::wiz::{
         assignable_expr, assignment_stmt, directly_assignable_expr, file, while_stmt,
     };
