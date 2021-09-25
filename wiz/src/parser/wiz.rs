@@ -1,10 +1,10 @@
-use crate::syntax::file::WizFile;
-use std::fs::{File, read_to_string};
-use crate::parser::wiz::statement::file;
 use crate::parser::error::ParseError;
-use std::path::Path;
 use crate::parser::result::Result;
+use crate::parser::wiz::statement::file;
+use crate::syntax::file::WizFile;
+use std::fs::{read_to_string, File};
 use std::io::Read;
+use std::path::Path;
 
 pub mod character;
 pub mod declaration;
