@@ -1,12 +1,3 @@
-use crate::syntax::block::Block;
-use crate::syntax::decl::{
-    Decl, FunSyntax, InitializerSyntax, MethodSyntax, PackageName, StoredPropertySyntax,
-    StructPropertySyntax, StructSyntax, UseSyntax, VarSyntax,
-};
-use crate::syntax::expr::Expr;
-use crate::syntax::fun::arg_def::{ArgDef, ValueArgDef};
-use crate::syntax::fun::body_def::FunBody;
-use crate::syntax::type_name::{TypeName, TypeParam};
 use crate::parser::wiz::expression::expr;
 use crate::parser::wiz::keywords::{
     as_keyword, fun_keyword, init_keyword, self_keyword, struct_keyword, use_keyword, val_keyword,
@@ -17,6 +8,15 @@ use crate::parser::wiz::lexical_structure::{
 };
 use crate::parser::wiz::stmts;
 use crate::parser::wiz::type_::{type_, type_parameters};
+use crate::syntax::block::Block;
+use crate::syntax::decl::{
+    Decl, FunSyntax, InitializerSyntax, MethodSyntax, PackageName, StoredPropertySyntax,
+    StructPropertySyntax, StructSyntax, UseSyntax, VarSyntax,
+};
+use crate::syntax::expr::Expr;
+use crate::syntax::fun::arg_def::{ArgDef, ValueArgDef};
+use crate::syntax::fun::body_def::FunBody;
+use crate::syntax::type_name::{TypeName, TypeParam};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
@@ -398,6 +398,10 @@ pub fn package_name(s: &str) -> IResult<&str, PackageName> {
 
 #[cfg(test)]
 mod test {
+    use crate::parser::wiz::declaration::{
+        block, function_body, function_decl, member_function, package_name, stored_property,
+        struct_properties, struct_syntax, use_syntax, var_decl,
+    };
     use crate::syntax::block::Block;
     use crate::syntax::decl::{
         Decl, FunSyntax, MethodSyntax, PackageName, StoredPropertySyntax, StructPropertySyntax,
@@ -409,10 +413,6 @@ mod test {
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::stmt::Stmt;
     use crate::syntax::type_name::TypeName;
-    use crate::parser::wiz::declaration::{
-        block, function_body, function_decl, member_function, package_name, stored_property,
-        struct_properties, struct_syntax, use_syntax, var_decl,
-    };
 
     #[test]
     fn test_struct_properties() {

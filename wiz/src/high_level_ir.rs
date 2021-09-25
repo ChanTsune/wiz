@@ -1,15 +1,3 @@
-use crate::syntax::block::Block;
-use crate::syntax::decl::{
-    Decl, FunSyntax, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax,
-    StructSyntax, VarSyntax,
-};
-use crate::syntax::expr::{CallExprSyntax, Expr, NameExprSyntax, ReturnSyntax, SubscriptSyntax};
-use crate::syntax::file::{FileSyntax, WizFile};
-use crate::syntax::fun::arg_def::ArgDef;
-use crate::syntax::fun::body_def::FunBody;
-use crate::syntax::literal::LiteralSyntax;
-use crate::syntax::stmt::{AssignmentStmt, LoopStmt, Stmt};
-use crate::syntax::type_name::{TypeName, TypeParam};
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedFun, TypedFunBody, TypedInitializer,
     TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedValueArgDef, TypedVar,
@@ -24,6 +12,18 @@ use crate::high_level_ir::typed_stmt::{
     TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
 };
 use crate::high_level_ir::typed_type::{Package, TypedType, TypedTypeParam, TypedValueType};
+use crate::syntax::block::Block;
+use crate::syntax::decl::{
+    Decl, FunSyntax, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax,
+    StructSyntax, VarSyntax,
+};
+use crate::syntax::expr::{CallExprSyntax, Expr, NameExprSyntax, ReturnSyntax, SubscriptSyntax};
+use crate::syntax::file::{FileSyntax, WizFile};
+use crate::syntax::fun::arg_def::ArgDef;
+use crate::syntax::fun::body_def::FunBody;
+use crate::syntax::literal::LiteralSyntax;
+use crate::syntax::stmt::{AssignmentStmt, LoopStmt, Stmt};
+use crate::syntax::type_name::{TypeName, TypeParam};
 use crate::utils::path_string_to_page_name;
 use std::option::Option::Some;
 
