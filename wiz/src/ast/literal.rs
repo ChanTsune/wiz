@@ -1,6 +1,6 @@
 use crate::ast::node::Node;
-use std::fmt;
 use crate::ast::token::TokenSyntax;
+use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum LiteralSyntax {
