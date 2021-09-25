@@ -1,4 +1,4 @@
-use crate::parser::nom::character::{alphabet, digit, under_score};
+use crate::parser::wiz::character::{alphabet, digit, under_score};
 use nom::branch::{alt, permutation};
 use nom::bytes::complete::{is_not, tag};
 use nom::character::complete::{anychar, char};
@@ -159,7 +159,7 @@ pub fn eol(s: &str) -> IResult<&str, char> {
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::nom::lexical_structure::{
+    use crate::parser::wiz::lexical_structure::{
         comment, eol, identifier, whitespace0, whitespace1,
     };
     use nom::error;

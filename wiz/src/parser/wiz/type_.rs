@@ -1,5 +1,5 @@
 use crate::ast::type_name::{TypeName, TypeParam};
-use crate::parser::nom::lexical_structure::{identifier, whitespace0};
+use crate::parser::wiz::lexical_structure::{identifier, whitespace0};
 use nom::branch::alt;
 use nom::character::complete::char;
 use nom::combinator::{map, opt};
@@ -116,7 +116,7 @@ pub fn type_parameter(s: &str) -> IResult<&str, TypeParam> {
 #[cfg(test)]
 mod tests {
     use crate::ast::type_name::{TypeName, TypeParam};
-    use crate::parser::nom::type_::type_parameter;
+    use crate::parser::wiz::type_::type_parameter;
 
     #[test]
     fn test_simple_type_parameter() {

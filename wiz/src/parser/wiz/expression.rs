@@ -6,14 +6,14 @@ use crate::ast::expr::{
 use crate::ast::literal::LiteralSyntax;
 use crate::ast::stmt::Stmt;
 use crate::ast::type_name::TypeName;
-use crate::parser::nom::declaration::block;
-use crate::parser::nom::keywords::{else_keyword, if_keyword, return_keyword};
-use crate::parser::nom::lexical_structure::{
+use crate::parser::wiz::declaration::block;
+use crate::parser::wiz::keywords::{else_keyword, if_keyword, return_keyword};
+use crate::parser::wiz::lexical_structure::{
     identifier, whitespace0, whitespace1, whitespace_without_eol0,
 };
-use crate::parser::nom::operators::member_access_operator;
-use crate::parser::nom::stmts;
-use crate::parser::nom::type_::{type_, type_arguments};
+use crate::parser::wiz::operators::member_access_operator;
+use crate::parser::wiz::stmts;
+use crate::parser::wiz::type_::{type_, type_arguments};
 use nom::branch::alt;
 use nom::character::complete::{char, digit1, none_of, one_of};
 use nom::combinator::{map, opt};
@@ -700,7 +700,7 @@ mod tests {
         CallArg, CallExprSyntax, Expr, NameExprSyntax, PostfixSuffix, ReturnSyntax,
     };
     use crate::ast::literal::LiteralSyntax;
-    use crate::parser::nom::expression::{
+    use crate::parser::wiz::expression::{
         disjunction_expr, expr, floating_point_literal, indexing_suffix, integer_literal,
         postfix_suffix, return_expr, string_literal, value_arguments,
     };

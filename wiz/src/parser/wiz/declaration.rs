@@ -7,16 +7,16 @@ use crate::ast::expr::Expr;
 use crate::ast::fun::arg_def::{ArgDef, ValueArgDef};
 use crate::ast::fun::body_def::FunBody;
 use crate::ast::type_name::{TypeName, TypeParam};
-use crate::parser::nom::expression::expr;
-use crate::parser::nom::keywords::{
+use crate::parser::wiz::expression::expr;
+use crate::parser::wiz::keywords::{
     as_keyword, fun_keyword, init_keyword, self_keyword, struct_keyword, use_keyword, val_keyword,
     var_keyword, where_keyword,
 };
-use crate::parser::nom::lexical_structure::{
+use crate::parser::wiz::lexical_structure::{
     eol, identifier, whitespace0, whitespace1, whitespace_without_eol0,
 };
-use crate::parser::nom::stmts;
-use crate::parser::nom::type_::{type_, type_parameters};
+use crate::parser::wiz::stmts;
+use crate::parser::wiz::type_::{type_, type_parameters};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
@@ -409,7 +409,7 @@ mod test {
     use crate::ast::literal::LiteralSyntax;
     use crate::ast::stmt::Stmt;
     use crate::ast::type_name::TypeName;
-    use crate::parser::nom::declaration::{
+    use crate::parser::wiz::declaration::{
         block, function_body, function_decl, member_function, package_name, stored_property,
         struct_properties, struct_syntax, use_syntax, var_decl,
     };

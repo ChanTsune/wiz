@@ -1,3 +1,3 @@
 pub mod error;
-pub mod nom;
+pub mod wiz;
 pub mod parser;
