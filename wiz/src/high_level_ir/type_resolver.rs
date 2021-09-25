@@ -282,7 +282,7 @@ impl TypeResolver {
 
     pub fn typed_struct(&mut self, s: TypedStruct) -> Result<TypedStruct> {
         let TypedStruct {
-            package:_,
+            package: _,
             name,
             type_params,
             init,                // TODO
