@@ -4,7 +4,6 @@ use crate::parser::wiz::lexical_structure::{
     identifier, whitespace0, whitespace1, whitespace_without_eol0,
 };
 use crate::parser::wiz::operators::member_access_operator;
-use crate::parser::wiz::stmts;
 use crate::parser::wiz::type_::{type_, type_arguments};
 use crate::syntax::block::Block;
 use crate::syntax::expr::{
@@ -20,6 +19,7 @@ use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
 use nom::IResult;
+use crate::parser::wiz::statement::stmts;
 
 pub fn integer_literal(s: &str) -> IResult<&str, LiteralSyntax> {
     map(digit1, |n: &str| LiteralSyntax::Integer {

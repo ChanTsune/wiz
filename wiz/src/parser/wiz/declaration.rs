@@ -6,7 +6,6 @@ use crate::parser::wiz::keywords::{
 use crate::parser::wiz::lexical_structure::{
     eol, identifier, whitespace0, whitespace1, whitespace_without_eol0,
 };
-use crate::parser::wiz::stmts;
 use crate::parser::wiz::type_::{type_, type_parameters};
 use crate::syntax::block::Block;
 use crate::syntax::decl::{
@@ -24,6 +23,7 @@ use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
 use nom::IResult;
+use crate::parser::wiz::statement::stmts;
 
 pub fn decl(s: &str) -> IResult<&str, Decl> {
     alt((use_decl, struct_decl, function_decl, var_decl))(s)
