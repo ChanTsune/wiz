@@ -143,15 +143,15 @@ where
 }
 
 fn inline_comment_start<I>(input: I) -> IResult<I, I>
-    where
-        I: InputTake + Compare<&'static str>,
+where
+    I: InputTake + Compare<&'static str>,
 {
     tag("/*")(input)
 }
 
 fn inline_comment_end<I>(input: I) -> IResult<I, I>
-    where
-        I: InputTake + Compare<&'static str>,
+where
+    I: InputTake + Compare<&'static str>,
 {
     tag("*/")(input)
 }
