@@ -35,17 +35,16 @@ where
 }
 
 pub fn cr<I>(s: I) -> IResult<I, char>
-    where
-        I: Slice<RangeFrom<usize>> + InputIter,
-        <I as InputIter>::Item: AsChar,
+where
+    I: Slice<RangeFrom<usize>> + InputIter,
+    <I as InputIter>::Item: AsChar,
 {
     char('\r')(s)
 }
 
-
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::character::{alphabet, digit, eol, space, under_score, cr};
+    use crate::parser::wiz::character::{alphabet, cr, digit, eol, space, under_score};
 
     #[test]
     fn test_alphabet() {

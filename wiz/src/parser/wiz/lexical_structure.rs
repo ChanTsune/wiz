@@ -1,4 +1,4 @@
-use crate::parser::wiz::character::{alphabet, digit, eol, space, under_score, cr};
+use crate::parser::wiz::character::{alphabet, cr, digit, eol, space, under_score};
 use crate::syntax::trivia::TriviaPiece;
 use nom::branch::{alt, permutation};
 use nom::bytes::complete::{is_not, tag};
@@ -180,17 +180,18 @@ where
 }
 
 pub fn carriage_returns<I>(s: I) -> IResult<I, TriviaPiece>
-    where
-        I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength,
-        <I as InputIter>::Item: AsChar,
+where
+    I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength,
+    <I as InputIter>::Item: AsChar,
 {
     map(many1(cr), |l| TriviaPiece::CarriageReturns(l.len() as i64))(s)
 }
 
-
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::lexical_structure::{comment, identifier, newlines, spaces, whitespace0, whitespace1, tabs, carriage_returns};
+    use crate::parser::wiz::lexical_structure::{
+        carriage_returns, comment, identifier, newlines, spaces, tabs, whitespace0, whitespace1,
+    };
     use crate::syntax::trivia::TriviaPiece;
     use nom::error;
     use nom::error::ErrorKind;
@@ -304,6 +305,9 @@ mod tests {
 
     #[test]
     fn test_carriage_returns() {
-        assert_eq!(carriage_returns("\r"), Ok(("", TriviaPiece::CarriageReturns(1))))
+        assert_eq!(
+            carriage_returns("\r"),
+            Ok(("", TriviaPiece::CarriageReturns(1)))
+        )
     }
 }
