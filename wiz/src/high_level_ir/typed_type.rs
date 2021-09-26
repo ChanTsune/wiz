@@ -175,6 +175,10 @@ impl TypedType {
             .collect()
     }
 
+    pub fn is_function_type(&self) -> bool {
+        matches!(self, Self::Function(_))
+    }
+
     pub fn is_primitive(&self) -> bool {
         Self::builtin_types().contains(self)
     }

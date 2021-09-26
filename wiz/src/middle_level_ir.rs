@@ -8,7 +8,7 @@ use crate::high_level_ir::typed_expr::{
 };
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
-use crate::high_level_ir::typed_type::{TypedFunctionType, TypedType, TypedValueType};
+use crate::high_level_ir::typed_type::{TypedFunctionType, TypedType, TypedValueType, Package};
 use crate::middle_level_ir::ml_decl::{
     MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar,
 };
@@ -265,7 +265,7 @@ impl HLIR2MLIR {
         let args = arg_defs.into_iter().map(|a| self.arg_def(a)).collect();
         MLFun {
             modifiers,
-            name,
+            name: self.name_mangling(package, name),
             arg_defs: args,
             return_type: self.type_(return_type.unwrap()).into_value_type(),
             body: body.map(|b| self.fun_body(b)),
@@ -384,13 +384,8 @@ impl HLIR2MLIR {
     }
 
     pub fn name(&self, n: TypedName) -> MLName {
-        let name = if let Some(pkg) = n.package {
-            pkg.to_string() + "::" + &*n.name
-        } else {
-            n.name
-        };
         MLName {
-            name,
+            name: self.name_mangling(n.package, n.name),
             type_: self.type_(n.type_.unwrap()),
         }
     }
@@ -589,5 +584,9 @@ impl HLIR2MLIR {
         MLBlock {
             body: b.body.into_iter().map(|s| self.stmt(s)).flatten().collect(),
         }
+    }
+
+    fn name_mangling(&self, package: Option<Package>, name: String) -> String {
+        if let Some(pkg) = package { if pkg.is_global() || name == "main" { name } else { pkg.to_string() + "::" + &*name }} else {name}
     }
 }

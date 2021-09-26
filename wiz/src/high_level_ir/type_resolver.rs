@@ -453,9 +453,10 @@ impl TypeResolver {
     }
 
     pub fn typed_name(&mut self, n: TypedName) -> Result<TypedName> {
+        let (type_, package) = self.context.resolve_name_type(n.name.clone())?;
         Result::Ok(TypedName {
-            package: None,
-            type_: Some(self.context.resolve_name_type(n.name.clone())?),
+            package,
+            type_: Some(type_),
             name: n.name,
         })
     }

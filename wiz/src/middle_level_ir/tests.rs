@@ -67,7 +67,7 @@ fn test_return_integer_literal() {
             name: "test".to_string(),
             body: vec![MLDecl::Fun(MLFun {
                 modifiers: vec![],
-                name: "integer".to_string(),
+                name: "test::integer".to_string(),
                 arg_defs: vec![],
                 return_type: MLValueType::Primitive(String::from("Int64")),
                 body: Some(MLFunBody {

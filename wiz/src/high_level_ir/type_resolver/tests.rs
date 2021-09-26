@@ -566,7 +566,7 @@ fn test_function_call() {
                     body: Some(TypedFunBody::Block(TypedBlock {
                         body: vec![TypedStmt::Expr(TypedExpr::Call(TypedCall {
                             target: Box::new(TypedExpr::Name(TypedName {
-                                package: None,
+                                package: Some(Package::new(vec![String::from("test")])),
                                 name: "target_function".to_string(),
                                 type_: Some(TypedType::Function(Box::new(TypedFunctionType {
                                     arguments: vec![],
