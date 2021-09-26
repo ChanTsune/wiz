@@ -1,5 +1,5 @@
 use crate::high_level_ir::typed_stmt::TypedBlock;
-use crate::high_level_ir::typed_type::TypedType;
+use crate::high_level_ir::typed_type::{Package, TypedType};
 use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -24,6 +24,7 @@ pub enum TypedExpr {
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct TypedName {
+    pub(crate) package: Option<Package>,
     pub(crate) name: String,
     pub(crate) type_: Option<TypedType>,
 }

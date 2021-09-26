@@ -6,4 +6,6 @@ pub mod fun;
 pub mod literal;
 pub mod node;
 pub mod stmt;
+pub mod token;
+pub mod trivia;
 pub mod type_name;

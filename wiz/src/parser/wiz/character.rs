@@ -20,7 +20,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::nom::character::{alphabet, digit, under_score};
+    use crate::parser::wiz::character::{alphabet, digit, under_score};
 
     #[test]
     fn test_alphabet() {

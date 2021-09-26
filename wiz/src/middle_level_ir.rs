@@ -1,4 +1,3 @@
-use crate::constants::UNSAFE_POINTER;
 use crate::ext::string::StringExt;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct, TypedVar,
@@ -9,7 +8,7 @@ use crate::high_level_ir::typed_expr::{
 };
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
-use crate::high_level_ir::typed_type::{TypedFunctionType, TypedType, TypedValueType};
+use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
 use crate::middle_level_ir::ml_decl::{
     MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar,
 };
@@ -22,6 +21,7 @@ use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLS
 use crate::middle_level_ir::ml_type::{MLFunctionType, MLType, MLValueType};
 use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::HashMap;
+use std::option::Option::Some;
 use std::process::exit;
 
 pub mod builder;
@@ -32,6 +32,8 @@ pub mod ml_file;
 pub mod ml_node;
 pub mod ml_stmt;
 pub mod ml_type;
+#[cfg(test)]
+mod tests;
 
 struct HLIR2MLIRContext {
     generic_structs: StackedHashMap<String, TypedStruct>,
@@ -86,7 +88,7 @@ impl HLIR2MLIR {
     }
 
     pub fn value_type(&self, t: TypedValueType) -> MLValueType {
-        if t.package.names.len() == 0 && t.name == UNSAFE_POINTER {
+        if t.is_unsafe_pointer() {
             match self.type_(t.type_args.unwrap()[0].clone()) {
                 MLType::Value(v) => MLValueType::Pointer(Box::new(v)),
                 MLType::Function(f) => {
@@ -95,7 +97,7 @@ impl HLIR2MLIR {
                 }
             }
         } else {
-            let mut pkg = t.package.names;
+            let mut pkg = t.package.clone().unwrap().names;
             if pkg.is_empty() {
                 match &*t.name {
                     "Unit" | "Int8" | "UInt8" | "Int16" | "UInt16" | "Int32" | "UInt32"
@@ -226,15 +228,16 @@ impl HLIR2MLIR {
             TypedDecl::Fun(f) => vec![MLDecl::Fun(self.fun(f))],
             TypedDecl::Struct(s) => {
                 let (st, fns) = self.struct_(s);
-                let mut fns: Vec<MLDecl> = fns.into_iter().map(|f| MLDecl::Fun(f)).collect();
-                let mut r = vec![MLDecl::Struct(st)];
-                r.append(&mut fns);
-                r
+                vec![MLDecl::Struct(st)]
+                    .into_iter()
+                    .chain(fns.into_iter().map(|f| MLDecl::Fun(f)))
+                    .collect()
             }
             TypedDecl::Class => exit(-1),
             TypedDecl::Enum => exit(-1),
             TypedDecl::Protocol => exit(-1),
             TypedDecl::Extension => exit(-1),
+            TypedDecl::Use => exit(-1),
         }
     }
 
@@ -250,6 +253,7 @@ impl HLIR2MLIR {
 
     pub fn fun(&mut self, f: TypedFun) -> MLFun {
         let TypedFun {
+            package,
             modifiers,
             name,
             type_params,
@@ -261,7 +265,7 @@ impl HLIR2MLIR {
         let args = arg_defs.into_iter().map(|a| self.arg_def(a)).collect();
         MLFun {
             modifiers,
-            name,
+            name: self.name_mangling(&package, name),
             arg_defs: args,
             return_type: self.type_(return_type.unwrap()).into_value_type(),
             body: body.map(|b| self.fun_body(b)),
@@ -270,6 +274,7 @@ impl HLIR2MLIR {
 
     pub fn struct_(&mut self, s: TypedStruct) -> (MLStruct, Vec<MLFun>) {
         let TypedStruct {
+            package,
             name,
             type_params,
             init,
@@ -293,7 +298,7 @@ impl HLIR2MLIR {
         let value_type = MLValueType::Struct(struct_.name.clone());
         self.add_struct(value_type.clone(), struct_.clone());
 
-        let mut init: Vec<MLFun> = init
+        let init: Vec<MLFun> = init
             .into_iter()
             .map(|i| {
                 let type_ = MLType::Value(value_type.clone());
@@ -318,14 +323,14 @@ impl HLIR2MLIR {
                 })));
                 MLFun {
                     modifiers: vec![],
-                    name: name.clone() + "#init",
+                    name: self.name_mangling(&package, name.clone()) + "#init",
                     arg_defs: i.args.into_iter().map(|a| self.arg_def(a)).collect(),
                     return_type: type_.into_value_type(),
                     body: Some(MLFunBody { body }),
                 }
             })
             .collect();
-        let mut members: Vec<MLFun> = member_functions
+        let members: Vec<MLFun> = member_functions
             .into_iter()
             .map(|mf| {
                 let TypedMemberFunction {
@@ -335,15 +340,16 @@ impl HLIR2MLIR {
                     body,
                     return_type,
                 } = mf;
-                let mut a = args.into_iter().map(|a| self.arg_def(a)).collect();
-                let mut args = vec![MLArgDef {
+                let args = vec![MLArgDef {
                     name: String::from("self"),
                     type_: value_type.clone(),
-                }];
-                args.append(&mut a);
+                }]
+                .into_iter()
+                .chain(args.into_iter().map(|a| self.arg_def(a)))
+                .collect();
                 MLFun {
                     modifiers: vec![],
-                    name: name.clone() + "::" + &fname,
+                    name: self.name_mangling(&package, name.clone()) + "::" + &fname,
                     arg_defs: args,
                     return_type: self.type_(return_type.unwrap()).into_value_type(),
                     body: match body {
@@ -353,10 +359,7 @@ impl HLIR2MLIR {
                 }
             })
             .collect();
-        let mut funs: Vec<MLFun> = vec![];
-        funs.append(&mut init);
-        funs.append(&mut members);
-        (struct_, funs)
+        (struct_, init.into_iter().chain(members).collect())
     }
 
     pub fn expr(&mut self, e: TypedExpr) -> MLExpr {
@@ -382,7 +385,7 @@ impl HLIR2MLIR {
 
     pub fn name(&self, n: TypedName) -> MLName {
         MLName {
-            name: n.name,
+            name: self.name_mangling(&n.package, n.name),
             type_: self.type_(n.type_.unwrap()),
         }
     }
@@ -517,7 +520,7 @@ impl HLIR2MLIR {
             TypedType::Type(t) => {
                 let type_ = self.type_(type_.unwrap());
                 MLExpr::Name(MLName {
-                    name: t.name + "#" + &*name,
+                    name: self.name_mangling(&t.package, t.name) + "#" + &*name,
                     type_,
                 })
             }
@@ -580,6 +583,18 @@ impl HLIR2MLIR {
     pub fn block(&mut self, b: TypedBlock) -> MLBlock {
         MLBlock {
             body: b.body.into_iter().map(|s| self.stmt(s)).flatten().collect(),
+        }
+    }
+
+    fn name_mangling(&self, package: &Option<Package>, name: String) -> String {
+        if let Some(pkg) = package {
+            if pkg.is_global() || name == "main" {
+                name
+            } else {
+                pkg.to_string() + "::" + &*name
+            }
+        } else {
+            name
         }
     }
 }

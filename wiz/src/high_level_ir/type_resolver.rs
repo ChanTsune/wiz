@@ -1,8 +1,9 @@
 pub mod context;
 pub mod error;
 pub mod result;
+#[cfg(test)]
+mod tests;
 
-use crate::constants::UNSAFE_POINTER;
 use crate::high_level_ir::type_resolver::context::{ResolverContext, ResolverStruct};
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
@@ -45,9 +46,9 @@ impl TypeResolver {
                     ns.values.insert(
                         s.name.clone(),
                         TypedType::Type(TypedValueType {
-                            package: Package {
+                            package: Some(Package {
                                 names: current_namespace.clone(),
-                            },
+                            }),
                             name: s.name.clone(),
                             type_args: None,
                         }),
@@ -100,11 +101,13 @@ impl TypeResolver {
             TypedDecl::Enum => {}
             TypedDecl::Protocol => {}
             TypedDecl::Extension => {}
+            TypedDecl::Use => {}
         }
         Result::Ok(())
     }
 
     pub fn preload_fun(&mut self, f: TypedFun) -> Result<TypedFun> {
+        let c_name_space = self.context.current_namespace.clone();
         self.context.push_name_space(f.name.clone());
         let arg_defs = f
             .arg_defs
@@ -122,6 +125,7 @@ impl TypeResolver {
             .collect::<Result<Vec<TypedArgDef>>>()?;
         let return_type = self.typed_function_return_type(&f)?;
         let fun = TypedFun {
+            package: Some(Package::new(c_name_space)),
             modifiers: f.modifiers,
             name: f.name,
             type_params: f.type_params, // TODO
@@ -161,6 +165,7 @@ impl TypeResolver {
             TypedDecl::Enum => TypedDecl::Enum,
             TypedDecl::Protocol => TypedDecl::Protocol,
             TypedDecl::Extension => TypedDecl::Extension,
+            TypedDecl::Use => TypedDecl::Use,
         })
     }
 
@@ -188,6 +193,7 @@ impl TypeResolver {
             ))),
         }?;
         let v = TypedVar {
+            package: None,
             is_mut: t.is_mut,
             name: t.name,
             type_: Some(v_type),
@@ -236,6 +242,7 @@ impl TypeResolver {
     }
 
     pub fn typed_fun(&mut self, f: TypedFun) -> Result<TypedFun> {
+        let c_name_space = self.context.current_namespace.clone();
         self.context.push_name_space(f.name.clone());
         let arg_defs = f
             .arg_defs
@@ -253,6 +260,7 @@ impl TypeResolver {
             .collect::<Result<Vec<TypedArgDef>>>()?;
         let return_type = self.typed_function_return_type(&f)?;
         let fun = TypedFun {
+            package: Some(Package::new(c_name_space)),
             modifiers: f.modifiers,
             name: f.name,
             type_params: f.type_params, // TODO
@@ -274,6 +282,7 @@ impl TypeResolver {
 
     pub fn typed_struct(&mut self, s: TypedStruct) -> Result<TypedStruct> {
         let TypedStruct {
+            package: _,
             name,
             type_params,
             init,                // TODO
@@ -285,9 +294,7 @@ impl TypeResolver {
         let current_namespace = self.context.current_namespace.clone();
         let ns = self.context.get_current_namespace_mut()?;
         let this_type = TypedType::Value(TypedValueType {
-            package: Package {
-                names: current_namespace,
-            },
+            package: Some(Package::new(current_namespace)),
             name: name.clone(),
             type_args: None,
         });
@@ -336,6 +343,7 @@ impl TypeResolver {
         self.context.clear_current_type();
         self.context.pop_name_space();
         Result::Ok(TypedStruct {
+            package: Some(Package::new(self.context.current_namespace.clone())),
             name,
             type_params,
             init,
@@ -443,8 +451,10 @@ impl TypeResolver {
     }
 
     pub fn typed_name(&mut self, n: TypedName) -> Result<TypedName> {
+        let (type_, package) = self.context.resolve_name_type(n.name.clone())?;
         Result::Ok(TypedName {
-            type_: Some(self.context.resolve_name_type(n.name.clone())?),
+            package,
+            type_: Some(type_),
             name: n.name,
         })
     }
@@ -523,8 +533,9 @@ impl TypeResolver {
 
     pub fn typed_subscript(&mut self, s: TypedSubscript) -> Result<TypedSubscript> {
         let target = self.expr(*s.target)?;
-        if let TypedType::Value(v) = target.type_().unwrap() {
-            if v.name == UNSAFE_POINTER {
+        let target_type = target.type_().unwrap();
+        if let TypedType::Value(v) = target_type {
+            if v.is_unsafe_pointer() {
                 if let Some(mut ags) = v.type_args {
                     if ags.len() == 1 {
                         return Result::Ok(TypedSubscript {
@@ -676,784 +687,5 @@ impl TypeResolver {
             iterator: self.expr(iterator)?,
             block: self.typed_block(block)?,
         })
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::constants::UNSAFE_POINTER;
-    use crate::high_level_ir::type_resolver::TypeResolver;
-    use crate::high_level_ir::typed_decl::{
-        TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedStoredProperty,
-        TypedStruct, TypedValueArgDef, TypedVar,
-    };
-    use crate::high_level_ir::typed_expr::{
-        TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedInstanceMember, TypedLiteral,
-        TypedName, TypedReturn, TypedSubscript,
-    };
-    use crate::high_level_ir::typed_file::TypedFile;
-    use crate::high_level_ir::typed_stmt::{
-        TypedAssignment, TypedAssignmentStmt, TypedBlock, TypedStmt,
-    };
-    use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
-    use crate::high_level_ir::Ast2HLIR;
-    use crate::parser::parser::parse_from_string;
-
-    #[test]
-    fn test_empty() {
-        let source = "";
-
-        let ast = parse_from_string(String::from(source)).unwrap();
-
-        let mut ast2hlir = Ast2HLIR::new();
-
-        let mut file = ast2hlir.file(ast);
-        file.name = String::from("test");
-
-        let mut resolver = TypeResolver::new();
-        let _ = resolver.detect_type(&file);
-        let _ = resolver.preload_file(file.clone());
-        let f = resolver.file(file);
-
-        assert_eq!(
-            f,
-            Result::Ok(TypedFile {
-                name: "test".to_string(),
-                body: vec![]
-            })
-        );
-    }
-
-    #[test]
-    fn test_unsafe_pointer() {
-        let source = r"
-        struct A {
-            val a: UnsafePointer<UInt8>
-        }
-        fun function(_ a: A): Unit {
-            val a = a.a
-        }
-        ";
-
-        let ast = parse_from_string(String::from(source)).unwrap();
-
-        let mut ast2hlir = Ast2HLIR::new();
-
-        let mut file = ast2hlir.file(ast);
-        file.name = String::from("test");
-
-        let mut resolver = TypeResolver::new();
-        let _ = resolver.detect_type(&file);
-        let _ = resolver.preload_file(file.clone());
-        let f = resolver.file(file);
-
-        assert_eq!(
-            f,
-            Result::Ok(TypedFile {
-                name: "test".to_string(),
-                body: vec![
-                    TypedDecl::Struct(TypedStruct {
-                        name: "A".to_string(),
-                        type_params: None,
-                        init: vec![TypedInitializer {
-                            args: vec![TypedArgDef::Value(TypedValueArgDef {
-                                label: "a".to_string(),
-                                name: "a".to_string(),
-                                type_: TypedType::Value(TypedValueType {
-                                    package: Package::global(),
-                                    name: String::from(UNSAFE_POINTER),
-                                    type_args: Some(vec![TypedType::uint8()])
-                                })
-                            })],
-                            body: TypedFunBody::Block(TypedBlock {
-                                body: vec![TypedStmt::Assignment(TypedAssignmentStmt::Assignment(
-                                    TypedAssignment {
-                                        target: TypedExpr::Member(TypedInstanceMember {
-                                            target: Box::new(TypedExpr::Name(TypedName {
-                                                name: "self".to_string(),
-                                                type_: Some(TypedType::Value(TypedValueType {
-                                                    package: Package {
-                                                        names: vec![String::from("test")]
-                                                    },
-                                                    name: "A".to_string(),
-                                                    type_args: None
-                                                }))
-                                            })),
-                                            name: "a".to_string(),
-                                            is_safe: false,
-                                            type_: Some(TypedType::Value(TypedValueType {
-                                                package: Package::global(),
-                                                name: String::from(UNSAFE_POINTER),
-                                                type_args: Some(vec![TypedType::uint8()])
-                                            }))
-                                        }),
-                                        value: TypedExpr::Name(TypedName {
-                                            name: "a".to_string(),
-                                            type_: Some(TypedType::Value(TypedValueType {
-                                                package: Package::global(),
-                                                name: String::from(UNSAFE_POINTER),
-                                                type_args: Some(vec![TypedType::uint8()])
-                                            }))
-                                        })
-                                    }
-                                ))]
-                            })
-                        }],
-                        stored_properties: vec![TypedStoredProperty {
-                            name: "a".to_string(),
-                            type_: TypedType::Value(TypedValueType {
-                                package: Package::global(),
-                                name: String::from(UNSAFE_POINTER),
-                                type_args: Some(vec![TypedType::uint8()])
-                            })
-                        }],
-                        computed_properties: vec![],
-                        member_functions: vec![],
-                        static_function: vec![]
-                    }),
-                    TypedDecl::Fun(TypedFun {
-                        modifiers: vec![],
-                        name: "function".to_string(),
-                        type_params: None,
-                        arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
-                            label: "_".to_string(),
-                            name: "a".to_string(),
-                            type_: TypedType::Value(TypedValueType {
-                                package: Package {
-                                    names: vec![String::from("test")]
-                                },
-                                name: "A".to_string(),
-                                type_args: None
-                            })
-                        })],
-                        body: Option::Some(TypedFunBody::Block(TypedBlock {
-                            body: vec![TypedStmt::Decl(TypedDecl::Var(TypedVar {
-                                is_mut: false,
-                                name: "a".to_string(),
-                                type_: Some(TypedType::Value(TypedValueType {
-                                    package: Package::global(),
-                                    name: String::from(UNSAFE_POINTER),
-                                    type_args: Some(vec![TypedType::uint8()])
-                                })),
-                                value: TypedExpr::Member(TypedInstanceMember {
-                                    target: Box::new(TypedExpr::Name(TypedName {
-                                        name: "a".to_string(),
-                                        type_: Some(TypedType::Value(TypedValueType {
-                                            package: Package {
-                                                names: vec![String::from("test")]
-                                            },
-                                            name: "A".to_string(),
-                                            type_args: None
-                                        }))
-                                    })),
-                                    name: "a".to_string(),
-                                    is_safe: false,
-                                    type_: Some(TypedType::Value(TypedValueType {
-                                        package: Package::global(),
-                                        name: String::from(UNSAFE_POINTER),
-                                        type_args: Some(vec![TypedType::uint8()])
-                                    }))
-                                })
-                            }))]
-                        })),
-                        return_type: Some(TypedType::unit())
-                    })
-                ],
-            })
-        );
-    }
-
-    #[test]
-    fn test_struct_member() {
-        let source = r"
-        struct A {
-            val a: Int64
-        }
-        fun function(_ a: A) {
-            val a = a.a
-        }
-        ";
-        let ast = parse_from_string(String::from(source)).unwrap();
-
-        let mut ast2hlir = Ast2HLIR::new();
-
-        let mut file = ast2hlir.file(ast);
-        file.name = String::from("test");
-
-        let mut resolver = TypeResolver::new();
-        let _ = resolver.detect_type(&file);
-        let _ = resolver.preload_file(file.clone());
-        let f = resolver.file(file);
-
-        assert_eq!(
-            f,
-            Result::Ok(TypedFile {
-                name: "test".to_string(),
-                body: vec![
-                    TypedDecl::Struct(TypedStruct {
-                        name: "A".to_string(),
-                        type_params: None,
-                        init: vec![TypedInitializer {
-                            args: vec![TypedArgDef::Value(TypedValueArgDef {
-                                label: "a".to_string(),
-                                name: "a".to_string(),
-                                type_: TypedType::int64()
-                            })],
-                            body: TypedFunBody::Block(TypedBlock {
-                                body: vec![TypedStmt::Assignment(TypedAssignmentStmt::Assignment(
-                                    TypedAssignment {
-                                        target: TypedExpr::Member(TypedInstanceMember {
-                                            target: Box::new(TypedExpr::Name(TypedName {
-                                                name: "self".to_string(),
-                                                type_: Some(TypedType::Value(TypedValueType {
-                                                    package: Package {
-                                                        names: vec![String::from("test")]
-                                                    },
-                                                    name: "A".to_string(),
-                                                    type_args: None
-                                                }))
-                                            })),
-                                            name: "a".to_string(),
-                                            is_safe: false,
-                                            type_: Some(TypedType::int64())
-                                        }),
-                                        value: TypedExpr::Name(TypedName {
-                                            name: "a".to_string(),
-                                            type_: Some(TypedType::int64())
-                                        })
-                                    }
-                                ))]
-                            })
-                        }],
-                        stored_properties: vec![TypedStoredProperty {
-                            name: "a".to_string(),
-                            type_: TypedType::int64()
-                        }],
-                        computed_properties: vec![],
-                        member_functions: vec![],
-                        static_function: vec![]
-                    }),
-                    TypedDecl::Fun(TypedFun {
-                        modifiers: vec![],
-                        name: "function".to_string(),
-                        type_params: None,
-                        arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
-                            label: "_".to_string(),
-                            name: "a".to_string(),
-                            type_: TypedType::Value(TypedValueType {
-                                package: Package {
-                                    names: vec![String::from("test")]
-                                },
-                                name: "A".to_string(),
-                                type_args: None
-                            })
-                        })],
-                        body: Option::Some(TypedFunBody::Block(TypedBlock {
-                            body: vec![TypedStmt::Decl(TypedDecl::Var(TypedVar {
-                                is_mut: false,
-                                name: "a".to_string(),
-                                type_: Some(TypedType::int64()),
-                                value: TypedExpr::Member(TypedInstanceMember {
-                                    target: Box::new(TypedExpr::Name(TypedName {
-                                        name: "a".to_string(),
-                                        type_: Some(TypedType::Value(TypedValueType {
-                                            package: Package {
-                                                names: vec![String::from("test")]
-                                            },
-                                            name: "A".to_string(),
-                                            type_args: None
-                                        }))
-                                    })),
-                                    name: "a".to_string(),
-                                    is_safe: false,
-                                    type_: Some(TypedType::int64())
-                                })
-                            }))]
-                        })),
-                        return_type: Some(TypedType::unit())
-                    })
-                ],
-            })
-        );
-    }
-
-    #[test]
-    fn test_struct_init() {
-        let source = r"
-        struct A {
-            val a: Int64
-        }
-        fun function(_ a: A) {
-            val a = A.init(a:1)
-        }
-        ";
-        let ast = parse_from_string(String::from(source)).unwrap();
-
-        let mut ast2hlir = Ast2HLIR::new();
-
-        let mut file = ast2hlir.file(ast);
-        file.name = String::from("test");
-
-        let mut resolver = TypeResolver::new();
-        let _ = resolver.detect_type(&file);
-        let _ = resolver.preload_file(file.clone());
-        let f = resolver.file(file);
-
-        assert_eq!(
-            f,
-            Result::Ok(TypedFile {
-                name: "test".to_string(),
-                body: vec![
-                    TypedDecl::Struct(TypedStruct {
-                        name: "A".to_string(),
-                        type_params: None,
-                        init: vec![TypedInitializer {
-                            args: vec![TypedArgDef::Value(TypedValueArgDef {
-                                label: "a".to_string(),
-                                name: "a".to_string(),
-                                type_: TypedType::int64()
-                            })],
-                            body: TypedFunBody::Block(TypedBlock {
-                                body: vec![TypedStmt::Assignment(TypedAssignmentStmt::Assignment(
-                                    TypedAssignment {
-                                        target: TypedExpr::Member(TypedInstanceMember {
-                                            target: Box::new(TypedExpr::Name(TypedName {
-                                                name: "self".to_string(),
-                                                type_: Some(TypedType::Value(TypedValueType {
-                                                    package: Package {
-                                                        names: vec![String::from("test")]
-                                                    },
-                                                    name: "A".to_string(),
-                                                    type_args: None
-                                                }))
-                                            })),
-                                            name: "a".to_string(),
-                                            is_safe: false,
-                                            type_: Some(TypedType::int64())
-                                        }),
-                                        value: TypedExpr::Name(TypedName {
-                                            name: "a".to_string(),
-                                            type_: Some(TypedType::int64())
-                                        })
-                                    }
-                                ))]
-                            })
-                        }],
-                        stored_properties: vec![TypedStoredProperty {
-                            name: "a".to_string(),
-                            type_: TypedType::int64(),
-                        }],
-                        computed_properties: vec![],
-                        member_functions: vec![],
-                        static_function: vec![],
-                    }),
-                    TypedDecl::Fun(TypedFun {
-                        modifiers: vec![],
-                        name: "function".to_string(),
-                        type_params: None,
-                        arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
-                            label: "_".to_string(),
-                            name: "a".to_string(),
-                            type_: TypedType::Value(TypedValueType {
-                                package: Package {
-                                    names: vec![String::from("test")],
-                                },
-                                name: "A".to_string(),
-                                type_args: None,
-                            }),
-                        })],
-                        body: Option::Some(TypedFunBody::Block(TypedBlock {
-                            body: vec![TypedStmt::Decl(TypedDecl::Var(TypedVar {
-                                is_mut: false,
-                                name: "a".to_string(),
-                                type_: Some(TypedType::Value(TypedValueType {
-                                    package: Package {
-                                        names: vec![String::from("test")]
-                                    },
-                                    name: "A".to_string(),
-                                    type_args: None
-                                })),
-                                value: TypedExpr::Call(TypedCall {
-                                    target: Box::new(TypedExpr::Member(TypedInstanceMember {
-                                        target: Box::new(TypedExpr::Name(TypedName {
-                                            name: "A".to_string(),
-                                            type_: Some(TypedType::Type(TypedValueType {
-                                                package: Package {
-                                                    names: vec![String::from("test")]
-                                                },
-                                                name: "A".to_string(),
-                                                type_args: None
-                                            })),
-                                        })),
-                                        name: "init".to_string(),
-                                        is_safe: false,
-                                        type_: Some(TypedType::Function(Box::new(
-                                            TypedFunctionType {
-                                                arguments: vec![TypedArgDef::Value(
-                                                    TypedValueArgDef {
-                                                        label: "a".to_string(),
-                                                        name: "a".to_string(),
-                                                        type_: TypedType::int64()
-                                                    }
-                                                )],
-                                                return_type: TypedType::Value(TypedValueType {
-                                                    package: Package {
-                                                        names: vec![String::from("test")]
-                                                    },
-                                                    name: "A".to_string(),
-                                                    type_args: None
-                                                })
-                                            }
-                                        ))),
-                                    })),
-                                    args: vec![TypedCallArg {
-                                        label: Some(String::from("a")),
-                                        arg: Box::new(TypedExpr::Literal(TypedLiteral::Integer {
-                                            value: "1".to_string(),
-                                            type_: Some(TypedType::int64())
-                                        })),
-                                        is_vararg: false
-                                    }],
-                                    type_: Some(TypedType::Value(TypedValueType {
-                                        package: Package {
-                                            names: vec![String::from("test")]
-                                        },
-                                        name: "A".to_string(),
-                                        type_args: None
-                                    }))
-                                }),
-                            }))],
-                        })),
-                        return_type: Some(TypedType::unit()),
-                    }),
-                ],
-            })
-        );
-    }
-
-    #[test]
-    fn test_expr_function_with_no_arg() {
-        let source = r"
-        fun function() = 1
-        ";
-        let ast = parse_from_string(String::from(source)).unwrap();
-
-        let mut ast2hlir = Ast2HLIR::new();
-
-        let mut file = ast2hlir.file(ast);
-        file.name = String::from("test");
-
-        let mut resolver = TypeResolver::new();
-        let _ = resolver.detect_type(&file);
-        let _ = resolver.preload_file(file.clone());
-        let f = resolver.file(file);
-
-        assert_eq!(
-            f,
-            Result::Ok(TypedFile {
-                name: "test".to_string(),
-                body: vec![TypedDecl::Fun(TypedFun {
-                    modifiers: vec![],
-                    name: "function".to_string(),
-                    type_params: None,
-                    arg_defs: vec![],
-                    body: Some(TypedFunBody::Expr(TypedExpr::Literal(
-                        TypedLiteral::Integer {
-                            value: "1".to_string(),
-                            type_: Some(TypedType::int64())
-                        }
-                    ))),
-                    return_type: Some(TypedType::int64())
-                })],
-            })
-        );
-    }
-
-    #[test]
-    fn test_expr_function_with_arg() {
-        let source = r"
-        fun function(_ i:Int32) = i
-        ";
-        let ast = parse_from_string(String::from(source)).unwrap();
-
-        let mut ast2hlir = Ast2HLIR::new();
-
-        let mut file = ast2hlir.file(ast);
-        file.name = String::from("test");
-
-        let mut resolver = TypeResolver::new();
-        let _ = resolver.detect_type(&file);
-        let _ = resolver.preload_file(file.clone());
-        let f = resolver.file(file);
-
-        assert_eq!(
-            f,
-            Result::Ok(TypedFile {
-                name: "test".to_string(),
-                body: vec![TypedDecl::Fun(TypedFun {
-                    modifiers: vec![],
-                    name: "function".to_string(),
-                    type_params: None,
-                    arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
-                        label: "_".to_string(),
-                        name: "i".to_string(),
-                        type_: TypedType::int32()
-                    })],
-                    body: Some(TypedFunBody::Expr(TypedExpr::Name(TypedName {
-                        name: "i".to_string(),
-                        type_: Some(TypedType::int32())
-                    }))),
-                    return_type: Some(TypedType::int32())
-                })],
-            })
-        );
-    }
-
-    #[test]
-    fn test_function_call() {
-        let source = r"
-        fun target_function() = 1
-        fun main() {
-            target_function()
-        }
-        ";
-        let ast = parse_from_string(String::from(source)).unwrap();
-
-        let mut ast2hlir = Ast2HLIR::new();
-
-        let mut file = ast2hlir.file(ast);
-        file.name = String::from("test");
-
-        let mut resolver = TypeResolver::new();
-        let _ = resolver.detect_type(&file);
-        let _ = resolver.preload_file(file.clone());
-        let f = resolver.file(file);
-
-        assert_eq!(
-            f,
-            Result::Ok(TypedFile {
-                name: "test".to_string(),
-                body: vec![
-                    TypedDecl::Fun(TypedFun {
-                        modifiers: vec![],
-                        name: "target_function".to_string(),
-                        type_params: None,
-                        arg_defs: vec![],
-                        body: Some(TypedFunBody::Expr(TypedExpr::Literal(
-                            TypedLiteral::Integer {
-                                value: "1".to_string(),
-                                type_: Some(TypedType::int64()),
-                            },
-                        ))),
-                        return_type: Some(TypedType::int64()),
-                    }),
-                    TypedDecl::Fun(TypedFun {
-                        modifiers: vec![],
-                        name: "main".to_string(),
-                        type_params: None,
-                        arg_defs: vec![],
-                        body: Some(TypedFunBody::Block(TypedBlock {
-                            body: vec![TypedStmt::Expr(TypedExpr::Call(TypedCall {
-                                target: Box::new(TypedExpr::Name(TypedName {
-                                    name: "target_function".to_string(),
-                                    type_: Some(TypedType::Function(Box::new(TypedFunctionType {
-                                        arguments: vec![],
-                                        return_type: TypedType::int64()
-                                    })))
-                                })),
-                                args: vec![],
-                                type_: Some(TypedType::int64())
-                            }))]
-                        })),
-                        return_type: Some(TypedType::unit())
-                    })
-                ],
-            })
-        );
-    }
-
-    #[test]
-    fn test_return_integer_literal() {
-        let source = r"
-        fun sample(): Int64 {
-            return 1
-        }
-        ";
-        let ast = parse_from_string(String::from(source)).unwrap();
-
-        let mut ast2hlir = Ast2HLIR::new();
-
-        let mut file = ast2hlir.file(ast);
-        file.name = String::from("test");
-
-        let mut resolver = TypeResolver::new();
-        let _ = resolver.detect_type(&file);
-        let _ = resolver.preload_file(file.clone());
-        let f = resolver.file(file);
-
-        assert_eq!(
-            f,
-            Result::Ok(TypedFile {
-                name: "test".to_string(),
-                body: vec![TypedDecl::Fun(TypedFun {
-                    modifiers: vec![],
-                    name: "sample".to_string(),
-                    type_params: None,
-                    arg_defs: vec![],
-                    body: Option::from(TypedFunBody::Block(TypedBlock {
-                        body: vec![TypedStmt::Expr(TypedExpr::Return(TypedReturn {
-                            value: Option::Some(Box::new(TypedExpr::Literal(
-                                TypedLiteral::Integer {
-                                    value: "1".to_string(),
-                                    type_: Some(TypedType::int64())
-                                }
-                            ))),
-                            type_: Some(TypedType::int64())
-                        }))]
-                    })),
-                    return_type: Some(TypedType::int64())
-                })]
-            })
-        );
-    }
-
-    #[test]
-    fn test_return_floating_point_literal() {
-        let source = r"
-        fun sample(): Double {
-            return 0.5
-        }
-        ";
-        let ast = parse_from_string(String::from(source)).unwrap();
-
-        let mut ast2hlir = Ast2HLIR::new();
-
-        let mut file = ast2hlir.file(ast);
-        file.name = String::from("test");
-
-        let mut resolver = TypeResolver::new();
-        let _ = resolver.detect_type(&file);
-        let _ = resolver.preload_file(file.clone());
-        let f = resolver.file(file);
-
-        assert_eq!(
-            f,
-            Result::Ok(TypedFile {
-                name: "test".to_string(),
-                body: vec![TypedDecl::Fun(TypedFun {
-                    modifiers: vec![],
-                    name: "sample".to_string(),
-                    type_params: None,
-                    arg_defs: vec![],
-                    body: Option::from(TypedFunBody::Block(TypedBlock {
-                        body: vec![TypedStmt::Expr(TypedExpr::Return(TypedReturn {
-                            value: Option::Some(Box::new(TypedExpr::Literal(
-                                TypedLiteral::FloatingPoint {
-                                    value: "0.5".to_string(),
-                                    type_: Some(TypedType::double())
-                                }
-                            ))),
-                            type_: Some(TypedType::double())
-                        }))]
-                    })),
-                    return_type: Some(TypedType::double())
-                })]
-            })
-        );
-    }
-
-    #[test]
-    fn test_binop() {
-        let source = r"
-        fun sample() {
-            1 + 2
-        }
-        ";
-        let ast = parse_from_string(String::from(source)).unwrap();
-
-        let mut ast2hlir = Ast2HLIR::new();
-
-        let mut file = ast2hlir.file(ast);
-        file.name = String::from("test");
-
-        let mut resolver = TypeResolver::new();
-        let _ = resolver.detect_type(&file);
-        let _ = resolver.preload_file(file.clone());
-        let f = resolver.file(file);
-
-        assert_eq!(
-            f,
-            Result::Ok(TypedFile {
-                name: "test".to_string(),
-                body: vec![TypedDecl::Fun(TypedFun {
-                    modifiers: vec![],
-                    name: "sample".to_string(),
-                    type_params: None,
-                    arg_defs: vec![],
-                    body: Option::from(TypedFunBody::Block(TypedBlock {
-                        body: vec![TypedStmt::Expr(TypedExpr::BinOp(TypedBinOp {
-                            left: Box::new(TypedExpr::Literal(TypedLiteral::Integer {
-                                value: "1".to_string(),
-                                type_: Some(TypedType::int64()),
-                            })),
-                            kind: "+".to_string(),
-                            right: Box::new(TypedExpr::Literal(TypedLiteral::Integer {
-                                value: "2".to_string(),
-                                type_: Some(TypedType::int64()),
-                            })),
-                            type_: Some(TypedType::int64()),
-                        }))],
-                    })),
-                    return_type: Some(TypedType::unit())
-                })]
-            })
-        );
-    }
-
-    #[test]
-    fn test_subscript() {
-        let source = r"
-        fun get_first(_ p:UnsafePointer<UInt8>) = p[0]
-        ";
-        let ast = parse_from_string(String::from(source)).unwrap();
-
-        let mut ast2hlir = Ast2HLIR::new();
-
-        let mut file = ast2hlir.file(ast);
-        file.name = String::from("test");
-
-        let mut resolver = TypeResolver::new();
-        let _ = resolver.detect_type(&file);
-        let _ = resolver.preload_file(file.clone());
-        let f = resolver.file(file);
-
-        assert_eq!(
-            f,
-            Result::Ok(TypedFile {
-                name: "test".to_string(),
-                body: vec![TypedDecl::Fun(TypedFun {
-                    modifiers: vec![],
-                    name: "get_first".to_string(),
-                    type_params: None,
-                    arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
-                        label: "_".to_string(),
-                        name: "p".to_string(),
-                        type_: TypedType::unsafe_pointer(TypedType::uint8())
-                    })],
-                    body: Option::from(TypedFunBody::Expr(TypedExpr::Subscript(TypedSubscript {
-                        target: Box::new(TypedExpr::Name(TypedName {
-                            name: "p".to_string(),
-                            type_: Some(TypedType::unsafe_pointer(TypedType::uint8()))
-                        })),
-                        indexes: vec![TypedExpr::Literal(TypedLiteral::Integer {
-                            value: "0".to_string(),
-                            type_: Some(TypedType::int64())
-                        })],
-                        type_: Some(TypedType::uint8())
-                    }))),
-                    return_type: Some(TypedType::uint8())
-                })]
-            })
-        );
     }
 }

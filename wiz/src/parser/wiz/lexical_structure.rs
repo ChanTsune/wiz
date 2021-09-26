@@ -1,12 +1,14 @@
-use crate::parser::nom::character::{alphabet, digit, under_score};
+use crate::parser::wiz::character::{alphabet, digit, under_score};
+use crate::syntax::trivia::TriviaPiece;
 use nom::branch::{alt, permutation};
 use nom::bytes::complete::{is_not, tag};
 use nom::character::complete::{anychar, char};
 use nom::combinator::{map, opt};
 use nom::error::{ErrorKind, ParseError};
-use nom::multi::many0;
+use nom::lib::std::ops::RangeFrom;
+use nom::multi::{many0, many1};
 use nom::sequence::tuple;
-use nom::{AsChar, IResult, InputTakeAtPosition};
+use nom::{AsChar, IResult, InputIter, InputLength, InputTakeAtPosition, Slice};
 use std::iter::FromIterator;
 
 pub fn whitespace0(s: &str) -> IResult<&str, String> {
@@ -153,15 +155,28 @@ pub fn identifier(s: &str) -> IResult<&str, String> {
     ))(s)
 }
 
-pub fn eol(s: &str) -> IResult<&str, char> {
+pub fn eol<I>(s: I) -> IResult<I, char>
+where
+    I: Slice<RangeFrom<usize>> + InputIter,
+    <I as InputIter>::Item: AsChar,
+{
     char('\n')(s)
+}
+
+pub fn newlines<I>(s: I) -> IResult<I, TriviaPiece>
+where
+    I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength,
+    <I as InputIter>::Item: AsChar,
+{
+    map(many1(eol), |l| TriviaPiece::Newlines(l.len() as i64))(s)
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::nom::lexical_structure::{
-        comment, eol, identifier, whitespace0, whitespace1,
+    use crate::parser::wiz::lexical_structure::{
+        comment, eol, identifier, newlines, whitespace0, whitespace1,
     };
+    use crate::syntax::trivia::TriviaPiece;
     use nom::error;
     use nom::error::ErrorKind;
     use nom::Err;
@@ -260,5 +275,10 @@ mod tests {
         );
         assert_eq!(whitespace1("/* a */"), Ok(("", String::from("/* a */"))));
         assert_eq!(whitespace1("/**/"), Ok(("", String::from("/**/"))));
+    }
+
+    #[test]
+    fn test_newline() {
+        assert_eq!(newlines("\n"), Ok(("", TriviaPiece::Newlines(1))))
     }
 }

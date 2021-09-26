@@ -1,15 +1,3 @@
-use crate::ast::block::Block;
-use crate::ast::decl::{
-    Decl, FunSyntax, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax,
-    StructSyntax, VarSyntax,
-};
-use crate::ast::expr::{CallExprSyntax, Expr, NameExprSyntax, ReturnSyntax, SubscriptSyntax};
-use crate::ast::file::{FileSyntax, WizFile};
-use crate::ast::fun::arg_def::ArgDef;
-use crate::ast::fun::body_def::FunBody;
-use crate::ast::literal::Literal;
-use crate::ast::stmt::{AssignmentStmt, LoopStmt, Stmt};
-use crate::ast::type_name::{TypeName, TypeParam};
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedFun, TypedFunBody, TypedInitializer,
     TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedValueArgDef, TypedVar,
@@ -24,6 +12,18 @@ use crate::high_level_ir::typed_stmt::{
     TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
 };
 use crate::high_level_ir::typed_type::{Package, TypedType, TypedTypeParam, TypedValueType};
+use crate::syntax::block::Block;
+use crate::syntax::decl::{
+    Decl, FunSyntax, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax,
+    StructSyntax, VarSyntax,
+};
+use crate::syntax::expr::{CallExprSyntax, Expr, NameExprSyntax, ReturnSyntax, SubscriptSyntax};
+use crate::syntax::file::{FileSyntax, WizFile};
+use crate::syntax::fun::arg_def::ArgDef;
+use crate::syntax::fun::body_def::FunBody;
+use crate::syntax::literal::LiteralSyntax;
+use crate::syntax::stmt::{AssignmentStmt, LoopStmt, Stmt};
+use crate::syntax::type_name::{TypeName, TypeParam};
 use crate::utils::path_string_to_page_name;
 use std::option::Option::Some;
 
@@ -108,12 +108,14 @@ impl Ast2HLIR {
             Decl::Enum { .. } => TypedDecl::Enum,
             Decl::Protocol { .. } => TypedDecl::Protocol,
             Decl::Extension { .. } => TypedDecl::Extension,
+            Decl::Use(_) => TypedDecl::Use,
         }
     }
 
     pub fn var_syntax(&mut self, v: VarSyntax) -> TypedVar {
         let expr = self.expr(v.value);
         TypedVar {
+            package: None,
             is_mut: v.is_mut,
             name: v.name,
             type_: None,
@@ -147,6 +149,7 @@ impl Ast2HLIR {
         };
 
         TypedFun {
+            package: None,
             modifiers: f.modifiers,
             name: f.name,
             type_params: f.type_params.map(|v| {
@@ -175,7 +178,7 @@ impl Ast2HLIR {
 
     pub fn type_(&self, tn: TypeName) -> TypedType {
         TypedType::Value(TypedValueType {
-            package: Package::global(),
+            package: Some(Package::global()),
             name: tn.name,
             type_args: tn
                 .type_args
@@ -210,6 +213,7 @@ impl Ast2HLIR {
             };
         }
         TypedStruct {
+            package: None,
             name: s.name,
             type_params: s
                 .type_params
@@ -236,7 +240,7 @@ impl Ast2HLIR {
             .collect();
         if s.init.is_empty() {
             let struct_type = TypedValueType {
-                package: Package { names: vec![] },
+                package: Some(Package::global()),
                 name: s.name.clone(),
                 type_args: None,
             };
@@ -251,6 +255,7 @@ impl Ast2HLIR {
                                 TypedAssignment {
                                     target: TypedExpr::Member(TypedInstanceMember {
                                         target: Box::new(TypedExpr::Name(TypedName {
+                                            package: None,
                                             name: "self".to_string(),
                                             type_: Some(TypedType::Value(struct_type.clone())),
                                         })),
@@ -259,6 +264,7 @@ impl Ast2HLIR {
                                         type_: Some(p.type_.clone()),
                                     }),
                                     value: TypedExpr::Name(TypedName {
+                                        package: None,
                                         name: p.name.clone(),
                                         type_: Some(p.type_.clone()),
                                     }),
@@ -311,25 +317,27 @@ impl Ast2HLIR {
         match e {
             Expr::Name(n) => TypedExpr::Name(self.name_syntax(n)),
             Expr::Literal(literal) => match literal {
-                Literal::Integer { value } => TypedExpr::Literal(TypedLiteral::Integer {
+                LiteralSyntax::Integer { value } => TypedExpr::Literal(TypedLiteral::Integer {
                     value,
                     type_: Some(TypedType::int64()),
                 }),
-                Literal::FloatingPoint { value } => {
+                LiteralSyntax::FloatingPoint { value } => {
                     TypedExpr::Literal(TypedLiteral::FloatingPoint {
                         value,
                         type_: Some(TypedType::double()),
                     })
                 }
-                Literal::String { value } => TypedExpr::Literal(TypedLiteral::String {
+                LiteralSyntax::String { value } => TypedExpr::Literal(TypedLiteral::String {
                     value,
                     type_: Some(TypedType::string()),
                 }),
-                Literal::Boolean { value } => TypedExpr::Literal(TypedLiteral::Boolean {
-                    value,
+                LiteralSyntax::Boolean(syntax) => TypedExpr::Literal(TypedLiteral::Boolean {
+                    value: syntax.token,
                     type_: Some(TypedType::bool()),
                 }),
-                Literal::Null => TypedExpr::Literal(TypedLiteral::NullLiteral { type_: None }),
+                LiteralSyntax::Null => {
+                    TypedExpr::Literal(TypedLiteral::NullLiteral { type_: None })
+                }
             },
             Expr::BinOp { left, kind, right } => {
                 let left = Box::new(self.expr(*left));
@@ -400,7 +408,11 @@ impl Ast2HLIR {
 
     pub fn name_syntax(&self, n: NameExprSyntax) -> TypedName {
         let NameExprSyntax { name } = n;
-        TypedName { name, type_: None }
+        TypedName {
+            package: None,
+            name,
+            type_: None,
+        }
     }
 
     pub fn subscript_syntax(&mut self, s: SubscriptSyntax) -> TypedSubscript {

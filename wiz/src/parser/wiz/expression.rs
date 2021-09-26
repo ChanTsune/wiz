@@ -1,19 +1,19 @@
-use crate::ast::block::Block;
-use crate::ast::expr::{
+use crate::parser::wiz::declaration::block;
+use crate::parser::wiz::keywords::{else_keyword, if_keyword, return_keyword};
+use crate::parser::wiz::lexical_structure::{
+    identifier, whitespace0, whitespace1, whitespace_without_eol0,
+};
+use crate::parser::wiz::operators::member_access_operator;
+use crate::parser::wiz::statement::stmts;
+use crate::parser::wiz::type_::{type_, type_arguments};
+use crate::syntax::block::Block;
+use crate::syntax::expr::{
     CallArg, CallExprSyntax, Expr, LambdaSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax,
     SubscriptSyntax,
 };
-use crate::ast::literal::Literal;
-use crate::ast::stmt::Stmt;
-use crate::ast::type_name::TypeName;
-use crate::parser::nom::declaration::block;
-use crate::parser::nom::keywords::{else_keyword, if_keyword, return_keyword};
-use crate::parser::nom::lexical_structure::{
-    identifier, whitespace0, whitespace1, whitespace_without_eol0,
-};
-use crate::parser::nom::operators::member_access_operator;
-use crate::parser::nom::stmts;
-use crate::parser::nom::type_::{type_, type_arguments};
+use crate::syntax::literal::LiteralSyntax;
+use crate::syntax::stmt::Stmt;
+use crate::syntax::type_name::TypeName;
 use nom::branch::alt;
 use nom::character::complete::{char, digit1, none_of, one_of};
 use nom::combinator::{map, opt};
@@ -21,25 +21,25 @@ use nom::multi::many0;
 use nom::sequence::tuple;
 use nom::IResult;
 
-pub fn integer_literal(s: &str) -> IResult<&str, Literal> {
-    map(digit1, |n: &str| Literal::Integer {
+pub fn integer_literal(s: &str) -> IResult<&str, LiteralSyntax> {
+    map(digit1, |n: &str| LiteralSyntax::Integer {
         value: n.to_string(),
     })(s)
 }
 
-pub fn floating_point_literal(s: &str) -> IResult<&str, Literal> {
+pub fn floating_point_literal(s: &str) -> IResult<&str, LiteralSyntax> {
     map(
         tuple((digit1, char('.'), digit1)),
-        |(i, d, f): (&str, char, &str)| Literal::FloatingPoint {
+        |(i, d, f): (&str, char, &str)| LiteralSyntax::FloatingPoint {
             value: String::from(i) + &*d.to_string() + f,
         },
     )(s)
 }
 
-pub fn string_literal(s: &str) -> IResult<&str, Literal> {
+pub fn string_literal(s: &str) -> IResult<&str, LiteralSyntax> {
     map(
         tuple((char('"'), many0(none_of("\"")), char('"'))),
-        |(a, b, c)| Literal::String {
+        |(a, b, c)| LiteralSyntax::String {
             value: b.into_iter().collect(),
         },
     )(s)
@@ -208,11 +208,11 @@ pub fn indexing_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
             whitespace0,
             char(']'),
         )),
-        |(_, _, ex, _, exs, _, _, _, _)| {
-            let mut es = vec![ex];
-            let mut e = exs.into_iter().map(|(_, _, e)| e).collect();
-            es.append(&mut e);
-            PostfixSuffix::IndexingSuffix { indexes: es }
+        |(_, _, ex, _, exs, _, _, _, _)| PostfixSuffix::IndexingSuffix {
+            indexes: vec![ex]
+                .into_iter()
+                .chain(exs.into_iter().map(|(_, _, e)| e))
+                .collect(),
         },
     )(s)
 }
@@ -694,16 +694,16 @@ pub fn expr(s: &str) -> IResult<&str, Expr> {
 
 #[cfg(test)]
 mod tests {
-    use crate::ast::block::Block;
-    use crate::ast::expr::Expr::{BinOp, If};
-    use crate::ast::expr::{
-        CallArg, CallExprSyntax, Expr, NameExprSyntax, PostfixSuffix, ReturnSyntax,
-    };
-    use crate::ast::literal::Literal;
-    use crate::parser::nom::expression::{
+    use crate::parser::wiz::expression::{
         disjunction_expr, expr, floating_point_literal, indexing_suffix, integer_literal,
         postfix_suffix, return_expr, string_literal, value_arguments,
     };
+    use crate::syntax::block::Block;
+    use crate::syntax::expr::Expr::{BinOp, If};
+    use crate::syntax::expr::{
+        CallArg, CallExprSyntax, Expr, NameExprSyntax, PostfixSuffix, ReturnSyntax,
+    };
+    use crate::syntax::literal::LiteralSyntax;
 
     #[test]
     fn test_numeric() {
@@ -711,7 +711,7 @@ mod tests {
             integer_literal("1"),
             Ok((
                 "",
-                Literal::Integer {
+                LiteralSyntax::Integer {
                     value: "1".to_string()
                 }
             ))
@@ -720,7 +720,7 @@ mod tests {
             integer_literal("12"),
             Ok((
                 "",
-                Literal::Integer {
+                LiteralSyntax::Integer {
                     value: "12".to_string()
                 }
             ))
@@ -733,7 +733,7 @@ mod tests {
             floating_point_literal("1.0"),
             Ok((
                 "",
-                Literal::FloatingPoint {
+                LiteralSyntax::FloatingPoint {
                     value: "1.0".to_string()
                 }
             ))
@@ -742,7 +742,7 @@ mod tests {
             floating_point_literal("12.0"),
             Ok((
                 "",
-                Literal::FloatingPoint {
+                LiteralSyntax::FloatingPoint {
                     value: "12.0".to_string()
                 }
             ))
@@ -751,7 +751,7 @@ mod tests {
             floating_point_literal("13847.03478"),
             Ok((
                 "",
-                Literal::FloatingPoint {
+                LiteralSyntax::FloatingPoint {
                     value: "13847.03478".to_string()
                 }
             ))
@@ -764,7 +764,7 @@ mod tests {
             string_literal("\"\""),
             Ok((
                 "",
-                Literal::String {
+                LiteralSyntax::String {
                     value: "".to_string()
                 }
             ))
@@ -779,16 +779,16 @@ mod tests {
                 "",
                 BinOp {
                     left: Box::from(BinOp {
-                        left: Box::from(Expr::Literal(Literal::Integer {
+                        left: Box::from(Expr::Literal(LiteralSyntax::Integer {
                             value: "1".parse().unwrap()
                         })),
                         kind: "||".parse().unwrap(),
-                        right: Box::from(Expr::Literal(Literal::Integer {
+                        right: Box::from(Expr::Literal(LiteralSyntax::Integer {
                             value: "2".parse().unwrap()
                         }))
                     }),
                     kind: "||".parse().unwrap(),
-                    right: Box::from(Expr::Literal(Literal::Integer {
+                    right: Box::from(Expr::Literal(LiteralSyntax::Integer {
                         value: "3".parse().unwrap()
                     }))
                 }
@@ -809,7 +809,7 @@ mod tests {
                 "",
                 vec![CallArg {
                     label: None,
-                    arg: Box::from(Expr::Literal(Literal::String {
+                    arg: Box::from(Expr::Literal(LiteralSyntax::String {
                         value: "Hello, World".parse().unwrap()
                     })),
                     is_vararg: false
@@ -861,7 +861,7 @@ mod tests {
                     })),
                     args: vec![CallArg {
                         label: None,
-                        arg: Box::from(Expr::Literal(Literal::String {
+                        arg: Box::from(Expr::Literal(LiteralSyntax::String {
                             value: "Hello, World".parse().unwrap()
                         })),
                         is_vararg: false
@@ -884,7 +884,7 @@ mod tests {
                     })),
                     args: vec![CallArg {
                         label: Some(String::from("string")),
-                        arg: Box::from(Expr::Literal(Literal::String {
+                        arg: Box::from(Expr::Literal(LiteralSyntax::String {
                             value: "Hello, World".parse().unwrap()
                         })),
                         is_vararg: false

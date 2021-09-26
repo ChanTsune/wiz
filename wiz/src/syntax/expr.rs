@@ -1,14 +1,14 @@
-use crate::ast::block::Block;
-use crate::ast::literal::Literal;
-use crate::ast::node::Node;
-use crate::ast::stmt::Stmt;
-use crate::ast::type_name::TypeName;
+use crate::syntax::block::Block;
+use crate::syntax::literal::LiteralSyntax;
+use crate::syntax::node::SyntaxNode;
+use crate::syntax::stmt::Stmt;
+use crate::syntax::type_name::TypeName;
 use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum Expr {
     Name(NameExprSyntax),
-    Literal(Literal),
+    Literal(LiteralSyntax),
     BinOp {
         left: Box<Expr>,
         kind: String,
@@ -55,7 +55,7 @@ pub enum Expr {
     },
 }
 
-impl Node for Expr {}
+impl SyntaxNode for Expr {}
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct NameExprSyntax {

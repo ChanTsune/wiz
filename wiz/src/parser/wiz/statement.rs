@@ -1,21 +1,13 @@
-pub mod character;
-pub mod declaration;
-pub mod expression;
-pub mod keywords;
-pub mod lexical_structure;
-pub mod operators;
-pub mod type_;
-
-use crate::ast::expr::{Expr, NameExprSyntax};
-use crate::ast::file::FileSyntax;
-use crate::ast::stmt::{
+use crate::parser::wiz::declaration::{block, decl};
+use crate::parser::wiz::expression::{expr, postfix_expr, prefix_expr};
+use crate::parser::wiz::keywords::while_keyword;
+use crate::parser::wiz::lexical_structure::{identifier, whitespace0, whitespace1};
+use crate::parser::wiz::operators::assignment_operator;
+use crate::syntax::expr::{Expr, NameExprSyntax};
+use crate::syntax::file::FileSyntax;
+use crate::syntax::stmt::{
     AssignmentAndOperatorSyntax, AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt,
 };
-use crate::parser::nom::declaration::{block, decl};
-use crate::parser::nom::expression::{expr, postfix_expr, prefix_expr};
-use crate::parser::nom::keywords::while_keyword;
-use crate::parser::nom::lexical_structure::{identifier, whitespace0, whitespace1};
-use crate::parser::nom::operators::assignment_operator;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
@@ -164,14 +156,14 @@ pub fn file(s: &str) -> IResult<&str, FileSyntax> {
 
 #[cfg(test)]
 mod tests {
-    use crate::ast::block::Block;
-    use crate::ast::expr::{Expr, NameExprSyntax};
-    use crate::ast::file::FileSyntax;
-    use crate::ast::literal::Literal;
-    use crate::ast::stmt::{AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt};
-    use crate::parser::nom::{
+    use crate::parser::wiz::statement::{
         assignable_expr, assignment_stmt, directly_assignable_expr, file, while_stmt,
     };
+    use crate::syntax::block::Block;
+    use crate::syntax::expr::{Expr, NameExprSyntax};
+    use crate::syntax::file::FileSyntax;
+    use crate::syntax::literal::LiteralSyntax;
+    use crate::syntax::stmt::{AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt};
 
     #[test]
     fn test_while_stmt_with_bracket() {
@@ -204,7 +196,7 @@ mod tests {
                                         name: "a".to_string()
                                     })),
                                     kind: "+".to_string(),
-                                    right: Box::new(Expr::Literal(Literal::Integer {
+                                    right: Box::new(Expr::Literal(LiteralSyntax::Integer {
                                         value: "1".to_string()
                                     }))
                                 }
@@ -251,7 +243,7 @@ mod tests {
                                         name: "a".to_string()
                                     })),
                                     kind: "+".to_string(),
-                                    right: Box::new(Expr::Literal(Literal::Integer {
+                                    right: Box::new(Expr::Literal(LiteralSyntax::Integer {
                                         value: "1".to_string()
                                     }))
                                 }

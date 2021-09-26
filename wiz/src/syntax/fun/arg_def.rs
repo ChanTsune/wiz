@@ -1,5 +1,5 @@
-use crate::ast::node::Node;
-use crate::ast::type_name::TypeName;
+use crate::syntax::node::SyntaxNode;
+use crate::syntax::type_name::TypeName;
 use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -8,7 +8,7 @@ pub enum ArgDef {
     Self_,
 }
 
-impl Node for ArgDef {}
+impl SyntaxNode for ArgDef {}
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct ValueArgDef {

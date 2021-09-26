@@ -1,5 +1,5 @@
-use crate::ast::block::Block;
-use crate::ast::expr::Expr;
+use crate::syntax::block::Block;
+use crate::syntax::expr::Expr;
 use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]

@@ -1,8 +1,8 @@
-use super::node::Node;
-use crate::ast::expr::Expr;
-use crate::ast::fun::arg_def::ArgDef;
-use crate::ast::fun::body_def::FunBody;
-use crate::ast::type_name::{TypeName, TypeParam};
+use super::node::SyntaxNode;
+use crate::syntax::expr::Expr;
+use crate::syntax::fun::arg_def::ArgDef;
+use crate::syntax::fun::body_def::FunBody;
+use crate::syntax::type_name::{TypeName, TypeParam};
 use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -22,9 +22,10 @@ pub enum Decl {
     Extension {
         // TODO
     },
+    Use(UseSyntax),
 }
 
-impl Node for Decl {}
+impl SyntaxNode for Decl {}
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct VarSyntax {
@@ -79,4 +80,15 @@ pub struct MethodSyntax {
     pub(crate) type_params: Option<Vec<TypeParam>>,
     pub(crate) body: Option<FunBody>,
     pub(crate) return_type: Option<TypeName>,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct UseSyntax {
+    pub(crate) package_name: PackageName,
+    pub(crate) alias: Option<String>,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct PackageName {
+    pub(crate) names: Vec<String>,
 }

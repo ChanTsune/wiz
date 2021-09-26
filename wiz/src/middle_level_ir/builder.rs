@@ -83,10 +83,10 @@ impl MLIRModuleBuilder {
             name,
             body: self
                 .structs
-                .into_values()
-                .map(|v| MLDecl::Struct(v))
-                .chain(self.variables.into_values().map(|v| MLDecl::Var(v)))
-                .chain(self.functions.into_values().map(|v| MLDecl::Fun(v)))
+                .into_iter()
+                .map(|(_, v)| MLDecl::Struct(v))
+                .chain(self.variables.into_iter().map(|(_, v)| MLDecl::Var(v)))
+                .chain(self.functions.into_iter().map(|(_, v)| MLDecl::Fun(v)))
                 .collect(),
         }
     }

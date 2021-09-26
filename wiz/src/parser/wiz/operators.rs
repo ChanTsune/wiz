@@ -20,7 +20,7 @@ pub fn assignment_operator(s: &str) -> IResult<&str, &str> {
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::nom::operators::member_access_operator;
+    use crate::parser::wiz::operators::member_access_operator;
 
     #[test]
     fn test_member_access_operator() {

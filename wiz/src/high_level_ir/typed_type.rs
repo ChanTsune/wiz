@@ -1,6 +1,7 @@
 use crate::constants::UNSAFE_POINTER;
 use crate::high_level_ir::typed_decl::TypedArgDef;
 use std::fmt;
+use std::option::Option::Some;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
 pub struct Package {
@@ -16,7 +17,7 @@ pub enum TypedType {
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
 pub struct TypedValueType {
-    pub(crate) package: Package,
+    pub(crate) package: Option<Package>,
     pub(crate) name: String,
     pub(crate) type_args: Option<Vec<TypedType>>,
 }
@@ -34,15 +35,40 @@ pub struct TypedTypeParam {
 }
 
 impl Package {
+    pub(crate) fn new(names: Vec<String>) -> Self {
+        Self { names }
+    }
+
     pub(crate) fn global() -> Self {
         Self { names: vec![] }
+    }
+
+    pub(crate) fn is_global(&self) -> bool {
+        self.names.is_empty()
+    }
+}
+
+impl ToString for Package {
+    fn to_string(&self) -> String {
+        self.names.join("::")
+    }
+}
+
+impl TypedValueType {
+    pub(crate) fn is_unsafe_pointer(&self) -> bool {
+        self.name == UNSAFE_POINTER
+            && if let Some(pkg) = &self.package {
+                pkg.is_global()
+            } else {
+                false
+            }
     }
 }
 
 impl TypedType {
     fn builtin(name: &str) -> TypedType {
         TypedType::Value(TypedValueType {
-            package: Package::global(),
+            package: Some(Package::global()),
             name: String::from(name),
             type_args: None,
         })
@@ -106,7 +132,7 @@ impl TypedType {
 
     pub fn unsafe_pointer(typ: TypedType) -> TypedType {
         TypedType::Value(TypedValueType {
-            package: Package::global(),
+            package: Some(Package::global()),
             name: UNSAFE_POINTER.to_string(),
             type_args: Some(vec![typ]),
         })
@@ -149,6 +175,10 @@ impl TypedType {
             .collect()
     }
 
+    pub fn is_function_type(&self) -> bool {
+        matches!(self, Self::Function(_))
+    }
+
     pub fn is_primitive(&self) -> bool {
         Self::builtin_types().contains(self)
     }
@@ -171,7 +201,7 @@ impl TypedType {
 
     pub fn is_pointer_type(&self) -> bool {
         match self {
-            TypedType::Value(v) => v.name == UNSAFE_POINTER,
+            TypedType::Value(v) => v.is_unsafe_pointer(),
             _ => false,
         }
     }

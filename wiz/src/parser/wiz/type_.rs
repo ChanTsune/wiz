@@ -1,5 +1,5 @@
-use crate::ast::type_name::{TypeName, TypeParam};
-use crate::parser::nom::lexical_structure::{identifier, whitespace0};
+use crate::parser::wiz::lexical_structure::{identifier, whitespace0};
+use crate::syntax::type_name::{TypeName, TypeParam};
 use nom::branch::alt;
 use nom::character::complete::char;
 use nom::combinator::{map, opt};
@@ -67,14 +67,10 @@ pub fn type_arguments(s: &str) -> IResult<&str, Vec<TypeName>> {
             char('>'),
         )),
         |(_, t, ts, _, _)| {
-            let mut t = vec![t];
-            t.append(
-                ts.into_iter()
-                    .map(|(_, b)| b)
-                    .collect::<Vec<TypeName>>()
-                    .as_mut(),
-            );
-            t
+            vec![t]
+                .into_iter()
+                .chain(ts.into_iter().map(|(_, b)| b))
+                .collect()
         },
     )(s)
 }
@@ -94,14 +90,10 @@ pub fn type_parameters(s: &str) -> IResult<&str, Vec<TypeParam>> {
             char('>'),
         )),
         |(_, _, p1, _, pn, _, _, _, _)| {
-            let mut type_params = vec![p1];
-            type_params.append(
-                pn.into_iter()
-                    .map(|(_, _, p, _)| p)
-                    .collect::<Vec<TypeParam>>()
-                    .as_mut(),
-            );
-            type_params
+            vec![p1]
+                .into_iter()
+                .chain(pn.into_iter().map(|(_, _, p, _)| p))
+                .collect()
         },
     )(s)
 }
@@ -123,8 +115,8 @@ pub fn type_parameter(s: &str) -> IResult<&str, TypeParam> {
 
 #[cfg(test)]
 mod tests {
-    use crate::ast::type_name::{TypeName, TypeParam};
-    use crate::parser::nom::type_::type_parameter;
+    use crate::parser::wiz::type_::type_parameter;
+    use crate::syntax::type_name::{TypeName, TypeParam};
 
     #[test]
     fn test_simple_type_parameter() {

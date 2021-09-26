@@ -1,23 +1,24 @@
-use crate::ast::block::Block;
-use crate::ast::decl::{
-    Decl, FunSyntax, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax,
-    StructSyntax, VarSyntax,
+use crate::parser::wiz::expression::expr;
+use crate::parser::wiz::keywords::{
+    as_keyword, fun_keyword, init_keyword, self_keyword, struct_keyword, use_keyword, val_keyword,
+    var_keyword, where_keyword,
 };
-use crate::ast::expr::Expr;
-use crate::ast::fun::arg_def::{ArgDef, ValueArgDef};
-use crate::ast::fun::body_def::FunBody;
-use crate::ast::type_name::{TypeName, TypeParam};
-use crate::parser::nom::expression::expr;
-use crate::parser::nom::keywords::{
-    fun_keyword, init_keyword, self_keyword, struct_keyword, val_keyword, var_keyword,
-    where_keyword,
-};
-use crate::parser::nom::lexical_structure::{
+use crate::parser::wiz::lexical_structure::{
     eol, identifier, whitespace0, whitespace1, whitespace_without_eol0,
 };
-use crate::parser::nom::stmts;
-use crate::parser::nom::type_::{type_, type_parameters};
+use crate::parser::wiz::statement::stmts;
+use crate::parser::wiz::type_::{type_, type_parameters};
+use crate::syntax::block::Block;
+use crate::syntax::decl::{
+    Decl, FunSyntax, InitializerSyntax, MethodSyntax, PackageName, StoredPropertySyntax,
+    StructPropertySyntax, StructSyntax, UseSyntax, VarSyntax,
+};
+use crate::syntax::expr::Expr;
+use crate::syntax::fun::arg_def::{ArgDef, ValueArgDef};
+use crate::syntax::fun::body_def::FunBody;
+use crate::syntax::type_name::{TypeName, TypeParam};
 use nom::branch::alt;
+use nom::bytes::complete::tag;
 use nom::character::complete::char;
 use nom::combinator::{map, opt};
 use nom::multi::many0;
@@ -25,7 +26,7 @@ use nom::sequence::tuple;
 use nom::IResult;
 
 pub fn decl(s: &str) -> IResult<&str, Decl> {
-    alt((struct_decl, function_decl, var_decl))(s)
+    alt((use_decl, struct_decl, function_decl, var_decl))(s)
 }
 
 //region struct
@@ -221,11 +222,7 @@ pub fn function_value_parameters(s: &str) -> IResult<&str, Vec<ArgDef>> {
             char(')'),
         )),
         |(_, args, _)| match args {
-            Some((a, mut ar, _)) => {
-                let mut t = vec![a];
-                t.append(&mut ar);
-                t
-            }
+            Some((a, ar, _)) => vec![a].into_iter().chain(ar).collect(),
             None => Vec::new(),
         },
     )(s)
@@ -363,23 +360,59 @@ pub fn var_body(s: &str) -> IResult<&str, (String, Option<TypeName>, Expr)> {
 
 //endregion
 
+//region use
+pub fn use_decl(s: &str) -> IResult<&str, Decl> {
+    map(use_syntax, |u| Decl::Use(u))(s)
+}
+
+// <use> ::= "use" <package_name> ("as" <identifier>)?
+pub fn use_syntax(s: &str) -> IResult<&str, UseSyntax> {
+    map(
+        tuple((
+            use_keyword,
+            whitespace1,
+            package_name,
+            opt(tuple((whitespace1, as_keyword, whitespace1, identifier))),
+        )),
+        |(_, _, pkg, alias)| UseSyntax {
+            package_name: pkg,
+            alias: alias.map(|(_, _, _, a)| a),
+        },
+    )(s)
+}
+
+// <package_name> ::= <identifier> ("::" <identifier>)*
+pub fn package_name(s: &str) -> IResult<&str, PackageName> {
+    map(
+        tuple((identifier, many0(tuple((tag("::"), identifier))))),
+        |(i, is): (String, Vec<(&str, String)>)| PackageName {
+            names: vec![i]
+                .into_iter()
+                .chain(is.into_iter().map(|(_, i)| i))
+                .collect(),
+        },
+    )(s)
+}
+
+//endregion
+
 #[cfg(test)]
 mod test {
-    use crate::ast::block::Block;
-    use crate::ast::decl::{
-        Decl, FunSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax,
-        VarSyntax,
+    use crate::parser::wiz::declaration::{
+        block, function_body, function_decl, member_function, package_name, stored_property,
+        struct_properties, struct_syntax, use_syntax, var_decl,
     };
-    use crate::ast::expr::{Expr, NameExprSyntax};
-    use crate::ast::fun::arg_def::{ArgDef, ValueArgDef};
-    use crate::ast::fun::body_def::FunBody;
-    use crate::ast::literal::Literal;
-    use crate::ast::stmt::Stmt;
-    use crate::ast::type_name::TypeName;
-    use crate::parser::nom::declaration::{
-        block, function_body, function_decl, member_function, stored_property, struct_properties,
-        struct_syntax, var_decl,
+    use crate::syntax::block::Block;
+    use crate::syntax::decl::{
+        Decl, FunSyntax, MethodSyntax, PackageName, StoredPropertySyntax, StructPropertySyntax,
+        StructSyntax, UseSyntax, VarSyntax,
     };
+    use crate::syntax::expr::{Expr, NameExprSyntax};
+    use crate::syntax::fun::arg_def::{ArgDef, ValueArgDef};
+    use crate::syntax::fun::body_def::FunBody;
+    use crate::syntax::literal::LiteralSyntax;
+    use crate::syntax::stmt::Stmt;
+    use crate::syntax::type_name::TypeName;
 
     #[test]
     fn test_struct_properties() {
@@ -504,7 +537,7 @@ mod test {
                 "",
                 Block {
                     body: vec![Stmt::Expr {
-                        expr: Expr::Literal(Literal::Integer {
+                        expr: Expr::Literal(LiteralSyntax::Integer {
                             value: "1".to_string()
                         })
                     }]
@@ -522,11 +555,11 @@ mod test {
                 Block {
                     body: vec![Stmt::Expr {
                         expr: Expr::BinOp {
-                            left: Box::new(Expr::Literal(Literal::Integer {
+                            left: Box::new(Expr::Literal(LiteralSyntax::Integer {
                                 value: "1".to_string()
                             })),
                             kind: "+".to_string(),
-                            right: Box::new(Expr::Literal(Literal::Integer {
+                            right: Box::new(Expr::Literal(LiteralSyntax::Integer {
                                 value: "1".to_string()
                             })),
                         }
@@ -548,7 +581,7 @@ mod test {
                 "",
                 Block {
                     body: vec![Stmt::Expr {
-                        expr: Expr::Literal(Literal::Integer {
+                        expr: Expr::Literal(LiteralSyntax::Integer {
                             value: "1".to_string()
                         })
                     }]
@@ -674,7 +707,7 @@ mod test {
                         name: "Int".to_string(),
                         type_args: None
                     }),
-                    value: Expr::Literal(Literal::Integer {
+                    value: Expr::Literal(LiteralSyntax::Integer {
                         value: "1".to_string()
                     })
                 })
@@ -692,11 +725,61 @@ mod test {
                     is_mut: false,
                     name: "a".to_string(),
                     type_: None,
-                    value: Expr::Literal(Literal::Integer {
+                    value: Expr::Literal(LiteralSyntax::Integer {
                         value: "1".to_string()
                     })
                 })
             ))
         )
+    }
+
+    #[test]
+    fn test_package_name() {
+        assert_eq!(
+            package_name("abc"),
+            Ok((
+                "",
+                PackageName {
+                    names: vec![String::from("abc")]
+                }
+            ))
+        );
+        assert_eq!(
+            package_name("abc::def"),
+            Ok((
+                "",
+                PackageName {
+                    names: vec![String::from("abc"), String::from("def")]
+                }
+            ))
+        );
+    }
+
+    #[test]
+    fn test_use() {
+        assert_eq!(
+            use_syntax("use abc"),
+            Ok((
+                "",
+                UseSyntax {
+                    package_name: PackageName {
+                        names: vec![String::from("abc")]
+                    },
+                    alias: None
+                }
+            ))
+        );
+        assert_eq!(
+            use_syntax("use abc as def"),
+            Ok((
+                "",
+                UseSyntax {
+                    package_name: PackageName {
+                        names: vec![String::from("abc")]
+                    },
+                    alias: Some(String::from("def"))
+                }
+            ))
+        );
     }
 }

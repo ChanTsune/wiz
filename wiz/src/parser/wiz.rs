@@ -1,11 +1,19 @@
-use crate::ast::file::WizFile;
 use crate::parser::error::ParseError;
-use crate::parser::nom::file;
+use crate::parser::result::Result;
+use crate::parser::wiz::statement::file;
+use crate::syntax::file::WizFile;
 use std::fs::{read_to_string, File};
 use std::io::Read;
 use std::path::Path;
 
-pub(crate) type Result<T> = core::result::Result<T, ParseError>;
+pub mod character;
+pub mod declaration;
+pub mod expression;
+pub mod keywords;
+pub mod lexical_structure;
+pub mod operators;
+pub mod statement;
+pub mod type_;
 
 pub fn parse_from_string(string: String) -> Result<WizFile> {
     return match file(&*string) {

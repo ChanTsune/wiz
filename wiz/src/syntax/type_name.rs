@@ -1,4 +1,4 @@
-use crate::ast::node::Node;
+use crate::syntax::node::SyntaxNode;
 use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -7,7 +7,7 @@ pub struct TypeName {
     pub(crate) type_args: Option<Vec<TypeName>>,
 }
 
-impl Node for TypeName {}
+impl SyntaxNode for TypeName {}
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct TypeParam {
@@ -15,4 +15,4 @@ pub struct TypeParam {
     pub(crate) type_constraints: Option<TypeName>,
 }
 
-impl Node for TypeParam {}
+impl SyntaxNode for TypeParam {}
