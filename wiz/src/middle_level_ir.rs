@@ -323,7 +323,7 @@ impl HLIR2MLIR {
                 })));
                 MLFun {
                     modifiers: vec![],
-                    name: self.name_mangling(&package,name.clone()) + "#init",
+                    name: self.name_mangling(&package, name.clone()) + "#init",
                     arg_defs: i.args.into_iter().map(|a| self.arg_def(a)).collect(),
                     return_type: type_.into_value_type(),
                     body: Some(MLFunBody { body }),

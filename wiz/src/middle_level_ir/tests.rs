@@ -1,10 +1,14 @@
 use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::Ast2HLIR;
-use crate::middle_level_ir::ml_decl::{MLDecl, MLFun, MLFunBody, MLStruct, MLField, MLArgDef, MLVar};
-use crate::middle_level_ir::ml_expr::{MLExpr, MLLiteral, MLReturn, MLName, MLMember, MLCall, MLCallArg};
+use crate::middle_level_ir::ml_decl::{
+    MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar,
+};
+use crate::middle_level_ir::ml_expr::{
+    MLCall, MLCallArg, MLExpr, MLLiteral, MLMember, MLName, MLReturn,
+};
 use crate::middle_level_ir::ml_file::MLFile;
-use crate::middle_level_ir::ml_stmt::{MLStmt, MLAssignmentStmt};
-use crate::middle_level_ir::ml_type::{MLValueType, MLType, MLFunctionType};
+use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLStmt};
+use crate::middle_level_ir::ml_type::{MLFunctionType, MLType, MLValueType};
 use crate::middle_level_ir::HLIR2MLIR;
 use crate::parser::wiz::parse_from_string;
 
@@ -65,38 +69,65 @@ fn test_struct() {
         f,
         MLFile {
             name: "test".to_string(),
-            body: vec![MLDecl::Struct(MLStruct {
-                name: "test::A".to_string(),
-                fields: vec![MLField {
-                    name: "a".to_string(),
-                    type_: MLValueType::Primitive(String::from("Int64"))
-                }]
-            }), MLDecl::Fun(MLFun {
-                modifiers: vec![],
-                name: "test::A#init".to_string(),
-                arg_defs: vec![MLArgDef {
-                    name: "a".to_string(),
-                    type_: MLValueType::Primitive(String::from("Int64"))
-                }],
-                return_type: MLValueType::Struct(String::from("test::A")),
-                body: Some(MLFunBody { body: vec![
-                    MLStmt::Var(MLVar {
-                        is_mute: true,
-                        name: "self".to_string(),
-                        type_: MLType::Value(MLValueType::Struct(String::from("test::A"))),
-                        value: MLExpr::Literal(MLLiteral::Struct { type_: MLValueType::Struct(String::from("test::A")) })
-                    }),
-                    MLStmt::Assignment(MLAssignmentStmt {
-                        target: MLExpr::Member(MLMember {
-                            target: Box::new(MLExpr::Name(MLName { name: "self".to_string(), type_: MLType::Value(MLValueType::Struct(String::from("test::A"))) })),
-                            name: "a".to_string(),
-                            type_: MLType::Value(MLValueType::Primitive(String::from("Int64")))
-                        }),
-                        value: MLExpr::Name(MLName { name: "a".to_string(), type_: MLType::Value(MLValueType::Primitive(String::from("Int64"))) })
-                    }),
-                    MLStmt::Expr(MLExpr::Return(MLReturn { value: Some(Box::new(MLExpr::Name(MLName { name: String::from("self"), type_: MLType::Value(MLValueType::Struct(String::from("test::A"))) }))), type_: MLValueType::Struct(String::from("test::A")) }))
-                ] })
-            })]
+            body: vec![
+                MLDecl::Struct(MLStruct {
+                    name: "test::A".to_string(),
+                    fields: vec![MLField {
+                        name: "a".to_string(),
+                        type_: MLValueType::Primitive(String::from("Int64"))
+                    }]
+                }),
+                MLDecl::Fun(MLFun {
+                    modifiers: vec![],
+                    name: "test::A#init".to_string(),
+                    arg_defs: vec![MLArgDef {
+                        name: "a".to_string(),
+                        type_: MLValueType::Primitive(String::from("Int64"))
+                    }],
+                    return_type: MLValueType::Struct(String::from("test::A")),
+                    body: Some(MLFunBody {
+                        body: vec![
+                            MLStmt::Var(MLVar {
+                                is_mute: true,
+                                name: "self".to_string(),
+                                type_: MLType::Value(MLValueType::Struct(String::from("test::A"))),
+                                value: MLExpr::Literal(MLLiteral::Struct {
+                                    type_: MLValueType::Struct(String::from("test::A"))
+                                })
+                            }),
+                            MLStmt::Assignment(MLAssignmentStmt {
+                                target: MLExpr::Member(MLMember {
+                                    target: Box::new(MLExpr::Name(MLName {
+                                        name: "self".to_string(),
+                                        type_: MLType::Value(MLValueType::Struct(String::from(
+                                            "test::A"
+                                        )))
+                                    })),
+                                    name: "a".to_string(),
+                                    type_: MLType::Value(MLValueType::Primitive(String::from(
+                                        "Int64"
+                                    )))
+                                }),
+                                value: MLExpr::Name(MLName {
+                                    name: "a".to_string(),
+                                    type_: MLType::Value(MLValueType::Primitive(String::from(
+                                        "Int64"
+                                    )))
+                                })
+                            }),
+                            MLStmt::Expr(MLExpr::Return(MLReturn {
+                                value: Some(Box::new(MLExpr::Name(MLName {
+                                    name: String::from("self"),
+                                    type_: MLType::Value(MLValueType::Struct(String::from(
+                                        "test::A"
+                                    )))
+                                }))),
+                                type_: MLValueType::Struct(String::from("test::A"))
+                            }))
+                        ]
+                    })
+                })
+            ]
         }
     );
 }
