@@ -1,4 +1,4 @@
-use nom::character::complete::{char, one_of, newline};
+use nom::character::complete::{char, newline, one_of};
 use nom::{AsChar, IResult, InputIter, Slice};
 use std::ops::RangeFrom;
 
