@@ -22,6 +22,7 @@ use crate::middle_level_ir::ml_type::{MLFunctionType, MLType, MLValueType};
 use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::HashMap;
 use std::process::exit;
+use std::option::Option::Some;
 
 pub mod builder;
 pub mod format;
@@ -383,8 +384,9 @@ impl HLIR2MLIR {
     }
 
     pub fn name(&self, n: TypedName) -> MLName {
+        let name = if let Some(pkg) = n.package { pkg.to_string() + "::" + &*n.name } else { n.name };
         MLName {
-            name: n.name,
+            name,
             type_: self.type_(n.type_.unwrap()),
         }
     }
