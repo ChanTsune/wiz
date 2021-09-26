@@ -294,9 +294,7 @@ impl TypeResolver {
         let current_namespace = self.context.current_namespace.clone();
         let ns = self.context.get_current_namespace_mut()?;
         let this_type = TypedType::Value(TypedValueType {
-            package: Some(Package {
-                names: current_namespace,
-            }),
+            package: Some(Package::new(current_namespace)),
             name: name.clone(),
             type_args: None,
         });
