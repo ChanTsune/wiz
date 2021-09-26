@@ -1,13 +1,31 @@
-use nom::character::complete::{char, newline, one_of};
-use nom::{AsChar, IResult, InputIter, Slice};
+use nom::character::complete::{char, newline};
+use nom::{AsChar, IResult, InputIter, Slice, InputTake, InputLength};
 use std::ops::RangeFrom;
+use nom::bytes::complete::take_while_m_n;
+use nom::combinator::map;
 
-pub fn alphabet(s: &str) -> IResult<&str, char> {
-    one_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")(s)
+pub fn alphabet<I>(s: I) -> IResult<I, char>
+    where
+        I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength,
+        <I as InputIter>::Item: AsChar,
+{
+    map(take_while_m_n(1, 1, |c:<I as InputIter>::Item| {
+        c.is_alpha()
+    }),|p:I|{
+        p.iter_elements().next().unwrap().as_char()
+    })(s)
 }
 
-pub fn digit(s: &str) -> IResult<&str, char> {
-    one_of("0123456789")(s)
+pub fn digit<I>(s: I) -> IResult<I, char>
+    where
+        I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength,
+        <I as InputIter>::Item: AsChar,
+{
+    map(take_while_m_n(1, 1, |c:<I as InputIter>::Item| {
+        c.is_dec_digit()
+    }),|p:I|{
+        p.iter_elements().next().unwrap().as_char()
+    })(s)
 }
 
 pub fn under_score<I>(s: I) -> IResult<I, char>
