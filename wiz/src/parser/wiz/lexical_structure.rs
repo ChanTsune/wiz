@@ -253,8 +253,14 @@ where
 
 pub fn trivia_piece<I>(s: I) -> IResult<I, TriviaPiece>
 where
-    I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength + ToString
-    + InputTake + FindSubstring<& 'static str> + Compare<& 'static str>,
+    I: Slice<RangeFrom<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
     <I as InputIter>::Item: AsChar + Copy,
 {
     alt((
@@ -264,7 +270,7 @@ where
         carriage_returns,
         line_comment,
         block_comment,
-        ))(s)
+    ))(s)
 }
 
 #[cfg(test)]
