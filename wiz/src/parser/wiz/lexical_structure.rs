@@ -1,4 +1,4 @@
-use crate::parser::wiz::character::{alphabet, digit, eol, space, under_score};
+use crate::parser::wiz::character::{alphabet, digit, eol, space, under_score, cr};
 use crate::syntax::trivia::TriviaPiece;
 use nom::branch::{alt, permutation};
 use nom::bytes::complete::{is_not, tag};
@@ -179,9 +179,18 @@ where
     map(many1(eol), |l| TriviaPiece::Newlines(l.len() as i64))(s)
 }
 
+pub fn carriage_returns<I>(s: I) -> IResult<I, TriviaPiece>
+    where
+        I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength,
+        <I as InputIter>::Item: AsChar,
+{
+    map(many1(cr), |l| TriviaPiece::CarriageReturns(l.len() as i64))(s)
+}
+
+
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::lexical_structure::{comment, identifier, newlines, spaces, whitespace0, whitespace1, tabs};
+    use crate::parser::wiz::lexical_structure::{comment, identifier, newlines, spaces, whitespace0, whitespace1, tabs, carriage_returns};
     use crate::syntax::trivia::TriviaPiece;
     use nom::error;
     use nom::error::ErrorKind;
@@ -289,7 +298,12 @@ mod tests {
     }
 
     #[test]
-    fn test_newline() {
+    fn test_newlines() {
         assert_eq!(newlines("\n"), Ok(("", TriviaPiece::Newlines(1))))
+    }
+
+    #[test]
+    fn test_carriage_returns() {
+        assert_eq!(carriage_returns("\r"), Ok(("", TriviaPiece::CarriageReturns(1))))
     }
 }
