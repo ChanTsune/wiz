@@ -34,9 +34,18 @@ where
     newline(s)
 }
 
+pub fn cr<I>(s: I) -> IResult<I, char>
+    where
+        I: Slice<RangeFrom<usize>> + InputIter,
+        <I as InputIter>::Item: AsChar,
+{
+    char('\r')(s)
+}
+
+
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::character::{alphabet, digit, eol, space, under_score};
+    use crate::parser::wiz::character::{alphabet, digit, eol, space, under_score, cr};
 
     #[test]
     fn test_alphabet() {
@@ -61,5 +70,10 @@ mod tests {
     #[test]
     fn test_eol() {
         assert_eq!(eol("\n"), Ok(("", '\n')))
+    }
+
+    #[test]
+    fn test_cr() {
+        assert_eq!(cr("\r"), Ok(("", '\r')))
     }
 }
