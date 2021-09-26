@@ -27,8 +27,8 @@ fn test_empty() {
     file.name = String::from("test");
 
     let mut resolver = TypeResolver::new();
-    let _ = resolver.detect_type(&file);
-    let _ = resolver.preload_file(file.clone());
+    let _ = resolver.detect_type(&file).unwrap();
+    let _ = resolver.preload_file(file.clone()).unwrap();
     let f = resolver.file(file);
 
     assert_eq!(
@@ -59,8 +59,8 @@ fn test_unsafe_pointer() {
     file.name = String::from("test");
 
     let mut resolver = TypeResolver::new();
-    let _ = resolver.detect_type(&file);
-    let _ = resolver.preload_file(file.clone());
+    let _ = resolver.detect_type(&file).unwrap();
+    let _ = resolver.preload_file(file.clone()).unwrap();
     let f = resolver.file(file);
 
     assert_eq!(
@@ -179,8 +179,8 @@ fn test_struct_member() {
     file.name = String::from("test");
 
     let mut resolver = TypeResolver::new();
-    let _ = resolver.detect_type(&file);
-    let _ = resolver.preload_file(file.clone());
+    let _ = resolver.detect_type(&file).unwrap();
+    let _ = resolver.preload_file(file.clone()).unwrap();
     let f = resolver.file(file);
 
     assert_eq!(
@@ -299,8 +299,8 @@ fn test_struct_init() {
     file.name = String::from("test");
 
     let mut resolver = TypeResolver::new();
-    let _ = resolver.detect_type(&file);
-    let _ = resolver.preload_file(file.clone());
+    let _ = resolver.detect_type(&file).unwrap();
+    let _ = resolver.preload_file(file.clone()).unwrap();
     let f = resolver.file(file);
 
     assert_eq!(
@@ -450,8 +450,8 @@ fn test_expr_function_with_no_arg() {
     file.name = String::from("test");
 
     let mut resolver = TypeResolver::new();
-    let _ = resolver.detect_type(&file);
-    let _ = resolver.preload_file(file.clone());
+    let _ = resolver.detect_type(&file).unwrap();
+    let _ = resolver.preload_file(file.clone()).unwrap();
     let f = resolver.file(file);
 
     assert_eq!(
@@ -489,8 +489,8 @@ fn test_expr_function_with_arg() {
     file.name = String::from("test");
 
     let mut resolver = TypeResolver::new();
-    let _ = resolver.detect_type(&file);
-    let _ = resolver.preload_file(file.clone());
+    let _ = resolver.detect_type(&file).unwrap();
+    let _ = resolver.preload_file(file.clone()).unwrap();
     let f = resolver.file(file);
 
     assert_eq!(
@@ -534,8 +534,8 @@ fn test_function_call() {
     file.name = String::from("test");
 
     let mut resolver = TypeResolver::new();
-    let _ = resolver.detect_type(&file);
-    let _ = resolver.preload_file(file.clone());
+    let _ = resolver.detect_type(&file).unwrap();
+    let _ = resolver.preload_file(file.clone()).unwrap();
     let f = resolver.file(file);
 
     assert_eq!(
@@ -599,8 +599,8 @@ fn test_return_integer_literal() {
     file.name = String::from("test");
 
     let mut resolver = TypeResolver::new();
-    let _ = resolver.detect_type(&file);
-    let _ = resolver.preload_file(file.clone());
+    let _ = resolver.detect_type(&file).unwrap();
+    let _ = resolver.preload_file(file.clone()).unwrap();
     let f = resolver.file(file);
 
     assert_eq!(
@@ -643,8 +643,8 @@ fn test_return_floating_point_literal() {
     file.name = String::from("test");
 
     let mut resolver = TypeResolver::new();
-    let _ = resolver.detect_type(&file);
-    let _ = resolver.preload_file(file.clone());
+    let _ = resolver.detect_type(&file).unwrap();
+    let _ = resolver.preload_file(file.clone()).unwrap();
     let f = resolver.file(file);
 
     assert_eq!(
@@ -689,8 +689,8 @@ fn test_binop() {
     file.name = String::from("test");
 
     let mut resolver = TypeResolver::new();
-    let _ = resolver.detect_type(&file);
-    let _ = resolver.preload_file(file.clone());
+    let _ = resolver.detect_type(&file).unwrap();
+    let _ = resolver.preload_file(file.clone()).unwrap();
     let f = resolver.file(file);
 
     assert_eq!(
@@ -736,8 +736,8 @@ fn test_subscript() {
     file.name = String::from("test");
 
     let mut resolver = TypeResolver::new();
-    let _ = resolver.detect_type(&file);
-    let _ = resolver.preload_file(file.clone());
+    let _ = resolver.detect_type(&file).unwrap();
+    let _ = resolver.preload_file(file.clone()).unwrap();
     let f = resolver.file(file);
 
     assert_eq!(
@@ -787,8 +787,8 @@ fn test_if_else() {
     file.name = String::from("test");
 
     let mut resolver = TypeResolver::new();
-    let _ = resolver.detect_type(&file);
-    let _ = resolver.preload_file(file.clone());
+    let _ = resolver.detect_type(&file).unwrap();
+    let _ = resolver.preload_file(file.clone()).unwrap();
     let f = resolver.file(file);
 
     assert_eq!(
@@ -864,8 +864,8 @@ fn test_if() {
     file.name = String::from("test");
 
     let mut resolver = TypeResolver::new();
-    let _ = resolver.detect_type(&file);
-    let _ = resolver.preload_file(file.clone());
+    let _ = resolver.detect_type(&file).unwrap();
+    let _ = resolver.preload_file(file.clone()).unwrap();
     let f = resolver.file(file);
 
     assert_eq!(

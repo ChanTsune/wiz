@@ -24,8 +24,8 @@ fn test_empty() {
     file.name = String::from("test");
 
     let mut resolver = TypeResolver::new();
-    let _ = resolver.detect_type(&file);
-    let _ = resolver.preload_file(file.clone());
+    let _ = resolver.detect_type(&file).unwrap();
+    let _ = resolver.preload_file(file.clone()).unwrap();
     let hl_file = resolver.file(file).unwrap();
 
     let mut hlir2mlir = HLIR2MLIR::new();
@@ -57,8 +57,8 @@ fn test_struct() {
     file.name = String::from("test");
 
     let mut resolver = TypeResolver::new();
-    let _ = resolver.detect_type(&file);
-    let _ = resolver.preload_file(file.clone());
+    let _ = resolver.detect_type(&file).unwrap();
+    let _ = resolver.preload_file(file.clone()).unwrap();
     let hl_file = resolver.file(file).unwrap();
 
     let mut hlir2mlir = HLIR2MLIR::new();
@@ -148,8 +148,8 @@ fn test_return_integer_literal() {
     file.name = String::from("test");
 
     let mut resolver = TypeResolver::new();
-    let _ = resolver.detect_type(&file);
-    let _ = resolver.preload_file(file.clone());
+    let _ = resolver.detect_type(&file).unwrap();
+    let _ = resolver.preload_file(file.clone()).unwrap();
     let hl_file = resolver.file(file).unwrap();
 
     let mut hlir2mlir = HLIR2MLIR::new();
