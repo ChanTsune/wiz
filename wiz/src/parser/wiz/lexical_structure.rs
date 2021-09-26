@@ -166,19 +166,30 @@ where
     take_until("*/")(input)
 }
 
-pub fn inline_comment(input: &str) -> IResult<&str, String> {
+fn _block_comment<I>(input: I) -> IResult<I, String>
+    where
+        I: InputTake + FindSubstring<&'static str> + Compare<&'static str> + ToString + Clone,
+{
     map(
         permutation((
             block_comment_start,
             take_until_block_comment_end,
             block_comment_end,
         )),
-        |(a, b, c): (&str, _, &str)| a.to_string() + b + c,
+        |(a, b, c): (I, I, I)| a.to_string() + &*b.to_string() + &*c.to_string(),
     )(input)
 }
 
+pub fn block_comment<I>(input: I) -> IResult<I, TriviaPiece>
+    where
+        I: InputTake + FindSubstring<&'static str> + Compare<&'static str> + ToString + Clone,
+{
+    map(_block_comment, |s|{
+        TriviaPiece::BlockComment(s)
+    })(input)
+}
 pub fn comment(input: &str) -> IResult<&str, String> {
-    alt((_line_comment, inline_comment))(input)
+    alt((_line_comment, _block_comment))(input)
 }
 
 pub fn identifier_head(s: &str) -> IResult<&str, char> {
@@ -244,10 +255,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::lexical_structure::{
-        carriage_returns, comment, identifier, line_comment, newlines, spaces, tabs, whitespace0,
-        whitespace1,
-    };
+    use crate::parser::wiz::lexical_structure::{carriage_returns, comment, identifier, line_comment, newlines, spaces, tabs, whitespace0, whitespace1, block_comment};
     use crate::syntax::trivia::TriviaPiece;
     use nom::error;
     use nom::error::ErrorKind;
@@ -388,6 +396,31 @@ mod tests {
             Ok((
                 "not comment\n",
                 TriviaPiece::LineComment(String::from("//comment\n"))
+            ))
+        );
+    }
+
+    #[test]
+    fn test_block_comment() {
+        assert_eq!(
+            block_comment("/* this is comment */"),
+            Ok((
+                "",
+                TriviaPiece::BlockComment(String::from("/* this is comment */"))
+            ))
+        );
+        assert_eq!(
+            block_comment("/**/"),
+            Ok((
+                "",
+                TriviaPiece::BlockComment(String::from("/**/"))
+            ))
+        );
+        assert_eq!(
+            block_comment("/*/comment\n*/not comment\n"),
+            Ok((
+                "not comment\n",
+                TriviaPiece::BlockComment(String::from("/*/comment\n*/"))
             ))
         );
     }
