@@ -1,31 +1,29 @@
-use nom::character::complete::{char, newline};
-use nom::{AsChar, IResult, InputIter, Slice, InputTake, InputLength};
-use std::ops::RangeFrom;
 use nom::bytes::complete::take_while_m_n;
+use nom::character::complete::{char, newline};
 use nom::combinator::map;
+use nom::{AsChar, IResult, InputIter, InputLength, InputTake, Slice};
+use std::ops::RangeFrom;
 
 pub fn alphabet<I>(s: I) -> IResult<I, char>
-    where
-        I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength,
-        <I as InputIter>::Item: AsChar,
+where
+    I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength,
+    <I as InputIter>::Item: AsChar,
 {
-    map(take_while_m_n(1, 1, |c:<I as InputIter>::Item| {
-        c.is_alpha()
-    }),|p:I|{
-        p.iter_elements().next().unwrap().as_char()
-    })(s)
+    map(
+        take_while_m_n(1, 1, |c: <I as InputIter>::Item| c.is_alpha()),
+        |p: I| p.iter_elements().next().unwrap().as_char(),
+    )(s)
 }
 
 pub fn digit<I>(s: I) -> IResult<I, char>
-    where
-        I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength,
-        <I as InputIter>::Item: AsChar,
+where
+    I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength,
+    <I as InputIter>::Item: AsChar,
 {
-    map(take_while_m_n(1, 1, |c:<I as InputIter>::Item| {
-        c.is_dec_digit()
-    }),|p:I|{
-        p.iter_elements().next().unwrap().as_char()
-    })(s)
+    map(
+        take_while_m_n(1, 1, |c: <I as InputIter>::Item| c.is_dec_digit()),
+        |p: I| p.iter_elements().next().unwrap().as_char(),
+    )(s)
 }
 
 pub fn under_score<I>(s: I) -> IResult<I, char>
