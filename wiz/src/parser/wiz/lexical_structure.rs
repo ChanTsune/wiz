@@ -164,9 +164,9 @@ where
 }
 
 pub fn tabs<I>(s: I) -> IResult<I, TriviaPiece>
-    where
-        I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength,
-        <I as InputIter>::Item: AsChar,
+where
+    I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength,
+    <I as InputIter>::Item: AsChar,
 {
     map(many1(tab), |l| TriviaPiece::Tabs(l.len() as i64))(s)
 }
