@@ -1,14 +1,17 @@
 use crate::parser::wiz::character::{alphabet, cr, digit, eol, space, under_score};
 use crate::syntax::trivia::TriviaPiece;
 use nom::branch::{alt, permutation};
-use nom::bytes::complete::{tag, take_while_m_n, take_until};
+use nom::bytes::complete::{tag, take_until, take_while_m_n};
 use nom::character::complete::{char, newline, tab};
 use nom::combinator::{map, opt};
 use nom::error::{ErrorKind, ParseError};
 use nom::lib::std::ops::RangeFrom;
 use nom::multi::{many0, many1};
 use nom::sequence::tuple;
-use nom::{AsChar, Compare, IResult, InputIter, InputLength, InputTake, InputTakeAtPosition, Slice, FindSubstring};
+use nom::{
+    AsChar, Compare, FindSubstring, IResult, InputIter, InputLength, InputTake,
+    InputTakeAtPosition, Slice,
+};
 use std::iter::FromIterator;
 
 pub fn whitespace0(s: &str) -> IResult<&str, String> {
@@ -157,8 +160,8 @@ where
 }
 
 fn take_until_block_comment_end<I>(input: I) -> IResult<I, I>
-    where
-        I: InputTake + FindSubstring<&'static str>,
+where
+    I: InputTake + FindSubstring<&'static str>,
 {
     take_until("*/")(input)
 }
