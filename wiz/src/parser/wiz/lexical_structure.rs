@@ -145,15 +145,15 @@ where
 }
 
 fn inline_comment_start<I>(input: I) -> IResult<I, I>
-    where
-        I: InputTake + Compare<&'static str>,
+where
+    I: InputTake + Compare<&'static str>,
 {
     tag("/*")(input)
 }
 
 fn inline_comment_end<I>(input: I) -> IResult<I, I>
-    where
-        I: InputTake + Compare<&'static str>,
+where
+    I: InputTake + Compare<&'static str>,
 {
     tag("*/")(input)
 }
@@ -161,7 +161,7 @@ fn inline_comment_end<I>(input: I) -> IResult<I, I>
 pub fn inline_comment(input: &str) -> IResult<&str, String> {
     map(
         permutation((inline_comment_start, opt(is_not("*/")), inline_comment_end)),
-        |(a, b, c):(&str, _, &str)| a.to_string() + b.unwrap_or_default() + c,
+        |(a, b, c): (&str, _, &str)| a.to_string() + b.unwrap_or_default() + c,
     )(input)
 }
 
