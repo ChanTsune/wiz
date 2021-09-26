@@ -142,14 +142,14 @@ where
     map(_line_comment, |c| TriviaPiece::LineComment(c))(s)
 }
 
-fn inline_comment_start<I>(input: I) -> IResult<I, I>
+fn block_comment_start<I>(input: I) -> IResult<I, I>
 where
     I: InputTake + Compare<&'static str>,
 {
     tag("/*")(input)
 }
 
-fn inline_comment_end<I>(input: I) -> IResult<I, I>
+fn block_comment_end<I>(input: I) -> IResult<I, I>
 where
     I: InputTake + Compare<&'static str>,
 {
@@ -165,7 +165,7 @@ fn take_until_block_comment_end<I>(input: I) -> IResult<I, I>
 
 pub fn inline_comment(input: &str) -> IResult<&str, String> {
     map(
-        permutation((inline_comment_start, take_until_block_comment_end, inline_comment_end)),
+        permutation((block_comment_start, take_until_block_comment_end, block_comment_end)),
         |(a, b, c):(&str, _, &str)| a.to_string() + b + c,
     )(input)
 }
@@ -183,8 +183,8 @@ pub fn identifier_character(s: &str) -> IResult<&str, char> {
 
 pub fn identifier_characters(s: &str) -> IResult<&str, String> {
     map(
-        tuple((identifier_character, opt(identifier_characters))),
-        |(c, ops)| c.to_string() + &*ops.unwrap_or_default(),
+        many0(identifier_character),
+        |c| String::from_iter(c),
     )(s)
 }
 
