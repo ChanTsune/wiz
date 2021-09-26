@@ -1,4 +1,4 @@
-use nom::character::complete::{char, one_of};
+use nom::character::complete::{char, one_of, newline};
 use nom::{AsChar, IResult, InputIter, Slice};
 use std::ops::RangeFrom;
 
@@ -31,7 +31,7 @@ where
     I: Slice<RangeFrom<usize>> + InputIter,
     <I as InputIter>::Item: AsChar,
 {
-    char('\n')(s)
+    newline(s)
 }
 
 #[cfg(test)]
