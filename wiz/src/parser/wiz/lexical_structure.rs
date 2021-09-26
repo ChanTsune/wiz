@@ -167,8 +167,8 @@ where
 }
 
 fn _block_comment<I>(input: I) -> IResult<I, String>
-    where
-        I: InputTake + FindSubstring<&'static str> + Compare<&'static str> + ToString + Clone,
+where
+    I: InputTake + FindSubstring<&'static str> + Compare<&'static str> + ToString + Clone,
 {
     map(
         permutation((
@@ -181,12 +181,10 @@ fn _block_comment<I>(input: I) -> IResult<I, String>
 }
 
 pub fn block_comment<I>(input: I) -> IResult<I, TriviaPiece>
-    where
-        I: InputTake + FindSubstring<&'static str> + Compare<&'static str> + ToString + Clone,
+where
+    I: InputTake + FindSubstring<&'static str> + Compare<&'static str> + ToString + Clone,
 {
-    map(_block_comment, |s|{
-        TriviaPiece::BlockComment(s)
-    })(input)
+    map(_block_comment, |s| TriviaPiece::BlockComment(s))(input)
 }
 pub fn comment(input: &str) -> IResult<&str, String> {
     alt((_line_comment, _block_comment))(input)
@@ -271,7 +269,10 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::lexical_structure::{carriage_returns, comment, identifier, line_comment, newlines, spaces, tabs, whitespace0, whitespace1, block_comment};
+    use crate::parser::wiz::lexical_structure::{
+        block_comment, carriage_returns, comment, identifier, line_comment, newlines, spaces, tabs,
+        whitespace0, whitespace1,
+    };
     use crate::syntax::trivia::TriviaPiece;
     use nom::error;
     use nom::error::ErrorKind;
@@ -427,10 +428,7 @@ mod tests {
         );
         assert_eq!(
             block_comment("/**/"),
-            Ok((
-                "",
-                TriviaPiece::BlockComment(String::from("/**/"))
-            ))
+            Ok(("", TriviaPiece::BlockComment(String::from("/**/"))))
         );
         assert_eq!(
             block_comment("/*/comment\n*/not comment\n"),
