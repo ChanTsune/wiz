@@ -8,7 +8,7 @@ use crate::high_level_ir::typed_expr::{
 };
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
-use crate::high_level_ir::typed_type::{TypedFunctionType, TypedType, TypedValueType, Package};
+use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
 use crate::middle_level_ir::ml_decl::{
     MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar,
 };
@@ -587,6 +587,14 @@ impl HLIR2MLIR {
     }
 
     fn name_mangling(&self, package: Option<Package>, name: String) -> String {
-        if let Some(pkg) = package { if pkg.is_global() || name == "main" { name } else { pkg.to_string() + "::" + &*name }} else {name}
+        if let Some(pkg) = package {
+            if pkg.is_global() || name == "main" {
+                name
+            } else {
+                pkg.to_string() + "::" + &*name
+            }
+        } else {
+            name
+        }
     }
 }

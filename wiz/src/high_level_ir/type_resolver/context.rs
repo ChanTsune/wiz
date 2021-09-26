@@ -230,7 +230,14 @@ impl ResolverContext {
         loop {
             let ns = self.get_namespace_mut(cns.clone())?;
             if let Some(t) = ns.values.get(&name) {
-                return Result::Ok((t.clone(), if t.is_function_type() { Some(Package::new(cns)) } else { None }));
+                return Result::Ok((
+                    t.clone(),
+                    if t.is_function_type() {
+                        Some(Package::new(cns))
+                    } else {
+                        None
+                    },
+                ));
             }
             if cns.is_empty() {
                 break;
