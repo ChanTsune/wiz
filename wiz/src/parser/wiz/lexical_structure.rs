@@ -1,16 +1,14 @@
 use crate::parser::wiz::character::{alphabet, cr, digit, eol, space, under_score};
 use crate::syntax::trivia::TriviaPiece;
 use nom::branch::{alt, permutation};
-use nom::bytes::complete::{is_not, tag, take_while_m_n};
+use nom::bytes::complete::{tag, take_while_m_n, take_until};
 use nom::character::complete::{char, newline, tab};
 use nom::combinator::{map, opt};
 use nom::error::{ErrorKind, ParseError};
 use nom::lib::std::ops::RangeFrom;
 use nom::multi::{many0, many1};
 use nom::sequence::tuple;
-use nom::{
-    AsChar, Compare, IResult, InputIter, InputLength, InputTake, InputTakeAtPosition, Slice,
-};
+use nom::{AsChar, Compare, IResult, InputIter, InputLength, InputTake, InputTakeAtPosition, Slice, FindSubstring};
 use std::iter::FromIterator;
 
 pub fn whitespace0(s: &str) -> IResult<&str, String> {
@@ -158,10 +156,17 @@ fn inline_comment_end<I>(input: I) -> IResult<I, I>
     tag("*/")(input)
 }
 
+fn take_until_block_comment_end<I>(input: I) -> IResult<I, I>
+    where
+        I: InputTake + FindSubstring<&'static str>,
+{
+    take_until("*/")(input)
+}
+
 pub fn inline_comment(input: &str) -> IResult<&str, String> {
     map(
-        permutation((inline_comment_start, opt(is_not("*/")), inline_comment_end)),
-        |(a, b, c):(&str, _, &str)| a.to_string() + b.unwrap_or_default() + c,
+        permutation((inline_comment_start, take_until_block_comment_end, inline_comment_end)),
+        |(a, b, c):(&str, _, &str)| a.to_string() + b + c,
     )(input)
 }
 
