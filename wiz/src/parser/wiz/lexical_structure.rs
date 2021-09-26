@@ -1,4 +1,4 @@
-use crate::parser::wiz::character::{alphabet, digit, under_score, eol, space};
+use crate::parser::wiz::character::{alphabet, digit, eol, space, under_score};
 use crate::syntax::trivia::TriviaPiece;
 use nom::branch::{alt, permutation};
 use nom::bytes::complete::{is_not, tag};
@@ -156,9 +156,9 @@ pub fn identifier(s: &str) -> IResult<&str, String> {
 }
 
 pub fn spaces<I>(s: I) -> IResult<I, TriviaPiece>
-    where
-        I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength,
-        <I as InputIter>::Item: AsChar,
+where
+    I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength,
+    <I as InputIter>::Item: AsChar,
 {
     map(many1(space), |l| TriviaPiece::Spaces(l.len() as i64))(s)
 }
@@ -173,7 +173,9 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::lexical_structure::{comment, identifier, newlines, whitespace0, whitespace1, spaces};
+    use crate::parser::wiz::lexical_structure::{
+        comment, identifier, newlines, spaces, whitespace0, whitespace1,
+    };
     use crate::syntax::trivia::TriviaPiece;
     use nom::error;
     use nom::error::ErrorKind;
