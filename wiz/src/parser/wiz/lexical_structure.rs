@@ -1,4 +1,4 @@
-use crate::parser::wiz::character::{alphabet, digit, under_score, eol};
+use crate::parser::wiz::character::{alphabet, digit, eol, under_score};
 use crate::syntax::trivia::TriviaPiece;
 use nom::branch::{alt, permutation};
 use nom::bytes::complete::{is_not, tag};

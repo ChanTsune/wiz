@@ -1,3 +1,4 @@
+use crate::parser::wiz::character::eol;
 use crate::parser::wiz::expression::expr;
 use crate::parser::wiz::keywords::{
     as_keyword, fun_keyword, init_keyword, self_keyword, struct_keyword, use_keyword, val_keyword,
@@ -24,7 +25,6 @@ use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
 use nom::IResult;
-use crate::parser::wiz::character::eol;
 
 pub fn decl(s: &str) -> IResult<&str, Decl> {
     alt((use_decl, struct_decl, function_decl, var_decl))(s)

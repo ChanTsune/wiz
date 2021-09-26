@@ -19,25 +19,24 @@ where
 }
 
 pub fn space<I>(s: I) -> IResult<I, char>
-    where
-        I: Slice<RangeFrom<usize>> + InputIter,
-        <I as InputIter>::Item: AsChar,
+where
+    I: Slice<RangeFrom<usize>> + InputIter,
+    <I as InputIter>::Item: AsChar,
 {
     char(' ')(s)
 }
 
 pub fn eol<I>(s: I) -> IResult<I, char>
-    where
-        I: Slice<RangeFrom<usize>> + InputIter,
-        <I as InputIter>::Item: AsChar,
+where
+    I: Slice<RangeFrom<usize>> + InputIter,
+    <I as InputIter>::Item: AsChar,
 {
     char('\n')(s)
 }
 
-
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::character::{alphabet, digit, under_score, eol, space};
+    use crate::parser::wiz::character::{alphabet, digit, eol, space, under_score};
 
     #[test]
     fn test_alphabet() {
