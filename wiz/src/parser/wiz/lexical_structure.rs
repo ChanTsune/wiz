@@ -2,7 +2,7 @@ use crate::parser::wiz::character::{alphabet, digit, eol, space, under_score, cr
 use crate::syntax::trivia::TriviaPiece;
 use nom::branch::{alt, permutation};
 use nom::bytes::complete::{is_not, tag};
-use nom::character::complete::{anychar, char, tab};
+use nom::character::complete::{char, tab, none_of};
 use nom::combinator::{map, opt};
 use nom::error::{ErrorKind, ParseError};
 use nom::lib::std::ops::RangeFrom;
@@ -97,7 +97,7 @@ fn line_comment_start(s: &str) -> IResult<&str, &str> {
 
 pub fn line_comment(input: &str) -> IResult<&str, String> {
     map(
-        tuple((line_comment_start, many0(anychar), opt(eol))),
+        tuple((line_comment_start, many0(none_of("\n")), opt(eol))),
         |(s, c, e)| {
             s.to_string() + &*String::from_iter(c) + &*e.map(|c| c.to_string()).unwrap_or_default()
         },
