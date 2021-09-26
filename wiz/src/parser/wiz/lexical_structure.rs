@@ -2,7 +2,7 @@ use crate::parser::wiz::character::{alphabet, cr, digit, eol, space, under_score
 use crate::syntax::trivia::TriviaPiece;
 use nom::branch::{alt, permutation};
 use nom::bytes::complete::{is_not, tag};
-use nom::character::complete::{char, tab, none_of};
+use nom::character::complete::{char, none_of, tab};
 use nom::combinator::{map, opt};
 use nom::error::{ErrorKind, ParseError};
 use nom::lib::std::ops::RangeFrom;
