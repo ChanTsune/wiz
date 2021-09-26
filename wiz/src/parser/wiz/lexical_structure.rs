@@ -144,18 +144,24 @@ where
     map(_line_comment, |c| TriviaPiece::LineComment(c))(s)
 }
 
-fn inline_comment_start(input: &str) -> IResult<&str, &str> {
+fn inline_comment_start<I>(input: I) -> IResult<I, I>
+    where
+        I: InputTake + Compare<&'static str>,
+{
     tag("/*")(input)
 }
 
-fn inline_comment_end(input: &str) -> IResult<&str, &str> {
+fn inline_comment_end<I>(input: I) -> IResult<I, I>
+    where
+        I: InputTake + Compare<&'static str>,
+{
     tag("*/")(input)
 }
 
 pub fn inline_comment(input: &str) -> IResult<&str, String> {
     map(
         permutation((inline_comment_start, opt(is_not("*/")), inline_comment_end)),
-        |(a, b, c)| a.to_string() + b.unwrap_or_default() + c,
+        |(a, b, c):(&str, _, &str)| a.to_string() + b.unwrap_or_default() + c,
     )(input)
 }
 
