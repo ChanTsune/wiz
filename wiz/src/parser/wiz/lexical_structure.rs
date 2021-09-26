@@ -1,4 +1,4 @@
-use crate::parser::wiz::character::{alphabet, digit, eol, under_score};
+use crate::parser::wiz::character::{alphabet, digit, under_score, eol, space};
 use crate::syntax::trivia::TriviaPiece;
 use nom::branch::{alt, permutation};
 use nom::bytes::complete::{is_not, tag};
@@ -155,6 +155,14 @@ pub fn identifier(s: &str) -> IResult<&str, String> {
     ))(s)
 }
 
+pub fn spaces<I>(s: I) -> IResult<I, TriviaPiece>
+    where
+        I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength,
+        <I as InputIter>::Item: AsChar,
+{
+    map(many1(space), |l| TriviaPiece::Spaces(l.len() as i64))(s)
+}
+
 pub fn newlines<I>(s: I) -> IResult<I, TriviaPiece>
 where
     I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength,
@@ -165,9 +173,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::lexical_structure::{
-        comment, identifier, newlines, whitespace0, whitespace1,
-    };
+    use crate::parser::wiz::lexical_structure::{comment, identifier, newlines, whitespace0, whitespace1, spaces};
     use crate::syntax::trivia::TriviaPiece;
     use nom::error;
     use nom::error::ErrorKind;
@@ -262,6 +268,11 @@ mod tests {
         );
         assert_eq!(whitespace1("/* a */"), Ok(("", String::from("/* a */"))));
         assert_eq!(whitespace1("/**/"), Ok(("", String::from("/**/"))));
+    }
+
+    #[test]
+    fn test_spaces() {
+        assert_eq!(spaces(" "), Ok(("", TriviaPiece::Spaces(1))))
     }
 
     #[test]
