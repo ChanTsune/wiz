@@ -253,6 +253,22 @@ where
     map(many1(cr), |l| TriviaPiece::CarriageReturns(l.len() as i64))(s)
 }
 
+pub fn trivia_piece<I>(s: I) -> IResult<I, TriviaPiece>
+where
+    I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength + ToString
+    + InputTake + FindSubstring<& 'static str> + Compare<& 'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+{
+    alt((
+        spaces,
+        tabs,
+        newlines,
+        carriage_returns,
+        line_comment,
+        block_comment,
+        ))(s)
+}
+
 #[cfg(test)]
 mod tests {
     use crate::parser::wiz::lexical_structure::{carriage_returns, comment, identifier, line_comment, newlines, spaces, tabs, whitespace0, whitespace1, block_comment};
