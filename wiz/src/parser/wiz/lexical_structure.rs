@@ -1,14 +1,14 @@
 use crate::parser::wiz::character::{alphabet, cr, digit, eol, space, under_score};
 use crate::syntax::trivia::TriviaPiece;
 use nom::branch::{alt, permutation};
-use nom::bytes::complete::{is_not, tag};
-use nom::character::complete::{char, none_of, tab};
+use nom::bytes::complete::{is_not, tag, take_while_m_n};
+use nom::character::complete::{char, tab, newline};
 use nom::combinator::{map, opt};
 use nom::error::{ErrorKind, ParseError};
 use nom::lib::std::ops::RangeFrom;
 use nom::multi::{many0, many1};
 use nom::sequence::tuple;
-use nom::{AsChar, IResult, InputIter, InputLength, InputTakeAtPosition, Slice};
+use nom::{AsChar, IResult, InputIter, InputLength, InputTakeAtPosition, Slice, InputTake, Compare};
 use std::iter::FromIterator;
 
 pub fn whitespace0(s: &str) -> IResult<&str, String> {
@@ -91,17 +91,46 @@ where
     )
 }
 
-fn line_comment_start(s: &str) -> IResult<&str, &str> {
+fn line_comment_start<I>(s: I) -> IResult<I, I>
+where
+I: InputTake + Compare<&'static str>
+{
     tag("//")(s)
 }
 
-pub fn line_comment(input: &str) -> IResult<&str, String> {
+fn none_of_newline<I>(s: I) -> IResult<I, char>
+    where
+        I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength,
+        <I as InputIter>::Item: AsChar,
+{
     map(
-        tuple((line_comment_start, many0(none_of("\n")), opt(eol))),
-        |(s, c, e)| {
+        take_while_m_n(1, 1, |c: <I as InputIter>::Item| c.as_char() != '\n'),
+        |p: I| p.iter_elements().next().unwrap().as_char(),
+    )(s)
+}
+
+
+fn _line_comment<I>(input: I) -> IResult<I, String>
+    where
+        I: InputTake + Compare<&'static str> + Clone + InputLength + InputIter + Slice<RangeFrom<usize>> + ToString,
+        <I as InputIter>::Item: AsChar + Copy
+{
+    map(
+        tuple((line_comment_start, many0(none_of_newline), opt(newline))),
+        |(s, c, e):(I, _, _)| {
             s.to_string() + &*String::from_iter(c) + &*e.map(|c| c.to_string()).unwrap_or_default()
         },
     )(input)
+}
+
+fn line_comment<I>(s: I) -> IResult<I, TriviaPiece>
+where
+    I: InputTake + Compare<&'static str> + Clone + InputLength + InputIter + Slice<RangeFrom<usize>> + ToString,
+    <I as InputIter>::Item: AsChar + Copy
+{
+    map(_line_comment, |c|{
+        TriviaPiece::LineComment(c)
+    })(s)
 }
 
 fn inline_comment_start(input: &str) -> IResult<&str, &str> {
@@ -120,7 +149,7 @@ pub fn inline_comment(input: &str) -> IResult<&str, String> {
 }
 
 pub fn comment(input: &str) -> IResult<&str, String> {
-    alt((line_comment, inline_comment))(input)
+    alt((_line_comment, inline_comment))(input)
 }
 
 pub fn identifier_head(s: &str) -> IResult<&str, char> {
@@ -189,9 +218,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::lexical_structure::{
-        carriage_returns, comment, identifier, newlines, spaces, tabs, whitespace0, whitespace1,
-    };
+    use crate::parser::wiz::lexical_structure::{carriage_returns, comment, identifier, newlines, spaces, tabs, whitespace0, whitespace1, line_comment};
     use crate::syntax::trivia::TriviaPiece;
     use nom::error;
     use nom::error::ErrorKind;
@@ -309,5 +336,18 @@ mod tests {
             carriage_returns("\r"),
             Ok(("", TriviaPiece::CarriageReturns(1)))
         )
+    }
+
+    #[test]
+    fn test_line_comment() {
+        assert_eq!(
+            line_comment("// this is comment"), Ok(("", TriviaPiece::LineComment(String::from("// this is comment"))))
+        );
+        assert_eq!(
+            line_comment("// this is comment\n"), Ok(("", TriviaPiece::LineComment(String::from("// this is comment\n"))))
+        );
+        assert_eq!(
+            line_comment("//comment\nnot comment\n"), Ok(("not comment\n", TriviaPiece::LineComment(String::from("//comment\n"))))
+        );
     }
 }
