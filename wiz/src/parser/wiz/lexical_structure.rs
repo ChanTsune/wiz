@@ -2,7 +2,7 @@ use crate::parser::wiz::character::{alphabet, digit, eol, space, under_score};
 use crate::syntax::trivia::TriviaPiece;
 use nom::branch::{alt, permutation};
 use nom::bytes::complete::{is_not, tag};
-use nom::character::complete::{anychar, char};
+use nom::character::complete::{anychar, char, tab};
 use nom::combinator::{map, opt};
 use nom::error::{ErrorKind, ParseError};
 use nom::lib::std::ops::RangeFrom;
@@ -163,6 +163,14 @@ where
     map(many1(space), |l| TriviaPiece::Spaces(l.len() as i64))(s)
 }
 
+pub fn tabs<I>(s: I) -> IResult<I, TriviaPiece>
+    where
+        I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength,
+        <I as InputIter>::Item: AsChar,
+{
+    map(many1(tab), |l| TriviaPiece::Tabs(l.len() as i64))(s)
+}
+
 pub fn newlines<I>(s: I) -> IResult<I, TriviaPiece>
 where
     I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength,
@@ -173,9 +181,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::lexical_structure::{
-        comment, identifier, newlines, spaces, whitespace0, whitespace1,
-    };
+    use crate::parser::wiz::lexical_structure::{comment, identifier, newlines, spaces, whitespace0, whitespace1, tabs};
     use crate::syntax::trivia::TriviaPiece;
     use nom::error;
     use nom::error::ErrorKind;
@@ -275,6 +281,11 @@ mod tests {
     #[test]
     fn test_spaces() {
         assert_eq!(spaces(" "), Ok(("", TriviaPiece::Spaces(1))))
+    }
+
+    #[test]
+    fn test_tabs() {
+        assert_eq!(tabs("\t"), Ok(("", TriviaPiece::Tabs(1))))
     }
 
     #[test]
