@@ -168,8 +168,12 @@ where
 
 pub fn inline_comment(input: &str) -> IResult<&str, String> {
     map(
-        permutation((block_comment_start, take_until_block_comment_end, block_comment_end)),
-        |(a, b, c):(&str, _, &str)| a.to_string() + b + c,
+        permutation((
+            block_comment_start,
+            take_until_block_comment_end,
+            block_comment_end,
+        )),
+        |(a, b, c): (&str, _, &str)| a.to_string() + b + c,
     )(input)
 }
 
@@ -185,10 +189,7 @@ pub fn identifier_character(s: &str) -> IResult<&str, char> {
 }
 
 pub fn identifier_characters(s: &str) -> IResult<&str, String> {
-    map(
-        many0(identifier_character),
-        |c| String::from_iter(c),
-    )(s)
+    map(many0(identifier_character), |c| String::from_iter(c))(s)
 }
 
 pub fn identifier(s: &str) -> IResult<&str, String> {
