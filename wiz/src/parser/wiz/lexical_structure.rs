@@ -164,9 +164,9 @@ where
 }
 
 pub fn tabs<I>(s: I) -> IResult<I, TriviaPiece>
-    where
-        I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength,
-        <I as InputIter>::Item: AsChar,
+where
+    I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength,
+    <I as InputIter>::Item: AsChar,
 {
     map(many1(tab), |l| TriviaPiece::Tabs(l.len() as i64))(s)
 }
@@ -181,7 +181,9 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::lexical_structure::{comment, identifier, newlines, spaces, whitespace0, whitespace1, tabs};
+    use crate::parser::wiz::lexical_structure::{
+        comment, identifier, newlines, spaces, tabs, whitespace0, whitespace1,
+    };
     use crate::syntax::trivia::TriviaPiece;
     use nom::error;
     use nom::error::ErrorKind;
