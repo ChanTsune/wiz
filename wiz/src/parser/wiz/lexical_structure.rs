@@ -1,4 +1,4 @@
-use crate::parser::wiz::character::{alphabet, digit, under_score};
+use crate::parser::wiz::character::{alphabet, digit, under_score, eol};
 use crate::syntax::trivia::TriviaPiece;
 use nom::branch::{alt, permutation};
 use nom::bytes::complete::{is_not, tag};
@@ -155,14 +155,6 @@ pub fn identifier(s: &str) -> IResult<&str, String> {
     ))(s)
 }
 
-pub fn eol<I>(s: I) -> IResult<I, char>
-where
-    I: Slice<RangeFrom<usize>> + InputIter,
-    <I as InputIter>::Item: AsChar,
-{
-    char('\n')(s)
-}
-
 pub fn newlines<I>(s: I) -> IResult<I, TriviaPiece>
 where
     I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength,
@@ -174,7 +166,7 @@ where
 #[cfg(test)]
 mod tests {
     use crate::parser::wiz::lexical_structure::{
-        comment, eol, identifier, newlines, whitespace0, whitespace1,
+        comment, identifier, newlines, whitespace0, whitespace1,
     };
     use crate::syntax::trivia::TriviaPiece;
     use nom::error;
@@ -226,11 +218,6 @@ mod tests {
         assert_eq!(comment("/* a */"), Ok(("", String::from("/* a */"))));
         assert_eq!(comment("/**/"), Ok(("", String::from("/**/"))));
         assert_eq!(comment("/*\n*/"), Ok(("", String::from("/*\n*/"))));
-    }
-
-    #[test]
-    fn test_eol() {
-        assert_eq!(eol("\n"), Ok(("", '\n')))
     }
 
     #[test]
