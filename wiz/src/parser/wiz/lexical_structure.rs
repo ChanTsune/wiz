@@ -1,5 +1,5 @@
-use crate::parser::wiz::character::{alphabet, cr, digit, eol, space, under_score};
 use crate::syntax::trivia::TriviaPiece;
+use crate::parser::wiz::character::{alphabet, cr, digit, eol, space, under_score, backticks};
 use nom::branch::{alt, permutation};
 use nom::bytes::complete::{tag, take_until, take_while_m_n};
 use nom::character::complete::{char, crlf, newline, tab};
@@ -152,10 +152,10 @@ pub fn identifier(s: &str) -> IResult<&str, String> {
     alt((
         map(
             tuple((
-                map(char('`'), |r| r.to_string()),
+                map(backticks, |r| r.to_string()),
                 map(identifier_head, |r| r.to_string()),
                 identifier_characters,
-                map(char('`'), |r| r.to_string()),
+                map(backticks, |r| r.to_string()),
             )),
             |(a, b, c, d)| a + &*b + &*c + &*d,
         ),

@@ -34,6 +34,14 @@ where
     char('_')(s)
 }
 
+pub fn backticks<I>(s: I) -> IResult<I, char>
+    where
+        I: Slice<RangeFrom<usize>> + InputIter,
+        <I as InputIter>::Item: AsChar,
+{
+    char('`')(s)
+}
+
 pub fn space<I>(s: I) -> IResult<I, char>
 where
     I: Slice<RangeFrom<usize>> + InputIter,
@@ -60,7 +68,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::character::{alphabet, cr, digit, eol, space, under_score};
+    use crate::parser::wiz::character::{alphabet, cr, digit, eol, space, under_score, backticks};
 
     #[test]
     fn test_alphabet() {
@@ -75,6 +83,11 @@ mod tests {
     #[test]
     fn test_under_score() {
         assert_eq!(under_score("_"), Ok(("", '_')))
+    }
+
+    #[test]
+    fn test_backticks() {
+        assert_eq!(backticks("`"), Ok(("", '`')));
     }
 
     #[test]
