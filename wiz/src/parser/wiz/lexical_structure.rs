@@ -244,9 +244,9 @@ where
 }
 
 pub fn identifier<I>(s: I) -> IResult<I, String>
-    where
-        I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
-        <I as InputIter>::Item: AsChar,
+where
+    I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
+    <I as InputIter>::Item: AsChar,
 {
     alt((
         map(
