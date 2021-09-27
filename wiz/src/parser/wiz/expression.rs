@@ -1,5 +1,7 @@
 use crate::parser::wiz::declaration::block;
-use crate::parser::wiz::keywords::{else_keyword, if_keyword, return_keyword, as_keyword, in_keyword};
+use crate::parser::wiz::keywords::{
+    as_keyword, else_keyword, if_keyword, in_keyword, return_keyword,
+};
 use crate::parser::wiz::lexical_structure::{
     identifier, whitespace0, whitespace1, whitespace_without_eol0,
 };
@@ -650,12 +652,10 @@ pub fn as_operator(s: &str) -> IResult<&str, String> {
 
 pub fn in_operator(s: &str) -> IResult<&str, String> {
     alt((
-        map(tuple((in_keyword, char('!'))), |(a, b):(&str, _)| {
+        map(tuple((in_keyword, char('!'))), |(a, b): (&str, _)| {
             a.to_string() + &*b.to_string()
         }),
-        map(in_keyword, |a:&str| {
-            a.to_string()
-        }),
+        map(in_keyword, |a: &str| a.to_string()),
     ))(s)
 }
 

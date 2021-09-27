@@ -86,8 +86,8 @@ where
 }
 
 pub fn in_keyword<I>(s: I) -> IResult<I, I>
-    where
-        I: InputTake + Compare<&'static str>,
+where
+    I: InputTake + Compare<&'static str>,
 {
     tag("in")(s)
 }
@@ -101,7 +101,11 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::keywords::{as_keyword, else_keyword, fun_keyword, if_keyword, init_keyword, return_keyword, self_keyword, struct_keyword, use_keyword, val_keyword, var_keyword, where_keyword, while_keyword, in_keyword};
+    use crate::parser::wiz::keywords::{
+        as_keyword, else_keyword, fun_keyword, if_keyword, in_keyword, init_keyword,
+        return_keyword, self_keyword, struct_keyword, use_keyword, val_keyword, var_keyword,
+        where_keyword, while_keyword,
+    };
 
     #[test]
     fn test_struct_keyword() {
