@@ -21,6 +21,7 @@ use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
 use nom::IResult;
+use crate::syntax::trivia::Trivia;
 
 pub fn integer_literal(s: &str) -> IResult<&str, LiteralSyntax> {
     map(digit1, |n: &str| LiteralSyntax::Integer {
@@ -235,7 +236,7 @@ pub fn prefix_expr(s: &str) -> IResult<&str, Expr> {
     )(s)
 }
 
-fn _binop(e: Expr, v: Vec<(String, String, String, Expr)>) -> Expr {
+fn _binop(e: Expr, v: Vec<(Trivia, String, Trivia, Expr)>) -> Expr {
     let mut bin_op = e;
     for (_, op, _, ex) in v {
         bin_op = Expr::BinOp {

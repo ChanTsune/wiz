@@ -50,3 +50,21 @@ impl ToString for TriviaPiece {
 pub struct Trivia {
     peaces: Vec<TriviaPiece>,
 }
+
+impl Trivia {
+    pub fn new(peaces: Vec<TriviaPiece>) -> Self {
+        Self { peaces }
+    }
+}
+
+impl ToString for Trivia {
+    fn to_string(&self) -> String {
+        self.peaces.iter().map(|t| t.to_string()).collect()
+    }
+}
+
+impl From<TriviaPiece> for Trivia {
+    fn from(trivia_piece: TriviaPiece) -> Self {
+        Self::new(vec![trivia_piece])
+    }
+}
