@@ -243,7 +243,11 @@ where
     map(many0(identifier_character), |c| String::from_iter(c))(s)
 }
 
-pub fn identifier(s: &str) -> IResult<&str, String> {
+pub fn identifier<I>(s: I) -> IResult<I, String>
+    where
+        I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
+        <I as InputIter>::Item: AsChar,
+{
     alt((
         map(
             tuple((
