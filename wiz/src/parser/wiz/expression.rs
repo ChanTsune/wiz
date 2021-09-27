@@ -1,5 +1,5 @@
 use crate::parser::wiz::declaration::block;
-use crate::parser::wiz::keywords::{else_keyword, if_keyword, return_keyword};
+use crate::parser::wiz::keywords::{else_keyword, if_keyword, return_keyword, as_keyword};
 use crate::parser::wiz::lexical_structure::{
     identifier, whitespace0, whitespace1, whitespace_without_eol0,
 };
@@ -641,11 +641,11 @@ pub fn as_expr(s: &str) -> IResult<&str, Expr> {
 
 pub fn as_operator(s: &str) -> IResult<&str, String> {
     alt((
-        map(tuple((char('a'), char('s'), char('?'))), |(a, b, c)| {
-            a.to_string() + &*b.to_string() + &*c.to_string()
-        }),
-        map(tuple((char('a'), char('s'))), |(a, b)| {
+        map(tuple((as_keyword, char('?'))), |(a, b):(&str, _)| {
             a.to_string() + &*b.to_string()
+        }),
+        map(as_keyword, |a:&str| {
+            a.to_string()
         }),
     ))(s)
 }
