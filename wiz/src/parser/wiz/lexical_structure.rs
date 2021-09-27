@@ -124,14 +124,27 @@ where
     map(_block_comment, |s| TriviaPiece::BlockComment(s))(input)
 }
 
-pub fn identifier_head(s: &str) -> IResult<&str, char> {
+pub fn identifier_head<I>(s: I) -> IResult<I, char>
+    where
+        I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
+        <I as InputIter>::Item: AsChar,
+{
     alt((alphabet, under_score))(s)
 }
-pub fn identifier_character(s: &str) -> IResult<&str, char> {
+
+pub fn identifier_character<I>(s: I) -> IResult<I, char>
+    where
+        I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
+        <I as InputIter>::Item: AsChar,
+{
     alt((alphabet, under_score, digit))(s)
 }
 
-pub fn identifier_characters(s: &str) -> IResult<&str, String> {
+pub fn identifier_characters<I>(s: I) -> IResult<I, String>
+    where
+        I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
+        <I as InputIter>::Item: AsChar,
+{
     map(many0(identifier_character), |c| String::from_iter(c))(s)
 }
 
