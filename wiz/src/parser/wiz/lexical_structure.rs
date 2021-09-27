@@ -4,7 +4,7 @@ use nom::branch::{alt, permutation};
 use nom::bytes::complete::{tag, take_until, take_while_m_n};
 use nom::character::complete::{char, newline, tab};
 use nom::combinator::{map, opt};
-use nom::error::{ErrorKind, ParseError};
+use nom::error::{ParseError};
 use nom::lib::std::ops::RangeFrom;
 use nom::multi::{many0, many1};
 use nom::sequence::tuple;
@@ -36,31 +36,6 @@ pub fn whitespace_without_eol0(s: &str) -> IResult<&str, String> {
     )(s)
 }
 
-fn _whitespace0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
-where
-    T: InputTakeAtPosition,
-    <T as InputTakeAtPosition>::Item: AsChar + Clone,
-{
-    input.split_at_position_complete(|item| {
-        let c = item.as_char();
-        !c.is_whitespace()
-    })
-}
-
-fn _whitespace1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
-where
-    T: InputTakeAtPosition,
-    <T as InputTakeAtPosition>::Item: AsChar + Clone,
-{
-    input.split_at_position1_complete(
-        |item| {
-            let c = item.as_char();
-            !c.is_whitespace()
-        },
-        ErrorKind::Space,
-    )
-}
-
 fn _whitespace_without_eol0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
     T: InputTakeAtPosition,
@@ -70,20 +45,6 @@ where
         let c = item.as_char();
         !c.is_whitespace() || (c == '\n')
     })
-}
-
-pub fn whitespace_without_eol1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
-where
-    T: InputTakeAtPosition,
-    <T as InputTakeAtPosition>::Item: AsChar + Clone,
-{
-    input.split_at_position1_complete(
-        |item| {
-            let c = item.as_char();
-            !c.is_whitespace() || (c == '\n')
-        },
-        ErrorKind::Space,
-    )
 }
 
 fn line_comment_start<I>(s: I) -> IResult<I, I>
