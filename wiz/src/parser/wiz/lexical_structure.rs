@@ -65,6 +65,13 @@ where
     tag("//")(s)
 }
 
+fn doc_line_comment_start<I>(s: I) -> IResult<I, I>
+where
+I: InputTake + Compare<&'static str>,
+{
+    tag("///")(s)
+}
+
 fn none_of_newline<I>(s: I) -> IResult<I, char>
 where
     I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength,
@@ -95,6 +102,25 @@ where
     )(input)
 }
 
+fn _doc_line_comment<I>(input: I) -> IResult<I, String>
+    where
+        I: InputTake
+        + Compare<&'static str>
+        + Clone
+        + InputLength
+        + InputIter
+        + Slice<RangeFrom<usize>>
+        + ToString,
+        <I as InputIter>::Item: AsChar + Copy,
+{
+    map(
+        tuple((doc_line_comment_start, many0(none_of_newline), opt(newline))),
+        |(s, c, e): (I, _, _)| {
+            s.to_string() + &*String::from_iter(c) + &*e.map(|c| c.to_string()).unwrap_or_default()
+        },
+    )(input)
+}
+
 fn line_comment<I>(s: I) -> IResult<I, TriviaPiece>
 where
     I: InputTake
@@ -107,6 +133,20 @@ where
     <I as InputIter>::Item: AsChar + Copy,
 {
     map(_line_comment, |c| TriviaPiece::LineComment(c))(s)
+}
+
+fn doc_line_comment<I>(s: I) -> IResult<I, TriviaPiece>
+    where
+        I: InputTake
+        + Compare<&'static str>
+        + Clone
+        + InputLength
+        + InputIter
+        + Slice<RangeFrom<usize>>
+        + ToString,
+        <I as InputIter>::Item: AsChar + Copy,
+{
+    map(_doc_line_comment, |c| TriviaPiece::DocLineComment(c))(s)
 }
 
 fn block_comment_start<I>(input: I) -> IResult<I, I>
@@ -257,6 +297,7 @@ where
         carriage_return_line_feeds,
         newlines,
         carriage_returns,
+        doc_line_comment,
         line_comment,
         block_comment,
     ))(s)
@@ -279,6 +320,7 @@ where
         spaces,
         tabs,
         carriage_return_line_feeds,
+        doc_line_comment,
         line_comment,
         block_comment,
     ))(s)
@@ -286,10 +328,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::lexical_structure::{
-        block_comment, carriage_return_line_feeds, carriage_returns, identifier, line_comment,
-        newlines, spaces, tabs, whitespace0, whitespace1,
-    };
+    use crate::parser::wiz::lexical_structure::{block_comment, carriage_return_line_feeds, carriage_returns, identifier, line_comment, newlines, spaces, tabs, whitespace0, whitespace1, doc_line_comment};
     use crate::syntax::trivia::{Trivia, TriviaPiece};
     use nom::error;
     use nom::error::ErrorKind;
@@ -375,10 +414,10 @@ mod tests {
             ))
         );
         assert_eq!(
-            whitespace0("// code comment\n"),
+            whitespace0("/// code comment\n"),
             Ok((
                 "",
-                Trivia::from(TriviaPiece::LineComment(String::from("// code comment\n")))
+                Trivia::from(TriviaPiece::DocLineComment(String::from("/// code comment\n")))
             ))
         );
         assert_eq!(
@@ -506,6 +545,24 @@ mod tests {
             Ok((
                 "not comment\n",
                 TriviaPiece::LineComment(String::from("//comment\n"))
+            ))
+        );
+    }
+
+    #[test]
+    fn test_doc_line_comment() {
+        assert_eq!(
+            doc_line_comment("/// doc comment\n"),
+            Ok((
+                "",
+                TriviaPiece::DocLineComment(String::from("/// doc comment\n"))
+            ))
+        );
+        assert_eq!(
+            doc_line_comment("/// this is document comment"),
+            Ok((
+                "",
+                TriviaPiece::DocLineComment(String::from("/// this is document comment"))
             ))
         );
     }
