@@ -2,10 +2,10 @@ use crate::parser::wiz::character::{alphabet, cr, digit, eol, space, under_score
 use crate::syntax::trivia::TriviaPiece;
 use nom::branch::{alt, permutation};
 use nom::bytes::complete::{tag, take_until, take_while_m_n};
-use nom::character::complete::{char, newline, tab, crlf};
+use nom::character::complete::{char, crlf, newline, tab};
 use nom::combinator::{map, opt};
 use nom::error::ParseError;
-use nom::lib::std::ops::{RangeFrom, Range};
+use nom::lib::std::ops::{Range, RangeFrom};
 use nom::multi::{many0, many1};
 use nom::sequence::tuple;
 use nom::{
@@ -206,15 +206,22 @@ where
 
 pub fn carriage_return_line_feeds<I>(s: I) -> IResult<I, TriviaPiece>
 where
-I: Slice<RangeFrom<usize>> + Slice<Range<usize>> + Clone + InputLength + InputIter + Compare<&'static str>
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + Clone
+        + InputLength
+        + InputIter
+        + Compare<&'static str>,
 {
-    map(many1(crlf), |l| TriviaPiece::CarriageReturnLineFeeds(l.len() as i64))(s)
+    map(many1(crlf), |l| {
+        TriviaPiece::CarriageReturnLineFeeds(l.len() as i64)
+    })(s)
 }
 
 pub fn trivia_piece<I>(s: I) -> IResult<I, TriviaPiece>
 where
     I: Slice<RangeFrom<usize>>
-    + Slice<Range<usize>>
+        + Slice<Range<usize>>
         + InputIter
         + Clone
         + InputLength
@@ -236,8 +243,8 @@ where
 }
 
 pub fn trivia_piece_without_line_ending<I>(s: I) -> IResult<I, TriviaPiece>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + Clone
@@ -246,7 +253,7 @@ pub fn trivia_piece_without_line_ending<I>(s: I) -> IResult<I, TriviaPiece>
         + InputTake
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
+    <I as InputIter>::Item: AsChar + Copy,
 {
     alt((
         spaces,
@@ -256,7 +263,6 @@ pub fn trivia_piece_without_line_ending<I>(s: I) -> IResult<I, TriviaPiece>
         block_comment,
     ))(s)
 }
-
 
 #[cfg(test)]
 mod tests {
