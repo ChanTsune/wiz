@@ -4,7 +4,6 @@ use nom::branch::{alt, permutation};
 use nom::bytes::complete::{tag, take_until, take_while_m_n};
 use nom::character::complete::{char, crlf, newline, tab};
 use nom::combinator::{map, opt};
-use nom::error::ParseError;
 use nom::lib::std::ops::{Range, RangeFrom};
 use nom::multi::{many0, many1};
 use nom::sequence::tuple;
@@ -25,26 +24,12 @@ pub fn whitespace1(s: &str) -> IResult<&str, String> {
         v.into_iter().map(|t| t.to_string()).collect()
     })(s)
 }
+
 pub fn whitespace_without_eol0(s: &str) -> IResult<&str, String> {
     map(
-        tuple((
-            _whitespace_without_eol0,
-            opt(comment),
-            _whitespace_without_eol0,
-        )),
-        |(w1, c, w2)| String::from(w1) + &*c.unwrap_or_default() + w2,
+        many0(trivia_piece_without_line_ending),
+        |v| v.into_iter().map(|t| t.to_string()).collect(),
     )(s)
-}
-
-fn _whitespace_without_eol0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
-where
-    T: InputTakeAtPosition,
-    <T as InputTakeAtPosition>::Item: AsChar + Clone,
-{
-    input.split_at_position_complete(|item| {
-        let c = item.as_char();
-        !c.is_whitespace() || (c == '\n')
-    })
 }
 
 fn line_comment_start<I>(s: I) -> IResult<I, I>
@@ -138,9 +123,6 @@ where
     I: InputTake + FindSubstring<&'static str> + Compare<&'static str> + ToString + Clone,
 {
     map(_block_comment, |s| TriviaPiece::BlockComment(s))(input)
-}
-pub fn comment(input: &str) -> IResult<&str, String> {
-    alt((_line_comment, _block_comment))(input)
 }
 
 pub fn identifier_head(s: &str) -> IResult<&str, char> {
@@ -266,10 +248,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::lexical_structure::{
-        block_comment, carriage_returns, comment, identifier, line_comment, newlines, spaces, tabs,
-        whitespace0, whitespace1,
-    };
+    use crate::parser::wiz::lexical_structure::{block_comment, carriage_returns, identifier, line_comment, newlines, spaces, tabs, whitespace0, whitespace1, carriage_return_line_feeds};
     use crate::syntax::trivia::TriviaPiece;
     use nom::error;
     use nom::error::ErrorKind;
@@ -300,26 +279,6 @@ mod tests {
                 code: ErrorKind::Char
             }))
         );
-    }
-
-    #[test]
-    fn test_comment() {
-        assert_eq!(
-            comment("// code comment"),
-            Ok(("", String::from("// code comment")))
-        );
-        assert_eq!(comment("//"), Ok(("", String::from("//"))));
-        assert_eq!(
-            comment("// code comment\n"),
-            Ok(("", String::from("// code comment\n")))
-        );
-    }
-
-    #[test]
-    fn test_inline_comment() {
-        assert_eq!(comment("/* a */"), Ok(("", String::from("/* a */"))));
-        assert_eq!(comment("/**/"), Ok(("", String::from("/**/"))));
-        assert_eq!(comment("/*\n*/"), Ok(("", String::from("/*\n*/"))));
     }
 
     #[test]
@@ -390,7 +349,24 @@ mod tests {
     }
 
     #[test]
+    fn test_carriage_return_line_feeds() {
+        assert_eq!(
+            carriage_return_line_feeds("\r\n\r\n"),
+            Ok(("", TriviaPiece::CarriageReturnLineFeeds(2)))
+        )
+    }
+
+    #[test]
     fn test_line_comment() {
+        assert_eq!(
+            line_comment("// code comment"),
+            Ok(("", TriviaPiece::LineComment(String::from("// code comment"))))
+        );
+        assert_eq!(line_comment("//"), Ok(("", TriviaPiece::LineComment(String::from("//")))));
+        assert_eq!(
+            line_comment("// code comment\n"),
+            Ok(("", TriviaPiece::LineComment(String::from("// code comment\n"))))
+        );
         assert_eq!(
             line_comment("// this is comment"),
             Ok((
@@ -416,6 +392,9 @@ mod tests {
 
     #[test]
     fn test_block_comment() {
+        assert_eq!(block_comment("/* a */"), Ok(("", TriviaPiece::BlockComment(String::from("/* a */")))));
+        assert_eq!(block_comment("/**/"), Ok(("", TriviaPiece::BlockComment(String::from("/**/")))));
+        assert_eq!(block_comment("/*\n*/"), Ok(("", TriviaPiece::BlockComment(String::from("/*\n*/")))));
         assert_eq!(
             block_comment("/* this is comment */"),
             Ok((
