@@ -7,15 +7,12 @@ use nom::combinator::{map, opt};
 use nom::lib::std::ops::{Range, RangeFrom};
 use nom::multi::{many0, many1};
 use nom::sequence::tuple;
-use nom::{
-    AsChar, Compare, FindSubstring, IResult, InputIter, InputLength, InputTake,
-    Slice,
-};
+use nom::{AsChar, Compare, FindSubstring, IResult, InputIter, InputLength, InputTake, Slice};
 use std::iter::FromIterator;
 
 pub fn whitespace0<I>(s: I) -> IResult<I, Trivia>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + Clone
@@ -24,14 +21,14 @@ pub fn whitespace0<I>(s: I) -> IResult<I, Trivia>
         + InputTake
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
+    <I as InputIter>::Item: AsChar + Copy,
 {
     map(many0(trivia_piece), |v| Trivia::new(v))(s)
 }
 
 pub fn whitespace1<I>(s: I) -> IResult<I, Trivia>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + Clone
@@ -40,14 +37,14 @@ pub fn whitespace1<I>(s: I) -> IResult<I, Trivia>
         + InputTake
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
+    <I as InputIter>::Item: AsChar + Copy,
 {
     map(many1(trivia_piece), |v| Trivia::new(v))(s)
 }
 
 pub fn whitespace_without_eol0<I>(s: I) -> IResult<I, Trivia>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + Clone
@@ -56,7 +53,7 @@ pub fn whitespace_without_eol0<I>(s: I) -> IResult<I, Trivia>
         + InputTake
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
+    <I as InputIter>::Item: AsChar + Copy,
 {
     map(many0(trivia_piece_without_line_ending), |v| Trivia::new(v))(s)
 }
