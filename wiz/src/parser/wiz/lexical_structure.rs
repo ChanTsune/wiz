@@ -4,7 +4,7 @@ use nom::branch::{alt, permutation};
 use nom::bytes::complete::{tag, take_until, take_while_m_n};
 use nom::character::complete::{char, newline, tab};
 use nom::combinator::{map, opt};
-use nom::error::{ParseError};
+use nom::error::ParseError;
 use nom::lib::std::ops::RangeFrom;
 use nom::multi::{many0, many1};
 use nom::sequence::tuple;
