@@ -694,10 +694,7 @@ pub fn expr(s: &str) -> IResult<&str, Expr> {
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::expression::{
-        disjunction_expr, expr, floating_point_literal, indexing_suffix, integer_literal,
-        postfix_suffix, return_expr, string_literal, value_arguments,
-    };
+    use crate::parser::wiz::expression::{disjunction_expr, expr, floating_point_literal, indexing_suffix, integer_literal, postfix_suffix, return_expr, string_literal, value_arguments, conjunction_expr};
     use crate::syntax::block::Block;
     use crate::syntax::expr::Expr::{BinOp, If};
     use crate::syntax::expr::{
@@ -788,6 +785,32 @@ mod tests {
                         }))
                     }),
                     kind: "||".parse().unwrap(),
+                    right: Box::from(Expr::Literal(LiteralSyntax::Integer {
+                        value: "3".parse().unwrap()
+                    }))
+                }
+            ))
+        )
+    }
+
+    #[test]
+    fn test_conjunction_expr() {
+        assert_eq!(
+            conjunction_expr(r"1 &&
+            2 && 3"),
+            Ok((
+                "",
+                BinOp {
+                    left: Box::from(BinOp {
+                        left: Box::from(Expr::Literal(LiteralSyntax::Integer {
+                            value: "1".parse().unwrap()
+                        })),
+                        kind: "&&".parse().unwrap(),
+                        right: Box::from(Expr::Literal(LiteralSyntax::Integer {
+                            value: "2".parse().unwrap()
+                        }))
+                    }),
+                    kind: "&&".parse().unwrap(),
                     right: Box::from(Expr::Literal(LiteralSyntax::Integer {
                         value: "3".parse().unwrap()
                     }))
