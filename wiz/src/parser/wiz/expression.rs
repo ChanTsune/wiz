@@ -15,12 +15,12 @@ use crate::syntax::literal::LiteralSyntax;
 use crate::syntax::stmt::Stmt;
 use crate::syntax::type_name::TypeName;
 use nom::branch::{alt, permutation};
+use nom::bytes::complete::take_until;
 use nom::character::complete::{char, digit1};
 use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
 use nom::IResult;
-use nom::bytes::complete::take_until;
 
 pub fn integer_literal(s: &str) -> IResult<&str, LiteralSyntax> {
     map(digit1, |n: &str| LiteralSyntax::Integer {
@@ -40,14 +40,17 @@ pub fn floating_point_literal(s: &str) -> IResult<&str, LiteralSyntax> {
 pub fn string_literal(s: &str) -> IResult<&str, LiteralSyntax> {
     map(
         permutation((char('"'), take_until("\""), char('"'))),
-        |(a, b, c):(_, &str, _)| LiteralSyntax::String {
+        |(a, b, c): (_, &str, _)| LiteralSyntax::String {
             value: String::from(b),
         },
     )(s)
 }
 
 pub fn prefix_operator(s: &str) -> IResult<&str, String> {
-    map(alt((char('+'), char('-'), char('!'), char('*'), char('&'))), |c| c.to_string())(s)
+    map(
+        alt((char('+'), char('-'), char('!'), char('*'), char('&'))),
+        |c| c.to_string(),
+    )(s)
 }
 
 pub fn literal_expr(s: &str) -> IResult<&str, Expr> {
