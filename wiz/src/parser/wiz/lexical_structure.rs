@@ -159,10 +159,9 @@ pub fn identifier(s: &str) -> IResult<&str, String> {
             )),
             |(a, b, c, d)| a + &*b + &*c + &*d,
         ),
-        map(
-            tuple((identifier_head, identifier_characters)),
-            |(a, b)| a.to_string() + &*b,
-        ),
+        map(tuple((identifier_head, identifier_characters)), |(a, b)| {
+            a.to_string() + &*b
+        }),
     ))(s)
 }
 
