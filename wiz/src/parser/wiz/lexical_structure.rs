@@ -156,6 +156,13 @@ where
     tag("/*")(input)
 }
 
+fn doc_block_comment_start<I>(input: I) -> IResult<I, I>
+    where
+        I: InputTake + Compare<&'static str>,
+{
+    tag("/**")(input)
+}
+
 fn block_comment_end<I>(input: I) -> IResult<I, I>
 where
     I: InputTake + Compare<&'static str>,
@@ -184,11 +191,32 @@ where
     )(input)
 }
 
+fn _doc_block_comment<I>(input: I) -> IResult<I, String>
+    where
+        I: InputTake + FindSubstring<&'static str> + Compare<&'static str> + ToString + Clone,
+{
+    map(
+        permutation((
+            doc_block_comment_start,
+            take_until_block_comment_end,
+            block_comment_end,
+        )),
+        |(a, b, c): (I, I, I)| a.to_string() + &*b.to_string() + &*c.to_string(),
+    )(input)
+}
+
 pub fn block_comment<I>(input: I) -> IResult<I, TriviaPiece>
 where
     I: InputTake + FindSubstring<&'static str> + Compare<&'static str> + ToString + Clone,
 {
     map(_block_comment, |s| TriviaPiece::BlockComment(s))(input)
+}
+
+pub fn doc_block_comment<I>(input: I) -> IResult<I, TriviaPiece>
+    where
+        I: InputTake + FindSubstring<&'static str> + Compare<&'static str> + ToString + Clone,
+{
+    map(_doc_block_comment, |s| TriviaPiece::DocBlockComment(s))(input)
 }
 
 pub fn identifier_head<I>(s: I) -> IResult<I, char>
@@ -298,6 +326,7 @@ where
         newlines,
         carriage_returns,
         doc_line_comment,
+        doc_block_comment,
         line_comment,
         block_comment,
     ))(s)
@@ -321,6 +350,7 @@ where
         tabs,
         carriage_return_line_feeds,
         doc_line_comment,
+        doc_block_comment,
         line_comment,
         block_comment,
     ))(s)
@@ -328,10 +358,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::lexical_structure::{
-        block_comment, carriage_return_line_feeds, carriage_returns, doc_line_comment, identifier,
-        line_comment, newlines, spaces, tabs, whitespace0, whitespace1,
-    };
+    use crate::parser::wiz::lexical_structure::{block_comment, carriage_return_line_feeds, carriage_returns, doc_line_comment, identifier, line_comment, newlines, spaces, tabs, whitespace0, whitespace1, doc_block_comment};
     use crate::syntax::trivia::{Trivia, TriviaPiece};
     use nom::error;
     use nom::error::ErrorKind;
@@ -433,10 +460,10 @@ mod tests {
             ))
         );
         assert_eq!(
-            whitespace0("/**/"),
+            whitespace0("/***/"),
             Ok((
                 "",
-                Trivia::from(TriviaPiece::BlockComment(String::from("/**/")))
+                Trivia::from(TriviaPiece::DocBlockComment(String::from("/***/")))
             ))
         );
     }
@@ -599,6 +626,18 @@ mod tests {
                 "not comment\n",
                 TriviaPiece::BlockComment(String::from("/*/comment\n*/"))
             ))
+        );
+    }
+
+    #[test]
+    fn test_doc_block_comment() {
+        assert_eq!(
+            doc_block_comment("/** a */"),
+            Ok(("", TriviaPiece::DocBlockComment(String::from("/** a */"))))
+        );
+        assert_eq!(
+            doc_block_comment("/***/"),
+            Ok(("", TriviaPiece::DocBlockComment(String::from("/***/"))))
         );
     }
 }
