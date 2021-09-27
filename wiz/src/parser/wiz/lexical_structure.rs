@@ -67,7 +67,7 @@ where
 
 fn doc_line_comment_start<I>(s: I) -> IResult<I, I>
 where
-I: InputTake + Compare<&'static str>,
+    I: InputTake + Compare<&'static str>,
 {
     tag("///")(s)
 }
@@ -103,15 +103,15 @@ where
 }
 
 fn _doc_line_comment<I>(input: I) -> IResult<I, String>
-    where
-        I: InputTake
+where
+    I: InputTake
         + Compare<&'static str>
         + Clone
         + InputLength
         + InputIter
         + Slice<RangeFrom<usize>>
         + ToString,
-        <I as InputIter>::Item: AsChar + Copy,
+    <I as InputIter>::Item: AsChar + Copy,
 {
     map(
         tuple((doc_line_comment_start, many0(none_of_newline), opt(newline))),
@@ -136,15 +136,15 @@ where
 }
 
 fn doc_line_comment<I>(s: I) -> IResult<I, TriviaPiece>
-    where
-        I: InputTake
+where
+    I: InputTake
         + Compare<&'static str>
         + Clone
         + InputLength
         + InputIter
         + Slice<RangeFrom<usize>>
         + ToString,
-        <I as InputIter>::Item: AsChar + Copy,
+    <I as InputIter>::Item: AsChar + Copy,
 {
     map(_doc_line_comment, |c| TriviaPiece::DocLineComment(c))(s)
 }
@@ -328,7 +328,10 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::lexical_structure::{block_comment, carriage_return_line_feeds, carriage_returns, identifier, line_comment, newlines, spaces, tabs, whitespace0, whitespace1, doc_line_comment};
+    use crate::parser::wiz::lexical_structure::{
+        block_comment, carriage_return_line_feeds, carriage_returns, doc_line_comment, identifier,
+        line_comment, newlines, spaces, tabs, whitespace0, whitespace1,
+    };
     use crate::syntax::trivia::{Trivia, TriviaPiece};
     use nom::error;
     use nom::error::ErrorKind;
@@ -417,7 +420,9 @@ mod tests {
             whitespace0("/// code comment\n"),
             Ok((
                 "",
-                Trivia::from(TriviaPiece::DocLineComment(String::from("/// code comment\n")))
+                Trivia::from(TriviaPiece::DocLineComment(String::from(
+                    "/// code comment\n"
+                )))
             ))
         );
         assert_eq!(
