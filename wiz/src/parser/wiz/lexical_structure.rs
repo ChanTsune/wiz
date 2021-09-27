@@ -157,8 +157,8 @@ where
 }
 
 fn doc_block_comment_start<I>(input: I) -> IResult<I, I>
-    where
-        I: InputTake + Compare<&'static str>,
+where
+    I: InputTake + Compare<&'static str>,
 {
     tag("/**")(input)
 }
@@ -192,8 +192,8 @@ where
 }
 
 fn _doc_block_comment<I>(input: I) -> IResult<I, String>
-    where
-        I: InputTake + FindSubstring<&'static str> + Compare<&'static str> + ToString + Clone,
+where
+    I: InputTake + FindSubstring<&'static str> + Compare<&'static str> + ToString + Clone,
 {
     map(
         permutation((
@@ -213,8 +213,8 @@ where
 }
 
 pub fn doc_block_comment<I>(input: I) -> IResult<I, TriviaPiece>
-    where
-        I: InputTake + FindSubstring<&'static str> + Compare<&'static str> + ToString + Clone,
+where
+    I: InputTake + FindSubstring<&'static str> + Compare<&'static str> + ToString + Clone,
 {
     map(_doc_block_comment, |s| TriviaPiece::DocBlockComment(s))(input)
 }
@@ -358,7 +358,11 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::lexical_structure::{block_comment, carriage_return_line_feeds, carriage_returns, doc_line_comment, identifier, line_comment, newlines, spaces, tabs, whitespace0, whitespace1, doc_block_comment};
+    use crate::parser::wiz::lexical_structure::{
+        block_comment, carriage_return_line_feeds, carriage_returns, doc_block_comment,
+        doc_line_comment, identifier, line_comment, newlines, spaces, tabs, whitespace0,
+        whitespace1,
+    };
     use crate::syntax::trivia::{Trivia, TriviaPiece};
     use nom::error;
     use nom::error::ErrorKind;
