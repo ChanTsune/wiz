@@ -9,19 +9,55 @@ use nom::multi::{many0, many1};
 use nom::sequence::tuple;
 use nom::{
     AsChar, Compare, FindSubstring, IResult, InputIter, InputLength, InputTake,
-    InputTakeAtPosition, Slice,
+    Slice,
 };
 use std::iter::FromIterator;
 
-pub fn whitespace0(s: &str) -> IResult<&str, Trivia> {
+pub fn whitespace0<I>(s: I) -> IResult<I, Trivia>
+    where
+        I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+        <I as InputIter>::Item: AsChar + Copy,
+{
     map(many0(trivia_piece), |v| Trivia::new(v))(s)
 }
 
-pub fn whitespace1(s: &str) -> IResult<&str, Trivia> {
+pub fn whitespace1<I>(s: I) -> IResult<I, Trivia>
+    where
+        I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+        <I as InputIter>::Item: AsChar + Copy,
+{
     map(many1(trivia_piece), |v| Trivia::new(v))(s)
 }
 
-pub fn whitespace_without_eol0(s: &str) -> IResult<&str, Trivia> {
+pub fn whitespace_without_eol0<I>(s: I) -> IResult<I, Trivia>
+    where
+        I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+        <I as InputIter>::Item: AsChar + Copy,
+{
     map(many0(trivia_piece_without_line_ending), |v| Trivia::new(v))(s)
 }
 
