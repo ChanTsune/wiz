@@ -2,10 +2,10 @@ use crate::parser::wiz::character::{alphabet, cr, digit, eol, space, under_score
 use crate::syntax::trivia::TriviaPiece;
 use nom::branch::{alt, permutation};
 use nom::bytes::complete::{tag, take_until, take_while_m_n};
-use nom::character::complete::{char, newline, tab};
+use nom::character::complete::{char, newline, tab, crlf};
 use nom::combinator::{map, opt};
 use nom::error::ParseError;
-use nom::lib::std::ops::RangeFrom;
+use nom::lib::std::ops::{RangeFrom, Range};
 use nom::multi::{many0, many1};
 use nom::sequence::tuple;
 use nom::{
@@ -204,9 +204,17 @@ where
     map(many1(cr), |l| TriviaPiece::CarriageReturns(l.len() as i64))(s)
 }
 
+pub fn carriage_return_line_feeds<I>(s: I) -> IResult<I, TriviaPiece>
+where
+I: Slice<RangeFrom<usize>> + Slice<Range<usize>> + Clone + InputLength + InputIter + Compare<&'static str>
+{
+    map(many1(crlf), |l| TriviaPiece::CarriageReturnLineFeeds(l.len() as i64))(s)
+}
+
 pub fn trivia_piece<I>(s: I) -> IResult<I, TriviaPiece>
 where
     I: Slice<RangeFrom<usize>>
+    + Slice<Range<usize>>
         + InputIter
         + Clone
         + InputLength
@@ -219,12 +227,36 @@ where
     alt((
         spaces,
         tabs,
+        carriage_return_line_feeds,
         newlines,
         carriage_returns,
         line_comment,
         block_comment,
     ))(s)
 }
+
+pub fn trivia_piece_without_line_ending<I>(s: I) -> IResult<I, TriviaPiece>
+    where
+        I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+        <I as InputIter>::Item: AsChar + Copy,
+{
+    alt((
+        spaces,
+        tabs,
+        carriage_return_line_feeds,
+        line_comment,
+        block_comment,
+    ))(s)
+}
+
 
 #[cfg(test)]
 mod tests {
