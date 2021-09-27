@@ -26,10 +26,9 @@ pub fn whitespace1(s: &str) -> IResult<&str, String> {
 }
 
 pub fn whitespace_without_eol0(s: &str) -> IResult<&str, String> {
-    map(
-        many0(trivia_piece_without_line_ending),
-        |v| v.into_iter().map(|t| t.to_string()).collect(),
-    )(s)
+    map(many0(trivia_piece_without_line_ending), |v| {
+        v.into_iter().map(|t| t.to_string()).collect()
+    })(s)
 }
 
 fn line_comment_start<I>(s: I) -> IResult<I, I>
@@ -248,7 +247,10 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::lexical_structure::{block_comment, carriage_returns, identifier, line_comment, newlines, spaces, tabs, whitespace0, whitespace1, carriage_return_line_feeds};
+    use crate::parser::wiz::lexical_structure::{
+        block_comment, carriage_return_line_feeds, carriage_returns, identifier, line_comment,
+        newlines, spaces, tabs, whitespace0, whitespace1,
+    };
     use crate::syntax::trivia::TriviaPiece;
     use nom::error;
     use nom::error::ErrorKind;
@@ -360,12 +362,21 @@ mod tests {
     fn test_line_comment() {
         assert_eq!(
             line_comment("// code comment"),
-            Ok(("", TriviaPiece::LineComment(String::from("// code comment"))))
+            Ok((
+                "",
+                TriviaPiece::LineComment(String::from("// code comment"))
+            ))
         );
-        assert_eq!(line_comment("//"), Ok(("", TriviaPiece::LineComment(String::from("//")))));
+        assert_eq!(
+            line_comment("//"),
+            Ok(("", TriviaPiece::LineComment(String::from("//"))))
+        );
         assert_eq!(
             line_comment("// code comment\n"),
-            Ok(("", TriviaPiece::LineComment(String::from("// code comment\n"))))
+            Ok((
+                "",
+                TriviaPiece::LineComment(String::from("// code comment\n"))
+            ))
         );
         assert_eq!(
             line_comment("// this is comment"),
@@ -392,9 +403,18 @@ mod tests {
 
     #[test]
     fn test_block_comment() {
-        assert_eq!(block_comment("/* a */"), Ok(("", TriviaPiece::BlockComment(String::from("/* a */")))));
-        assert_eq!(block_comment("/**/"), Ok(("", TriviaPiece::BlockComment(String::from("/**/")))));
-        assert_eq!(block_comment("/*\n*/"), Ok(("", TriviaPiece::BlockComment(String::from("/*\n*/")))));
+        assert_eq!(
+            block_comment("/* a */"),
+            Ok(("", TriviaPiece::BlockComment(String::from("/* a */"))))
+        );
+        assert_eq!(
+            block_comment("/**/"),
+            Ok(("", TriviaPiece::BlockComment(String::from("/**/"))))
+        );
+        assert_eq!(
+            block_comment("/*\n*/"),
+            Ok(("", TriviaPiece::BlockComment(String::from("/*\n*/"))))
+        );
         assert_eq!(
             block_comment("/* this is comment */"),
             Ok((
