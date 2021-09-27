@@ -694,10 +694,7 @@ pub fn expr(s: &str) -> IResult<&str, Expr> {
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::expression::{
-        conjunction_expr, disjunction_expr, expr, floating_point_literal, indexing_suffix,
-        integer_literal, postfix_suffix, return_expr, string_literal, value_arguments,
-    };
+    use crate::parser::wiz::expression::{disjunction_expr, expr, floating_point_literal, indexing_suffix, integer_literal, postfix_suffix, return_expr, string_literal, value_arguments, conjunction_expr, equality_expr};
     use crate::syntax::block::Block;
     use crate::syntax::expr::Expr::{BinOp, If};
     use crate::syntax::expr::{
@@ -822,6 +819,21 @@ mod tests {
                 }
             ))
         )
+    }
+
+    #[test]
+    fn test_equality_expr() {
+        assert_eq!(
+            equality_expr(r"1
+            && 2"),
+            Ok((
+                "\n            && 2",
+                Expr::Literal(LiteralSyntax::Integer {
+                    value: "1".parse().unwrap()
+                })
+            ))
+        )
+
     }
 
     #[test]
