@@ -423,10 +423,6 @@ mod tests {
             ))
         );
         assert_eq!(
-            block_comment("/**/"),
-            Ok(("", TriviaPiece::BlockComment(String::from("/**/"))))
-        );
-        assert_eq!(
             block_comment("/*/comment\n*/not comment\n"),
             Ok((
                 "not comment\n",
