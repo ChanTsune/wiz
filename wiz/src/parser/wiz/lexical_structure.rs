@@ -15,17 +15,15 @@ use nom::{
 use std::iter::FromIterator;
 
 pub fn whitespace0(s: &str) -> IResult<&str, String> {
-    map(
-        many0(trivia_piece),
-        |v| v.into_iter().map(|t|{t.to_string()}).collect(),
-    )(s)
+    map(many0(trivia_piece), |v| {
+        v.into_iter().map(|t| t.to_string()).collect()
+    })(s)
 }
 
 pub fn whitespace1(s: &str) -> IResult<&str, String> {
-    map(
-        many1(trivia_piece),
-        |v| v.into_iter().map(|t|{t.to_string()}).collect(),
-    )(s)
+    map(many1(trivia_piece), |v| {
+        v.into_iter().map(|t| t.to_string()).collect()
+    })(s)
 }
 pub fn whitespace_without_eol0(s: &str) -> IResult<&str, String> {
     map(

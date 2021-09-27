@@ -28,25 +28,25 @@ pub enum TriviaPiece {
 impl ToString for TriviaPiece {
     fn to_string(&self) -> String {
         match self {
-            TriviaPiece::Spaces(i) => {String::from(' ').repeat(i.clone() as usize)}
-            TriviaPiece::Tabs(i) => {String::from('\t').repeat(i.clone() as usize)}
-            TriviaPiece::VerticalTabs(i) => {String::from('\x11').repeat(i.clone() as usize)}
-            TriviaPiece::FormFeeds(i) => {String::from('\x12').repeat(i.clone() as usize)}
-            TriviaPiece::Newlines(i) => {String::from('\n').repeat(i.clone() as usize)}
-            TriviaPiece::CarriageReturns(i) => {String::from('\r').repeat(i.clone() as usize)}
-            TriviaPiece::CarriageReturnLineFeeds(i) => {String::from("\r\n").repeat(i.clone() as usize)}
-            TriviaPiece::LineComment(s) => {s.clone()}
-            TriviaPiece::BlockComment(s) => {s.clone()}
-            TriviaPiece::DocLineComment(s) => {s.clone()}
-            TriviaPiece::DocBlockComment(s) => {s.clone()}
-            TriviaPiece::GarbageText(s) => {s.clone()}
+            TriviaPiece::Spaces(i) => String::from(' ').repeat(i.clone() as usize),
+            TriviaPiece::Tabs(i) => String::from('\t').repeat(i.clone() as usize),
+            TriviaPiece::VerticalTabs(i) => String::from('\x11').repeat(i.clone() as usize),
+            TriviaPiece::FormFeeds(i) => String::from('\x12').repeat(i.clone() as usize),
+            TriviaPiece::Newlines(i) => String::from('\n').repeat(i.clone() as usize),
+            TriviaPiece::CarriageReturns(i) => String::from('\r').repeat(i.clone() as usize),
+            TriviaPiece::CarriageReturnLineFeeds(i) => {
+                String::from("\r\n").repeat(i.clone() as usize)
+            }
+            TriviaPiece::LineComment(s) => s.clone(),
+            TriviaPiece::BlockComment(s) => s.clone(),
+            TriviaPiece::DocLineComment(s) => s.clone(),
+            TriviaPiece::DocBlockComment(s) => s.clone(),
+            TriviaPiece::GarbageText(s) => s.clone(),
         }
     }
 }
-
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct Trivia {
     peaces: Vec<TriviaPiece>,
 }
-
