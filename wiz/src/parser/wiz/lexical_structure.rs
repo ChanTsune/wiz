@@ -1,5 +1,5 @@
+use crate::parser::wiz::character::{alphabet, backticks, cr, digit, eol, space, under_score};
 use crate::syntax::trivia::TriviaPiece;
-use crate::parser::wiz::character::{alphabet, cr, digit, eol, space, under_score, backticks};
 use nom::branch::{alt, permutation};
 use nom::bytes::complete::{tag, take_until, take_while_m_n};
 use nom::character::complete::{char, crlf, newline, tab};
