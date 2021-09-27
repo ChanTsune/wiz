@@ -13,6 +13,7 @@ use crate::syntax::expr::{
 };
 use crate::syntax::literal::LiteralSyntax;
 use crate::syntax::stmt::Stmt;
+use crate::syntax::trivia::Trivia;
 use crate::syntax::type_name::TypeName;
 use nom::branch::{alt, permutation};
 use nom::bytes::complete::take_until;
@@ -21,7 +22,6 @@ use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
 use nom::IResult;
-use crate::syntax::trivia::Trivia;
 
 pub fn integer_literal(s: &str) -> IResult<&str, LiteralSyntax> {
     map(digit1, |n: &str| LiteralSyntax::Integer {

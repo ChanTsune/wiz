@@ -1,5 +1,5 @@
 use crate::parser::wiz::character::{alphabet, backticks, cr, digit, eol, space, under_score};
-use crate::syntax::trivia::{TriviaPiece, Trivia};
+use crate::syntax::trivia::{Trivia, TriviaPiece};
 use nom::branch::{alt, permutation};
 use nom::bytes::complete::{tag, take_until, take_while_m_n};
 use nom::character::complete::{crlf, newline, tab};
@@ -14,21 +14,15 @@ use nom::{
 use std::iter::FromIterator;
 
 pub fn whitespace0(s: &str) -> IResult<&str, Trivia> {
-    map(many0(trivia_piece), |v| {
-        Trivia::new(v)
-    })(s)
+    map(many0(trivia_piece), |v| Trivia::new(v))(s)
 }
 
 pub fn whitespace1(s: &str) -> IResult<&str, Trivia> {
-    map(many1(trivia_piece), |v| {
-        Trivia::new(v)
-    })(s)
+    map(many1(trivia_piece), |v| Trivia::new(v))(s)
 }
 
 pub fn whitespace_without_eol0(s: &str) -> IResult<&str, Trivia> {
-    map(many0(trivia_piece_without_line_ending), |v| {
-        Trivia::new(v)
-    })(s)
+    map(many0(trivia_piece_without_line_ending), |v| Trivia::new(v))(s)
 }
 
 fn line_comment_start<I>(s: I) -> IResult<I, I>
@@ -263,7 +257,7 @@ mod tests {
         block_comment, carriage_return_line_feeds, carriage_returns, identifier, line_comment,
         newlines, spaces, tabs, whitespace0, whitespace1,
     };
-    use crate::syntax::trivia::{TriviaPiece, Trivia};
+    use crate::syntax::trivia::{Trivia, TriviaPiece};
     use nom::error;
     use nom::error::ErrorKind;
     use nom::Err;
@@ -298,45 +292,115 @@ mod tests {
     #[test]
     fn test_whitespace0() {
         assert_eq!(whitespace0(""), Ok(("", Trivia::new(vec![]))));
-        assert_eq!(whitespace0("\n"), Ok(("", Trivia::from(TriviaPiece::Newlines(1)))));
-        assert_eq!(whitespace0(" \n "), Ok(("", Trivia::new(vec![TriviaPiece::Spaces(1), TriviaPiece::Newlines(1),TriviaPiece::Spaces(1)]))));
-        assert_eq!(whitespace0("        "), Ok(("", Trivia::from(TriviaPiece::Spaces(8)))));
+        assert_eq!(
+            whitespace0("\n"),
+            Ok(("", Trivia::from(TriviaPiece::Newlines(1))))
+        );
+        assert_eq!(
+            whitespace0(" \n "),
+            Ok((
+                "",
+                Trivia::new(vec![
+                    TriviaPiece::Spaces(1),
+                    TriviaPiece::Newlines(1),
+                    TriviaPiece::Spaces(1)
+                ])
+            ))
+        );
+        assert_eq!(
+            whitespace0("        "),
+            Ok(("", Trivia::from(TriviaPiece::Spaces(8))))
+        );
     }
 
     #[test]
     fn test_whitespace1() {
-        assert_eq!(whitespace1(" "), Ok(("", Trivia::from(TriviaPiece::Spaces(1)))));
-        assert_eq!(whitespace1("        "), Ok(("", Trivia::from(TriviaPiece::Spaces(8)))));
+        assert_eq!(
+            whitespace1(" "),
+            Ok(("", Trivia::from(TriviaPiece::Spaces(1))))
+        );
+        assert_eq!(
+            whitespace1("        "),
+            Ok(("", Trivia::from(TriviaPiece::Spaces(8))))
+        );
     }
 
     #[test]
     fn test_whitespace0_with_comment() {
         assert_eq!(
             whitespace0("// code comment"),
-            Ok(("", Trivia::from(TriviaPiece::LineComment(String::from("// code comment")))))
+            Ok((
+                "",
+                Trivia::from(TriviaPiece::LineComment(String::from("// code comment")))
+            ))
         );
-        assert_eq!(whitespace0("//"), Ok(("", Trivia::from(TriviaPiece::LineComment(String::from("//"))))));
+        assert_eq!(
+            whitespace0("//"),
+            Ok((
+                "",
+                Trivia::from(TriviaPiece::LineComment(String::from("//")))
+            ))
+        );
         assert_eq!(
             whitespace0("// code comment\n"),
-            Ok(("", Trivia::from(TriviaPiece::LineComment(String::from("// code comment\n")))))
+            Ok((
+                "",
+                Trivia::from(TriviaPiece::LineComment(String::from("// code comment\n")))
+            ))
         );
-        assert_eq!(whitespace0("/* a */"), Ok(("", Trivia::from(TriviaPiece::BlockComment(String::from("/* a */"))))));
-        assert_eq!(whitespace0("/**/"), Ok(("", Trivia::from(TriviaPiece::BlockComment(String::from("/**/"))))));
+        assert_eq!(
+            whitespace0("/* a */"),
+            Ok((
+                "",
+                Trivia::from(TriviaPiece::BlockComment(String::from("/* a */")))
+            ))
+        );
+        assert_eq!(
+            whitespace0("/**/"),
+            Ok((
+                "",
+                Trivia::from(TriviaPiece::BlockComment(String::from("/**/")))
+            ))
+        );
     }
 
     #[test]
     fn test_whitespace1_with_comment() {
         assert_eq!(
             whitespace1("// code comment"),
-            Ok(("", Trivia::from(TriviaPiece::LineComment(String::from("// code comment")))))
+            Ok((
+                "",
+                Trivia::from(TriviaPiece::LineComment(String::from("// code comment")))
+            ))
         );
-        assert_eq!(whitespace1("//"), Ok(("", Trivia::from(TriviaPiece::LineComment(String::from("//"))))));
+        assert_eq!(
+            whitespace1("//"),
+            Ok((
+                "",
+                Trivia::from(TriviaPiece::LineComment(String::from("//")))
+            ))
+        );
         assert_eq!(
             whitespace1("// code comment\n"),
-            Ok(("", Trivia::from(TriviaPiece::LineComment(String::from("// code comment\n")))))
+            Ok((
+                "",
+                Trivia::from(TriviaPiece::LineComment(String::from("// code comment\n")))
+            ))
         );
-        assert_eq!(whitespace1("/* a */"), Ok(("", Trivia::from(TriviaPiece::BlockComment(String::from("/* a */"))))));
-        assert_eq!(whitespace1("/**/"), Ok(("", Trivia::from(TriviaPiece::BlockComment(String::from("/**/"))))));
+        assert_eq!(
+            whitespace1("/* a */"),
+            Ok((
+                "",
+                Trivia::from(TriviaPiece::BlockComment(String::from("/* a */")))
+            ))
+        );
+        assert_eq!(
+            whitespace1("/**/"),
+            Ok((
+                "",
+                Trivia::from(TriviaPiece::BlockComment(String::from("/**/")))
+            ))
+        );
     }
 
     #[test]
