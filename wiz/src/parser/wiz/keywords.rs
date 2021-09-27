@@ -85,6 +85,13 @@ where
     tag("as")(s)
 }
 
+pub fn in_keyword<I>(s: I) -> IResult<I, I>
+    where
+        I: InputTake + Compare<&'static str>,
+{
+    tag("in")(s)
+}
+
 pub fn self_keyword<I>(s: I) -> IResult<I, I>
 where
     I: InputTake + Compare<&'static str>,
@@ -94,11 +101,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::keywords::{
-        as_keyword, else_keyword, fun_keyword, if_keyword, init_keyword, return_keyword,
-        self_keyword, struct_keyword, use_keyword, val_keyword, var_keyword, where_keyword,
-        while_keyword,
-    };
+    use crate::parser::wiz::keywords::{as_keyword, else_keyword, fun_keyword, if_keyword, init_keyword, return_keyword, self_keyword, struct_keyword, use_keyword, val_keyword, var_keyword, where_keyword, while_keyword, in_keyword};
 
     #[test]
     fn test_struct_keyword() {
@@ -158,6 +161,11 @@ mod tests {
     #[test]
     fn test_as_keyword() {
         assert_eq!(as_keyword("as"), Ok(("", "as")))
+    }
+
+    #[test]
+    fn test_in_keyword() {
+        assert_eq!(in_keyword("in"), Ok(("", "in")))
     }
 
     #[test]
