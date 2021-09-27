@@ -154,14 +154,14 @@ pub fn identifier(s: &str) -> IResult<&str, String> {
             tuple((
                 map(char('`'), |r| r.to_string()),
                 map(identifier_head, |r| r.to_string()),
-                opt(identifier_characters),
+                identifier_characters,
                 map(char('`'), |r| r.to_string()),
             )),
-            |(a, b, c, d)| a + &*b + &*c.unwrap_or_default() + &*d,
+            |(a, b, c, d)| a + &*b + &*c + &*d,
         ),
         map(
-            tuple((identifier_head, opt(identifier_characters))),
-            |(a, b)| a.to_string() + &*b.unwrap_or_default(),
+            tuple((identifier_head, identifier_characters)),
+            |(a, b)| a.to_string() + &*b,
         ),
     ))(s)
 }
