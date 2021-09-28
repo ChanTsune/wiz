@@ -2,9 +2,9 @@ use super::node::SyntaxNode;
 use crate::syntax::expr::Expr;
 use crate::syntax::fun::arg_def::ArgDef;
 use crate::syntax::fun::body_def::FunBody;
+use crate::syntax::token::TokenSyntax;
 use crate::syntax::type_name::{TypeName, TypeParam};
 use std::fmt;
-use crate::syntax::token::TokenSyntax;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum Decl {

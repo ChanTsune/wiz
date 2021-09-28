@@ -45,32 +45,28 @@ pub fn struct_syntax(s: &str) -> IResult<&str, StructSyntax> {
             identifier,
             whitespace0,
             opt(type_parameters),
-            opt(tuple((whitespace0,
-                      char('{'),
-                      whitespace0,
-                      struct_properties,
-                      whitespace0,
-                      char('}')))),
+            opt(tuple((
+                whitespace0,
+                char('{'),
+                whitespace0,
+                struct_properties,
+                whitespace0,
+                char('}'),
+            ))),
         )),
-        |(_, _, name, _, params, body)| {
-            match body {
-                Some((_, _, _, properties, _, _)) => {
-                    StructSyntax {
-                        annotations: vec![],
-                        name,
-                        type_params: params,
-                        properties,
-                    }
-                }
-                None => {
-                    StructSyntax {
-                        annotations: vec![String::from("CStructPointer")],
-                        name,
-                        type_params: params,
-                        properties: vec![],
-                    }
-                }
-            }
+        |(_, _, name, _, params, body)| match body {
+            Some((_, _, _, properties, _, _)) => StructSyntax {
+                annotations: vec![],
+                name,
+                type_params: params,
+                properties,
+            },
+            None => StructSyntax {
+                annotations: vec![String::from("CStructPointer")],
+                name,
+                type_params: params,
+                properties: vec![],
+            },
         },
     )(s)
 }
