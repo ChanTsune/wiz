@@ -499,6 +499,7 @@ mod test {
             Ok((
                 "",
                 StructSyntax {
+                    annotations: vec![],
                     name: "A".to_string(),
                     type_params: None,
                     properties: vec![StructPropertySyntax::StoredProperty(StoredPropertySyntax {
