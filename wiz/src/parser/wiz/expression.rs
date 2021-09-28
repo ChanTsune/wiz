@@ -1,5 +1,7 @@
 use crate::parser::wiz::declaration::block;
-use crate::parser::wiz::keywords::{as_keyword, else_keyword, if_keyword, in_keyword, return_keyword, true_keyword, false_keyword};
+use crate::parser::wiz::keywords::{
+    as_keyword, else_keyword, false_keyword, if_keyword, in_keyword, return_keyword, true_keyword,
+};
 use crate::parser::wiz::lexical_structure::{
     identifier, whitespace0, whitespace1, whitespace_without_eol0,
 };
@@ -13,6 +15,7 @@ use crate::syntax::expr::{
 };
 use crate::syntax::literal::LiteralSyntax;
 use crate::syntax::stmt::Stmt;
+use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::type_name::TypeName;
 use nom::branch::{alt, permutation};
@@ -21,8 +24,7 @@ use nom::character::complete::{char, digit1};
 use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
-use nom::{IResult, InputTake, Compare};
-use crate::syntax::token::TokenSyntax;
+use nom::{Compare, IResult, InputTake};
 
 pub fn integer_literal(s: &str) -> IResult<&str, LiteralSyntax> {
     map(digit1, |n: &str| LiteralSyntax::Integer {
@@ -48,16 +50,15 @@ pub fn string_literal(s: &str) -> IResult<&str, LiteralSyntax> {
     )(s)
 }
 
-pub fn boolean_literal<I>(s:I) -> IResult<I, LiteralSyntax>
-    where
-        I: InputTake + Compare<&'static str> + Clone + ToString,
-
+pub fn boolean_literal<I>(s: I) -> IResult<I, LiteralSyntax>
+where
+    I: InputTake + Compare<&'static str> + Clone + ToString,
 {
-    map(alt((true_keyword,false_keyword)),|b:I|{
-        LiteralSyntax::Boolean(TokenSyntax{
+    map(alt((true_keyword, false_keyword)), |b: I| {
+        LiteralSyntax::Boolean(TokenSyntax {
             leading_trivia: Trivia::new(vec![]),
             token: b.to_string(),
-            trailing_trivia: (Trivia::new(vec![]))
+            trailing_trivia: (Trivia::new(vec![])),
         })
     })(s)
 }
@@ -71,7 +72,12 @@ pub fn prefix_operator(s: &str) -> IResult<&str, String> {
 
 pub fn literal_expr(s: &str) -> IResult<&str, Expr> {
     map(
-        alt((boolean_literal,floating_point_literal, integer_literal, string_literal)),
+        alt((
+            boolean_literal,
+            floating_point_literal,
+            integer_literal,
+            string_literal,
+        )),
         |l| Expr::Literal(l),
     )(s)
 }
@@ -710,7 +716,11 @@ pub fn expr(s: &str) -> IResult<&str, Expr> {
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::expression::{conjunction_expr, disjunction_expr, equality_expr, expr, floating_point_literal, indexing_suffix, integer_literal, postfix_suffix, return_expr, string_literal, value_arguments, boolean_literal};
+    use crate::parser::wiz::expression::{
+        boolean_literal, conjunction_expr, disjunction_expr, equality_expr, expr,
+        floating_point_literal, indexing_suffix, integer_literal, postfix_suffix, return_expr,
+        string_literal, value_arguments,
+    };
     use crate::syntax::block::Block;
     use crate::syntax::expr::Expr::{BinOp, If};
     use crate::syntax::expr::{
@@ -788,11 +798,17 @@ mod tests {
 
     #[test]
     fn test_boolean_literal() {
-        assert_eq!(boolean_literal("true"), Ok(("", LiteralSyntax::Boolean(TokenSyntax {
-            leading_trivia: Trivia::new(vec![]),
-            token: "true".to_string(),
-            trailing_trivia: Trivia::new(vec![])
-        }))))
+        assert_eq!(
+            boolean_literal("true"),
+            Ok((
+                "",
+                LiteralSyntax::Boolean(TokenSyntax {
+                    leading_trivia: Trivia::new(vec![]),
+                    token: "true".to_string(),
+                    trailing_trivia: Trivia::new(vec![])
+                })
+            ))
+        )
     }
 
     #[test]
