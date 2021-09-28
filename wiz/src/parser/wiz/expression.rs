@@ -1,3 +1,4 @@
+use crate::parser::wiz::character::comma;
 use crate::parser::wiz::declaration::block;
 use crate::parser::wiz::keywords::{
     as_keyword, else_keyword, false_keyword, if_keyword, in_keyword, return_keyword, true_keyword,
@@ -25,7 +26,6 @@ use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
 use nom::{Compare, IResult, InputTake};
-use crate::parser::wiz::character::comma;
 
 pub fn integer_literal(s: &str) -> IResult<&str, LiteralSyntax> {
     map(digit1, |n: &str| LiteralSyntax::Integer {

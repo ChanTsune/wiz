@@ -1,3 +1,4 @@
+use crate::parser::wiz::character::comma;
 use crate::parser::wiz::lexical_structure::{identifier, whitespace0};
 use crate::syntax::type_name::{TypeName, TypeParam};
 use nom::branch::alt;
@@ -6,7 +7,6 @@ use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
 use nom::IResult;
-use crate::parser::wiz::character::comma;
 
 pub fn type_(s: &str) -> IResult<&str, TypeName> {
     alt((

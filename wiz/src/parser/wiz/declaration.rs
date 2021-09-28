@@ -1,4 +1,4 @@
-use crate::parser::wiz::character::{eol, comma};
+use crate::parser::wiz::character::{comma, eol};
 use crate::parser::wiz::expression::expr;
 use crate::parser::wiz::keywords::{
     as_keyword, fun_keyword, init_keyword, self_keyword, struct_keyword, use_keyword, val_keyword,
@@ -214,10 +214,7 @@ pub fn function_value_parameters(s: &str) -> IResult<&str, Vec<ArgDef>> {
             char('('),
             opt(tuple((
                 function_value_parameter,
-                many0(map(
-                    tuple((comma, function_value_parameter)),
-                    |(_, a)| a,
-                )),
+                many0(map(tuple((comma, function_value_parameter)), |(_, a)| a)),
                 opt(comma),
             ))),
             char(')'),
