@@ -99,13 +99,23 @@ where
     tag("self")(s)
 }
 
+pub fn true_keyword<I>(s: I) -> IResult<I, I>
+    where
+        I: InputTake + Compare<&'static str>,
+{
+    tag("true")(s)
+}
+
+pub fn false_keyword<I>(s: I) -> IResult<I, I>
+    where
+        I: InputTake + Compare<&'static str>,
+{
+    tag("false")(s)
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::keywords::{
-        as_keyword, else_keyword, fun_keyword, if_keyword, in_keyword, init_keyword,
-        return_keyword, self_keyword, struct_keyword, use_keyword, val_keyword, var_keyword,
-        where_keyword, while_keyword,
-    };
+    use crate::parser::wiz::keywords::{as_keyword, else_keyword, fun_keyword, if_keyword, init_keyword, return_keyword, self_keyword, struct_keyword, use_keyword, val_keyword, var_keyword, where_keyword, while_keyword, in_keyword, true_keyword, false_keyword};
 
     #[test]
     fn test_struct_keyword() {
@@ -175,5 +185,15 @@ mod tests {
     #[test]
     fn test_self_keyword() {
         assert_eq!(self_keyword("self"), Ok(("", "self")))
+    }
+
+    #[test]
+    fn test_true_keyword() {
+        assert_eq!(true_keyword("true"), Ok(("", "true")))
+    }
+
+    #[test]
+    fn test_false_keyword() {
+        assert_eq!(false_keyword("false"), Ok(("", "false")))
     }
 }
