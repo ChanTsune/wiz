@@ -28,8 +28,14 @@ use nom::sequence::tuple;
 use nom::{AsChar, Compare, IResult, InputIter, InputLength, InputTake, InputTakeAtPosition, Slice, FindSubstring};
 use std::ops::RangeFrom;
 
-pub fn integer_literal(s: &str) -> IResult<&str, LiteralSyntax> {
-    map(digit1, |n: &str| LiteralSyntax::Integer {
+pub fn integer_literal<I>(s: I) -> IResult<I, LiteralSyntax>
+where
+I:InputTake + ToString + InputLength + InputIter + Clone + InputTakeAtPosition
+,
+<I as InputIter>::Item: AsChar,
+<I as InputTakeAtPosition>::Item: AsChar,
+{
+    map(digit1, |n: I| LiteralSyntax::Integer {
         value: n.to_string(),
     })(s)
 }
