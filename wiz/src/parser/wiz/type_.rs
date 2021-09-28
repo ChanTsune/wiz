@@ -1,4 +1,4 @@
-use crate::parser::wiz::character::comma;
+use crate::parser::wiz::character::{comma, dot};
 use crate::parser::wiz::lexical_structure::{identifier, whitespace0};
 use crate::syntax::type_name::{TypeName, TypeParam};
 use nom::branch::alt;
@@ -36,7 +36,7 @@ pub fn user_type(s: &str) -> IResult<&str, TypeName> {
     map(
         tuple((
             simple_user_type,
-            many0(tuple((char('.'), simple_user_type))),
+            many0(tuple((dot, simple_user_type))),
         )),
         |(p, chs)| {
             // TODO: use chs

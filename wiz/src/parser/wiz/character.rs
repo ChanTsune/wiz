@@ -42,6 +42,14 @@ where
     char('`')(s)
 }
 
+pub fn dot<I>(s: I) -> IResult<I, char>
+where
+    I: Slice<RangeFrom<usize>> + InputIter,
+    <I as InputIter>::Item: AsChar,
+{
+    char('.')(s)
+}
+
 pub fn comma<I>(s: I) -> IResult<I, char>
 where
     I: Slice<RangeFrom<usize>> + InputIter,
@@ -76,9 +84,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::character::{
-        alphabet, backticks, comma, cr, digit, eol, space, under_score,
-    };
+    use crate::parser::wiz::character::{alphabet, backticks, comma, cr, digit, eol, space, under_score, dot};
 
     #[test]
     fn test_alphabet() {
@@ -98,6 +104,11 @@ mod tests {
     #[test]
     fn test_backticks() {
         assert_eq!(backticks("`"), Ok(("", '`')));
+    }
+
+    #[test]
+    fn test_dot() {
+        assert_eq!(dot("."), Ok(("", '.')))
     }
 
     #[test]

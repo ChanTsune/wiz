@@ -321,9 +321,9 @@ impl Ast2HLIR {
                     value,
                     type_: Some(TypedType::int64()),
                 }),
-                LiteralSyntax::FloatingPoint { value } => {
+                LiteralSyntax::FloatingPoint(value) => {
                     TypedExpr::Literal(TypedLiteral::FloatingPoint {
-                        value,
+                        value: value.token,
                         type_: Some(TypedType::double()),
                     })
                 }

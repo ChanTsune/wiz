@@ -7,9 +7,7 @@ pub enum LiteralSyntax {
     Integer {
         value: String,
     },
-    FloatingPoint {
-        value: String,
-    },
+    FloatingPoint(TokenSyntax),
     String {
         open_quote: TokenSyntax,
         value: String,
