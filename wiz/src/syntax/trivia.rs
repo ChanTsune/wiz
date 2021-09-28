@@ -64,7 +64,12 @@ impl Add<Trivia> for Trivia {
     type Output = Trivia;
 
     fn add(self, rhs: Trivia) -> Self::Output {
-        Trivia::from(self.peaces.into_iter().chain(rhs.peaces).collect::<Vec<_>>())
+        Trivia::from(
+            self.peaces
+                .into_iter()
+                .chain(rhs.peaces)
+                .collect::<Vec<_>>(),
+        )
     }
 }
 
@@ -77,7 +82,7 @@ impl ToString for Trivia {
 impl From<Vec<TriviaPiece>> for Trivia {
     fn from(trivia_pieces: Vec<TriviaPiece>) -> Self {
         Self {
-            peaces: trivia_pieces
+            peaces: trivia_pieces,
         }
     }
 }

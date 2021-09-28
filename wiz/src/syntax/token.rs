@@ -10,7 +10,7 @@ pub struct TokenSyntax {
 
 impl TokenSyntax {
     pub(crate) fn new(token: String) -> Self {
-        Self{
+        Self {
             leading_trivia: Trivia::new(),
             token,
             trailing_trivia: Trivia::new(),

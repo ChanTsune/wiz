@@ -47,7 +47,7 @@ pub fn string_literal(s: &str) -> IResult<&str, LiteralSyntax> {
         |(a, b, c): (char, &str, char)| LiteralSyntax::String {
             open_quote: TokenSyntax::new(a.to_string()),
             value: String::from(b),
-            close_quote: TokenSyntax::new(c.to_string())
+            close_quote: TokenSyntax::new(c.to_string()),
         },
     )(s)
 }
