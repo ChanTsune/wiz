@@ -1,38 +1,38 @@
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::{IResult, InputTake, Compare};
+use nom::{Compare, IResult, InputTake};
 
 fn simple_member_access_operator<I>(s: I) -> IResult<I, I>
-    where
-        I: InputTake + Compare<&'static str>
+where
+    I: InputTake + Compare<&'static str>,
 {
     tag(".")(s)
 }
 
 fn safe_member_access_operator<I>(s: I) -> IResult<I, I>
-    where
-        I: InputTake + Compare<&'static str>
+where
+    I: InputTake + Compare<&'static str>,
 {
     tag("?.")(s)
 }
 
 pub fn member_access_operator<I>(s: I) -> IResult<I, I>
-    where
-        I: InputTake + Compare<&'static str> + Clone
+where
+    I: InputTake + Compare<&'static str> + Clone,
 {
     alt((simple_member_access_operator, safe_member_access_operator))(s)
 }
 
 pub fn assignment_operator<I>(s: I) -> IResult<I, I>
-    where
-        I: InputTake + Compare<&'static str>
+where
+    I: InputTake + Compare<&'static str>,
 {
     tag("=")(s)
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::operators::{member_access_operator, assignment_operator};
+    use crate::parser::wiz::operators::{assignment_operator, member_access_operator};
 
     #[test]
     fn test_member_access_operator() {
