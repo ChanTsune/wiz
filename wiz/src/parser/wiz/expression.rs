@@ -25,7 +25,10 @@ use nom::character::complete::{char, digit1};
 use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
-use nom::{AsChar, Compare, IResult, InputIter, InputLength, InputTake, InputTakeAtPosition, Slice, FindSubstring};
+use nom::{
+    AsChar, Compare, FindSubstring, IResult, InputIter, InputLength, InputTake,
+    InputTakeAtPosition, Slice,
+};
 use std::ops::RangeFrom;
 
 pub fn integer_literal<I>(s: I) -> IResult<I, LiteralSyntax>
@@ -63,9 +66,12 @@ where
 pub fn string_literal<I>(s: I) -> IResult<I, LiteralSyntax>
 where
     I: InputTake
-    + Compare<&'static str> + Clone
-    + FindSubstring<&'static str>
-    + Slice<RangeFrom<usize>> + InputIter + ToString,
+        + Compare<&'static str>
+        + Clone
+        + FindSubstring<&'static str>
+        + Slice<RangeFrom<usize>>
+        + InputIter
+        + ToString,
     <I as InputIter>::Item: AsChar,
 {
     map(
