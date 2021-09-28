@@ -44,8 +44,10 @@ pub fn floating_point_literal(s: &str) -> IResult<&str, LiteralSyntax> {
 pub fn string_literal(s: &str) -> IResult<&str, LiteralSyntax> {
     map(
         permutation((char('"'), take_until("\""), char('"'))),
-        |(a, b, c): (_, &str, _)| LiteralSyntax::String {
+        |(a, b, c): (char, &str, char)| LiteralSyntax::String {
+            open_quote: TokenSyntax::new(a.to_string()),
             value: String::from(b),
+            close_quote: TokenSyntax::new(c.to_string())
         },
     )(s)
 }
@@ -56,9 +58,9 @@ where
 {
     map(alt((true_keyword, false_keyword)), |b: I| {
         LiteralSyntax::Boolean(TokenSyntax {
-            leading_trivia: Trivia::new(vec![]),
+            leading_trivia: Trivia::new(),
             token: b.to_string(),
-            trailing_trivia: (Trivia::new(vec![])),
+            trailing_trivia: (Trivia::new()),
         })
     })(s)
 }
@@ -790,7 +792,9 @@ mod tests {
             Ok((
                 "",
                 LiteralSyntax::String {
-                    value: "".to_string()
+                    open_quote: TokenSyntax::new('"'.to_string()),
+                    value: "".to_string(),
+                    close_quote: TokenSyntax::new('"'.to_string())
                 }
             ))
         );
@@ -803,9 +807,9 @@ mod tests {
             Ok((
                 "",
                 LiteralSyntax::Boolean(TokenSyntax {
-                    leading_trivia: Trivia::new(vec![]),
+                    leading_trivia: Trivia::new(),
                     token: "true".to_string(),
-                    trailing_trivia: Trivia::new(vec![])
+                    trailing_trivia: Trivia::new()
                 })
             ))
         )
@@ -894,7 +898,9 @@ mod tests {
                 vec![CallArg {
                     label: None,
                     arg: Box::from(Expr::Literal(LiteralSyntax::String {
-                        value: "Hello, World".parse().unwrap()
+                        open_quote: TokenSyntax::new('"'.to_string()),
+                        value: "Hello, World".parse().unwrap(),
+                        close_quote: TokenSyntax::new('"'.to_string()),
                     })),
                     is_vararg: false
                 }]
@@ -946,7 +952,9 @@ mod tests {
                     args: vec![CallArg {
                         label: None,
                         arg: Box::from(Expr::Literal(LiteralSyntax::String {
-                            value: "Hello, World".parse().unwrap()
+                            open_quote: TokenSyntax::new('"'.to_string()),
+                            value: "Hello, World".parse().unwrap(),
+                            close_quote: TokenSyntax::new('"'.to_string()),
                         })),
                         is_vararg: false
                     }],
@@ -969,7 +977,9 @@ mod tests {
                     args: vec![CallArg {
                         label: Some(String::from("string")),
                         arg: Box::from(Expr::Literal(LiteralSyntax::String {
-                            value: "Hello, World".parse().unwrap()
+                            open_quote: TokenSyntax::new('"'.to_string()),
+                            value: "Hello, World".parse().unwrap(),
+                            close_quote: TokenSyntax::new('"'.to_string())
                         })),
                         is_vararg: false
                     }],

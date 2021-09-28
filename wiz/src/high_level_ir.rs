@@ -327,7 +327,7 @@ impl Ast2HLIR {
                         type_: Some(TypedType::double()),
                     })
                 }
-                LiteralSyntax::String { value } => TypedExpr::Literal(TypedLiteral::String {
+                LiteralSyntax::String { open_quote:_, value, close_quote:_ } => TypedExpr::Literal(TypedLiteral::String {
                     value,
                     type_: Some(TypedType::string()),
                 }),

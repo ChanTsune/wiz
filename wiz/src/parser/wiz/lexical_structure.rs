@@ -23,7 +23,7 @@ where
         + Compare<&'static str>,
     <I as InputIter>::Item: AsChar + Copy,
 {
-    map(many0(trivia_piece), |v| Trivia::new(v))(s)
+    map(many0(trivia_piece), |v| Trivia::from(v))(s)
 }
 
 pub fn whitespace1<I>(s: I) -> IResult<I, Trivia>
@@ -39,7 +39,7 @@ where
         + Compare<&'static str>,
     <I as InputIter>::Item: AsChar + Copy,
 {
-    map(many1(trivia_piece), |v| Trivia::new(v))(s)
+    map(many1(trivia_piece), |v| Trivia::from(v))(s)
 }
 
 pub fn whitespace_without_eol0<I>(s: I) -> IResult<I, Trivia>
@@ -55,7 +55,7 @@ where
         + Compare<&'static str>,
     <I as InputIter>::Item: AsChar + Copy,
 {
-    map(many0(trivia_piece_without_line_ending), |v| Trivia::new(v))(s)
+    map(many0(trivia_piece_without_line_ending), |v| Trivia::from(v))(s)
 }
 
 fn line_comment_start<I>(s: I) -> IResult<I, I>
@@ -401,7 +401,7 @@ mod tests {
 
     #[test]
     fn test_whitespace0() {
-        assert_eq!(whitespace0(""), Ok(("", Trivia::new(vec![]))));
+        assert_eq!(whitespace0(""), Ok(("", Trivia::new())));
         assert_eq!(
             whitespace0("\n"),
             Ok(("", Trivia::from(TriviaPiece::Newlines(1))))
@@ -410,7 +410,7 @@ mod tests {
             whitespace0(" \n "),
             Ok((
                 "",
-                Trivia::new(vec![
+                Trivia::from(vec![
                     TriviaPiece::Spaces(1),
                     TriviaPiece::Newlines(1),
                     TriviaPiece::Spaces(1)

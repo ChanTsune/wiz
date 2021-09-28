@@ -6,7 +6,7 @@ use std::fmt;
 pub enum LiteralSyntax {
     Integer { value: String },
     FloatingPoint { value: String },
-    String { value: String },
+    String {open_quote: TokenSyntax, value: String, close_quote: TokenSyntax},
     Boolean(TokenSyntax),
     Null,
 }

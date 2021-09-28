@@ -1,3 +1,5 @@
+use std::ops::Add;
+
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum TriviaPiece {
     /// A space ' ' character.
@@ -25,6 +27,7 @@ pub enum TriviaPiece {
     /// Any skipped garbage text.
     GarbageText(String),
 }
+
 impl ToString for TriviaPiece {
     fn to_string(&self) -> String {
         match self {
@@ -52,8 +55,16 @@ pub struct Trivia {
 }
 
 impl Trivia {
-    pub fn new(peaces: Vec<TriviaPiece>) -> Self {
-        Self { peaces }
+    pub fn new() -> Self {
+        Self { peaces: vec![] }
+    }
+}
+
+impl Add<Trivia> for Trivia {
+    type Output = Trivia;
+
+    fn add(self, rhs: Trivia) -> Self::Output {
+        Trivia::from(self.peaces.into_iter().chain(rhs.peaces).collect::<Vec<_>>())
     }
 }
 
@@ -63,8 +74,16 @@ impl ToString for Trivia {
     }
 }
 
+impl From<Vec<TriviaPiece>> for Trivia {
+    fn from(trivia_pieces: Vec<TriviaPiece>) -> Self {
+        Self {
+            peaces: trivia_pieces
+        }
+    }
+}
+
 impl From<TriviaPiece> for Trivia {
     fn from(trivia_piece: TriviaPiece) -> Self {
-        Self::new(vec![trivia_piece])
+        Self::from(vec![trivia_piece])
     }
 }
