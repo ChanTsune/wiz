@@ -4,9 +4,7 @@ use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum LiteralSyntax {
-    Integer {
-        value: String,
-    },
+    Integer(TokenSyntax),
     FloatingPoint(TokenSyntax),
     String {
         open_quote: TokenSyntax,

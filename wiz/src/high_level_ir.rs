@@ -317,8 +317,8 @@ impl Ast2HLIR {
         match e {
             Expr::Name(n) => TypedExpr::Name(self.name_syntax(n)),
             Expr::Literal(literal) => match literal {
-                LiteralSyntax::Integer { value } => TypedExpr::Literal(TypedLiteral::Integer {
-                    value,
+                LiteralSyntax::Integer(value) => TypedExpr::Literal(TypedLiteral::Integer {
+                    value: value.token,
                     type_: Some(TypedType::int64()),
                 }),
                 LiteralSyntax::FloatingPoint(value) => {

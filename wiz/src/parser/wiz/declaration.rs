@@ -411,6 +411,7 @@ mod test {
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::stmt::Stmt;
     use crate::syntax::type_name::TypeName;
+    use crate::syntax::token::TokenSyntax;
 
     #[test]
     fn test_struct_properties() {
@@ -535,9 +536,7 @@ mod test {
                 "",
                 Block {
                     body: vec![Stmt::Expr {
-                        expr: Expr::Literal(LiteralSyntax::Integer {
-                            value: "1".to_string()
-                        })
+                        expr: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new("1".to_string())))
                     }]
                 }
             ))
@@ -553,13 +552,9 @@ mod test {
                 Block {
                     body: vec![Stmt::Expr {
                         expr: Expr::BinOp {
-                            left: Box::new(Expr::Literal(LiteralSyntax::Integer {
-                                value: "1".to_string()
-                            })),
+                            left: Box::new(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new("1".to_string())))),
                             kind: "+".to_string(),
-                            right: Box::new(Expr::Literal(LiteralSyntax::Integer {
-                                value: "1".to_string()
-                            })),
+                            right: Box::new(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new("1".to_string())))),
                         }
                     }]
                 }
@@ -579,9 +574,7 @@ mod test {
                 "",
                 Block {
                     body: vec![Stmt::Expr {
-                        expr: Expr::Literal(LiteralSyntax::Integer {
-                            value: "1".to_string()
-                        })
+                        expr: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new("1".to_string())))
                     }]
                 }
             ))
@@ -705,9 +698,7 @@ mod test {
                         name: "Int".to_string(),
                         type_args: None
                     }),
-                    value: Expr::Literal(LiteralSyntax::Integer {
-                        value: "1".to_string()
-                    })
+                    value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new("1".to_string())))
                 })
             ))
         )
@@ -723,9 +714,7 @@ mod test {
                     is_mut: false,
                     name: "a".to_string(),
                     type_: None,
-                    value: Expr::Literal(LiteralSyntax::Integer {
-                        value: "1".to_string()
-                    })
+                    value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new("1".to_string())))
                 })
             ))
         )

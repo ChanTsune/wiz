@@ -164,6 +164,7 @@ mod tests {
     use crate::syntax::file::FileSyntax;
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::stmt::{AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt};
+    use crate::syntax::token::TokenSyntax;
 
     #[test]
     fn test_while_stmt_with_bracket() {
@@ -196,9 +197,7 @@ mod tests {
                                         name: "a".to_string()
                                     })),
                                     kind: "+".to_string(),
-                                    right: Box::new(Expr::Literal(LiteralSyntax::Integer {
-                                        value: "1".to_string()
-                                    }))
+                                    right: Box::new(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new("1".to_string()))))
                                 }
                             }
                         ))]
@@ -243,9 +242,7 @@ mod tests {
                                         name: "a".to_string()
                                     })),
                                     kind: "+".to_string(),
-                                    right: Box::new(Expr::Literal(LiteralSyntax::Integer {
-                                        value: "1".to_string()
-                                    }))
+                                    right: Box::new(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new("1".to_string()))))
                                 }
                             }
                         ))]
