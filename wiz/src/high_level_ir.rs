@@ -104,7 +104,7 @@ impl Ast2HLIR {
                 let struct_ = self.default_init_if_needed(struct_);
                 TypedDecl::Struct(struct_)
             }
-            Decl::Class { .. } => TypedDecl::Class,
+            Decl::ExternC { .. } => TypedDecl::Class,
             Decl::Enum { .. } => TypedDecl::Enum,
             Decl::Protocol { .. } => TypedDecl::Protocol,
             Decl::Extension { .. } => TypedDecl::Extension,
