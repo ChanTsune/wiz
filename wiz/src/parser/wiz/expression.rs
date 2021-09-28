@@ -33,10 +33,9 @@ use std::ops::RangeFrom;
 
 pub fn integer_literal<I>(s: I) -> IResult<I, LiteralSyntax>
 where
-I:InputTake + ToString + InputLength + InputIter + Clone + InputTakeAtPosition
-,
-<I as InputIter>::Item: AsChar,
-<I as InputTakeAtPosition>::Item: AsChar,
+    I: InputTake + ToString + InputLength + InputIter + Clone + InputTakeAtPosition,
+    <I as InputIter>::Item: AsChar,
+    <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(digit1, |n: I| LiteralSyntax::Integer {
         value: n.to_string(),
