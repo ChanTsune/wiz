@@ -91,7 +91,7 @@ where
         LiteralSyntax::Boolean(TokenSyntax {
             leading_trivia: Trivia::new(),
             token: b.to_string(),
-            trailing_trivia: (Trivia::new()),
+            trailing_trivia: Trivia::new(),
         })
     })(s)
 }
