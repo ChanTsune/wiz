@@ -1,4 +1,4 @@
-use crate::parser::wiz::character::{comma, dot};
+use crate::parser::wiz::character::{comma, dot, double_quote};
 use crate::parser::wiz::declaration::block;
 use crate::parser::wiz::keywords::{
     as_keyword, else_keyword, false_keyword, if_keyword, in_keyword, return_keyword, true_keyword,
@@ -25,9 +25,7 @@ use nom::character::complete::{char, digit1};
 use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
-use nom::{
-    AsChar, Compare, IResult, InputIter, InputLength, InputTake, InputTakeAtPosition, Slice,
-};
+use nom::{AsChar, Compare, IResult, InputIter, InputLength, InputTake, InputTakeAtPosition, Slice, FindSubstring};
 use std::ops::RangeFrom;
 
 pub fn integer_literal(s: &str) -> IResult<&str, LiteralSyntax> {
@@ -56,12 +54,19 @@ where
     })(s)
 }
 
-pub fn string_literal(s: &str) -> IResult<&str, LiteralSyntax> {
+pub fn string_literal<I>(s: I) -> IResult<I, LiteralSyntax>
+where
+    I: InputTake
+    + Compare<&'static str> + Clone
+    + FindSubstring<&'static str>
+    + Slice<RangeFrom<usize>> + InputIter + ToString,
+    <I as InputIter>::Item: AsChar,
+{
     map(
-        permutation((char('"'), take_until("\""), char('"'))),
-        |(a, b, c): (char, &str, char)| LiteralSyntax::String {
+        permutation((double_quote, take_until("\""), double_quote)),
+        |(a, b, c): (char, I, char)| LiteralSyntax::String {
             open_quote: TokenSyntax::new(a.to_string()),
-            value: String::from(b),
+            value: b.to_string(),
             close_quote: TokenSyntax::new(c.to_string()),
         },
     )(s)
