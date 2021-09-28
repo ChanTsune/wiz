@@ -37,7 +37,9 @@ where
     <I as InputIter>::Item: AsChar,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(digit1, |n: I| LiteralSyntax::Integer(TokenSyntax::new(n.to_string())))(s)
+    map(digit1, |n: I| {
+        LiteralSyntax::Integer(TokenSyntax::new(n.to_string()))
+    })(s)
 }
 
 pub fn floating_point_literal<I>(s: I) -> IResult<I, LiteralSyntax>
@@ -855,12 +857,18 @@ mod tests {
                 "",
                 BinOp {
                     left: Box::from(BinOp {
-                        left: Box::from(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new("1".to_string())))),
+                        left: Box::from(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
+                            "1".to_string()
+                        )))),
                         kind: "||".to_string(),
-                        right: Box::from(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new("2".to_string()))))
+                        right: Box::from(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
+                            "2".to_string()
+                        ))))
                     }),
                     kind: "||".to_string(),
-                    right: Box::from(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new("3".to_string()))))
+                    right: Box::from(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
+                        "3".to_string()
+                    ))))
                 }
             ))
         )
@@ -877,12 +885,18 @@ mod tests {
                 "",
                 BinOp {
                     left: Box::from(BinOp {
-                        left: Box::from(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new("1".to_string())))),
+                        left: Box::from(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
+                            "1".to_string()
+                        )))),
                         kind: "&&".to_string(),
-                        right: Box::from(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new("2".to_string()))))
+                        right: Box::from(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
+                            "2".to_string()
+                        ))))
                     }),
                     kind: "&&".to_string(),
-                    right: Box::from(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new("3".to_string()))))
+                    right: Box::from(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
+                        "3".to_string()
+                    ))))
                 }
             ))
         )

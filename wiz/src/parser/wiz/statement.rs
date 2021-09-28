@@ -197,7 +197,9 @@ mod tests {
                                         name: "a".to_string()
                                     })),
                                     kind: "+".to_string(),
-                                    right: Box::new(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new("1".to_string()))))
+                                    right: Box::new(Expr::Literal(LiteralSyntax::Integer(
+                                        TokenSyntax::new("1".to_string())
+                                    )))
                                 }
                             }
                         ))]
@@ -242,7 +244,9 @@ mod tests {
                                         name: "a".to_string()
                                     })),
                                     kind: "+".to_string(),
-                                    right: Box::new(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new("1".to_string()))))
+                                    right: Box::new(Expr::Literal(LiteralSyntax::Integer(
+                                        TokenSyntax::new("1".to_string())
+                                    )))
                                 }
                             }
                         ))]

@@ -410,8 +410,8 @@ mod test {
     use crate::syntax::fun::body_def::FunBody;
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::stmt::Stmt;
-    use crate::syntax::type_name::TypeName;
     use crate::syntax::token::TokenSyntax;
+    use crate::syntax::type_name::TypeName;
 
     #[test]
     fn test_struct_properties() {
@@ -536,7 +536,9 @@ mod test {
                 "",
                 Block {
                     body: vec![Stmt::Expr {
-                        expr: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new("1".to_string())))
+                        expr: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
+                            "1".to_string()
+                        )))
                     }]
                 }
             ))
@@ -552,9 +554,13 @@ mod test {
                 Block {
                     body: vec![Stmt::Expr {
                         expr: Expr::BinOp {
-                            left: Box::new(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new("1".to_string())))),
+                            left: Box::new(Expr::Literal(LiteralSyntax::Integer(
+                                TokenSyntax::new("1".to_string())
+                            ))),
                             kind: "+".to_string(),
-                            right: Box::new(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new("1".to_string())))),
+                            right: Box::new(Expr::Literal(LiteralSyntax::Integer(
+                                TokenSyntax::new("1".to_string())
+                            ))),
                         }
                     }]
                 }
@@ -574,7 +580,9 @@ mod test {
                 "",
                 Block {
                     body: vec![Stmt::Expr {
-                        expr: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new("1".to_string())))
+                        expr: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
+                            "1".to_string()
+                        )))
                     }]
                 }
             ))
