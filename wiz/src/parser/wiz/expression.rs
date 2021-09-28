@@ -25,7 +25,9 @@ use nom::character::complete::{char, digit1};
 use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
-use nom::{Compare, IResult, InputTake, Slice, InputIter, AsChar, InputLength, InputTakeAtPosition};
+use nom::{
+    AsChar, Compare, IResult, InputIter, InputLength, InputTake, InputTakeAtPosition, Slice,
+};
 use std::ops::RangeFrom;
 
 pub fn integer_literal(s: &str) -> IResult<&str, LiteralSyntax> {
@@ -35,14 +37,23 @@ pub fn integer_literal(s: &str) -> IResult<&str, LiteralSyntax> {
 }
 
 pub fn floating_point_literal<I>(s: I) -> IResult<I, LiteralSyntax>
-    where
-        I: InputTake + Compare<&'static str> +Slice<RangeFrom<usize>>+InputIter+Clone+InputLength+ToString+InputTakeAtPosition,
-        <I as InputIter>::Item: AsChar,
-        <I as InputTakeAtPosition>::Item: AsChar{
-    map(
-        tuple((digit1, dot, digit1)),
-        |(i, d, f): (I, char, I)| LiteralSyntax::FloatingPoint(TokenSyntax::new(i.to_string() + &*d.to_string() + &*f.to_string())),
-    )(s)
+where
+    I: InputTake
+        + Compare<&'static str>
+        + Slice<RangeFrom<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTakeAtPosition,
+    <I as InputIter>::Item: AsChar,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
+    map(tuple((digit1, dot, digit1)), |(i, d, f): (I, char, I)| {
+        LiteralSyntax::FloatingPoint(TokenSyntax::new(
+            i.to_string() + &*d.to_string() + &*f.to_string(),
+        ))
+    })(s)
 }
 
 pub fn string_literal(s: &str) -> IResult<&str, LiteralSyntax> {
@@ -722,7 +733,11 @@ pub fn expr(s: &str) -> IResult<&str, Expr> {
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::expression::{boolean_literal, conjunction_expr, disjunction_expr, equality_expr, expr, floating_point_literal, indexing_suffix, integer_literal, postfix_suffix, return_expr, string_literal, value_arguments, literal_expr};
+    use crate::parser::wiz::expression::{
+        boolean_literal, conjunction_expr, disjunction_expr, equality_expr, expr,
+        floating_point_literal, indexing_suffix, integer_literal, literal_expr, postfix_suffix,
+        return_expr, string_literal, value_arguments,
+    };
     use crate::syntax::block::Block;
     use crate::syntax::expr::Expr::{BinOp, If};
     use crate::syntax::expr::{
@@ -781,7 +796,15 @@ mod tests {
 
     #[test]
     fn test_number_literal() {
-        assert_eq!(literal_expr("1.1"), Ok(("", Expr::Literal(LiteralSyntax::FloatingPoint(TokenSyntax::new(String::from("1.1")))))));
+        assert_eq!(
+            literal_expr("1.1"),
+            Ok((
+                "",
+                Expr::Literal(LiteralSyntax::FloatingPoint(TokenSyntax::new(
+                    String::from("1.1")
+                )))
+            ))
+        );
     }
 
     #[test]

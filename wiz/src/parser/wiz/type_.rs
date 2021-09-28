@@ -34,10 +34,7 @@ pub fn type_reference(s: &str) -> IResult<&str, TypeName> {
 
 pub fn user_type(s: &str) -> IResult<&str, TypeName> {
     map(
-        tuple((
-            simple_user_type,
-            many0(tuple((dot, simple_user_type))),
-        )),
+        tuple((simple_user_type, many0(tuple((dot, simple_user_type))))),
         |(p, chs)| {
             // TODO: use chs
             p

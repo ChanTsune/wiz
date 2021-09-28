@@ -84,7 +84,9 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::character::{alphabet, backticks, comma, cr, digit, eol, space, under_score, dot};
+    use crate::parser::wiz::character::{
+        alphabet, backticks, comma, cr, digit, dot, eol, space, under_score,
+    };
 
     #[test]
     fn test_alphabet() {
