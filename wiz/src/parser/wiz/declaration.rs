@@ -1,4 +1,4 @@
-use crate::parser::wiz::character::eol;
+use crate::parser::wiz::character::{eol, comma};
 use crate::parser::wiz::expression::expr;
 use crate::parser::wiz::keywords::{
     as_keyword, fun_keyword, init_keyword, self_keyword, struct_keyword, use_keyword, val_keyword,
@@ -215,10 +215,10 @@ pub fn function_value_parameters(s: &str) -> IResult<&str, Vec<ArgDef>> {
             opt(tuple((
                 function_value_parameter,
                 many0(map(
-                    tuple((char(','), function_value_parameter)),
+                    tuple((comma, function_value_parameter)),
                     |(_, a)| a,
                 )),
-                opt(char(',')),
+                opt(comma),
             ))),
             char(')'),
         )),
@@ -270,7 +270,7 @@ pub fn type_constraints(s: &str) -> IResult<&str, Vec<TypeParam>> {
         tuple((
             where_keyword,
             type_constraint,
-            opt(tuple((char(','), type_constraint))),
+            opt(tuple((comma, type_constraint))),
         )),
         |(_, t, ts)| match ts {
             Some((_, ts)) => {

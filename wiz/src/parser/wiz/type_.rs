@@ -6,6 +6,7 @@ use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
 use nom::IResult;
+use crate::parser::wiz::character::comma;
 
 pub fn type_(s: &str) -> IResult<&str, TypeName> {
     alt((
@@ -62,8 +63,8 @@ pub fn type_arguments(s: &str) -> IResult<&str, Vec<TypeName>> {
         tuple((
             char('<'),
             type_,
-            many0(tuple((char(','), type_))),
-            opt(char(',')),
+            many0(tuple((comma, type_))),
+            opt(comma),
             char('>'),
         )),
         |(_, t, ts, _, _)| {
@@ -83,9 +84,9 @@ pub fn type_parameters(s: &str) -> IResult<&str, Vec<TypeParam>> {
             whitespace0,
             type_parameter,
             whitespace0,
-            many0(tuple((char(','), whitespace0, type_parameter, whitespace0))),
+            many0(tuple((comma, whitespace0, type_parameter, whitespace0))),
             whitespace0,
-            opt(char(',')),
+            opt(comma),
             whitespace0,
             char('>'),
         )),

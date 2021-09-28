@@ -25,6 +25,7 @@ use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
 use nom::{Compare, IResult, InputTake};
+use crate::parser::wiz::character::comma;
 
 pub fn integer_literal(s: &str) -> IResult<&str, LiteralSyntax> {
     map(digit1, |n: &str| LiteralSyntax::Integer {
@@ -230,9 +231,9 @@ pub fn indexing_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
             whitespace0,
             expr,
             whitespace0,
-            many0(tuple((char(','), whitespace0, expr))),
+            many0(tuple((comma, whitespace0, expr))),
             whitespace0,
-            opt(char(',')),
+            opt(comma),
             whitespace0,
             char(']'),
         )),
@@ -390,8 +391,8 @@ pub fn value_arguments(s: &str) -> IResult<&str, Vec<CallArg>> {
             char('('),
             opt(tuple((
                 value_argument,
-                many0(tuple((char(','), value_argument))),
-                opt(char(',')),
+                many0(tuple((comma, value_argument))),
+                opt(comma),
             ))),
             char(')'),
         )),
