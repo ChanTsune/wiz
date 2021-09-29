@@ -20,17 +20,17 @@ use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::type_name::TypeName;
 use nom::branch::{alt, permutation};
-use nom::bytes::complete::{take_until, take_while_m_n, escaped_transform};
+use nom::bytes::complete::{escaped_transform, take_until, take_while_m_n};
 use nom::character::complete::{char, digit1, none_of};
 use nom::combinator::{map, opt, value};
 use nom::multi::many0;
-use nom::sequence::{tuple, delimited};
+use nom::sequence::{delimited, tuple};
 use nom::{
     AsChar, Compare, FindSubstring, IResult, InputIter, InputLength, InputTake,
     InputTakeAtPosition, Slice,
 };
-use std::ops::RangeFrom;
 use std::char::{decode_utf16, REPLACEMENT_CHARACTER};
+use std::ops::RangeFrom;
 
 pub fn integer_literal<I>(s: I) -> IResult<I, LiteralSyntax>
 where
@@ -85,31 +85,41 @@ where
 }
 
 pub fn string_literal(s: &str) -> IResult<&str, LiteralSyntax> {
-    map(delimited(
-        char('\"'),
-        escaped_transform(none_of("\"\\"), '\\', alt((
-            value('\\', char('\\')),
-            value('\"', char('\"')),
-            value('\'', char('\'')),
-            value('\r', char('r')),
-            value('\n', char('n')),
-            value('\t', char('t')),
-            map(
-                permutation((char('u'), take_while_m_n(4, 4, |c: char| c.is_ascii_hexdigit()))),
-                |(_, code): (char, &str)| -> char {
-                    decode_utf16(vec![u16::from_str_radix(code, 16).unwrap()])
-                        .nth(0).unwrap().unwrap_or(REPLACEMENT_CHARACTER)
-                },
-            )
-        ))),
-        char('\"'),
-    ),|s|{
-        LiteralSyntax::String {
+    map(
+        delimited(
+            char('\"'),
+            escaped_transform(
+                none_of("\"\\"),
+                '\\',
+                alt((
+                    value('\\', char('\\')),
+                    value('\"', char('\"')),
+                    value('\'', char('\'')),
+                    value('\r', char('r')),
+                    value('\n', char('n')),
+                    value('\t', char('t')),
+                    map(
+                        permutation((
+                            char('u'),
+                            take_while_m_n(4, 4, |c: char| c.is_ascii_hexdigit()),
+                        )),
+                        |(_, code): (char, &str)| -> char {
+                            decode_utf16(vec![u16::from_str_radix(code, 16).unwrap()])
+                                .nth(0)
+                                .unwrap()
+                                .unwrap_or(REPLACEMENT_CHARACTER)
+                        },
+                    ),
+                )),
+            ),
+            char('\"'),
+        ),
+        |s| LiteralSyntax::String {
             open_quote: TokenSyntax::new('"'.to_string()),
             value: s,
-            close_quote: TokenSyntax::new('"'.to_string())
-        }
-    })(s)
+            close_quote: TokenSyntax::new('"'.to_string()),
+        },
+    )(s)
 }
 
 pub fn boolean_literal<I>(s: I) -> IResult<I, LiteralSyntax>
@@ -779,7 +789,11 @@ pub fn expr(s: &str) -> IResult<&str, Expr> {
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::expression::{boolean_literal, conjunction_expr, disjunction_expr, equality_expr, expr, floating_point_literal, indexing_suffix, integer_literal, literal_expr, postfix_suffix, return_expr, raw_string_literal, value_arguments, string_literal};
+    use crate::parser::wiz::expression::{
+        boolean_literal, conjunction_expr, disjunction_expr, equality_expr, expr,
+        floating_point_literal, indexing_suffix, integer_literal, literal_expr, postfix_suffix,
+        raw_string_literal, return_expr, string_literal, value_arguments,
+    };
     use crate::syntax::block::Block;
     use crate::syntax::expr::Expr::{BinOp, If};
     use crate::syntax::expr::{
