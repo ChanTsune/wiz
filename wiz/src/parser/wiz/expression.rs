@@ -1,4 +1,4 @@
-use crate::parser::wiz::character::{comma, dot, double_quote};
+use crate::parser::wiz::character::{comma, dot, double_quote, not_double_quote_or_back_slash};
 use crate::parser::wiz::declaration::block;
 use crate::parser::wiz::keywords::{
     as_keyword, else_keyword, false_keyword, if_keyword, in_keyword, return_keyword, true_keyword,
@@ -22,13 +22,10 @@ use crate::syntax::type_name::TypeName;
 use nom::branch::{alt, permutation};
 use nom::bytes::complete::{escaped_transform, take_until, take_while_m_n};
 use nom::character::complete::{char, digit1, none_of};
-use nom::combinator::{map, opt, value};
+use nom::combinator::{map, not, opt, value};
 use nom::multi::many0;
 use nom::sequence::{delimited, tuple};
-use nom::{
-    AsChar, Compare, FindSubstring, IResult, InputIter, InputLength, InputTake,
-    InputTakeAtPosition, Slice,
-};
+use nom::{AsChar, Compare, FindSubstring, IResult, InputIter, InputLength, InputTake, InputTakeAtPosition, Slice, Offset, ExtendInto};
 use std::char::{decode_utf16, REPLACEMENT_CHARACTER};
 use std::ops::RangeFrom;
 
@@ -84,12 +81,15 @@ where
     )(s)
 }
 
-pub fn string_literal(s: &str) -> IResult<&str, LiteralSyntax> {
+pub fn string_literal<I>(s: I) -> IResult<I, LiteralSyntax>
+    where     I: Clone + Offset + InputLength + InputTake + InputTakeAtPosition + Slice<RangeFrom<usize>> + InputIter + ToString + ExtendInto<Item = char, Extender = String>,
+              <I as InputIter>::Item: AsChar + Copy
+{
     map(
-        delimited(
-            char('\"'),
+        tuple((
+            double_quote,
             escaped_transform(
-                none_of("\"\\"),
+                    not_double_quote_or_back_slash,
                 '\\',
                 alt((
                     value('\\', char('\\')),
@@ -101,10 +101,10 @@ pub fn string_literal(s: &str) -> IResult<&str, LiteralSyntax> {
                     map(
                         permutation((
                             char('u'),
-                            take_while_m_n(4, 4, |c: char| c.is_ascii_hexdigit()),
+                            take_while_m_n(4, 4, |c: <I as InputIter>::Item| c.is_hex_digit()),
                         )),
-                        |(_, code): (char, &str)| -> char {
-                            decode_utf16(vec![u16::from_str_radix(code, 16).unwrap()])
+                        |(_, code): (char, I)| -> char {
+                            decode_utf16(vec![u16::from_str_radix(&*code.to_string(), 16).unwrap()])
                                 .nth(0)
                                 .unwrap()
                                 .unwrap_or(REPLACEMENT_CHARACTER)
@@ -112,12 +112,12 @@ pub fn string_literal(s: &str) -> IResult<&str, LiteralSyntax> {
                     ),
                 )),
             ),
-            char('\"'),
+            double_quote),
         ),
-        |s| LiteralSyntax::String {
-            open_quote: TokenSyntax::new('"'.to_string()),
+        |(a,s, b )| LiteralSyntax::String {
+            open_quote: TokenSyntax::new(a.to_string()),
             value: s,
-            close_quote: TokenSyntax::new('"'.to_string()),
+            close_quote: TokenSyntax::new(b.to_string()),
         },
     )(s)
 }
