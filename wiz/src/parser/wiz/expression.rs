@@ -20,16 +20,17 @@ use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::type_name::TypeName;
 use nom::branch::{alt, permutation};
-use nom::bytes::complete::take_until;
-use nom::character::complete::{char, digit1};
-use nom::combinator::{map, opt};
+use nom::bytes::complete::{take_until, take_while_m_n, escaped_transform};
+use nom::character::complete::{char, digit1, none_of};
+use nom::combinator::{map, opt, value};
 use nom::multi::many0;
-use nom::sequence::tuple;
+use nom::sequence::{tuple, delimited};
 use nom::{
     AsChar, Compare, FindSubstring, IResult, InputIter, InputLength, InputTake,
     InputTakeAtPosition, Slice,
 };
 use std::ops::RangeFrom;
+use std::char::{decode_utf16, REPLACEMENT_CHARACTER};
 
 pub fn integer_literal<I>(s: I) -> IResult<I, LiteralSyntax>
 where
@@ -62,7 +63,7 @@ where
     })(s)
 }
 
-pub fn string_literal<I>(s: I) -> IResult<I, LiteralSyntax>
+pub fn raw_string_literal<I>(s: I) -> IResult<I, LiteralSyntax>
 where
     I: InputTake
         + Compare<&'static str>
@@ -74,13 +75,41 @@ where
     <I as InputIter>::Item: AsChar,
 {
     map(
-        permutation((double_quote, take_until("\""), double_quote)),
-        |(a, b, c): (char, I, char)| LiteralSyntax::String {
-            open_quote: TokenSyntax::new(a.to_string()),
+        permutation((char('r'), double_quote, take_until("\""), double_quote)),
+        |(r, a, b, c): (char, char, I, char)| LiteralSyntax::String {
+            open_quote: TokenSyntax::new(r.to_string() + &*a.to_string()),
             value: b.to_string(),
             close_quote: TokenSyntax::new(c.to_string()),
         },
     )(s)
+}
+
+pub fn string_literal(s: &str) -> IResult<&str, LiteralSyntax> {
+    map(delimited(
+        char('\"'),
+        escaped_transform(none_of("\"\\"), '\\', alt((
+            value('\\', char('\\')),
+            value('\"', char('\"')),
+            value('\'', char('\'')),
+            value('\r', char('r')),
+            value('\n', char('n')),
+            value('\t', char('t')),
+            map(
+                permutation((char('u'), take_while_m_n(4, 4, |c: char| c.is_ascii_hexdigit()))),
+                |(_, code): (char, &str)| -> char {
+                    decode_utf16(vec![u16::from_str_radix(code, 16).unwrap()])
+                        .nth(0).unwrap().unwrap_or(REPLACEMENT_CHARACTER)
+                },
+            )
+        ))),
+        char('\"'),
+    ),|s|{
+        LiteralSyntax::String {
+            open_quote: TokenSyntax::new('"'.to_string()),
+            value: s,
+            close_quote: TokenSyntax::new('"'.to_string())
+        }
+    })(s)
 }
 
 pub fn boolean_literal<I>(s: I) -> IResult<I, LiteralSyntax>
@@ -110,6 +139,7 @@ pub fn literal_expr(s: &str) -> IResult<&str, Expr> {
             floating_point_literal,
             integer_literal,
             string_literal,
+            raw_string_literal,
         )),
         |l| Expr::Literal(l),
     )(s)
@@ -749,11 +779,7 @@ pub fn expr(s: &str) -> IResult<&str, Expr> {
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::expression::{
-        boolean_literal, conjunction_expr, disjunction_expr, equality_expr, expr,
-        floating_point_literal, indexing_suffix, integer_literal, literal_expr, postfix_suffix,
-        return_expr, string_literal, value_arguments,
-    };
+    use crate::parser::wiz::expression::{boolean_literal, conjunction_expr, disjunction_expr, equality_expr, expr, floating_point_literal, indexing_suffix, integer_literal, literal_expr, postfix_suffix, return_expr, raw_string_literal, value_arguments, string_literal};
     use crate::syntax::block::Block;
     use crate::syntax::expr::Expr::{BinOp, If};
     use crate::syntax::expr::{
@@ -820,14 +846,29 @@ mod tests {
     }
 
     #[test]
+    fn test_raw_string_literal() {
+        assert_eq!(
+            raw_string_literal("r\"\""),
+            Ok((
+                "",
+                LiteralSyntax::String {
+                    open_quote: TokenSyntax::new(r#"r""#.to_string()),
+                    value: "".to_string(),
+                    close_quote: TokenSyntax::new('"'.to_string())
+                }
+            ))
+        );
+    }
+
+    #[test]
     fn test_string_literal() {
         assert_eq!(
-            string_literal("\"\""),
+            string_literal("\"s\\t\\ri\\ng\\\\\""),
             Ok((
                 "",
                 LiteralSyntax::String {
                     open_quote: TokenSyntax::new('"'.to_string()),
-                    value: "".to_string(),
+                    value: "s\t\ri\ng\\".to_string(),
                     close_quote: TokenSyntax::new('"'.to_string())
                 }
             ))
