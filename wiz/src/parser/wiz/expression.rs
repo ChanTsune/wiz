@@ -21,10 +21,10 @@ use crate::syntax::trivia::Trivia;
 use crate::syntax::type_name::TypeName;
 use nom::branch::{alt, permutation};
 use nom::bytes::complete::{escaped_transform, take_until, take_while_m_n};
-use nom::character::complete::{char, digit1, none_of};
-use nom::combinator::{map, not, opt, value};
+use nom::character::complete::{char, digit1};
+use nom::combinator::{map, opt, value};
 use nom::multi::many0;
-use nom::sequence::{delimited, tuple};
+use nom::sequence::{tuple};
 use nom::{
     AsChar, Compare, ExtendInto, FindSubstring, IResult, InputIter, InputLength, InputTake,
     InputTakeAtPosition, Offset, Slice,
