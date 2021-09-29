@@ -5,17 +5,18 @@ use nom::{AsChar, IResult, InputIter, InputLength, InputTake, Slice};
 use std::ops::RangeFrom;
 
 pub fn not_double_quote_or_back_slash<I>(s: I) -> IResult<I, char>
-    where
-        I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength,
-        <I as InputIter>::Item: AsChar,
+where
+    I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength,
+    <I as InputIter>::Item: AsChar,
 {
     map(
-        take_while_m_n(1, 1, |c: <I as InputIter>::Item| { let c = c.as_char();
-        c != '"' && c != '\\' }),
+        take_while_m_n(1, 1, |c: <I as InputIter>::Item| {
+            let c = c.as_char();
+            c != '"' && c != '\\'
+        }),
         |p: I| p.iter_elements().next().unwrap().as_char(),
     )(s)
 }
-
 
 pub fn alphabet<I>(s: I) -> IResult<I, char>
 where
@@ -105,7 +106,10 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::character::{alphabet, backticks, comma, cr, digit, dot, double_quote, eol, not_double_quote_or_back_slash, space, under_score};
+    use crate::parser::wiz::character::{
+        alphabet, backticks, comma, cr, digit, dot, double_quote, eol,
+        not_double_quote_or_back_slash, space, under_score,
+    };
 
     #[test]
     fn test_alphabet() {

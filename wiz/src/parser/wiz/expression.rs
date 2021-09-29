@@ -25,7 +25,10 @@ use nom::character::complete::{char, digit1, none_of};
 use nom::combinator::{map, not, opt, value};
 use nom::multi::many0;
 use nom::sequence::{delimited, tuple};
-use nom::{AsChar, Compare, FindSubstring, IResult, InputIter, InputLength, InputTake, InputTakeAtPosition, Slice, Offset, ExtendInto};
+use nom::{
+    AsChar, Compare, ExtendInto, FindSubstring, IResult, InputIter, InputLength, InputTake,
+    InputTakeAtPosition, Offset, Slice,
+};
 use std::char::{decode_utf16, REPLACEMENT_CHARACTER};
 use std::ops::RangeFrom;
 
@@ -82,14 +85,23 @@ where
 }
 
 pub fn string_literal<I>(s: I) -> IResult<I, LiteralSyntax>
-    where     I: Clone + Offset + InputLength + InputTake + InputTakeAtPosition + Slice<RangeFrom<usize>> + InputIter + ToString + ExtendInto<Item = char, Extender = String>,
-              <I as InputIter>::Item: AsChar + Copy
+where
+    I: Clone
+        + Offset
+        + InputLength
+        + InputTake
+        + InputTakeAtPosition
+        + Slice<RangeFrom<usize>>
+        + InputIter
+        + ToString
+        + ExtendInto<Item = char, Extender = String>,
+    <I as InputIter>::Item: AsChar + Copy,
 {
     map(
         tuple((
             double_quote,
             escaped_transform(
-                    not_double_quote_or_back_slash,
+                not_double_quote_or_back_slash,
                 '\\',
                 alt((
                     value('\\', char('\\')),
@@ -112,9 +124,9 @@ pub fn string_literal<I>(s: I) -> IResult<I, LiteralSyntax>
                     ),
                 )),
             ),
-            double_quote),
-        ),
-        |(a,s, b )| LiteralSyntax::String {
+            double_quote,
+        )),
+        |(a, s, b)| LiteralSyntax::String {
             open_quote: TokenSyntax::new(a.to_string()),
             value: s,
             close_quote: TokenSyntax::new(b.to_string()),
