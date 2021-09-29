@@ -2,9 +2,9 @@ use crate::syntax::block::Block;
 use crate::syntax::literal::LiteralSyntax;
 use crate::syntax::node::SyntaxNode;
 use crate::syntax::stmt::Stmt;
+use crate::syntax::token::TokenSyntax;
 use crate::syntax::type_name::TypeName;
 use std::fmt;
-use crate::syntax::token::TokenSyntax;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum Expr {

@@ -19,6 +19,7 @@ use crate::syntax::stmt::Stmt;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::type_name::TypeName;
+use crate::syntax::Syntax;
 use nom::branch::{alt, permutation};
 use nom::bytes::complete::{escaped_transform, take_until, take_while_m_n};
 use nom::character::complete::{char, digit1};
@@ -31,7 +32,6 @@ use nom::{
 };
 use std::char::{decode_utf16, REPLACEMENT_CHARACTER};
 use std::ops::RangeFrom;
-use crate::syntax::Syntax;
 
 pub fn integer_literal<I>(s: I) -> IResult<I, LiteralSyntax>
 where
