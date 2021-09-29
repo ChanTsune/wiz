@@ -1,7 +1,8 @@
 use crate::parser::error::ParseError;
 use crate::parser::result::Result;
 use crate::parser::wiz::statement::file;
-use crate::syntax::file::WizFile;
+use crate::syntax::file::{WizFile, SourceSet};
+use std::fs;
 use std::fs::{read_to_string, File};
 use std::io::Read;
 use std::path::Path;
@@ -46,4 +47,34 @@ pub fn parse_from_file_path(path: &Path) -> Result<WizFile> {
     let mut f = parse_from_string(s)?;
     f.name = String::from(path.to_string_lossy());
     Ok(f)
+}
+
+pub fn read_package_from_path(path: &Path) -> Result<SourceSet> {
+    if !path.is_dir() {
+        Result::Err(ParseError::ParseError(String::from(format!("{:?} is not package dir", path))))
+    } else {
+        let dir = fs::read_dir(path)?;
+        for item in  dir.into_iter() {
+            let dir_entry = item.unwrap();
+            if dir_entry.file_name().to_str().unwrap() == "src" {
+                return Result::Ok(SourceSet::Dir { name: path.file_name().unwrap().to_str().unwrap().to_string(), items: match read_package_files(dir_entry.path().as_path())? {
+                    SourceSet::File(_) => {panic!("never execution branch executed!!")}
+                    SourceSet::Dir { name:_, items } => { items }
+                } })
+            }
+            println!("{}", dir_entry.path().to_str().unwrap());
+        }
+        Result::Ok(SourceSet::Dir { name: path.file_name().unwrap().to_str().unwrap().to_string(), items: vec![] })
+    }
+}
+
+fn read_package_files(path: &Path) -> Result<SourceSet> {
+    if path.is_dir() {
+        let dir = fs::read_dir(path)?;
+        Result::Ok(SourceSet::Dir { name: path.file_name().unwrap().to_str().unwrap().to_string(), items: dir.into_iter().map(|d|{
+            read_package_files(&*d.unwrap().path())
+        }).collect::<Result<Vec<SourceSet>>>()? })
+    } else {
+        Result::Ok(SourceSet::File(parse_from_file_path(path)?))
+    }
 }
