@@ -1143,7 +1143,8 @@ mod tests {
             Ok((
                 "",
                 Expr::Return(ReturnSyntax {
-                    return_keyword: TokenSyntax::new(String::from("return")).with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    return_keyword: TokenSyntax::new(String::from("return"))
+                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     value: Some(Box::new(Expr::Name(NameExprSyntax {
                         name: "name".to_string()
                     })))
