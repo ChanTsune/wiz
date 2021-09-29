@@ -815,7 +815,8 @@ mod tests {
     };
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::token::TokenSyntax;
-    use crate::syntax::trivia::Trivia;
+    use crate::syntax::trivia::{Trivia, TriviaPiece};
+    use crate::syntax::Syntax;
 
     #[test]
     fn test_integer_literal() {
@@ -1142,6 +1143,7 @@ mod tests {
             Ok((
                 "",
                 Expr::Return(ReturnSyntax {
+                    return_keyword: TokenSyntax::new(String::from("return")).with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     value: Some(Box::new(Expr::Name(NameExprSyntax {
                         name: "name".to_string()
                     })))
