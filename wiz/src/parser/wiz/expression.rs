@@ -24,7 +24,7 @@ use nom::bytes::complete::{escaped_transform, take_until, take_while_m_n};
 use nom::character::complete::{char, digit1};
 use nom::combinator::{map, opt, value};
 use nom::multi::many0;
-use nom::sequence::{tuple};
+use nom::sequence::tuple;
 use nom::{
     AsChar, Compare, ExtendInto, FindSubstring, IResult, InputIter, InputLength, InputTake,
     InputTakeAtPosition, Offset, Slice,
