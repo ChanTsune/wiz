@@ -872,6 +872,17 @@ mod tests {
                 }
             ))
         );
+        assert_eq!(
+            raw_string_literal("r\"\\\\\""),
+            Ok((
+                "",
+                LiteralSyntax::String {
+                    open_quote: TokenSyntax::new(r#"r""#.to_string()),
+                    value: "\\\\".to_string(),
+                    close_quote: TokenSyntax::new('"'.to_string())
+                }
+            ))
+        );
     }
 
     #[test]
