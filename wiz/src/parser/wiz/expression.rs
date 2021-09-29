@@ -31,6 +31,7 @@ use nom::{
 };
 use std::char::{decode_utf16, REPLACEMENT_CHARACTER};
 use std::ops::RangeFrom;
+use crate::syntax::Syntax;
 
 pub fn integer_literal<I>(s: I) -> IResult<I, LiteralSyntax>
 where
@@ -181,8 +182,9 @@ pub fn parenthesized_expr(s: &str) -> IResult<&str, Expr> {
 pub fn return_expr(s: &str) -> IResult<&str, Expr> {
     map(
         tuple((return_keyword, whitespace1, opt(expr))),
-        |(_, _, e)| {
+        |(r, ws, e)| {
             Expr::Return(ReturnSyntax {
+                return_keyword: TokenSyntax::new(r.to_string()).with_trailing_trivia(ws),
                 value: e.map(|i| Box::new(i)),
             })
         },

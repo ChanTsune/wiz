@@ -4,6 +4,7 @@ use crate::syntax::node::SyntaxNode;
 use crate::syntax::stmt::Stmt;
 use crate::syntax::type_name::TypeName;
 use std::fmt;
+use crate::syntax::token::TokenSyntax;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum Expr {
@@ -110,5 +111,6 @@ pub enum PostfixSuffix {
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct ReturnSyntax {
+    pub(crate) return_keyword: TokenSyntax,
     pub(crate) value: Option<Box<Expr>>,
 }
