@@ -6,8 +6,8 @@ pub enum TypedSourceSet {
     File(TypedFile),
     Dir {
         name: String,
-        items: Vec<TypedSourceSet>
-    }
+        items: Vec<TypedSourceSet>,
+    },
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]

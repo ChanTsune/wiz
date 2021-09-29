@@ -5,10 +5,7 @@ use std::fmt;
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum SourceSet {
     File(WizFile),
-    Dir {
-        name: String,
-        items: Vec<SourceSet>
-    }
+    Dir { name: String, items: Vec<SourceSet> },
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
