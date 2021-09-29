@@ -588,6 +588,12 @@ impl<'ctx> CodeGen<'ctx> {
                 self.set_to_environment(name, ptr.as_any_value_enum());
                 self.builder.build_store(ptr, s).as_any_value_enum()
             }
+            AnyValueEnum::PointerValue(p) => {
+                let ptr_type = p.get_type();
+                let ptr = self.builder.build_alloca(ptr_type, &*name);
+                self.set_to_environment(name, ptr.as_any_value_enum());
+                self.builder.build_store(ptr, p).as_any_value_enum()
+            }
             t => {
                 eprintln!("undefined root executed {:?}", t);
                 exit(-14)
