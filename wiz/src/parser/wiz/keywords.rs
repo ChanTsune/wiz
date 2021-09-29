@@ -113,13 +113,16 @@ where
     tag("false")(s)
 }
 
+pub fn extern_keyword<I>(s: I) -> IResult<I, I>
+    where
+        I: InputTake + Compare<&'static str>,
+{
+    tag("extern")(s)
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::keywords::{
-        as_keyword, else_keyword, false_keyword, fun_keyword, if_keyword, in_keyword, init_keyword,
-        return_keyword, self_keyword, struct_keyword, true_keyword, use_keyword, val_keyword,
-        var_keyword, where_keyword, while_keyword,
-    };
+    use crate::parser::wiz::keywords::{as_keyword, else_keyword, false_keyword, fun_keyword, if_keyword, in_keyword, init_keyword, return_keyword, self_keyword, struct_keyword, true_keyword, use_keyword, val_keyword, var_keyword, where_keyword, while_keyword, extern_keyword};
 
     #[test]
     fn test_struct_keyword() {
@@ -199,5 +202,10 @@ mod tests {
     #[test]
     fn test_false_keyword() {
         assert_eq!(false_keyword("false"), Ok(("", "false")))
+    }
+
+    #[test]
+    fn test_extern_keyword() {
+        assert_eq!(extern_keyword("extern"), Ok(("", "extern")));
     }
 }
