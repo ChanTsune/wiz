@@ -281,7 +281,7 @@ pub fn type_constraints(s: &str) -> IResult<&str, Vec<TypeParam>> {
             type_constraint,
             whitespace0,
             opt(tuple((comma, whitespace0, type_constraint))),
-            opt(comma)
+            opt(comma),
         )),
         |(_, _, t, _, ts, _)| match ts {
             Some((_, _, ts)) => {
@@ -767,15 +767,13 @@ mod test {
             type_constraints("where T: Printable,"),
             Ok((
                 "",
-                vec![
-                    TypeParam {
-                        name: "T".to_string(),
-                        type_constraints: Some(TypeName {
-                            name: "Printable".to_string(),
-                            type_args: None
-                        })
-                    },
-                ]
+                vec![TypeParam {
+                    name: "T".to_string(),
+                    type_constraints: Some(TypeName {
+                        name: "Printable".to_string(),
+                        type_args: None
+                    })
+                },]
             ))
         );
         assert_eq!(
