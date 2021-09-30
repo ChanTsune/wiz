@@ -64,7 +64,12 @@ pub fn assignment_stmt(s: &str) -> IResult<&str, Stmt> {
 pub fn directly_assignable_expr(s: &str) -> IResult<&str, Expr> {
     alt((
         _directly_assignable_postfix_expr,
-        map(identifier, |name| Expr::Name(NameExprSyntax { name_space: vec![], name })),
+        map(identifier, |name| {
+            Expr::Name(NameExprSyntax {
+                name_space: vec![],
+                name,
+            })
+        }),
         map(parenthesized_directly_assignable_expr, |e| e),
     ))(s)
 }
