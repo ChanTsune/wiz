@@ -15,7 +15,7 @@ use crate::high_level_ir::typed_expr::{
     TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral,
     TypedName, TypedReturn, TypedSubscript,
 };
-use crate::high_level_ir::typed_file::TypedFile;
+use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedForStmt,
     TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
@@ -32,6 +32,18 @@ impl TypeResolver {
     pub fn new() -> Self {
         Self {
             context: ResolverContext::new(),
+        }
+    }
+
+    pub fn detect_type_from_source_set(&mut self, s: &TypedSourceSet) -> Result<()> {
+        match s {
+            TypedSourceSet::File(f) => {self.detect_type(f)}
+            TypedSourceSet::Dir { name, items } => {
+                self.context.push_name_space(name.clone());
+                items.iter().map(|i|{ self.detect_type_from_source_set(i) }).collect::<Result<Vec<()>>>()?;
+                self.context.pop_name_space();
+                Result::Ok(())
+            }
         }
     }
 
@@ -62,6 +74,18 @@ impl TypeResolver {
         }
         self.context.pop_name_space();
         Result::Ok(())
+    }
+
+    pub fn preload_source_set(&mut self, s: TypedSourceSet) -> Result<()> {
+        match s {
+            TypedSourceSet::File(f) => {self.preload_file(f)}
+            TypedSourceSet::Dir { name, items } => {
+                self.context.push_name_space(name);
+                items.into_iter().map(|i|{ self.preload_source_set(i) }).collect::<Result<Vec<()>>>()?;
+                self.context.pop_name_space();
+                Result::Ok(())
+            }
+        }
     }
 
     pub fn preload_file(&mut self, f: TypedFile) -> Result<()> {
@@ -135,6 +159,19 @@ impl TypeResolver {
         };
         self.context.pop_name_space();
         Result::Ok(fun)
+    }
+
+    pub fn source_set(&mut self, s: TypedSourceSet) -> Result<TypedSourceSet> {
+        Result::Ok(
+        match s {
+            TypedSourceSet::File(f) => {TypedSourceSet::File(self.file(f)?)}
+            TypedSourceSet::Dir { name, items } => {
+                self.context.push_name_space(name.clone());
+                let items = items.into_iter().map(|i|{ self.source_set(i) }).collect::<Result<Vec<TypedSourceSet>>>()?;
+                self.context.pop_name_space();
+                TypedSourceSet::Dir { name, items }
+            }
+        })
     }
 
     pub fn file(&mut self, f: TypedFile) -> Result<TypedFile> {

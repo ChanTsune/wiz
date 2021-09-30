@@ -6,7 +6,7 @@ use crate::high_level_ir::typed_expr::{
     TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral,
     TypedName, TypedReturn, TypedSubscript, TypedUnaryOp,
 };
-use crate::high_level_ir::typed_file::TypedFile;
+use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedForStmt,
     TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
@@ -18,7 +18,7 @@ use crate::syntax::decl::{
     StructSyntax, VarSyntax,
 };
 use crate::syntax::expr::{CallExprSyntax, Expr, NameExprSyntax, ReturnSyntax, SubscriptSyntax};
-use crate::syntax::file::{FileSyntax, WizFile};
+use crate::syntax::file::{FileSyntax, SourceSet, WizFile};
 use crate::syntax::fun::arg_def::ArgDef;
 use crate::syntax::fun::body_def::FunBody;
 use crate::syntax::literal::LiteralSyntax;
@@ -39,6 +39,15 @@ pub struct Ast2HLIR;
 impl Ast2HLIR {
     pub fn new() -> Self {
         Self {}
+    }
+
+    pub fn source_set(&mut self, s: SourceSet) -> TypedSourceSet {
+        match s {
+            SourceSet::File(f) => { TypedSourceSet::File(self.file(f)) }
+            SourceSet::Dir { name, items } => {
+                TypedSourceSet::Dir { name, items: items.into_iter().map(|i|self.source_set(i)).collect() }
+            }
+        }
     }
 
     pub fn file(&mut self, f: WizFile) -> TypedFile {

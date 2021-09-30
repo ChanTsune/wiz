@@ -62,6 +62,8 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         .map(|w| ast2hlir.file(w))
         .collect();
 
+    let std_hlir = ast2hlir.source_set(std_package_source_set);
+
     let ast_files: Vec<WizFile> = inputs
         .iter()
         .map(|s| parse_from_file_path_str(s))
@@ -75,6 +77,8 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         type_resolver.detect_type(hlir)?;
     }
 
+    type_resolver.detect_type_from_source_set(&std_hlir)?;
+
     for hlir in hlfiles.iter() {
         type_resolver.detect_type(hlir)?;
     }
@@ -83,9 +87,15 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         type_resolver.preload_file(hlir.clone())?;
     }
 
+    type_resolver.preload_source_set(std_hlir.clone())?;
+
     for hlir in hlfiles.iter() {
         type_resolver.preload_file(hlir.clone())?;
     }
+
+    let std_hlir = type_resolver.source_set(std_hlir)?;
+
+    println!("{:?}", std_hlir);
 
     let hlfiles = hlfiles
         .into_iter()
