@@ -43,10 +43,11 @@ impl Ast2HLIR {
 
     pub fn source_set(&mut self, s: SourceSet) -> TypedSourceSet {
         match s {
-            SourceSet::File(f) => { TypedSourceSet::File(self.file(f)) }
-            SourceSet::Dir { name, items } => {
-                TypedSourceSet::Dir { name, items: items.into_iter().map(|i|self.source_set(i)).collect() }
-            }
+            SourceSet::File(f) => TypedSourceSet::File(self.file(f)),
+            SourceSet::Dir { name, items } => TypedSourceSet::Dir {
+                name,
+                items: items.into_iter().map(|i| self.source_set(i)).collect(),
+            },
         }
     }
 

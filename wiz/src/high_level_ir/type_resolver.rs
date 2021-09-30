@@ -37,10 +37,13 @@ impl TypeResolver {
 
     pub fn detect_type_from_source_set(&mut self, s: &TypedSourceSet) -> Result<()> {
         match s {
-            TypedSourceSet::File(f) => {self.detect_type(f)}
+            TypedSourceSet::File(f) => self.detect_type(f),
             TypedSourceSet::Dir { name, items } => {
                 self.context.push_name_space(name.clone());
-                items.iter().map(|i|{ self.detect_type_from_source_set(i) }).collect::<Result<Vec<()>>>()?;
+                items
+                    .iter()
+                    .map(|i| self.detect_type_from_source_set(i))
+                    .collect::<Result<Vec<()>>>()?;
                 self.context.pop_name_space();
                 Result::Ok(())
             }
@@ -78,10 +81,13 @@ impl TypeResolver {
 
     pub fn preload_source_set(&mut self, s: TypedSourceSet) -> Result<()> {
         match s {
-            TypedSourceSet::File(f) => {self.preload_file(f)}
+            TypedSourceSet::File(f) => self.preload_file(f),
             TypedSourceSet::Dir { name, items } => {
                 self.context.push_name_space(name);
-                items.into_iter().map(|i|{ self.preload_source_set(i) }).collect::<Result<Vec<()>>>()?;
+                items
+                    .into_iter()
+                    .map(|i| self.preload_source_set(i))
+                    .collect::<Result<Vec<()>>>()?;
                 self.context.pop_name_space();
                 Result::Ok(())
             }
@@ -162,12 +168,14 @@ impl TypeResolver {
     }
 
     pub fn source_set(&mut self, s: TypedSourceSet) -> Result<TypedSourceSet> {
-        Result::Ok(
-        match s {
-            TypedSourceSet::File(f) => {TypedSourceSet::File(self.file(f)?)}
+        Result::Ok(match s {
+            TypedSourceSet::File(f) => TypedSourceSet::File(self.file(f)?),
             TypedSourceSet::Dir { name, items } => {
                 self.context.push_name_space(name.clone());
-                let items = items.into_iter().map(|i|{ self.source_set(i) }).collect::<Result<Vec<TypedSourceSet>>>()?;
+                let items = items
+                    .into_iter()
+                    .map(|i| self.source_set(i))
+                    .collect::<Result<Vec<TypedSourceSet>>>()?;
                 self.context.pop_name_space();
                 TypedSourceSet::Dir { name, items }
             }
