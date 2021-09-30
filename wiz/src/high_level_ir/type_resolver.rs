@@ -496,10 +496,15 @@ impl TypeResolver {
     }
 
     pub fn typed_name(&mut self, n: TypedName) -> Result<TypedName> {
-        let (type_, package) = self.context.resolve_name_type(match n.package {
-            None => {vec![]}
-            Some(p) => {p.names}
-        }, n.name.clone())?;
+        let (type_, package) = self.context.resolve_name_type(
+            match n.package {
+                None => {
+                    vec![]
+                }
+                Some(p) => p.names,
+            },
+            n.name.clone(),
+        )?;
         Result::Ok(TypedName {
             package,
             type_: Some(type_),
