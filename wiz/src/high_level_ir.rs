@@ -428,7 +428,11 @@ impl Ast2HLIR {
     pub fn name_syntax(&self, n: NameExprSyntax) -> TypedName {
         let NameExprSyntax { name_space, name } = n;
         TypedName {
-            package: None,
+            package: if name_space.is_empty() {
+                None
+            } else {
+                Some(Package::new(name_space))
+            },
             name,
             type_: None,
         }
