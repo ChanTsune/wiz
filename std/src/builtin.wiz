@@ -1,0 +1,5 @@
+// fun println<T>(_ item: T)
+// where T: Printable
+// {
+//     puts(item.description)
+// }
