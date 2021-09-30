@@ -60,6 +60,7 @@ impl SyntaxNode for Expr {}
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct NameExprSyntax {
+    pub(crate) name_space: Vec<String>,
     pub(crate) name: String,
 }
 

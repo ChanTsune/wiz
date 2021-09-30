@@ -426,7 +426,7 @@ impl Ast2HLIR {
     }
 
     pub fn name_syntax(&self, n: NameExprSyntax) -> TypedName {
-        let NameExprSyntax { name } = n;
+        let NameExprSyntax { name_space, name } = n;
         TypedName {
             package: None,
             name,

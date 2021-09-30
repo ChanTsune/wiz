@@ -169,7 +169,7 @@ pub fn literal_expr(s: &str) -> IResult<&str, Expr> {
 }
 
 pub fn name_expr(s: &str) -> IResult<&str, Expr> {
-    map(identifier, |name| Expr::Name(NameExprSyntax { name }))(s)
+    map(identifier, |name| Expr::Name(NameExprSyntax { name_space: vec![],name }))(s)
 }
 
 pub fn parenthesized_expr(s: &str) -> IResult<&str, Expr> {
@@ -1043,7 +1043,8 @@ mod tests {
                 "",
                 Expr::Call(CallExprSyntax {
                     target: Box::new(Expr::Name(NameExprSyntax {
-                        name: "puts".parse().unwrap()
+                        name_space: vec![],
+                        name: "puts".to_string()
                     })),
                     args: vec![],
                     tailing_lambda: None,
@@ -1060,7 +1061,8 @@ mod tests {
                 "",
                 Expr::Call(CallExprSyntax {
                     target: Box::new(Expr::Name(NameExprSyntax {
-                        name: "puts".parse().unwrap()
+                        name_space: vec![],
+                        name: "puts".to_string()
                     })),
                     args: vec![CallArg {
                         label: None,
@@ -1085,7 +1087,8 @@ mod tests {
                 "",
                 Expr::Call(CallExprSyntax {
                     target: Box::new(Expr::Name(NameExprSyntax {
-                        name: "puts".parse().unwrap()
+                        name_space: vec![],
+                        name: "puts".to_string()
                     })),
                     args: vec![CallArg {
                         label: Some(String::from("string")),
@@ -1110,6 +1113,7 @@ mod tests {
                 "",
                 If {
                     condition: Box::new(Expr::Name(NameExprSyntax {
+                        name_space: vec![],
                         name: "a".to_string()
                     })),
                     body: Block { body: vec![] },
@@ -1127,6 +1131,7 @@ mod tests {
                 "",
                 If {
                     condition: Box::new(Expr::Name(NameExprSyntax {
+                        name_space: vec![],
                         name: "a".to_string()
                     })),
                     body: Block { body: vec![] },
@@ -1146,6 +1151,7 @@ mod tests {
                     return_keyword: TokenSyntax::new(String::from("return"))
                         .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     value: Some(Box::new(Expr::Name(NameExprSyntax {
+                        name_space: vec![],
                         name: "name".to_string()
                     })))
                 })
@@ -1161,6 +1167,7 @@ mod tests {
                 "",
                 Expr::Member {
                     target: Box::new(Expr::Name(NameExprSyntax {
+                        name_space: vec![],
                         name: "a".to_string()
                     })),
                     name: "b".to_string(),
@@ -1178,6 +1185,7 @@ mod tests {
                 "",
                 PostfixSuffix::IndexingSuffix {
                     indexes: vec![Expr::Name(NameExprSyntax {
+                        name_space: vec![],
                         name: "a".to_string()
                     }),]
                 }
@@ -1190,9 +1198,11 @@ mod tests {
                 PostfixSuffix::IndexingSuffix {
                     indexes: vec![
                         Expr::Name(NameExprSyntax {
+                            name_space: vec![],
                             name: "a".to_string()
                         }),
                         Expr::Name(NameExprSyntax {
+                            name_space: vec![],
                             name: "b".to_string()
                         }),
                     ]
@@ -1206,9 +1216,11 @@ mod tests {
                 PostfixSuffix::IndexingSuffix {
                     indexes: vec![
                         Expr::Name(NameExprSyntax {
+                            name_space: vec![],
                             name: "a".to_string()
                         }),
                         Expr::Name(NameExprSyntax {
+                            name_space: vec![],
                             name: "b".to_string()
                         }),
                     ]
