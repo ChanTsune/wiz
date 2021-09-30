@@ -21,7 +21,7 @@ use crate::syntax::trivia::Trivia;
 use crate::syntax::type_name::TypeName;
 use crate::syntax::Syntax;
 use nom::branch::{alt, permutation};
-use nom::bytes::complete::{escaped_transform, take_until, take_while_m_n, tag};
+use nom::bytes::complete::{escaped_transform, tag, take_until, take_while_m_n};
 use nom::character::complete::{char, digit1};
 use nom::combinator::{map, opt, value};
 use nom::multi::many0;
@@ -170,13 +170,16 @@ pub fn literal_expr(s: &str) -> IResult<&str, Expr> {
 
 pub fn name_space<I>(s: I) -> IResult<I, Vec<String>>
 where
-    I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone + Compare<&'static str>,
+    I: Slice<RangeFrom<usize>>
+        + InputIter
+        + InputTake
+        + InputLength
+        + Clone
+        + Compare<&'static str>,
     <I as InputIter>::Item: AsChar,
 {
-    map(many0(tuple((identifier, tag("::")))), |ns|{
-        ns.into_iter().map(|(i, _)|{
-            i
-        }).collect()
+    map(many0(tuple((identifier, tag("::")))), |ns| {
+        ns.into_iter().map(|(i, _)| i).collect()
     })(s)
 }
 
@@ -820,7 +823,11 @@ pub fn expr(s: &str) -> IResult<&str, Expr> {
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::expression::{boolean_literal, conjunction_expr, disjunction_expr, equality_expr, expr, floating_point_literal, indexing_suffix, integer_literal, literal_expr, postfix_suffix, raw_string_literal, return_expr, string_literal, value_arguments, name_expr};
+    use crate::parser::wiz::expression::{
+        boolean_literal, conjunction_expr, disjunction_expr, equality_expr, expr,
+        floating_point_literal, indexing_suffix, integer_literal, literal_expr, name_expr,
+        postfix_suffix, raw_string_literal, return_expr, string_literal, value_arguments,
+    };
     use crate::syntax::block::Block;
     use crate::syntax::expr::Expr::{BinOp, If};
     use crate::syntax::expr::{
@@ -945,10 +952,16 @@ mod tests {
 
     #[test]
     fn test_name_expr() {
-        assert_eq!(name_expr("std::builtin::println"), Ok(("", Expr::Name(NameExprSyntax {
-            name_space: vec![String::from("std"), String::from("builtin")],
-            name: "println".to_string()
-        }))))
+        assert_eq!(
+            name_expr("std::builtin::println"),
+            Ok((
+                "",
+                Expr::Name(NameExprSyntax {
+                    name_space: vec![String::from("std"), String::from("builtin")],
+                    name: "println".to_string()
+                })
+            ))
+        )
     }
 
     #[test]
