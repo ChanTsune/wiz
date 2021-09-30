@@ -169,7 +169,12 @@ pub fn literal_expr(s: &str) -> IResult<&str, Expr> {
 }
 
 pub fn name_expr(s: &str) -> IResult<&str, Expr> {
-    map(identifier, |name| Expr::Name(NameExprSyntax { name_space: vec![],name }))(s)
+    map(identifier, |name| {
+        Expr::Name(NameExprSyntax {
+            name_space: vec![],
+            name,
+        })
+    })(s)
 }
 
 pub fn parenthesized_expr(s: &str) -> IResult<&str, Expr> {
