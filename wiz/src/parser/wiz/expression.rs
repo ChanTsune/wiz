@@ -758,7 +758,7 @@ pub fn as_operator(s: &str) -> IResult<&str, String> {
 
 pub fn in_operator(s: &str) -> IResult<&str, String> {
     alt((
-        map(tuple((in_keyword, char('!'))), |(a, b): (&str, _)| {
+        map(tuple((char('!'), in_keyword)), |(a, b): (_, &str)| {
             a.to_string() + &*b.to_string()
         }),
         map(in_keyword, |a: &str| a.to_string()),
@@ -767,7 +767,7 @@ pub fn in_operator(s: &str) -> IResult<&str, String> {
 
 pub fn is_operator(s: &str) -> IResult<&str, String> {
     alt((
-        map(tuple((char('i'), char('s'), char('!'))), |(a, b, c)| {
+        map(tuple((char('!'), char('i'), char('s'))), |(a, b, c)| {
             a.to_string() + &*b.to_string() + &*c.to_string()
         }),
         map(tuple((char('i'), char('s'))), |(a, b)| {
