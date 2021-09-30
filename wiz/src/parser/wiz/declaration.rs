@@ -281,8 +281,9 @@ pub fn type_constraints(s: &str) -> IResult<&str, Vec<TypeParam>> {
             type_constraint,
             whitespace0,
             opt(tuple((comma, whitespace0, type_constraint))),
+            opt(comma)
         )),
-        |(_, _, t, _, ts)| match ts {
+        |(_, _, t, _, ts, _)| match ts {
             Some((_, _, ts)) => {
                 vec![t, ts]
             }
@@ -763,7 +764,44 @@ mod test {
     #[test]
     fn test_type_constraints() {
         assert_eq!(
+            type_constraints("where T: Printable,"),
+            Ok((
+                "",
+                vec![
+                    TypeParam {
+                        name: "T".to_string(),
+                        type_constraints: Some(TypeName {
+                            name: "Printable".to_string(),
+                            type_args: None
+                        })
+                    },
+                ]
+            ))
+        );
+        assert_eq!(
             type_constraints("where T: Printable, T: DebugPrintable"),
+            Ok((
+                "",
+                vec![
+                    TypeParam {
+                        name: "T".to_string(),
+                        type_constraints: Some(TypeName {
+                            name: "Printable".to_string(),
+                            type_args: None
+                        })
+                    },
+                    TypeParam {
+                        name: "T".to_string(),
+                        type_constraints: Some(TypeName {
+                            name: "DebugPrintable".to_string(),
+                            type_args: None
+                        })
+                    }
+                ]
+            ))
+        );
+        assert_eq!(
+            type_constraints("where T: Printable, T: DebugPrintable,"),
             Ok((
                 "",
                 vec![
