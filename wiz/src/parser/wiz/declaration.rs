@@ -277,11 +277,13 @@ pub fn type_constraints(s: &str) -> IResult<&str, Vec<TypeParam>> {
     map(
         tuple((
             where_keyword,
+            whitespace1,
             type_constraint,
-            opt(tuple((comma, type_constraint))),
+            whitespace0,
+            opt(tuple((comma,whitespace0, type_constraint))),
         )),
-        |(_, t, ts)| match ts {
-            Some((_, ts)) => {
+        |(_, _, t,_, ts)| match ts {
+            Some((_, _, ts)) => {
                 vec![t, ts]
             }
             None => {
@@ -292,7 +294,7 @@ pub fn type_constraints(s: &str) -> IResult<&str, Vec<TypeParam>> {
 }
 
 pub fn type_constraint(s: &str) -> IResult<&str, TypeParam> {
-    map(tuple((identifier, char(':'), type_)), |(id, _, typ)| {
+    map(tuple((identifier,whitespace0, char(':'),whitespace0, type_)), |(id, _,_,_, typ)| {
         TypeParam {
             name: id,
             type_constraints: Some(typ),
@@ -407,10 +409,7 @@ pub fn package_name(s: &str) -> IResult<&str, PackageName> {
 
 #[cfg(test)]
 mod test {
-    use crate::parser::wiz::declaration::{
-        block, function_body, function_decl, member_function, package_name, stored_property,
-        struct_properties, struct_syntax, use_syntax, var_decl,
-    };
+    use crate::parser::wiz::declaration::{block, function_body, function_decl, member_function, package_name, stored_property, struct_properties, struct_syntax, type_constraint, type_constraints, use_syntax, var_decl};
     use crate::syntax::block::Block;
     use crate::syntax::decl::{
         Decl, FunSyntax, MethodSyntax, PackageName, StoredPropertySyntax, StructPropertySyntax,
@@ -422,7 +421,7 @@ mod test {
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::stmt::Stmt;
     use crate::syntax::token::TokenSyntax;
-    use crate::syntax::type_name::TypeName;
+    use crate::syntax::type_name::{TypeName, TypeParam};
 
     #[test]
     fn test_struct_properties() {
@@ -738,6 +737,34 @@ mod test {
                 })
             ))
         )
+    }
+
+    #[test]
+    fn test_type_constraint() {
+        assert_eq!(type_constraint("T: Printable"), Ok(("", TypeParam {
+            name: "T".to_string(),
+            type_constraints: Some(TypeName {
+                name: "Printable".to_string(),
+                type_args: None
+            })
+        })))
+    }
+
+    #[test]
+    fn test_type_constraints() {
+        assert_eq!(type_constraints("where T: Printable, T: DebugPrintable"), Ok(("", vec![TypeParam {
+            name: "T".to_string(),
+            type_constraints: Some(TypeName {
+                name: "Printable".to_string(),
+                type_args: None
+            })
+        },TypeParam {
+            name: "T".to_string(),
+            type_constraints: Some(TypeName {
+                name: "DebugPrintable".to_string(),
+                type_args: None
+            })
+        }])));
     }
 
     #[test]
