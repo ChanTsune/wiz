@@ -116,6 +116,12 @@ pub struct MLReturn {
     pub(crate) type_: MLValueType,
 }
 
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct MLTypeCast {
+    pub(crate) target: Box<MLExpr>,
+    pub(crate) type_: MLValueType
+}
+
 impl MLExpr {
     pub fn type_(&self) -> MLType {
         match self {
@@ -304,5 +310,13 @@ impl MLNode for MLReturn {
             Some(v) => v.fmt(f),
             None => fmt::Result::Ok(()),
         }
+    }
+}
+
+impl MLNode for MLTypeCast {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        self.target.fmt(f)?;
+        f.write_str(" as ")?;
+        self.type_.fmt(f)
     }
 }
