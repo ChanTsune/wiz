@@ -1,5 +1,8 @@
 use crate::middle_level_ir::ml_decl::{MLDecl, MLFun, MLStruct, MLVar};
-use crate::middle_level_ir::ml_expr::{MLBinOp, MLBinopKind, MLCall, MLExpr, MLIf, MLLiteral, MLMember, MLReturn, MLSubscript, MLUnaryOp, MLTypeCast};
+use crate::middle_level_ir::ml_expr::{
+    MLBinOp, MLBinopKind, MLCall, MLExpr, MLIf, MLLiteral, MLMember, MLReturn, MLSubscript,
+    MLTypeCast, MLUnaryOp,
+};
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
 use crate::middle_level_ir::ml_type::{MLType, MLValueType};
@@ -514,32 +517,40 @@ impl<'ctx> CodeGen<'ctx> {
             // AnyValueEnum::ArrayValue(_) => {}
             AnyValueEnum::IntValue(i) => {
                 let ty = match t.type_ {
-                    MLValueType::Primitive(p) => {
-                        match &*p {
-                            "Int64" => { self.context.i64_type() }
-                            "Int32" => {self.context.i32_type() }
-                            _ => panic!()
-                        }
+                    MLValueType::Primitive(p) => match &*p {
+                        "Int64" => self.context.i64_type(),
+                        "Int32" => self.context.i32_type(),
+                        _ => panic!(),
+                    },
+                    MLValueType::Struct(_) => {
+                        todo!()
                     }
-                    MLValueType::Struct(_) => {todo!()}
-                    MLValueType::Pointer(_) => {todo!()}
-                    MLValueType::Reference(_) => {todo!()}
+                    MLValueType::Pointer(_) => {
+                        todo!()
+                    }
+                    MLValueType::Reference(_) => {
+                        todo!()
+                    }
                 };
                 let t = self.builder.build_int_cast(i, ty, "int_cast");
                 t.as_any_value_enum()
             }
             AnyValueEnum::FloatValue(f) => {
                 let ty = match t.type_ {
-                    MLValueType::Primitive(p) => {
-                        match &*p {
-                            "Float" => { self.context.f32_type() }
-                            "Double" => {self.context.f64_type() }
-                            _ => panic!()
-                        }
+                    MLValueType::Primitive(p) => match &*p {
+                        "Float" => self.context.f32_type(),
+                        "Double" => self.context.f64_type(),
+                        _ => panic!(),
+                    },
+                    MLValueType::Struct(_) => {
+                        todo!()
                     }
-                    MLValueType::Struct(_) => {todo!()}
-                    MLValueType::Pointer(_) => {todo!()}
-                    MLValueType::Reference(_) => {todo!()}
+                    MLValueType::Pointer(_) => {
+                        todo!()
+                    }
+                    MLValueType::Reference(_) => {
+                        todo!()
+                    }
                 };
                 let t = self.builder.build_float_cast(f, ty, "float_cast");
                 t.as_any_value_enum()

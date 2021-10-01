@@ -2,14 +2,20 @@ use crate::ext::string::StringExt;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{TypedBinOp, TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn, TypedSubscript, TypedTypeCast};
+use crate::high_level_ir::typed_expr::{
+    TypedBinOp, TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName,
+    TypedReturn, TypedSubscript, TypedTypeCast,
+};
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
 use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
 use crate::middle_level_ir::ml_decl::{
     MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar,
 };
-use crate::middle_level_ir::ml_expr::{MLBinOp, MLBinopKind, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLMember, MLName, MLReturn, MLSubscript, MLTypeCast};
+use crate::middle_level_ir::ml_expr::{
+    MLBinOp, MLBinopKind, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLMember, MLName, MLReturn,
+    MLSubscript, MLTypeCast,
+};
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
 use crate::middle_level_ir::ml_type::{MLFunctionType, MLType, MLValueType};
@@ -573,7 +579,7 @@ impl HLIR2MLIR {
     pub fn type_cast(&mut self, t: TypedTypeCast) -> MLTypeCast {
         MLTypeCast {
             target: Box::new(self.expr(*t.target)),
-            type_: self.type_(t.type_.unwrap()).into_value_type()
+            type_: self.type_(t.type_.unwrap()).into_value_type(),
         }
     }
 

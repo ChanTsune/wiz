@@ -118,7 +118,7 @@ pub struct MLReturn {
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct MLTypeCast {
     pub(crate) target: Box<MLExpr>,
-    pub(crate) type_: MLValueType
+    pub(crate) type_: MLValueType,
 }
 
 impl MLExpr {
