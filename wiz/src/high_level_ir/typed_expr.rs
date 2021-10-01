@@ -118,6 +118,13 @@ pub struct TypedReturn {
     pub(crate) type_: Option<TypedType>,
 }
 
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct TypedTypeCast {
+    pub(crate) target: Box<TypedExpr>,
+    pub(crate) is_safe: bool,
+    pub(crate) type_: Option<TypedType>
+}
+
 impl TypedExpr {
     pub fn type_(&self) -> Option<TypedType> {
         match self {
