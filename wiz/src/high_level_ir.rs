@@ -1,12 +1,12 @@
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedFun, TypedFunBody, TypedInitializer,
-    TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedValueArgDef, TypedVar,
+    TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedUse, TypedValueArgDef, TypedVar,
 };
 use crate::high_level_ir::typed_expr::{
     TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral,
-    TypedName, TypedReturn, TypedSubscript, TypedUnaryOp,
+    TypedName, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
-use crate::high_level_ir::typed_file::TypedFile;
+use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedForStmt,
     TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
@@ -17,8 +17,10 @@ use crate::syntax::decl::{
     Decl, FunSyntax, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax,
     StructSyntax, VarSyntax,
 };
-use crate::syntax::expr::{CallExprSyntax, Expr, NameExprSyntax, ReturnSyntax, SubscriptSyntax};
-use crate::syntax::file::{FileSyntax, WizFile};
+use crate::syntax::expr::{
+    CallExprSyntax, Expr, NameExprSyntax, ReturnSyntax, SubscriptSyntax, TypeCastSyntax,
+};
+use crate::syntax::file::{FileSyntax, SourceSet, WizFile};
 use crate::syntax::fun::arg_def::ArgDef;
 use crate::syntax::fun::body_def::FunBody;
 use crate::syntax::literal::LiteralSyntax;
@@ -41,6 +43,16 @@ impl Ast2HLIR {
         Self {}
     }
 
+    pub fn source_set(&mut self, s: SourceSet) -> TypedSourceSet {
+        match s {
+            SourceSet::File(f) => TypedSourceSet::File(self.file(f)),
+            SourceSet::Dir { name, items } => TypedSourceSet::Dir {
+                name,
+                items: items.into_iter().map(|i| self.source_set(i)).collect(),
+            },
+        }
+    }
+
     pub fn file(&mut self, f: WizFile) -> TypedFile {
         TypedFile {
             name: path_string_to_page_name(f.name),
@@ -52,7 +64,7 @@ impl Ast2HLIR {
         f.body.into_iter().map(|d| self.decl(d)).collect()
     }
 
-    pub fn stmt(&mut self, s: Stmt) -> TypedStmt {
+    pub fn stmt(&self, s: Stmt) -> TypedStmt {
         match s {
             Stmt::Decl { decl } => TypedStmt::Decl(self.decl(decl)),
             Stmt::Expr { expr } => TypedStmt::Expr(self.expr(expr)),
@@ -61,7 +73,7 @@ impl Ast2HLIR {
         }
     }
 
-    pub fn assignment(&mut self, a: AssignmentStmt) -> TypedAssignmentStmt {
+    pub fn assignment(&self, a: AssignmentStmt) -> TypedAssignmentStmt {
         match a {
             AssignmentStmt::Assignment(a) => TypedAssignmentStmt::Assignment(TypedAssignment {
                 target: self.expr(a.target),
@@ -77,7 +89,7 @@ impl Ast2HLIR {
         }
     }
 
-    pub fn loop_stmt(&mut self, l: LoopStmt) -> TypedLoopStmt {
+    pub fn loop_stmt(&self, l: LoopStmt) -> TypedLoopStmt {
         match l {
             LoopStmt::While { condition, block } => TypedLoopStmt::While(TypedWhileLoopStmt {
                 condition: self.expr(condition),
@@ -95,7 +107,7 @@ impl Ast2HLIR {
         }
     }
 
-    pub fn decl(&mut self, d: Decl) -> TypedDecl {
+    pub fn decl(&self, d: Decl) -> TypedDecl {
         match d {
             Decl::Var(v) => TypedDecl::Var(self.var_syntax(v)),
             Decl::Fun(f) => TypedDecl::Fun(self.fun_syntax(f)),
@@ -104,15 +116,20 @@ impl Ast2HLIR {
                 let struct_ = self.default_init_if_needed(struct_);
                 TypedDecl::Struct(struct_)
             }
-            Decl::Class { .. } => TypedDecl::Class,
+            Decl::ExternC { .. } => TypedDecl::Class,
             Decl::Enum { .. } => TypedDecl::Enum,
             Decl::Protocol { .. } => TypedDecl::Protocol,
             Decl::Extension { .. } => TypedDecl::Extension,
-            Decl::Use(_) => TypedDecl::Use,
+            Decl::Use(u) => TypedDecl::Use(TypedUse {
+                package: Package {
+                    names: u.package_name.names,
+                },
+                alias: u.alias,
+            }),
         }
     }
 
-    pub fn var_syntax(&mut self, v: VarSyntax) -> TypedVar {
+    pub fn var_syntax(&self, v: VarSyntax) -> TypedVar {
         let expr = self.expr(v.value);
         TypedVar {
             package: None,
@@ -134,14 +151,14 @@ impl Ast2HLIR {
         }
     }
 
-    pub fn fun_body(&mut self, body: FunBody) -> TypedFunBody {
+    pub fn fun_body(&self, body: FunBody) -> TypedFunBody {
         match body {
             FunBody::Block { block } => TypedFunBody::Block(self.block(block)),
             FunBody::Expr { expr } => TypedFunBody::Expr(self.expr(expr)),
         }
     }
 
-    pub fn fun_syntax(&mut self, f: FunSyntax) -> TypedFun {
+    pub fn fun_syntax(&self, f: FunSyntax) -> TypedFun {
         let args: Vec<TypedArgDef> = f.arg_defs.into_iter().map(|a| self.arg_def(a)).collect();
         let body = match f.body {
             None => None,
@@ -193,7 +210,7 @@ impl Ast2HLIR {
         }
     }
 
-    pub fn struct_syntax(&mut self, s: StructSyntax) -> TypedStruct {
+    pub fn struct_syntax(&self, s: StructSyntax) -> TypedStruct {
         let mut stored_properties: Vec<TypedStoredProperty> = vec![];
         let mut computed_properties: Vec<TypedComputedProperty> = vec![];
         let mut initializers: Vec<TypedInitializer> = vec![];
@@ -285,14 +302,14 @@ impl Ast2HLIR {
         }
     }
 
-    pub fn initializer_syntax(&mut self, init: InitializerSyntax) -> TypedInitializer {
+    pub fn initializer_syntax(&self, init: InitializerSyntax) -> TypedInitializer {
         TypedInitializer {
             args: init.args.into_iter().map(|a| self.arg_def(a)).collect(),
             body: self.fun_body(init.body),
         }
     }
 
-    pub fn member_function(&mut self, member_function: MethodSyntax) -> TypedMemberFunction {
+    pub fn member_function(&self, member_function: MethodSyntax) -> TypedMemberFunction {
         let MethodSyntax {
             name,
             args,
@@ -313,21 +330,25 @@ impl Ast2HLIR {
         }
     }
 
-    pub fn expr(&mut self, e: Expr) -> TypedExpr {
+    pub fn expr(&self, e: Expr) -> TypedExpr {
         match e {
             Expr::Name(n) => TypedExpr::Name(self.name_syntax(n)),
             Expr::Literal(literal) => match literal {
-                LiteralSyntax::Integer { value } => TypedExpr::Literal(TypedLiteral::Integer {
-                    value,
+                LiteralSyntax::Integer(value) => TypedExpr::Literal(TypedLiteral::Integer {
+                    value: value.token,
                     type_: Some(TypedType::int64()),
                 }),
-                LiteralSyntax::FloatingPoint { value } => {
+                LiteralSyntax::FloatingPoint(value) => {
                     TypedExpr::Literal(TypedLiteral::FloatingPoint {
-                        value,
+                        value: value.token,
                         type_: Some(TypedType::double()),
                     })
                 }
-                LiteralSyntax::String { value } => TypedExpr::Literal(TypedLiteral::String {
+                LiteralSyntax::String {
+                    open_quote: _,
+                    value,
+                    close_quote: _,
+                } => TypedExpr::Literal(TypedLiteral::String {
                     value,
                     type_: Some(TypedType::string()),
                 }),
@@ -402,20 +423,24 @@ impl Ast2HLIR {
             Expr::When { .. } => TypedExpr::When,
             Expr::Lambda { .. } => TypedExpr::Lambda,
             Expr::Return(r) => TypedExpr::Return(self.return_syntax(r)),
-            Expr::TypeCast { .. } => TypedExpr::TypeCast,
+            Expr::TypeCast(t) => TypedExpr::TypeCast(self.type_cast(t)),
         }
     }
 
     pub fn name_syntax(&self, n: NameExprSyntax) -> TypedName {
-        let NameExprSyntax { name } = n;
+        let NameExprSyntax { name_space, name } = n;
         TypedName {
-            package: None,
+            package: if name_space.is_empty() {
+                None
+            } else {
+                Some(Package::new(name_space))
+            },
             name,
             type_: None,
         }
     }
 
-    pub fn subscript_syntax(&mut self, s: SubscriptSyntax) -> TypedSubscript {
+    pub fn subscript_syntax(&self, s: SubscriptSyntax) -> TypedSubscript {
         let target = Box::new(self.expr(*s.target));
         let indexes: Vec<TypedExpr> = s.idx_or_keys.into_iter().map(|i| self.expr(i)).collect();
         TypedSubscript {
@@ -425,7 +450,7 @@ impl Ast2HLIR {
         }
     }
 
-    pub fn call_syntax(&mut self, c: CallExprSyntax) -> TypedCall {
+    pub fn call_syntax(&self, c: CallExprSyntax) -> TypedCall {
         let CallExprSyntax {
             target,
             args,
@@ -456,7 +481,7 @@ impl Ast2HLIR {
         }
     }
 
-    pub fn return_syntax(&mut self, r: ReturnSyntax) -> TypedReturn {
+    pub fn return_syntax(&self, r: ReturnSyntax) -> TypedReturn {
         let value = r.value.map(|v| Box::new(self.expr(*v)));
         let t = match &value {
             Some(v) => v.type_(),
@@ -465,7 +490,15 @@ impl Ast2HLIR {
         TypedReturn { value, type_: t }
     }
 
-    pub fn block(&mut self, block: Block) -> TypedBlock {
+    pub fn type_cast(&self, t: TypeCastSyntax) -> TypedTypeCast {
+        TypedTypeCast {
+            target: Box::new(self.expr(*t.target)),
+            is_safe: t.is_safe,
+            type_: Some(self.type_(t.type_)),
+        }
+    }
+
+    pub fn block(&self, block: Block) -> TypedBlock {
         TypedBlock {
             body: block.body.into_iter().map(|s| self.stmt(s)).collect(),
         }

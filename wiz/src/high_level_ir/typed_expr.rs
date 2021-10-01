@@ -19,7 +19,7 @@ pub enum TypedExpr {
     When,
     Lambda,
     Return(TypedReturn),
-    TypeCast,
+    TypeCast(TypedTypeCast),
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -118,6 +118,13 @@ pub struct TypedReturn {
     pub(crate) type_: Option<TypedType>,
 }
 
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct TypedTypeCast {
+    pub(crate) target: Box<TypedExpr>,
+    pub(crate) is_safe: bool,
+    pub(crate) type_: Option<TypedType>,
+}
+
 impl TypedExpr {
     pub fn type_(&self) -> Option<TypedType> {
         match self {
@@ -136,7 +143,7 @@ impl TypedExpr {
             TypedExpr::When => None,
             TypedExpr::Lambda => None,
             TypedExpr::Return(r) => r.type_.clone(),
-            TypedExpr::TypeCast => None,
+            TypedExpr::TypeCast(t) => t.type_.clone(),
         }
     }
 }

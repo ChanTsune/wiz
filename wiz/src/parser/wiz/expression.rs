@@ -1,5 +1,8 @@
+use crate::parser::wiz::character::{comma, dot, double_quote, not_double_quote_or_back_slash};
 use crate::parser::wiz::declaration::block;
-use crate::parser::wiz::keywords::{else_keyword, if_keyword, return_keyword};
+use crate::parser::wiz::keywords::{
+    as_keyword, else_keyword, false_keyword, if_keyword, in_keyword, return_keyword, true_keyword,
+};
 use crate::parser::wiz::lexical_structure::{
     identifier, whitespace0, whitespace1, whitespace_without_eol0,
 };
@@ -9,55 +12,184 @@ use crate::parser::wiz::type_::{type_, type_arguments};
 use crate::syntax::block::Block;
 use crate::syntax::expr::{
     CallArg, CallExprSyntax, Expr, LambdaSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax,
-    SubscriptSyntax,
+    SubscriptSyntax, TypeCastSyntax,
 };
 use crate::syntax::literal::LiteralSyntax;
 use crate::syntax::stmt::Stmt;
+use crate::syntax::token::TokenSyntax;
+use crate::syntax::trivia::Trivia;
 use crate::syntax::type_name::TypeName;
-use nom::branch::alt;
-use nom::character::complete::{char, digit1, none_of, one_of};
-use nom::combinator::{map, opt};
+use crate::syntax::Syntax;
+use nom::branch::{alt, permutation};
+use nom::bytes::complete::{escaped_transform, tag, take_until, take_while_m_n};
+use nom::character::complete::{char, digit1};
+use nom::combinator::{map, opt, value};
 use nom::multi::many0;
 use nom::sequence::tuple;
-use nom::IResult;
+use nom::{
+    AsChar, Compare, ExtendInto, FindSubstring, IResult, InputIter, InputLength, InputTake,
+    InputTakeAtPosition, Offset, Slice,
+};
+use std::char::{decode_utf16, REPLACEMENT_CHARACTER};
+use std::ops::RangeFrom;
 
-pub fn integer_literal(s: &str) -> IResult<&str, LiteralSyntax> {
-    map(digit1, |n: &str| LiteralSyntax::Integer {
-        value: n.to_string(),
+pub fn integer_literal<I>(s: I) -> IResult<I, LiteralSyntax>
+where
+    I: InputTake + ToString + InputLength + InputIter + Clone + InputTakeAtPosition,
+    <I as InputIter>::Item: AsChar,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
+    map(digit1, |n: I| {
+        LiteralSyntax::Integer(TokenSyntax::new(n.to_string()))
     })(s)
 }
 
-pub fn floating_point_literal(s: &str) -> IResult<&str, LiteralSyntax> {
+pub fn floating_point_literal<I>(s: I) -> IResult<I, LiteralSyntax>
+where
+    I: InputTake
+        + Compare<&'static str>
+        + Slice<RangeFrom<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTakeAtPosition,
+    <I as InputIter>::Item: AsChar,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
+    map(tuple((digit1, dot, digit1)), |(i, d, f): (I, char, I)| {
+        LiteralSyntax::FloatingPoint(TokenSyntax::new(
+            i.to_string() + &*d.to_string() + &*f.to_string(),
+        ))
+    })(s)
+}
+
+pub fn raw_string_literal<I>(s: I) -> IResult<I, LiteralSyntax>
+where
+    I: InputTake
+        + Compare<&'static str>
+        + Clone
+        + FindSubstring<&'static str>
+        + Slice<RangeFrom<usize>>
+        + InputIter
+        + ToString,
+    <I as InputIter>::Item: AsChar,
+{
     map(
-        tuple((digit1, char('.'), digit1)),
-        |(i, d, f): (&str, char, &str)| LiteralSyntax::FloatingPoint {
-            value: String::from(i) + &*d.to_string() + f,
+        permutation((char('r'), double_quote, take_until("\""), double_quote)),
+        |(r, a, b, c): (char, char, I, char)| LiteralSyntax::String {
+            open_quote: TokenSyntax::new(r.to_string() + &*a.to_string()),
+            value: b.to_string(),
+            close_quote: TokenSyntax::new(c.to_string()),
         },
     )(s)
 }
 
-pub fn string_literal(s: &str) -> IResult<&str, LiteralSyntax> {
+pub fn string_literal<I>(s: I) -> IResult<I, LiteralSyntax>
+where
+    I: Clone
+        + Offset
+        + InputLength
+        + InputTake
+        + InputTakeAtPosition
+        + Slice<RangeFrom<usize>>
+        + InputIter
+        + ToString
+        + ExtendInto<Item = char, Extender = String>,
+    <I as InputIter>::Item: AsChar + Copy,
+{
     map(
-        tuple((char('"'), many0(none_of("\"")), char('"'))),
-        |(a, b, c)| LiteralSyntax::String {
-            value: b.into_iter().collect(),
+        tuple((
+            double_quote,
+            escaped_transform(
+                not_double_quote_or_back_slash,
+                '\\',
+                alt((
+                    value('\\', char('\\')),
+                    value('\"', char('\"')),
+                    value('\'', char('\'')),
+                    value('\r', char('r')),
+                    value('\n', char('n')),
+                    value('\t', char('t')),
+                    map(
+                        permutation((
+                            char('u'),
+                            take_while_m_n(4, 4, |c: <I as InputIter>::Item| c.is_hex_digit()),
+                        )),
+                        |(_, code): (char, I)| -> char {
+                            decode_utf16(vec![u16::from_str_radix(&*code.to_string(), 16).unwrap()])
+                                .nth(0)
+                                .unwrap()
+                                .unwrap_or(REPLACEMENT_CHARACTER)
+                        },
+                    ),
+                )),
+            ),
+            double_quote,
+        )),
+        |(a, s, b)| LiteralSyntax::String {
+            open_quote: TokenSyntax::new(a.to_string()),
+            value: s,
+            close_quote: TokenSyntax::new(b.to_string()),
         },
     )(s)
+}
+
+pub fn boolean_literal<I>(s: I) -> IResult<I, LiteralSyntax>
+where
+    I: InputTake + Compare<&'static str> + Clone + ToString,
+{
+    map(alt((true_keyword, false_keyword)), |b: I| {
+        LiteralSyntax::Boolean(TokenSyntax {
+            leading_trivia: Trivia::new(),
+            token: b.to_string(),
+            trailing_trivia: Trivia::new(),
+        })
+    })(s)
 }
 
 pub fn prefix_operator(s: &str) -> IResult<&str, String> {
-    map(one_of("+-!"), |c| c.to_string())(s)
+    map(
+        alt((char('+'), char('-'), char('!'), char('*'), char('&'))),
+        |c| c.to_string(),
+    )(s)
 }
 
 pub fn literal_expr(s: &str) -> IResult<&str, Expr> {
     map(
-        alt((floating_point_literal, integer_literal, string_literal)),
+        alt((
+            boolean_literal,
+            floating_point_literal,
+            integer_literal,
+            string_literal,
+            raw_string_literal,
+        )),
         |l| Expr::Literal(l),
     )(s)
 }
 
+pub fn name_space<I>(s: I) -> IResult<I, Vec<String>>
+where
+    I: Slice<RangeFrom<usize>>
+        + InputIter
+        + InputTake
+        + InputLength
+        + Clone
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar,
+{
+    map(many0(tuple((identifier, tag("::")))), |ns| {
+        ns.into_iter().map(|(i, _)| i).collect()
+    })(s)
+}
+
 pub fn name_expr(s: &str) -> IResult<&str, Expr> {
-    map(identifier, |name| Expr::Name(NameExprSyntax { name }))(s)
+    map(tuple((name_space, identifier)), |(ns, name)| {
+        Expr::Name(NameExprSyntax {
+            name_space: ns,
+            name,
+        })
+    })(s)
 }
 
 pub fn parenthesized_expr(s: &str) -> IResult<&str, Expr> {
@@ -70,8 +202,9 @@ pub fn parenthesized_expr(s: &str) -> IResult<&str, Expr> {
 pub fn return_expr(s: &str) -> IResult<&str, Expr> {
     map(
         tuple((return_keyword, whitespace1, opt(expr))),
-        |(_, _, e)| {
+        |(r, ws, e)| {
             Expr::Return(ReturnSyntax {
+                return_keyword: TokenSyntax::new(r.to_string()).with_trailing_trivia(ws),
                 value: e.map(|i| Box::new(i)),
             })
         },
@@ -202,9 +335,9 @@ pub fn indexing_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
             whitespace0,
             expr,
             whitespace0,
-            many0(tuple((char(','), whitespace0, expr))),
+            many0(tuple((comma, whitespace0, expr))),
             whitespace0,
-            opt(char(',')),
+            opt(comma),
             whitespace0,
             char(']'),
         )),
@@ -231,7 +364,7 @@ pub fn prefix_expr(s: &str) -> IResult<&str, Expr> {
     )(s)
 }
 
-fn _binop(e: Expr, v: Vec<(String, String, String, Expr)>) -> Expr {
+fn _binop(e: Expr, v: Vec<(Trivia, String, Trivia, Expr)>) -> Expr {
     let mut bin_op = e;
     for (_, op, _, ex) in v {
         bin_op = Expr::BinOp {
@@ -362,8 +495,8 @@ pub fn value_arguments(s: &str) -> IResult<&str, Vec<CallArg>> {
             char('('),
             opt(tuple((
                 value_argument,
-                many0(tuple((char(','), value_argument))),
-                opt(char(',')),
+                many0(tuple((comma, value_argument))),
+                opt(comma),
             ))),
             char(')'),
         )),
@@ -467,11 +600,11 @@ pub fn infix_operation_expr(s: &str) -> IResult<&str, Expr> {
             for p in v {
                 match p {
                     P::IS { op, type_ } => {
-                        bin_op = Expr::TypeCast {
+                        bin_op = Expr::TypeCast(TypeCastSyntax {
                             target: Box::new(bin_op),
                             is_safe: op.ends_with("?"),
                             type_,
-                        }
+                        })
                     }
                     P::IN { op, expr } => {
                         bin_op = Expr::BinOp {
@@ -623,11 +756,11 @@ pub fn as_expr(s: &str) -> IResult<&str, Expr> {
         |(e, v)| {
             let mut bin_op = e;
             for (_, op, _, typ) in v {
-                bin_op = Expr::TypeCast {
+                bin_op = Expr::TypeCast(TypeCastSyntax {
                     target: Box::new(bin_op),
                     is_safe: op.ends_with("?"),
                     type_: typ,
-                }
+                })
             }
             bin_op
         },
@@ -636,29 +769,25 @@ pub fn as_expr(s: &str) -> IResult<&str, Expr> {
 
 pub fn as_operator(s: &str) -> IResult<&str, String> {
     alt((
-        map(tuple((char('a'), char('s'), char('?'))), |(a, b, c)| {
-            a.to_string() + &*b.to_string() + &*c.to_string()
-        }),
-        map(tuple((char('a'), char('s'))), |(a, b)| {
+        map(tuple((as_keyword, char('?'))), |(a, b): (&str, _)| {
             a.to_string() + &*b.to_string()
         }),
+        map(as_keyword, |a: &str| a.to_string()),
     ))(s)
 }
 
 pub fn in_operator(s: &str) -> IResult<&str, String> {
     alt((
-        map(tuple((char('i'), char('n'), char('!'))), |(a, b, c)| {
-            a.to_string() + &*b.to_string() + &*c.to_string()
-        }),
-        map(tuple((char('i'), char('n'))), |(a, b)| {
+        map(tuple((char('!'), in_keyword)), |(a, b): (_, &str)| {
             a.to_string() + &*b.to_string()
         }),
+        map(in_keyword, |a: &str| a.to_string()),
     ))(s)
 }
 
 pub fn is_operator(s: &str) -> IResult<&str, String> {
     alt((
-        map(tuple((char('i'), char('s'), char('!'))), |(a, b, c)| {
+        map(tuple((char('!'), char('i'), char('s'))), |(a, b, c)| {
             a.to_string() + &*b.to_string() + &*c.to_string()
         }),
         map(tuple((char('i'), char('s'))), |(a, b)| {
@@ -695,8 +824,9 @@ pub fn expr(s: &str) -> IResult<&str, Expr> {
 #[cfg(test)]
 mod tests {
     use crate::parser::wiz::expression::{
-        disjunction_expr, expr, floating_point_literal, indexing_suffix, integer_literal,
-        postfix_suffix, return_expr, string_literal, value_arguments,
+        boolean_literal, conjunction_expr, disjunction_expr, equality_expr, expr,
+        floating_point_literal, indexing_suffix, integer_literal, literal_expr, name_expr,
+        postfix_suffix, raw_string_literal, return_expr, string_literal, value_arguments,
     };
     use crate::syntax::block::Block;
     use crate::syntax::expr::Expr::{BinOp, If};
@@ -704,25 +834,24 @@ mod tests {
         CallArg, CallExprSyntax, Expr, NameExprSyntax, PostfixSuffix, ReturnSyntax,
     };
     use crate::syntax::literal::LiteralSyntax;
+    use crate::syntax::token::TokenSyntax;
+    use crate::syntax::trivia::{Trivia, TriviaPiece};
+    use crate::syntax::Syntax;
 
     #[test]
-    fn test_numeric() {
+    fn test_integer_literal() {
         assert_eq!(
             integer_literal("1"),
             Ok((
                 "",
-                LiteralSyntax::Integer {
-                    value: "1".to_string()
-                }
+                LiteralSyntax::Integer(TokenSyntax::new("1".to_string()))
             ))
         );
         assert_eq!(
             integer_literal("12"),
             Ok((
                 "",
-                LiteralSyntax::Integer {
-                    value: "12".to_string()
-                }
+                LiteralSyntax::Integer(TokenSyntax::new("12".to_string()))
             ))
         );
     }
@@ -733,26 +862,59 @@ mod tests {
             floating_point_literal("1.0"),
             Ok((
                 "",
-                LiteralSyntax::FloatingPoint {
-                    value: "1.0".to_string()
-                }
+                LiteralSyntax::FloatingPoint(TokenSyntax::new("1.0".to_string()))
             ))
         );
         assert_eq!(
             floating_point_literal("12.0"),
             Ok((
                 "",
-                LiteralSyntax::FloatingPoint {
-                    value: "12.0".to_string()
-                }
+                LiteralSyntax::FloatingPoint(TokenSyntax::new("12.0".to_string()))
             ))
         );
         assert_eq!(
             floating_point_literal("13847.03478"),
             Ok((
                 "",
-                LiteralSyntax::FloatingPoint {
-                    value: "13847.03478".to_string()
+                LiteralSyntax::FloatingPoint(TokenSyntax::new("13847.03478".to_string()))
+            ))
+        );
+    }
+
+    #[test]
+    fn test_number_literal() {
+        assert_eq!(
+            literal_expr("1.1"),
+            Ok((
+                "",
+                Expr::Literal(LiteralSyntax::FloatingPoint(TokenSyntax::new(
+                    String::from("1.1")
+                )))
+            ))
+        );
+    }
+
+    #[test]
+    fn test_raw_string_literal() {
+        assert_eq!(
+            raw_string_literal("r\"\""),
+            Ok((
+                "",
+                LiteralSyntax::String {
+                    open_quote: TokenSyntax::new(r#"r""#.to_string()),
+                    value: "".to_string(),
+                    close_quote: TokenSyntax::new('"'.to_string())
+                }
+            ))
+        );
+        assert_eq!(
+            raw_string_literal("r\"\\\\\""),
+            Ok((
+                "",
+                LiteralSyntax::String {
+                    open_quote: TokenSyntax::new(r#"r""#.to_string()),
+                    value: "\\\\".to_string(),
+                    close_quote: TokenSyntax::new('"'.to_string())
                 }
             ))
         );
@@ -761,14 +923,45 @@ mod tests {
     #[test]
     fn test_string_literal() {
         assert_eq!(
-            string_literal("\"\""),
+            string_literal("\"s\\t\\ri\\ng\\\\\""),
             Ok((
                 "",
                 LiteralSyntax::String {
-                    value: "".to_string()
+                    open_quote: TokenSyntax::new('"'.to_string()),
+                    value: "s\t\ri\ng\\".to_string(),
+                    close_quote: TokenSyntax::new('"'.to_string())
                 }
             ))
         );
+    }
+
+    #[test]
+    fn test_boolean_literal() {
+        assert_eq!(
+            boolean_literal("true"),
+            Ok((
+                "",
+                LiteralSyntax::Boolean(TokenSyntax {
+                    leading_trivia: Trivia::new(),
+                    token: "true".to_string(),
+                    trailing_trivia: Trivia::new()
+                })
+            ))
+        )
+    }
+
+    #[test]
+    fn test_name_expr() {
+        assert_eq!(
+            name_expr("std::builtin::println"),
+            Ok((
+                "",
+                Expr::Name(NameExprSyntax {
+                    name_space: vec![String::from("std"), String::from("builtin")],
+                    name: "println".to_string()
+                })
+            ))
+        )
     }
 
     #[test]
@@ -779,19 +972,61 @@ mod tests {
                 "",
                 BinOp {
                     left: Box::from(BinOp {
-                        left: Box::from(Expr::Literal(LiteralSyntax::Integer {
-                            value: "1".parse().unwrap()
-                        })),
-                        kind: "||".parse().unwrap(),
-                        right: Box::from(Expr::Literal(LiteralSyntax::Integer {
-                            value: "2".parse().unwrap()
-                        }))
+                        left: Box::from(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
+                            "1".to_string()
+                        )))),
+                        kind: "||".to_string(),
+                        right: Box::from(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
+                            "2".to_string()
+                        ))))
                     }),
-                    kind: "||".parse().unwrap(),
-                    right: Box::from(Expr::Literal(LiteralSyntax::Integer {
-                        value: "3".parse().unwrap()
-                    }))
+                    kind: "||".to_string(),
+                    right: Box::from(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
+                        "3".to_string()
+                    ))))
                 }
+            ))
+        )
+    }
+
+    #[test]
+    fn test_conjunction_expr() {
+        assert_eq!(
+            conjunction_expr(
+                r"1 &&
+            2 && 3"
+            ),
+            Ok((
+                "",
+                BinOp {
+                    left: Box::from(BinOp {
+                        left: Box::from(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
+                            "1".to_string()
+                        )))),
+                        kind: "&&".to_string(),
+                        right: Box::from(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
+                            "2".to_string()
+                        ))))
+                    }),
+                    kind: "&&".to_string(),
+                    right: Box::from(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
+                        "3".to_string()
+                    ))))
+                }
+            ))
+        )
+    }
+
+    #[test]
+    fn test_equality_expr() {
+        assert_eq!(
+            equality_expr(
+                r"1
+            && 2"
+            ),
+            Ok((
+                "\n            && 2",
+                Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new("1".to_string())))
             ))
         )
     }
@@ -810,7 +1045,9 @@ mod tests {
                 vec![CallArg {
                     label: None,
                     arg: Box::from(Expr::Literal(LiteralSyntax::String {
-                        value: "Hello, World".parse().unwrap()
+                        open_quote: TokenSyntax::new('"'.to_string()),
+                        value: "Hello, World".parse().unwrap(),
+                        close_quote: TokenSyntax::new('"'.to_string()),
                     })),
                     is_vararg: false
                 }]
@@ -840,7 +1077,8 @@ mod tests {
                 "",
                 Expr::Call(CallExprSyntax {
                     target: Box::new(Expr::Name(NameExprSyntax {
-                        name: "puts".parse().unwrap()
+                        name_space: vec![],
+                        name: "puts".to_string()
                     })),
                     args: vec![],
                     tailing_lambda: None,
@@ -857,12 +1095,15 @@ mod tests {
                 "",
                 Expr::Call(CallExprSyntax {
                     target: Box::new(Expr::Name(NameExprSyntax {
-                        name: "puts".parse().unwrap()
+                        name_space: vec![],
+                        name: "puts".to_string()
                     })),
                     args: vec![CallArg {
                         label: None,
                         arg: Box::from(Expr::Literal(LiteralSyntax::String {
-                            value: "Hello, World".parse().unwrap()
+                            open_quote: TokenSyntax::new('"'.to_string()),
+                            value: "Hello, World".parse().unwrap(),
+                            close_quote: TokenSyntax::new('"'.to_string()),
                         })),
                         is_vararg: false
                     }],
@@ -880,12 +1121,15 @@ mod tests {
                 "",
                 Expr::Call(CallExprSyntax {
                     target: Box::new(Expr::Name(NameExprSyntax {
-                        name: "puts".parse().unwrap()
+                        name_space: vec![],
+                        name: "puts".to_string()
                     })),
                     args: vec![CallArg {
                         label: Some(String::from("string")),
                         arg: Box::from(Expr::Literal(LiteralSyntax::String {
-                            value: "Hello, World".parse().unwrap()
+                            open_quote: TokenSyntax::new('"'.to_string()),
+                            value: "Hello, World".parse().unwrap(),
+                            close_quote: TokenSyntax::new('"'.to_string())
                         })),
                         is_vararg: false
                     }],
@@ -903,6 +1147,7 @@ mod tests {
                 "",
                 If {
                     condition: Box::new(Expr::Name(NameExprSyntax {
+                        name_space: vec![],
                         name: "a".to_string()
                     })),
                     body: Block { body: vec![] },
@@ -920,6 +1165,7 @@ mod tests {
                 "",
                 If {
                     condition: Box::new(Expr::Name(NameExprSyntax {
+                        name_space: vec![],
                         name: "a".to_string()
                     })),
                     body: Block { body: vec![] },
@@ -936,7 +1182,10 @@ mod tests {
             Ok((
                 "",
                 Expr::Return(ReturnSyntax {
+                    return_keyword: TokenSyntax::new(String::from("return"))
+                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     value: Some(Box::new(Expr::Name(NameExprSyntax {
+                        name_space: vec![],
                         name: "name".to_string()
                     })))
                 })
@@ -952,6 +1201,7 @@ mod tests {
                 "",
                 Expr::Member {
                     target: Box::new(Expr::Name(NameExprSyntax {
+                        name_space: vec![],
                         name: "a".to_string()
                     })),
                     name: "b".to_string(),
@@ -969,6 +1219,7 @@ mod tests {
                 "",
                 PostfixSuffix::IndexingSuffix {
                     indexes: vec![Expr::Name(NameExprSyntax {
+                        name_space: vec![],
                         name: "a".to_string()
                     }),]
                 }
@@ -981,9 +1232,11 @@ mod tests {
                 PostfixSuffix::IndexingSuffix {
                     indexes: vec![
                         Expr::Name(NameExprSyntax {
+                            name_space: vec![],
                             name: "a".to_string()
                         }),
                         Expr::Name(NameExprSyntax {
+                            name_space: vec![],
                             name: "b".to_string()
                         }),
                     ]
@@ -997,9 +1250,11 @@ mod tests {
                 PostfixSuffix::IndexingSuffix {
                     indexes: vec![
                         Expr::Name(NameExprSyntax {
+                            name_space: vec![],
                             name: "a".to_string()
                         }),
                         Expr::Name(NameExprSyntax {
+                            name_space: vec![],
                             name: "b".to_string()
                         }),
                     ]

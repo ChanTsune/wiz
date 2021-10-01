@@ -1,64 +1,131 @@
 use nom::bytes::complete::tag;
-use nom::IResult;
+use nom::{Compare, IResult, InputTake};
 
-pub fn struct_keyword(s: &str) -> IResult<&str, &str> {
+pub fn struct_keyword<I>(s: I) -> IResult<I, I>
+where
+    I: InputTake + Compare<&'static str>,
+{
     tag("struct")(s)
 }
 
-pub fn fun_keyword(s: &str) -> IResult<&str, &str> {
+pub fn fun_keyword<I>(s: I) -> IResult<I, I>
+where
+    I: InputTake + Compare<&'static str>,
+{
     tag("fun")(s)
 }
 
-pub fn where_keyword(s: &str) -> IResult<&str, &str> {
+pub fn where_keyword<I>(s: I) -> IResult<I, I>
+where
+    I: InputTake + Compare<&'static str>,
+{
     tag("where")(s)
 }
 
-pub fn var_keyword(s: &str) -> IResult<&str, &str> {
+pub fn var_keyword<I>(s: I) -> IResult<I, I>
+where
+    I: InputTake + Compare<&'static str>,
+{
     tag("var")(s)
 }
 
-pub fn val_keyword(s: &str) -> IResult<&str, &str> {
+pub fn val_keyword<I>(s: I) -> IResult<I, I>
+where
+    I: InputTake + Compare<&'static str>,
+{
     tag("val")(s)
 }
 
-pub fn while_keyword(s: &str) -> IResult<&str, &str> {
+pub fn while_keyword<I>(s: I) -> IResult<I, I>
+where
+    I: InputTake + Compare<&'static str>,
+{
     tag("while")(s)
 }
 
-pub fn if_keyword(s: &str) -> IResult<&str, &str> {
+pub fn if_keyword<I>(s: I) -> IResult<I, I>
+where
+    I: InputTake + Compare<&'static str>,
+{
     tag("if")(s)
 }
 
-pub fn else_keyword(s: &str) -> IResult<&str, &str> {
+pub fn else_keyword<I>(s: I) -> IResult<I, I>
+where
+    I: InputTake + Compare<&'static str>,
+{
     tag("else")(s)
 }
 
-pub fn return_keyword(s: &str) -> IResult<&str, &str> {
+pub fn return_keyword<I>(s: I) -> IResult<I, I>
+where
+    I: InputTake + Compare<&'static str>,
+{
     tag("return")(s)
 }
 
-pub fn init_keyword(s: &str) -> IResult<&str, &str> {
+pub fn init_keyword<I>(s: I) -> IResult<I, I>
+where
+    I: InputTake + Compare<&'static str>,
+{
     tag("init")(s)
 }
 
-pub fn use_keyword(s: &str) -> IResult<&str, &str> {
+pub fn use_keyword<I>(s: I) -> IResult<I, I>
+where
+    I: InputTake + Compare<&'static str>,
+{
     tag("use")(s)
 }
 
-pub fn as_keyword(s: &str) -> IResult<&str, &str> {
+pub fn as_keyword<I>(s: I) -> IResult<I, I>
+where
+    I: InputTake + Compare<&'static str>,
+{
     tag("as")(s)
 }
 
-pub fn self_keyword(s: &str) -> IResult<&str, &str> {
+pub fn in_keyword<I>(s: I) -> IResult<I, I>
+where
+    I: InputTake + Compare<&'static str>,
+{
+    tag("in")(s)
+}
+
+pub fn self_keyword<I>(s: I) -> IResult<I, I>
+where
+    I: InputTake + Compare<&'static str>,
+{
     tag("self")(s)
+}
+
+pub fn true_keyword<I>(s: I) -> IResult<I, I>
+where
+    I: InputTake + Compare<&'static str>,
+{
+    tag("true")(s)
+}
+
+pub fn false_keyword<I>(s: I) -> IResult<I, I>
+where
+    I: InputTake + Compare<&'static str>,
+{
+    tag("false")(s)
+}
+
+pub fn extern_keyword<I>(s: I) -> IResult<I, I>
+where
+    I: InputTake + Compare<&'static str>,
+{
+    tag("extern")(s)
 }
 
 #[cfg(test)]
 mod tests {
     use crate::parser::wiz::keywords::{
-        as_keyword, else_keyword, fun_keyword, if_keyword, init_keyword, return_keyword,
-        self_keyword, struct_keyword, use_keyword, val_keyword, var_keyword, where_keyword,
-        while_keyword,
+        as_keyword, else_keyword, extern_keyword, false_keyword, fun_keyword, if_keyword,
+        in_keyword, init_keyword, return_keyword, self_keyword, struct_keyword, true_keyword,
+        use_keyword, val_keyword, var_keyword, where_keyword, while_keyword,
     };
 
     #[test]
@@ -122,7 +189,27 @@ mod tests {
     }
 
     #[test]
+    fn test_in_keyword() {
+        assert_eq!(in_keyword("in"), Ok(("", "in")))
+    }
+
+    #[test]
     fn test_self_keyword() {
         assert_eq!(self_keyword("self"), Ok(("", "self")))
+    }
+
+    #[test]
+    fn test_true_keyword() {
+        assert_eq!(true_keyword("true"), Ok(("", "true")))
+    }
+
+    #[test]
+    fn test_false_keyword() {
+        assert_eq!(false_keyword("false"), Ok(("", "false")))
+    }
+
+    #[test]
+    fn test_extern_keyword() {
+        assert_eq!(extern_keyword("extern"), Ok(("", "extern")));
     }
 }

@@ -225,7 +225,24 @@ impl ResolverContext {
         }
     }
 
-    pub fn resolve_name_type(&mut self, name: String) -> Result<(TypedType, Option<Package>)> {
+    pub fn resolve_name_type(
+        &mut self,
+        name_space: Vec<String>,
+        name: String,
+    ) -> Result<(TypedType, Option<Package>)> {
+        if !name_space.is_empty() {
+            let ns = self.get_namespace_mut(name_space.clone())?;
+            return Result::Ok((
+                ns.values
+                    .get(&name)
+                    .ok_or(ResolverError::from(format!(
+                        "Cannot resolve name {:?}",
+                        name
+                    )))?
+                    .clone(),
+                Some(Package::new(name_space)),
+            ));
+        }
         let mut cns = self.current_namespace.clone();
         loop {
             let ns = self.get_namespace_mut(cns.clone())?;

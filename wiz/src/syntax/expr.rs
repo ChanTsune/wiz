@@ -2,6 +2,7 @@ use crate::syntax::block::Block;
 use crate::syntax::literal::LiteralSyntax;
 use crate::syntax::node::SyntaxNode;
 use crate::syntax::stmt::Stmt;
+use crate::syntax::token::TokenSyntax;
 use crate::syntax::type_name::TypeName;
 use std::fmt;
 
@@ -48,17 +49,14 @@ pub enum Expr {
     },
     Lambda(LambdaSyntax),
     Return(ReturnSyntax),
-    TypeCast {
-        target: Box<Expr>,
-        is_safe: bool,
-        type_: TypeName,
-    },
+    TypeCast(TypeCastSyntax),
 }
 
 impl SyntaxNode for Expr {}
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct NameExprSyntax {
+    pub(crate) name_space: Vec<String>,
     pub(crate) name: String,
 }
 
@@ -110,5 +108,13 @@ pub enum PostfixSuffix {
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct ReturnSyntax {
+    pub(crate) return_keyword: TokenSyntax,
     pub(crate) value: Option<Box<Expr>>,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct TypeCastSyntax {
+    pub(crate) target: Box<Expr>,
+    pub(crate) is_safe: bool,
+    pub(crate) type_: TypeName,
 }

@@ -1,7 +1,7 @@
 use crate::middle_level_ir::ml_decl::{MLDecl, MLFun, MLStruct, MLVar};
 use crate::middle_level_ir::ml_expr::{
     MLBinOp, MLBinopKind, MLCall, MLExpr, MLIf, MLLiteral, MLMember, MLReturn, MLSubscript,
-    MLUnaryOp,
+    MLTypeCast, MLUnaryOp,
 };
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
@@ -120,7 +120,7 @@ impl<'ctx> CodeGen<'ctx> {
             MLExpr::If(i) => self.if_expr(i),
             MLExpr::When => exit(-1),
             MLExpr::Return(r) => self.return_expr(r),
-            MLExpr::TypeCast => exit(-1),
+            MLExpr::PrimitiveTypeCast(t) => self.type_cast(t),
         }
     }
 
@@ -365,8 +365,7 @@ impl<'ctx> CodeGen<'ctx> {
     }
 
     pub fn unaryop(&self, u: MLUnaryOp) -> AnyValueEnum<'ctx> {
-        println!("Unsupported unaryop {:?}", &u);
-        exit(-1)
+        todo!()
     }
 
     pub fn subscript(&mut self, s: MLSubscript) -> AnyValueEnum<'ctx> {
@@ -512,6 +511,64 @@ impl<'ctx> CodeGen<'ctx> {
         }))
     }
 
+    pub fn type_cast(&mut self, t: MLTypeCast) -> AnyValueEnum<'ctx> {
+        let target = self.expr(*t.target);
+        match target {
+            // AnyValueEnum::ArrayValue(_) => {}
+            AnyValueEnum::IntValue(i) => {
+                let ty = match t.type_ {
+                    MLValueType::Primitive(p) => match &*p {
+                        "Int64" | "UInt64" => self.context.i64_type(),
+                        "Int32" | "UInt32" => self.context.i32_type(),
+                        "Int16" | "UInt16" => self.context.i16_type(),
+                        "Int8" | "UInt8" => self.context.i8_type(),
+                        _ => panic!(),
+                    },
+                    MLValueType::Struct(_) => {
+                        todo!()
+                    }
+                    MLValueType::Pointer(_) => {
+                        todo!()
+                    }
+                    MLValueType::Reference(_) => {
+                        todo!()
+                    }
+                };
+                let t = self.builder.build_int_cast(i, ty, "int_cast");
+                t.as_any_value_enum()
+            }
+            AnyValueEnum::FloatValue(f) => {
+                let ty = match t.type_ {
+                    MLValueType::Primitive(p) => match &*p {
+                        "Float" => self.context.f32_type(),
+                        "Double" => self.context.f64_type(),
+                        _ => panic!(),
+                    },
+                    MLValueType::Struct(_) => {
+                        todo!()
+                    }
+                    MLValueType::Pointer(_) => {
+                        todo!()
+                    }
+                    MLValueType::Reference(_) => {
+                        todo!()
+                    }
+                };
+                let t = self.builder.build_float_cast(f, ty, "float_cast");
+                t.as_any_value_enum()
+            }
+            // AnyValueEnum::PhiValue(_) => {}
+            // AnyValueEnum::FunctionValue(_) => {}
+            // AnyValueEnum::PointerValue(_) => {}
+            // AnyValueEnum::StructValue(_) => {}
+            // AnyValueEnum::VectorValue(_) => {}
+            // AnyValueEnum::InstructionValue(_) => {}
+            a => {
+                panic!("never execution branch executed!!")
+            }
+        }
+    }
+
     pub fn block(&mut self, b: MLBlock) -> AnyValueEnum<'ctx> {
         let i64_type = self.context.i64_type(); // Void
         let len = b.body.len();
@@ -587,6 +644,12 @@ impl<'ctx> CodeGen<'ctx> {
                 let ptr = self.builder.build_alloca(struct_type, &*name);
                 self.set_to_environment(name, ptr.as_any_value_enum());
                 self.builder.build_store(ptr, s).as_any_value_enum()
+            }
+            AnyValueEnum::PointerValue(p) => {
+                let ptr_type = p.get_type();
+                let ptr = self.builder.build_alloca(ptr_type, &*name);
+                self.set_to_environment(name, ptr.as_any_value_enum());
+                self.builder.build_store(ptr, p).as_any_value_enum()
             }
             t => {
                 eprintln!("undefined root executed {:?}", t);

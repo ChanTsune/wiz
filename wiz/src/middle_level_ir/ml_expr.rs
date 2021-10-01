@@ -4,7 +4,6 @@ use crate::middle_level_ir::ml_stmt::MLBlock;
 use crate::middle_level_ir::ml_type::{MLType, MLValueType};
 use std::fmt;
 use std::fmt::Write;
-use std::process::exit;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum MLExpr {
@@ -18,7 +17,7 @@ pub enum MLExpr {
     If(MLIf),
     When,
     Return(MLReturn),
-    TypeCast,
+    PrimitiveTypeCast(MLTypeCast),
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -116,6 +115,12 @@ pub struct MLReturn {
     pub(crate) type_: MLValueType,
 }
 
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct MLTypeCast {
+    pub(crate) target: Box<MLExpr>,
+    pub(crate) type_: MLValueType,
+}
+
 impl MLExpr {
     pub fn type_(&self) -> MLType {
         match self {
@@ -127,9 +132,9 @@ impl MLExpr {
             MLExpr::PrimitiveSubscript(p) => MLType::Value(p.type_.clone()),
             MLExpr::Member(f) => f.type_.clone(),
             MLExpr::If(i) => i.type_.clone(),
-            MLExpr::When => exit(-9),
+            MLExpr::When => todo!(),
             MLExpr::Return(r) => MLType::Value(r.type_.clone()),
-            MLExpr::TypeCast => exit(-9),
+            MLExpr::PrimitiveTypeCast(t) => MLType::Value(t.type_.clone()),
         }
     }
 }
@@ -176,7 +181,7 @@ impl MLNode for MLExpr {
             MLExpr::If(i) => i.fmt(f),
             MLExpr::When => fmt::Result::Err(Default::default()),
             MLExpr::Return(r) => r.fmt(f),
-            MLExpr::TypeCast => fmt::Result::Err(Default::default()),
+            MLExpr::PrimitiveTypeCast(t) => t.fmt(f),
         }
     }
 }
@@ -304,5 +309,13 @@ impl MLNode for MLReturn {
             Some(v) => v.fmt(f),
             None => fmt::Result::Ok(()),
         }
+    }
+}
+
+impl MLNode for MLTypeCast {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        self.target.fmt(f)?;
+        f.write_str(" as ")?;
+        self.type_.fmt(f)
     }
 }

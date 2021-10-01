@@ -2,6 +2,7 @@ use super::node::SyntaxNode;
 use crate::syntax::expr::Expr;
 use crate::syntax::fun::arg_def::ArgDef;
 use crate::syntax::fun::body_def::FunBody;
+use crate::syntax::token::TokenSyntax;
 use crate::syntax::type_name::{TypeName, TypeParam};
 use std::fmt;
 
@@ -10,9 +11,7 @@ pub enum Decl {
     Var(VarSyntax),
     Fun(FunSyntax),
     Struct(StructSyntax),
-    Class {
-        // TODO
-    },
+    ExternC(ExternCSyntax),
     Enum {
         // TODO
     },
@@ -47,6 +46,7 @@ pub struct FunSyntax {
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct StructSyntax {
+    pub(crate) annotations: Vec<String>, // TODO: Change to AnnotationSyntax type
     pub(crate) name: String,
     pub(crate) type_params: Option<Vec<TypeParam>>,
     pub(crate) properties: Vec<StructPropertySyntax>,
@@ -91,4 +91,12 @@ pub struct UseSyntax {
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct PackageName {
     pub(crate) names: Vec<String>,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct ExternCSyntax {
+    pub(crate) extern_keyword: TokenSyntax,
+    pub(crate) left_brace: TokenSyntax,
+    pub(crate) declarations: Vec<Decl>,
+    pub(crate) right_brace: TokenSyntax,
 }

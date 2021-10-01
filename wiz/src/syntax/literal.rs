@@ -4,9 +4,13 @@ use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum LiteralSyntax {
-    Integer { value: String },
-    FloatingPoint { value: String },
-    String { value: String },
+    Integer(TokenSyntax),
+    FloatingPoint(TokenSyntax),
+    String {
+        open_quote: TokenSyntax,
+        value: String,
+        close_quote: TokenSyntax,
+    },
     Boolean(TokenSyntax),
     Null,
 }

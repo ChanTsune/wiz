@@ -4,9 +4,9 @@ use crate::high_level_ir::typed_decl::{
 };
 use crate::high_level_ir::typed_expr::{
     TypedBinOp, TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName,
-    TypedReturn, TypedSubscript,
+    TypedReturn, TypedSubscript, TypedTypeCast,
 };
-use crate::high_level_ir::typed_file::TypedFile;
+use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
 use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
 use crate::middle_level_ir::ml_decl::{
@@ -14,7 +14,7 @@ use crate::middle_level_ir::ml_decl::{
 };
 use crate::middle_level_ir::ml_expr::{
     MLBinOp, MLBinopKind, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLMember, MLName, MLReturn,
-    MLSubscript,
+    MLSubscript, MLTypeCast,
 };
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
@@ -159,6 +159,19 @@ impl HLIR2MLIR {
         ))
     }
 
+    pub fn source_set(&mut self, s: TypedSourceSet) -> Vec<MLFile> {
+        match s {
+            TypedSourceSet::File(f) => {
+                vec![self.file(f)]
+            }
+            TypedSourceSet::Dir { name, items } => items
+                .into_iter()
+                .map(|i| self.source_set(i))
+                .flatten()
+                .collect(),
+        }
+    }
+
     pub fn file(&mut self, f: TypedFile) -> MLFile {
         self.context.push_name_space(f.name.clone());
         let f = MLFile {
@@ -237,7 +250,7 @@ impl HLIR2MLIR {
             TypedDecl::Enum => exit(-1),
             TypedDecl::Protocol => exit(-1),
             TypedDecl::Extension => exit(-1),
-            TypedDecl::Use => exit(-1),
+            TypedDecl::Use(_) => vec![],
         }
     }
 
@@ -367,19 +380,19 @@ impl HLIR2MLIR {
             TypedExpr::Name(name) => MLExpr::Name(self.name(name)),
             TypedExpr::Literal(l) => MLExpr::Literal(self.literal(l)),
             TypedExpr::BinOp(b) => MLExpr::PrimitiveBinOp(self.binop(b)),
-            TypedExpr::UnaryOp { .. } => exit(-2),
+            TypedExpr::UnaryOp { .. } => todo!(),
             TypedExpr::Subscript(s) => self.subscript(s),
             TypedExpr::Member(m) => self.member(m),
-            TypedExpr::List => exit(-1),
-            TypedExpr::Tuple => exit(-1),
-            TypedExpr::Dict => exit(-1),
-            TypedExpr::StringBuilder => exit(-1),
+            TypedExpr::List => todo!(),
+            TypedExpr::Tuple => todo!(),
+            TypedExpr::Dict => todo!(),
+            TypedExpr::StringBuilder => todo!(),
             TypedExpr::Call(c) => MLExpr::Call(self.call(c)),
             TypedExpr::If(i) => MLExpr::If(self.if_expr(i)),
-            TypedExpr::When => exit(-1),
-            TypedExpr::Lambda => exit(-1),
+            TypedExpr::When => todo!(),
+            TypedExpr::Lambda => todo!(),
             TypedExpr::Return(r) => MLExpr::Return(self.return_expr(r)),
-            TypedExpr::TypeCast => exit(-1),
+            TypedExpr::TypeCast(t) => MLExpr::PrimitiveTypeCast(self.type_cast(t)),
         }
     }
 
@@ -559,6 +572,13 @@ impl HLIR2MLIR {
         MLReturn {
             value: r.value.map(|v| Box::new(self.expr(*v))),
             type_: self.type_(r.type_.unwrap()).into_value_type(),
+        }
+    }
+
+    pub fn type_cast(&mut self, t: TypedTypeCast) -> MLTypeCast {
+        MLTypeCast {
+            target: Box::new(self.expr(*t.target)),
+            type_: self.type_(t.type_.unwrap()).into_value_type(),
         }
     }
 

@@ -220,7 +220,9 @@
 
 <parenthesized_expr> ::= "(" <white_spaces> <expr> <white_spaces> ")"
 
-<name_expr> ::= <identifire>
+<name_expr> ::= (<name_space>)? <identifire>
+
+<name_space> ::= (<identifire> "::")+
 
 <literal_expr> ::= <integer_literal>
             # | <floating_point_literal>

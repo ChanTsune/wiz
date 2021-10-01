@@ -5,3 +5,9 @@ fun malloc(_ size: UInt64): UnsafePointer<UInt8>
 fun calloc(_ count: UInt64, _ sizeOfContent: UInt64): UnsafePointer<UInt8>
 fun realloc(_ pointer: UnsafePointer<UInt8>, _ size: UInt64): UnsafePointer<UInt8>
 fun free(_ ptr: UnsafePointer<UInt8>): Unit
+fun fopen(_ fileName:String, _ mode:String): UnsafePointer<UInt8>
+fun fclose(_ filePointer: UnsafePointer<UInt8>): Unit
+fun fread(_ buf:UnsafePointer<UInt8>, _ size: UInt64, _ n: UInt64, _ fp: UnsafePointer<UInt8>): UInt64
+fun fwrite(_ ptr:UnsafePointer<UInt8>, _ size:Int64, _ nmemb: Int64, _ stream: UnsafePointer<UInt8>): Int64
+fun strlen(_ item: String): UInt64
+fun atoi(_ item: String): Int64

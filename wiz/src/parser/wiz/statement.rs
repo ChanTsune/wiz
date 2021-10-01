@@ -64,7 +64,12 @@ pub fn assignment_stmt(s: &str) -> IResult<&str, Stmt> {
 pub fn directly_assignable_expr(s: &str) -> IResult<&str, Expr> {
     alt((
         _directly_assignable_postfix_expr,
-        map(identifier, |name| Expr::Name(NameExprSyntax { name })),
+        map(identifier, |name| {
+            Expr::Name(NameExprSyntax {
+                name_space: vec![],
+                name,
+            })
+        }),
         map(parenthesized_directly_assignable_expr, |e| e),
     ))(s)
 }
@@ -164,6 +169,7 @@ mod tests {
     use crate::syntax::file::FileSyntax;
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::stmt::{AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt};
+    use crate::syntax::token::TokenSyntax;
 
     #[test]
     fn test_while_stmt_with_bracket() {
@@ -178,10 +184,12 @@ mod tests {
                 LoopStmt::While {
                     condition: Expr::BinOp {
                         left: Box::new(Expr::Name(NameExprSyntax {
+                            name_space: vec![],
                             name: "a".to_string()
                         })),
                         kind: "<".to_string(),
                         right: Box::new(Expr::Name(NameExprSyntax {
+                            name_space: vec![],
                             name: "b".to_string()
                         }))
                     },
@@ -189,16 +197,18 @@ mod tests {
                         body: vec![Stmt::Assignment(AssignmentStmt::Assignment(
                             AssignmentSyntax {
                                 target: Expr::Name(NameExprSyntax {
+                                    name_space: vec![],
                                     name: "a".to_string()
                                 }),
                                 value: Expr::BinOp {
                                     left: Box::new(Expr::Name(NameExprSyntax {
+                                        name_space: vec![],
                                         name: "a".to_string()
                                     })),
                                     kind: "+".to_string(),
-                                    right: Box::new(Expr::Literal(LiteralSyntax::Integer {
-                                        value: "1".to_string()
-                                    }))
+                                    right: Box::new(Expr::Literal(LiteralSyntax::Integer(
+                                        TokenSyntax::new("1".to_string())
+                                    )))
                                 }
                             }
                         ))]
@@ -222,6 +232,7 @@ mod tests {
                     condition: Expr::BinOp {
                         left: Box::new(Expr::Member {
                             target: Box::new(Expr::Name(NameExprSyntax {
+                                name_space: vec![],
                                 name: "a".to_string()
                             })),
                             name: "c".to_string(),
@@ -229,6 +240,7 @@ mod tests {
                         }),
                         kind: "<".to_string(),
                         right: Box::new(Expr::Name(NameExprSyntax {
+                            name_space: vec![],
                             name: "b".to_string()
                         }))
                     },
@@ -236,16 +248,18 @@ mod tests {
                         body: vec![Stmt::Assignment(AssignmentStmt::Assignment(
                             AssignmentSyntax {
                                 target: Expr::Name(NameExprSyntax {
+                                    name_space: vec![],
                                     name: "a".to_string()
                                 }),
                                 value: Expr::BinOp {
                                     left: Box::new(Expr::Name(NameExprSyntax {
+                                        name_space: vec![],
                                         name: "a".to_string()
                                     })),
                                     kind: "+".to_string(),
-                                    right: Box::new(Expr::Literal(LiteralSyntax::Integer {
-                                        value: "1".to_string()
-                                    }))
+                                    right: Box::new(Expr::Literal(LiteralSyntax::Integer(
+                                        TokenSyntax::new("1".to_string())
+                                    )))
                                 }
                             }
                         ))]
@@ -263,6 +277,7 @@ mod tests {
                 "",
                 Expr::Member {
                     target: Box::new(Expr::Name(NameExprSyntax {
+                        name_space: vec![],
                         name: "a".to_string()
                     })),
                     name: "b".to_string(),
@@ -280,6 +295,7 @@ mod tests {
                 "",
                 Expr::Member {
                     target: Box::new(Expr::Name(NameExprSyntax {
+                        name_space: vec![],
                         name: "a".to_string()
                     })),
                     name: "b".to_string(),
@@ -297,9 +313,11 @@ mod tests {
                 "",
                 Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax {
                     target: Expr::Name(NameExprSyntax {
+                        name_space: vec![],
                         name: "a".to_string()
                     }),
                     value: Expr::Name(NameExprSyntax {
+                        name_space: vec![],
                         name: "b".to_string()
                     })
                 }))
@@ -314,10 +332,12 @@ mod tests {
                 "",
                 Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax {
                     target: Expr::Name(NameExprSyntax {
+                        name_space: vec![],
                         name: "a".to_string()
                     }),
                     value: Expr::Member {
                         target: Box::new(Expr::Name(NameExprSyntax {
+                            name_space: vec![],
                             name: "b".to_string()
                         })),
                         name: "c".to_string(),
@@ -336,12 +356,14 @@ mod tests {
                 Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax {
                     target: Expr::Member {
                         target: Box::new(Expr::Name(NameExprSyntax {
+                            name_space: vec![],
                             name: "a".to_string()
                         })),
                         name: "b".to_string(),
                         is_safe: false
                     },
                     value: Expr::Name(NameExprSyntax {
+                        name_space: vec![],
                         name: "c".to_string()
                     }),
                 }))

@@ -13,9 +13,9 @@ use crate::high_level_ir::typed_decl::{
 };
 use crate::high_level_ir::typed_expr::{
     TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral,
-    TypedName, TypedReturn, TypedSubscript,
+    TypedName, TypedReturn, TypedSubscript, TypedTypeCast,
 };
-use crate::high_level_ir::typed_file::TypedFile;
+use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedForStmt,
     TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
@@ -32,6 +32,21 @@ impl TypeResolver {
     pub fn new() -> Self {
         Self {
             context: ResolverContext::new(),
+        }
+    }
+
+    pub fn detect_type_from_source_set(&mut self, s: &TypedSourceSet) -> Result<()> {
+        match s {
+            TypedSourceSet::File(f) => self.detect_type(f),
+            TypedSourceSet::Dir { name, items } => {
+                self.context.push_name_space(name.clone());
+                items
+                    .iter()
+                    .map(|i| self.detect_type_from_source_set(i))
+                    .collect::<Result<Vec<()>>>()?;
+                self.context.pop_name_space();
+                Result::Ok(())
+            }
         }
     }
 
@@ -62,6 +77,21 @@ impl TypeResolver {
         }
         self.context.pop_name_space();
         Result::Ok(())
+    }
+
+    pub fn preload_source_set(&mut self, s: TypedSourceSet) -> Result<()> {
+        match s {
+            TypedSourceSet::File(f) => self.preload_file(f),
+            TypedSourceSet::Dir { name, items } => {
+                self.context.push_name_space(name);
+                items
+                    .into_iter()
+                    .map(|i| self.preload_source_set(i))
+                    .collect::<Result<Vec<()>>>()?;
+                self.context.pop_name_space();
+                Result::Ok(())
+            }
+        }
     }
 
     pub fn preload_file(&mut self, f: TypedFile) -> Result<()> {
@@ -101,7 +131,7 @@ impl TypeResolver {
             TypedDecl::Enum => {}
             TypedDecl::Protocol => {}
             TypedDecl::Extension => {}
-            TypedDecl::Use => {}
+            TypedDecl::Use(_) => {}
         }
         Result::Ok(())
     }
@@ -137,6 +167,21 @@ impl TypeResolver {
         Result::Ok(fun)
     }
 
+    pub fn source_set(&mut self, s: TypedSourceSet) -> Result<TypedSourceSet> {
+        Result::Ok(match s {
+            TypedSourceSet::File(f) => TypedSourceSet::File(self.file(f)?),
+            TypedSourceSet::Dir { name, items } => {
+                self.context.push_name_space(name.clone());
+                let items = items
+                    .into_iter()
+                    .map(|i| self.source_set(i))
+                    .collect::<Result<Vec<TypedSourceSet>>>()?;
+                self.context.pop_name_space();
+                TypedSourceSet::Dir { name, items }
+            }
+        })
+    }
+
     pub fn file(&mut self, f: TypedFile) -> Result<TypedFile> {
         let name = f.name.clone();
         if name != String::from("builtin.ll") {
@@ -165,7 +210,7 @@ impl TypeResolver {
             TypedDecl::Enum => TypedDecl::Enum,
             TypedDecl::Protocol => TypedDecl::Protocol,
             TypedDecl::Extension => TypedDecl::Extension,
-            TypedDecl::Use => TypedDecl::Use,
+            TypedDecl::Use(u) => TypedDecl::Use(u),
         })
     }
 
@@ -446,12 +491,20 @@ impl TypeResolver {
             TypedExpr::When => TypedExpr::When,
             TypedExpr::Lambda => TypedExpr::Lambda,
             TypedExpr::Return(r) => TypedExpr::Return(self.typed_return(r)?),
-            TypedExpr::TypeCast => TypedExpr::TypeCast,
+            TypedExpr::TypeCast(t) => TypedExpr::TypeCast(self.typed_type_cast(t)?),
         })
     }
 
     pub fn typed_name(&mut self, n: TypedName) -> Result<TypedName> {
-        let (type_, package) = self.context.resolve_name_type(n.name.clone())?;
+        let (type_, package) = self.context.resolve_name_type(
+            match n.package {
+                None => {
+                    vec![]
+                }
+                Some(p) => p.names,
+            },
+            n.name.clone(),
+        )?;
         Result::Ok(TypedName {
             package,
             type_: Some(type_),
@@ -616,6 +669,14 @@ impl TypeResolver {
                 None => None,
             },
             value: value,
+        })
+    }
+
+    pub fn typed_type_cast(&mut self, t: TypedTypeCast) -> Result<TypedTypeCast> {
+        Result::Ok(TypedTypeCast {
+            target: Box::new(self.expr(*t.target)?),
+            is_safe: t.is_safe,
+            type_: Some(self.context.full_type_name(t.type_.unwrap())?),
         })
     }
 

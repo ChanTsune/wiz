@@ -1,3 +1,4 @@
+use crate::parser::wiz::character::{comma, dot};
 use crate::parser::wiz::lexical_structure::{identifier, whitespace0};
 use crate::syntax::type_name::{TypeName, TypeParam};
 use nom::branch::alt;
@@ -33,10 +34,7 @@ pub fn type_reference(s: &str) -> IResult<&str, TypeName> {
 
 pub fn user_type(s: &str) -> IResult<&str, TypeName> {
     map(
-        tuple((
-            simple_user_type,
-            many0(tuple((char('.'), simple_user_type))),
-        )),
+        tuple((simple_user_type, many0(tuple((dot, simple_user_type))))),
         |(p, chs)| {
             // TODO: use chs
             p
@@ -62,8 +60,8 @@ pub fn type_arguments(s: &str) -> IResult<&str, Vec<TypeName>> {
         tuple((
             char('<'),
             type_,
-            many0(tuple((char(','), type_))),
-            opt(char(',')),
+            many0(tuple((comma, type_))),
+            opt(comma),
             char('>'),
         )),
         |(_, t, ts, _, _)| {
@@ -83,9 +81,9 @@ pub fn type_parameters(s: &str) -> IResult<&str, Vec<TypeParam>> {
             whitespace0,
             type_parameter,
             whitespace0,
-            many0(tuple((char(','), whitespace0, type_parameter, whitespace0))),
+            many0(tuple((comma, whitespace0, type_parameter, whitespace0))),
             whitespace0,
-            opt(char(',')),
+            opt(comma),
             whitespace0,
             char('>'),
         )),

@@ -5,7 +5,7 @@ use crate::high_level_ir::Ast2HLIR;
 use crate::llvm_ir::codegen::{CodeGen, MLContext};
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::HLIR2MLIR;
-use crate::parser::wiz::{parse_from_file_path, parse_from_file_path_str};
+use crate::parser::wiz::{parse_from_file_path, parse_from_file_path_str, read_package_from_path};
 use crate::syntax::file::WizFile;
 use clap::{App, Arg};
 use inkwell::context::Context;
@@ -51,12 +51,18 @@ fn main() -> result::Result<(), Box<dyn Error>> {
 
     let builtin_syntax = get_builtin_syntax();
 
+    let std_package_source_set = read_package_from_path(Path::new("../std"))?;
+
+    println!("{:?}", std_package_source_set);
+
     let mut ast2hlir = Ast2HLIR::new();
 
     let builtin_hlir: Vec<TypedFile> = builtin_syntax
         .into_iter()
         .map(|w| ast2hlir.file(w))
         .collect();
+
+    let std_hlir = ast2hlir.source_set(std_package_source_set);
 
     let ast_files: Vec<WizFile> = inputs
         .iter()
@@ -71,6 +77,8 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         type_resolver.detect_type(hlir)?;
     }
 
+    type_resolver.detect_type_from_source_set(&std_hlir)?;
+
     for hlir in hlfiles.iter() {
         type_resolver.detect_type(hlir)?;
     }
@@ -79,9 +87,15 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         type_resolver.preload_file(hlir.clone())?;
     }
 
+    type_resolver.preload_source_set(std_hlir.clone())?;
+
     for hlir in hlfiles.iter() {
         type_resolver.preload_file(hlir.clone())?;
     }
+
+    let std_hlir = type_resolver.source_set(std_hlir)?;
+
+    println!("{:?}", std_hlir);
 
     let hlfiles = hlfiles
         .into_iter()
@@ -94,6 +108,13 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         .into_iter()
         .map(|w| hlir2mlir.file(w))
         .collect();
+
+    let std_mlir = hlir2mlir.source_set(std_hlir);
+
+    for m in std_mlir.iter() {
+        println!("==== {} ====", m.name);
+        println!("{}", m.to_string());
+    }
 
     let mlfiles: Vec<MLFile> = hlfiles.into_iter().map(|f| hlir2mlir.file(f)).collect();
 
@@ -116,6 +137,10 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         };
 
         for m in builtin_mlir.iter() {
+            codegen.file(m.clone());
+        }
+
+        for m in std_mlir.iter() {
             codegen.file(m.clone());
         }
 

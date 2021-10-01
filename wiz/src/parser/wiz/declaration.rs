@@ -1,10 +1,11 @@
+use crate::parser::wiz::character::{comma, eol};
 use crate::parser::wiz::expression::expr;
 use crate::parser::wiz::keywords::{
     as_keyword, fun_keyword, init_keyword, self_keyword, struct_keyword, use_keyword, val_keyword,
     var_keyword, where_keyword,
 };
 use crate::parser::wiz::lexical_structure::{
-    eol, identifier, whitespace0, whitespace1, whitespace_without_eol0,
+    identifier, whitespace0, whitespace1, whitespace_without_eol0,
 };
 use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_parameters};
@@ -44,17 +45,28 @@ pub fn struct_syntax(s: &str) -> IResult<&str, StructSyntax> {
             identifier,
             whitespace0,
             opt(type_parameters),
-            whitespace0,
-            char('{'),
-            whitespace0,
-            struct_properties,
-            whitespace0,
-            char('}'),
+            opt(tuple((
+                whitespace0,
+                char('{'),
+                whitespace0,
+                struct_properties,
+                whitespace0,
+                char('}'),
+            ))),
         )),
-        |(_, _, name, _, params, _, _, _, properties, _, _)| StructSyntax {
-            name,
-            type_params: params,
-            properties,
+        |(_, _, name, _, params, body)| match body {
+            Some((_, _, _, properties, _, _)) => StructSyntax {
+                annotations: vec![],
+                name,
+                type_params: params,
+                properties,
+            },
+            None => StructSyntax {
+                annotations: vec![String::from("CStructPointer")],
+                name,
+                type_params: params,
+                properties: vec![],
+            },
         },
     )(s)
 }
@@ -213,11 +225,8 @@ pub fn function_value_parameters(s: &str) -> IResult<&str, Vec<ArgDef>> {
             char('('),
             opt(tuple((
                 function_value_parameter,
-                many0(map(
-                    tuple((char(','), function_value_parameter)),
-                    |(_, a)| a,
-                )),
-                opt(char(',')),
+                many0(map(tuple((comma, function_value_parameter)), |(_, a)| a)),
+                opt(comma),
             ))),
             char(')'),
         )),
@@ -268,11 +277,14 @@ pub fn type_constraints(s: &str) -> IResult<&str, Vec<TypeParam>> {
     map(
         tuple((
             where_keyword,
+            whitespace1,
             type_constraint,
-            opt(tuple((char(','), type_constraint))),
+            whitespace0,
+            opt(tuple((comma, whitespace0, type_constraint))),
+            opt(comma),
         )),
-        |(_, t, ts)| match ts {
-            Some((_, ts)) => {
+        |(_, _, t, _, ts, _)| match ts {
+            Some((_, _, ts)) => {
                 vec![t, ts]
             }
             None => {
@@ -283,12 +295,13 @@ pub fn type_constraints(s: &str) -> IResult<&str, Vec<TypeParam>> {
 }
 
 pub fn type_constraint(s: &str) -> IResult<&str, TypeParam> {
-    map(tuple((identifier, char(':'), type_)), |(id, _, typ)| {
-        TypeParam {
+    map(
+        tuple((identifier, whitespace0, char(':'), whitespace0, type_)),
+        |(id, _, _, _, typ)| TypeParam {
             name: id,
             type_constraints: Some(typ),
-        }
-    })(s)
+        },
+    )(s)
 }
 
 pub fn function_body(s: &str) -> IResult<&str, FunBody> {
@@ -400,7 +413,7 @@ pub fn package_name(s: &str) -> IResult<&str, PackageName> {
 mod test {
     use crate::parser::wiz::declaration::{
         block, function_body, function_decl, member_function, package_name, stored_property,
-        struct_properties, struct_syntax, use_syntax, var_decl,
+        struct_properties, struct_syntax, type_constraint, type_constraints, use_syntax, var_decl,
     };
     use crate::syntax::block::Block;
     use crate::syntax::decl::{
@@ -412,7 +425,8 @@ mod test {
     use crate::syntax::fun::body_def::FunBody;
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::stmt::Stmt;
-    use crate::syntax::type_name::TypeName;
+    use crate::syntax::token::TokenSyntax;
+    use crate::syntax::type_name::{TypeName, TypeParam};
 
     #[test]
     fn test_struct_properties() {
@@ -489,6 +503,7 @@ mod test {
             Ok((
                 "",
                 StructSyntax {
+                    annotations: vec![],
                     name: "A".to_string(),
                     type_params: None,
                     properties: vec![StructPropertySyntax::StoredProperty(StoredPropertySyntax {
@@ -537,9 +552,9 @@ mod test {
                 "",
                 Block {
                     body: vec![Stmt::Expr {
-                        expr: Expr::Literal(LiteralSyntax::Integer {
-                            value: "1".to_string()
-                        })
+                        expr: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
+                            "1".to_string()
+                        )))
                     }]
                 }
             ))
@@ -555,13 +570,13 @@ mod test {
                 Block {
                     body: vec![Stmt::Expr {
                         expr: Expr::BinOp {
-                            left: Box::new(Expr::Literal(LiteralSyntax::Integer {
-                                value: "1".to_string()
-                            })),
+                            left: Box::new(Expr::Literal(LiteralSyntax::Integer(
+                                TokenSyntax::new("1".to_string())
+                            ))),
                             kind: "+".to_string(),
-                            right: Box::new(Expr::Literal(LiteralSyntax::Integer {
-                                value: "1".to_string()
-                            })),
+                            right: Box::new(Expr::Literal(LiteralSyntax::Integer(
+                                TokenSyntax::new("1".to_string())
+                            ))),
                         }
                     }]
                 }
@@ -581,9 +596,9 @@ mod test {
                 "",
                 Block {
                     body: vec![Stmt::Expr {
-                        expr: Expr::Literal(LiteralSyntax::Integer {
-                            value: "1".to_string()
-                        })
+                        expr: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
+                            "1".to_string()
+                        )))
                     }]
                 }
             ))
@@ -611,6 +626,7 @@ mod test {
                 "",
                 FunBody::Expr {
                     expr: Expr::Name(NameExprSyntax {
+                        name_space: vec![],
                         name: "name".to_string()
                     })
                 }
@@ -707,9 +723,7 @@ mod test {
                         name: "Int".to_string(),
                         type_args: None
                     }),
-                    value: Expr::Literal(LiteralSyntax::Integer {
-                        value: "1".to_string()
-                    })
+                    value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new("1".to_string())))
                 })
             ))
         )
@@ -725,12 +739,88 @@ mod test {
                     is_mut: false,
                     name: "a".to_string(),
                     type_: None,
-                    value: Expr::Literal(LiteralSyntax::Integer {
-                        value: "1".to_string()
-                    })
+                    value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new("1".to_string())))
                 })
             ))
         )
+    }
+
+    #[test]
+    fn test_type_constraint() {
+        assert_eq!(
+            type_constraint("T: Printable"),
+            Ok((
+                "",
+                TypeParam {
+                    name: "T".to_string(),
+                    type_constraints: Some(TypeName {
+                        name: "Printable".to_string(),
+                        type_args: None
+                    })
+                }
+            ))
+        )
+    }
+
+    #[test]
+    fn test_type_constraints() {
+        assert_eq!(
+            type_constraints("where T: Printable,"),
+            Ok((
+                "",
+                vec![TypeParam {
+                    name: "T".to_string(),
+                    type_constraints: Some(TypeName {
+                        name: "Printable".to_string(),
+                        type_args: None
+                    })
+                },]
+            ))
+        );
+        assert_eq!(
+            type_constraints("where T: Printable, T: DebugPrintable"),
+            Ok((
+                "",
+                vec![
+                    TypeParam {
+                        name: "T".to_string(),
+                        type_constraints: Some(TypeName {
+                            name: "Printable".to_string(),
+                            type_args: None
+                        })
+                    },
+                    TypeParam {
+                        name: "T".to_string(),
+                        type_constraints: Some(TypeName {
+                            name: "DebugPrintable".to_string(),
+                            type_args: None
+                        })
+                    }
+                ]
+            ))
+        );
+        assert_eq!(
+            type_constraints("where T: Printable, T: DebugPrintable,"),
+            Ok((
+                "",
+                vec![
+                    TypeParam {
+                        name: "T".to_string(),
+                        type_constraints: Some(TypeName {
+                            name: "Printable".to_string(),
+                            type_args: None
+                        })
+                    },
+                    TypeParam {
+                        name: "T".to_string(),
+                        type_constraints: Some(TypeName {
+                            name: "DebugPrintable".to_string(),
+                            type_args: None
+                        })
+                    }
+                ]
+            ))
+        );
     }
 
     #[test]
