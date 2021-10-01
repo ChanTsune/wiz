@@ -7,3 +7,10 @@
 fun println(_ item: String) {
     puts(item)
 }
+
+fun intPrintln(_ item: Int64) {
+    if 9 < item {
+        intPrintln(item / 10)
+    }
+    putchar((item % 10)+48)
+}
