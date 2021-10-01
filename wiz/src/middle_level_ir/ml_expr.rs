@@ -4,7 +4,6 @@ use crate::middle_level_ir::ml_stmt::MLBlock;
 use crate::middle_level_ir::ml_type::{MLType, MLValueType};
 use std::fmt;
 use std::fmt::Write;
-use std::process::exit;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum MLExpr {
