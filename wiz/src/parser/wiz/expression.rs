@@ -10,10 +10,7 @@ use crate::parser::wiz::operators::member_access_operator;
 use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_arguments};
 use crate::syntax::block::Block;
-use crate::syntax::expr::{
-    CallArg, CallExprSyntax, Expr, LambdaSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax,
-    SubscriptSyntax,
-};
+use crate::syntax::expr::{CallArg, CallExprSyntax, Expr, LambdaSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax, SubscriptSyntax, TypeCastSyntax};
 use crate::syntax::literal::LiteralSyntax;
 use crate::syntax::stmt::Stmt;
 use crate::syntax::token::TokenSyntax;
@@ -600,11 +597,11 @@ pub fn infix_operation_expr(s: &str) -> IResult<&str, Expr> {
             for p in v {
                 match p {
                     P::IS { op, type_ } => {
-                        bin_op = Expr::TypeCast {
+                        bin_op = Expr::TypeCast(TypeCastSyntax {
                             target: Box::new(bin_op),
                             is_safe: op.ends_with("?"),
                             type_,
-                        }
+                        })
                     }
                     P::IN { op, expr } => {
                         bin_op = Expr::BinOp {
@@ -756,11 +753,11 @@ pub fn as_expr(s: &str) -> IResult<&str, Expr> {
         |(e, v)| {
             let mut bin_op = e;
             for (_, op, _, typ) in v {
-                bin_op = Expr::TypeCast {
+                bin_op = Expr::TypeCast(TypeCastSyntax {
                     target: Box::new(bin_op),
                     is_safe: op.ends_with("?"),
                     type_: typ,
-                }
+                })
             }
             bin_op
         },
