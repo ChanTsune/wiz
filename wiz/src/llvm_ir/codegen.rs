@@ -518,10 +518,10 @@ impl<'ctx> CodeGen<'ctx> {
             AnyValueEnum::IntValue(i) => {
                 let ty = match t.type_ {
                     MLValueType::Primitive(p) => match &*p {
-                        "Int64"|"UInt64" => self.context.i64_type(),
-                        "Int32"|"UInt32" => self.context.i32_type(),
-                        "Int16"|"UInt16" => self.context.i16_type(),
-                        "Int8"|"UInt8" => self.context.i8_type(),
+                        "Int64" | "UInt64" => self.context.i64_type(),
+                        "Int32" | "UInt32" => self.context.i32_type(),
+                        "Int16" | "UInt16" => self.context.i16_type(),
+                        "Int8" | "UInt8" => self.context.i8_type(),
                         _ => panic!(),
                     },
                     MLValueType::Struct(_) => {
