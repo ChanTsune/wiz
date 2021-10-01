@@ -17,7 +17,7 @@ jobs:
       - name: run format
         run: cd wiz && cargo fmt
       - name: Commit changes
-        uses: EndBug/add-and-commit@v7.3.0
+        uses: EndBug/add-and-commit@v7.4.0
         with:
           author_name: GitHub Actions
           author_email: 41658782+ChanTsune@users.noreply.github.com
