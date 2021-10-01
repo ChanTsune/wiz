@@ -397,7 +397,6 @@ impl HLIR2MLIR {
     }
 
     pub fn name(&self, n: TypedName) -> MLName {
-        println!("{:?}", n.name);
         MLName {
             name: self.name_mangling(&n.package, n.name),
             type_: self.type_(n.type_.unwrap()),

@@ -13,8 +13,8 @@ use inkwell::context::Context;
 use inkwell::execution_engine::ExecutionEngine;
 use inkwell::module::Module;
 use inkwell::support::LLVMString;
-use inkwell::types::{AnyType, AnyTypeEnum, BasicType, BasicTypeEnum, IntType};
-use inkwell::values::{AnyValue, AnyValueEnum, BasicValueEnum, FunctionValue, IntMathValue};
+use inkwell::types::{AnyType, AnyTypeEnum, BasicType, BasicTypeEnum};
+use inkwell::values::{AnyValue, AnyValueEnum, BasicValueEnum, FunctionValue};
 use inkwell::{AddressSpace, FloatPredicate, IntPredicate};
 use nom::lib::std::convert::TryFrom;
 use std::collections::HashMap;
@@ -518,8 +518,10 @@ impl<'ctx> CodeGen<'ctx> {
             AnyValueEnum::IntValue(i) => {
                 let ty = match t.type_ {
                     MLValueType::Primitive(p) => match &*p {
-                        "Int64" => self.context.i64_type(),
-                        "Int32" => self.context.i32_type(),
+                        "Int64"|"UInt64" => self.context.i64_type(),
+                        "Int32"|"UInt32" => self.context.i32_type(),
+                        "Int16"|"UInt16" => self.context.i16_type(),
+                        "Int8"|"UInt8" => self.context.i8_type(),
                         _ => panic!(),
                     },
                     MLValueType::Struct(_) => {
