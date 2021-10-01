@@ -10,7 +10,10 @@ use crate::parser::wiz::operators::member_access_operator;
 use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_arguments};
 use crate::syntax::block::Block;
-use crate::syntax::expr::{CallArg, CallExprSyntax, Expr, LambdaSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax, SubscriptSyntax, TypeCastSyntax};
+use crate::syntax::expr::{
+    CallArg, CallExprSyntax, Expr, LambdaSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax,
+    SubscriptSyntax, TypeCastSyntax,
+};
 use crate::syntax::literal::LiteralSyntax;
 use crate::syntax::stmt::Stmt;
 use crate::syntax::token::TokenSyntax;
