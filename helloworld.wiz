@@ -17,7 +17,7 @@ struct UInt8Vector {
 }
 
 fun helloWorld(): Unit {
-    puts("Hello world!")
+    std::builtin::println("Hello world!")
 }
 
 fun modBy2(_ n: Int64): Int64 {

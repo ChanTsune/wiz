@@ -109,6 +109,14 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         .map(|w| hlir2mlir.file(w))
         .collect();
 
+    let std_mlir = hlir2mlir.source_set(std_hlir);
+
+    for m in std_mlir.iter() {
+        println!("==== {} ====", m.name);
+        println!("{}", m.to_string());
+    }
+
+
     let mlfiles: Vec<MLFile> = hlfiles.into_iter().map(|f| hlir2mlir.file(f)).collect();
 
     for m in mlfiles.iter() {
@@ -130,6 +138,10 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         };
 
         for m in builtin_mlir.iter() {
+            codegen.file(m.clone());
+        }
+
+        for m in std_mlir.iter() {
             codegen.file(m.clone());
         }
 

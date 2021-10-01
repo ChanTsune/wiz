@@ -6,7 +6,7 @@ use crate::high_level_ir::typed_expr::{
     TypedBinOp, TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName,
     TypedReturn, TypedSubscript,
 };
-use crate::high_level_ir::typed_file::TypedFile;
+use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
 use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
 use crate::middle_level_ir::ml_decl::{
@@ -157,6 +157,15 @@ impl HLIR2MLIR {
             },
             vec![],
         ))
+    }
+
+    pub fn source_set(&mut self, s: TypedSourceSet) -> Vec<MLFile> {
+        match s {
+            TypedSourceSet::File(f) => {vec![self.file(f)]}
+            TypedSourceSet::Dir { name, items } => {
+                items.into_iter().map(|i|{self.source_set(i)}).flatten().collect()
+            }
+        }
     }
 
     pub fn file(&mut self, f: TypedFile) -> MLFile {

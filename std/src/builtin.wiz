@@ -3,3 +3,7 @@
 // {
 //     puts(item.description)
 // }
+
+fun println(_ item: String) {
+    puts(item)
+}
