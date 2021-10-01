@@ -2,20 +2,14 @@ use crate::ext::string::StringExt;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{
-    TypedBinOp, TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName,
-    TypedReturn, TypedSubscript,
-};
+use crate::high_level_ir::typed_expr::{TypedBinOp, TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn, TypedSubscript, TypedTypeCast};
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
 use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
 use crate::middle_level_ir::ml_decl::{
     MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar,
 };
-use crate::middle_level_ir::ml_expr::{
-    MLBinOp, MLBinopKind, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLMember, MLName, MLReturn,
-    MLSubscript,
-};
+use crate::middle_level_ir::ml_expr::{MLBinOp, MLBinopKind, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLMember, MLName, MLReturn, MLSubscript, MLTypeCast};
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
 use crate::middle_level_ir::ml_type::{MLFunctionType, MLType, MLValueType};
@@ -392,11 +386,12 @@ impl HLIR2MLIR {
             TypedExpr::When => todo!(),
             TypedExpr::Lambda => todo!(),
             TypedExpr::Return(r) => MLExpr::Return(self.return_expr(r)),
-            TypedExpr::TypeCast => MLExpr::TypeCast,
+            TypedExpr::TypeCast(t) => MLExpr::PrimitiveTypeCast(self.type_cast(t)),
         }
     }
 
     pub fn name(&self, n: TypedName) -> MLName {
+        println!("{:?}", n.name);
         MLName {
             name: self.name_mangling(&n.package, n.name),
             type_: self.type_(n.type_.unwrap()),
@@ -572,6 +567,13 @@ impl HLIR2MLIR {
         MLReturn {
             value: r.value.map(|v| Box::new(self.expr(*v))),
             type_: self.type_(r.type_.unwrap()).into_value_type(),
+        }
+    }
+
+    pub fn type_cast(&mut self, t: TypedTypeCast) -> MLTypeCast {
+        MLTypeCast {
+            target: Box::new(self.expr(*t.target)),
+            type_: self.type_(t.type_.unwrap()).into_value_type()
         }
     }
 

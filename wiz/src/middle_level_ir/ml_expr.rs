@@ -17,7 +17,7 @@ pub enum MLExpr {
     If(MLIf),
     When,
     Return(MLReturn),
-    TypeCast,
+    PrimitiveTypeCast(MLTypeCast),
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -134,7 +134,7 @@ impl MLExpr {
             MLExpr::If(i) => i.type_.clone(),
             MLExpr::When => todo!(),
             MLExpr::Return(r) => MLType::Value(r.type_.clone()),
-            MLExpr::TypeCast => todo!(),
+            MLExpr::PrimitiveTypeCast(t) => MLType::Value(t.type_.clone()),
         }
     }
 }
@@ -181,7 +181,7 @@ impl MLNode for MLExpr {
             MLExpr::If(i) => i.fmt(f),
             MLExpr::When => fmt::Result::Err(Default::default()),
             MLExpr::Return(r) => r.fmt(f),
-            MLExpr::TypeCast => fmt::Result::Err(Default::default()),
+            MLExpr::PrimitiveTypeCast(t) => t.fmt(f),
         }
     }
 }

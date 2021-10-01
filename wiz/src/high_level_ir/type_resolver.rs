@@ -11,10 +11,7 @@ use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedMemberFunction,
     TypedStruct, TypedValueArgDef, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{
-    TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral,
-    TypedName, TypedReturn, TypedSubscript,
-};
+use crate::high_level_ir::typed_expr::{TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn, TypedSubscript, TypedTypeCast};
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedForStmt,
@@ -491,7 +488,7 @@ impl TypeResolver {
             TypedExpr::When => TypedExpr::When,
             TypedExpr::Lambda => TypedExpr::Lambda,
             TypedExpr::Return(r) => TypedExpr::Return(self.typed_return(r)?),
-            TypedExpr::TypeCast => TypedExpr::TypeCast,
+            TypedExpr::TypeCast(t) => TypedExpr::TypeCast(self.typed_type_cast(t)?),
         })
     }
 
@@ -669,6 +666,14 @@ impl TypeResolver {
                 None => None,
             },
             value: value,
+        })
+    }
+
+    pub fn typed_type_cast(&mut self, t: TypedTypeCast) -> Result<TypedTypeCast> {
+        Result::Ok(TypedTypeCast {
+            target: Box::new(self.expr(*t.target)?),
+            is_safe: t.is_safe,
+            type_: Some(self.context.full_type_name(t.type_.unwrap())?)
         })
     }
 

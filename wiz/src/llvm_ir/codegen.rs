@@ -1,8 +1,5 @@
 use crate::middle_level_ir::ml_decl::{MLDecl, MLFun, MLStruct, MLVar};
-use crate::middle_level_ir::ml_expr::{
-    MLBinOp, MLBinopKind, MLCall, MLExpr, MLIf, MLLiteral, MLMember, MLReturn, MLSubscript,
-    MLUnaryOp,
-};
+use crate::middle_level_ir::ml_expr::{MLBinOp, MLBinopKind, MLCall, MLExpr, MLIf, MLLiteral, MLMember, MLReturn, MLSubscript, MLUnaryOp, MLTypeCast};
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
 use crate::middle_level_ir::ml_type::{MLType, MLValueType};
@@ -13,8 +10,8 @@ use inkwell::context::Context;
 use inkwell::execution_engine::ExecutionEngine;
 use inkwell::module::Module;
 use inkwell::support::LLVMString;
-use inkwell::types::{AnyType, AnyTypeEnum, BasicType, BasicTypeEnum};
-use inkwell::values::{AnyValue, AnyValueEnum, BasicValueEnum, FunctionValue};
+use inkwell::types::{AnyType, AnyTypeEnum, BasicType, BasicTypeEnum, IntType};
+use inkwell::values::{AnyValue, AnyValueEnum, BasicValueEnum, FunctionValue, IntMathValue};
 use inkwell::{AddressSpace, FloatPredicate, IntPredicate};
 use nom::lib::std::convert::TryFrom;
 use std::collections::HashMap;
@@ -120,7 +117,7 @@ impl<'ctx> CodeGen<'ctx> {
             MLExpr::If(i) => self.if_expr(i),
             MLExpr::When => exit(-1),
             MLExpr::Return(r) => self.return_expr(r),
-            MLExpr::TypeCast => exit(-1),
+            MLExpr::PrimitiveTypeCast(t) => self.type_cast(t),
         }
     }
 
@@ -365,8 +362,7 @@ impl<'ctx> CodeGen<'ctx> {
     }
 
     pub fn unaryop(&self, u: MLUnaryOp) -> AnyValueEnum<'ctx> {
-        println!("Unsupported unaryop {:?}", &u);
-        exit(-1)
+        todo!()
     }
 
     pub fn subscript(&mut self, s: MLSubscript) -> AnyValueEnum<'ctx> {
@@ -510,6 +506,54 @@ impl<'ctx> CodeGen<'ctx> {
             None => None,
             Some(b) => Some(b),
         }))
+    }
+
+    pub fn type_cast(&mut self, t: MLTypeCast) -> AnyValueEnum<'ctx> {
+        let target = self.expr(*t.target);
+        match target {
+            // AnyValueEnum::ArrayValue(_) => {}
+            AnyValueEnum::IntValue(i) => {
+                let ty = match t.type_ {
+                    MLValueType::Primitive(p) => {
+                        match &*p {
+                            "Int64" => { self.context.i64_type() }
+                            "Int32" => {self.context.i32_type() }
+                            _ => panic!()
+                        }
+                    }
+                    MLValueType::Struct(_) => {todo!()}
+                    MLValueType::Pointer(_) => {todo!()}
+                    MLValueType::Reference(_) => {todo!()}
+                };
+                let t = self.builder.build_int_cast(i, ty, "int_cast");
+                t.as_any_value_enum()
+            }
+            AnyValueEnum::FloatValue(f) => {
+                let ty = match t.type_ {
+                    MLValueType::Primitive(p) => {
+                        match &*p {
+                            "Float" => { self.context.f32_type() }
+                            "Double" => {self.context.f64_type() }
+                            _ => panic!()
+                        }
+                    }
+                    MLValueType::Struct(_) => {todo!()}
+                    MLValueType::Pointer(_) => {todo!()}
+                    MLValueType::Reference(_) => {todo!()}
+                };
+                let t = self.builder.build_float_cast(f, ty, "float_cast");
+                t.as_any_value_enum()
+            }
+            // AnyValueEnum::PhiValue(_) => {}
+            // AnyValueEnum::FunctionValue(_) => {}
+            // AnyValueEnum::PointerValue(_) => {}
+            // AnyValueEnum::StructValue(_) => {}
+            // AnyValueEnum::VectorValue(_) => {}
+            // AnyValueEnum::InstructionValue(_) => {}
+            a => {
+                panic!("never execution branch executed!!")
+            }
+        }
     }
 
     pub fn block(&mut self, b: MLBlock) -> AnyValueEnum<'ctx> {

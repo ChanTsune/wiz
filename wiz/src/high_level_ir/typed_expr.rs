@@ -19,7 +19,7 @@ pub enum TypedExpr {
     When,
     Lambda,
     Return(TypedReturn),
-    TypeCast,
+    TypeCast(TypedTypeCast),
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -143,7 +143,7 @@ impl TypedExpr {
             TypedExpr::When => None,
             TypedExpr::Lambda => None,
             TypedExpr::Return(r) => r.type_.clone(),
-            TypedExpr::TypeCast => None,
+            TypedExpr::TypeCast(t) => t.type_.clone(),
         }
     }
 }
