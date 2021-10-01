@@ -12,5 +12,5 @@ fun intPrintln(_ item: Int64) {
     if 9 < item {
         intPrintln(item / 10)
     }
-    putchar((item % 10)+48)
+    putchar(((item % 10)+48) as Int32)
 }
