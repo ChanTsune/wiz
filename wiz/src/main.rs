@@ -116,7 +116,6 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         println!("{}", m.to_string());
     }
 
-
     let mlfiles: Vec<MLFile> = hlfiles.into_iter().map(|f| hlir2mlir.file(f)).collect();
 
     for m in mlfiles.iter() {

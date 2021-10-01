@@ -161,10 +161,14 @@ impl HLIR2MLIR {
 
     pub fn source_set(&mut self, s: TypedSourceSet) -> Vec<MLFile> {
         match s {
-            TypedSourceSet::File(f) => {vec![self.file(f)]}
-            TypedSourceSet::Dir { name, items } => {
-                items.into_iter().map(|i|{self.source_set(i)}).flatten().collect()
+            TypedSourceSet::File(f) => {
+                vec![self.file(f)]
             }
+            TypedSourceSet::Dir { name, items } => items
+                .into_iter()
+                .map(|i| self.source_set(i))
+                .flatten()
+                .collect(),
         }
     }
 
