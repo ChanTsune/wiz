@@ -17,7 +17,10 @@ use crate::syntax::decl::{
     Decl, FunSyntax, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax,
     StructSyntax, VarSyntax,
 };
-use crate::syntax::expr::{CallExprSyntax, Expr, NameExprSyntax, ReturnSyntax, SubscriptSyntax, TypeCastSyntax, IfExprSyntax};
+use crate::syntax::expr::{
+    CallExprSyntax, Expr, IfExprSyntax, NameExprSyntax, ReturnSyntax, SubscriptSyntax,
+    TypeCastSyntax,
+};
 use crate::syntax::file::{FileSyntax, SourceSet, WizFile};
 use crate::syntax::fun::arg_def::ArgDef;
 use crate::syntax::fun::body_def::FunBody;
@@ -400,9 +403,7 @@ impl Ast2HLIR {
             Expr::Dict { .. } => TypedExpr::Dict,
             Expr::StringBuilder { .. } => TypedExpr::StringBuilder,
             Expr::Call(c) => TypedExpr::Call(self.call_syntax(c)),
-            Expr::If(i) => {
-                TypedExpr::If(self.if_syntax(i))
-            }
+            Expr::If(i) => TypedExpr::If(self.if_syntax(i)),
             Expr::When { .. } => TypedExpr::When,
             Expr::Lambda { .. } => TypedExpr::Lambda,
             Expr::Return(r) => TypedExpr::Return(self.return_syntax(r)),
