@@ -1,16 +1,12 @@
 use crate::parser::wiz::character::{comma, dot, double_quote, not_double_quote_or_back_slash};
 use crate::parser::wiz::declaration::block;
 use crate::parser::wiz::keywords::{
-    as_keyword, else_keyword, false_keyword, if_keyword, in_keyword, return_keyword, true_keyword,
+    as_keyword, else_keyword, false_keyword, if_keyword, return_keyword, true_keyword,
 };
 use crate::parser::wiz::lexical_structure::{
     identifier, whitespace0, whitespace1, whitespace_without_eol0,
 };
-use crate::parser::wiz::operators::{
-    additive_operator, comparison_operator, conjunction_operator, disjunction_operator,
-    elvis_operator, equality_operator, member_access_operator, multiplicative_operator,
-    postfix_operator, prefix_operator, range_operator,
-};
+use crate::parser::wiz::operators::{additive_operator, comparison_operator, conjunction_operator, disjunction_operator, elvis_operator, equality_operator, member_access_operator, multiplicative_operator, postfix_operator, prefix_operator, range_operator, in_operator, is_operator};
 use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_arguments};
 use crate::syntax::block::Block;
@@ -573,11 +569,11 @@ pub fn infix_operation_expr(s: &str) -> IResult<&str, Expr> {
             many0(alt((
                 map(
                     tuple((whitespace1, in_operator, whitespace1, elvis_expr)),
-                    |(_, op, _, expr)| P::IN { op, expr },
+                    |(_, op, _, expr)| P::IN { op: op.to_string(), expr },
                 ),
                 map(
                     tuple((whitespace1, is_operator, whitespace1, type_)),
-                    |(_, op, _, type_)| P::IS { op, type_ },
+                    |(_, op, _, type_)| P::IS { op: op.to_string(), type_ },
                 ),
             ))),
         )),
@@ -725,26 +721,6 @@ pub fn as_operator(s: &str) -> IResult<&str, String> {
             a.to_string() + &*b.to_string()
         }),
         map(as_keyword, |a: &str| a.to_string()),
-    ))(s)
-}
-
-pub fn in_operator(s: &str) -> IResult<&str, String> {
-    alt((
-        map(tuple((char('!'), in_keyword)), |(a, b): (_, &str)| {
-            a.to_string() + &*b.to_string()
-        }),
-        map(in_keyword, |a: &str| a.to_string()),
-    ))(s)
-}
-
-pub fn is_operator(s: &str) -> IResult<&str, String> {
-    alt((
-        map(tuple((char('!'), char('i'), char('s'))), |(a, b, c)| {
-            a.to_string() + &*b.to_string() + &*c.to_string()
-        }),
-        map(tuple((char('i'), char('s'))), |(a, b)| {
-            a.to_string() + &*b.to_string()
-        }),
     ))(s)
 }
 
