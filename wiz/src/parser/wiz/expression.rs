@@ -31,9 +31,12 @@ use nom::character::complete::{char, digit1};
 use nom::combinator::{map, opt, value};
 use nom::multi::many0;
 use nom::sequence::tuple;
-use nom::{AsChar, Compare, ExtendInto, FindSubstring, IResult, InputIter, InputLength, InputTake, InputTakeAtPosition, Offset, Slice};
+use nom::{
+    AsChar, Compare, ExtendInto, FindSubstring, IResult, InputIter, InputLength, InputTake,
+    InputTakeAtPosition, Offset, Slice,
+};
 use std::char::{decode_utf16, REPLACEMENT_CHARACTER};
-use std::ops::{RangeFrom, Range};
+use std::ops::{Range, RangeFrom};
 
 pub fn integer_literal<I>(s: I) -> IResult<I, LiteralSyntax>
 where
@@ -212,8 +215,8 @@ where
 }
 
 pub fn parenthesized_expr<I>(s: I) -> IResult<I, Expr>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + Clone
@@ -222,11 +225,11 @@ pub fn parenthesized_expr<I>(s: I) -> IResult<I, Expr>
         + InputTake
         + Offset
         + InputTakeAtPosition
-        + ExtendInto<Item=char, Extender = String>
+        + ExtendInto<Item = char, Extender = String>
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
-        <I as InputTakeAtPosition>::Item: AsChar
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
         tuple((char('('), whitespace0, expr, whitespace0, char(')'))),
@@ -235,8 +238,8 @@ pub fn parenthesized_expr<I>(s: I) -> IResult<I, Expr>
 }
 
 pub fn return_expr<I>(s: I) -> IResult<I, Expr>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + Clone
@@ -245,15 +248,15 @@ pub fn return_expr<I>(s: I) -> IResult<I, Expr>
         + InputTake
         + Offset
         + InputTakeAtPosition
-        + ExtendInto<Item=char, Extender = String>
+        + ExtendInto<Item = char, Extender = String>
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
-        <I as InputTakeAtPosition>::Item: AsChar
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
         tuple((return_keyword, whitespace1, opt(expr))),
-        |(r, ws, e):(I,_,_)| {
+        |(r, ws, e): (I, _, _)| {
             Expr::Return(ReturnSyntax {
                 return_keyword: TokenSyntax::new(r.to_string()).with_trailing_trivia(ws),
                 value: e.map(|i| Box::new(i)),
@@ -263,8 +266,8 @@ pub fn return_expr<I>(s: I) -> IResult<I, Expr>
 }
 
 pub fn primary_expr<I>(s: I) -> IResult<I, Expr>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + Clone
@@ -273,11 +276,11 @@ pub fn primary_expr<I>(s: I) -> IResult<I, Expr>
         + InputTake
         + Offset
         + InputTakeAtPosition
-        + ExtendInto<Item=char, Extender = String>
+        + ExtendInto<Item = char, Extender = String>
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
-        <I as InputTakeAtPosition>::Item: AsChar
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
 {
     alt((
         return_expr,
@@ -291,8 +294,8 @@ pub fn primary_expr<I>(s: I) -> IResult<I, Expr>
 <if> ::= "if" <expr> <block> ("else" (<block> | <if>))?
 */
 pub fn if_expr<I>(s: I) -> IResult<I, Expr>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + Clone
@@ -301,11 +304,11 @@ pub fn if_expr<I>(s: I) -> IResult<I, Expr>
         + InputTake
         + Offset
         + InputTakeAtPosition
-        + ExtendInto<Item=char, Extender = String>
+        + ExtendInto<Item = char, Extender = String>
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
-        <I as InputTakeAtPosition>::Item: AsChar
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
         tuple((
@@ -341,8 +344,8 @@ pub fn if_expr<I>(s: I) -> IResult<I, Expr>
 <postfix_expr> ::= <primary_expr> <postfix_suffix>*
 */
 pub fn postfix_expr<I>(s: I) -> IResult<I, Expr>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + Clone
@@ -354,8 +357,8 @@ pub fn postfix_expr<I>(s: I) -> IResult<I, Expr>
         + ExtendInto<Item = char, Extender = String>
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
-        <I as InputTakeAtPosition>::Item: AsChar
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(_postfix_expr, |(e, suffixes)| {
         let mut e = e;
@@ -389,20 +392,20 @@ pub fn postfix_expr<I>(s: I) -> IResult<I, Expr>
 
 pub fn _postfix_expr<I>(s: I) -> IResult<I, (Expr, Vec<PostfixSuffix>)>
 where
-I: Slice<RangeFrom<usize>>
-+ Slice<Range<usize>>
-+ InputIter
-+ Clone
-+ Offset
-+ InputLength
-+ ToString
-+ InputTake
-+ InputTakeAtPosition
-+ ExtendInto<Item = char, Extender = String>
-+ FindSubstring<&'static str>
-+ Compare<&'static str>,
-<I as InputIter>::Item: AsChar + Copy,
-<I as InputTakeAtPosition>::Item: AsChar
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + Offset
+        + InputLength
+        + ToString
+        + InputTake
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
 {
     tuple((primary_expr, many0(postfix_suffix)))(s)
 }
@@ -416,20 +419,20 @@ I: Slice<RangeFrom<usize>>
 */
 pub fn postfix_suffix<I>(s: I) -> IResult<I, PostfixSuffix>
 where
-I: Slice<RangeFrom<usize>>
-+ Slice<Range<usize>>
-+ InputIter
-+ Clone
-+ InputLength
-+ ToString
-+ InputTake
-+ Offset
-+ InputTakeAtPosition
-+ ExtendInto<Item=char, Extender = String>
-+ FindSubstring<&'static str>
-+ Compare<&'static str>,
-<I as InputIter>::Item: AsChar + Copy,
-<I as InputTakeAtPosition>::Item: AsChar
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
 {
     alt((
         map(postfix_operator, |s: I| PostfixSuffix::Operator {
@@ -449,21 +452,22 @@ I: Slice<RangeFrom<usize>>
 */
 pub fn navigation_suffix<I>(s: I) -> IResult<I, PostfixSuffix>
 where
-I: Slice<RangeFrom<usize>>
-+ Slice<Range<usize>>
-+ InputIter
-+ Clone
-+ InputLength
-+ ToString
-+ InputTake
-+ FindSubstring<&'static str>
-+ Compare<&'static str>,
-<I as InputIter>::Item: AsChar + Copy,
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
 {
-    map(tuple((member_access_operator, identifier)),
+    map(
+        tuple((member_access_operator, identifier)),
         |(op, name): (I, _)| PostfixSuffix::NavigationSuffix {
-        navigation: op.to_string(),
-        name,
+            navigation: op.to_string(),
+            name,
         },
     )(s)
 }
@@ -471,20 +475,20 @@ I: Slice<RangeFrom<usize>>
 // <indexing_suffix> ::= "[" <expr> ("," <expr>)* ","? "]"
 pub fn indexing_suffix<I>(s: I) -> IResult<I, PostfixSuffix>
 where
-I: Slice<RangeFrom<usize>>
-+ Slice<Range<usize>>
-+ InputIter
-+ Clone
-+ InputLength
-+ ToString
-+ InputTake
-+ Offset
-+ InputTakeAtPosition
-+ ExtendInto<Item=char, Extender = String>
-+ FindSubstring<&'static str>
-+ Compare<&'static str>,
-<I as InputIter>::Item: AsChar + Copy,
-<I as InputTakeAtPosition>::Item: AsChar
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
         tuple((
@@ -508,8 +512,8 @@ I: Slice<RangeFrom<usize>>
 }
 
 pub fn prefix_expr<I>(s: I) -> IResult<I, Expr>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + Clone
@@ -518,15 +522,15 @@ pub fn prefix_expr<I>(s: I) -> IResult<I, Expr>
         + InputTake
         + Offset
         + InputTakeAtPosition
-        + ExtendInto<Item=char, Extender = String>
+        + ExtendInto<Item = char, Extender = String>
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
-        <I as InputTakeAtPosition>::Item: AsChar
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
         tuple((opt(prefix_operator), postfix_expr)),
-        |(op, postfix):(Option<I>, _)| match op {
+        |(op, postfix): (Option<I>, _)| match op {
             Some(op) => Expr::UnaryOp {
                 target: Box::new(postfix),
                 prefix: true,
@@ -556,8 +560,8 @@ where
 <conjunction_expr> ::= <equality_expr> ("&&" <equality_expr>)*
 */
 pub fn conjunction_expr<I>(s: I) -> IResult<I, Expr>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + Clone
@@ -566,11 +570,11 @@ pub fn conjunction_expr<I>(s: I) -> IResult<I, Expr>
         + InputTake
         + Offset
         + InputTakeAtPosition
-        + ExtendInto<Item=char, Extender = String>
+        + ExtendInto<Item = char, Extender = String>
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
-        <I as InputTakeAtPosition>::Item: AsChar
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
         tuple((
@@ -589,8 +593,8 @@ pub fn conjunction_expr<I>(s: I) -> IResult<I, Expr>
 <equality_expr> ::= <comparison_expr> (<equality_operator> <comparison_expr>)*
 */
 pub fn equality_expr<I>(s: I) -> IResult<I, Expr>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + Clone
@@ -599,11 +603,11 @@ pub fn equality_expr<I>(s: I) -> IResult<I, Expr>
         + InputTake
         + Offset
         + InputTakeAtPosition
-        + ExtendInto<Item=char, Extender = String>
+        + ExtendInto<Item = char, Extender = String>
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
-        <I as InputTakeAtPosition>::Item: AsChar
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
         tuple((
@@ -623,8 +627,8 @@ pub fn equality_expr<I>(s: I) -> IResult<I, Expr>
 <comparison_expr> ::= <generic_call_like_comparison_expr> (<comparison_operator> <generic_call_like_comparison_expr>)*
 */
 pub fn comparison_expr<I>(s: I) -> IResult<I, Expr>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + Clone
@@ -633,11 +637,11 @@ pub fn comparison_expr<I>(s: I) -> IResult<I, Expr>
         + InputTake
         + Offset
         + InputTakeAtPosition
-        + ExtendInto<Item=char, Extender = String>
+        + ExtendInto<Item = char, Extender = String>
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
-        <I as InputTakeAtPosition>::Item: AsChar
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
         tuple((
@@ -658,20 +662,20 @@ pub fn comparison_expr<I>(s: I) -> IResult<I, Expr>
 */
 pub fn call_suffix<I>(s: I) -> IResult<I, PostfixSuffix>
 where
-I: Slice<RangeFrom<usize>>
-+ Slice<Range<usize>>
-+ InputIter
-+ Clone
-+ InputLength
-+ ToString
-+ InputTake
-+ Offset
-+ InputTakeAtPosition
-+ ExtendInto<Item=char, Extender = String>
-+ FindSubstring<&'static str>
-+ Compare<&'static str>,
-<I as InputIter>::Item: AsChar + Copy,
-<I as InputTakeAtPosition>::Item: AsChar
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
         tuple((
@@ -695,20 +699,20 @@ I: Slice<RangeFrom<usize>>
 */
 pub fn value_arguments<I>(s: I) -> IResult<I, Vec<CallArg>>
 where
-I: Slice<RangeFrom<usize>>
-+ Slice<Range<usize>>
-+ InputIter
-+ Clone
-+ InputLength
-+ ToString
-+ InputTake
-+ Offset
-+ InputTakeAtPosition
-+ ExtendInto<Item=char, Extender = String>
-+ FindSubstring<&'static str>
-+ Compare<&'static str>,
-<I as InputIter>::Item: AsChar + Copy,
-<I as InputTakeAtPosition>::Item: AsChar
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
         tuple((
@@ -740,20 +744,20 @@ I: Slice<RangeFrom<usize>>
 */
 pub fn value_argument<I>(s: I) -> IResult<I, CallArg>
 where
-I: Slice<RangeFrom<usize>>
-+ Slice<Range<usize>>
-+ InputIter
-+ Clone
-+ InputLength
-+ ToString
-+ InputTake
-+ Offset
-+ InputTakeAtPosition
-+ ExtendInto<Item=char, Extender = String>
-+ FindSubstring<&'static str>
-+ Compare<&'static str>,
-<I as InputIter>::Item: AsChar + Copy,
-<I as InputTakeAtPosition>::Item: AsChar
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
         tuple((
@@ -777,20 +781,20 @@ I: Slice<RangeFrom<usize>>
 */
 pub fn annotated_lambda<I>(s: I) -> IResult<I, LambdaSyntax>
 where
-I: Slice<RangeFrom<usize>>
-+ Slice<Range<usize>>
-+ InputIter
-+ Clone
-+ InputLength
-+ ToString
-+ InputTake
-+ Offset
-+ InputTakeAtPosition
-+ ExtendInto<Item=char, Extender = String>
-+ FindSubstring<&'static str>
-+ Compare<&'static str>,
-<I as InputIter>::Item: AsChar + Copy,
-<I as InputTakeAtPosition>::Item: AsChar
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
         tuple((
@@ -803,20 +807,20 @@ I: Slice<RangeFrom<usize>>
 
 pub fn lambda_literal<I>(s: I) -> IResult<I, LambdaSyntax>
 where
-I: Slice<RangeFrom<usize>>
-+ Slice<Range<usize>>
-+ InputIter
-+ Clone
-+ InputLength
-+ ToString
-+ InputTake
-+ Offset
-+ InputTakeAtPosition
-+ ExtendInto<Item=char, Extender = String>
-+ FindSubstring<&'static str>
-+ Compare<&'static str>,
-<I as InputIter>::Item: AsChar + Copy,
-<I as InputTakeAtPosition>::Item: AsChar
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(tuple((char('{'), stmts, char('}'))), |(_, stms, _)| {
         LambdaSyntax { stmts: stms }
@@ -825,16 +829,16 @@ I: Slice<RangeFrom<usize>>
 
 pub fn label<I>(s: I) -> IResult<I, char>
 where
-I: Slice<RangeFrom<usize>>
-+ Slice<Range<usize>>
-+ InputIter
-+ Clone
-+ InputLength
-+ ToString
-+ InputTake
-+ FindSubstring<&'static str>
-+ Compare<&'static str>,
-<I as InputIter>::Item: AsChar + Copy,
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
 {
     // TODO: Impl
     char(' ')(s)
@@ -844,8 +848,8 @@ I: Slice<RangeFrom<usize>>
 <generic_call_like_comparison_expr> ::= <infix_operation_expr> <call_suffix>*
 */
 pub fn generic_call_like_comparison_expr<I>(s: I) -> IResult<I, Expr>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + Clone
@@ -854,11 +858,11 @@ pub fn generic_call_like_comparison_expr<I>(s: I) -> IResult<I, Expr>
         + InputTake
         + Offset
         + InputTakeAtPosition
-        + ExtendInto<Item=char, Extender = String>
+        + ExtendInto<Item = char, Extender = String>
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
-        <I as InputTakeAtPosition>::Item: AsChar
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
         tuple((infix_operation_expr, many0(call_suffix))),
@@ -873,8 +877,8 @@ pub fn generic_call_like_comparison_expr<I>(s: I) -> IResult<I, Expr>
 <infix_operation_expr> ::= <elvis_expr> ((<in_operator> <elvis_expr>) | (<is_operator> <type>))*
 */
 pub fn infix_operation_expr<I>(s: I) -> IResult<I, Expr>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + Clone
@@ -883,11 +887,11 @@ pub fn infix_operation_expr<I>(s: I) -> IResult<I, Expr>
         + InputTake
         + Offset
         + InputTakeAtPosition
-        + ExtendInto<Item=char, Extender = String>
+        + ExtendInto<Item = char, Extender = String>
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
-        <I as InputTakeAtPosition>::Item: AsChar
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
 {
     enum P {
         IN { op: String, expr: Expr },
@@ -899,7 +903,7 @@ pub fn infix_operation_expr<I>(s: I) -> IResult<I, Expr>
             many0(alt((
                 map(
                     tuple((whitespace1, in_operator, whitespace1, elvis_expr)),
-                    |(_, op, _, expr):(_, I, _, _)| P::IN {
+                    |(_, op, _, expr): (_, I, _, _)| P::IN {
                         op: op.to_string(),
                         expr,
                     },
@@ -942,8 +946,8 @@ pub fn infix_operation_expr<I>(s: I) -> IResult<I, Expr>
 <elvis_expr> ::= <infix_function_call> (":?" <infix_function_call_expr>)*
 */
 pub fn elvis_expr<I>(s: I) -> IResult<I, Expr>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + Clone
@@ -952,11 +956,11 @@ pub fn elvis_expr<I>(s: I) -> IResult<I, Expr>
         + InputTake
         + Offset
         + InputTakeAtPosition
-        + ExtendInto<Item=char, Extender = String>
+        + ExtendInto<Item = char, Extender = String>
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
-        <I as InputTakeAtPosition>::Item: AsChar
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
         tuple((
@@ -976,8 +980,8 @@ pub fn elvis_expr<I>(s: I) -> IResult<I, Expr>
 <infix_function_call_expr> ::= <range_expr> (<identifier> <range_expr>)*
 */
 pub fn infix_function_call_expr<I>(s: I) -> IResult<I, Expr>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + Clone
@@ -986,11 +990,11 @@ pub fn infix_function_call_expr<I>(s: I) -> IResult<I, Expr>
         + InputTake
         + Offset
         + InputTakeAtPosition
-        + ExtendInto<Item=char, Extender = String>
+        + ExtendInto<Item = char, Extender = String>
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
-        <I as InputTakeAtPosition>::Item: AsChar
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
         tuple((
@@ -1010,8 +1014,8 @@ pub fn infix_function_call_expr<I>(s: I) -> IResult<I, Expr>
 <range_expr> ::= <additive_expr> (<range_operator> <additive_expr>)*
 */
 pub fn range_expr<I>(s: I) -> IResult<I, Expr>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + Clone
@@ -1020,11 +1024,11 @@ pub fn range_expr<I>(s: I) -> IResult<I, Expr>
         + InputTake
         + Offset
         + InputTakeAtPosition
-        + ExtendInto<Item=char, Extender = String>
+        + ExtendInto<Item = char, Extender = String>
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
-        <I as InputTakeAtPosition>::Item: AsChar
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
         tuple((
@@ -1044,8 +1048,8 @@ pub fn range_expr<I>(s: I) -> IResult<I, Expr>
 <additive_expr> ::= <multiplicative_expr> (<additive_operator> <multiplicative_expr>)*
 */
 pub fn additive_expr<I>(s: I) -> IResult<I, Expr>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + Clone
@@ -1054,11 +1058,11 @@ pub fn additive_expr<I>(s: I) -> IResult<I, Expr>
         + InputTake
         + Offset
         + InputTakeAtPosition
-        + ExtendInto<Item=char, Extender = String>
+        + ExtendInto<Item = char, Extender = String>
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
-        <I as InputTakeAtPosition>::Item: AsChar
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
         tuple((
@@ -1078,8 +1082,8 @@ pub fn additive_expr<I>(s: I) -> IResult<I, Expr>
 <multiplicative_expr> ::= <as_expr> (<multiplicative_operator> <as_expr>)*
 */
 pub fn multiplicative_expr<I>(s: I) -> IResult<I, Expr>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + Clone
@@ -1088,11 +1092,11 @@ pub fn multiplicative_expr<I>(s: I) -> IResult<I, Expr>
         + InputTake
         + Offset
         + InputTakeAtPosition
-        + ExtendInto<Item=char, Extender = String>
+        + ExtendInto<Item = char, Extender = String>
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
-        <I as InputTakeAtPosition>::Item: AsChar
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
         tuple((
@@ -1112,8 +1116,8 @@ pub fn multiplicative_expr<I>(s: I) -> IResult<I, Expr>
 <as_expr> ::= <prefix_expr> (<as_operator> <type>)*
 */
 pub fn as_expr<I>(s: I) -> IResult<I, Expr>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + Clone
@@ -1122,18 +1126,18 @@ pub fn as_expr<I>(s: I) -> IResult<I, Expr>
         + InputTake
         + Offset
         + InputTakeAtPosition
-        + ExtendInto<Item=char, Extender = String>
+        + ExtendInto<Item = char, Extender = String>
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
-        <I as InputTakeAtPosition>::Item: AsChar
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
         tuple((
             prefix_expr,
             many0(tuple((whitespace1, as_operator, whitespace1, type_))),
         )),
-        |(e, v):(_, Vec<(_,I, _, _)>)| {
+        |(e, v): (_, Vec<(_, I, _, _)>)| {
             let mut bin_op = e;
             for (_, op, _, typ) in v {
                 bin_op = Expr::TypeCast(TypeCastSyntax {
@@ -1148,8 +1152,8 @@ pub fn as_expr<I>(s: I) -> IResult<I, Expr>
 }
 
 pub fn disjunction_expr<I>(s: I) -> IResult<I, Expr>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + Clone
@@ -1158,11 +1162,11 @@ pub fn disjunction_expr<I>(s: I) -> IResult<I, Expr>
         + InputTake
         + Offset
         + InputTakeAtPosition
-        + ExtendInto<Item=char, Extender = String>
+        + ExtendInto<Item = char, Extender = String>
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
-        <I as InputTakeAtPosition>::Item: AsChar
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
         tuple((
@@ -1179,8 +1183,8 @@ pub fn disjunction_expr<I>(s: I) -> IResult<I, Expr>
 }
 
 pub fn expr<I>(s: I) -> IResult<I, Expr>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + Clone
@@ -1189,11 +1193,11 @@ pub fn expr<I>(s: I) -> IResult<I, Expr>
         + InputTake
         + Offset
         + InputTakeAtPosition
-        + ExtendInto<Item=char, Extender = String>
+        + ExtendInto<Item = char, Extender = String>
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
-        <I as InputTakeAtPosition>::Item: AsChar
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
 {
     disjunction_expr(s)
 }
