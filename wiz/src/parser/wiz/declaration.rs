@@ -146,7 +146,7 @@ where
             struct_property,
             whitespace_without_eol0,
             many0(tuple((newline, whitespace0, struct_property))),
-            opt(tuple((newline, whitespace0))),
+            whitespace0,
         ))),
         |o| match o {
             None => vec![],
