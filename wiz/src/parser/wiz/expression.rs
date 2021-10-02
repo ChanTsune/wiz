@@ -195,7 +195,16 @@ where
     })(s)
 }
 
-pub fn name_expr(s: &str) -> IResult<&str, Expr> {
+pub fn name_expr<I>(s: I) -> IResult<I, Expr>
+    where
+        I: Slice<RangeFrom<usize>>
+        + InputIter
+        + InputTake
+        + InputLength
+        + Clone
+        + Compare<&'static str>,
+        <I as InputIter>::Item: AsChar,
+{
     map(tuple((name_space, identifier)), |(ns, name)| {
         Expr::Name(NameExprSyntax {
             name_space: ns,
