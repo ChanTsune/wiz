@@ -153,8 +153,8 @@ where
 }
 
 pub fn literal_expr<I>(s: I) -> IResult<I, Expr>
-    where
-        I: Clone
+where
+    I: Clone
         + Offset
         + InputLength
         + InputTake
@@ -165,8 +165,8 @@ pub fn literal_expr<I>(s: I) -> IResult<I, Expr>
         + ExtendInto<Item = char, Extender = String>
         + Compare<&'static str>
         + FindSubstring<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
-        <I as InputTakeAtPosition>::Item: AsChar
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
         alt((
