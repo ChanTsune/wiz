@@ -361,11 +361,7 @@ where
     <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
-        tuple((
-            whitespace0,
-            many0(tuple((whitespace0, decl))),
-            whitespace0,
-        )),
+        tuple((whitespace0, many0(tuple((whitespace0, decl))), whitespace0)),
         |(_, decls, _)| FileSyntax {
             body: decls.into_iter().map(|(_, f)| f).collect(),
         },
