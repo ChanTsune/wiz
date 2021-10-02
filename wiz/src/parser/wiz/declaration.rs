@@ -24,7 +24,8 @@ use nom::character::complete::{char, newline};
 use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
-use nom::IResult;
+use nom::{IResult, Slice, InputIter, AsChar, InputTake, InputLength, FindSubstring, Compare};
+use std::ops::{RangeFrom, Range};
 
 pub fn decl(s: &str) -> IResult<&str, Decl> {
     alt((use_decl, struct_decl, function_decl, var_decl))(s)
@@ -130,7 +131,13 @@ pub fn immutable_stored_property(s: &str) -> IResult<&str, StoredPropertySyntax>
 }
 
 // <stored_property_body> ::= <identifier> ":" <type>
-pub fn stored_property_body(s: &str) -> IResult<&str, (String, char, TypeName)> {
+pub fn stored_property_body<I>(s: I) -> IResult<I, (String, char, TypeName)>
+where
+I: Slice<RangeFrom<usize>> + Slice<Range<usize>> + InputIter + InputTake + InputLength + Clone + ToString      + FindSubstring<&'static str>
++ Compare<&'static str>,
+
+<I as InputIter>::Item: AsChar+Copy,
+{
     map(
         tuple((
             whitespace1,
