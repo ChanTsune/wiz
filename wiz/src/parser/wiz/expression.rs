@@ -580,7 +580,7 @@ pub fn infix_operation_expr(s: &str) -> IResult<&str, Expr> {
                 ),
                 map(
                     tuple((whitespace1, is_operator, whitespace1, type_)),
-                    |(_, op, _, type_)| P::IS {
+                    |(_, op, _, type_):(_, &str, _, _)| P::IS {
                         op: op.to_string(),
                         type_,
                     },
