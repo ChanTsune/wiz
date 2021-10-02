@@ -101,7 +101,7 @@ pub enum PostfixSuffix {
         indexes: Vec<Expr>,
     },
     NavigationSuffix {
-        is_safe: bool,
+        navigation: String,
         name: String,
     },
 }

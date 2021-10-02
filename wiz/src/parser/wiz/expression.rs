@@ -299,10 +299,10 @@ pub fn postfix_expr(s: &str) -> IResult<&str, Expr> {
                     target: Box::new(e),
                     idx_or_keys: indexes,
                 }),
-                PostfixSuffix::NavigationSuffix { is_safe, name } => Expr::Member {
+                PostfixSuffix::NavigationSuffix { navigation, name } => Expr::Member {
                     target: Box::new(e),
                     name,
-                    is_safe,
+                    is_safe: navigation.ends_with("?"),
                 },
             }
         }
@@ -339,9 +339,9 @@ pub fn postfix_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
 <navigation_suffix> ::= <member_access_operator> <identifier>
 */
 pub fn navigation_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
-    map(tuple((member_access_operator, identifier)), |(op, name)| {
+    map(tuple((member_access_operator, identifier)), |(op, name):(&str, _)| {
         PostfixSuffix::NavigationSuffix {
-            is_safe: op == "?.",
+            navigation: op.to_string(),
             name,
         }
     })(s)
