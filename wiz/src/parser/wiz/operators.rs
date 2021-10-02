@@ -32,15 +32,16 @@ where
 
 pub fn prefix_operator<I>(s: I) -> IResult<I, I>
 where
-I: InputTake + Compare<&'static str> + Clone,
+    I: InputTake + Compare<&'static str> + Clone,
 {
     alt((tag("+"), tag("-"), tag("!"), tag("*"), tag("&")))(s)
 }
 
-
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::operators::{assignment_operator, member_access_operator, prefix_operator};
+    use crate::parser::wiz::operators::{
+        assignment_operator, member_access_operator, prefix_operator,
+    };
 
     #[test]
     fn test_member_access_operator() {
