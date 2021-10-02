@@ -1,7 +1,7 @@
+use crate::parser::wiz::keywords::in_keyword;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::{Compare, IResult, InputTake};
-use crate::parser::wiz::keywords::in_keyword;
 
 fn simple_member_access_operator<I>(s: I) -> IResult<I, I>
 where
@@ -117,25 +117,18 @@ where
 }
 
 pub fn in_operator<I>(s: I) -> IResult<I, I>
-    where
-        I: InputTake + Compare<&'static str> + Clone,
+where
+    I: InputTake + Compare<&'static str> + Clone,
 {
-    alt((
-        tag("!in"),
-        in_keyword,
-    ))(s)
+    alt((tag("!in"), in_keyword))(s)
 }
 
 pub fn is_operator<I>(s: I) -> IResult<I, I>
-    where
-        I: InputTake + Compare<&'static str> + Clone,
+where
+    I: InputTake + Compare<&'static str> + Clone,
 {
-    alt((
-        tag("!is"),
-        tag("is"),
-    ))(s)
+    alt((tag("!is"), tag("is")))(s)
 }
-
 
 #[cfg(test)]
 mod tests {

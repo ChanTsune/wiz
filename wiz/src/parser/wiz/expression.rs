@@ -6,7 +6,11 @@ use crate::parser::wiz::keywords::{
 use crate::parser::wiz::lexical_structure::{
     identifier, whitespace0, whitespace1, whitespace_without_eol0,
 };
-use crate::parser::wiz::operators::{additive_operator, comparison_operator, conjunction_operator, disjunction_operator, elvis_operator, equality_operator, member_access_operator, multiplicative_operator, postfix_operator, prefix_operator, range_operator, in_operator, is_operator};
+use crate::parser::wiz::operators::{
+    additive_operator, comparison_operator, conjunction_operator, disjunction_operator,
+    elvis_operator, equality_operator, in_operator, is_operator, member_access_operator,
+    multiplicative_operator, postfix_operator, prefix_operator, range_operator,
+};
 use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_arguments};
 use crate::syntax::block::Block;
@@ -569,11 +573,17 @@ pub fn infix_operation_expr(s: &str) -> IResult<&str, Expr> {
             many0(alt((
                 map(
                     tuple((whitespace1, in_operator, whitespace1, elvis_expr)),
-                    |(_, op, _, expr)| P::IN { op: op.to_string(), expr },
+                    |(_, op, _, expr)| P::IN {
+                        op: op.to_string(),
+                        expr,
+                    },
                 ),
                 map(
                     tuple((whitespace1, is_operator, whitespace1, type_)),
-                    |(_, op, _, type_)| P::IS { op: op.to_string(), type_ },
+                    |(_, op, _, type_)| P::IS {
+                        op: op.to_string(),
+                        type_,
+                    },
                 ),
             ))),
         )),
