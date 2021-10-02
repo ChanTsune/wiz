@@ -339,12 +339,13 @@ pub fn postfix_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
 <navigation_suffix> ::= <member_access_operator> <identifier>
 */
 pub fn navigation_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
-    map(tuple((member_access_operator, identifier)), |(op, name):(&str, _)| {
-        PostfixSuffix::NavigationSuffix {
+    map(
+        tuple((member_access_operator, identifier)),
+        |(op, name): (&str, _)| PostfixSuffix::NavigationSuffix {
             navigation: op.to_string(),
             name,
-        }
-    })(s)
+        },
+    )(s)
 }
 
 // <indexing_suffix> ::= "[" <expr> ("," <expr>)* ","? "]"
