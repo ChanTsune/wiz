@@ -24,7 +24,7 @@ pub enum Expr {
     Member {
         target: Box<Expr>,
         name: String,
-        is_safe: bool,
+        navigation_operator: String,
     },
     List {
         values: Vec<Expr>,

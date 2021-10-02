@@ -387,13 +387,13 @@ impl Ast2HLIR {
             Expr::Member {
                 target,
                 name,
-                is_safe,
+                navigation_operator,
             } => {
                 let target = self.expr(*target);
                 TypedExpr::Member(TypedInstanceMember {
                     target: Box::new(target),
                     name,
-                    is_safe,
+                    is_safe: navigation_operator.ends_with("?"),
                     type_: None,
                 })
             }

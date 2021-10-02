@@ -302,7 +302,7 @@ pub fn postfix_expr(s: &str) -> IResult<&str, Expr> {
                 PostfixSuffix::NavigationSuffix { navigation, name } => Expr::Member {
                     target: Box::new(e),
                     name,
-                    is_safe: navigation.ends_with("?"),
+                    navigation_operator: navigation,
                 },
             }
         }
@@ -1130,7 +1130,7 @@ mod tests {
                         name: "a".to_string()
                     })),
                     name: "b".to_string(),
-                    is_safe: false
+                    navigation_operator: ".".to_string()
                 }
             ))
         )

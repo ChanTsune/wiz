@@ -232,7 +232,7 @@ mod tests {
                                 name: "a".to_string()
                             })),
                             name: "c".to_string(),
-                            is_safe: false
+                            navigation_operator: ".".to_string()
                         }),
                         kind: "<".to_string(),
                         right: Box::new(Expr::Name(NameExprSyntax {
@@ -277,7 +277,7 @@ mod tests {
                         name: "a".to_string()
                     })),
                     name: "b".to_string(),
-                    is_safe: false
+                    navigation_operator: ".".to_string()
                 }
             ))
         )
@@ -295,7 +295,7 @@ mod tests {
                         name: "a".to_string()
                     })),
                     name: "b".to_string(),
-                    is_safe: false
+                    navigation_operator: ".".to_string()
                 }
             ))
         )
@@ -337,7 +337,7 @@ mod tests {
                             name: "b".to_string()
                         })),
                         name: "c".to_string(),
-                        is_safe: false
+                        navigation_operator: ".".to_string()
                     }
                 }))
             ))
@@ -356,7 +356,7 @@ mod tests {
                             name: "a".to_string()
                         })),
                         name: "b".to_string(),
-                        is_safe: false
+                        navigation_operator: ".".to_string()
                     },
                     value: Expr::Name(NameExprSyntax {
                         name_space: vec![],
