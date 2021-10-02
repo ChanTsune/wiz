@@ -6,8 +6,8 @@ use nom::character::complete::char;
 use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
-use nom::{AsChar, IResult, InputIter, InputLength, InputTake, Slice, FindSubstring, Compare};
-use std::ops::{RangeFrom, Range};
+use nom::{AsChar, Compare, FindSubstring, IResult, InputIter, InputLength, InputTake, Slice};
+use std::ops::{Range, RangeFrom};
 
 pub fn type_<I>(s: I) -> IResult<I, TypeName>
 where
@@ -104,13 +104,17 @@ where
 
 // <type_parameters> ::= "<" <type_parameter> ("," <type_parameter>)* ","? ">"
 pub fn type_parameters<I>(s: I) -> IResult<I, Vec<TypeParam>>
-    where
-        I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone
+where
+    I: Slice<RangeFrom<usize>>
+        + InputIter
+        + InputTake
+        + InputLength
+        + Clone
         + Compare<&'static str>
         + FindSubstring<&'static str>
         + ToString
         + Slice<Range<usize>>,
-        <I as InputIter>::Item: AsChar + Copy,
+    <I as InputIter>::Item: AsChar + Copy,
 {
     map(
         tuple((
@@ -135,13 +139,17 @@ pub fn type_parameters<I>(s: I) -> IResult<I, Vec<TypeParam>>
 
 // <type_parameter> ::= <identifier> (":", <type>)?
 pub fn type_parameter<I>(s: I) -> IResult<I, TypeParam>
-    where
-        I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone
+where
+    I: Slice<RangeFrom<usize>>
+        + InputIter
+        + InputTake
+        + InputLength
+        + Clone
         + Compare<&'static str>
         + FindSubstring<&'static str>
         + ToString
         + Slice<Range<usize>>,
-        <I as InputIter>::Item: AsChar + Copy,
+    <I as InputIter>::Item: AsChar + Copy,
 {
     map(
         tuple((
