@@ -6,7 +6,7 @@ use crate::parser::wiz::keywords::{
 use crate::parser::wiz::lexical_structure::{
     identifier, whitespace0, whitespace1, whitespace_without_eol0,
 };
-use crate::parser::wiz::operators::member_access_operator;
+use crate::parser::wiz::operators::{member_access_operator, prefix_operator};
 use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_arguments};
 use crate::syntax::block::Block;
@@ -146,13 +146,6 @@ where
             trailing_trivia: Trivia::new(),
         })
     })(s)
-}
-
-pub fn prefix_operator(s: &str) -> IResult<&str, String> {
-    map(
-        alt((char('+'), char('-'), char('!'), char('*'), char('&'))),
-        |c| c.to_string(),
-    )(s)
 }
 
 pub fn literal_expr(s: &str) -> IResult<&str, Expr> {
@@ -357,7 +350,7 @@ pub fn prefix_expr(s: &str) -> IResult<&str, Expr> {
             Some(op) => Expr::UnaryOp {
                 target: Box::new(postfix),
                 prefix: true,
-                kind: op,
+                kind: op.to_string(),
             },
             None => postfix,
         },

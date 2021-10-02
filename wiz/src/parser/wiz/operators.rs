@@ -30,9 +30,17 @@ where
     tag("=")(s)
 }
 
+pub fn prefix_operator<I>(s: I) -> IResult<I, I>
+where
+I: InputTake + Compare<&'static str> + Clone,
+{
+    alt((tag("+"), tag("-"), tag("!"), tag("*"), tag("&")))(s)
+}
+
+
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::operators::{assignment_operator, member_access_operator};
+    use crate::parser::wiz::operators::{assignment_operator, member_access_operator, prefix_operator};
 
     #[test]
     fn test_member_access_operator() {
@@ -43,5 +51,14 @@ mod tests {
     #[test]
     fn test_assignment_operator() {
         assert_eq!(assignment_operator("="), Ok(("", "=")));
+    }
+
+    #[test]
+    fn test_prefix_operator() {
+        assert_eq!(prefix_operator("+"), Ok(("", "+")));
+        assert_eq!(prefix_operator("-"), Ok(("", "-")));
+        assert_eq!(prefix_operator("!"), Ok(("", "!")));
+        assert_eq!(prefix_operator("*"), Ok(("", "*")));
+        assert_eq!(prefix_operator("&"), Ok(("", "&")));
     }
 }
