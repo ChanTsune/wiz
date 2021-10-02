@@ -1,5 +1,5 @@
 use nom::bytes::complete::take_while_m_n;
-use nom::character::complete::{char};
+use nom::character::complete::char;
 use nom::combinator::map;
 use nom::{AsChar, IResult, InputIter, InputLength, InputTake, Slice};
 use std::ops::RangeFrom;
@@ -99,8 +99,8 @@ where
 #[cfg(test)]
 mod tests {
     use crate::parser::wiz::character::{
-        alphabet, backticks, comma, cr, digit, dot, double_quote,
-        not_double_quote_or_back_slash, space, under_score,
+        alphabet, backticks, comma, cr, digit, dot, double_quote, not_double_quote_or_back_slash,
+        space, under_score,
     };
 
     #[test]

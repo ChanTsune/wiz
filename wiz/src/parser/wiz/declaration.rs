@@ -1,4 +1,4 @@
-use crate::parser::wiz::character::{comma};
+use crate::parser::wiz::character::comma;
 use crate::parser::wiz::expression::expr;
 use crate::parser::wiz::keywords::{
     as_keyword, fun_keyword, init_keyword, self_keyword, struct_keyword, use_keyword, val_keyword,
