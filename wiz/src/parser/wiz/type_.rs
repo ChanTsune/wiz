@@ -6,13 +6,13 @@ use nom::character::complete::char;
 use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
-use nom::{IResult, InputTake, Slice, InputIter, InputLength, AsChar};
+use nom::{AsChar, IResult, InputIter, InputLength, InputTake, Slice};
 use std::ops::RangeFrom;
 
 pub fn type_<I>(s: I) -> IResult<I, TypeName>
-    where
-        I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
-        <I as InputIter>::Item: AsChar,
+where
+    I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
+    <I as InputIter>::Item: AsChar,
 {
     alt((
         parenthesized_type,
@@ -23,17 +23,17 @@ pub fn type_<I>(s: I) -> IResult<I, TypeName>
 }
 
 pub fn parenthesized_type<I>(s: I) -> IResult<I, TypeName>
-    where
-        I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
-        <I as InputIter>::Item: AsChar,
+where
+    I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
+    <I as InputIter>::Item: AsChar,
 {
     map(tuple((char('('), type_, char(')'))), |(_, type_, _)| type_)(s)
 }
 
 pub fn nullable_type<I>(s: I) -> IResult<I, TypeName>
-    where
-        I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
-        <I as InputIter>::Item: AsChar,
+where
+    I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
+    <I as InputIter>::Item: AsChar,
 {
     map(
         tuple((alt((type_reference, parenthesized_type)), char('?'))),
@@ -42,17 +42,17 @@ pub fn nullable_type<I>(s: I) -> IResult<I, TypeName>
 }
 
 pub fn type_reference<I>(s: I) -> IResult<I, TypeName>
-    where
-        I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
-        <I as InputIter>::Item: AsChar,
+where
+    I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
+    <I as InputIter>::Item: AsChar,
 {
     user_type(s)
 }
 
 pub fn user_type<I>(s: I) -> IResult<I, TypeName>
-    where
-        I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
-        <I as InputIter>::Item: AsChar,
+where
+    I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
+    <I as InputIter>::Item: AsChar,
 {
     map(
         tuple((simple_user_type, many0(tuple((dot, simple_user_type))))),
@@ -64,9 +64,9 @@ pub fn user_type<I>(s: I) -> IResult<I, TypeName>
 }
 
 pub fn simple_user_type<I>(s: I) -> IResult<I, TypeName>
-    where
-        I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
-        <I as InputIter>::Item: AsChar,
+where
+    I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
+    <I as InputIter>::Item: AsChar,
 {
     map(tuple((identifier, opt(type_arguments))), |(name, args)| {
         TypeName {
@@ -81,9 +81,9 @@ pub fn simple_user_type<I>(s: I) -> IResult<I, TypeName>
 // }
 
 pub fn type_arguments<I>(s: I) -> IResult<I, Vec<TypeName>>
-    where
-        I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
-        <I as InputIter>::Item: AsChar,
+where
+    I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
+    <I as InputIter>::Item: AsChar,
 {
     map(
         tuple((
