@@ -500,10 +500,14 @@ pub fn use_syntax(s: &str) -> IResult<&str, UseSyntax> {
 }
 
 // <package_name> ::= <identifier> ("::" <identifier>)*
-pub fn package_name(s: &str) -> IResult<&str, PackageName> {
+pub fn package_name<I>(s: I) -> IResult<I, PackageName>
+    where
+        I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone + Compare<&'static str>,
+        <I as InputIter>::Item: AsChar,
+{
     map(
         tuple((identifier, many0(tuple((tag("::"), identifier))))),
-        |(i, is): (String, Vec<(&str, String)>)| PackageName {
+        |(i, is): (String, Vec<(I, String)>)| PackageName {
             names: vec![i]
                 .into_iter()
                 .chain(is.into_iter().map(|(_, i)| i))
