@@ -791,7 +791,7 @@ where
 //endregion
 
 #[cfg(test)]
-mod test {
+mod tests {
     use crate::parser::wiz::declaration::{
         block, function_body, function_decl, member_function, package_name, stored_property,
         struct_properties, struct_syntax, type_constraint, type_constraints, use_syntax, var_decl,
