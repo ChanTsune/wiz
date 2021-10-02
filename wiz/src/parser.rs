@@ -15,7 +15,7 @@ impl<'a> From<Span<'a>> for Location {
     fn from(span: Span<'a>) -> Self {
         Self {
             offset: span.location_offset(),
-            line: span.location_line()
+            line: span.location_line(),
         }
     }
 }

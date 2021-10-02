@@ -1,12 +1,12 @@
 use crate::parser::error::ParseError;
 use crate::parser::result::Result;
 use crate::parser::wiz::statement::file;
+use crate::parser::Span;
 use crate::syntax::file::{SourceSet, WizFile};
 use std::fs;
 use std::fs::{read_to_string, File};
 use std::io::Read;
 use std::path::Path;
-use crate::parser::Span;
 
 pub mod character;
 pub mod declaration;
