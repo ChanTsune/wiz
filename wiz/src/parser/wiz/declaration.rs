@@ -479,7 +479,19 @@ pub fn var_body(s: &str) -> IResult<&str, (String, Option<TypeName>, Expr)> {
 //endregion
 
 //region use
-pub fn use_decl(s: &str) -> IResult<&str, Decl> {
+pub fn use_decl<I>(s: I) -> IResult<I, Decl>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + InputTake
+        + InputLength
+        + Clone
+        + ToString
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+{
     map(use_syntax, |u| Decl::Use(u))(s)
 }
 
