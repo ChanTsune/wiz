@@ -100,8 +100,8 @@ pub fn struct_property(s: &str) -> IResult<&str, StructPropertySyntax> {
 
 // <stored_property> ::= <mutable_stored_property> | <immutable_stored_property>
 pub fn stored_property<I>(s: I) -> IResult<I, StructPropertySyntax>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + InputTake
@@ -110,7 +110,7 @@ pub fn stored_property<I>(s: I) -> IResult<I, StructPropertySyntax>
         + ToString
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
+    <I as InputIter>::Item: AsChar + Copy,
 {
     map(
         alt((mutable_stored_property, immutable_stored_property)),
@@ -120,8 +120,8 @@ pub fn stored_property<I>(s: I) -> IResult<I, StructPropertySyntax>
 
 // <mutable_stored_property> ::= "var" <stored_property_body>
 pub fn mutable_stored_property<I>(s: I) -> IResult<I, StoredPropertySyntax>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + InputTake
@@ -130,7 +130,7 @@ pub fn mutable_stored_property<I>(s: I) -> IResult<I, StoredPropertySyntax>
         + ToString
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
+    <I as InputIter>::Item: AsChar + Copy,
 {
     map(
         tuple((var_keyword, stored_property_body)),
@@ -144,8 +144,8 @@ pub fn mutable_stored_property<I>(s: I) -> IResult<I, StoredPropertySyntax>
 
 // <immutable_stored_property> ::= "val" <stored_property_body>
 pub fn immutable_stored_property<I>(s: I) -> IResult<I, StoredPropertySyntax>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + InputTake
@@ -154,7 +154,7 @@ pub fn immutable_stored_property<I>(s: I) -> IResult<I, StoredPropertySyntax>
         + ToString
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
+    <I as InputIter>::Item: AsChar + Copy,
 {
     map(
         tuple((val_keyword, stored_property_body)),
