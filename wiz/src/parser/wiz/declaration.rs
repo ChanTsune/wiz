@@ -355,8 +355,8 @@ where
 }
 
 pub fn type_constraints<I>(s: I) -> IResult<I, Vec<TypeParam>>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + Clone
@@ -365,7 +365,7 @@ pub fn type_constraints<I>(s: I) -> IResult<I, Vec<TypeParam>>
         + InputTake
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
+    <I as InputIter>::Item: AsChar + Copy,
 {
     map(
         tuple((
@@ -388,8 +388,8 @@ pub fn type_constraints<I>(s: I) -> IResult<I, Vec<TypeParam>>
 }
 
 pub fn type_constraint<I>(s: I) -> IResult<I, TypeParam>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + Clone
@@ -398,7 +398,7 @@ pub fn type_constraint<I>(s: I) -> IResult<I, TypeParam>
         + InputTake
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
+    <I as InputIter>::Item: AsChar + Copy,
 {
     map(
         tuple((identifier, whitespace0, char(':'), whitespace0, type_)),
