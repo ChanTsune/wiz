@@ -6,7 +6,7 @@ use crate::parser::wiz::keywords::{
 use crate::parser::wiz::lexical_structure::{
     identifier, whitespace0, whitespace1, whitespace_without_eol0,
 };
-use crate::parser::wiz::operators::{member_access_operator, prefix_operator};
+use crate::parser::wiz::operators::{member_access_operator, prefix_operator, conjunction_operator, equality_operator, disjunction_operator, postfix_operator, comparison_operator, elvis_operator, range_operator, additive_operator, multiplicative_operator};
 use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_arguments};
 use crate::syntax::block::Block;
@@ -294,7 +294,7 @@ pub fn _postfix_expr(s: &str) -> IResult<&str, (Expr, Vec<PostfixSuffix>)> {
 */
 pub fn postfix_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
     alt((
-        map(postfix_operator, |s| PostfixSuffix::Operator { kind: s }),
+        map(postfix_operator, |s:&str| PostfixSuffix::Operator { kind: s.to_string() }),
         map(type_arguments, |type_names| {
             PostfixSuffix::TypeArgumentSuffix { types: type_names }
         }),
@@ -314,10 +314,6 @@ pub fn navigation_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
             name,
         }
     })(s)
-}
-
-pub fn postfix_operator(s: &str) -> IResult<&str, String> {
-    map(char('!'), |c| c.to_string())(s)
 }
 
 // <indexing_suffix> ::= "[" <expr> ("," <expr>)* ","? "]"
@@ -357,23 +353,18 @@ pub fn prefix_expr(s: &str) -> IResult<&str, Expr> {
     )(s)
 }
 
-fn _binop(e: Expr, v: Vec<(Trivia, String, Trivia, Expr)>) -> Expr {
+fn _binop<T>(e: Expr, v: Vec<(Trivia, T, Trivia, Expr)>) -> Expr
+where T: ToString
+{
     let mut bin_op = e;
     for (_, op, _, ex) in v {
         bin_op = Expr::BinOp {
             left: Box::new(bin_op),
-            kind: op,
+            kind: op.to_string(),
             right: Box::new(ex),
         }
     }
     bin_op
-}
-
-// &&
-pub fn conjunction_operator(s: &str) -> IResult<&str, String> {
-    map(tuple((char('&'), char('&'))), |(a, b)| {
-        a.to_string() + &*b.to_string()
-    })(s)
 }
 
 /*
@@ -412,20 +403,6 @@ pub fn equality_expr(s: &str) -> IResult<&str, Expr> {
 }
 
 /*
-<equality_operator> ::= "==" | "!="
-*/
-pub fn equality_operator(s: &str) -> IResult<&str, String> {
-    alt((
-        map(tuple((char('='), char('='))), |(a, b)| {
-            a.to_string() + &*b.to_string()
-        }),
-        map(tuple((char('!'), char('='))), |(a, b)| {
-            a.to_string() + &*b.to_string()
-        }),
-    ))(s)
-}
-
-/*
 <comparison_expr> ::= <generic_call_like_comparison_expr> (<comparison_operator> <generic_call_like_comparison_expr>)*
 */
 pub fn comparison_expr(s: &str) -> IResult<&str, Expr> {
@@ -443,21 +420,6 @@ pub fn comparison_expr(s: &str) -> IResult<&str, Expr> {
     )(s)
 }
 
-/*
-<comparison_operator> ::= "<"  | ">"  | "<="  | ">="
-*/
-pub fn comparison_operator(s: &str) -> IResult<&str, String> {
-    alt((
-        map(tuple((char('<'), char('='))), |(a, b)| {
-            a.to_string() + &*b.to_string()
-        }),
-        map(tuple((char('>'), char('='))), |(a, b)| {
-            a.to_string() + &*b.to_string()
-        }),
-        map(char('<'), |a| a.to_string()),
-        map(char('>'), |a| a.to_string()),
-    ))(s)
-}
 /*
 <call_suffix> ::= <type_arguments>? ((<value_arguments>? <annotated_lambda>) | <value_arguments>)
 */
@@ -631,12 +593,6 @@ pub fn elvis_expr(s: &str) -> IResult<&str, Expr> {
     )(s)
 }
 
-pub fn elvis_operator(s: &str) -> IResult<&str, String> {
-    map(tuple((char(':'), char('?'))), |(a, b)| {
-        a.to_string() + &*b.to_string()
-    })(s)
-}
-
 /*
 <infix_function_call_expr> ::= <range_expr> (<identifier> <range_expr>)*
 */
@@ -673,19 +629,6 @@ pub fn range_expr(s: &str) -> IResult<&str, Expr> {
     )(s)
 }
 
-/*
-<range_operator> ::= "..." || "..<"
-*/
-pub fn range_operator(s: &str) -> IResult<&str, String> {
-    alt((
-        map(tuple((char('.'), char('.'), char('.'))), |(a, b, c)| {
-            a.to_string() + &*b.to_string() + &*c.to_string()
-        }),
-        map(tuple((char('.'), char('.'), char('<'))), |(a, b, c)| {
-            a.to_string() + &*b.to_string() + &*c.to_string()
-        }),
-    ))(s)
-}
 
 /*
 <additive_expr> ::= <multiplicative_expr> (<additive_operator> <multiplicative_expr>)*
@@ -705,12 +648,6 @@ pub fn additive_expr(s: &str) -> IResult<&str, Expr> {
     )(s)
 }
 
-/*
-<additive_operator> ::= "+" | "-"
-*/
-pub fn additive_operator(s: &str) -> IResult<&str, String> {
-    map(alt((char('+'), char('-'))), |c| c.to_string())(s)
-}
 
 /*
 <multiplicative_expr> ::= <as_expr> (<multiplicative_operator> <as_expr>)*
@@ -728,13 +665,6 @@ pub fn multiplicative_expr(s: &str) -> IResult<&str, Expr> {
         )),
         |(op, v)| _binop(op, v),
     )(s)
-}
-
-/*
-<multiplicative_operator> ::= "*" | "/" | "%"
-*/
-pub fn multiplicative_operator(s: &str) -> IResult<&str, String> {
-    map(alt((char('*'), char('/'), char('%'))), |c| c.to_string())(s)
 }
 
 /*
@@ -787,12 +717,6 @@ pub fn is_operator(s: &str) -> IResult<&str, String> {
             a.to_string() + &*b.to_string()
         }),
     ))(s)
-}
-
-pub fn disjunction_operator(s: &str) -> IResult<&str, String> {
-    map(tuple((char('|'), char('|'))), |(a, b)| {
-        a.to_string() + &*b.to_string()
-    })(s)
 }
 
 pub fn disjunction_expr(s: &str) -> IResult<&str, Expr> {
