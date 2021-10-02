@@ -1,4 +1,4 @@
-use crate::parser::wiz::keywords::in_keyword;
+use crate::parser::wiz::keywords::{in_keyword, as_keyword};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::{Compare, IResult, InputTake};
@@ -121,6 +121,16 @@ where
     I: InputTake + Compare<&'static str>,
 {
     tag(":?")(s)
+}
+
+pub fn as_operator<I>(s: I) -> IResult<I, I>
+    where
+        I: InputTake + Compare<&'static str> + Clone,
+{
+    alt((
+        tag("as?"),
+        as_keyword,
+    ))(s)
 }
 
 pub fn in_operator<I>(s: I) -> IResult<I, I>

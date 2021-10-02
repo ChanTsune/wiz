@@ -1,16 +1,12 @@
 use crate::parser::wiz::character::{comma, dot, double_quote, not_double_quote_or_back_slash};
 use crate::parser::wiz::declaration::block;
 use crate::parser::wiz::keywords::{
-    as_keyword, else_keyword, false_keyword, if_keyword, return_keyword, true_keyword,
+    else_keyword, false_keyword, if_keyword, return_keyword, true_keyword,
 };
 use crate::parser::wiz::lexical_structure::{
     identifier, whitespace0, whitespace1, whitespace_without_eol0,
 };
-use crate::parser::wiz::operators::{
-    additive_operator, comparison_operator, conjunction_operator, disjunction_operator,
-    elvis_operator, equality_operator, in_operator, is_operator, member_access_operator,
-    multiplicative_operator, postfix_operator, prefix_operator, range_operator,
-};
+use crate::parser::wiz::operators::{additive_operator, comparison_operator, conjunction_operator, disjunction_operator, elvis_operator, equality_operator, in_operator, is_operator, member_access_operator, multiplicative_operator, postfix_operator, prefix_operator, range_operator, as_operator};
 use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_arguments};
 use crate::syntax::block::Block;
@@ -723,15 +719,6 @@ pub fn as_expr(s: &str) -> IResult<&str, Expr> {
             bin_op
         },
     )(s)
-}
-
-pub fn as_operator(s: &str) -> IResult<&str, String> {
-    alt((
-        map(tuple((as_keyword, char('?'))), |(a, b): (&str, _)| {
-            a.to_string() + &*b.to_string()
-        }),
-        map(as_keyword, |a: &str| a.to_string()),
-    ))(s)
 }
 
 pub fn disjunction_expr(s: &str) -> IResult<&str, Expr> {
