@@ -268,7 +268,19 @@ pub fn function_decl(s: &str) -> IResult<&str, Decl> {
     )(s)
 }
 
-pub fn function_value_parameters(s: &str) -> IResult<&str, Vec<ArgDef>> {
+pub fn function_value_parameters<I>(s: I) -> IResult<I, Vec<ArgDef>>
+    where
+        I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+        <I as InputIter>::Item: AsChar + Copy,
+{
     map(
         tuple((
             char('('),
@@ -287,7 +299,19 @@ pub fn function_value_parameters(s: &str) -> IResult<&str, Vec<ArgDef>> {
 }
 
 // <function_value_parameter> ::= (<function_value_label> <function_value_name> ":" <type> ("=" <expr>)?) | "self"
-pub fn function_value_parameter(s: &str) -> IResult<&str, ArgDef> {
+pub fn function_value_parameter<I>(s: I) -> IResult<I, ArgDef>
+    where
+        I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+        <I as InputIter>::Item: AsChar + Copy,
+{
     alt((
         map(
             tuple((
@@ -314,11 +338,19 @@ pub fn function_value_parameter(s: &str) -> IResult<&str, ArgDef> {
     ))(s)
 }
 
-pub fn function_value_label(s: &str) -> IResult<&str, String> {
+pub fn function_value_label<I>(s: I) -> IResult<I, String>
+    where
+        I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
+        <I as InputIter>::Item: AsChar,
+{
     identifier(s)
 }
 
-pub fn function_value_name(s: &str) -> IResult<&str, String> {
+pub fn function_value_name<I>(s: I) -> IResult<I, String>
+    where
+        I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
+        <I as InputIter>::Item: AsChar,
+{
     identifier(s)
 }
 
