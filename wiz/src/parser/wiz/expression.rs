@@ -152,7 +152,22 @@ where
     })(s)
 }
 
-pub fn literal_expr(s: &str) -> IResult<&str, Expr> {
+pub fn literal_expr<I>(s: I) -> IResult<I, Expr>
+    where
+        I: Clone
+        + Offset
+        + InputLength
+        + InputTake
+        + InputTakeAtPosition
+        + Slice<RangeFrom<usize>>
+        + InputIter
+        + ToString
+        + ExtendInto<Item = char, Extender = String>
+        + Compare<&'static str>
+        + FindSubstring<&'static str>,
+        <I as InputIter>::Item: AsChar + Copy,
+        <I as InputTakeAtPosition>::Item: AsChar
+{
     map(
         alt((
             boolean_literal,
