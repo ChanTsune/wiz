@@ -1,4 +1,4 @@
-use crate::parser::wiz::character::{comma, eol};
+use crate::parser::wiz::character::{comma};
 use crate::parser::wiz::expression::expr;
 use crate::parser::wiz::keywords::{
     as_keyword, fun_keyword, init_keyword, self_keyword, struct_keyword, use_keyword, val_keyword,
@@ -20,7 +20,7 @@ use crate::syntax::fun::body_def::FunBody;
 use crate::syntax::type_name::{TypeName, TypeParam};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::char;
+use nom::character::complete::{char, newline};
 use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
@@ -77,8 +77,8 @@ pub fn struct_properties(s: &str) -> IResult<&str, Vec<StructPropertySyntax>> {
         opt(tuple((
             struct_property,
             whitespace_without_eol0,
-            many0(tuple((eol, whitespace0, struct_property))),
-            opt(tuple((eol, whitespace0))),
+            many0(tuple((newline, whitespace0, struct_property))),
+            opt(tuple((newline, whitespace0))),
         ))),
         |o| match o {
             None => vec![],

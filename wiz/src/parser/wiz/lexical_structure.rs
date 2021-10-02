@@ -1,4 +1,4 @@
-use crate::parser::wiz::character::{alphabet, backticks, cr, digit, eol, space, under_score};
+use crate::parser::wiz::character::{alphabet, backticks, cr, digit, space, under_score};
 use crate::syntax::trivia::{Trivia, TriviaPiece};
 use nom::branch::{alt, permutation};
 use nom::bytes::complete::{tag, take_until, take_while_m_n};
@@ -285,7 +285,7 @@ where
     I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength,
     <I as InputIter>::Item: AsChar,
 {
-    map(many1(eol), |l| TriviaPiece::Newlines(l.len() as i64))(s)
+    map(many1(newline), |l| TriviaPiece::Newlines(l.len() as i64))(s)
 }
 
 pub fn carriage_returns<I>(s: I) -> IResult<I, TriviaPiece>
