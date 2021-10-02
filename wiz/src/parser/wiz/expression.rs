@@ -6,7 +6,11 @@ use crate::parser::wiz::keywords::{
 use crate::parser::wiz::lexical_structure::{
     identifier, whitespace0, whitespace1, whitespace_without_eol0,
 };
-use crate::parser::wiz::operators::{member_access_operator, prefix_operator, conjunction_operator, equality_operator, disjunction_operator, postfix_operator, comparison_operator, elvis_operator, range_operator, additive_operator, multiplicative_operator};
+use crate::parser::wiz::operators::{
+    additive_operator, comparison_operator, conjunction_operator, disjunction_operator,
+    elvis_operator, equality_operator, member_access_operator, multiplicative_operator,
+    postfix_operator, prefix_operator, range_operator,
+};
 use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_arguments};
 use crate::syntax::block::Block;
@@ -294,7 +298,9 @@ pub fn _postfix_expr(s: &str) -> IResult<&str, (Expr, Vec<PostfixSuffix>)> {
 */
 pub fn postfix_suffix(s: &str) -> IResult<&str, PostfixSuffix> {
     alt((
-        map(postfix_operator, |s:&str| PostfixSuffix::Operator { kind: s.to_string() }),
+        map(postfix_operator, |s: &str| PostfixSuffix::Operator {
+            kind: s.to_string(),
+        }),
         map(type_arguments, |type_names| {
             PostfixSuffix::TypeArgumentSuffix { types: type_names }
         }),
@@ -354,7 +360,8 @@ pub fn prefix_expr(s: &str) -> IResult<&str, Expr> {
 }
 
 fn _binop<T>(e: Expr, v: Vec<(Trivia, T, Trivia, Expr)>) -> Expr
-where T: ToString
+where
+    T: ToString,
 {
     let mut bin_op = e;
     for (_, op, _, ex) in v {
@@ -629,7 +636,6 @@ pub fn range_expr(s: &str) -> IResult<&str, Expr> {
     )(s)
 }
 
-
 /*
 <additive_expr> ::= <multiplicative_expr> (<additive_operator> <multiplicative_expr>)*
 */
@@ -647,7 +653,6 @@ pub fn additive_expr(s: &str) -> IResult<&str, Expr> {
         |(op, v)| _binop(op, v),
     )(s)
 }
-
 
 /*
 <multiplicative_expr> ::= <as_expr> (<multiplicative_operator> <as_expr>)*

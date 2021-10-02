@@ -38,74 +38,62 @@ where
 }
 
 pub fn postfix_operator<I>(s: I) -> IResult<I, I>
-    where
-        I: InputTake + Compare<&'static str>,
+where
+    I: InputTake + Compare<&'static str>,
 {
     tag("!")(s)
 }
 
-
 pub fn conjunction_operator<I>(s: I) -> IResult<I, I>
-    where
-        I: InputTake + Compare<&'static str>,
+where
+    I: InputTake + Compare<&'static str>,
 {
     tag("&&")(s)
 }
 
 pub fn disjunction_operator<I>(s: I) -> IResult<I, I>
-    where
-        I: InputTake + Compare<&'static str>,
+where
+    I: InputTake + Compare<&'static str>,
 {
     tag("||")(s)
 }
-
 
 /*
 <equality_operator> ::= "==" | "!="
 */
 pub fn equality_operator<I>(s: I) -> IResult<I, I>
-    where
-        I: InputTake + Compare<&'static str> + Clone,
+where
+    I: InputTake + Compare<&'static str> + Clone,
 {
-    alt((tag("=="),
-        tag("!="),
-    ))(s)
+    alt((tag("=="), tag("!=")))(s)
 }
 
 /*
 <comparison_operator> ::= "<"  | ">"  | "<="  | ">="
 */
 pub fn comparison_operator<I>(s: I) -> IResult<I, I>
-    where
-        I: InputTake + Compare<&'static str> + Clone,
+where
+    I: InputTake + Compare<&'static str> + Clone,
 {
-    alt((
-        tag("<="),
-        tag(">="),
-        tag("<"),
-        tag(">"),
-    ))(s)
+    alt((tag("<="), tag(">="), tag("<"), tag(">")))(s)
 }
 
 /*
 <range_operator> ::= "..." || "..<"
 */
 pub fn range_operator<I>(s: I) -> IResult<I, I>
-    where
-        I: InputTake + Compare<&'static str> + Clone,
+where
+    I: InputTake + Compare<&'static str> + Clone,
 {
-    alt((
-        tag("..."),
-        tag("..<")
-    ))(s)
+    alt((tag("..."), tag("..<")))(s)
 }
 
 /*
 <additive_operator> ::= "+" | "-"
 */
 pub fn additive_operator<I>(s: I) -> IResult<I, I>
-    where
-        I: InputTake + Compare<&'static str> + Clone,
+where
+    I: InputTake + Compare<&'static str> + Clone,
 {
     alt((tag("+"), tag("-")))(s)
 }
@@ -114,24 +102,26 @@ pub fn additive_operator<I>(s: I) -> IResult<I, I>
 <multiplicative_operator> ::= "*" | "/" | "%"
 */
 pub fn multiplicative_operator<I>(s: I) -> IResult<I, I>
-    where
-        I: InputTake + Compare<&'static str> + Clone,
+where
+    I: InputTake + Compare<&'static str> + Clone,
 {
     alt((tag("*"), tag("/"), tag("%")))(s)
 }
 
-
 pub fn elvis_operator<I>(s: I) -> IResult<I, I>
-    where
-        I: InputTake + Compare<&'static str>
+where
+    I: InputTake + Compare<&'static str>,
 {
     tag(":?")(s)
 }
 
-
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::operators::{assignment_operator, member_access_operator, prefix_operator, conjunction_operator, equality_operator, disjunction_operator, postfix_operator, comparison_operator, elvis_operator, range_operator, additive_operator, multiplicative_operator};
+    use crate::parser::wiz::operators::{
+        additive_operator, assignment_operator, comparison_operator, conjunction_operator,
+        disjunction_operator, elvis_operator, equality_operator, member_access_operator,
+        multiplicative_operator, postfix_operator, prefix_operator, range_operator,
+    };
 
     #[test]
     fn test_member_access_operator() {
@@ -155,7 +145,7 @@ mod tests {
 
     #[test]
     fn test_postfix_operator() {
-        assert_eq!(postfix_operator("!"), Ok(("","!")));
+        assert_eq!(postfix_operator("!"), Ok(("", "!")));
     }
 
     #[test]
