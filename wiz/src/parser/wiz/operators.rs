@@ -132,11 +132,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::operators::{
-        additive_operator, assignment_operator, comparison_operator, conjunction_operator,
-        disjunction_operator, elvis_operator, equality_operator, member_access_operator,
-        multiplicative_operator, postfix_operator, prefix_operator, range_operator,
-    };
+    use crate::parser::wiz::operators::{additive_operator, assignment_operator, comparison_operator, conjunction_operator, disjunction_operator, elvis_operator, equality_operator, member_access_operator, multiplicative_operator, postfix_operator, prefix_operator, range_operator, is_operator, in_operator};
 
     #[test]
     fn test_member_access_operator() {
@@ -209,5 +205,17 @@ mod tests {
     #[test]
     fn test_elvis_operator() {
         assert_eq!(elvis_operator(":?"), Ok(("", ":?")));
+    }
+
+    #[test]
+    fn test_is_operator() {
+        assert_eq!(is_operator("is"), Ok(("", "is")));
+        assert_eq!(is_operator("!is"), Ok(("", "!is")));
+    }
+
+    #[test]
+    fn test_in_operator() {
+        assert_eq!(in_operator("in"), Ok(("", "in")));
+        assert_eq!(in_operator("!in"), Ok(("", "!in")));
     }
 }
