@@ -115,6 +115,6 @@ pub struct ReturnSyntax {
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct TypeCastSyntax {
     pub(crate) target: Box<Expr>,
-    pub(crate) is_safe: bool,
+    pub(crate) operator : String,
     pub(crate) type_: TypeName,
 }

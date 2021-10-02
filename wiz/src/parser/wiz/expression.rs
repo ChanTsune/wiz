@@ -596,7 +596,7 @@ pub fn infix_operation_expr(s: &str) -> IResult<&str, Expr> {
                     P::IS { op, type_ } => {
                         bin_op = Expr::TypeCast(TypeCastSyntax {
                             target: Box::new(bin_op),
-                            is_safe: op.ends_with("?"),
+                            operator: op,
                             type_,
                         })
                     }
@@ -718,7 +718,7 @@ pub fn as_expr(s: &str) -> IResult<&str, Expr> {
             for (_, op, _, typ) in v {
                 bin_op = Expr::TypeCast(TypeCastSyntax {
                     target: Box::new(bin_op),
-                    is_safe: op.ends_with("?"),
+                    operator: op.to_string(),
                     type_: typ,
                 })
             }
