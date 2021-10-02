@@ -39,11 +39,7 @@ pub enum Expr {
         // TODO
     },
     Call(CallExprSyntax),
-    If {
-        condition: Box<Expr>,
-        body: Block,
-        else_body: Option<Block>,
-    },
+    If(IfExprSyntax),
     When {
         // TODO
     },
@@ -104,6 +100,13 @@ pub enum PostfixSuffix {
         navigation: String,
         name: String,
     },
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct IfExprSyntax {
+    pub(crate) condition: Box<Expr>,
+    pub(crate) body: Block,
+    pub(crate) else_body: Option<Block>,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]

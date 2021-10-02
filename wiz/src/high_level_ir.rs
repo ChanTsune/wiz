@@ -17,9 +17,7 @@ use crate::syntax::decl::{
     Decl, FunSyntax, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax,
     StructSyntax, VarSyntax,
 };
-use crate::syntax::expr::{
-    CallExprSyntax, Expr, NameExprSyntax, ReturnSyntax, SubscriptSyntax, TypeCastSyntax,
-};
+use crate::syntax::expr::{CallExprSyntax, Expr, NameExprSyntax, ReturnSyntax, SubscriptSyntax, TypeCastSyntax, IfExprSyntax};
 use crate::syntax::file::{FileSyntax, SourceSet, WizFile};
 use crate::syntax::fun::arg_def::ArgDef;
 use crate::syntax::fun::body_def::FunBody;
@@ -402,23 +400,8 @@ impl Ast2HLIR {
             Expr::Dict { .. } => TypedExpr::Dict,
             Expr::StringBuilder { .. } => TypedExpr::StringBuilder,
             Expr::Call(c) => TypedExpr::Call(self.call_syntax(c)),
-            Expr::If {
-                condition,
-                body,
-                else_body,
-            } => {
-                let block = self.block(body);
-                let type_ = if else_body == None {
-                    TypedType::noting()
-                } else {
-                    block.type_().unwrap_or(TypedType::noting())
-                };
-                TypedExpr::If(TypedIf {
-                    condition: Box::new(self.expr(*condition)),
-                    body: block,
-                    else_body: else_body.map(|b| self.block(b)),
-                    type_: Some(type_),
-                })
+            Expr::If(i) => {
+                TypedExpr::If(self.if_syntax(i))
             }
             Expr::When { .. } => TypedExpr::When,
             Expr::Lambda { .. } => TypedExpr::Lambda,
@@ -478,6 +461,26 @@ impl Ast2HLIR {
             target: Box::new(self.expr(*target)),
             args: args,
             type_: None,
+        }
+    }
+
+    pub fn if_syntax(&self, i: IfExprSyntax) -> TypedIf {
+        let IfExprSyntax {
+            condition,
+            body,
+            else_body,
+        } = i;
+        let block = self.block(body);
+        let type_ = if else_body == None {
+            TypedType::noting()
+        } else {
+            block.type_().unwrap_or(TypedType::noting())
+        };
+        TypedIf {
+            condition: Box::new(self.expr(*condition)),
+            body: block,
+            else_body: else_body.map(|b| self.block(b)),
+            type_: Some(type_),
         }
     }
 

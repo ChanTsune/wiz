@@ -15,10 +15,7 @@ use crate::parser::wiz::operators::{
 use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_arguments};
 use crate::syntax::block::Block;
-use crate::syntax::expr::{
-    CallArg, CallExprSyntax, Expr, LambdaSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax,
-    SubscriptSyntax, TypeCastSyntax,
-};
+use crate::syntax::expr::{CallArg, CallExprSyntax, Expr, LambdaSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax, SubscriptSyntax, TypeCastSyntax, IfExprSyntax};
 use crate::syntax::literal::LiteralSyntax;
 use crate::syntax::stmt::Stmt;
 use crate::syntax::token::TokenSyntax;
@@ -332,11 +329,11 @@ where
                 |(_, _, _, e)| e,
             )),
         )),
-        |(_, _, condition, _, body, else_body)| Expr::If {
+        |(_, _, condition, _, body, else_body)| Expr::If(IfExprSyntax {
             condition: Box::new(condition),
             body,
             else_body,
-        },
+        }),
     )(s)
 }
 
@@ -1210,10 +1207,8 @@ mod tests {
         postfix_suffix, raw_string_literal, return_expr, string_literal, value_arguments,
     };
     use crate::syntax::block::Block;
-    use crate::syntax::expr::Expr::{BinOp, If};
-    use crate::syntax::expr::{
-        CallArg, CallExprSyntax, Expr, NameExprSyntax, PostfixSuffix, ReturnSyntax,
-    };
+    use crate::syntax::expr::Expr::{BinOp};
+    use crate::syntax::expr::{CallArg, CallExprSyntax, Expr, NameExprSyntax, PostfixSuffix, ReturnSyntax, IfExprSyntax};
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::token::TokenSyntax;
     use crate::syntax::trivia::{Trivia, TriviaPiece};
@@ -1526,14 +1521,14 @@ mod tests {
             expr(r"if a { }"),
             Ok((
                 "",
-                If {
+                Expr::If (IfExprSyntax{
                     condition: Box::new(Expr::Name(NameExprSyntax {
                         name_space: vec![],
                         name: "a".to_string()
                     })),
                     body: Block { body: vec![] },
                     else_body: None
-                }
+                })
             ))
         )
     }
@@ -1544,14 +1539,14 @@ mod tests {
             expr(r"if a { } else { }"),
             Ok((
                 "",
-                If {
+                Expr::If (IfExprSyntax{
                     condition: Box::new(Expr::Name(NameExprSyntax {
                         name_space: vec![],
                         name: "a".to_string()
                     })),
                     body: Block { body: vec![] },
                     else_body: Some(Block { body: vec![] })
-                }
+                })
             ))
         )
     }
