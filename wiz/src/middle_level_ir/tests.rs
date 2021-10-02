@@ -16,7 +16,7 @@ use crate::parser::wiz::parse_from_string;
 fn test_empty() {
     let source = "";
 
-    let ast = parse_from_string(String::from(source)).unwrap();
+    let ast = parse_from_string(source).unwrap();
 
     let mut ast2hlir = Ast2HLIR::new();
 
@@ -49,7 +49,7 @@ fn test_struct() {
     }
     ";
 
-    let ast = parse_from_string(String::from(source)).unwrap();
+    let ast = parse_from_string(source).unwrap();
 
     let mut ast2hlir = Ast2HLIR::new();
 
@@ -143,7 +143,7 @@ fn test_struct_init() {
     }
     ";
 
-    let ast = parse_from_string(String::from(source)).unwrap();
+    let ast = parse_from_string(source).unwrap();
 
     let mut ast2hlir = Ast2HLIR::new();
 
@@ -263,7 +263,7 @@ fn test_return_integer_literal() {
     }
     ";
 
-    let ast = parse_from_string(String::from(source)).unwrap();
+    let ast = parse_from_string(source).unwrap();
 
     let mut ast2hlir = Ast2HLIR::new();
 

@@ -24,7 +24,7 @@ pub enum Expr {
     Member {
         target: Box<Expr>,
         name: String,
-        is_safe: bool,
+        navigation_operator: String,
     },
     List {
         values: Vec<Expr>,
@@ -101,7 +101,7 @@ pub enum PostfixSuffix {
         indexes: Vec<Expr>,
     },
     NavigationSuffix {
-        is_safe: bool,
+        navigation: String,
         name: String,
     },
 }
@@ -115,6 +115,6 @@ pub struct ReturnSyntax {
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct TypeCastSyntax {
     pub(crate) target: Box<Expr>,
-    pub(crate) is_safe: bool,
+    pub(crate) operator: String,
     pub(crate) type_: TypeName,
 }

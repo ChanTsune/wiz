@@ -1,4 +1,4 @@
-use crate::parser::wiz::character::{comma, eol};
+use crate::parser::wiz::character::comma;
 use crate::parser::wiz::expression::expr;
 use crate::parser::wiz::keywords::{
     as_keyword, fun_keyword, init_keyword, self_keyword, struct_keyword, use_keyword, val_keyword,
@@ -20,24 +20,76 @@ use crate::syntax::fun::body_def::FunBody;
 use crate::syntax::type_name::{TypeName, TypeParam};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::char;
+use nom::character::complete::{char, newline};
 use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
-use nom::IResult;
+use nom::{
+    AsChar, Compare, ExtendInto, FindSubstring, IResult, InputIter, InputLength, InputTake,
+    InputTakeAtPosition, Offset, Slice,
+};
+use std::ops::{Range, RangeFrom};
 
-pub fn decl(s: &str) -> IResult<&str, Decl> {
+pub fn decl<I>(s: I) -> IResult<I, Decl>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
     alt((use_decl, struct_decl, function_decl, var_decl))(s)
 }
 
 //region struct
 
-pub fn struct_decl(s: &str) -> IResult<&str, Decl> {
+pub fn struct_decl<I>(s: I) -> IResult<I, Decl>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
     map(struct_syntax, |struct_syntax| Decl::Struct(struct_syntax))(s)
 }
 
 // <struct_decl> ::= "struct" <identifier> <type_parameters>? "{" <struct_properties> "}"
-pub fn struct_syntax(s: &str) -> IResult<&str, StructSyntax> {
+pub fn struct_syntax<I>(s: I) -> IResult<I, StructSyntax>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
     map(
         tuple((
             struct_keyword,
@@ -72,13 +124,29 @@ pub fn struct_syntax(s: &str) -> IResult<&str, StructSyntax> {
 }
 
 // <struct_properties> ::= (<struct_property> ("\n" <struct_property>)* "\n"?)?
-pub fn struct_properties(s: &str) -> IResult<&str, Vec<StructPropertySyntax>> {
+pub fn struct_properties<I>(s: I) -> IResult<I, Vec<StructPropertySyntax>>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
     map(
         opt(tuple((
             struct_property,
             whitespace_without_eol0,
-            many0(tuple((eol, whitespace0, struct_property))),
-            opt(tuple((eol, whitespace0))),
+            many0(tuple((newline, whitespace0, struct_property))),
+            opt(tuple((newline, whitespace0))),
         ))),
         |o| match o {
             None => vec![],
@@ -93,12 +161,40 @@ pub fn struct_properties(s: &str) -> IResult<&str, Vec<StructPropertySyntax>> {
 
 // <struct_property> ::= <stored_property>
 //                     | <initializer>
-pub fn struct_property(s: &str) -> IResult<&str, StructPropertySyntax> {
+pub fn struct_property<I>(s: I) -> IResult<I, StructPropertySyntax>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
     alt((stored_property, initializer, member_function))(s)
 }
 
 // <stored_property> ::= <mutable_stored_property> | <immutable_stored_property>
-pub fn stored_property(s: &str) -> IResult<&str, StructPropertySyntax> {
+pub fn stored_property<I>(s: I) -> IResult<I, StructPropertySyntax>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + InputTake
+        + InputLength
+        + Clone
+        + ToString
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+{
     map(
         alt((mutable_stored_property, immutable_stored_property)),
         |stored_property| StructPropertySyntax::StoredProperty(stored_property),
@@ -106,7 +202,19 @@ pub fn stored_property(s: &str) -> IResult<&str, StructPropertySyntax> {
 }
 
 // <mutable_stored_property> ::= "var" <stored_property_body>
-pub fn mutable_stored_property(s: &str) -> IResult<&str, StoredPropertySyntax> {
+pub fn mutable_stored_property<I>(s: I) -> IResult<I, StoredPropertySyntax>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + InputTake
+        + InputLength
+        + Clone
+        + ToString
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+{
     map(
         tuple((var_keyword, stored_property_body)),
         |(_, (name, _, typ))| StoredPropertySyntax {
@@ -118,7 +226,19 @@ pub fn mutable_stored_property(s: &str) -> IResult<&str, StoredPropertySyntax> {
 }
 
 // <immutable_stored_property> ::= "val" <stored_property_body>
-pub fn immutable_stored_property(s: &str) -> IResult<&str, StoredPropertySyntax> {
+pub fn immutable_stored_property<I>(s: I) -> IResult<I, StoredPropertySyntax>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + InputTake
+        + InputLength
+        + Clone
+        + ToString
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+{
     map(
         tuple((val_keyword, stored_property_body)),
         |(_, (name, _, typ))| StoredPropertySyntax {
@@ -130,7 +250,19 @@ pub fn immutable_stored_property(s: &str) -> IResult<&str, StoredPropertySyntax>
 }
 
 // <stored_property_body> ::= <identifier> ":" <type>
-pub fn stored_property_body(s: &str) -> IResult<&str, (String, char, TypeName)> {
+pub fn stored_property_body<I>(s: I) -> IResult<I, (String, char, TypeName)>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + InputTake
+        + InputLength
+        + Clone
+        + ToString
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+{
     map(
         tuple((
             whitespace1,
@@ -145,7 +277,23 @@ pub fn stored_property_body(s: &str) -> IResult<&str, (String, char, TypeName)> 
 }
 
 // <initializer> =:: "init" <function_value_parameters> <function_body>
-pub fn initializer(s: &str) -> IResult<&str, StructPropertySyntax> {
+pub fn initializer<I>(s: I) -> IResult<I, StructPropertySyntax>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
     map(
         tuple((
             init_keyword,
@@ -159,7 +307,23 @@ pub fn initializer(s: &str) -> IResult<&str, StructPropertySyntax> {
 }
 
 // <member_function> =:: <modifiers>? "fun" <identifire> <type_parameters>? <function_value_parameters> (":" <type>)? <type_constraints>? <function_body>?
-pub fn member_function(s: &str) -> IResult<&str, StructPropertySyntax> {
+pub fn member_function<I>(s: I) -> IResult<I, StructPropertySyntax>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
     map(
         tuple((
             fun_keyword,
@@ -191,7 +355,23 @@ pub fn member_function(s: &str) -> IResult<&str, StructPropertySyntax> {
 
 //region func
 
-pub fn function_decl(s: &str) -> IResult<&str, Decl> {
+pub fn function_decl<I>(s: I) -> IResult<I, Decl>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
     map(
         tuple((
             fun_keyword,
@@ -219,7 +399,19 @@ pub fn function_decl(s: &str) -> IResult<&str, Decl> {
     )(s)
 }
 
-pub fn function_value_parameters(s: &str) -> IResult<&str, Vec<ArgDef>> {
+pub fn function_value_parameters<I>(s: I) -> IResult<I, Vec<ArgDef>>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+{
     map(
         tuple((
             char('('),
@@ -238,7 +430,19 @@ pub fn function_value_parameters(s: &str) -> IResult<&str, Vec<ArgDef>> {
 }
 
 // <function_value_parameter> ::= (<function_value_label> <function_value_name> ":" <type> ("=" <expr>)?) | "self"
-pub fn function_value_parameter(s: &str) -> IResult<&str, ArgDef> {
+pub fn function_value_parameter<I>(s: I) -> IResult<I, ArgDef>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+{
     alt((
         map(
             tuple((
@@ -265,15 +469,35 @@ pub fn function_value_parameter(s: &str) -> IResult<&str, ArgDef> {
     ))(s)
 }
 
-pub fn function_value_label(s: &str) -> IResult<&str, String> {
+pub fn function_value_label<I>(s: I) -> IResult<I, String>
+where
+    I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
+    <I as InputIter>::Item: AsChar,
+{
     identifier(s)
 }
 
-pub fn function_value_name(s: &str) -> IResult<&str, String> {
+pub fn function_value_name<I>(s: I) -> IResult<I, String>
+where
+    I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
+    <I as InputIter>::Item: AsChar,
+{
     identifier(s)
 }
 
-pub fn type_constraints(s: &str) -> IResult<&str, Vec<TypeParam>> {
+pub fn type_constraints<I>(s: I) -> IResult<I, Vec<TypeParam>>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+{
     map(
         tuple((
             where_keyword,
@@ -294,7 +518,19 @@ pub fn type_constraints(s: &str) -> IResult<&str, Vec<TypeParam>> {
     )(s)
 }
 
-pub fn type_constraint(s: &str) -> IResult<&str, TypeParam> {
+pub fn type_constraint<I>(s: I) -> IResult<I, TypeParam>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+{
     map(
         tuple((identifier, whitespace0, char(':'), whitespace0, type_)),
         |(id, _, _, _, typ)| TypeParam {
@@ -304,7 +540,23 @@ pub fn type_constraint(s: &str) -> IResult<&str, TypeParam> {
     )(s)
 }
 
-pub fn function_body(s: &str) -> IResult<&str, FunBody> {
+pub fn function_body<I>(s: I) -> IResult<I, FunBody>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
     alt((
         map(block, |b| FunBody::Block { block: b }),
         map(tuple((char('='), whitespace0, expr)), |(_, _, ex)| {
@@ -313,7 +565,23 @@ pub fn function_body(s: &str) -> IResult<&str, FunBody> {
     ))(s)
 }
 
-pub fn block(s: &str) -> IResult<&str, Block> {
+pub fn block<I>(s: I) -> IResult<I, Block>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
     map(
         tuple((char('{'), whitespace0, stmts, whitespace0, char('}'))),
         |(_, _, stmts, _, _)| Block { body: stmts },
@@ -324,15 +592,63 @@ pub fn block(s: &str) -> IResult<&str, Block> {
 
 //region var
 
-pub fn var_decl(s: &str) -> IResult<&str, Decl> {
+pub fn var_decl<I>(s: I) -> IResult<I, Decl>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
     map(var_syntax, |v| Decl::Var(v))(s)
 }
 
-pub fn var_syntax(s: &str) -> IResult<&str, VarSyntax> {
+pub fn var_syntax<I>(s: I) -> IResult<I, VarSyntax>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
     alt((var, val))(s)
 }
 
-pub fn var(s: &str) -> IResult<&str, VarSyntax> {
+pub fn var<I>(s: I) -> IResult<I, VarSyntax>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
     map(
         tuple((var_keyword, whitespace1, var_body)),
         |(_, _, (name, t, e))| VarSyntax {
@@ -344,7 +660,23 @@ pub fn var(s: &str) -> IResult<&str, VarSyntax> {
     )(s)
 }
 
-pub fn val(s: &str) -> IResult<&str, VarSyntax> {
+pub fn val<I>(s: I) -> IResult<I, VarSyntax>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
     map(
         tuple((val_keyword, whitespace1, var_body)),
         |(_, _, (name, t, e))| VarSyntax {
@@ -356,7 +688,23 @@ pub fn val(s: &str) -> IResult<&str, VarSyntax> {
     )(s)
 }
 
-pub fn var_body(s: &str) -> IResult<&str, (String, Option<TypeName>, Expr)> {
+pub fn var_body<I>(s: I) -> IResult<I, (String, Option<TypeName>, Expr)>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
     map(
         tuple((
             identifier,
@@ -374,12 +722,36 @@ pub fn var_body(s: &str) -> IResult<&str, (String, Option<TypeName>, Expr)> {
 //endregion
 
 //region use
-pub fn use_decl(s: &str) -> IResult<&str, Decl> {
+pub fn use_decl<I>(s: I) -> IResult<I, Decl>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + InputTake
+        + InputLength
+        + Clone
+        + ToString
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+{
     map(use_syntax, |u| Decl::Use(u))(s)
 }
 
 // <use> ::= "use" <package_name> ("as" <identifier>)?
-pub fn use_syntax(s: &str) -> IResult<&str, UseSyntax> {
+pub fn use_syntax<I>(s: I) -> IResult<I, UseSyntax>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + InputTake
+        + InputLength
+        + Clone
+        + ToString
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+{
     map(
         tuple((
             use_keyword,
@@ -395,10 +767,19 @@ pub fn use_syntax(s: &str) -> IResult<&str, UseSyntax> {
 }
 
 // <package_name> ::= <identifier> ("::" <identifier>)*
-pub fn package_name(s: &str) -> IResult<&str, PackageName> {
+pub fn package_name<I>(s: I) -> IResult<I, PackageName>
+where
+    I: Slice<RangeFrom<usize>>
+        + InputIter
+        + InputTake
+        + InputLength
+        + Clone
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar,
+{
     map(
         tuple((identifier, many0(tuple((tag("::"), identifier))))),
-        |(i, is): (String, Vec<(&str, String)>)| PackageName {
+        |(i, is): (String, Vec<(I, String)>)| PackageName {
             names: vec![i]
                 .into_iter()
                 .chain(is.into_iter().map(|(_, i)| i))

@@ -1,5 +1,5 @@
 use nom::bytes::complete::take_while_m_n;
-use nom::character::complete::{char, newline};
+use nom::character::complete::char;
 use nom::combinator::map;
 use nom::{AsChar, IResult, InputIter, InputLength, InputTake, Slice};
 use std::ops::RangeFrom;
@@ -88,14 +88,6 @@ where
     char(' ')(s)
 }
 
-pub fn eol<I>(s: I) -> IResult<I, char>
-where
-    I: Slice<RangeFrom<usize>> + InputIter,
-    <I as InputIter>::Item: AsChar,
-{
-    newline(s)
-}
-
 pub fn cr<I>(s: I) -> IResult<I, char>
 where
     I: Slice<RangeFrom<usize>> + InputIter,
@@ -107,8 +99,8 @@ where
 #[cfg(test)]
 mod tests {
     use crate::parser::wiz::character::{
-        alphabet, backticks, comma, cr, digit, dot, double_quote, eol,
-        not_double_quote_or_back_slash, space, under_score,
+        alphabet, backticks, comma, cr, digit, dot, double_quote, not_double_quote_or_back_slash,
+        space, under_score,
     };
 
     #[test]
@@ -149,11 +141,6 @@ mod tests {
     #[test]
     fn test_space() {
         assert_eq!(space(" "), Ok(("", ' ')))
-    }
-
-    #[test]
-    fn test_eol() {
-        assert_eq!(eol("\n"), Ok(("", '\n')))
     }
 
     #[test]

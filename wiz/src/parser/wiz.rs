@@ -1,6 +1,7 @@
 use crate::parser::error::ParseError;
 use crate::parser::result::Result;
 use crate::parser::wiz::statement::file;
+use crate::parser::Span;
 use crate::syntax::file::{SourceSet, WizFile};
 use std::fs;
 use std::fs::{read_to_string, File};
@@ -16,8 +17,8 @@ pub mod operators;
 pub mod statement;
 pub mod type_;
 
-pub fn parse_from_string(string: String) -> Result<WizFile> {
-    return match file(&*string) {
+pub fn parse_from_string(string: &str) -> Result<WizFile> {
+    return match file(Span::from(string)) {
         Ok((s, f)) => {
             if !s.is_empty() {
                 return Result::Err(ParseError::ParseError(String::from(format!("{}", s))));
@@ -34,7 +35,7 @@ pub fn parse_from_string(string: String) -> Result<WizFile> {
 pub fn parse_from_file(mut file: File) -> Result<WizFile> {
     let mut string = String::new();
     let _ = file.read_to_string(&mut string)?;
-    parse_from_string(string)
+    parse_from_string(&*string)
 }
 
 pub fn parse_from_file_path_str(path: &str) -> Result<WizFile> {
@@ -44,7 +45,7 @@ pub fn parse_from_file_path_str(path: &str) -> Result<WizFile> {
 
 pub fn parse_from_file_path(path: &Path) -> Result<WizFile> {
     let s = read_to_string(path)?;
-    let mut f = parse_from_string(s)?;
+    let mut f = parse_from_string(&*s)?;
     f.name = String::from(path.to_string_lossy());
     Ok(f)
 }

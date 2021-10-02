@@ -387,13 +387,13 @@ impl Ast2HLIR {
             Expr::Member {
                 target,
                 name,
-                is_safe,
+                navigation_operator,
             } => {
                 let target = self.expr(*target);
                 TypedExpr::Member(TypedInstanceMember {
                     target: Box::new(target),
                     name,
-                    is_safe,
+                    is_safe: navigation_operator.ends_with("?"),
                     type_: None,
                 })
             }
@@ -493,7 +493,7 @@ impl Ast2HLIR {
     pub fn type_cast(&self, t: TypeCastSyntax) -> TypedTypeCast {
         TypedTypeCast {
             target: Box::new(self.expr(*t.target)),
-            is_safe: t.is_safe,
+            is_safe: t.operator.ends_with("?"),
             type_: Some(self.type_(t.type_)),
         }
     }

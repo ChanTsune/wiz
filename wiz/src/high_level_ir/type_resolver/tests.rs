@@ -19,7 +19,7 @@ use crate::parser::wiz::parse_from_string;
 fn test_empty() {
     let source = "";
 
-    let ast = parse_from_string(String::from(source)).unwrap();
+    let ast = parse_from_string(source).unwrap();
 
     let mut ast2hlir = Ast2HLIR::new();
 
@@ -51,7 +51,7 @@ fn test_unsafe_pointer() {
         }
         ";
 
-    let ast = parse_from_string(String::from(source)).unwrap();
+    let ast = parse_from_string(source).unwrap();
 
     let mut ast2hlir = Ast2HLIR::new();
 
@@ -171,7 +171,7 @@ fn test_struct_member() {
             val a = a.a
         }
         ";
-    let ast = parse_from_string(String::from(source)).unwrap();
+    let ast = parse_from_string(source).unwrap();
 
     let mut ast2hlir = Ast2HLIR::new();
 
@@ -291,7 +291,7 @@ fn test_struct_init() {
             val a = A.init(a:1)
         }
         ";
-    let ast = parse_from_string(String::from(source)).unwrap();
+    let ast = parse_from_string(source).unwrap();
 
     let mut ast2hlir = Ast2HLIR::new();
 
@@ -442,7 +442,7 @@ fn test_expr_function_with_no_arg() {
     let source = r"
         fun function() = 1
         ";
-    let ast = parse_from_string(String::from(source)).unwrap();
+    let ast = parse_from_string(source).unwrap();
 
     let mut ast2hlir = Ast2HLIR::new();
 
@@ -481,7 +481,7 @@ fn test_expr_function_with_arg() {
     let source = r"
         fun function(_ i:Int32) = i
         ";
-    let ast = parse_from_string(String::from(source)).unwrap();
+    let ast = parse_from_string(source).unwrap();
 
     let mut ast2hlir = Ast2HLIR::new();
 
@@ -526,7 +526,7 @@ fn test_function_call() {
             target_function()
         }
         ";
-    let ast = parse_from_string(String::from(source)).unwrap();
+    let ast = parse_from_string(source).unwrap();
 
     let mut ast2hlir = Ast2HLIR::new();
 
@@ -591,7 +591,7 @@ fn test_return_integer_literal() {
             return 1
         }
         ";
-    let ast = parse_from_string(String::from(source)).unwrap();
+    let ast = parse_from_string(source).unwrap();
 
     let mut ast2hlir = Ast2HLIR::new();
 
@@ -635,7 +635,7 @@ fn test_return_floating_point_literal() {
             return 0.5
         }
         ";
-    let ast = parse_from_string(String::from(source)).unwrap();
+    let ast = parse_from_string(source).unwrap();
 
     let mut ast2hlir = Ast2HLIR::new();
 
@@ -681,7 +681,7 @@ fn test_binop() {
             1 + 2
         }
         ";
-    let ast = parse_from_string(String::from(source)).unwrap();
+    let ast = parse_from_string(source).unwrap();
 
     let mut ast2hlir = Ast2HLIR::new();
 
@@ -728,7 +728,7 @@ fn test_subscript() {
     let source = r"
         fun get_first(_ p:UnsafePointer<UInt8>) = p[0]
         ";
-    let ast = parse_from_string(String::from(source)).unwrap();
+    let ast = parse_from_string(source).unwrap();
 
     let mut ast2hlir = Ast2HLIR::new();
 
@@ -779,7 +779,7 @@ fn test_if_else() {
             return if i <= 0 { 0 } else { i }
         }
         ";
-    let ast = parse_from_string(String::from(source)).unwrap();
+    let ast = parse_from_string(source).unwrap();
 
     let mut ast2hlir = Ast2HLIR::new();
 
@@ -856,7 +856,7 @@ fn test_if() {
             }
         }
         ";
-    let ast = parse_from_string(String::from(source)).unwrap();
+    let ast = parse_from_string(source).unwrap();
 
     let mut ast2hlir = Ast2HLIR::new();
 

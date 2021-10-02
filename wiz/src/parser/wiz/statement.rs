@@ -2,33 +2,84 @@ use crate::parser::wiz::declaration::{block, decl};
 use crate::parser::wiz::expression::{expr, postfix_expr, prefix_expr};
 use crate::parser::wiz::keywords::while_keyword;
 use crate::parser::wiz::lexical_structure::{identifier, whitespace0, whitespace1};
-use crate::parser::wiz::operators::assignment_operator;
+use crate::parser::wiz::operators::{assignment_and_operator, assignment_operator};
 use crate::syntax::expr::{Expr, NameExprSyntax};
 use crate::syntax::file::FileSyntax;
 use crate::syntax::stmt::{
     AssignmentAndOperatorSyntax, AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt,
 };
 use nom::branch::alt;
-use nom::bytes::complete::tag;
 use nom::character::complete::char;
 use nom::combinator::map;
 use nom::multi::many0;
 use nom::sequence::tuple;
 use nom::Err::Error;
-use nom::{error, IResult};
+use nom::{
+    error, AsChar, Compare, CompareResult, ExtendInto, FindSubstring, IResult, InputIter,
+    InputLength, InputTake, InputTakeAtPosition, Offset, Slice,
+};
+use std::ops::{Range, RangeFrom};
 
-pub fn decl_stmt(s: &str) -> IResult<&str, Stmt> {
+pub fn decl_stmt<I>(s: I) -> IResult<I, Stmt>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
     map(decl, |d| Stmt::Decl { decl: d })(s)
 }
 
-pub fn expr_stmt(s: &str) -> IResult<&str, Stmt> {
+pub fn expr_stmt<I>(s: I) -> IResult<I, Stmt>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
     map(expr, |e| Stmt::Expr { expr: e })(s)
 }
 
 /*
 <assignment_stmt> ::= ((<directly_assignable_expr> '=') | (<assignable_expr> <assignment_and_operator>)) <expr>
 */
-pub fn assignment_stmt(s: &str) -> IResult<&str, Stmt> {
+pub fn assignment_stmt<I>(s: I) -> IResult<I, Stmt>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
     map(
         tuple((
             alt((
@@ -38,20 +89,25 @@ pub fn assignment_stmt(s: &str) -> IResult<&str, Stmt> {
             whitespace0,
             expr,
         )),
-        |((target, _, op), _, value)| {
-            if op == "=" {
-                Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax {
-                    target,
-                    value,
-                }))
-            } else {
-                Stmt::Assignment(AssignmentStmt::AssignmentAndOperator(
-                    AssignmentAndOperatorSyntax {
+        |((target, _, op), _, value): ((_, _, I), _, _)| {
+            let r = op.compare("");
+            match r {
+                CompareResult::Ok => {
+                    Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax {
+                        target,
+                        value,
+                    }))
+                }
+                CompareResult::Incomplete => Stmt::Assignment(
+                    AssignmentStmt::AssignmentAndOperator(AssignmentAndOperatorSyntax {
                         target,
                         operator: op.to_string(),
                         value,
-                    },
-                ))
+                    }),
+                ),
+                CompareResult::Error => {
+                    panic!()
+                }
             }
         },
     )(s)
@@ -61,7 +117,23 @@ pub fn assignment_stmt(s: &str) -> IResult<&str, Stmt> {
                              | <identifier>
                              | <parenthesized_directly_assignable_expr>
 */
-pub fn directly_assignable_expr(s: &str) -> IResult<&str, Expr> {
+pub fn directly_assignable_expr<I>(s: I) -> IResult<I, Expr>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
     alt((
         _directly_assignable_postfix_expr,
         map(identifier, |name| {
@@ -79,7 +151,23 @@ pub fn directly_assignable_expr(s: &str) -> IResult<&str, Expr> {
   | <indexing_suffix>
   | <navigation_suffix>
 */
-fn _directly_assignable_postfix_expr(s: &str) -> IResult<&str, Expr> {
+fn _directly_assignable_postfix_expr<I>(s: I) -> IResult<I, Expr>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
     let (e, expr) = postfix_expr(s)?;
     match expr {
         Expr::Member { .. } => IResult::Ok((e, expr)),
@@ -92,13 +180,45 @@ fn _directly_assignable_postfix_expr(s: &str) -> IResult<&str, Expr> {
 <assignable_expr> ::= <prefix_expr>
   | <parenthesized_assignable_expression>
 */
-pub fn assignable_expr(s: &str) -> IResult<&str, Expr> {
+pub fn assignable_expr<I>(s: I) -> IResult<I, Expr>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
     alt((prefix_expr, parenthesized_assignable_expression))(s)
 }
 /*
 <parenthesized_assignable_expression> ::= "(" <assignable_expr> ")"
 */
-pub fn parenthesized_assignable_expression(s: &str) -> IResult<&str, Expr> {
+pub fn parenthesized_assignable_expression<I>(s: I) -> IResult<I, Expr>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
     map(
         tuple((char('('), assignable_expr, char(')'))),
         |(_, e, _)| e,
@@ -108,21 +228,66 @@ pub fn parenthesized_assignable_expression(s: &str) -> IResult<&str, Expr> {
 /*
 <parenthesized_directly_assignable_expr> ::= '(' <directly_assignable_expr> ')'
 */
-pub fn parenthesized_directly_assignable_expr(s: &str) -> IResult<&str, Expr> {
+pub fn parenthesized_directly_assignable_expr<I>(s: I) -> IResult<I, Expr>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
     map(
         tuple((char('('), directly_assignable_expr, char(')'))),
         |(_, e, _)| e,
     )(s)
 }
-pub fn assignment_and_operator(s: &str) -> IResult<&str, &str> {
-    alt((tag("+="), tag("-="), tag("*="), tag("/="), tag("%=")))(s)
-}
 
-pub fn loop_stmt(s: &str) -> IResult<&str, Stmt> {
+pub fn loop_stmt<I>(s: I) -> IResult<I, Stmt>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
     map(alt((while_stmt, while_stmt)), |l| Stmt::Loop(l))(s)
 }
 
-pub fn while_stmt(s: &str) -> IResult<&str, LoopStmt> {
+pub fn while_stmt<I>(s: I) -> IResult<I, LoopStmt>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
     map(
         tuple((while_keyword, whitespace1, expr, whitespace1, block)),
         |(_, _, e, _, b)| LoopStmt::While {
@@ -132,7 +297,23 @@ pub fn while_stmt(s: &str) -> IResult<&str, LoopStmt> {
     )(s)
 }
 
-pub fn stmt(s: &str) -> IResult<&str, Stmt> {
+pub fn stmt<I>(s: I) -> IResult<I, Stmt>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
     map(
         tuple((
             whitespace0,
@@ -142,11 +323,43 @@ pub fn stmt(s: &str) -> IResult<&str, Stmt> {
     )(s)
 }
 
-pub fn stmts(s: &str) -> IResult<&str, Vec<Stmt>> {
+pub fn stmts<I>(s: I) -> IResult<I, Vec<Stmt>>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
     many0(stmt)(s)
 }
 
-pub fn file(s: &str) -> IResult<&str, FileSyntax> {
+pub fn file<I>(s: I) -> IResult<I, FileSyntax>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
     map(
         tuple((
             whitespace0,
@@ -236,7 +449,7 @@ mod tests {
                                 name: "a".to_string()
                             })),
                             name: "c".to_string(),
-                            is_safe: false
+                            navigation_operator: ".".to_string()
                         }),
                         kind: "<".to_string(),
                         right: Box::new(Expr::Name(NameExprSyntax {
@@ -281,7 +494,7 @@ mod tests {
                         name: "a".to_string()
                     })),
                     name: "b".to_string(),
-                    is_safe: false
+                    navigation_operator: ".".to_string()
                 }
             ))
         )
@@ -299,7 +512,7 @@ mod tests {
                         name: "a".to_string()
                     })),
                     name: "b".to_string(),
-                    is_safe: false
+                    navigation_operator: ".".to_string()
                 }
             ))
         )
@@ -341,7 +554,7 @@ mod tests {
                             name: "b".to_string()
                         })),
                         name: "c".to_string(),
-                        is_safe: false
+                        navigation_operator: ".".to_string()
                     }
                 }))
             ))
@@ -360,7 +573,7 @@ mod tests {
                             name: "a".to_string()
                         })),
                         name: "b".to_string(),
-                        is_safe: false
+                        navigation_operator: ".".to_string()
                     },
                     value: Expr::Name(NameExprSyntax {
                         name_space: vec![],
