@@ -354,7 +354,19 @@ pub fn function_value_name<I>(s: I) -> IResult<I, String>
     identifier(s)
 }
 
-pub fn type_constraints(s: &str) -> IResult<&str, Vec<TypeParam>> {
+pub fn type_constraints<I>(s: I) -> IResult<I, Vec<TypeParam>>
+    where
+        I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+        <I as InputIter>::Item: AsChar + Copy,
+{
     map(
         tuple((
             where_keyword,
@@ -375,7 +387,19 @@ pub fn type_constraints(s: &str) -> IResult<&str, Vec<TypeParam>> {
     )(s)
 }
 
-pub fn type_constraint(s: &str) -> IResult<&str, TypeParam> {
+pub fn type_constraint<I>(s: I) -> IResult<I, TypeParam>
+    where
+        I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+        <I as InputIter>::Item: AsChar + Copy,
+{
     map(
         tuple((identifier, whitespace0, char(':'), whitespace0, type_)),
         |(id, _, _, _, typ)| TypeParam {
