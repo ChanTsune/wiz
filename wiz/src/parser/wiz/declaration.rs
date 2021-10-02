@@ -484,7 +484,19 @@ pub fn use_decl(s: &str) -> IResult<&str, Decl> {
 }
 
 // <use> ::= "use" <package_name> ("as" <identifier>)?
-pub fn use_syntax(s: &str) -> IResult<&str, UseSyntax> {
+pub fn use_syntax<I>(s: I) -> IResult<I, UseSyntax>
+    where
+        I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + InputTake
+        + InputLength
+        + Clone
+        + ToString
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+        <I as InputIter>::Item: AsChar + Copy,
+{
     map(
         tuple((
             use_keyword,
