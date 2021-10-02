@@ -2,14 +2,13 @@ use crate::parser::wiz::declaration::{block, decl};
 use crate::parser::wiz::expression::{expr, postfix_expr, prefix_expr};
 use crate::parser::wiz::keywords::while_keyword;
 use crate::parser::wiz::lexical_structure::{identifier, whitespace0, whitespace1};
-use crate::parser::wiz::operators::assignment_operator;
+use crate::parser::wiz::operators::{assignment_operator, assignment_and_operator};
 use crate::syntax::expr::{Expr, NameExprSyntax};
 use crate::syntax::file::FileSyntax;
 use crate::syntax::stmt::{
     AssignmentAndOperatorSyntax, AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt,
 };
 use nom::branch::alt;
-use nom::bytes::complete::tag;
 use nom::character::complete::char;
 use nom::combinator::map;
 use nom::multi::many0;
@@ -113,9 +112,6 @@ pub fn parenthesized_directly_assignable_expr(s: &str) -> IResult<&str, Expr> {
         tuple((char('('), directly_assignable_expr, char(')'))),
         |(_, e, _)| e,
     )(s)
-}
-pub fn assignment_and_operator(s: &str) -> IResult<&str, &str> {
-    alt((tag("+="), tag("-="), tag("*="), tag("/="), tag("%=")))(s)
 }
 
 pub fn loop_stmt(s: &str) -> IResult<&str, Stmt> {

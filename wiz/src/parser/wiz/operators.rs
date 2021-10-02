@@ -31,6 +31,14 @@ where
     tag("=")(s)
 }
 
+pub fn assignment_and_operator<I>(s: I) -> IResult<I, I>
+    where
+        I: InputTake + Compare<&'static str> + Clone,
+{
+    alt((tag("+="), tag("-="), tag("*="), tag("/="), tag("%=")))(s)
+}
+
+
 pub fn prefix_operator<I>(s: I) -> IResult<I, I>
 where
     I: InputTake + Compare<&'static str> + Clone,
@@ -132,12 +140,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::operators::{
-        additive_operator, assignment_operator, comparison_operator, conjunction_operator,
-        disjunction_operator, elvis_operator, equality_operator, in_operator, is_operator,
-        member_access_operator, multiplicative_operator, postfix_operator, prefix_operator,
-        range_operator,
-    };
+    use crate::parser::wiz::operators::{additive_operator, assignment_operator, comparison_operator, conjunction_operator, disjunction_operator, elvis_operator, equality_operator, in_operator, is_operator, member_access_operator, multiplicative_operator, postfix_operator, prefix_operator, range_operator, assignment_and_operator};
 
     #[test]
     fn test_member_access_operator() {
@@ -148,6 +151,15 @@ mod tests {
     #[test]
     fn test_assignment_operator() {
         assert_eq!(assignment_operator("="), Ok(("", "=")));
+    }
+
+    #[test]
+    fn test_assignment_and_operator() {
+        assert_eq!(assignment_and_operator("+="), Ok(("", "+=")));
+        assert_eq!(assignment_and_operator("-="), Ok(("", "-=")));
+        assert_eq!(assignment_and_operator("*="), Ok(("", "*=")));
+        assert_eq!(assignment_and_operator("/="), Ok(("", "/=")));
+        assert_eq!(assignment_and_operator("%="), Ok(("", "%=")));
     }
 
     #[test]
