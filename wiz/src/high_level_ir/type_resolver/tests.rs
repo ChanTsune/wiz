@@ -1,5 +1,8 @@
 use crate::high_level_ir::type_resolver::TypeResolver;
-use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedStoredProperty, TypedStruct, TypedValueArgDef, TypedVar, TypedMemberFunction};
+use crate::high_level_ir::typed_decl::{
+    TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedMemberFunction,
+    TypedStoredProperty, TypedStruct, TypedValueArgDef, TypedVar,
+};
 use crate::high_level_ir::typed_expr::{
     TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral,
     TypedName, TypedReturn, TypedSubscript,
@@ -461,66 +464,27 @@ fn test_struct_member_function() {
         f,
         Result::Ok(TypedFile {
             name: "test".to_string(),
-            body: vec![
-                TypedDecl::Struct(TypedStruct {
-                    package: Some(Package::new(vec![String::from("test")])),
-                    name: "A".to_string(),
-                    type_params: None,
-                    init: vec![TypedInitializer {
-                        args: vec![TypedArgDef::Value(TypedValueArgDef {
-                            label: "a".to_string(),
-                            name: "a".to_string(),
-                            type_: TypedType::int64()
-                        })],
-                        body: TypedFunBody::Block(TypedBlock {
-                            body: vec![TypedStmt::Assignment(TypedAssignmentStmt::Assignment(
-                                TypedAssignment {
-                                    target: TypedExpr::Member(TypedInstanceMember {
-                                        target: Box::new(TypedExpr::Name(TypedName {
-                                            package: None,
-                                            name: "self".to_string(),
-                                            type_: Some(TypedType::Value(TypedValueType {
-                                                package: Some(Package {
-                                                    names: vec![String::from("test")]
-                                                }),
-                                                name: "A".to_string(),
-                                                type_args: None
-                                            }))
-                                        })),
-                                        name: "a".to_string(),
-                                        is_safe: false,
-                                        type_: Some(TypedType::int64())
-                                    }),
-                                    value: TypedExpr::Name(TypedName {
-                                        package: None,
-                                        name: "a".to_string(),
-                                        type_: Some(TypedType::int64())
-                                    })
-                                }
-                            ))]
-                        })
-                    }],
-                    stored_properties: vec![TypedStoredProperty {
+            body: vec![TypedDecl::Struct(TypedStruct {
+                package: Some(Package::new(vec![String::from("test")])),
+                name: "A".to_string(),
+                type_params: None,
+                init: vec![TypedInitializer {
+                    args: vec![TypedArgDef::Value(TypedValueArgDef {
+                        label: "a".to_string(),
                         name: "a".to_string(),
-                        type_: TypedType::int64(),
-                    }],
-                    computed_properties: vec![],
-                    member_functions: vec![TypedMemberFunction {
-                        name: "getA".to_string(),
-                        args: vec![TypedArgDef::Self_(Some(TypedType::Value(TypedValueType {
-                            package: Some(Package::new(vec![String::from("test")])),
-                            name: "A".to_string(),
-                            type_args: None
-                        })))],
-                        type_params: None,
-                        body: Some(TypedFunBody::Block(TypedBlock {
-                            body: vec![TypedStmt::Expr(TypedExpr::Return(TypedReturn {
-                                value: Some(Box::new(TypedExpr::Member(TypedInstanceMember {
+                        type_: TypedType::int64()
+                    })],
+                    body: TypedFunBody::Block(TypedBlock {
+                        body: vec![TypedStmt::Assignment(TypedAssignmentStmt::Assignment(
+                            TypedAssignment {
+                                target: TypedExpr::Member(TypedInstanceMember {
                                     target: Box::new(TypedExpr::Name(TypedName {
                                         package: None,
                                         name: "self".to_string(),
                                         type_: Some(TypedType::Value(TypedValueType {
-                                            package: Some(Package::new(vec![String::from("test")])),
+                                            package: Some(Package {
+                                                names: vec![String::from("test")]
+                                            }),
                                             name: "A".to_string(),
                                             type_args: None
                                         }))
@@ -528,15 +492,52 @@ fn test_struct_member_function() {
                                     name: "a".to_string(),
                                     is_safe: false,
                                     type_: Some(TypedType::int64())
-                                }))),
+                                }),
+                                value: TypedExpr::Name(TypedName {
+                                    package: None,
+                                    name: "a".to_string(),
+                                    type_: Some(TypedType::int64())
+                                })
+                            }
+                        ))]
+                    })
+                }],
+                stored_properties: vec![TypedStoredProperty {
+                    name: "a".to_string(),
+                    type_: TypedType::int64(),
+                }],
+                computed_properties: vec![],
+                member_functions: vec![TypedMemberFunction {
+                    name: "getA".to_string(),
+                    args: vec![TypedArgDef::Self_(Some(TypedType::Value(TypedValueType {
+                        package: Some(Package::new(vec![String::from("test")])),
+                        name: "A".to_string(),
+                        type_args: None
+                    })))],
+                    type_params: None,
+                    body: Some(TypedFunBody::Block(TypedBlock {
+                        body: vec![TypedStmt::Expr(TypedExpr::Return(TypedReturn {
+                            value: Some(Box::new(TypedExpr::Member(TypedInstanceMember {
+                                target: Box::new(TypedExpr::Name(TypedName {
+                                    package: None,
+                                    name: "self".to_string(),
+                                    type_: Some(TypedType::Value(TypedValueType {
+                                        package: Some(Package::new(vec![String::from("test")])),
+                                        name: "A".to_string(),
+                                        type_args: None
+                                    }))
+                                })),
+                                name: "a".to_string(),
+                                is_safe: false,
                                 type_: Some(TypedType::int64())
-                            }))]
-                        })),
-                        return_type: Some(TypedType::int64())
-                    }],
-                    static_function: vec![],
-                }),
-            ],
+                            }))),
+                            type_: Some(TypedType::int64())
+                        }))]
+                    })),
+                    return_type: Some(TypedType::int64())
+                }],
+                static_function: vec![],
+            }),],
         })
     );
 }
