@@ -283,7 +283,7 @@ impl HLIR2MLIR {
         let args = arg_defs.into_iter().map(|a| self.arg_def(a)).collect();
         MLFun {
             modifiers,
-            name: self.name_mangling(&package, name),
+            name: self.package_name_mangling(&package, name),
             arg_defs: args,
             return_type: self.type_(return_type.unwrap()).into_value_type(),
             body: body.map(|b| self.fun_body(b)),
@@ -341,7 +341,7 @@ impl HLIR2MLIR {
                 })));
                 MLFun {
                     modifiers: vec![],
-                    name: self.name_mangling(&package, name.clone()) + "#init",
+                    name: self.package_name_mangling(&package, name.clone()) + "#init",
                     arg_defs: i.args.into_iter().map(|a| self.arg_def(a)).collect(),
                     return_type: type_.into_value_type(),
                     body: Some(MLFunBody { body }),
@@ -367,7 +367,7 @@ impl HLIR2MLIR {
                 .collect();
                 MLFun {
                     modifiers: vec![],
-                    name: self.name_mangling(&package, name.clone()) + "::" + &fname,
+                    name: self.package_name_mangling(&package, name.clone()) + "::" + &fname,
                     arg_defs: args,
                     return_type: self.type_(return_type.unwrap()).into_value_type(),
                     body: match body {
@@ -403,7 +403,7 @@ impl HLIR2MLIR {
 
     pub fn name(&self, n: TypedName) -> MLName {
         MLName {
-            name: self.name_mangling(&n.package, n.name),
+            name: self.package_name_mangling(&n.package, n.name),
             type_: self.type_(n.type_.unwrap()),
         }
     }
@@ -538,7 +538,7 @@ impl HLIR2MLIR {
             TypedType::Type(t) => {
                 let type_ = self.type_(type_.unwrap());
                 MLExpr::Name(MLName {
-                    name: self.name_mangling(&t.package, t.name) + "#" + &*name,
+                    name: self.package_name_mangling(&t.package, t.name) + "#" + &*name,
                     type_,
                 })
             }
@@ -611,7 +611,7 @@ impl HLIR2MLIR {
         }
     }
 
-    fn name_mangling(&self, package: &Option<Package>, name: String) -> String {
+    fn package_name_mangling(&self, package: &Option<Package>, name: String) -> String {
         if let Some(pkg) = package {
             if pkg.is_global() || name == "main" {
                 name
