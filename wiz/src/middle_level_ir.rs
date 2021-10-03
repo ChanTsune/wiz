@@ -164,11 +164,16 @@ impl HLIR2MLIR {
             TypedSourceSet::File(f) => {
                 vec![self.file(f)]
             }
-            TypedSourceSet::Dir { name, items } => items
-                .into_iter()
-                .map(|i| self.source_set(i))
-                .flatten()
-                .collect(),
+            TypedSourceSet::Dir { name, items } => {
+                self.context.push_name_space(name);
+                let i = items
+                    .into_iter()
+                    .map(|i| self.source_set(i))
+                    .flatten()
+                    .collect();
+                self.context.pop_name_space();
+                i
+            }
         }
     }
 
