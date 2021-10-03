@@ -358,8 +358,7 @@ impl HLIR2MLIR {
                     body,
                     return_type,
                 } = mf;
-                let args = args.into_iter().map(|a| self.arg_def(a))
-                .collect();
+                let args = args.into_iter().map(|a| self.arg_def(a)).collect();
                 MLFun {
                     modifiers: vec![],
                     name: self.package_name_mangling(&package, name.clone()) + "::" + &fname,
