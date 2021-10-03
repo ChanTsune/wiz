@@ -358,12 +358,7 @@ impl HLIR2MLIR {
                     body,
                     return_type,
                 } = mf;
-                let args = vec![MLArgDef {
-                    name: String::from("self"),
-                    type_: value_type.clone(),
-                }]
-                .into_iter()
-                .chain(args.into_iter().map(|a| self.arg_def(a)))
+                let args = args.into_iter().map(|a| self.arg_def(a))
                 .collect();
                 MLFun {
                     modifiers: vec![],
