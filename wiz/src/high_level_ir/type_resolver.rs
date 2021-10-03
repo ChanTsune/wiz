@@ -282,7 +282,10 @@ impl TypeResolver {
                 name: a.name,
                 type_: self.context.full_type_name(a.type_)?,
             }),
-            TypedArgDef::Self_(s) => TypedArgDef::Self_(s),
+            TypedArgDef::Self_(_) => {
+                let self_type = self.context.get_current_type();
+                TypedArgDef::Self_(self_type)
+            },
         })
     }
 
@@ -427,21 +430,18 @@ impl TypeResolver {
 
     fn typed_member_function(&mut self, mf: TypedMemberFunction) -> Result<TypedMemberFunction> {
         self.context.push_name_space(mf.name.clone());
-        let self_type = self.context.get_current_type();
-        let ns = self.context.get_current_namespace_mut()?;
         let result = Result::Ok(TypedMemberFunction {
             name: mf.name,
             args: mf
                 .args
                 .into_iter()
                 .map(|a| {
+                    let a = self.typed_arg_def(a)?;
+                    let ns = self.context.get_current_namespace_mut()?;
                     ns.values.insert(
                         a.name(),
-                        a.type_().unwrap_or(
-                            self_type
-                                .clone()
-                                .ok_or(ResolverError::from("Can not resolve `self`"))?,
-                        ),
+                        a.type_().ok_or(ResolverError::from("Can not resolve `self`")
+                        )?,
                     );
                     Result::Ok(a)
                 })
