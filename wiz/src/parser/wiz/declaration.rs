@@ -146,7 +146,7 @@ where
             struct_property,
             whitespace_without_eol0,
             many0(tuple((newline, whitespace0, struct_property))),
-            opt(tuple((newline, whitespace0))),
+            whitespace0,
         ))),
         |o| match o {
             None => vec![],
@@ -791,7 +791,7 @@ where
 //endregion
 
 #[cfg(test)]
-mod test {
+mod tests {
     use crate::parser::wiz::declaration::{
         block, function_body, function_decl, member_function, package_name, stored_property,
         struct_properties, struct_syntax, type_constraint, type_constraints, use_syntax, var_decl,
@@ -932,11 +932,9 @@ mod test {
             Ok((
                 "",
                 Block {
-                    body: vec![Stmt::Expr {
-                        expr: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
-                            "1".to_string()
-                        )))
-                    }]
+                    body: vec![Stmt::Expr(Expr::Literal(LiteralSyntax::Integer(
+                        TokenSyntax::new("1".to_string())
+                    )))]
                 }
             ))
         )
@@ -949,17 +947,15 @@ mod test {
             Ok((
                 "",
                 Block {
-                    body: vec![Stmt::Expr {
-                        expr: Expr::BinOp {
-                            left: Box::new(Expr::Literal(LiteralSyntax::Integer(
-                                TokenSyntax::new("1".to_string())
-                            ))),
-                            kind: "+".to_string(),
-                            right: Box::new(Expr::Literal(LiteralSyntax::Integer(
-                                TokenSyntax::new("1".to_string())
-                            ))),
-                        }
-                    }]
+                    body: vec![Stmt::Expr(Expr::BinOp {
+                        left: Box::new(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
+                            "1".to_string()
+                        )))),
+                        kind: "+".to_string(),
+                        right: Box::new(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
+                            "1".to_string()
+                        )))),
+                    })]
                 }
             ))
         )
@@ -976,11 +972,9 @@ mod test {
             Ok((
                 "",
                 Block {
-                    body: vec![Stmt::Expr {
-                        expr: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
-                            "1".to_string()
-                        )))
-                    }]
+                    body: vec![Stmt::Expr(Expr::Literal(LiteralSyntax::Integer(
+                        TokenSyntax::new("1".to_string())
+                    )))]
                 }
             ))
         )

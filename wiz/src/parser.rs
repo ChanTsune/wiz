@@ -6,6 +6,7 @@ pub mod wiz;
 
 pub(crate) type Span<'a> = LocatedSpan<&'a str>;
 
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub(crate) struct Location {
     offset: usize,
     line: u32,

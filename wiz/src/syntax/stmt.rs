@@ -6,8 +6,8 @@ use std::fmt;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum Stmt {
-    Decl { decl: Decl },
-    Expr { expr: Expr },
+    Decl(Decl),
+    Expr(Expr),
     Assignment(AssignmentStmt),
     Loop(LoopStmt),
 }

@@ -18,7 +18,8 @@ use crate::syntax::decl::{
     StructSyntax, VarSyntax,
 };
 use crate::syntax::expr::{
-    CallExprSyntax, Expr, NameExprSyntax, ReturnSyntax, SubscriptSyntax, TypeCastSyntax,
+    CallExprSyntax, Expr, IfExprSyntax, NameExprSyntax, ReturnSyntax, SubscriptSyntax,
+    TypeCastSyntax,
 };
 use crate::syntax::file::{FileSyntax, SourceSet, WizFile};
 use crate::syntax::fun::arg_def::ArgDef;
@@ -66,8 +67,8 @@ impl Ast2HLIR {
 
     pub fn stmt(&self, s: Stmt) -> TypedStmt {
         match s {
-            Stmt::Decl { decl } => TypedStmt::Decl(self.decl(decl)),
-            Stmt::Expr { expr } => TypedStmt::Expr(self.expr(expr)),
+            Stmt::Decl(decl) => TypedStmt::Decl(self.decl(decl)),
+            Stmt::Expr(expr) => TypedStmt::Expr(self.expr(expr)),
             Stmt::Assignment(a) => TypedStmt::Assignment(self.assignment(a)),
             Stmt::Loop(l) => TypedStmt::Loop(self.loop_stmt(l)),
         }
@@ -402,24 +403,7 @@ impl Ast2HLIR {
             Expr::Dict { .. } => TypedExpr::Dict,
             Expr::StringBuilder { .. } => TypedExpr::StringBuilder,
             Expr::Call(c) => TypedExpr::Call(self.call_syntax(c)),
-            Expr::If {
-                condition,
-                body,
-                else_body,
-            } => {
-                let block = self.block(body);
-                let type_ = if else_body == None {
-                    TypedType::noting()
-                } else {
-                    block.type_().unwrap_or(TypedType::noting())
-                };
-                TypedExpr::If(TypedIf {
-                    condition: Box::new(self.expr(*condition)),
-                    body: block,
-                    else_body: else_body.map(|b| self.block(b)),
-                    type_: Some(type_),
-                })
-            }
+            Expr::If(i) => TypedExpr::If(self.if_syntax(i)),
             Expr::When { .. } => TypedExpr::When,
             Expr::Lambda { .. } => TypedExpr::Lambda,
             Expr::Return(r) => TypedExpr::Return(self.return_syntax(r)),
@@ -478,6 +462,26 @@ impl Ast2HLIR {
             target: Box::new(self.expr(*target)),
             args: args,
             type_: None,
+        }
+    }
+
+    pub fn if_syntax(&self, i: IfExprSyntax) -> TypedIf {
+        let IfExprSyntax {
+            condition,
+            body,
+            else_body,
+        } = i;
+        let block = self.block(body);
+        let type_ = if else_body == None {
+            TypedType::noting()
+        } else {
+            block.type_().unwrap_or(TypedType::noting())
+        };
+        TypedIf {
+            condition: Box::new(self.expr(*condition)),
+            body: block,
+            else_body: else_body.map(|b| self.block(b)),
+            type_: Some(type_),
         }
     }
 
