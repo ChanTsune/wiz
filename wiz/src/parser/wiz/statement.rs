@@ -57,7 +57,7 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(expr, |e| Stmt::Expr(e ))(s)
+    map(expr, |e| Stmt::Expr(e))(s)
 }
 
 /*
