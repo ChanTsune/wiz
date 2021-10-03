@@ -1,4 +1,4 @@
-use crate::parser::wiz::character::comma;
+use crate::parser::wiz::character::{comma, ampersand};
 use crate::parser::wiz::expression::expr;
 use crate::parser::wiz::keywords::{
     as_keyword, fun_keyword, init_keyword, self_keyword, struct_keyword, use_keyword, val_keyword,
@@ -15,7 +15,7 @@ use crate::syntax::decl::{
     StructPropertySyntax, StructSyntax, UseSyntax, VarSyntax,
 };
 use crate::syntax::expr::Expr;
-use crate::syntax::fun::arg_def::{ArgDef, ValueArgDef};
+use crate::syntax::fun::arg_def::{ArgDef, ValueArgDef, SelfArgDefSyntax};
 use crate::syntax::fun::body_def::FunBody;
 use crate::syntax::type_name::{TypeName, TypeParam};
 use nom::branch::alt;
@@ -29,6 +29,8 @@ use nom::{
     InputTakeAtPosition, Offset, Slice,
 };
 use std::ops::{Range, RangeFrom};
+use crate::syntax::token::TokenSyntax;
+use crate::syntax::Syntax;
 
 pub fn decl<I>(s: I) -> IResult<I, Decl>
 where
@@ -465,7 +467,10 @@ where
                 })
             },
         ),
-        map(self_keyword, |_| ArgDef::Self_),
+        map(tuple((opt(ampersand), whitespace0,self_keyword)), |(amp, ws, s):(_, _, I)| ArgDef::Self_(SelfArgDefSyntax {
+            reference: amp.map(|a|{TokenSyntax::new(a.to_string())}),
+            self_: TokenSyntax::new(s.to_string()).with_leading_trivia(ws)
+        })),
     ))(s)
 }
 

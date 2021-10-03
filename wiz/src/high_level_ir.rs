@@ -148,7 +148,7 @@ impl Ast2HLIR {
                 name: a.name,
                 type_: self.type_(a.type_name),
             }),
-            ArgDef::Self_ => TypedArgDef::Self_(None),
+            ArgDef::Self_(_) => TypedArgDef::Self_(None),
         }
     }
 
