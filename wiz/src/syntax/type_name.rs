@@ -16,7 +16,7 @@ pub struct SimpleTypeName {
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct DecoratedTypeName {
     pub(crate) decoration: String,
-    pub(crate) type_: TypeName
+    pub(crate) type_: TypeName,
 }
 
 impl SyntaxNode for TypeName {}

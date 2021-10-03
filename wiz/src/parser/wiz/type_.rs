@@ -1,6 +1,6 @@
-use crate::parser::wiz::character::{comma, dot, ampersand};
+use crate::parser::wiz::character::{ampersand, comma, dot};
 use crate::parser::wiz::lexical_structure::{identifier, whitespace0};
-use crate::syntax::type_name::{TypeName, TypeParam, SimpleTypeName, DecoratedTypeName};
+use crate::syntax::type_name::{DecoratedTypeName, SimpleTypeName, TypeName, TypeParam};
 use nom::branch::alt;
 use nom::character::complete::char;
 use nom::combinator::{map, opt};
@@ -36,12 +36,15 @@ where
     I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
     <I as InputIter>::Item: AsChar,
 {
-    map(tuple((char('*'), alt((type_reference, parenthesized_type)))), |(p,type_name)|{
-        TypeName::Decorated(Box::new(DecoratedTypeName {
-            decoration: p.to_string(),
-            type_: type_name
-        }))
-    })(s)
+    map(
+        tuple((char('*'), alt((type_reference, parenthesized_type)))),
+        |(p, type_name)| {
+            TypeName::Decorated(Box::new(DecoratedTypeName {
+                decoration: p.to_string(),
+                type_: type_name,
+            }))
+        },
+    )(s)
 }
 
 pub fn reference_type<I>(s: I) -> IResult<I, TypeName>
@@ -49,12 +52,15 @@ where
     I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
     <I as InputIter>::Item: AsChar,
 {
-    map(tuple((ampersand, alt((type_reference, parenthesized_type)))), |(a, type_name)|{
-        TypeName::Decorated(Box::new(DecoratedTypeName {
-            decoration: a.to_string(),
-            type_: type_name
-        }))
-    })(s)
+    map(
+        tuple((ampersand, alt((type_reference, parenthesized_type)))),
+        |(a, type_name)| {
+            TypeName::Decorated(Box::new(DecoratedTypeName {
+                decoration: a.to_string(),
+                type_: type_name,
+            }))
+        },
+    )(s)
 }
 
 pub fn type_reference<I>(s: I) -> IResult<I, TypeName>
@@ -183,7 +189,7 @@ where
 #[cfg(test)]
 mod tests {
     use crate::parser::wiz::type_::type_parameter;
-    use crate::syntax::type_name::{TypeName, TypeParam, SimpleTypeName};
+    use crate::syntax::type_name::{SimpleTypeName, TypeName, TypeParam};
 
     #[test]
     fn test_simple_type_parameter() {

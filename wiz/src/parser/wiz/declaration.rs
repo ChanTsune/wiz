@@ -807,7 +807,7 @@ mod tests {
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::stmt::Stmt;
     use crate::syntax::token::TokenSyntax;
-    use crate::syntax::type_name::{TypeName, TypeParam, SimpleTypeName};
+    use crate::syntax::type_name::{SimpleTypeName, TypeName, TypeParam};
 
     #[test]
     fn test_struct_properties() {
