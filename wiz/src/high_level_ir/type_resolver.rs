@@ -285,7 +285,7 @@ impl TypeResolver {
             TypedArgDef::Self_(_) => {
                 let self_type = self.context.get_current_type();
                 TypedArgDef::Self_(self_type)
-            },
+            }
         })
     }
 
@@ -440,8 +440,8 @@ impl TypeResolver {
                     let ns = self.context.get_current_namespace_mut()?;
                     ns.values.insert(
                         a.name(),
-                        a.type_().ok_or(ResolverError::from("Can not resolve `self`")
-                        )?,
+                        a.type_()
+                            .ok_or(ResolverError::from("Can not resolve `self`"))?,
                     );
                     Result::Ok(a)
                 })
