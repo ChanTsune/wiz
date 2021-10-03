@@ -932,11 +932,9 @@ mod tests {
             Ok((
                 "",
                 Block {
-                    body: vec![Stmt::Expr(
-                        Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
-                            "1".to_string()
-                        )))
-                    )]
+                    body: vec![Stmt::Expr(Expr::Literal(LiteralSyntax::Integer(
+                        TokenSyntax::new("1".to_string())
+                    )))]
                 }
             ))
         )
@@ -950,15 +948,14 @@ mod tests {
                 "",
                 Block {
                     body: vec![Stmt::Expr(Expr::BinOp {
-                            left: Box::new(Expr::Literal(LiteralSyntax::Integer(
-                                TokenSyntax::new("1".to_string())
-                            ))),
-                            kind: "+".to_string(),
-                            right: Box::new(Expr::Literal(LiteralSyntax::Integer(
-                                TokenSyntax::new("1".to_string())
-                            ))),
-                        }
-                    )]
+                        left: Box::new(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
+                            "1".to_string()
+                        )))),
+                        kind: "+".to_string(),
+                        right: Box::new(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
+                            "1".to_string()
+                        )))),
+                    })]
                 }
             ))
         )
@@ -975,11 +972,9 @@ mod tests {
             Ok((
                 "",
                 Block {
-                    body: vec![Stmt::Expr(
-                        Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
-                            "1".to_string()
-                        )))
-                    )]
+                    body: vec![Stmt::Expr(Expr::Literal(LiteralSyntax::Integer(
+                        TokenSyntax::new("1".to_string())
+                    )))]
                 }
             ))
         )
