@@ -57,7 +57,7 @@ impl TypedArgDef {
     pub(crate) fn type_(&self) -> Option<TypedType> {
         match self {
             TypedArgDef::Value(v) => Some(v.type_.clone()),
-            TypedArgDef::Self_(_) => None,
+            TypedArgDef::Self_(s) => s.clone(),
         }
     }
 }
