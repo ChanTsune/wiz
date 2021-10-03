@@ -195,13 +195,18 @@ impl Ast2HLIR {
     }
 
     pub fn type_(&self, tn: TypeName) -> TypedType {
-        TypedType::Value(TypedValueType {
-            package: Some(Package::global()),
-            name: tn.name,
-            type_args: tn
-                .type_args
-                .map(|v| v.into_iter().map(|t| self.type_(t)).collect()),
-        })
+        match tn {
+            TypeName::Simple(stn) => {
+                TypedType::Value(TypedValueType {
+                    package: Some(Package::global()),
+                    name: stn.name,
+                    type_args: stn
+                        .type_args
+                        .map(|v| v.into_iter().map(|t| self.type_(t)).collect()),
+                })
+            }
+            TypeName::Decorated(_) => {TypedType::Function(todo!())}
+        }
     }
 
     fn type_param(&self, tp: TypeParam) -> TypedTypeParam {

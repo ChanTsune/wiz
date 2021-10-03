@@ -1,6 +1,6 @@
-use crate::parser::wiz::character::{comma, dot};
+use crate::parser::wiz::character::{comma, dot, ampersand};
 use crate::parser::wiz::lexical_structure::{identifier, whitespace0};
-use crate::syntax::type_name::{TypeName, TypeParam};
+use crate::syntax::type_name::{TypeName, TypeParam, SimpleTypeName, DecoratedTypeName};
 use nom::branch::alt;
 use nom::character::complete::char;
 use nom::combinator::{map, opt};
@@ -16,7 +16,8 @@ where
 {
     alt((
         parenthesized_type,
-        nullable_type,
+        pointer_type,
+        reference_type,
         type_reference,
         // function_type,
     ))(s)
@@ -30,15 +31,30 @@ where
     map(tuple((char('('), type_, char(')'))), |(_, type_, _)| type_)(s)
 }
 
-pub fn nullable_type<I>(s: I) -> IResult<I, TypeName>
+pub fn pointer_type<I>(s: I) -> IResult<I, TypeName>
 where
     I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
     <I as InputIter>::Item: AsChar,
 {
-    map(
-        tuple((alt((type_reference, parenthesized_type)), char('?'))),
-        |(type_name, hatena)| type_name,
-    )(s)
+    map(tuple((char('*'), alt((type_reference, parenthesized_type)))), |(p,type_name)|{
+        TypeName::Decorated(Box::new(DecoratedTypeName {
+            decoration: p.to_string(),
+            type_: type_name
+        }))
+    })(s)
+}
+
+pub fn reference_type<I>(s: I) -> IResult<I, TypeName>
+where
+    I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
+    <I as InputIter>::Item: AsChar,
+{
+    map(tuple((ampersand, alt((type_reference, parenthesized_type)))), |(a, type_name)|{
+        TypeName::Decorated(Box::new(DecoratedTypeName {
+            decoration: a.to_string(),
+            type_: type_name
+        }))
+    })(s)
 }
 
 pub fn type_reference<I>(s: I) -> IResult<I, TypeName>
@@ -69,10 +85,10 @@ where
     <I as InputIter>::Item: AsChar,
 {
     map(tuple((identifier, opt(type_arguments))), |(name, args)| {
-        TypeName {
+        TypeName::Simple(SimpleTypeName {
             name,
             type_args: args,
-        }
+        })
     })(s)
 }
 
@@ -167,7 +183,7 @@ where
 #[cfg(test)]
 mod tests {
     use crate::parser::wiz::type_::type_parameter;
-    use crate::syntax::type_name::{TypeName, TypeParam};
+    use crate::syntax::type_name::{TypeName, TypeParam, SimpleTypeName};
 
     #[test]
     fn test_simple_type_parameter() {
@@ -191,10 +207,10 @@ mod tests {
                 "",
                 TypeParam {
                     name: "T".to_string(),
-                    type_constraints: Some(TypeName {
+                    type_constraints: Some(TypeName::Simple(SimpleTypeName {
                         name: "Int".to_string(),
                         type_args: None
-                    })
+                    }))
                 }
             ))
         );
@@ -204,10 +220,10 @@ mod tests {
                 "",
                 TypeParam {
                     name: "T".to_string(),
-                    type_constraints: Some(TypeName {
+                    type_constraints: Some(TypeName::Simple(SimpleTypeName {
                         name: "Int".to_string(),
                         type_args: None
-                    })
+                    }))
                 }
             ))
         );
@@ -217,10 +233,10 @@ mod tests {
                 "",
                 TypeParam {
                     name: "T".to_string(),
-                    type_constraints: Some(TypeName {
+                    type_constraints: Some(TypeName::Simple(SimpleTypeName {
                         name: "Int".to_string(),
                         type_args: None
-                    })
+                    }))
                 }
             ))
         );
@@ -230,10 +246,10 @@ mod tests {
                 "",
                 TypeParam {
                     name: "T".to_string(),
-                    type_constraints: Some(TypeName {
+                    type_constraints: Some(TypeName::Simple(SimpleTypeName {
                         name: "Int".to_string(),
                         type_args: None
-                    })
+                    }))
                 }
             ))
         );

@@ -96,12 +96,17 @@ where
     char('\r')(s)
 }
 
+pub fn ampersand<I>(s: I) -> IResult<I, char>
+    where
+        I: Slice<RangeFrom<usize>> + InputIter,
+        <I as InputIter>::Item: AsChar,
+{
+    char('&')(s)
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::character::{
-        alphabet, backticks, comma, cr, digit, dot, double_quote, not_double_quote_or_back_slash,
-        space, under_score,
-    };
+    use crate::parser::wiz::character::{alphabet, backticks, comma, cr, digit, dot, double_quote, not_double_quote_or_back_slash, space, under_score, ampersand};
 
     #[test]
     fn test_alphabet() {
@@ -146,6 +151,11 @@ mod tests {
     #[test]
     fn test_cr() {
         assert_eq!(cr("\r"), Ok(("", '\r')))
+    }
+
+    #[test]
+    fn test_ampersand() {
+        assert_eq!(ampersand("&"), Ok(("", '&')));
     }
 
     #[test]
