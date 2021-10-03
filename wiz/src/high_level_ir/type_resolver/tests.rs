@@ -162,7 +162,7 @@ fn test_unsafe_pointer() {
 }
 
 #[test]
-fn test_struct_member() {
+fn test_struct_stored_property() {
     let source = r"
         struct A {
             val a: Int64
