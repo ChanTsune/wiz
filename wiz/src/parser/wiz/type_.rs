@@ -188,8 +188,30 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::type_::type_parameter;
-    use crate::syntax::type_name::{SimpleTypeName, TypeName, TypeParam};
+    use crate::parser::wiz::type_::{type_parameter, reference_type, pointer_type};
+    use crate::syntax::type_name::{SimpleTypeName, TypeName, TypeParam, DecoratedTypeName};
+
+    #[test]
+    fn test_pointer_type() {
+        assert_eq!(pointer_type("*T"), Ok(("", TypeName::Decorated(Box::new(DecoratedTypeName {
+            decoration: "*".to_string(),
+            type_: TypeName::Simple(SimpleTypeName {
+                name: "T".to_string(),
+                type_args: None
+            })
+        })))));
+    }
+
+    #[test]
+    fn test_reference_type() {
+        assert_eq!(reference_type("&T"), Ok(("", TypeName::Decorated(Box::new(DecoratedTypeName {
+            decoration: "&".to_string(),
+            type_: TypeName::Simple(SimpleTypeName {
+                name: "T".to_string(),
+                type_args: None
+            })
+        })))));
+    }
 
     #[test]
     fn test_simple_type_parameter() {
