@@ -1,7 +1,7 @@
 use crate::syntax::node::SyntaxNode;
+use crate::syntax::token::TokenSyntax;
 use crate::syntax::type_name::TypeName;
 use std::fmt;
-use crate::syntax::token::TokenSyntax;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum ArgDef {
@@ -21,5 +21,5 @@ pub struct ValueArgDef {
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct SelfArgDefSyntax {
     pub(crate) reference: Option<TokenSyntax>,
-    pub(crate) self_: TokenSyntax
+    pub(crate) self_: TokenSyntax,
 }
