@@ -325,7 +325,7 @@ where
                     alt((
                         block,
                         map(if_expr, |ib| Block {
-                            body: vec![Stmt::Expr { expr: ib }],
+                            body: vec![Stmt::Expr(ib )],
                         }),
                     )),
                 )),

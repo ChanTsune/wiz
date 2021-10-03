@@ -37,7 +37,7 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(decl, |d| Stmt::Decl { decl: d })(s)
+    map(decl, |d| Stmt::Decl(d))(s)
 }
 
 pub fn expr_stmt<I>(s: I) -> IResult<I, Stmt>
@@ -57,7 +57,7 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(expr, |e| Stmt::Expr { expr: e })(s)
+    map(expr, |e| Stmt::Expr(e ))(s)
 }
 
 /*
