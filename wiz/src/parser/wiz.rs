@@ -1,7 +1,7 @@
 use crate::parser::error::ParseError;
 use crate::parser::result::Result;
 use crate::parser::wiz::statement::file;
-use crate::parser::Span;
+use crate::parser::{Span, Location};
 use crate::syntax::file::{SourceSet, WizFile};
 use std::fs;
 use std::fs::{read_to_string, File};
@@ -21,7 +21,7 @@ pub fn parse_from_string(string: &str) -> Result<WizFile> {
     return match file(Span::from(string)) {
         Ok((s, f)) => {
             if !s.is_empty() {
-                return Result::Err(ParseError::ParseError(String::from(format!("{}", s))));
+                return Result::Err(ParseError::ParseError(String::from(format!("{:?}{}", Location::from(s), s))));
             }
             Result::Ok(WizFile {
                 name: String::new(),
