@@ -932,11 +932,11 @@ mod tests {
             Ok((
                 "",
                 Block {
-                    body: vec![Stmt::Expr {
-                        expr: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
+                    body: vec![Stmt::Expr(
+                        Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
                             "1".to_string()
                         )))
-                    }]
+                    )]
                 }
             ))
         )
@@ -949,8 +949,7 @@ mod tests {
             Ok((
                 "",
                 Block {
-                    body: vec![Stmt::Expr {
-                        expr: Expr::BinOp {
+                    body: vec![Stmt::Expr(Expr::BinOp {
                             left: Box::new(Expr::Literal(LiteralSyntax::Integer(
                                 TokenSyntax::new("1".to_string())
                             ))),
@@ -959,7 +958,7 @@ mod tests {
                                 TokenSyntax::new("1".to_string())
                             ))),
                         }
-                    }]
+                    )]
                 }
             ))
         )
@@ -976,11 +975,11 @@ mod tests {
             Ok((
                 "",
                 Block {
-                    body: vec![Stmt::Expr {
-                        expr: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
+                    body: vec![Stmt::Expr(
+                        Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
                             "1".to_string()
                         )))
-                    }]
+                    )]
                 }
             ))
         )
