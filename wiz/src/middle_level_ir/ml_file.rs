@@ -35,7 +35,7 @@ mod tests {
     use crate::middle_level_ir::ml_expr::{MLExpr, MLName, MLReturn};
     use crate::middle_level_ir::ml_file::MLFile;
     use crate::middle_level_ir::ml_stmt::MLStmt;
-    use crate::middle_level_ir::ml_type::{MLType, MLValueType, MLPrimitiveType};
+    use crate::middle_level_ir::ml_type::{MLPrimitiveType, MLType, MLValueType};
 
     #[test]
     fn test_ml_file_to_string_empty() {

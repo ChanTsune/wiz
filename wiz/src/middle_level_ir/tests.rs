@@ -8,7 +8,7 @@ use crate::middle_level_ir::ml_expr::{
 };
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLStmt};
-use crate::middle_level_ir::ml_type::{MLFunctionType, MLType, MLValueType, MLPrimitiveType};
+use crate::middle_level_ir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
 use crate::middle_level_ir::HLIR2MLIR;
 use crate::parser::wiz::parse_from_string;
 
@@ -104,12 +104,14 @@ fn test_struct() {
                                         )))
                                     })),
                                     name: "a".to_string(),
-                                    type_: MLType::Value(MLValueType::Primitive(MLPrimitiveType::Int64
+                                    type_: MLType::Value(MLValueType::Primitive(
+                                        MLPrimitiveType::Int64
                                     ))
                                 }),
                                 value: MLExpr::Name(MLName {
                                     name: "a".to_string(),
-                                    type_: MLType::Value(MLValueType::Primitive(MLPrimitiveType::Int64
+                                    type_: MLType::Value(MLValueType::Primitive(
+                                        MLPrimitiveType::Int64
                                     ))
                                 })
                             }),
@@ -196,12 +198,14 @@ fn test_struct_init() {
                                         )))
                                     })),
                                     name: "a".to_string(),
-                                    type_: MLType::Value(MLValueType::Primitive(MLPrimitiveType::Int64
+                                    type_: MLType::Value(MLValueType::Primitive(
+                                        MLPrimitiveType::Int64
                                     ))
                                 }),
                                 value: MLExpr::Name(MLName {
                                     name: "a".to_string(),
-                                    type_: MLType::Value(MLValueType::Primitive(MLPrimitiveType::Int64
+                                    type_: MLType::Value(MLValueType::Primitive(
+                                        MLPrimitiveType::Int64
                                     ))
                                 })
                             }),
@@ -228,7 +232,8 @@ fn test_struct_init() {
                                 target: Box::new(MLExpr::Name(MLName {
                                     name: "test::A#init".to_string(),
                                     type_: MLType::Function(MLFunctionType {
-                                        arguments: vec![MLValueType::Primitive(MLPrimitiveType::Int64
+                                        arguments: vec![MLValueType::Primitive(
+                                            MLPrimitiveType::Int64
                                         )],
                                         return_type: MLValueType::Struct(String::from("test::A"))
                                     })

@@ -59,25 +59,23 @@ pub enum MLPrimitiveType {
 
 impl ToString for MLPrimitiveType {
     fn to_string(&self) -> String {
-        String::from(
-            match self {
-                MLPrimitiveType::Int8 => {"Int8"}
-                MLPrimitiveType::Int16 => {"Int16"}
-                MLPrimitiveType::Int32 => {"Int32"}
-                MLPrimitiveType::Int64 => {"Int64"}
-                MLPrimitiveType::Size => {"Size"}
-                MLPrimitiveType::UInt8 => {"UInt8"}
-                MLPrimitiveType::UInt16 => {"UInt16"}
-                MLPrimitiveType::UInt32 => {"UInt32"}
-                MLPrimitiveType::UInt64 => {"UInt64"}
-                MLPrimitiveType::USize => {"USize"}
-                MLPrimitiveType::Float => {"Float"}
-                MLPrimitiveType::Double => {"Double"}
-                MLPrimitiveType::Bool => {"Bool"}
-                MLPrimitiveType::String => {"String"}
-                MLPrimitiveType::Unit => {"Unit"}
-            }
-        )
+        String::from(match self {
+            MLPrimitiveType::Int8 => "Int8",
+            MLPrimitiveType::Int16 => "Int16",
+            MLPrimitiveType::Int32 => "Int32",
+            MLPrimitiveType::Int64 => "Int64",
+            MLPrimitiveType::Size => "Size",
+            MLPrimitiveType::UInt8 => "UInt8",
+            MLPrimitiveType::UInt16 => "UInt16",
+            MLPrimitiveType::UInt32 => "UInt32",
+            MLPrimitiveType::UInt64 => "UInt64",
+            MLPrimitiveType::USize => "USize",
+            MLPrimitiveType::Float => "Float",
+            MLPrimitiveType::Double => "Double",
+            MLPrimitiveType::Bool => "Bool",
+            MLPrimitiveType::String => "String",
+            MLPrimitiveType::Unit => "Unit",
+        })
     }
 }
 

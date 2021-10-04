@@ -5,7 +5,7 @@ use crate::middle_level_ir::ml_expr::{
 };
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
-use crate::middle_level_ir::ml_type::{MLType, MLValueType, MLPrimitiveType};
+use crate::middle_level_ir::ml_type::{MLPrimitiveType, MLType, MLValueType};
 use crate::utils::stacked_hash_map::StackedHashMap;
 use either::Either;
 use inkwell::builder::Builder;
@@ -130,16 +130,13 @@ impl<'ctx> CodeGen<'ctx> {
                 let i: u64 = value.parse().unwrap();
                 let int_type = match type_ {
                     MLValueType::Primitive(name) => match name {
-                        MLPrimitiveType::Int8 |
-                        MLPrimitiveType::UInt8 => self.context.i8_type(),
-                        MLPrimitiveType::Int16 |
-                        MLPrimitiveType::UInt16 => self.context.i16_type(),
-                        MLPrimitiveType::Int32 |
-                        MLPrimitiveType::UInt32 => self.context.i32_type(),
-                        MLPrimitiveType::Int64 |
-                        MLPrimitiveType::UInt64 => self.context.i64_type(),
-                        MLPrimitiveType::Size |
-                        MLPrimitiveType::USize => {todo!()}
+                        MLPrimitiveType::Int8 | MLPrimitiveType::UInt8 => self.context.i8_type(),
+                        MLPrimitiveType::Int16 | MLPrimitiveType::UInt16 => self.context.i16_type(),
+                        MLPrimitiveType::Int32 | MLPrimitiveType::UInt32 => self.context.i32_type(),
+                        MLPrimitiveType::Int64 | MLPrimitiveType::UInt64 => self.context.i64_type(),
+                        MLPrimitiveType::Size | MLPrimitiveType::USize => {
+                            todo!()
+                        }
                         _ => {
                             eprintln!("Invalid MLIR Literal {:?}", name);
                             exit(-1)
@@ -524,16 +521,13 @@ impl<'ctx> CodeGen<'ctx> {
             AnyValueEnum::IntValue(i) => {
                 let ty = match t.type_ {
                     MLValueType::Primitive(p) => match p {
-                        MLPrimitiveType::Int8 |
-                        MLPrimitiveType::UInt8 => self.context.i8_type(),
-                        MLPrimitiveType::Int16 |
-                        MLPrimitiveType::UInt16 => self.context.i16_type(),
-                        MLPrimitiveType::Int32 |
-                        MLPrimitiveType::UInt32 => self.context.i32_type(),
-                        MLPrimitiveType::Int64 |
-                        MLPrimitiveType::UInt64 => self.context.i64_type(),
-                        MLPrimitiveType::Size |
-                        MLPrimitiveType::USize => {todo!()}
+                        MLPrimitiveType::Int8 | MLPrimitiveType::UInt8 => self.context.i8_type(),
+                        MLPrimitiveType::Int16 | MLPrimitiveType::UInt16 => self.context.i16_type(),
+                        MLPrimitiveType::Int32 | MLPrimitiveType::UInt32 => self.context.i32_type(),
+                        MLPrimitiveType::Int64 | MLPrimitiveType::UInt64 => self.context.i64_type(),
+                        MLPrimitiveType::Size | MLPrimitiveType::USize => {
+                            todo!()
+                        }
                         _ => panic!(),
                     },
                     MLValueType::Struct(_) => {
@@ -863,10 +857,18 @@ impl<'ctx> CodeGen<'ctx> {
         match ml_type {
             MLValueType::Primitive(name) => match name {
                 MLPrimitiveType::Unit => AnyTypeEnum::from(self.context.void_type()),
-                MLPrimitiveType::Int8 | MLPrimitiveType::UInt8 => AnyTypeEnum::from(self.context.i8_type()),
-                MLPrimitiveType::Int16 | MLPrimitiveType::UInt16 => AnyTypeEnum::from(self.context.i16_type()),
-                MLPrimitiveType::Int32 | MLPrimitiveType::UInt32 => AnyTypeEnum::from(self.context.i32_type()),
-                MLPrimitiveType::Int64 | MLPrimitiveType::UInt64 => AnyTypeEnum::from(self.context.i64_type()),
+                MLPrimitiveType::Int8 | MLPrimitiveType::UInt8 => {
+                    AnyTypeEnum::from(self.context.i8_type())
+                }
+                MLPrimitiveType::Int16 | MLPrimitiveType::UInt16 => {
+                    AnyTypeEnum::from(self.context.i16_type())
+                }
+                MLPrimitiveType::Int32 | MLPrimitiveType::UInt32 => {
+                    AnyTypeEnum::from(self.context.i32_type())
+                }
+                MLPrimitiveType::Int64 | MLPrimitiveType::UInt64 => {
+                    AnyTypeEnum::from(self.context.i64_type())
+                }
                 MLPrimitiveType::Bool => AnyTypeEnum::from(self.context.bool_type()),
                 MLPrimitiveType::Float => AnyTypeEnum::from(self.context.f32_type()),
                 MLPrimitiveType::Double => AnyTypeEnum::from(self.context.f64_type()),
