@@ -9,7 +9,7 @@ use inkwell::execution_engine::JitFunction;
 use inkwell::OptimizationLevel;
 
 #[test]
-fn test_return_integer() {
+fn test_return_integer_literal() {
     type MainFunc = unsafe extern "C" fn() -> u8;
     let mlfile = MLFile {
         name: "name".to_string(),
@@ -56,7 +56,7 @@ fn test_return_integer() {
 }
 
 #[test]
-fn test_return_floating_point() {
+fn test_return_floating_point_literal() {
     type MainFunc = unsafe extern "C" fn() -> f64;
     let mlfile = MLFile {
         name: "name".to_string(),
