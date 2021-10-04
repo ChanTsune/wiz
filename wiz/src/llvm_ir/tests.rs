@@ -1,9 +1,9 @@
 use crate::llvm_ir::codegen::{CodeGen, MLContext};
 use crate::middle_level_ir::ml_decl::{MLDecl, MLFun, MLFunBody, MLVar};
-use crate::middle_level_ir::ml_expr::{MLExpr, MLLiteral, MLReturn, MLName};
+use crate::middle_level_ir::ml_expr::{MLExpr, MLLiteral, MLName, MLReturn};
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::MLStmt;
-use crate::middle_level_ir::ml_type::{MLPrimitiveType, MLValueType, MLType};
+use crate::middle_level_ir::ml_type::{MLPrimitiveType, MLType, MLValueType};
 use inkwell::context::Context;
 use inkwell::execution_engine::JitFunction;
 use inkwell::OptimizationLevel;
@@ -27,12 +27,16 @@ fn test_return_integer() {
                         value: MLExpr::Literal(MLLiteral::Integer {
                             value: "5".to_string(),
                             type_: MLValueType::Primitive(MLPrimitiveType::UInt8),
-                        })
+                        }),
                     }),
                     MLStmt::Expr(MLExpr::Return(MLReturn {
-                    value: Some(Box::new(MLExpr::Name(MLName { name: "i".to_string(), type_: MLType::Value(MLValueType::Primitive(MLPrimitiveType::UInt8)) }))),
-                    type_: MLValueType::Primitive(MLPrimitiveType::UInt8),
-                }))],
+                        value: Some(Box::new(MLExpr::Name(MLName {
+                            name: "i".to_string(),
+                            type_: MLType::Value(MLValueType::Primitive(MLPrimitiveType::UInt8)),
+                        }))),
+                        type_: MLValueType::Primitive(MLPrimitiveType::UInt8),
+                    })),
+                ],
             }),
         })],
     };
@@ -128,12 +132,16 @@ fn test_return_floating_point() {
                         value: MLExpr::Literal(MLLiteral::FloatingPoint {
                             value: "5.1".to_string(),
                             type_: MLValueType::Primitive(MLPrimitiveType::Double),
-                        })
+                        }),
                     }),
                     MLStmt::Expr(MLExpr::Return(MLReturn {
-                    value: Some(Box::new(MLExpr::Name(MLName { name: "d".to_string(), type_: MLType::Value(MLValueType::Primitive(MLPrimitiveType::Double)) }))),
-                    type_: MLValueType::Primitive(MLPrimitiveType::Double),
-                }))],
+                        value: Some(Box::new(MLExpr::Name(MLName {
+                            name: "d".to_string(),
+                            type_: MLType::Value(MLValueType::Primitive(MLPrimitiveType::Double)),
+                        }))),
+                        type_: MLValueType::Primitive(MLPrimitiveType::Double),
+                    })),
+                ],
             }),
         })],
     };
