@@ -509,7 +509,7 @@ fn test_struct_member_function() {
                 computed_properties: vec![],
                 member_functions: vec![TypedMemberFunction {
                     name: "getA".to_string(),
-                    args: vec![TypedArgDef::Self_(Some(TypedType::Value(TypedValueType {
+                    args: vec![TypedArgDef::RefSelf(Some(TypedType::Value(TypedValueType {
                         package: Some(Package::new(vec![String::from("test")])),
                         name: "A".to_string(),
                         type_args: None
