@@ -509,11 +509,13 @@ fn test_struct_member_function() {
                 computed_properties: vec![],
                 member_functions: vec![TypedMemberFunction {
                     name: "getA".to_string(),
-                    args: vec![TypedArgDef::RefSelf(Some(TypedType::Value(TypedValueType {
-                        package: Some(Package::new(vec![String::from("test")])),
-                        name: "A".to_string(),
-                        type_args: None
-                    })))],
+                    args: vec![TypedArgDef::RefSelf(Some(TypedType::Value(
+                        TypedValueType {
+                            package: Some(Package::new(vec![String::from("test")])),
+                            name: "A".to_string(),
+                            type_args: None
+                        }
+                    )))],
                     type_params: None,
                     body: Some(TypedFunBody::Block(TypedBlock {
                         body: vec![TypedStmt::Expr(TypedExpr::Return(TypedReturn {
