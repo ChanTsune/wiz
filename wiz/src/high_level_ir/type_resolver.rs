@@ -284,6 +284,7 @@ impl TypeResolver {
             }),
             TypedArgDef::Self_(_) => {
                 let self_type = self.context.get_current_type();
+                println!("Self => {:?}", self_type);
                 TypedArgDef::Self_(self_type)
             }
             TypedArgDef::RefSelf(_) => {
@@ -441,6 +442,7 @@ impl TypeResolver {
                 .into_iter()
                 .map(|a| {
                     let a = self.typed_arg_def(a)?;
+                    println!("a => {:?}", a);
                     let ns = self.context.get_current_namespace_mut()?;
                     ns.values.insert(
                         a.name(),

@@ -18,7 +18,7 @@ use crate::middle_level_ir::ml_expr::{
 };
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
-use crate::middle_level_ir::ml_type::{MLFunctionType, MLType, MLValueType};
+use crate::middle_level_ir::ml_type::{MLFunctionType, MLType, MLValueType, MLPrimitiveType};
 use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::HashMap;
 use std::option::Option::Some;
@@ -100,9 +100,22 @@ impl HLIR2MLIR {
             let mut pkg = t.package.clone().unwrap().names;
             if pkg.is_empty() {
                 match &*t.name {
-                    "Unit" | "Int8" | "UInt8" | "Int16" | "UInt16" | "Int32" | "UInt32"
-                    | "Int64" | "UInt64" | "Bool" | "Float" | "Double" | "String" => {
-                        MLValueType::Primitive(t.name)
+                    "Unit" => {MLValueType::Primitive(MLPrimitiveType::Unit)}
+                    "Int8" => MLValueType::Primitive(MLPrimitiveType::Int8),
+                        "UInt8" =>MLValueType::Primitive(MLPrimitiveType::UInt8),
+                            "Int16" => MLValueType::Primitive(MLPrimitiveType::Int16),
+                                "UInt16" =>MLValueType::Primitive(MLPrimitiveType::UInt16),
+                                    "Int32" => MLValueType::Primitive(MLPrimitiveType::Int32),
+                    "UInt32" => MLValueType::Primitive(MLPrimitiveType::UInt32),
+                    "Int64" => MLValueType::Primitive(MLPrimitiveType::Int64),
+                        "UInt64" => MLValueType::Primitive(MLPrimitiveType::UInt64),
+                    "Size" => MLValueType::Primitive(MLPrimitiveType::Size),
+                    "USize" => MLValueType::Primitive(MLPrimitiveType::USize),
+                    "Bool" => MLValueType::Primitive(MLPrimitiveType::Bool),
+                        "Float" => MLValueType::Primitive(MLPrimitiveType::Float),
+                    "Double" => MLValueType::Primitive(MLPrimitiveType::Double),
+                    "String" => {
+                        MLValueType::Primitive(MLPrimitiveType::String)
                     }
                     other => {
                         pkg.push(String::from(other));

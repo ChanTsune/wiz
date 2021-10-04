@@ -3,7 +3,7 @@ use crate::middle_level_ir::ml_decl::{MLDecl, MLFun, MLFunBody};
 use crate::middle_level_ir::ml_expr::{MLExpr, MLLiteral, MLReturn};
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::MLStmt;
-use crate::middle_level_ir::ml_type::MLValueType;
+use crate::middle_level_ir::ml_type::{MLValueType, MLPrimitiveType};
 use inkwell::context::Context;
 use inkwell::execution_engine::JitFunction;
 use inkwell::OptimizationLevel;
@@ -17,14 +17,14 @@ fn test_return_integer() {
             modifiers: vec![],
             name: "test".to_string(),
             arg_defs: vec![],
-            return_type: MLValueType::Primitive(String::from("UInt8")),
+            return_type: MLValueType::Primitive(MLPrimitiveType::UInt8),
             body: Some(MLFunBody {
                 body: vec![MLStmt::Expr(MLExpr::Return(MLReturn {
                     value: Some(Box::new(MLExpr::Literal(MLLiteral::Integer {
                         value: "5".to_string(),
-                        type_: MLValueType::Primitive(String::from("UInt8")),
+                        type_: MLValueType::Primitive(MLPrimitiveType::UInt8),
                     }))),
-                    type_: MLValueType::Primitive(String::from("UInt8")),
+                    type_: MLValueType::Primitive(MLPrimitiveType::UInt8),
                 }))],
             }),
         })],
@@ -64,14 +64,14 @@ fn test_return_floating_point() {
             modifiers: vec![],
             name: "test".to_string(),
             arg_defs: vec![],
-            return_type: MLValueType::Primitive(String::from("Double")),
+            return_type: MLValueType::Primitive(MLPrimitiveType::Double),
             body: Some(MLFunBody {
                 body: vec![MLStmt::Expr(MLExpr::Return(MLReturn {
                     value: Some(Box::new(MLExpr::Literal(MLLiteral::FloatingPoint {
                         value: "5.1".to_string(),
-                        type_: MLValueType::Primitive(String::from("Double")),
+                        type_: MLValueType::Primitive(MLPrimitiveType::Double),
                     }))),
-                    type_: MLValueType::Primitive(String::from("Double")),
+                    type_: MLValueType::Primitive(MLPrimitiveType::Double),
                 }))],
             }),
         })],
