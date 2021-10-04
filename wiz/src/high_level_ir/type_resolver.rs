@@ -286,6 +286,10 @@ impl TypeResolver {
                 let self_type = self.context.get_current_type();
                 TypedArgDef::Self_(self_type)
             }
+            TypedArgDef::RefSelf(_) => {
+                let self_type = self.context.get_current_type();
+                TypedArgDef::RefSelf(self_type)
+            }
         })
     }
 
