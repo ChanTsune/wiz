@@ -34,7 +34,7 @@ fun main() {
         if modBy2(s.a) == 0 {
             helloWorld()
         } else {
-            puts("Welcome to Wiz!!")
+            std::builtin::println("Welcome to Wiz!!")
         }
         s.a = s.a + if modBy2Expr(s.a) == 0 { 1 } else { 3 }
     }
@@ -42,5 +42,5 @@ fun main() {
     val file = fopen("./tmp.tmp", "wb")
     fwrite("File write from wiz\n", 1, 20, file)
     fclose(file)
-    puts("...bye")
+    std::builtin::println("...bye")
 }
