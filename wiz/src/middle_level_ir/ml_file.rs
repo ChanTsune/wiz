@@ -139,7 +139,6 @@ mod tests {
                             name: "b".to_string(),
                             type_: MLType::Value(MLValueType::Primitive(MLPrimitiveType::Int64)),
                         }))),
-                        type_: MLValueType::Primitive(MLPrimitiveType::Int64),
                     }))],
                 }),
             })],

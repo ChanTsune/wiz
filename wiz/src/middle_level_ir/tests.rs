@@ -122,7 +122,6 @@ fn test_struct() {
                                         "test::A"
                                     )))
                                 }))),
-                                type_: MLValueType::Struct(String::from("test::A"))
                             }))
                         ]
                     })
@@ -216,7 +215,6 @@ fn test_struct_init() {
                                         "test::A"
                                     )))
                                 }))),
-                                type_: MLValueType::Struct(String::from("test::A"))
                             }))
                         ]
                     })
@@ -246,7 +244,6 @@ fn test_struct_init() {
                                 }],
                                 type_: MLType::Value(MLValueType::Struct(String::from("test::A")))
                             }))),
-                            type_: MLValueType::Struct(String::from("test::A"))
                         }))]
                     })
                 })
@@ -294,7 +291,6 @@ fn test_return_integer_literal() {
                             value: "1".to_string(),
                             type_: MLValueType::Primitive(MLPrimitiveType::Int64)
                         }))),
-                        type_: MLValueType::Primitive(MLPrimitiveType::Int64)
                     }))]
                 })
             })]

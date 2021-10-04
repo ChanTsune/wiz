@@ -493,11 +493,7 @@ impl Ast2HLIR {
 
     pub fn return_syntax(&self, r: ReturnSyntax) -> TypedReturn {
         let value = r.value.map(|v| Box::new(self.expr(*v)));
-        let t = match &value {
-            Some(v) => v.type_(),
-            None => None,
-        };
-        TypedReturn { value, type_: t }
+        TypedReturn { value }
     }
 
     pub fn type_cast(&self, t: TypeCastSyntax) -> TypedTypeCast {

@@ -100,6 +100,7 @@ impl HLIR2MLIR {
             let mut pkg = t.package.clone().unwrap().names;
             if pkg.is_empty() {
                 match &*t.name {
+                    "Noting" => MLValueType::Primitive(MLPrimitiveType::Void),
                     "Unit" => MLValueType::Primitive(MLPrimitiveType::Unit),
                     "Int8" => MLValueType::Primitive(MLPrimitiveType::Int8),
                     "UInt8" => MLValueType::Primitive(MLPrimitiveType::UInt8),
@@ -348,7 +349,6 @@ impl HLIR2MLIR {
                         name: String::from("self"),
                         type_: type_.clone(),
                     }))),
-                    type_: type_.clone().into_value_type(),
                 })));
                 MLFun {
                     modifiers: vec![],
@@ -581,7 +581,6 @@ impl HLIR2MLIR {
     pub fn return_expr(&mut self, r: TypedReturn) -> MLReturn {
         MLReturn {
             value: r.value.map(|v| Box::new(self.expr(*v))),
-            type_: self.type_(r.type_.unwrap()).into_value_type(),
         }
     }
 

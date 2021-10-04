@@ -670,11 +670,7 @@ impl TypeResolver {
             None => None,
         };
         Result::Ok(TypedReturn {
-            type_: match &value {
-                Some(v) => v.type_(),
-                None => None,
-            },
-            value: value,
+            value,
         })
     }
 

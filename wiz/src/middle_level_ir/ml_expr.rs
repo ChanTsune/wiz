@@ -1,7 +1,7 @@
 use crate::middle_level_ir::format::Formatter;
 use crate::middle_level_ir::ml_node::MLNode;
 use crate::middle_level_ir::ml_stmt::MLBlock;
-use crate::middle_level_ir::ml_type::{MLType, MLValueType};
+use crate::middle_level_ir::ml_type::{MLType, MLValueType, MLPrimitiveType};
 use std::fmt;
 use std::fmt::Write;
 
@@ -112,7 +112,6 @@ pub struct MLMember {
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct MLReturn {
     pub(crate) value: Option<Box<MLExpr>>,
-    pub(crate) type_: MLValueType,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -133,7 +132,7 @@ impl MLExpr {
             MLExpr::Member(f) => f.type_.clone(),
             MLExpr::If(i) => i.type_.clone(),
             MLExpr::When => todo!(),
-            MLExpr::Return(r) => MLType::Value(r.type_.clone()),
+            MLExpr::Return(r) => MLType::Value(r.type_()),
             MLExpr::PrimitiveTypeCast(t) => MLType::Value(t.type_.clone()),
         }
     }
@@ -160,11 +159,12 @@ impl MLCallArg {
 
 impl MLReturn {
     pub fn new(expr: MLExpr) -> Self {
-        let type_ = expr.type_();
         MLReturn {
             value: Some(Box::new(expr)),
-            type_: type_.into_value_type(),
         }
+    }
+    pub(crate) fn type_(&self) -> MLValueType {
+        MLValueType::Primitive(MLPrimitiveType::Void)
     }
 }
 

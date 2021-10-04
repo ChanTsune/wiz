@@ -533,7 +533,6 @@ fn test_struct_member_function() {
                                 is_safe: false,
                                 type_: Some(TypedType::int64())
                             }))),
-                            type_: Some(TypedType::int64())
                         }))]
                     })),
                     return_type: Some(TypedType::int64())
@@ -726,7 +725,6 @@ fn test_return_integer_literal() {
                             value: "1".to_string(),
                             type_: Some(TypedType::int64())
                         }))),
-                        type_: Some(TypedType::int64())
                     }))]
                 })),
                 return_type: Some(TypedType::int64())
@@ -772,7 +770,6 @@ fn test_return_floating_point_literal() {
                                 type_: Some(TypedType::double())
                             }
                         ))),
-                        type_: Some(TypedType::double())
                     }))]
                 })),
                 return_type: Some(TypedType::double())
@@ -945,7 +942,6 @@ fn test_if_else() {
                                 }))]
                             })
                         }))),
-                        type_: Some(TypedType::int64())
                     }))]
                 })),
                 return_type: Some(TypedType::int64())
