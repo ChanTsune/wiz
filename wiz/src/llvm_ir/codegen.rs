@@ -497,7 +497,7 @@ impl<'ctx> CodeGen<'ctx> {
                     let n = self.expr(*e);
                     Some(self.builder.build_load(n.into_pointer_value(), "v"))
                 }
-                MLExpr::PrimitiveSubscript(_) => {
+                MLExpr::PrimitiveSubscript(_)| MLExpr::Member(_) => {
                     let s_type = e.type_().into_value_type();
                     let s = self.expr(*e);
                     let s = self.load_if_pointer_value(s, &s_type);
