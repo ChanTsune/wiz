@@ -669,9 +669,7 @@ impl TypeResolver {
             Some(v) => Some(Box::new(self.expr(*v)?)),
             None => None,
         };
-        Result::Ok(TypedReturn {
-            value,
-        })
+        Result::Ok(TypedReturn { value })
     }
 
     pub fn typed_type_cast(&mut self, t: TypedTypeCast) -> Result<TypedTypeCast> {

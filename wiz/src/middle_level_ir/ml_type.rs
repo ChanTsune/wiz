@@ -76,7 +76,7 @@ impl ToString for MLPrimitiveType {
             MLPrimitiveType::Bool => "Bool",
             MLPrimitiveType::String => "String",
             MLPrimitiveType::Unit => "Unit",
-            MLPrimitiveType::Void => "Void"
+            MLPrimitiveType::Void => "Void",
         })
     }
 }
