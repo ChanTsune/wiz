@@ -148,15 +148,9 @@ impl Ast2HLIR {
                 name: a.name,
                 type_: self.type_(a.type_name),
             }),
-            ArgDef::Self_(s) => {
-                match s.reference {
-                    None => {
-                        TypedArgDef::Self_(None)
-                    }
-                    Some(_) => {
-                        TypedArgDef::RefSelf(None)
-                    }
-                }
+            ArgDef::Self_(s) => match s.reference {
+                None => TypedArgDef::Self_(None),
+                Some(_) => TypedArgDef::RefSelf(None),
             },
         }
     }
