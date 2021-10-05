@@ -457,7 +457,10 @@ impl TypeResolver {
                 None => None,
                 Some(body) => Some(self.typed_fun_body(body)?),
             },
-            return_type: mf.return_type,
+            return_type: match mf.return_type {
+                Some(b) => {Some(self.context.full_type_name(b.clone())?)}
+                None => {todo!()}
+            },
         });
         self.context.pop_name_space();
         result
