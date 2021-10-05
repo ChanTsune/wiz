@@ -1,6 +1,6 @@
 use crate::parser::wiz::declaration::{block, decl};
 use crate::parser::wiz::expression::{expr, postfix_expr, prefix_expr};
-use crate::parser::wiz::keywords::while_keyword;
+use crate::parser::wiz::keywords::{for_keyword, in_keyword, while_keyword};
 use crate::parser::wiz::lexical_structure::{identifier, whitespace0, whitespace1};
 use crate::parser::wiz::operators::{assignment_and_operator, assignment_operator};
 use crate::syntax::expr::{Expr, NameExprSyntax};
@@ -268,7 +268,7 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(alt((while_stmt, while_stmt)), |l| Stmt::Loop(l))(s)
+    map(alt((for_stmt, while_stmt)), |l| Stmt::Loop(l))(s)
 }
 
 pub fn while_stmt<I>(s: I) -> IResult<I, LoopStmt>
@@ -296,6 +296,34 @@ where
         },
     )(s)
 }
+
+pub fn for_stmt<I>(s: I) -> IResult<I, LoopStmt>
+    where
+        I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+        <I as InputIter>::Item: AsChar + Copy,
+        <I as InputTakeAtPosition>::Item: AsChar,
+{
+    map(
+        tuple((for_keyword, whitespace1, identifier ,whitespace1,in_keyword,whitespace1, expr, whitespace1, block)),
+        |(_, _, value, _, _,_,iterator, _, block)| LoopStmt::For {
+            iterator,
+            values: vec![value],
+            block,
+        },
+    )(s)
+}
+
 
 pub fn stmt<I>(s: I) -> IResult<I, Stmt>
 where
