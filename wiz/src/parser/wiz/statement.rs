@@ -298,8 +298,8 @@ where
 }
 
 pub fn for_stmt<I>(s: I) -> IResult<I, LoopStmt>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + Clone
@@ -311,19 +311,28 @@ pub fn for_stmt<I>(s: I) -> IResult<I, LoopStmt>
         + ExtendInto<Item = char, Extender = String>
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
-        <I as InputTakeAtPosition>::Item: AsChar,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
-        tuple((for_keyword, whitespace1, identifier ,whitespace1,in_keyword,whitespace1, expr, whitespace1, block)),
-        |(_, _, value, _, _,_,iterator, _, block)| LoopStmt::For {
+        tuple((
+            for_keyword,
+            whitespace1,
+            identifier,
+            whitespace1,
+            in_keyword,
+            whitespace1,
+            expr,
+            whitespace1,
+            block,
+        )),
+        |(_, _, value, _, _, _, iterator, _, block)| LoopStmt::For {
             iterator,
             values: vec![value],
             block,
         },
     )(s)
 }
-
 
 pub fn stmt<I>(s: I) -> IResult<I, Stmt>
 where
