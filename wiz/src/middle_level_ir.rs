@@ -533,7 +533,7 @@ impl HLIR2MLIR {
                             type_: type_.clone(),
                         })),
                         args: vec![],
-                        type_: type_,
+                        type_,
                     })
                 }
             }
@@ -546,6 +546,9 @@ impl HLIR2MLIR {
                     name: self.package_name_mangling(&t.package, t.name) + "#" + &*name,
                     type_,
                 })
+            }
+            TypedType::Reference(t) => {
+                todo!()
             }
         }
         // else field as function call etc...

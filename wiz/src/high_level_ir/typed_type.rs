@@ -13,6 +13,7 @@ pub enum TypedType {
     Value(TypedValueType),
     Function(Box<TypedFunctionType>),
     Type(TypedValueType),
+    Reference(TypedValueType),
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
