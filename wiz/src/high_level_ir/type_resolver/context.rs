@@ -155,6 +155,9 @@ impl ResolverContext {
             for t in TypedType::integer_types() {
                 bo.insert((op.clone(), t.clone(), t.clone()), t);
             }
+            for t in TypedType::floating_point_types() {
+                bo.insert((op.clone(), t.clone(), t.clone()), t);
+            }
         }
         Self {
             name_space: ns,
