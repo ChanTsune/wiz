@@ -1,4 +1,4 @@
-use crate::parser::wiz::character::{alphabet, backticks, cr, digit, space, under_score};
+use crate::parser::wiz::character::{alphabet, backticks, cr, digit, space, under_score, vertical_tab};
 use crate::syntax::trivia::{Trivia, TriviaPiece};
 use nom::branch::{alt, permutation};
 use nom::bytes::complete::{tag, take_until, take_while_m_n};
@@ -280,6 +280,14 @@ where
     map(many1(tab), |l| TriviaPiece::Tabs(l.len() as i64))(s)
 }
 
+pub fn vertical_tabs<I>(s: I) -> IResult<I, TriviaPiece>
+    where
+        I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength,
+        <I as InputIter>::Item: AsChar,
+{
+    map(many1(vertical_tab), |l| TriviaPiece::VerticalTabs(l.len() as i64))(s)
+}
+
 pub fn newlines<I>(s: I) -> IResult<I, TriviaPiece>
 where
     I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength,
@@ -326,6 +334,7 @@ where
     alt((
         spaces,
         tabs,
+        vertical_tabs,
         carriage_return_line_feeds,
         newlines,
         carriage_returns,
@@ -352,6 +361,7 @@ where
     alt((
         spaces,
         tabs,
+        vertical_tabs,
         carriage_return_line_feeds,
         doc_line_comment,
         doc_block_comment,
@@ -362,11 +372,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::lexical_structure::{
-        block_comment, carriage_return_line_feeds, carriage_returns, doc_block_comment,
-        doc_line_comment, identifier, line_comment, newlines, spaces, tabs, whitespace0,
-        whitespace1,
-    };
+    use crate::parser::wiz::lexical_structure::{block_comment, carriage_return_line_feeds, carriage_returns, doc_block_comment, doc_line_comment, identifier, line_comment, newlines, spaces, tabs, vertical_tabs, whitespace0, whitespace1};
     use crate::syntax::trivia::{Trivia, TriviaPiece};
     use nom::error;
     use nom::error::ErrorKind;
@@ -523,6 +529,11 @@ mod tests {
     #[test]
     fn test_tabs() {
         assert_eq!(tabs("\t"), Ok(("", TriviaPiece::Tabs(1))))
+    }
+
+    #[test]
+    fn test_vertical_tabs() {
+        assert_eq!(vertical_tabs("\x11"), Ok(("", TriviaPiece::VerticalTabs(1))));
     }
 
     #[test]

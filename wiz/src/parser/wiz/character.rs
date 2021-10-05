@@ -48,6 +48,14 @@ where
     char('_')(s)
 }
 
+pub fn vertical_tab<I>(s: I) -> IResult<I, char>
+    where
+        I: Slice<RangeFrom<usize>> + InputIter,
+        <I as InputIter>::Item: AsChar,
+{
+    char('\x11')(s)
+}
+
 pub fn double_quote<I>(s: I) -> IResult<I, char>
 where
     I: Slice<RangeFrom<usize>> + InputIter,
@@ -106,10 +114,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::character::{
-        alphabet, ampersand, backticks, comma, cr, digit, dot, double_quote,
-        not_double_quote_or_back_slash, space, under_score,
-    };
+    use crate::parser::wiz::character::{alphabet, ampersand, backticks, comma, cr, digit, dot, double_quote, not_double_quote_or_back_slash, space, under_score, vertical_tab};
 
     #[test]
     fn test_alphabet() {
@@ -124,6 +129,11 @@ mod tests {
     #[test]
     fn test_under_score() {
         assert_eq!(under_score("_"), Ok(("", '_')))
+    }
+
+    #[test]
+    fn test_vertical_tab() {
+        assert_eq!(vertical_tab("\x11"), Ok(("", '\x11')))
     }
 
     #[test]
