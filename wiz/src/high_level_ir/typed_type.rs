@@ -69,8 +69,8 @@ impl TypedValueType {
 impl ToString for TypedValueType {
     fn to_string(&self) -> String {
         match &self.package {
-            None => { self.name.clone() }
-            Some(pkg) => {pkg.to_string()}
+            None => self.name.clone(),
+            Some(pkg) => pkg.to_string(),
         }
     }
 }
@@ -224,10 +224,14 @@ impl TypedType {
 impl ToString for TypedType {
     fn to_string(&self) -> String {
         match self {
-            TypedType::Value(t) => {t.to_string()}
-            TypedType::Function(t) => { todo!()}
-            TypedType::Type(t) => {format!("Type<{}>", t.to_string())}
-            TypedType::Reference(t) => { String::from("&") + &*t.to_string() }
+            TypedType::Value(t) => t.to_string(),
+            TypedType::Function(t) => {
+                todo!()
+            }
+            TypedType::Type(t) => {
+                format!("Type<{}>", t.to_string())
+            }
+            TypedType::Reference(t) => String::from("&") + &*t.to_string(),
         }
     }
 }
