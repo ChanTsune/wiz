@@ -282,7 +282,15 @@ impl TypeResolver {
                 name: a.name,
                 type_: self.context.full_type_name(a.type_)?,
             }),
-            TypedArgDef::Self_(s) => TypedArgDef::Self_(s),
+            TypedArgDef::Self_(_) => {
+                let self_type = self.context.get_current_type();
+                println!("Self => {:?}", self_type);
+                TypedArgDef::Self_(self_type)
+            }
+            TypedArgDef::RefSelf(_) => {
+                let self_type = self.context.get_current_type();
+                TypedArgDef::RefSelf(self_type)
+            }
         })
     }
 
@@ -427,21 +435,19 @@ impl TypeResolver {
 
     fn typed_member_function(&mut self, mf: TypedMemberFunction) -> Result<TypedMemberFunction> {
         self.context.push_name_space(mf.name.clone());
-        let self_type = self.context.get_current_type();
-        let ns = self.context.get_current_namespace_mut()?;
         let result = Result::Ok(TypedMemberFunction {
             name: mf.name,
             args: mf
                 .args
                 .into_iter()
                 .map(|a| {
+                    let a = self.typed_arg_def(a)?;
+                    println!("a => {:?}", a);
+                    let ns = self.context.get_current_namespace_mut()?;
                     ns.values.insert(
                         a.name(),
-                        a.type_().unwrap_or(
-                            self_type
-                                .clone()
-                                .ok_or(ResolverError::from("Can not resolve `self`"))?,
-                        ),
+                        a.type_()
+                            .ok_or(ResolverError::from("Can not resolve `self`"))?,
                     );
                     Result::Ok(a)
                 })
@@ -451,7 +457,12 @@ impl TypeResolver {
                 None => None,
                 Some(body) => Some(self.typed_fun_body(body)?),
             },
-            return_type: mf.return_type,
+            return_type: match mf.return_type {
+                Some(b) => Some(self.context.full_type_name(b.clone())?),
+                None => {
+                    todo!()
+                }
+            },
         });
         self.context.pop_name_space();
         result
@@ -618,7 +629,7 @@ impl TypeResolver {
     pub fn typed_call(&mut self, c: TypedCall) -> Result<TypedCall> {
         let target = Box::new(self.expr(*c.target)?);
         let c_type = match target.type_().unwrap() {
-            TypedType::Value(v) | TypedType::Type(v) => {
+            TypedType::Value(v) | TypedType::Type(v) | TypedType::Reference(v) => {
                 Result::Err(ResolverError::from(format!("{:?} is not callable.", v)))
             }
             TypedType::Function(f) => Result::Ok(f.return_type),
@@ -663,13 +674,7 @@ impl TypeResolver {
             Some(v) => Some(Box::new(self.expr(*v)?)),
             None => None,
         };
-        Result::Ok(TypedReturn {
-            type_: match &value {
-                Some(v) => v.type_(),
-                None => None,
-            },
-            value: value,
-        })
+        Result::Ok(TypedReturn { value })
     }
 
     pub fn typed_type_cast(&mut self, t: TypedTypeCast) -> Result<TypedTypeCast> {

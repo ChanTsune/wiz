@@ -155,6 +155,9 @@ impl ResolverContext {
             for t in TypedType::integer_types() {
                 bo.insert((op.clone(), t.clone(), t.clone()), t);
             }
+            for t in TypedType::floating_point_types() {
+                bo.insert((op.clone(), t.clone(), t.clone()), t);
+            }
         }
         Self {
             name_space: ns,
@@ -295,7 +298,7 @@ impl ResolverContext {
         loop {
             let ns = self.get_namespace_mut(cns.clone())?;
             match &typ {
-                TypedType::Value(v) => {
+                TypedType::Value(v) | TypedType::Reference(v) => {
                     if let Some(_) = ns.types.get(&v.name) {
                         return Result::Ok(TypedType::Value(TypedValueType {
                             package: Some(Package { names: cns.clone() }),

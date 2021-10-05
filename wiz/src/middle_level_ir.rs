@@ -18,7 +18,7 @@ use crate::middle_level_ir::ml_expr::{
 };
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
-use crate::middle_level_ir::ml_type::{MLFunctionType, MLType, MLValueType};
+use crate::middle_level_ir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
 use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::HashMap;
 use std::option::Option::Some;
@@ -100,10 +100,22 @@ impl HLIR2MLIR {
             let mut pkg = t.package.clone().unwrap().names;
             if pkg.is_empty() {
                 match &*t.name {
-                    "Unit" | "Int8" | "UInt8" | "Int16" | "UInt16" | "Int32" | "UInt32"
-                    | "Int64" | "UInt64" | "Bool" | "Float" | "Double" | "String" => {
-                        MLValueType::Primitive(t.name)
-                    }
+                    "Noting" => MLValueType::Primitive(MLPrimitiveType::Void),
+                    "Unit" => MLValueType::Primitive(MLPrimitiveType::Unit),
+                    "Int8" => MLValueType::Primitive(MLPrimitiveType::Int8),
+                    "UInt8" => MLValueType::Primitive(MLPrimitiveType::UInt8),
+                    "Int16" => MLValueType::Primitive(MLPrimitiveType::Int16),
+                    "UInt16" => MLValueType::Primitive(MLPrimitiveType::UInt16),
+                    "Int32" => MLValueType::Primitive(MLPrimitiveType::Int32),
+                    "UInt32" => MLValueType::Primitive(MLPrimitiveType::UInt32),
+                    "Int64" => MLValueType::Primitive(MLPrimitiveType::Int64),
+                    "UInt64" => MLValueType::Primitive(MLPrimitiveType::UInt64),
+                    "Size" => MLValueType::Primitive(MLPrimitiveType::Size),
+                    "USize" => MLValueType::Primitive(MLPrimitiveType::USize),
+                    "Bool" => MLValueType::Primitive(MLPrimitiveType::Bool),
+                    "Float" => MLValueType::Primitive(MLPrimitiveType::Float),
+                    "Double" => MLValueType::Primitive(MLPrimitiveType::Double),
+                    "String" => MLValueType::Primitive(MLPrimitiveType::String),
                     other => {
                         pkg.push(String::from(other));
                         MLValueType::Struct(pkg.join("::"))
@@ -337,11 +349,10 @@ impl HLIR2MLIR {
                         name: String::from("self"),
                         type_: type_.clone(),
                     }))),
-                    type_: type_.clone().into_value_type(),
                 })));
                 MLFun {
                     modifiers: vec![],
-                    name: self.package_name_mangling(&package, name.clone()) + "#init",
+                    name: self.package_name_mangling(&package, name.clone()) + "::init",
                     arg_defs: i.args.into_iter().map(|a| self.arg_def(a)).collect(),
                     return_type: type_.into_value_type(),
                     body: Some(MLFunBody { body }),
@@ -358,13 +369,7 @@ impl HLIR2MLIR {
                     body,
                     return_type,
                 } = mf;
-                let args = vec![MLArgDef {
-                    name: String::from("self"),
-                    type_: value_type.clone(),
-                }]
-                .into_iter()
-                .chain(args.into_iter().map(|a| self.arg_def(a)))
-                .collect();
+                let args = args.into_iter().map(|a| self.arg_def(a)).collect();
                 MLFun {
                     modifiers: vec![],
                     name: self.package_name_mangling(&package, name.clone()) + "::" + &fname,
@@ -528,7 +533,7 @@ impl HLIR2MLIR {
                             type_: type_.clone(),
                         })),
                         args: vec![],
-                        type_: type_,
+                        type_,
                     })
                 }
             }
@@ -538,9 +543,12 @@ impl HLIR2MLIR {
             TypedType::Type(t) => {
                 let type_ = self.type_(type_.unwrap());
                 MLExpr::Name(MLName {
-                    name: self.package_name_mangling(&t.package, t.name) + "#" + &*name,
+                    name: self.package_name_mangling(&t.package, t.name) + "::" + &*name,
                     type_,
                 })
+            }
+            TypedType::Reference(t) => {
+                todo!()
             }
         }
         // else field as function call etc...
@@ -576,7 +584,6 @@ impl HLIR2MLIR {
     pub fn return_expr(&mut self, r: TypedReturn) -> MLReturn {
         MLReturn {
             value: r.value.map(|v| Box::new(self.expr(*v))),
-            type_: self.type_(r.type_.unwrap()).into_value_type(),
         }
     }
 
@@ -621,5 +628,12 @@ impl HLIR2MLIR {
         } else {
             name
         }
+    }
+
+    fn fun_arg_label_type_name_mangling(&self, args: &Vec<TypedArgDef>) -> String {
+        args.iter()
+            .map(|arg| arg.label() + &*arg.type_().unwrap().to_string())
+            .collect::<Vec<String>>()
+            .join("##")
     }
 }

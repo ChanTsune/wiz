@@ -35,7 +35,7 @@ mod tests {
     use crate::middle_level_ir::ml_expr::{MLExpr, MLName, MLReturn};
     use crate::middle_level_ir::ml_file::MLFile;
     use crate::middle_level_ir::ml_stmt::MLStmt;
-    use crate::middle_level_ir::ml_type::{MLType, MLValueType};
+    use crate::middle_level_ir::ml_type::{MLPrimitiveType, MLType, MLValueType};
 
     #[test]
     fn test_ml_file_to_string_empty() {
@@ -66,7 +66,7 @@ mod tests {
                 name: "T".to_string(),
                 fields: vec![MLField {
                     name: "i".to_string(),
-                    type_: MLValueType::Primitive(String::from("Int64")),
+                    type_: MLValueType::Primitive(MLPrimitiveType::Int64),
                 }],
             })],
         };
@@ -85,9 +85,9 @@ mod tests {
                 name: "a".to_string(),
                 arg_defs: vec![MLArgDef {
                     name: "b".to_string(),
-                    type_: MLValueType::Primitive(String::from("Int64")),
+                    type_: MLValueType::Primitive(MLPrimitiveType::Int64),
                 }],
-                return_type: MLValueType::Primitive(String::from("Unit")),
+                return_type: MLValueType::Primitive(MLPrimitiveType::Unit),
                 body: None,
             })],
         };
@@ -104,14 +104,14 @@ mod tests {
                 arg_defs: vec![
                     MLArgDef {
                         name: "b".to_string(),
-                        type_: MLValueType::Primitive(String::from("Int64")),
+                        type_: MLValueType::Primitive(MLPrimitiveType::Int64),
                     },
                     MLArgDef {
                         name: "c".to_string(),
-                        type_: MLValueType::Primitive(String::from("Int64")),
+                        type_: MLValueType::Primitive(MLPrimitiveType::Int64),
                     },
                 ],
-                return_type: MLValueType::Primitive(String::from("Unit")),
+                return_type: MLValueType::Primitive(MLPrimitiveType::Unit),
                 body: Some(MLFunBody { body: vec![] }),
             })],
         };
@@ -130,16 +130,15 @@ mod tests {
                 name: "a".to_string(),
                 arg_defs: vec![MLArgDef {
                     name: "b".to_string(),
-                    type_: MLValueType::Primitive(String::from("Int64")),
+                    type_: MLValueType::Primitive(MLPrimitiveType::Int64),
                 }],
-                return_type: MLValueType::Primitive(String::from("Int64")),
+                return_type: MLValueType::Primitive(MLPrimitiveType::Int64),
                 body: Some(MLFunBody {
                     body: vec![MLStmt::Expr(MLExpr::Return(MLReturn {
                         value: Some(Box::new(MLExpr::Name(MLName {
                             name: "b".to_string(),
-                            type_: MLType::Value(MLValueType::Primitive(String::from("Int64"))),
+                            type_: MLType::Value(MLValueType::Primitive(MLPrimitiveType::Int64)),
                         }))),
-                        type_: MLValueType::Primitive(String::from("Int64")),
                     }))],
                 }),
             })],

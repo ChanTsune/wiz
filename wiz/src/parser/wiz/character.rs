@@ -48,6 +48,22 @@ where
     char('_')(s)
 }
 
+pub fn vertical_tab<I>(s: I) -> IResult<I, char>
+where
+    I: Slice<RangeFrom<usize>> + InputIter,
+    <I as InputIter>::Item: AsChar,
+{
+    char('\x0b')(s)
+}
+
+pub fn form_feed<I>(s: I) -> IResult<I, char>
+where
+    I: Slice<RangeFrom<usize>> + InputIter,
+    <I as InputIter>::Item: AsChar,
+{
+    char('\x0c')(s)
+}
+
 pub fn double_quote<I>(s: I) -> IResult<I, char>
 where
     I: Slice<RangeFrom<usize>> + InputIter,
@@ -96,11 +112,19 @@ where
     char('\r')(s)
 }
 
+pub fn ampersand<I>(s: I) -> IResult<I, char>
+where
+    I: Slice<RangeFrom<usize>> + InputIter,
+    <I as InputIter>::Item: AsChar,
+{
+    char('&')(s)
+}
+
 #[cfg(test)]
 mod tests {
     use crate::parser::wiz::character::{
-        alphabet, backticks, comma, cr, digit, dot, double_quote, not_double_quote_or_back_slash,
-        space, under_score,
+        alphabet, ampersand, backticks, comma, cr, digit, dot, double_quote, form_feed,
+        not_double_quote_or_back_slash, space, under_score, vertical_tab,
     };
 
     #[test]
@@ -116,6 +140,16 @@ mod tests {
     #[test]
     fn test_under_score() {
         assert_eq!(under_score("_"), Ok(("", '_')))
+    }
+
+    #[test]
+    fn test_vertical_tab() {
+        assert_eq!(vertical_tab("\x0b"), Ok(("", '\x0b')))
+    }
+
+    #[test]
+    fn test_form_feed() {
+        assert_eq!(form_feed("\x0c"), Ok(("", '\x0c')))
     }
 
     #[test]
@@ -146,6 +180,11 @@ mod tests {
     #[test]
     fn test_cr() {
         assert_eq!(cr("\r"), Ok(("", '\r')))
+    }
+
+    #[test]
+    fn test_ampersand() {
+        assert_eq!(ampersand("&"), Ok(("", '&')));
     }
 
     #[test]

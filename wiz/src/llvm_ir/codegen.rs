@@ -5,7 +5,7 @@ use crate::middle_level_ir::ml_expr::{
 };
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
-use crate::middle_level_ir::ml_type::{MLType, MLValueType};
+use crate::middle_level_ir::ml_type::{MLPrimitiveType, MLType, MLValueType};
 use crate::utils::stacked_hash_map::StackedHashMap;
 use either::Either;
 use inkwell::builder::Builder;
@@ -129,13 +129,16 @@ impl<'ctx> CodeGen<'ctx> {
             MLLiteral::Integer { value, type_ } => {
                 let i: u64 = value.parse().unwrap();
                 let int_type = match type_ {
-                    MLValueType::Primitive(name) => match &*name {
-                        "Int8" | "UInt8" => self.context.i8_type(),
-                        "Int16" | "UInt16" => self.context.i16_type(),
-                        "Int32" | "UInt32" => self.context.i32_type(),
-                        "Int64" | "UInt64" => self.context.i64_type(),
+                    MLValueType::Primitive(name) => match name {
+                        MLPrimitiveType::Int8 | MLPrimitiveType::UInt8 => self.context.i8_type(),
+                        MLPrimitiveType::Int16 | MLPrimitiveType::UInt16 => self.context.i16_type(),
+                        MLPrimitiveType::Int32 | MLPrimitiveType::UInt32 => self.context.i32_type(),
+                        MLPrimitiveType::Int64 | MLPrimitiveType::UInt64 => self.context.i64_type(),
+                        MLPrimitiveType::Size | MLPrimitiveType::USize => {
+                            todo!()
+                        }
                         _ => {
-                            eprintln!("Invalid MLIR Literal {:}", name);
+                            eprintln!("Invalid MLIR Literal {:?}", name);
                             exit(-1)
                         }
                     },
@@ -149,11 +152,11 @@ impl<'ctx> CodeGen<'ctx> {
             MLLiteral::FloatingPoint { value, type_ } => {
                 let f: f64 = value.parse().unwrap();
                 let float_type = match type_ {
-                    MLValueType::Primitive(name) => match &*name {
-                        "Float" => self.context.f32_type(),
-                        "Double" => self.context.f64_type(),
+                    MLValueType::Primitive(name) => match name {
+                        MLPrimitiveType::Float => self.context.f32_type(),
+                        MLPrimitiveType::Double => self.context.f64_type(),
                         _ => {
-                            eprintln!("Invalid MLIR Literal {:}", name);
+                            eprintln!("Invalid MLIR Literal {:?}", name);
                             exit(-1)
                         }
                     },
@@ -203,7 +206,7 @@ impl<'ctx> CodeGen<'ctx> {
         let target = self.expr(*c.target);
         let args = c.args.into_iter().map(|arg| {
             if let MLValueType::Primitive(name) = arg.arg.type_().into_value_type() {
-                if name != String::from("String") {
+                if name != MLPrimitiveType::String {
                     let t = arg.type_().into_value_type();
                     let e = self.expr(arg.arg);
                     self.load_if_pointer_value(e, &t)
@@ -494,7 +497,7 @@ impl<'ctx> CodeGen<'ctx> {
                     let n = self.expr(*e);
                     Some(self.builder.build_load(n.into_pointer_value(), "v"))
                 }
-                MLExpr::PrimitiveSubscript(_) => {
+                MLExpr::PrimitiveSubscript(_) | MLExpr::Member(_) => {
                     let s_type = e.type_().into_value_type();
                     let s = self.expr(*e);
                     let s = self.load_if_pointer_value(s, &s_type);
@@ -517,11 +520,14 @@ impl<'ctx> CodeGen<'ctx> {
             // AnyValueEnum::ArrayValue(_) => {}
             AnyValueEnum::IntValue(i) => {
                 let ty = match t.type_ {
-                    MLValueType::Primitive(p) => match &*p {
-                        "Int64" | "UInt64" => self.context.i64_type(),
-                        "Int32" | "UInt32" => self.context.i32_type(),
-                        "Int16" | "UInt16" => self.context.i16_type(),
-                        "Int8" | "UInt8" => self.context.i8_type(),
+                    MLValueType::Primitive(p) => match p {
+                        MLPrimitiveType::Int8 | MLPrimitiveType::UInt8 => self.context.i8_type(),
+                        MLPrimitiveType::Int16 | MLPrimitiveType::UInt16 => self.context.i16_type(),
+                        MLPrimitiveType::Int32 | MLPrimitiveType::UInt32 => self.context.i32_type(),
+                        MLPrimitiveType::Int64 | MLPrimitiveType::UInt64 => self.context.i64_type(),
+                        MLPrimitiveType::Size | MLPrimitiveType::USize => {
+                            todo!()
+                        }
                         _ => panic!(),
                     },
                     MLValueType::Struct(_) => {
@@ -539,9 +545,9 @@ impl<'ctx> CodeGen<'ctx> {
             }
             AnyValueEnum::FloatValue(f) => {
                 let ty = match t.type_ {
-                    MLValueType::Primitive(p) => match &*p {
-                        "Float" => self.context.f32_type(),
-                        "Double" => self.context.f64_type(),
+                    MLValueType::Primitive(p) => match p {
+                        MLPrimitiveType::Float => self.context.f32_type(),
+                        MLPrimitiveType::Double => self.context.f64_type(),
                         _ => panic!(),
                     },
                     MLValueType::Struct(_) => {
@@ -849,20 +855,28 @@ impl<'ctx> CodeGen<'ctx> {
 
     fn ml_type_to_type(&self, ml_type: MLValueType) -> AnyTypeEnum<'ctx> {
         match ml_type {
-            MLValueType::Primitive(name) => match &*name {
-                "Unit" => AnyTypeEnum::from(self.context.void_type()),
-                "Int8" | "UInt8" => AnyTypeEnum::from(self.context.i8_type()),
-                "Int16" | "UInt16" => AnyTypeEnum::from(self.context.i16_type()),
-                "Int32" | "UInt32" => AnyTypeEnum::from(self.context.i32_type()),
-                "Int64" | "UInt64" => AnyTypeEnum::from(self.context.i64_type()),
-                "Bool" => AnyTypeEnum::from(self.context.bool_type()),
-                "Float" => AnyTypeEnum::from(self.context.f32_type()),
-                "Double" => AnyTypeEnum::from(self.context.f64_type()),
-                "String" => {
+            MLValueType::Primitive(name) => match name {
+                MLPrimitiveType::Unit => AnyTypeEnum::from(self.context.void_type()),
+                MLPrimitiveType::Int8 | MLPrimitiveType::UInt8 => {
+                    AnyTypeEnum::from(self.context.i8_type())
+                }
+                MLPrimitiveType::Int16 | MLPrimitiveType::UInt16 => {
+                    AnyTypeEnum::from(self.context.i16_type())
+                }
+                MLPrimitiveType::Int32 | MLPrimitiveType::UInt32 => {
+                    AnyTypeEnum::from(self.context.i32_type())
+                }
+                MLPrimitiveType::Int64 | MLPrimitiveType::UInt64 => {
+                    AnyTypeEnum::from(self.context.i64_type())
+                }
+                MLPrimitiveType::Bool => AnyTypeEnum::from(self.context.bool_type()),
+                MLPrimitiveType::Float => AnyTypeEnum::from(self.context.f32_type()),
+                MLPrimitiveType::Double => AnyTypeEnum::from(self.context.f64_type()),
+                MLPrimitiveType::String => {
                     AnyTypeEnum::from(self.context.i8_type().ptr_type(AddressSpace::Generic))
                 }
                 t => {
-                    eprintln!("Invalid Primitive Type {}", t);
+                    eprintln!("Invalid Primitive Type {:?}", t);
                     exit(-1)
                 }
             },

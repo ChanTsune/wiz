@@ -148,7 +148,10 @@ impl Ast2HLIR {
                 name: a.name,
                 type_: self.type_(a.type_name),
             }),
-            ArgDef::Self_ => TypedArgDef::Self_(None),
+            ArgDef::Self_(s) => match s.reference {
+                None => TypedArgDef::Self_(None),
+                Some(_) => TypedArgDef::RefSelf(None),
+            },
         }
     }
 
@@ -195,13 +198,34 @@ impl Ast2HLIR {
     }
 
     pub fn type_(&self, tn: TypeName) -> TypedType {
-        TypedType::Value(TypedValueType {
-            package: Some(Package::global()),
-            name: tn.name,
-            type_args: tn
-                .type_args
-                .map(|v| v.into_iter().map(|t| self.type_(t)).collect()),
-        })
+        match tn {
+            TypeName::Simple(stn) => TypedType::Value(TypedValueType {
+                package: Some(Package::global()),
+                name: stn.name,
+                type_args: stn
+                    .type_args
+                    .map(|v| v.into_iter().map(|t| self.type_(t)).collect()),
+            }),
+            TypeName::Decorated(d) => {
+                if d.decoration == "&" {
+                    let t = self.type_(d.type_);
+                    match t {
+                        TypedType::Value(v) => TypedType::Reference(v),
+                        TypedType::Function(_) => {
+                            todo!()
+                        }
+                        TypedType::Type(_) => {
+                            todo!()
+                        }
+                        TypedType::Reference(_) => {
+                            panic!("Reference can not reference.")
+                        }
+                    }
+                } else {
+                    todo!()
+                }
+            }
+        }
     }
 
     fn type_param(&self, tp: TypeParam) -> TypedTypeParam {
@@ -487,11 +511,7 @@ impl Ast2HLIR {
 
     pub fn return_syntax(&self, r: ReturnSyntax) -> TypedReturn {
         let value = r.value.map(|v| Box::new(self.expr(*v)));
-        let t = match &value {
-            Some(v) => v.type_(),
-            None => None,
-        };
-        TypedReturn { value, type_: t }
+        TypedReturn { value }
     }
 
     pub fn type_cast(&self, t: TypeCastSyntax) -> TypedTypeCast {

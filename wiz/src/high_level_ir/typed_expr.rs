@@ -115,7 +115,6 @@ pub struct TypedIf {
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct TypedReturn {
     pub(crate) value: Option<Box<TypedExpr>>,
-    pub(crate) type_: Option<TypedType>,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -142,7 +141,7 @@ impl TypedExpr {
             TypedExpr::If(i) => i.type_.clone(),
             TypedExpr::When => None,
             TypedExpr::Lambda => None,
-            TypedExpr::Return(r) => r.type_.clone(),
+            TypedExpr::Return(r) => Some(r.type_()),
             TypedExpr::TypeCast(t) => t.type_.clone(),
         }
     }
@@ -177,5 +176,11 @@ impl TypedLiteral {
 
     pub fn is_null(&self) -> bool {
         matches!(self, TypedLiteral::NullLiteral { .. })
+    }
+}
+
+impl TypedReturn {
+    pub(crate) fn type_(&self) -> TypedType {
+        TypedType::noting()
     }
 }

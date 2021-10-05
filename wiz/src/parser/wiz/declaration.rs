@@ -1,4 +1,4 @@
-use crate::parser::wiz::character::comma;
+use crate::parser::wiz::character::{ampersand, comma};
 use crate::parser::wiz::expression::expr;
 use crate::parser::wiz::keywords::{
     as_keyword, fun_keyword, init_keyword, self_keyword, struct_keyword, use_keyword, val_keyword,
@@ -15,9 +15,11 @@ use crate::syntax::decl::{
     StructPropertySyntax, StructSyntax, UseSyntax, VarSyntax,
 };
 use crate::syntax::expr::Expr;
-use crate::syntax::fun::arg_def::{ArgDef, ValueArgDef};
+use crate::syntax::fun::arg_def::{ArgDef, SelfArgDefSyntax, ValueArgDef};
 use crate::syntax::fun::body_def::FunBody;
+use crate::syntax::token::TokenSyntax;
 use crate::syntax::type_name::{TypeName, TypeParam};
+use crate::syntax::Syntax;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{char, newline};
@@ -465,7 +467,15 @@ where
                 })
             },
         ),
-        map(self_keyword, |_| ArgDef::Self_),
+        map(
+            tuple((opt(ampersand), whitespace0, self_keyword)),
+            |(amp, ws, s): (_, _, I)| {
+                ArgDef::Self_(SelfArgDefSyntax {
+                    reference: amp.map(|a| TokenSyntax::new(a.to_string())),
+                    self_: TokenSyntax::new(s.to_string()).with_leading_trivia(ws),
+                })
+            },
+        ),
     ))(s)
 }
 
@@ -807,7 +817,7 @@ mod tests {
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::stmt::Stmt;
     use crate::syntax::token::TokenSyntax;
-    use crate::syntax::type_name::{TypeName, TypeParam};
+    use crate::syntax::type_name::{SimpleTypeName, TypeName, TypeParam};
 
     #[test]
     fn test_struct_properties() {
@@ -823,18 +833,18 @@ mod tests {
                     StructPropertySyntax::StoredProperty(StoredPropertySyntax {
                         is_mut: false,
                         name: "a".to_string(),
-                        type_: TypeName {
+                        type_: TypeName::Simple(SimpleTypeName {
                             name: "Int64".to_string(),
                             type_args: None
-                        }
+                        })
                     }),
                     StructPropertySyntax::StoredProperty(StoredPropertySyntax {
                         is_mut: false,
                         name: "b".to_string(),
-                        type_: TypeName {
+                        type_: TypeName::Simple(SimpleTypeName {
                             name: "Int64".to_string(),
                             type_args: None
-                        }
+                        })
                     }),
                 ]
             ))
@@ -850,10 +860,10 @@ mod tests {
                 StructPropertySyntax::StoredProperty(StoredPropertySyntax {
                     is_mut: false,
                     name: "a".to_string(),
-                    type_: TypeName {
+                    type_: TypeName::Simple(SimpleTypeName {
                         name: "Int64".to_string(),
                         type_args: None
-                    }
+                    })
                 })
             ))
         );
@@ -864,10 +874,10 @@ mod tests {
                 StructPropertySyntax::StoredProperty(StoredPropertySyntax {
                     is_mut: true,
                     name: "a".to_string(),
-                    type_: TypeName {
+                    type_: TypeName::Simple(SimpleTypeName {
                         name: "Int64".to_string(),
                         type_args: None
-                    }
+                    })
                 })
             ))
         );
@@ -890,10 +900,10 @@ mod tests {
                     properties: vec![StructPropertySyntax::StoredProperty(StoredPropertySyntax {
                         is_mut: true,
                         name: "a".to_string(),
-                        type_: TypeName {
+                        type_: TypeName::Simple(SimpleTypeName {
                             name: "String".to_string(),
                             type_args: None
-                        }
+                        })
                     })]
                 }
             ))
@@ -1042,15 +1052,15 @@ mod tests {
                     arg_defs: vec![ArgDef::Value(ValueArgDef {
                         label: "_".to_string(),
                         name: "item".to_string(),
-                        type_name: TypeName {
+                        type_name: TypeName::Simple(SimpleTypeName {
                             name: "String".to_string(),
                             type_args: None
-                        }
+                        })
                     })],
-                    return_type: Some(TypeName {
+                    return_type: Some(TypeName::Simple(SimpleTypeName {
                         name: "Unit".to_string(),
                         type_args: None
-                    }),
+                    })),
                     body: None,
                 })
             ))
@@ -1070,15 +1080,15 @@ mod tests {
                     arg_defs: vec![ArgDef::Value(ValueArgDef {
                         label: "item".to_string(),
                         name: "item".to_string(),
-                        type_name: TypeName {
+                        type_name: TypeName::Simple(SimpleTypeName {
                             name: "String".to_string(),
                             type_args: None
-                        }
+                        })
                     })],
-                    return_type: Some(TypeName {
+                    return_type: Some(TypeName::Simple(SimpleTypeName {
                         name: "Unit".to_string(),
                         type_args: None
-                    }),
+                    })),
                     body: None,
                 })
             ))
@@ -1094,10 +1104,10 @@ mod tests {
                 Decl::Var(VarSyntax {
                     is_mut: false,
                     name: "a".to_string(),
-                    type_: Some(TypeName {
+                    type_: Some(TypeName::Simple(SimpleTypeName {
                         name: "Int".to_string(),
                         type_args: None
-                    }),
+                    })),
                     value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new("1".to_string())))
                 })
             ))
@@ -1128,10 +1138,10 @@ mod tests {
                 "",
                 TypeParam {
                     name: "T".to_string(),
-                    type_constraints: Some(TypeName {
+                    type_constraints: Some(TypeName::Simple(SimpleTypeName {
                         name: "Printable".to_string(),
                         type_args: None
-                    })
+                    }))
                 }
             ))
         )
@@ -1145,10 +1155,10 @@ mod tests {
                 "",
                 vec![TypeParam {
                     name: "T".to_string(),
-                    type_constraints: Some(TypeName {
+                    type_constraints: Some(TypeName::Simple(SimpleTypeName {
                         name: "Printable".to_string(),
                         type_args: None
-                    })
+                    }))
                 },]
             ))
         );
@@ -1159,17 +1169,17 @@ mod tests {
                 vec![
                     TypeParam {
                         name: "T".to_string(),
-                        type_constraints: Some(TypeName {
+                        type_constraints: Some(TypeName::Simple(SimpleTypeName {
                             name: "Printable".to_string(),
                             type_args: None
-                        })
+                        }))
                     },
                     TypeParam {
                         name: "T".to_string(),
-                        type_constraints: Some(TypeName {
+                        type_constraints: Some(TypeName::Simple(SimpleTypeName {
                             name: "DebugPrintable".to_string(),
                             type_args: None
-                        })
+                        }))
                     }
                 ]
             ))
@@ -1181,17 +1191,17 @@ mod tests {
                 vec![
                     TypeParam {
                         name: "T".to_string(),
-                        type_constraints: Some(TypeName {
+                        type_constraints: Some(TypeName::Simple(SimpleTypeName {
                             name: "Printable".to_string(),
                             type_args: None
-                        })
+                        }))
                     },
                     TypeParam {
                         name: "T".to_string(),
-                        type_constraints: Some(TypeName {
+                        type_constraints: Some(TypeName::Simple(SimpleTypeName {
                             name: "DebugPrintable".to_string(),
                             type_args: None
-                        })
+                        }))
                     }
                 ]
             ))
