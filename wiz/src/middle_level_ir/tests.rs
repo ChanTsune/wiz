@@ -79,7 +79,7 @@ fn test_struct() {
                 }),
                 MLDecl::Fun(MLFun {
                     modifiers: vec![],
-                    name: "test::A#init".to_string(),
+                    name: "test::A::init".to_string(),
                     arg_defs: vec![MLArgDef {
                         name: "a".to_string(),
                         type_: MLValueType::Primitive(MLPrimitiveType::Int64)
@@ -172,7 +172,7 @@ fn test_struct_init() {
                 }),
                 MLDecl::Fun(MLFun {
                     modifiers: vec![],
-                    name: "test::A#init".to_string(),
+                    name: "test::A::init".to_string(),
                     arg_defs: vec![MLArgDef {
                         name: "a".to_string(),
                         type_: MLValueType::Primitive(MLPrimitiveType::Int64)
@@ -228,7 +228,7 @@ fn test_struct_init() {
                         body: vec![MLStmt::Expr(MLExpr::Return(MLReturn {
                             value: Some(Box::from(MLExpr::Call(MLCall {
                                 target: Box::new(MLExpr::Name(MLName {
-                                    name: "test::A#init".to_string(),
+                                    name: "test::A::init".to_string(),
                                     type_: MLType::Function(MLFunctionType {
                                         arguments: vec![MLValueType::Primitive(
                                             MLPrimitiveType::Int64
