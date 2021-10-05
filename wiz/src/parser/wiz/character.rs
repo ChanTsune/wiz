@@ -53,7 +53,7 @@ where
     I: Slice<RangeFrom<usize>> + InputIter,
     <I as InputIter>::Item: AsChar,
 {
-    char('\x11')(s)
+    char('\x0b')(s)
 }
 
 pub fn double_quote<I>(s: I) -> IResult<I, char>
@@ -136,7 +136,7 @@ mod tests {
 
     #[test]
     fn test_vertical_tab() {
-        assert_eq!(vertical_tab("\x11"), Ok(("", '\x11')))
+        assert_eq!(vertical_tab("\x0b"), Ok(("", '\x0b')))
     }
 
     #[test]

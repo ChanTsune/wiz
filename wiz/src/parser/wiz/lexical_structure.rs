@@ -542,7 +542,7 @@ mod tests {
     #[test]
     fn test_vertical_tabs() {
         assert_eq!(
-            vertical_tabs("\x11"),
+            vertical_tabs("\x0b"),
             Ok(("", TriviaPiece::VerticalTabs(1)))
         );
     }

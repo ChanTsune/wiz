@@ -33,8 +33,8 @@ impl ToString for TriviaPiece {
         match self {
             TriviaPiece::Spaces(i) => String::from(' ').repeat(i.clone() as usize),
             TriviaPiece::Tabs(i) => String::from('\t').repeat(i.clone() as usize),
-            TriviaPiece::VerticalTabs(i) => String::from('\x11').repeat(i.clone() as usize),
-            TriviaPiece::FormFeeds(i) => String::from('\x12').repeat(i.clone() as usize),
+            TriviaPiece::VerticalTabs(i) => String::from('\x0b').repeat(i.clone() as usize),
+            TriviaPiece::FormFeeds(i) => String::from('\x0c').repeat(i.clone() as usize),
             TriviaPiece::Newlines(i) => String::from('\n').repeat(i.clone() as usize),
             TriviaPiece::CarriageReturns(i) => String::from('\r').repeat(i.clone() as usize),
             TriviaPiece::CarriageReturnLineFeeds(i) => {
