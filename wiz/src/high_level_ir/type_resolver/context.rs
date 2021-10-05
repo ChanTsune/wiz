@@ -298,7 +298,7 @@ impl ResolverContext {
         loop {
             let ns = self.get_namespace_mut(cns.clone())?;
             match &typ {
-                TypedType::Value(v)|TypedType::Reference(v) => {
+                TypedType::Value(v) | TypedType::Reference(v) => {
                     if let Some(_) = ns.types.get(&v.name) {
                         return Result::Ok(TypedType::Value(TypedValueType {
                             package: Some(Package { names: cns.clone() }),

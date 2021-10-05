@@ -629,7 +629,7 @@ impl TypeResolver {
     pub fn typed_call(&mut self, c: TypedCall) -> Result<TypedCall> {
         let target = Box::new(self.expr(*c.target)?);
         let c_type = match target.type_().unwrap() {
-            TypedType::Value(v) | TypedType::Type(v) | TypedType::Reference(v)=> {
+            TypedType::Value(v) | TypedType::Type(v) | TypedType::Reference(v) => {
                 Result::Err(ResolverError::from(format!("{:?} is not callable.", v)))
             }
             TypedType::Function(f) => Result::Ok(f.return_type),
