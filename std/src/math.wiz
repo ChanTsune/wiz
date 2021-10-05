@@ -1,4 +1,0 @@
-struct Complex {
-    var real: Double
-    var imaginary: Double
-}
