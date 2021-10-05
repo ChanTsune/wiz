@@ -57,9 +57,9 @@ where
 }
 
 pub fn form_feed<I>(s: I) -> IResult<I, char>
-    where
-        I: Slice<RangeFrom<usize>> + InputIter,
-        <I as InputIter>::Item: AsChar,
+where
+    I: Slice<RangeFrom<usize>> + InputIter,
+    <I as InputIter>::Item: AsChar,
 {
     char('\x0c')(s)
 }
@@ -122,7 +122,10 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::character::{alphabet, ampersand, backticks, comma, cr, digit, dot, double_quote, form_feed, not_double_quote_or_back_slash, space, under_score, vertical_tab};
+    use crate::parser::wiz::character::{
+        alphabet, ampersand, backticks, comma, cr, digit, dot, double_quote, form_feed,
+        not_double_quote_or_back_slash, space, under_score, vertical_tab,
+    };
 
     #[test]
     fn test_alphabet() {
