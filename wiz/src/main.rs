@@ -28,15 +28,14 @@ mod utils;
 
 type MainFunc = unsafe extern "C" fn() -> u8;
 
-fn get_builtin_syntax() -> Vec<WizFile> {
+fn get_builtin_syntax() -> parser::result::Result<Vec<WizFile>> {
     let builtin_dir = std::fs::read_dir(Path::new("../builtin")).unwrap();
     builtin_dir
         .flatten()
         .map(|p| p.path())
         .filter(|path| path.ends_with("builtin.ll.wiz"))
         .map(|path| parse_from_file_path(path.as_path()))
-        .flatten()
-        .collect()
+        .collect::<parser::result::Result<Vec<WizFile>>>()
 }
 
 fn main() -> result::Result<(), Box<dyn Error>> {
@@ -49,7 +48,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
     let inputs = matches.values_of_lossy("input").unwrap();
     let output = matches.value_of("output");
 
-    let builtin_syntax = get_builtin_syntax();
+    let builtin_syntax = get_builtin_syntax()?;
 
     let std_package_source_set = read_package_from_path(Path::new("../std"))?;
 
