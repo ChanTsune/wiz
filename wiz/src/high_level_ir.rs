@@ -206,17 +206,25 @@ impl Ast2HLIR {
                     .type_args
                     .map(|v| v.into_iter().map(|t| self.type_(t)).collect()),
             }),
-            TypeName::Decorated(d) => if d.decoration == "&" {
-                let t = self.type_(d.type_);
-                match t {
-                    TypedType::Value(v) => { TypedType::Reference(v) }
-                    TypedType::Function(_) => {todo!()}
-                    TypedType::Type(_) => {todo!()}
-                    TypedType::Reference(_) => {panic!("Reference can not reference.")}
+            TypeName::Decorated(d) => {
+                if d.decoration == "&" {
+                    let t = self.type_(d.type_);
+                    match t {
+                        TypedType::Value(v) => TypedType::Reference(v),
+                        TypedType::Function(_) => {
+                            todo!()
+                        }
+                        TypedType::Type(_) => {
+                            todo!()
+                        }
+                        TypedType::Reference(_) => {
+                            panic!("Reference can not reference.")
+                        }
+                    }
+                } else {
+                    todo!()
                 }
-            } else {
-                todo!()
-            },
+            }
         }
     }
 
