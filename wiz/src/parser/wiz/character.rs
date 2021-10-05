@@ -49,9 +49,9 @@ where
 }
 
 pub fn vertical_tab<I>(s: I) -> IResult<I, char>
-    where
-        I: Slice<RangeFrom<usize>> + InputIter,
-        <I as InputIter>::Item: AsChar,
+where
+    I: Slice<RangeFrom<usize>> + InputIter,
+    <I as InputIter>::Item: AsChar,
 {
     char('\x11')(s)
 }
@@ -114,7 +114,10 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::character::{alphabet, ampersand, backticks, comma, cr, digit, dot, double_quote, not_double_quote_or_back_slash, space, under_score, vertical_tab};
+    use crate::parser::wiz::character::{
+        alphabet, ampersand, backticks, comma, cr, digit, dot, double_quote,
+        not_double_quote_or_back_slash, space, under_score, vertical_tab,
+    };
 
     #[test]
     fn test_alphabet() {
