@@ -56,6 +56,14 @@ where
     char('\x0b')(s)
 }
 
+pub fn form_feed<I>(s: I) -> IResult<I, char>
+    where
+        I: Slice<RangeFrom<usize>> + InputIter,
+        <I as InputIter>::Item: AsChar,
+{
+    char('\x0c')(s)
+}
+
 pub fn double_quote<I>(s: I) -> IResult<I, char>
 where
     I: Slice<RangeFrom<usize>> + InputIter,
@@ -114,10 +122,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::character::{
-        alphabet, ampersand, backticks, comma, cr, digit, dot, double_quote,
-        not_double_quote_or_back_slash, space, under_score, vertical_tab,
-    };
+    use crate::parser::wiz::character::{alphabet, ampersand, backticks, comma, cr, digit, dot, double_quote, form_feed, not_double_quote_or_back_slash, space, under_score, vertical_tab};
 
     #[test]
     fn test_alphabet() {
@@ -137,6 +142,11 @@ mod tests {
     #[test]
     fn test_vertical_tab() {
         assert_eq!(vertical_tab("\x0b"), Ok(("", '\x0b')))
+    }
+
+    #[test]
+    fn test_form_feed() {
+        assert_eq!(form_feed("\x0c"), Ok(("", '\x0c')))
     }
 
     #[test]
