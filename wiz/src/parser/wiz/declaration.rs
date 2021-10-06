@@ -31,6 +31,9 @@ use nom::{
     InputTakeAtPosition, Offset, Slice,
 };
 use std::ops::{Range, RangeFrom};
+use crate::parser::wiz::annotation::annotations;
+use crate::syntax::annotation::{Annotatable};
+use crate::syntax::trivia::Trivia;
 
 pub fn decl<I>(s: I) -> IResult<I, Decl>
 where
@@ -49,7 +52,17 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    alt((use_decl, struct_decl, function_decl, var_decl))(s)
+    map(tuple((
+        opt(tuple((        annotations,
+                           whitespace0,
+        ))),
+        alt((use_decl, struct_decl, function_decl, var_decl))
+        )), |(a, d)|{
+        match a {
+            Some((a, _)) => {        d.with_annotation(a) }
+            None => {d}
+        }
+    })(s)
 }
 
 //region struct
