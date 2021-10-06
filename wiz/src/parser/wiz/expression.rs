@@ -1308,10 +1308,17 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::expression::{array_expr, boolean_literal, conjunction_expr, disjunction_expr, equality_expr, expr, floating_point_literal, indexing_suffix, integer_literal, literal_expr, name_expr, postfix_suffix, raw_string_literal, return_expr, string_literal, value_arguments};
+    use crate::parser::wiz::expression::{
+        array_expr, boolean_literal, conjunction_expr, disjunction_expr, equality_expr, expr,
+        floating_point_literal, indexing_suffix, integer_literal, literal_expr, name_expr,
+        postfix_suffix, raw_string_literal, return_expr, string_literal, value_arguments,
+    };
     use crate::syntax::block::Block;
     use crate::syntax::expr::Expr::BinOp;
-    use crate::syntax::expr::{ArrayElementSyntax, ArraySyntax, CallArg, CallExprSyntax, Expr, IfExprSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax};
+    use crate::syntax::expr::{
+        ArrayElementSyntax, ArraySyntax, CallArg, CallExprSyntax, Expr, IfExprSyntax,
+        NameExprSyntax, PostfixSuffix, ReturnSyntax,
+    };
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::token::TokenSyntax;
     use crate::syntax::trivia::{Trivia, TriviaPiece};
@@ -1445,44 +1452,95 @@ mod tests {
 
     #[test]
     fn test_array_expr() {
-        assert_eq!(array_expr("[a]"), Ok(("", Expr::Array(ArraySyntax {
-            open: TokenSyntax::new("[".to_string()),
-            values: vec![ArrayElementSyntax {
-                element: Expr::Name(NameExprSyntax { name_space: vec![], name: "a".to_string() }),
-                trailing_comma: TokenSyntax::new("".to_string())
-            }],
-            close: TokenSyntax::new("]".to_string())
-        }))));
-        assert_eq!(array_expr("[a, b]"), Ok(("", Expr::Array(ArraySyntax {
-            open: TokenSyntax::new("[".to_string()),
-            values: vec![ArrayElementSyntax {
-                element: Expr::Name(NameExprSyntax { name_space: vec![], name: "a".to_string() }),
-                trailing_comma: TokenSyntax::new(",".to_string()).with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-            },ArrayElementSyntax {
-                element: Expr::Name(NameExprSyntax { name_space: vec![], name: "b".to_string() }),
-                trailing_comma: TokenSyntax::new("".to_string())
-            }],
-            close: TokenSyntax::new("]".to_string())
-        }))));
-        assert_eq!(array_expr("[a,]"), Ok(("", Expr::Array(ArraySyntax {
-            open: TokenSyntax::new("[".to_string()),
-            values: vec![ArrayElementSyntax {
-                element: Expr::Name(NameExprSyntax { name_space: vec![], name: "a".to_string() }),
-                trailing_comma: TokenSyntax::new(",".to_string())
-            }],
-            close: TokenSyntax::new("]".to_string())
-        }))));
-        assert_eq!(array_expr("[a, b, ]"), Ok(("", Expr::Array(ArraySyntax {
-            open: TokenSyntax::new("[".to_string()),
-            values: vec![ArrayElementSyntax {
-                element: Expr::Name(NameExprSyntax { name_space: vec![], name: "a".to_string() }),
-                trailing_comma: TokenSyntax::new(",".to_string()).with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-            },ArrayElementSyntax {
-                element: Expr::Name(NameExprSyntax { name_space: vec![], name: "b".to_string() }),
-                trailing_comma: TokenSyntax::new(",".to_string())
-            }],
-            close: TokenSyntax::new("]".to_string()).with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-        }))));
+        assert_eq!(
+            array_expr("[a]"),
+            Ok((
+                "",
+                Expr::Array(ArraySyntax {
+                    open: TokenSyntax::new("[".to_string()),
+                    values: vec![ArrayElementSyntax {
+                        element: Expr::Name(NameExprSyntax {
+                            name_space: vec![],
+                            name: "a".to_string()
+                        }),
+                        trailing_comma: TokenSyntax::new("".to_string())
+                    }],
+                    close: TokenSyntax::new("]".to_string())
+                })
+            ))
+        );
+        assert_eq!(
+            array_expr("[a, b]"),
+            Ok((
+                "",
+                Expr::Array(ArraySyntax {
+                    open: TokenSyntax::new("[".to_string()),
+                    values: vec![
+                        ArrayElementSyntax {
+                            element: Expr::Name(NameExprSyntax {
+                                name_space: vec![],
+                                name: "a".to_string()
+                            }),
+                            trailing_comma: TokenSyntax::new(",".to_string())
+                                .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                        },
+                        ArrayElementSyntax {
+                            element: Expr::Name(NameExprSyntax {
+                                name_space: vec![],
+                                name: "b".to_string()
+                            }),
+                            trailing_comma: TokenSyntax::new("".to_string())
+                        }
+                    ],
+                    close: TokenSyntax::new("]".to_string())
+                })
+            ))
+        );
+        assert_eq!(
+            array_expr("[a,]"),
+            Ok((
+                "",
+                Expr::Array(ArraySyntax {
+                    open: TokenSyntax::new("[".to_string()),
+                    values: vec![ArrayElementSyntax {
+                        element: Expr::Name(NameExprSyntax {
+                            name_space: vec![],
+                            name: "a".to_string()
+                        }),
+                        trailing_comma: TokenSyntax::new(",".to_string())
+                    }],
+                    close: TokenSyntax::new("]".to_string())
+                })
+            ))
+        );
+        assert_eq!(
+            array_expr("[a, b, ]"),
+            Ok((
+                "",
+                Expr::Array(ArraySyntax {
+                    open: TokenSyntax::new("[".to_string()),
+                    values: vec![
+                        ArrayElementSyntax {
+                            element: Expr::Name(NameExprSyntax {
+                                name_space: vec![],
+                                name: "a".to_string()
+                            }),
+                            trailing_comma: TokenSyntax::new(",".to_string())
+                                .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                        },
+                        ArrayElementSyntax {
+                            element: Expr::Name(NameExprSyntax {
+                                name_space: vec![],
+                                name: "b".to_string()
+                            }),
+                            trailing_comma: TokenSyntax::new(",".to_string())
+                        }
+                    ],
+                    close: TokenSyntax::new("]".to_string())
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                })
+            ))
+        );
     }
 
     #[test]
