@@ -8,6 +8,7 @@ use std::fs::{read_to_string, File};
 use std::io::Read;
 use std::path::Path;
 
+pub mod annotation;
 pub mod character;
 pub mod declaration;
 pub mod expression;
