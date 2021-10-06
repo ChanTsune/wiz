@@ -32,7 +32,7 @@ pub struct TypedName {
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct TypedArray {
     pub(crate) elements: Vec<TypedExpr>,
-    pub(crate) type_: Option<TypedType>
+    pub(crate) type_: Option<TypedType>,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]

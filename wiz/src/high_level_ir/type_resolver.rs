@@ -11,7 +11,10 @@ use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedMemberFunction,
     TypedStruct, TypedValueArgDef, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn, TypedSubscript, TypedTypeCast};
+use crate::high_level_ir::typed_expr::{
+    TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember,
+    TypedLiteral, TypedName, TypedReturn, TypedSubscript, TypedTypeCast,
+};
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedForStmt,
@@ -623,26 +626,29 @@ impl TypeResolver {
         })
     }
 
-    pub fn typed_array(&mut self, a:TypedArray) -> Result<TypedArray> {
-        let elements = a.elements.into_iter().map(|e|self.expr(e)).collect::<Result<Vec<TypedExpr>>>()?;
+    pub fn typed_array(&mut self, a: TypedArray) -> Result<TypedArray> {
+        let elements = a
+            .elements
+            .into_iter()
+            .map(|e| self.expr(e))
+            .collect::<Result<Vec<TypedExpr>>>()?;
         Result::Ok(if let Some(e) = elements.get(0) {
             let e_type = e.type_();
-            if elements.iter().all(|e|e.type_() == e_type) {
+            if elements.iter().all(|e| e.type_() == e_type) {
                 TypedArray {
                     elements,
-                    type_: todo!()
+                    type_: todo!(),
                 }
             } else {
-                return Result::Err(ResolverError::from("Array elements must be same type."))
+                return Result::Err(ResolverError::from("Array elements must be same type."));
             }
         } else {
             // empty case
             TypedArray {
                 elements,
-                type_: None
+                type_: None,
             }
         })
-
     }
 
     pub fn typed_call(&mut self, c: TypedCall) -> Result<TypedCall> {
