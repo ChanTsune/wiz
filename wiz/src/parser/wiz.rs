@@ -8,6 +8,7 @@ use std::fs::{read_to_string, File};
 use std::io::Read;
 use std::path::Path;
 
+pub mod annotation;
 pub mod character;
 pub mod declaration;
 pub mod expression;
@@ -16,7 +17,6 @@ pub mod lexical_structure;
 pub mod operators;
 pub mod statement;
 pub mod type_;
-pub mod annotation;
 
 pub fn parse_from_string(string: &str) -> Result<WizFile> {
     return match file(Span::from(string)) {
