@@ -1,3 +1,4 @@
+use crate::parser::wiz::annotation::annotations;
 use crate::parser::wiz::character::{ampersand, comma};
 use crate::parser::wiz::expression::expr;
 use crate::parser::wiz::keywords::{
@@ -9,6 +10,7 @@ use crate::parser::wiz::lexical_structure::{
 };
 use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_parameters};
+use crate::syntax::annotation::Annotatable;
 use crate::syntax::block::Block;
 use crate::syntax::decl::{
     Decl, FunSyntax, InitializerSyntax, MethodSyntax, PackageName, StoredPropertySyntax,
@@ -18,6 +20,7 @@ use crate::syntax::expr::Expr;
 use crate::syntax::fun::arg_def::{ArgDef, SelfArgDefSyntax, ValueArgDef};
 use crate::syntax::fun::body_def::FunBody;
 use crate::syntax::token::TokenSyntax;
+use crate::syntax::trivia::Trivia;
 use crate::syntax::type_name::{TypeName, TypeParam};
 use crate::syntax::Syntax;
 use nom::branch::alt;
@@ -31,9 +34,6 @@ use nom::{
     InputTakeAtPosition, Offset, Slice,
 };
 use std::ops::{Range, RangeFrom};
-use crate::parser::wiz::annotation::annotations;
-use crate::syntax::annotation::{Annotatable};
-use crate::syntax::trivia::Trivia;
 
 pub fn decl<I>(s: I) -> IResult<I, Decl>
 where
@@ -52,17 +52,16 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(tuple((
-        opt(tuple((        annotations,
-                           whitespace0,
-        ))),
-        alt((use_decl, struct_decl, function_decl, var_decl))
-        )), |(a, d)|{
-        match a {
-            Some((a, _)) => {        d.with_annotation(a) }
-            None => {d}
-        }
-    })(s)
+    map(
+        tuple((
+            opt(tuple((annotations, whitespace0))),
+            alt((use_decl, struct_decl, function_decl, var_decl)),
+        )),
+        |(a, d)| match a {
+            Some((a, _)) => d.with_annotation(a),
+            None => d,
+        },
+    )(s)
 }
 
 //region struct
