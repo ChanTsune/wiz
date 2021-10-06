@@ -1,11 +1,11 @@
 use super::node::SyntaxNode;
+use crate::syntax::annotation::{Annotatable, AnnotationsSyntax};
 use crate::syntax::expr::Expr;
 use crate::syntax::fun::arg_def::ArgDef;
 use crate::syntax::fun::body_def::FunBody;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::type_name::{TypeName, TypeParam};
 use std::fmt;
-use crate::syntax::annotation::{AnnotationsSyntax, Annotatable};
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum Decl {
@@ -28,14 +28,14 @@ pub enum Decl {
 impl Annotatable for Decl {
     fn with_annotation(self, a: AnnotationsSyntax) -> Self {
         match self {
-            Decl::Var(v) => {Decl::Var(v.with_annotation(a))}
-            Decl::Fun(f) => {Decl::Fun(f.with_annotation(a))}
-            Decl::Struct(s) => {Decl::Struct(s.with_annotation(a))}
-            Decl::ExternC(e) => {Decl::ExternC(e).with_annotation(a)}
-            Decl::Enum { .. } => Decl::Enum { },
+            Decl::Var(v) => Decl::Var(v.with_annotation(a)),
+            Decl::Fun(f) => Decl::Fun(f.with_annotation(a)),
+            Decl::Struct(s) => Decl::Struct(s.with_annotation(a)),
+            Decl::ExternC(e) => Decl::ExternC(e).with_annotation(a),
+            Decl::Enum { .. } => Decl::Enum {},
             Decl::Protocol { .. } => Decl::Protocol {},
             Decl::Extension { .. } => Decl::Extension {},
-            Decl::Use(u) => {Decl::Use(u.with_annotation(a))}
+            Decl::Use(u) => Decl::Use(u.with_annotation(a)),
         }
     }
 }
