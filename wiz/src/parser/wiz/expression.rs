@@ -15,10 +15,7 @@ use crate::parser::wiz::operators::{
 use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_arguments};
 use crate::syntax::block::Block;
-use crate::syntax::expr::{
-    CallArg, CallExprSyntax, Expr, IfExprSyntax, LambdaSyntax, NameExprSyntax, PostfixSuffix,
-    ReturnSyntax, SubscriptSyntax, TypeCastSyntax,
-};
+use crate::syntax::expr::{ArrayElementSyntax, ArraySyntax, CallArg, CallExprSyntax, Expr, IfExprSyntax, LambdaSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax, SubscriptSyntax, TypeCastSyntax};
 use crate::syntax::literal::LiteralSyntax;
 use crate::syntax::stmt::Stmt;
 use crate::syntax::token::TokenSyntax;
@@ -265,6 +262,106 @@ where
     )(s)
 }
 
+pub fn array_elements<I>(s: I) -> IResult<I, Vec<ArrayElementSyntax>>
+    where
+        I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+        <I as InputIter>::Item: AsChar + Copy,
+        <I as InputTakeAtPosition>::Item: AsChar,
+{
+    map(opt(tuple((
+        expr,
+        whitespace0,
+        many0(tuple((comma, whitespace0, expr, whitespace0))),
+        opt(comma)
+    ))), |i|{
+    match i {
+        None => {vec![]}
+        Some((e, ws, v, c)) => {
+            let mut cmas = vec![];
+            let mut lwss = vec![];
+            let mut expers = vec![e];
+            let mut twss = vec![ws];
+            for (cma, lws, e, tws) in v.into_iter() {
+                cmas.push(cma);
+                lwss.push(lws);
+                expers.push(e);
+                twss.push(tws);
+            }
+            match c {
+                None => {}
+                Some(c) => {cmas.push(c)}
+            }
+            let mut elements = vec![];
+            for (idx, e) in expers.into_iter().enumerate() {
+                let mut trailing_comma = TokenSyntax::new(match cmas.get(idx) {
+                    None => {String::new()}
+                    Some(c) => {c.to_string()}
+                });
+                match lwss.get(idx) {
+                    None => {}
+                    Some(e) => {
+                        trailing_comma = trailing_comma.with_leading_trivia(e.clone());
+                    }
+                };
+                match twss.get(idx) {
+                    None => {}
+                    Some(e) => {
+                        trailing_comma = trailing_comma.with_trailing_trivia(e.clone());
+                    }
+                }
+                elements.push(ArrayElementSyntax {
+                    element: e,
+                    trailing_comma,
+                })
+            }
+            elements
+        }
+    }    })(s)
+}
+
+pub fn array_expr<I>(s: I) -> IResult<I, Expr>
+where
+        I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+        <I as InputIter>::Item: AsChar + Copy,
+        <I as InputTakeAtPosition>::Item: AsChar,
+{
+    map(tuple((
+        tag("["),
+        whitespace0,
+        array_elements,
+        whitespace0,
+        tag("]")
+    )), |(open,ows ,elements,cws,close):(I, _, _, _, I)|{
+        Expr::Array(ArraySyntax {
+            open: TokenSyntax::new(open.to_string()),
+            values: elements,
+            close: TokenSyntax::new(open.to_string())
+        })
+    })(s)
+}
+
 pub fn primary_expr<I>(s: I) -> IResult<I, Expr>
 where
     I: Slice<RangeFrom<usize>>
@@ -285,6 +382,7 @@ where
     alt((
         return_expr,
         if_expr,
+        array_expr,
         name_expr,
         literal_expr,
         parenthesized_expr,

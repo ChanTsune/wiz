@@ -422,7 +422,7 @@ impl Ast2HLIR {
                     type_: None,
                 })
             }
-            Expr::List { .. } => TypedExpr::List,
+            Expr::Array { .. } => TypedExpr::Array,
             Expr::Tuple { .. } => TypedExpr::Tuple,
             Expr::Dict { .. } => TypedExpr::Dict,
             Expr::StringBuilder { .. } => TypedExpr::StringBuilder,

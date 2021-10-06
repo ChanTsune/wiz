@@ -393,7 +393,7 @@ impl HLIR2MLIR {
             TypedExpr::UnaryOp { .. } => todo!(),
             TypedExpr::Subscript(s) => self.subscript(s),
             TypedExpr::Member(m) => self.member(m),
-            TypedExpr::List => todo!(),
+            TypedExpr::Array => todo!(),
             TypedExpr::Tuple => todo!(),
             TypedExpr::Dict => todo!(),
             TypedExpr::StringBuilder => todo!(),
