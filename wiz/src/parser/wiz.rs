@@ -16,6 +16,7 @@ pub mod lexical_structure;
 pub mod operators;
 pub mod statement;
 pub mod type_;
+pub mod annotation;
 
 pub fn parse_from_string(string: &str) -> Result<WizFile> {
     return match file(Span::from(string)) {
