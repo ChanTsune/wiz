@@ -89,7 +89,7 @@ pub struct ArraySyntax {
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct ArrayElementSyntax {
     pub(crate) element: Expr,
-    pub(crate) trailing_comma: TokenSyntax
+    pub(crate) trailing_comma: TokenSyntax,
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
