@@ -10,7 +10,7 @@ pub enum TypedExpr {
     UnaryOp(TypedUnaryOp),
     Subscript(TypedSubscript),
     Member(TypedInstanceMember),
-    Array,
+    Array(TypedArray),
     Tuple,
     Dict,
     StringBuilder,
@@ -27,6 +27,12 @@ pub struct TypedName {
     pub(crate) package: Option<Package>,
     pub(crate) name: String,
     pub(crate) type_: Option<TypedType>,
+}
+
+#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+pub struct TypedArray {
+    pub(crate) elements: Vec<TypedExpr>,
+    pub(crate) type_: Option<TypedType>
 }
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
@@ -133,7 +139,7 @@ impl TypedExpr {
             TypedExpr::UnaryOp(u) => u.type_.clone(),
             TypedExpr::Subscript(s) => s.type_.clone(),
             TypedExpr::Member(m) => m.type_.clone(),
-            TypedExpr::Array => None,
+            TypedExpr::Array(a) => a.type_.clone(),
             TypedExpr::Tuple => None,
             TypedExpr::Dict => None,
             TypedExpr::StringBuilder => None,

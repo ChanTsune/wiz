@@ -11,10 +11,7 @@ use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedMemberFunction,
     TypedStruct, TypedValueArgDef, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{
-    TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral,
-    TypedName, TypedReturn, TypedSubscript, TypedTypeCast,
-};
+use crate::high_level_ir::typed_expr::{TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn, TypedSubscript, TypedTypeCast};
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedForStmt,
@@ -493,7 +490,7 @@ impl TypeResolver {
             TypedExpr::UnaryOp(u) => TypedExpr::UnaryOp(u),
             TypedExpr::Subscript(s) => TypedExpr::Subscript(self.typed_subscript(s)?),
             TypedExpr::Member(m) => TypedExpr::Member(self.typed_instance_member(m)?),
-            TypedExpr::Array => TypedExpr::Array,
+            TypedExpr::Array(a) => TypedExpr::Array(self.typed_array(a)?),
             TypedExpr::Tuple => TypedExpr::Tuple,
             TypedExpr::Dict => TypedExpr::Dict,
             TypedExpr::StringBuilder => TypedExpr::StringBuilder,
@@ -624,6 +621,28 @@ impl TypeResolver {
                 .collect::<Result<Vec<TypedExpr>>>()?,
             type_: s.type_,
         })
+    }
+
+    pub fn typed_array(&mut self, a:TypedArray) -> Result<TypedArray> {
+        let elements = a.elements.into_iter().map(|e|self.expr(e)).collect::<Result<Vec<TypedExpr>>>()?;
+        Result::Ok(if let Some(e) = elements.get(0) {
+            let e_type = e.type_();
+            if elements.iter().all(|e|e.type_() == e_type) {
+                TypedArray {
+                    elements,
+                    type_: todo!()
+                }
+            } else {
+                return Result::Err(ResolverError::from("Array elements must be same type."))
+            }
+        } else {
+            // empty case
+            TypedArray {
+                elements,
+                type_: None
+            }
+        })
+
     }
 
     pub fn typed_call(&mut self, c: TypedCall) -> Result<TypedCall> {
