@@ -1,5 +1,6 @@
 use crate::syntax::trivia::Trivia;
 
+pub mod annotation;
 pub mod block;
 pub mod decl;
 pub mod expr;
@@ -11,7 +12,6 @@ pub mod stmt;
 pub mod token;
 pub mod trivia;
 pub mod type_name;
-pub mod annotation;
 
 pub(crate) trait Syntax {
     fn with_leading_trivia(self, trivia: Trivia) -> Self;
