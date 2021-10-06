@@ -110,13 +110,13 @@ where
         )),
         |(_, _, name, _, params, body)| match body {
             Some((_, _, _, properties, _, _)) => StructSyntax {
-                annotations: vec![],
+                annotations: None,
                 name,
                 type_params: params,
                 properties,
             },
             None => StructSyntax {
-                annotations: vec![String::from("CStructPointer")],
+                annotations: None,
                 name,
                 type_params: params,
                 properties: vec![],
@@ -390,12 +390,13 @@ where
         )),
         |(f, _, name, type_params, args, _, return_type, _, t_constraints, _, body)| {
             Decl::Fun(FunSyntax {
+                annotations: None,
                 modifiers: vec![],
-                name: name,
+                name,
                 type_params,
                 arg_defs: args,
                 return_type: return_type.map(|(_, _, t)| t),
-                body: body,
+                body,
             })
         },
     )(s)
@@ -662,8 +663,9 @@ where
     map(
         tuple((var_keyword, whitespace1, var_body)),
         |(_, _, (name, t, e))| VarSyntax {
+            annotations: None,
             is_mut: true,
-            name: name,
+            name,
             type_: t,
             value: e,
         },
@@ -690,8 +692,9 @@ where
     map(
         tuple((val_keyword, whitespace1, var_body)),
         |(_, _, (name, t, e))| VarSyntax {
+            annotations: None,
             is_mut: false,
-            name: name,
+            name,
             type_: t,
             value: e,
         },
@@ -770,6 +773,7 @@ where
             opt(tuple((whitespace1, as_keyword, whitespace1, identifier))),
         )),
         |(_, _, pkg, alias)| UseSyntax {
+            annotations: None,
             package_name: pkg,
             alias: alias.map(|(_, _, _, a)| a),
         },
@@ -894,7 +898,7 @@ mod tests {
             Ok((
                 "",
                 StructSyntax {
-                    annotations: vec![],
+                    annotations: None,
                     name: "A".to_string(),
                     type_params: None,
                     properties: vec![StructPropertySyntax::StoredProperty(StoredPropertySyntax {
@@ -1026,6 +1030,7 @@ mod tests {
             Ok((
                 "",
                 Decl::Fun(FunSyntax {
+                    annotations: None,
                     modifiers: vec![],
                     name: "function".to_string(),
                     type_params: None,
@@ -1046,6 +1051,7 @@ mod tests {
             Ok((
                 "",
                 Decl::Fun(FunSyntax {
+                    annotations: None,
                     modifiers: vec![],
                     name: "puts".to_string(),
                     type_params: None,
@@ -1074,6 +1080,7 @@ mod tests {
             Ok((
                 "",
                 Decl::Fun(FunSyntax {
+                    annotations: None,
                     modifiers: vec![],
                     name: "puts".to_string(),
                     type_params: None,
@@ -1102,6 +1109,7 @@ mod tests {
             Ok((
                 "",
                 Decl::Var(VarSyntax {
+                    annotations: None,
                     is_mut: false,
                     name: "a".to_string(),
                     type_: Some(TypeName::Simple(SimpleTypeName {
@@ -1121,6 +1129,7 @@ mod tests {
             Ok((
                 "",
                 Decl::Var(VarSyntax {
+                    annotations: None,
                     is_mut: false,
                     name: "a".to_string(),
                     type_: None,
@@ -1237,6 +1246,7 @@ mod tests {
             Ok((
                 "",
                 UseSyntax {
+                    annotations: None,
                     package_name: PackageName {
                         names: vec![String::from("abc")]
                     },
@@ -1249,6 +1259,7 @@ mod tests {
             Ok((
                 "",
                 UseSyntax {
+                    annotations: None,
                     package_name: PackageName {
                         names: vec![String::from("abc")]
                     },
