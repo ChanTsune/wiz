@@ -99,7 +99,7 @@ impl HLIR2MLIR {
             let mut pkg = t.package.clone().unwrap().names;
             if pkg.is_empty() {
                 match &*t.name {
-                    "Noting" => MLValueType::Primitive(MLPrimitiveType::Void),
+                    "Noting" => MLValueType::Primitive(MLPrimitiveType::Noting),
                     "Unit" => MLValueType::Primitive(MLPrimitiveType::Unit),
                     "Int8" => MLValueType::Primitive(MLPrimitiveType::Int8),
                     "UInt8" => MLValueType::Primitive(MLPrimitiveType::UInt8),

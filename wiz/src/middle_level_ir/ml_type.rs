@@ -40,7 +40,7 @@ pub struct MLFunctionType {
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub enum MLPrimitiveType {
-    Void,
+    Noting,
     Unit,
     Int8,
     Int16,
@@ -76,7 +76,7 @@ impl ToString for MLPrimitiveType {
             MLPrimitiveType::Bool => "Bool",
             MLPrimitiveType::String => "String",
             MLPrimitiveType::Unit => "Unit",
-            MLPrimitiveType::Void => "Void",
+            MLPrimitiveType::Noting => "Noting",
         })
     }
 }

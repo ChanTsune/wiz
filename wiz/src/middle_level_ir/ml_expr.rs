@@ -164,7 +164,7 @@ impl MLReturn {
         }
     }
     pub(crate) fn type_(&self) -> MLValueType {
-        MLValueType::Primitive(MLPrimitiveType::Void)
+        MLValueType::Primitive(MLPrimitiveType::Noting)
     }
 }
 
