@@ -358,33 +358,7 @@ impl Ast2HLIR {
     pub fn expr(&self, e: Expr) -> TypedExpr {
         match e {
             Expr::Name(n) => TypedExpr::Name(self.name_syntax(n)),
-            Expr::Literal(literal) => match literal {
-                LiteralSyntax::Integer(value) => TypedExpr::Literal(TypedLiteral::Integer {
-                    value: value.token,
-                    type_: Some(TypedType::int64()),
-                }),
-                LiteralSyntax::FloatingPoint(value) => {
-                    TypedExpr::Literal(TypedLiteral::FloatingPoint {
-                        value: value.token,
-                        type_: Some(TypedType::double()),
-                    })
-                }
-                LiteralSyntax::String {
-                    open_quote: _,
-                    value,
-                    close_quote: _,
-                } => TypedExpr::Literal(TypedLiteral::String {
-                    value,
-                    type_: Some(TypedType::string()),
-                }),
-                LiteralSyntax::Boolean(syntax) => TypedExpr::Literal(TypedLiteral::Boolean {
-                    value: syntax.token,
-                    type_: Some(TypedType::bool()),
-                }),
-                LiteralSyntax::Null => {
-                    TypedExpr::Literal(TypedLiteral::NullLiteral { type_: None })
-                }
-            },
+            Expr::Literal(literal) => TypedExpr::Literal(self.literal_syntax(literal)),
             Expr::BinOp { left, kind, right } => {
                 let left = Box::new(self.expr(*left));
                 let right = Box::new(self.expr(*right));
@@ -432,6 +406,36 @@ impl Ast2HLIR {
             Expr::Lambda { .. } => TypedExpr::Lambda,
             Expr::Return(r) => TypedExpr::Return(self.return_syntax(r)),
             Expr::TypeCast(t) => TypedExpr::TypeCast(self.type_cast(t)),
+        }
+    }
+
+    pub fn literal_syntax(&self, literal: LiteralSyntax) -> TypedLiteral {
+        match literal {
+            LiteralSyntax::Integer(value) => TypedLiteral::Integer {
+                value: value.token,
+                type_: Some(TypedType::int64()),
+            },
+            LiteralSyntax::FloatingPoint(value) => {
+                TypedLiteral::FloatingPoint {
+                    value: value.token,
+                    type_: Some(TypedType::double()),
+                }
+            }
+            LiteralSyntax::String {
+                open_quote: _,
+                value,
+                close_quote: _,
+            } => TypedLiteral::String {
+                value,
+                type_: Some(TypedType::string()),
+            },
+            LiteralSyntax::Boolean(syntax) => TypedLiteral::Boolean {
+                value: syntax.token,
+                type_: Some(TypedType::bool()),
+            },
+            LiteralSyntax::Null => {
+                TypedLiteral::NullLiteral { type_: None }
+            }
         }
     }
 
