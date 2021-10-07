@@ -16,8 +16,8 @@ use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_arguments};
 use crate::syntax::block::Block;
 use crate::syntax::expr::{
-    CallArg, CallExprSyntax, Expr, IfExprSyntax, LambdaSyntax, NameExprSyntax, PostfixSuffix,
-    ReturnSyntax, SubscriptSyntax, TypeCastSyntax,
+    ArrayElementSyntax, ArraySyntax, CallArg, CallExprSyntax, Expr, IfExprSyntax, LambdaSyntax,
+    NameExprSyntax, PostfixSuffix, ReturnSyntax, SubscriptSyntax, TypeCastSyntax,
 };
 use crate::syntax::literal::LiteralSyntax;
 use crate::syntax::stmt::Stmt;
@@ -265,6 +265,107 @@ where
     )(s)
 }
 
+pub fn array_elements<I>(s: I) -> IResult<I, Vec<ArrayElementSyntax>>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
+    map(
+        opt(tuple((
+            expr,
+            whitespace0,
+            many0(tuple((comma, whitespace0, expr, whitespace0))),
+            opt(comma),
+        ))),
+        |i| match i {
+            None => {
+                vec![]
+            }
+            Some((e, ws, v, c)) => {
+                let mut cmas = vec![];
+                let mut lwss = vec![ws];
+                let mut expers = vec![e];
+                let mut twss = vec![];
+                for (cma, tws, e, lws) in v.into_iter() {
+                    cmas.push(cma);
+                    twss.push(tws);
+                    expers.push(e);
+                    lwss.push(lws);
+                }
+                match c {
+                    None => {}
+                    Some(c) => cmas.push(c),
+                }
+                let mut elements = vec![];
+                for (idx, e) in expers.into_iter().enumerate() {
+                    let mut trailing_comma = TokenSyntax::new(match cmas.get(idx) {
+                        None => String::new(),
+                        Some(c) => c.to_string(),
+                    });
+                    match lwss.get(idx) {
+                        None => {}
+                        Some(e) => {
+                            trailing_comma = trailing_comma.with_leading_trivia(e.clone());
+                        }
+                    };
+                    match twss.get(idx) {
+                        None => {}
+                        Some(e) => {
+                            trailing_comma = trailing_comma.with_trailing_trivia(e.clone());
+                        }
+                    }
+                    elements.push(ArrayElementSyntax {
+                        element: e,
+                        trailing_comma,
+                    })
+                }
+                elements
+            }
+        },
+    )(s)
+}
+
+pub fn array_expr<I>(s: I) -> IResult<I, Expr>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
+    map(
+        tuple((tag("["), whitespace0, array_elements, whitespace0, tag("]"))),
+        |(open, ows, elements, cws, close): (I, _, _, _, I)| {
+            Expr::Array(ArraySyntax {
+                open: TokenSyntax::new(open.to_string()).with_trailing_trivia(ows),
+                values: elements,
+                close: TokenSyntax::new(close.to_string()).with_leading_trivia(cws),
+            })
+        },
+    )(s)
+}
+
 pub fn primary_expr<I>(s: I) -> IResult<I, Expr>
 where
     I: Slice<RangeFrom<usize>>
@@ -285,6 +386,7 @@ where
     alt((
         return_expr,
         if_expr,
+        array_expr,
         name_expr,
         literal_expr,
         parenthesized_expr,
@@ -1207,14 +1309,15 @@ where
 #[cfg(test)]
 mod tests {
     use crate::parser::wiz::expression::{
-        boolean_literal, conjunction_expr, disjunction_expr, equality_expr, expr,
+        array_expr, boolean_literal, conjunction_expr, disjunction_expr, equality_expr, expr,
         floating_point_literal, indexing_suffix, integer_literal, literal_expr, name_expr,
         postfix_suffix, raw_string_literal, return_expr, string_literal, value_arguments,
     };
     use crate::syntax::block::Block;
     use crate::syntax::expr::Expr::BinOp;
     use crate::syntax::expr::{
-        CallArg, CallExprSyntax, Expr, IfExprSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax,
+        ArrayElementSyntax, ArraySyntax, CallArg, CallExprSyntax, Expr, IfExprSyntax,
+        NameExprSyntax, PostfixSuffix, ReturnSyntax,
     };
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::token::TokenSyntax;
@@ -1345,6 +1448,99 @@ mod tests {
                 })
             ))
         )
+    }
+
+    #[test]
+    fn test_array_expr() {
+        assert_eq!(
+            array_expr("[a]"),
+            Ok((
+                "",
+                Expr::Array(ArraySyntax {
+                    open: TokenSyntax::new("[".to_string()),
+                    values: vec![ArrayElementSyntax {
+                        element: Expr::Name(NameExprSyntax {
+                            name_space: vec![],
+                            name: "a".to_string()
+                        }),
+                        trailing_comma: TokenSyntax::new("".to_string())
+                    }],
+                    close: TokenSyntax::new("]".to_string())
+                })
+            ))
+        );
+        assert_eq!(
+            array_expr("[a, b]"),
+            Ok((
+                "",
+                Expr::Array(ArraySyntax {
+                    open: TokenSyntax::new("[".to_string()),
+                    values: vec![
+                        ArrayElementSyntax {
+                            element: Expr::Name(NameExprSyntax {
+                                name_space: vec![],
+                                name: "a".to_string()
+                            }),
+                            trailing_comma: TokenSyntax::new(",".to_string())
+                                .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                        },
+                        ArrayElementSyntax {
+                            element: Expr::Name(NameExprSyntax {
+                                name_space: vec![],
+                                name: "b".to_string()
+                            }),
+                            trailing_comma: TokenSyntax::new("".to_string())
+                        }
+                    ],
+                    close: TokenSyntax::new("]".to_string())
+                })
+            ))
+        );
+        assert_eq!(
+            array_expr("[a,]"),
+            Ok((
+                "",
+                Expr::Array(ArraySyntax {
+                    open: TokenSyntax::new("[".to_string()),
+                    values: vec![ArrayElementSyntax {
+                        element: Expr::Name(NameExprSyntax {
+                            name_space: vec![],
+                            name: "a".to_string()
+                        }),
+                        trailing_comma: TokenSyntax::new(",".to_string())
+                    }],
+                    close: TokenSyntax::new("]".to_string())
+                })
+            ))
+        );
+        assert_eq!(
+            array_expr("[a, b, ]"),
+            Ok((
+                "",
+                Expr::Array(ArraySyntax {
+                    open: TokenSyntax::new("[".to_string()),
+                    values: vec![
+                        ArrayElementSyntax {
+                            element: Expr::Name(NameExprSyntax {
+                                name_space: vec![],
+                                name: "a".to_string()
+                            }),
+                            trailing_comma: TokenSyntax::new(",".to_string())
+                                .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                        },
+                        ArrayElementSyntax {
+                            element: Expr::Name(NameExprSyntax {
+                                name_space: vec![],
+                                name: "b".to_string()
+                            }),
+                            trailing_comma: TokenSyntax::new(",".to_string())
+                        }
+                    ],
+                    close: TokenSyntax::new("]".to_string())
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                })
+            ))
+        );
     }
 
     #[test]
