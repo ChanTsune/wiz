@@ -4,6 +4,13 @@ pub struct TypedAnnotations {
 }
 
 impl TypedAnnotations {
+
+    pub(crate) fn has_annotate<T: ToString>(&self, a:T) -> bool {
+        self.annotations.contains(&a.to_string())
+    }
+}
+
+impl TypedAnnotations {
     pub(crate) fn new() -> Self {
         Self {
             annotations: vec![],
