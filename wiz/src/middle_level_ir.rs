@@ -54,6 +54,14 @@ impl HLIR2MLIRContext {
         }
     }
 
+    pub(crate) fn get_struct(&self, typ: &MLValueType) -> &MLStruct {
+        self.structs.get(typ).unwrap()
+    }
+
+    pub(crate) fn add_struct(&mut self, typ: MLValueType, struct_: MLStruct) {
+        self.structs.insert(typ, struct_);
+    }
+
     pub(crate) fn push_name_space(&mut self, name: String) {
         self.current_name_space.push(name)
     }
@@ -68,15 +76,6 @@ impl HLIR2MLIR {
         HLIR2MLIR {
             context: HLIR2MLIRContext::new(),
         }
-    }
-
-    fn get_struct(&self, typ: &MLType) -> &MLStruct {
-        let typ = typ.clone();
-        self.context.structs.get(&typ.into_value_type()).unwrap()
-    }
-
-    fn add_struct(&mut self, typ: MLValueType, struct_: MLStruct) {
-        self.context.structs.insert(typ, struct_);
     }
 
     pub fn type_(&self, t: TypedType) -> MLType {
@@ -328,7 +327,7 @@ impl HLIR2MLIR {
                 .collect(),
         };
         let value_type = MLValueType::Struct(struct_.name.clone());
-        self.add_struct(value_type.clone(), struct_.clone());
+        self.context.add_struct(value_type.clone(), struct_.clone());
 
         let init: Vec<MLFun> = init
             .into_iter()
@@ -519,7 +518,7 @@ impl HLIR2MLIR {
         match target.type_().unwrap() {
             TypedType::Value(_) => {
                 let target = self.expr(*target);
-                let struct_ = self.get_struct(&target.type_());
+                let struct_ = self.context.get_struct(&target.type_().into_value_type());
                 let type_ = self.type_(type_.unwrap());
                 let is_stored = struct_.fields.iter().any(|f| f.name == name);
                 if is_stored {
