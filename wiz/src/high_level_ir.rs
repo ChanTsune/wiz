@@ -415,12 +415,10 @@ impl Ast2HLIR {
                 value: value.token,
                 type_: Some(TypedType::int64()),
             },
-            LiteralSyntax::FloatingPoint(value) => {
-                TypedLiteral::FloatingPoint {
-                    value: value.token,
-                    type_: Some(TypedType::double()),
-                }
-            }
+            LiteralSyntax::FloatingPoint(value) => TypedLiteral::FloatingPoint {
+                value: value.token,
+                type_: Some(TypedType::double()),
+            },
             LiteralSyntax::String {
                 open_quote: _,
                 value,
@@ -433,9 +431,7 @@ impl Ast2HLIR {
                 value: syntax.token,
                 type_: Some(TypedType::bool()),
             },
-            LiteralSyntax::Null => {
-                TypedLiteral::NullLiteral { type_: None }
-            }
+            LiteralSyntax::Null => TypedLiteral::NullLiteral { type_: None },
         }
     }
 
