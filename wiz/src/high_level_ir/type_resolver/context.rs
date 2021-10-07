@@ -3,15 +3,14 @@ use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_type::{Package, TypedType, TypedValueType};
 use std::collections::{HashMap, HashSet};
-use std::fmt;
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub(crate) struct ResolverTypeParam {
     type_constraints: Vec<String>,
     type_params: Option<HashMap<String, ResolverTypeParam>>,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct ResolverStruct {
     pub(crate) stored_properties: HashMap<String, TypedType>,
     pub(crate) computed_properties: HashMap<String, TypedType>,
@@ -21,27 +20,27 @@ pub struct ResolverStruct {
     pub(crate) type_params: Option<HashMap<String, ResolverTypeParam>>,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct NameSpace {
     pub(crate) children: HashMap<String, NameSpace>,
     pub(crate) types: HashMap<String, ResolverStruct>,
     pub(crate) values: HashMap<String, TypedType>,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 struct ResolverSubscript {
     target: TypedType,
     indexes: Vec<TypedType>,
     return_type: TypedType,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 struct ResolverUnary {
     value: TypedType,
     return_type: TypedType,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
+#[derive(Debug, Eq, PartialEq, Clone, Hash)]
 enum BinaryOperator {
     Add,
     Sub,
@@ -69,7 +68,7 @@ impl BinaryOperator {
     }
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct ResolverContext {
     name_space: NameSpace,
     binary_operators: HashMap<(BinaryOperator, TypedType, TypedType), TypedType>,

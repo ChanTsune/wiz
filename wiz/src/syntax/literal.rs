@@ -1,8 +1,7 @@
 use crate::syntax::node::SyntaxNode;
 use crate::syntax::token::TokenSyntax;
-use std::fmt;
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum LiteralSyntax {
     Integer(TokenSyntax),
     FloatingPoint(TokenSyntax),

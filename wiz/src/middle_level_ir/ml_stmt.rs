@@ -5,7 +5,7 @@ use crate::middle_level_ir::ml_node::MLNode;
 use std::fmt;
 use std::fmt::Write;
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum MLStmt {
     Expr(MLExpr),
     Var(MLVar),
@@ -13,19 +13,19 @@ pub enum MLStmt {
     Loop(MLLoopStmt),
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLAssignmentStmt {
     pub(crate) target: MLExpr,
     pub(crate) value: MLExpr,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLLoopStmt {
     pub(crate) condition: MLExpr,
     pub(crate) block: MLBlock,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLBlock {
     pub(crate) body: Vec<MLStmt>,
 }

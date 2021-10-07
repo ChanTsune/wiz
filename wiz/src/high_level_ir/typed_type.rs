@@ -1,14 +1,13 @@
 use crate::constants::UNSAFE_POINTER;
 use crate::high_level_ir::typed_decl::TypedArgDef;
-use std::fmt;
 use std::option::Option::Some;
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
+#[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub struct Package {
     pub(crate) names: Vec<String>,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
+#[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub enum TypedType {
     Value(TypedValueType),
     Function(Box<TypedFunctionType>),
@@ -16,20 +15,20 @@ pub enum TypedType {
     Reference(TypedValueType),
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
+#[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub struct TypedValueType {
     pub(crate) package: Option<Package>,
     pub(crate) name: String,
     pub(crate) type_args: Option<Vec<TypedType>>,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
+#[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub struct TypedFunctionType {
     pub(crate) arguments: Vec<TypedArgDef>,
     pub(crate) return_type: TypedType,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
+#[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub struct TypedTypeParam {
     pub(crate) name: String,
     pub(crate) type_constraint: Vec<TypedType>,

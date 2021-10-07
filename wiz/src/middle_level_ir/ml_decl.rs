@@ -6,14 +6,14 @@ use crate::middle_level_ir::ml_type::{MLType, MLValueType};
 use std::fmt;
 use std::fmt::Write;
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum MLDecl {
     Var(MLVar),
     Fun(MLFun),
     Struct(MLStruct),
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLVar {
     pub(crate) is_mute: bool,
     pub(crate) name: String,
@@ -21,7 +21,7 @@ pub struct MLVar {
     pub(crate) value: MLExpr,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLFun {
     pub(crate) modifiers: Vec<String>,
     pub(crate) name: String,
@@ -30,24 +30,24 @@ pub struct MLFun {
     pub(crate) body: Option<MLFunBody>,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLArgDef {
     pub(crate) name: String,
     pub(crate) type_: MLValueType,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLFunBody {
     pub(crate) body: Vec<MLStmt>,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLStruct {
     pub(crate) name: String,
     pub(crate) fields: Vec<MLField>,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLField {
     pub(crate) name: String,
     pub(crate) type_: MLValueType,
