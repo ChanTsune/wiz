@@ -466,8 +466,8 @@ impl HLIR2MLIR {
                 "<=" => MLBinopKind::LessThanEqual,
                 "<" => MLBinopKind::LessThan,
                 "!=" => MLBinopKind::NotEqual,
-                _ => {
-                    eprintln!("Unknown operator '{:?}'", kind);
+                k => {
+                    eprintln!("Unknown operator '{:?}'", k);
                     exit(-1)
                 }
             },
