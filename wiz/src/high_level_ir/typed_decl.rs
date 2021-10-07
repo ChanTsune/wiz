@@ -1,8 +1,8 @@
+use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_expr::TypedExpr;
 use crate::high_level_ir::typed_stmt::TypedBlock;
 use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedTypeParam};
 use std::fmt;
-use crate::high_level_ir::typed_annotation::TypedAnnotations;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum TypedDecl {

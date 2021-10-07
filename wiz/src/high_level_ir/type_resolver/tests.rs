@@ -1,4 +1,5 @@
 use crate::high_level_ir::type_resolver::TypeResolver;
+use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedMemberFunction,
     TypedStoredProperty, TypedStruct, TypedValueArgDef, TypedVar,
@@ -13,7 +14,6 @@ use crate::high_level_ir::typed_stmt::{
 };
 use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
 use crate::high_level_ir::Ast2HLIR;
-use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::parser::wiz::parse_from_string;
 
 #[test]
