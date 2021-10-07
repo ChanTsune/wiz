@@ -13,6 +13,7 @@ use crate::high_level_ir::typed_stmt::{
 };
 use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
 use crate::high_level_ir::Ast2HLIR;
+use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::parser::wiz::parse_from_string;
 
 #[test]
@@ -69,6 +70,7 @@ fn test_unsafe_pointer() {
             name: "test".to_string(),
             body: vec![
                 TypedDecl::Struct(TypedStruct {
+                    annotations: TypedAnnotations::new(),
                     package: Some(Package::new(vec![String::from("test")])),
                     name: "A".to_string(),
                     type_params: None,
@@ -115,6 +117,7 @@ fn test_unsafe_pointer() {
                     static_function: vec![]
                 }),
                 TypedDecl::Fun(TypedFun {
+                    annotations: TypedAnnotations::new(),
                     package: Some(Package::new(vec![String::from("test")])),
                     modifiers: vec![],
                     name: "function".to_string(),
@@ -132,6 +135,7 @@ fn test_unsafe_pointer() {
                     })],
                     body: Option::Some(TypedFunBody::Block(TypedBlock {
                         body: vec![TypedStmt::Decl(TypedDecl::Var(TypedVar {
+                            annotations: TypedAnnotations::new(),
                             package: None,
                             is_mut: false,
                             name: "a".to_string(),
@@ -189,6 +193,7 @@ fn test_struct_stored_property() {
             name: "test".to_string(),
             body: vec![
                 TypedDecl::Struct(TypedStruct {
+                    annotations: TypedAnnotations::new(),
                     package: Some(Package::new(vec![String::from("test")])),
                     name: "A".to_string(),
                     type_params: None,
@@ -235,6 +240,7 @@ fn test_struct_stored_property() {
                     static_function: vec![]
                 }),
                 TypedDecl::Fun(TypedFun {
+                    annotations: TypedAnnotations::new(),
                     package: Some(Package::new(vec![String::from("test")])),
                     modifiers: vec![],
                     name: "function".to_string(),
@@ -252,6 +258,7 @@ fn test_struct_stored_property() {
                     })],
                     body: Option::Some(TypedFunBody::Block(TypedBlock {
                         body: vec![TypedStmt::Decl(TypedDecl::Var(TypedVar {
+                            annotations: TypedAnnotations::new(),
                             package: None,
                             is_mut: false,
                             name: "a".to_string(),
@@ -309,6 +316,7 @@ fn test_struct_init() {
             name: "test".to_string(),
             body: vec![
                 TypedDecl::Struct(TypedStruct {
+                    annotations: TypedAnnotations::new(),
                     package: Some(Package::new(vec![String::from("test")])),
                     name: "A".to_string(),
                     type_params: None,
@@ -355,6 +363,7 @@ fn test_struct_init() {
                     static_function: vec![],
                 }),
                 TypedDecl::Fun(TypedFun {
+                    annotations: TypedAnnotations::new(),
                     package: Some(Package::new(vec![String::from("test")])),
                     modifiers: vec![],
                     name: "function".to_string(),
@@ -372,6 +381,7 @@ fn test_struct_init() {
                     })],
                     body: Option::Some(TypedFunBody::Block(TypedBlock {
                         body: vec![TypedStmt::Decl(TypedDecl::Var(TypedVar {
+                            annotations: TypedAnnotations::new(),
                             package: None,
                             is_mut: false,
                             name: "a".to_string(),
@@ -465,6 +475,7 @@ fn test_struct_member_function() {
         Result::Ok(TypedFile {
             name: "test".to_string(),
             body: vec![TypedDecl::Struct(TypedStruct {
+                annotations: TypedAnnotations::new(),
                 package: Some(Package::new(vec![String::from("test")])),
                 name: "A".to_string(),
                 type_params: None,
@@ -565,6 +576,7 @@ fn test_expr_function_with_no_arg() {
         Result::Ok(TypedFile {
             name: "test".to_string(),
             body: vec![TypedDecl::Fun(TypedFun {
+                annotations: TypedAnnotations::new(),
                 package: Some(Package::new(vec![String::from("test")])),
                 modifiers: vec![],
                 name: "function".to_string(),
@@ -604,6 +616,7 @@ fn test_expr_function_with_arg() {
         Result::Ok(TypedFile {
             name: "test".to_string(),
             body: vec![TypedDecl::Fun(TypedFun {
+                annotations: TypedAnnotations::new(),
                 package: Some(Package::new(vec![String::from("test")])),
                 modifiers: vec![],
                 name: "function".to_string(),
@@ -650,6 +663,7 @@ fn test_function_call() {
             name: "test".to_string(),
             body: vec![
                 TypedDecl::Fun(TypedFun {
+                    annotations: TypedAnnotations::new(),
                     package: Some(Package::new(vec![String::from("test")])),
                     modifiers: vec![],
                     name: "target_function".to_string(),
@@ -664,6 +678,7 @@ fn test_function_call() {
                     return_type: Some(TypedType::int64()),
                 }),
                 TypedDecl::Fun(TypedFun {
+                    annotations: TypedAnnotations::new(),
                     package: Some(Package::new(vec![String::from("test")])),
                     modifiers: vec![],
                     name: "main".to_string(),
@@ -714,6 +729,7 @@ fn test_return_integer_literal() {
         Result::Ok(TypedFile {
             name: "test".to_string(),
             body: vec![TypedDecl::Fun(TypedFun {
+                annotations: TypedAnnotations::new(),
                 package: Some(Package::new(vec![String::from("test")])),
                 modifiers: vec![],
                 name: "sample".to_string(),
@@ -757,6 +773,7 @@ fn test_return_floating_point_literal() {
         Result::Ok(TypedFile {
             name: "test".to_string(),
             body: vec![TypedDecl::Fun(TypedFun {
+                annotations: TypedAnnotations::new(),
                 package: Some(Package::new(vec![String::from("test")])),
                 modifiers: vec![],
                 name: "sample".to_string(),
@@ -802,6 +819,7 @@ fn test_binop() {
         Result::Ok(TypedFile {
             name: "test".to_string(),
             body: vec![TypedDecl::Fun(TypedFun {
+                annotations: TypedAnnotations::new(),
                 package: Some(Package::new(vec![String::from("test")])),
                 modifiers: vec![],
                 name: "sample".to_string(),
@@ -849,6 +867,7 @@ fn test_subscript() {
         Result::Ok(TypedFile {
             name: "test".to_string(),
             body: vec![TypedDecl::Fun(TypedFun {
+                annotations: TypedAnnotations::new(),
                 package: Some(Package::new(vec![String::from("test")])),
                 modifiers: vec![],
                 name: "get_first".to_string(),
@@ -900,6 +919,7 @@ fn test_if_else() {
         Result::Ok(TypedFile {
             name: "test".to_string(),
             body: vec![TypedDecl::Fun(TypedFun {
+                annotations: TypedAnnotations::new(),
                 package: Some(Package::new(vec![String::from("test")])),
                 modifiers: vec![],
                 name: "test_if".to_string(),
@@ -976,6 +996,7 @@ fn test_if() {
         Result::Ok(TypedFile {
             name: "test".to_string(),
             body: vec![TypedDecl::Fun(TypedFun {
+                annotations: TypedAnnotations::new(),
                 package: Some(Package::new(vec![String::from("test")])),
                 modifiers: vec![],
                 name: "test_if".to_string(),
@@ -1002,6 +1023,7 @@ fn test_if() {
                         })),
                         body: TypedBlock {
                             body: vec![TypedStmt::Decl(TypedDecl::Var(TypedVar {
+                                annotations: TypedAnnotations::new(),
                                 package: None,
                                 is_mut: false,
                                 name: "p".to_string(),

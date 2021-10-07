@@ -2,6 +2,7 @@ use crate::high_level_ir::typed_expr::TypedExpr;
 use crate::high_level_ir::typed_stmt::TypedBlock;
 use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedTypeParam};
 use std::fmt;
+use crate::high_level_ir::typed_annotation::TypedAnnotations;
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub enum TypedDecl {
@@ -17,6 +18,7 @@ pub enum TypedDecl {
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct TypedVar {
+    pub(crate) annotations: TypedAnnotations,
     pub(crate) package: Option<Package>,
     pub(crate) is_mut: bool,
     pub(crate) name: String,
@@ -26,6 +28,7 @@ pub struct TypedVar {
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct TypedFun {
+    pub(crate) annotations: TypedAnnotations,
     pub(crate) package: Option<Package>,
     pub(crate) modifiers: Vec<String>,
     pub(crate) name: String,
@@ -78,6 +81,7 @@ pub enum TypedFunBody {
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct TypedStruct {
+    pub(crate) annotations: TypedAnnotations,
     pub(crate) package: Option<Package>,
     pub(crate) name: String,
     pub(crate) type_params: Option<Vec<TypedTypeParam>>,
@@ -117,6 +121,7 @@ pub struct TypedMemberFunction {
 
 #[derive(fmt::Debug, Eq, PartialEq, Clone)]
 pub struct TypedUse {
+    pub(crate) annotations: TypedAnnotations,
     pub(crate) package: Package,
     pub(crate) alias: Option<String>,
 }

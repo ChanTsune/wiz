@@ -29,6 +29,8 @@ use crate::syntax::stmt::{AssignmentStmt, LoopStmt, Stmt};
 use crate::syntax::type_name::{TypeName, TypeParam};
 use crate::utils::path_string_to_page_name;
 use std::option::Option::Some;
+use crate::high_level_ir::typed_annotation::TypedAnnotations;
+use crate::syntax::annotation::AnnotationsSyntax;
 
 pub mod type_resolver;
 pub mod typed_decl;
@@ -36,6 +38,7 @@ pub mod typed_expr;
 pub mod typed_file;
 pub mod typed_stmt;
 pub mod typed_type;
+pub mod typed_annotation;
 
 pub struct Ast2HLIR;
 
@@ -63,6 +66,15 @@ impl Ast2HLIR {
 
     pub fn file_syntax(&mut self, f: FileSyntax) -> Vec<TypedDecl> {
         f.body.into_iter().map(|d| self.decl(d)).collect()
+    }
+
+    pub(crate) fn annotations(&self, a: Option<AnnotationsSyntax>) -> TypedAnnotations {
+        match a {
+            None => {TypedAnnotations::new()}
+            Some(a) => {
+                TypedAnnotations::from(a.annotations.into_iter().map(|a|a.name.token).collect::<Vec<String>>())
+            }
+        }
     }
 
     pub fn stmt(&self, s: Stmt) -> TypedStmt {
@@ -122,6 +134,7 @@ impl Ast2HLIR {
             Decl::Protocol { .. } => TypedDecl::Protocol,
             Decl::Extension { .. } => TypedDecl::Extension,
             Decl::Use(u) => TypedDecl::Use(TypedUse {
+                annotations: self.annotations(u.annotations),
                 package: Package {
                     names: u.package_name.names,
                 },
@@ -133,6 +146,7 @@ impl Ast2HLIR {
     pub fn var_syntax(&self, v: VarSyntax) -> TypedVar {
         let expr = self.expr(v.value);
         TypedVar {
+            annotations: self.annotations(v.annotations),
             package: None,
             is_mut: v.is_mut,
             name: v.name,
@@ -170,6 +184,7 @@ impl Ast2HLIR {
         };
 
         TypedFun {
+            annotations: self.annotations(f.annotations),
             package: None,
             modifiers: f.modifiers,
             name: f.name,
@@ -255,6 +270,7 @@ impl Ast2HLIR {
             };
         }
         TypedStruct {
+            annotations: self.annotations(s.annotations),
             package: None,
             name: s.name,
             type_params: s

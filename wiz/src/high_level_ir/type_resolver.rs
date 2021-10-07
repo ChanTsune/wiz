@@ -155,6 +155,7 @@ impl TypeResolver {
             .collect::<Result<Vec<TypedArgDef>>>()?;
         let return_type = self.typed_function_return_type(&f)?;
         let fun = TypedFun {
+            annotations: f.annotations,
             package: Some(Package::new(c_name_space)),
             modifiers: f.modifiers,
             name: f.name,
@@ -238,6 +239,7 @@ impl TypeResolver {
             ))),
         }?;
         let v = TypedVar {
+            annotations: t.annotations,
             package: None,
             is_mut: t.is_mut,
             name: t.name,
@@ -313,6 +315,7 @@ impl TypeResolver {
             .collect::<Result<Vec<TypedArgDef>>>()?;
         let return_type = self.typed_function_return_type(&f)?;
         let fun = TypedFun {
+            annotations: f.annotations,
             package: Some(Package::new(c_name_space)),
             modifiers: f.modifiers,
             name: f.name,
@@ -335,6 +338,7 @@ impl TypeResolver {
 
     pub fn typed_struct(&mut self, s: TypedStruct) -> Result<TypedStruct> {
         let TypedStruct {
+            annotations,
             package: _,
             name,
             type_params,
@@ -396,6 +400,7 @@ impl TypeResolver {
         self.context.clear_current_type();
         self.context.pop_name_space();
         Result::Ok(TypedStruct {
+            annotations,
             package: Some(Package::new(self.context.current_namespace.clone())),
             name,
             type_params,
