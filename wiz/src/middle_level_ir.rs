@@ -58,6 +58,10 @@ impl HLIR2MLIRContext {
         self.structs.get(typ).unwrap()
     }
 
+    pub(crate) fn struct_has_field(&self, typ: &MLValueType, field_name: &String) -> bool {
+        self.get_struct(typ).fields.iter().any(|f|f.name == *field_name)
+    }
+
     pub(crate) fn add_struct(&mut self, typ: MLValueType, struct_: MLStruct) {
         self.structs.insert(typ, struct_);
     }
@@ -518,9 +522,8 @@ impl HLIR2MLIR {
         match target.type_().unwrap() {
             TypedType::Value(_) => {
                 let target = self.expr(*target);
-                let struct_ = self.context.get_struct(&target.type_().into_value_type());
                 let type_ = self.type_(type_.unwrap());
-                let is_stored = struct_.fields.iter().any(|f| f.name == name);
+                let is_stored = self.context.struct_has_field(&target.type_().into_value_type(), &name);
                 if is_stored {
                     MLExpr::Member(MLMember {
                         target: Box::new(target),
