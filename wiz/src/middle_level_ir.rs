@@ -424,19 +424,19 @@ impl HLIR2MLIR {
     pub fn literal(&self, l: TypedLiteral) -> MLLiteral {
         match l {
             TypedLiteral::Integer { value, type_ } => MLLiteral::Integer {
-                value: value,
+                value,
                 type_: self.type_(type_.unwrap()).into_value_type(),
             },
             TypedLiteral::FloatingPoint { value, type_ } => MLLiteral::FloatingPoint {
-                value: value,
+                value,
                 type_: self.type_(type_.unwrap()).into_value_type(),
             },
             TypedLiteral::String { value, type_ } => MLLiteral::String {
-                value: value,
+                value,
                 type_: self.type_(type_.unwrap()).into_value_type(),
             },
             TypedLiteral::Boolean { value, type_ } => MLLiteral::Boolean {
-                value: value,
+                value,
                 type_: self.type_(type_.unwrap()).into_value_type(),
             },
             TypedLiteral::NullLiteral { type_ } => MLLiteral::Null {
