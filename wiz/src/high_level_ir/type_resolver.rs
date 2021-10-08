@@ -11,10 +11,7 @@ use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedMemberFunction,
     TypedStruct, TypedValueArgDef, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{
-    TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral,
-    TypedName, TypedReturn, TypedSubscript, TypedTypeCast,
-};
+use crate::high_level_ir::typed_expr::{TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp};
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedForStmt,
@@ -492,7 +489,7 @@ impl TypeResolver {
             TypedExpr::Name(n) => TypedExpr::Name(self.typed_name(n)?),
             TypedExpr::Literal(l) => TypedExpr::Literal(l),
             TypedExpr::BinOp(b) => TypedExpr::BinOp(self.typed_binop(b)?),
-            TypedExpr::UnaryOp(u) => TypedExpr::UnaryOp(u),
+            TypedExpr::UnaryOp(u) => TypedExpr::UnaryOp(self.typed_unary_op(u)?),
             TypedExpr::Subscript(s) => TypedExpr::Subscript(self.typed_subscript(s)?),
             TypedExpr::Member(m) => TypedExpr::Member(self.typed_instance_member(m)?),
             TypedExpr::List => TypedExpr::List,
@@ -522,6 +519,15 @@ impl TypeResolver {
             package,
             type_: Some(type_),
             name: n.name,
+        })
+    }
+
+    pub fn typed_unary_op(&mut self, u: TypedUnaryOp) -> Result<TypedUnaryOp> {
+        Result::Ok(TypedUnaryOp {
+            target: Box::new(self.expr(*u.target)?),
+            prefix: u.prefix,
+            kind: u.kind,
+            type_: u.type_
         })
     }
 
