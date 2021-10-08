@@ -826,7 +826,7 @@ mod tests {
         Decl, FunSyntax, MethodSyntax, PackageName, StoredPropertySyntax, StructPropertySyntax,
         StructSyntax, UseSyntax, VarSyntax,
     };
-    use crate::syntax::expr::{Expr, NameExprSyntax};
+    use crate::syntax::expr::{Expr, NameExprSyntax, BinaryOperationSyntax};
     use crate::syntax::fun::arg_def::{ArgDef, ValueArgDef};
     use crate::syntax::fun::body_def::FunBody;
     use crate::syntax::literal::LiteralSyntax;
@@ -972,15 +972,15 @@ mod tests {
             Ok((
                 "",
                 Block {
-                    body: vec![Stmt::Expr(Expr::BinOp {
+                    body: vec![Stmt::Expr(Expr::BinOp(BinaryOperationSyntax {
                         left: Box::new(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
                             "1".to_string()
                         )))),
-                        kind: "+".to_string(),
+                        kind: TokenSyntax::new("+".to_string()),
                         right: Box::new(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
                             "1".to_string()
                         )))),
-                    })]
+                    }))]
                 }
             ))
         )

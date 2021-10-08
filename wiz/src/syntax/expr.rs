@@ -9,11 +9,7 @@ use crate::syntax::type_name::TypeName;
 pub enum Expr {
     Name(NameExprSyntax),
     Literal(LiteralSyntax),
-    BinOp {
-        left: Box<Expr>,
-        kind: String,
-        right: Box<Expr>,
-    },
+    BinOp(BinaryOperationSyntax),
     UnaryOp {
         target: Box<Expr>,
         prefix: bool,
@@ -51,6 +47,13 @@ impl SyntaxNode for Expr {}
 pub struct NameExprSyntax {
     pub(crate) name_space: Vec<String>,
     pub(crate) name: String,
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct BinaryOperationSyntax {
+    pub(crate) left: Box<Expr>,
+    pub(crate) kind: TokenSyntax,
+    pub(crate) right: Box<Expr>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]

@@ -411,7 +411,7 @@ mod tests {
         assignable_expr, assignment_stmt, directly_assignable_expr, file, while_stmt,
     };
     use crate::syntax::block::Block;
-    use crate::syntax::expr::{Expr, NameExprSyntax};
+    use crate::syntax::expr::{Expr, NameExprSyntax, BinaryOperationSyntax};
     use crate::syntax::file::FileSyntax;
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::stmt::{AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt};
@@ -428,17 +428,17 @@ mod tests {
             Ok((
                 "",
                 LoopStmt::While {
-                    condition: Expr::BinOp {
+                    condition: Expr::BinOp(BinaryOperationSyntax {
                         left: Box::new(Expr::Name(NameExprSyntax {
                             name_space: vec![],
                             name: "a".to_string()
                         })),
-                        kind: "<".to_string(),
+                        kind: TokenSyntax::new("<".to_string()),
                         right: Box::new(Expr::Name(NameExprSyntax {
                             name_space: vec![],
                             name: "b".to_string()
                         }))
-                    },
+                    }),
                     block: Block {
                         body: vec![Stmt::Assignment(AssignmentStmt::Assignment(
                             AssignmentSyntax {
@@ -446,16 +446,16 @@ mod tests {
                                     name_space: vec![],
                                     name: "a".to_string()
                                 }),
-                                value: Expr::BinOp {
+                                value: Expr::BinOp(BinaryOperationSyntax {
                                     left: Box::new(Expr::Name(NameExprSyntax {
                                         name_space: vec![],
                                         name: "a".to_string()
                                     })),
-                                    kind: "+".to_string(),
+                                    kind: TokenSyntax::new("+".to_string()),
                                     right: Box::new(Expr::Literal(LiteralSyntax::Integer(
                                         TokenSyntax::new("1".to_string())
                                     )))
-                                }
+                                })
                             }
                         ))]
                     }
@@ -475,7 +475,7 @@ mod tests {
             Ok((
                 "",
                 LoopStmt::While {
-                    condition: Expr::BinOp {
+                    condition: Expr::BinOp(BinaryOperationSyntax {
                         left: Box::new(Expr::Member {
                             target: Box::new(Expr::Name(NameExprSyntax {
                                 name_space: vec![],
@@ -484,12 +484,12 @@ mod tests {
                             name: "c".to_string(),
                             navigation_operator: ".".to_string()
                         }),
-                        kind: "<".to_string(),
+                        kind: TokenSyntax::new("<".to_string()),
                         right: Box::new(Expr::Name(NameExprSyntax {
                             name_space: vec![],
                             name: "b".to_string()
                         }))
-                    },
+                    }),
                     block: Block {
                         body: vec![Stmt::Assignment(AssignmentStmt::Assignment(
                             AssignmentSyntax {
@@ -497,16 +497,16 @@ mod tests {
                                     name_space: vec![],
                                     name: "a".to_string()
                                 }),
-                                value: Expr::BinOp {
+                                value: Expr::BinOp(BinaryOperationSyntax {
                                     left: Box::new(Expr::Name(NameExprSyntax {
                                         name_space: vec![],
                                         name: "a".to_string()
                                     })),
-                                    kind: "+".to_string(),
+                                    kind: TokenSyntax::new("+".to_string()),
                                     right: Box::new(Expr::Literal(LiteralSyntax::Integer(
                                         TokenSyntax::new("1".to_string())
                                     )))
-                                }
+                                })
                             }
                         ))]
                     }

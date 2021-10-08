@@ -19,10 +19,7 @@ use crate::syntax::decl::{
     Decl, FunSyntax, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax,
     StructSyntax, VarSyntax,
 };
-use crate::syntax::expr::{
-    ArraySyntax, CallExprSyntax, Expr, IfExprSyntax, NameExprSyntax, ReturnSyntax, SubscriptSyntax,
-    TypeCastSyntax,
-};
+use crate::syntax::expr::{ArraySyntax, CallExprSyntax, Expr, IfExprSyntax, NameExprSyntax, ReturnSyntax, SubscriptSyntax, TypeCastSyntax, BinaryOperationSyntax};
 use crate::syntax::file::{FileSyntax, SourceSet, WizFile};
 use crate::syntax::fun::arg_def::ArgDef;
 use crate::syntax::fun::body_def::FunBody;
@@ -378,12 +375,12 @@ impl Ast2HLIR {
         match e {
             Expr::Name(n) => TypedExpr::Name(self.name_syntax(n)),
             Expr::Literal(literal) => TypedExpr::Literal(self.literal_syntax(literal)),
-            Expr::BinOp { left, kind, right } => {
+            Expr::BinOp(BinaryOperationSyntax { left, kind, right }) => {
                 let left = Box::new(self.expr(*left));
                 let right = Box::new(self.expr(*right));
                 TypedExpr::BinOp(TypedBinOp {
                     left: left,
-                    kind: kind,
+                    kind: kind.token,
                     right: right,
                     type_: None,
                 })
