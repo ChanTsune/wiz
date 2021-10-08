@@ -19,7 +19,10 @@ use crate::syntax::decl::{
     Decl, FunSyntax, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax,
     StructSyntax, VarSyntax,
 };
-use crate::syntax::expr::{ArraySyntax, CallExprSyntax, Expr, IfExprSyntax, NameExprSyntax, ReturnSyntax, SubscriptSyntax, TypeCastSyntax, BinaryOperationSyntax};
+use crate::syntax::expr::{
+    ArraySyntax, BinaryOperationSyntax, CallExprSyntax, Expr, IfExprSyntax, NameExprSyntax,
+    ReturnSyntax, SubscriptSyntax, TypeCastSyntax,
+};
 use crate::syntax::file::{FileSyntax, SourceSet, WizFile};
 use crate::syntax::fun::arg_def::ArgDef;
 use crate::syntax::fun::body_def::FunBody;

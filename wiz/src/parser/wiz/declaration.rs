@@ -826,7 +826,7 @@ mod tests {
         Decl, FunSyntax, MethodSyntax, PackageName, StoredPropertySyntax, StructPropertySyntax,
         StructSyntax, UseSyntax, VarSyntax,
     };
-    use crate::syntax::expr::{Expr, NameExprSyntax, BinaryOperationSyntax};
+    use crate::syntax::expr::{BinaryOperationSyntax, Expr, NameExprSyntax};
     use crate::syntax::fun::arg_def::{ArgDef, ValueArgDef};
     use crate::syntax::fun::body_def::FunBody;
     use crate::syntax::literal::LiteralSyntax;

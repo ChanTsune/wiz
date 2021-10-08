@@ -15,7 +15,11 @@ use crate::parser::wiz::operators::{
 use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_arguments};
 use crate::syntax::block::Block;
-use crate::syntax::expr::{ArrayElementSyntax, ArraySyntax, CallArg, CallExprSyntax, Expr, IfExprSyntax, LambdaSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax, SubscriptSyntax, TypeCastSyntax, BinaryOperationSyntax};
+use crate::syntax::expr::{
+    ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallExprSyntax, Expr,
+    IfExprSyntax, LambdaSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax, SubscriptSyntax,
+    TypeCastSyntax,
+};
 use crate::syntax::literal::LiteralSyntax;
 use crate::syntax::stmt::Stmt;
 use crate::syntax::token::TokenSyntax;
@@ -1311,7 +1315,10 @@ mod tests {
         postfix_suffix, raw_string_literal, return_expr, string_literal, value_arguments,
     };
     use crate::syntax::block::Block;
-    use crate::syntax::expr::{ArrayElementSyntax, ArraySyntax, CallArg, CallExprSyntax, Expr, IfExprSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax, BinaryOperationSyntax};
+    use crate::syntax::expr::{
+        ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallExprSyntax, Expr,
+        IfExprSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax,
+    };
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::token::TokenSyntax;
     use crate::syntax::trivia::{Trivia, TriviaPiece};
