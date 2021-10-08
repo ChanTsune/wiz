@@ -11,7 +11,10 @@ use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedMemberFunction,
     TypedStruct, TypedValueArgDef, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp};
+use crate::high_level_ir::typed_expr::{
+    TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral,
+    TypedName, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
+};
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedForStmt,
@@ -527,7 +530,7 @@ impl TypeResolver {
             target: Box::new(self.expr(*u.target)?),
             prefix: u.prefix,
             kind: u.kind,
-            type_: u.type_
+            type_: u.type_,
         })
     }
 
