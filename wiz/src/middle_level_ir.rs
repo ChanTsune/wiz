@@ -1,4 +1,5 @@
 use crate::ext::string::StringExt;
+use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct, TypedVar,
 };
@@ -23,7 +24,6 @@ use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::HashMap;
 use std::option::Option::Some;
 use std::process::exit;
-use crate::high_level_ir::typed_annotation::TypedAnnotations;
 
 pub mod builder;
 pub mod format;
@@ -61,11 +61,15 @@ impl HLIR2MLIRContext {
         self.declaration_annotations.insert(name, a);
     }
 
-    pub(crate) fn declaration_has_annotation(&self, declaration_name: &String, annotation: &str) -> bool {
+    pub(crate) fn declaration_has_annotation(
+        &self,
+        declaration_name: &String,
+        annotation: &str,
+    ) -> bool {
         let an = self.declaration_annotations.get(declaration_name);
         match an {
-            None => {false}
-            Some(an) => {an.has_annotate(annotation)}
+            None => false,
+            Some(an) => an.has_annotate(annotation),
         }
     }
 
@@ -320,7 +324,8 @@ impl HLIR2MLIR {
         } else {
             package_mangled_name
         };
-        self.context.set_declaration_annotations(mangled_name.clone(), annotations);
+        self.context
+            .set_declaration_annotations(mangled_name.clone(), annotations);
         let args = arg_defs.into_iter().map(|a| self.arg_def(a)).collect();
         MLFun {
             modifiers,
@@ -438,7 +443,10 @@ impl HLIR2MLIR {
 
     pub fn name(&self, n: TypedName) -> MLName {
         let package_mangled_name = self.package_name_mangling(&n.package, &*n.name);
-        let mangled_name = if self.context.declaration_has_annotation(&package_mangled_name, "no_mangle") {
+        let mangled_name = if self
+            .context
+            .declaration_has_annotation(&package_mangled_name, "no_mangle")
+        {
             n.name
         } else {
             package_mangled_name
