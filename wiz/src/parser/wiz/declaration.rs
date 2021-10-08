@@ -20,7 +20,6 @@ use crate::syntax::expr::Expr;
 use crate::syntax::fun::arg_def::{ArgDef, SelfArgDefSyntax, ValueArgDef};
 use crate::syntax::fun::body_def::FunBody;
 use crate::syntax::token::TokenSyntax;
-use crate::syntax::trivia::Trivia;
 use crate::syntax::type_name::{TypeName, TypeParam};
 use crate::syntax::Syntax;
 use nom::branch::alt;

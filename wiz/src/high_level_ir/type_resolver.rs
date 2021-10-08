@@ -13,7 +13,7 @@ use crate::high_level_ir::typed_decl::{
 };
 use crate::high_level_ir::typed_expr::{
     TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember,
-    TypedLiteral, TypedName, TypedReturn, TypedSubscript, TypedTypeCast,
+    TypedLiteral, TypedName, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{
@@ -21,9 +21,8 @@ use crate::high_level_ir::typed_stmt::{
     TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
 };
 use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
-use std::fmt;
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub(crate) struct TypeResolver {
     context: ResolverContext,
 }
@@ -155,6 +154,7 @@ impl TypeResolver {
             .collect::<Result<Vec<TypedArgDef>>>()?;
         let return_type = self.typed_function_return_type(&f)?;
         let fun = TypedFun {
+            annotations: f.annotations,
             package: Some(Package::new(c_name_space)),
             modifiers: f.modifiers,
             name: f.name,
@@ -238,6 +238,7 @@ impl TypeResolver {
             ))),
         }?;
         let v = TypedVar {
+            annotations: t.annotations,
             package: None,
             is_mut: t.is_mut,
             name: t.name,
@@ -284,7 +285,6 @@ impl TypeResolver {
             }),
             TypedArgDef::Self_(_) => {
                 let self_type = self.context.get_current_type();
-                println!("Self => {:?}", self_type);
                 TypedArgDef::Self_(self_type)
             }
             TypedArgDef::RefSelf(_) => {
@@ -313,6 +313,7 @@ impl TypeResolver {
             .collect::<Result<Vec<TypedArgDef>>>()?;
         let return_type = self.typed_function_return_type(&f)?;
         let fun = TypedFun {
+            annotations: f.annotations,
             package: Some(Package::new(c_name_space)),
             modifiers: f.modifiers,
             name: f.name,
@@ -335,6 +336,7 @@ impl TypeResolver {
 
     pub fn typed_struct(&mut self, s: TypedStruct) -> Result<TypedStruct> {
         let TypedStruct {
+            annotations,
             package: _,
             name,
             type_params,
@@ -396,6 +398,7 @@ impl TypeResolver {
         self.context.clear_current_type();
         self.context.pop_name_space();
         Result::Ok(TypedStruct {
+            annotations,
             package: Some(Package::new(self.context.current_namespace.clone())),
             name,
             type_params,
@@ -442,7 +445,6 @@ impl TypeResolver {
                 .into_iter()
                 .map(|a| {
                     let a = self.typed_arg_def(a)?;
-                    println!("a => {:?}", a);
                     let ns = self.context.get_current_namespace_mut()?;
                     ns.values.insert(
                         a.name(),
@@ -490,7 +492,7 @@ impl TypeResolver {
             TypedExpr::Name(n) => TypedExpr::Name(self.typed_name(n)?),
             TypedExpr::Literal(l) => TypedExpr::Literal(l),
             TypedExpr::BinOp(b) => TypedExpr::BinOp(self.typed_binop(b)?),
-            TypedExpr::UnaryOp(u) => TypedExpr::UnaryOp(u),
+            TypedExpr::UnaryOp(u) => TypedExpr::UnaryOp(self.typed_unary_op(u)?),
             TypedExpr::Subscript(s) => TypedExpr::Subscript(self.typed_subscript(s)?),
             TypedExpr::Member(m) => TypedExpr::Member(self.typed_instance_member(m)?),
             TypedExpr::Array(a) => TypedExpr::Array(self.typed_array(a)?),
@@ -520,6 +522,15 @@ impl TypeResolver {
             package,
             type_: Some(type_),
             name: n.name,
+        })
+    }
+
+    pub fn typed_unary_op(&mut self, u: TypedUnaryOp) -> Result<TypedUnaryOp> {
+        Result::Ok(TypedUnaryOp {
+            target: Box::new(self.expr(*u.target)?),
+            prefix: u.prefix,
+            kind: u.kind,
+            type_: u.type_,
         })
     }
 

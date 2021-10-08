@@ -4,9 +4,8 @@ use crate::syntax::node::SyntaxNode;
 use crate::syntax::stmt::Stmt;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::type_name::TypeName;
-use std::fmt;
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Expr {
     Name(NameExprSyntax),
     Literal(LiteralSyntax),
@@ -48,51 +47,51 @@ pub enum Expr {
 
 impl SyntaxNode for Expr {}
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct NameExprSyntax {
     pub(crate) name_space: Vec<String>,
     pub(crate) name: String,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct CallExprSyntax {
     pub(crate) target: Box<Expr>,
     pub(crate) args: Vec<CallArg>,
     pub(crate) tailing_lambda: Option<LambdaSyntax>,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct CallArg {
     pub(crate) label: Option<String>,
     pub(crate) arg: Box<Expr>,
     pub(crate) is_vararg: bool,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct LambdaSyntax {
     pub(crate) stmts: Vec<Stmt>,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct SubscriptSyntax {
     pub(crate) target: Box<Expr>,
     pub(crate) idx_or_keys: Vec<Expr>,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct ArraySyntax {
     pub(crate) open: TokenSyntax,
     pub(crate) values: Vec<ArrayElementSyntax>,
     pub(crate) close: TokenSyntax,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct ArrayElementSyntax {
     pub(crate) element: Expr,
     pub(crate) trailing_comma: TokenSyntax,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum PostfixSuffix {
     Operator {
         kind: String,
@@ -113,20 +112,20 @@ pub enum PostfixSuffix {
     },
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct IfExprSyntax {
     pub(crate) condition: Box<Expr>,
     pub(crate) body: Block,
     pub(crate) else_body: Option<Block>,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct ReturnSyntax {
     pub(crate) return_keyword: TokenSyntax,
     pub(crate) value: Option<Box<Expr>>,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypeCastSyntax {
     pub(crate) target: Box<Expr>,
     pub(crate) operator: String,

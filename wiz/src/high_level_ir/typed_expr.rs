@@ -1,8 +1,7 @@
 use crate::high_level_ir::typed_stmt::TypedBlock;
 use crate::high_level_ir::typed_type::{Package, TypedType};
-use std::fmt;
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum TypedExpr {
     Name(TypedName),
     Literal(TypedLiteral),
@@ -22,27 +21,27 @@ pub enum TypedExpr {
     TypeCast(TypedTypeCast),
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypedName {
     pub(crate) package: Option<Package>,
     pub(crate) name: String,
     pub(crate) type_: Option<TypedType>,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypedArray {
     pub(crate) elements: Vec<TypedExpr>,
     pub(crate) type_: Option<TypedType>,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypedSubscript {
     pub(crate) target: Box<TypedExpr>,
     pub(crate) indexes: Vec<TypedExpr>,
     pub(crate) type_: Option<TypedType>,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum TypedLiteral {
     Integer {
         value: String,
@@ -65,7 +64,7 @@ pub enum TypedLiteral {
     },
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypedBinOp {
     pub(crate) left: Box<TypedExpr>,
     pub(crate) kind: String,
@@ -73,7 +72,7 @@ pub struct TypedBinOp {
     pub(crate) type_: Option<TypedType>,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypedUnaryOp {
     pub(crate) target: Box<TypedExpr>,
     pub(crate) prefix: bool,
@@ -81,21 +80,21 @@ pub struct TypedUnaryOp {
     pub(crate) type_: Option<TypedType>,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypedCall {
     pub(crate) target: Box<TypedExpr>,
     pub(crate) args: Vec<TypedCallArg>,
     pub(crate) type_: Option<TypedType>,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypedCallArg {
     pub(crate) label: Option<String>,
     pub(crate) arg: Box<TypedExpr>,
     pub(crate) is_vararg: bool,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypedInstanceMember {
     pub(crate) target: Box<TypedExpr>,
     pub(crate) name: String,
@@ -103,14 +102,14 @@ pub struct TypedInstanceMember {
     pub(crate) type_: Option<TypedType>,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypedStaticMember {
     pub(crate) target: TypedType,
     pub(crate) name: String,
     pub(crate) type_: Option<TypedType>,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypedIf {
     pub(crate) condition: Box<TypedExpr>,
     pub(crate) body: TypedBlock,
@@ -118,12 +117,12 @@ pub struct TypedIf {
     pub(crate) type_: Option<TypedType>,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypedReturn {
     pub(crate) value: Option<Box<TypedExpr>>,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypedTypeCast {
     pub(crate) target: Box<TypedExpr>,
     pub(crate) is_safe: bool,

@@ -3,13 +3,13 @@ use crate::middle_level_ir::ml_node::MLNode;
 use std::fmt;
 use std::fmt::Write;
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
+#[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub enum MLType {
     Value(MLValueType),
     Function(MLFunctionType),
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
+#[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub enum MLValueType {
     Primitive(MLPrimitiveType),
     Struct(String),
@@ -32,7 +32,7 @@ impl MLValueType {
     }
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
+#[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub struct MLFunctionType {
     pub(crate) arguments: Vec<MLValueType>,
     pub(crate) return_type: MLValueType,
@@ -40,7 +40,7 @@ pub struct MLFunctionType {
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub enum MLPrimitiveType {
-    Void,
+    Noting,
     Unit,
     Int8,
     Int16,
@@ -76,7 +76,7 @@ impl ToString for MLPrimitiveType {
             MLPrimitiveType::Bool => "Bool",
             MLPrimitiveType::String => "String",
             MLPrimitiveType::Unit => "Unit",
-            MLPrimitiveType::Void => "Void",
+            MLPrimitiveType::Noting => "Noting",
         })
     }
 }

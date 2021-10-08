@@ -5,7 +5,7 @@ use crate::middle_level_ir::ml_type::{MLPrimitiveType, MLType, MLValueType};
 use std::fmt;
 use std::fmt::Write;
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum MLExpr {
     Name(MLName),
     Literal(MLLiteral),
@@ -20,13 +20,13 @@ pub enum MLExpr {
     PrimitiveTypeCast(MLTypeCast),
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLName {
     pub(crate) name: String,
     pub(crate) type_: MLType,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum MLLiteral {
     Integer { value: String, type_: MLValueType },
     FloatingPoint { value: String, type_: MLValueType },
@@ -36,19 +36,19 @@ pub enum MLLiteral {
     Struct { type_: MLValueType },
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLCall {
     pub(crate) target: Box<MLExpr>,
     pub(crate) args: Vec<MLCallArg>,
     pub(crate) type_: MLType,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLCallArg {
     pub(crate) arg: MLExpr,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLIf {
     pub(crate) condition: Box<MLExpr>,
     pub(crate) body: MLBlock,
@@ -56,7 +56,7 @@ pub struct MLIf {
     pub(crate) type_: MLType,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLBinOp {
     pub(crate) left: Box<MLExpr>,
     pub(crate) kind: MLBinopKind,
@@ -64,7 +64,7 @@ pub struct MLBinOp {
     pub(crate) type_: MLValueType,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum MLBinopKind {
     Plus,
     Minus,
@@ -79,14 +79,14 @@ pub enum MLBinopKind {
     NotEqual,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLUnaryOp {
     pub(crate) target: Box<MLExpr>,
     pub(crate) kind: MLUnaryOpKind,
     pub(crate) type_: MLValueType,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum MLUnaryOpKind {
     Negative,
     Positive,
@@ -95,26 +95,26 @@ pub enum MLUnaryOpKind {
     DeRef,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLSubscript {
     pub(crate) target: Box<MLExpr>,
     pub(crate) index: Box<MLExpr>,
     pub(crate) type_: MLValueType,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLMember {
     pub(crate) target: Box<MLExpr>,
     pub(crate) name: String,
     pub(crate) type_: MLType,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLReturn {
     pub(crate) value: Option<Box<MLExpr>>,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLTypeCast {
     pub(crate) target: Box<MLExpr>,
     pub(crate) type_: MLValueType,
@@ -164,7 +164,7 @@ impl MLReturn {
         }
     }
     pub(crate) fn type_(&self) -> MLValueType {
-        MLValueType::Primitive(MLPrimitiveType::Void)
+        MLValueType::Primitive(MLPrimitiveType::Noting)
     }
 }
 

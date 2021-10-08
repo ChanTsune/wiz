@@ -4,7 +4,7 @@ use crate::middle_level_ir::ml_node::MLNode;
 use std::fmt;
 use std::fmt::Write;
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLFile {
     pub(crate) name: String,
     pub(crate) body: Vec<MLDecl>,

@@ -1,9 +1,9 @@
+use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_expr::TypedExpr;
 use crate::high_level_ir::typed_stmt::TypedBlock;
 use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedTypeParam};
-use std::fmt;
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum TypedDecl {
     Var(TypedVar),
     Fun(TypedFun),
@@ -15,8 +15,9 @@ pub enum TypedDecl {
     Use(TypedUse),
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypedVar {
+    pub(crate) annotations: TypedAnnotations,
     pub(crate) package: Option<Package>,
     pub(crate) is_mut: bool,
     pub(crate) name: String,
@@ -24,8 +25,9 @@ pub struct TypedVar {
     pub(crate) value: TypedExpr,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypedFun {
+    pub(crate) annotations: TypedAnnotations,
     pub(crate) package: Option<Package>,
     pub(crate) modifiers: Vec<String>,
     pub(crate) name: String,
@@ -35,7 +37,7 @@ pub struct TypedFun {
     pub(crate) return_type: Option<TypedType>,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
+#[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub enum TypedArgDef {
     Value(TypedValueArgDef),
     Self_(Option<TypedType>),
@@ -63,21 +65,22 @@ impl TypedArgDef {
     }
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone, Hash)]
+#[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub struct TypedValueArgDef {
     pub(crate) label: String,
     pub(crate) name: String,
     pub(crate) type_: TypedType,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum TypedFunBody {
     Expr(TypedExpr),
     Block(TypedBlock),
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypedStruct {
+    pub(crate) annotations: TypedAnnotations,
     pub(crate) package: Option<Package>,
     pub(crate) name: String,
     pub(crate) type_params: Option<Vec<TypedTypeParam>>,
@@ -88,25 +91,25 @@ pub struct TypedStruct {
     pub(crate) static_function: Vec<TypedFun>,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypedInitializer {
     pub(crate) args: Vec<TypedArgDef>,
     pub(crate) body: TypedFunBody,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypedStoredProperty {
     pub(crate) name: String,
     pub(crate) type_: TypedType,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypedComputedProperty {
     pub(crate) name: String,
     pub(crate) type_: TypedType,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypedMemberFunction {
     pub(crate) name: String,
     pub(crate) args: Vec<TypedArgDef>,
@@ -115,8 +118,9 @@ pub struct TypedMemberFunction {
     pub(crate) return_type: Option<TypedType>,
 }
 
-#[derive(fmt::Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypedUse {
+    pub(crate) annotations: TypedAnnotations,
     pub(crate) package: Package,
     pub(crate) alias: Option<String>,
 }

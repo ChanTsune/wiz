@@ -570,7 +570,7 @@ impl<'ctx> CodeGen<'ctx> {
             // AnyValueEnum::VectorValue(_) => {}
             // AnyValueEnum::InstructionValue(_) => {}
             a => {
-                panic!("never execution branch executed!!")
+                panic!("never execution branch executed!! {:?}", a)
             }
         }
     }
