@@ -25,9 +25,7 @@ pub enum Expr {
         name: String,
         navigation_operator: String,
     },
-    List {
-        values: Vec<Expr>,
-    },
+    Array(ArraySyntax),
     Tuple {
         values: Vec<Expr>,
     },
@@ -78,6 +76,19 @@ pub struct LambdaSyntax {
 pub struct SubscriptSyntax {
     pub(crate) target: Box<Expr>,
     pub(crate) idx_or_keys: Vec<Expr>,
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct ArraySyntax {
+    pub(crate) open: TokenSyntax,
+    pub(crate) values: Vec<ArrayElementSyntax>,
+    pub(crate) close: TokenSyntax,
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct ArrayElementSyntax {
+    pub(crate) element: Expr,
+    pub(crate) trailing_comma: TokenSyntax,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]

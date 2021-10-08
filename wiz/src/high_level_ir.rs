@@ -4,8 +4,8 @@ use crate::high_level_ir::typed_decl::{
     TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedUse, TypedValueArgDef, TypedVar,
 };
 use crate::high_level_ir::typed_expr::{
-    TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral,
-    TypedName, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
+    TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember,
+    TypedLiteral, TypedName, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{
@@ -20,7 +20,7 @@ use crate::syntax::decl::{
     StructSyntax, VarSyntax,
 };
 use crate::syntax::expr::{
-    CallExprSyntax, Expr, IfExprSyntax, NameExprSyntax, ReturnSyntax, SubscriptSyntax,
+    ArraySyntax, CallExprSyntax, Expr, IfExprSyntax, NameExprSyntax, ReturnSyntax, SubscriptSyntax,
     TypeCastSyntax,
 };
 use crate::syntax::file::{FileSyntax, SourceSet, WizFile};
@@ -415,7 +415,7 @@ impl Ast2HLIR {
                     type_: None,
                 })
             }
-            Expr::List { .. } => TypedExpr::List,
+            Expr::Array(a) => TypedExpr::Array(self.array_syntax(a)),
             Expr::Tuple { .. } => TypedExpr::Tuple,
             Expr::Dict { .. } => TypedExpr::Dict,
             Expr::StringBuilder { .. } => TypedExpr::StringBuilder,
@@ -463,6 +463,13 @@ impl Ast2HLIR {
                 Some(Package::new(name_space))
             },
             name,
+            type_: None,
+        }
+    }
+
+    pub fn array_syntax(&self, a: ArraySyntax) -> TypedArray {
+        TypedArray {
+            elements: a.values.into_iter().map(|e| self.expr(e.element)).collect(),
             type_: None,
         }
     }
