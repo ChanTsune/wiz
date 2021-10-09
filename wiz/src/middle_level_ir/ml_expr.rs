@@ -59,13 +59,13 @@ pub struct MLIf {
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLBinOp {
     pub(crate) left: Box<MLExpr>,
-    pub(crate) kind: MLBinopKind,
+    pub(crate) kind: MLBinOpKind,
     pub(crate) right: Box<MLExpr>,
     pub(crate) type_: MLValueType,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
-pub enum MLBinopKind {
+pub enum MLBinOpKind {
     Plus,
     Minus,
     Mul,
@@ -238,17 +238,17 @@ impl MLNode for MLBinOp {
         self.left.fmt(f)?;
         f.write_char(' ')?;
         f.write_str(match self.kind {
-            MLBinopKind::Plus => "+",
-            MLBinopKind::Minus => "-",
-            MLBinopKind::Mul => "*",
-            MLBinopKind::Div => "/",
-            MLBinopKind::Mod => "%",
-            MLBinopKind::Equal => "==",
-            MLBinopKind::GrateThanEqual => "<=",
-            MLBinopKind::GrateThan => "<",
-            MLBinopKind::LessThanEqual => ">=",
-            MLBinopKind::LessThan => ">",
-            MLBinopKind::NotEqual => "!=",
+            MLBinOpKind::Plus => "+",
+            MLBinOpKind::Minus => "-",
+            MLBinOpKind::Mul => "*",
+            MLBinOpKind::Div => "/",
+            MLBinOpKind::Mod => "%",
+            MLBinOpKind::Equal => "==",
+            MLBinOpKind::GrateThanEqual => "<=",
+            MLBinOpKind::GrateThan => "<",
+            MLBinOpKind::LessThanEqual => ">=",
+            MLBinOpKind::LessThan => ">",
+            MLBinOpKind::NotEqual => "!=",
         })?;
         f.write_char(' ')?;
         self.right.fmt(f)

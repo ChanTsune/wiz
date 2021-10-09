@@ -1,6 +1,6 @@
 use crate::middle_level_ir::ml_decl::{MLDecl, MLFun, MLStruct, MLVar};
 use crate::middle_level_ir::ml_expr::{
-    MLBinOp, MLBinopKind, MLCall, MLExpr, MLIf, MLLiteral, MLMember, MLReturn, MLSubscript,
+    MLBinOp, MLBinOpKind, MLCall, MLExpr, MLIf, MLLiteral, MLMember, MLReturn, MLSubscript,
     MLTypeCast, MLUnaryOp,
 };
 use crate::middle_level_ir::ml_file::MLFile;
@@ -245,57 +245,57 @@ impl<'ctx> CodeGen<'ctx> {
 
         match (lft, rit) {
             (AnyValueEnum::IntValue(left), AnyValueEnum::IntValue(right)) => match b.kind {
-                MLBinopKind::Plus => {
+                MLBinOpKind::Plus => {
                     let v = self.builder.build_int_add(left, right, "sum");
                     v.as_any_value_enum()
                 }
-                MLBinopKind::Minus => {
+                MLBinOpKind::Minus => {
                     let v = self.builder.build_int_sub(left, right, "sub");
                     v.as_any_value_enum()
                 }
-                MLBinopKind::Mul => {
+                MLBinOpKind::Mul => {
                     let v = self.builder.build_int_mul(left, right, "mul");
                     v.as_any_value_enum()
                 }
-                MLBinopKind::Div => {
+                MLBinOpKind::Div => {
                     let v = self.builder.build_int_signed_div(left, right, "sdiv");
                     v.as_any_value_enum()
                 }
-                MLBinopKind::Mod => {
+                MLBinOpKind::Mod => {
                     let v = self.builder.build_int_signed_rem(left, right, "srem");
                     v.as_any_value_enum()
                 }
-                MLBinopKind::Equal => {
+                MLBinOpKind::Equal => {
                     let v = self
                         .builder
                         .build_int_compare(IntPredicate::EQ, left, right, "eq");
                     v.as_any_value_enum()
                 }
-                MLBinopKind::GrateThanEqual => {
+                MLBinOpKind::GrateThanEqual => {
                     let v = self
                         .builder
                         .build_int_compare(IntPredicate::SGE, left, right, "gte");
                     v.as_any_value_enum()
                 }
-                MLBinopKind::GrateThan => {
+                MLBinOpKind::GrateThan => {
                     let v = self
                         .builder
                         .build_int_compare(IntPredicate::SGT, left, right, "gt");
                     v.as_any_value_enum()
                 }
-                MLBinopKind::LessThanEqual => {
+                MLBinOpKind::LessThanEqual => {
                     let v = self
                         .builder
                         .build_int_compare(IntPredicate::SLE, left, right, "lte");
                     v.as_any_value_enum()
                 }
-                MLBinopKind::LessThan => {
+                MLBinOpKind::LessThan => {
                     let v = self
                         .builder
                         .build_int_compare(IntPredicate::SLT, left, right, "lt");
                     v.as_any_value_enum()
                 }
-                MLBinopKind::NotEqual => {
+                MLBinOpKind::NotEqual => {
                     let v = self
                         .builder
                         .build_int_compare(IntPredicate::NE, left, right, "neq");
@@ -303,57 +303,57 @@ impl<'ctx> CodeGen<'ctx> {
                 }
             },
             (AnyValueEnum::FloatValue(left), AnyValueEnum::FloatValue(right)) => match b.kind {
-                MLBinopKind::Plus => {
+                MLBinOpKind::Plus => {
                     let v = self.builder.build_float_add(left, right, "sum");
                     v.as_any_value_enum()
                 }
-                MLBinopKind::Minus => {
+                MLBinOpKind::Minus => {
                     let v = self.builder.build_float_sub(left, right, "sub");
                     v.as_any_value_enum()
                 }
-                MLBinopKind::Mul => {
+                MLBinOpKind::Mul => {
                     let v = self.builder.build_float_mul(left, right, "mul");
                     v.as_any_value_enum()
                 }
-                MLBinopKind::Div => {
+                MLBinOpKind::Div => {
                     let v = self.builder.build_float_div(left, right, "div");
                     v.as_any_value_enum()
                 }
-                MLBinopKind::Mod => {
+                MLBinOpKind::Mod => {
                     let v = self.builder.build_float_rem(left, right, "rem");
                     v.as_any_value_enum()
                 }
-                MLBinopKind::Equal => {
+                MLBinOpKind::Equal => {
                     let v =
                         self.builder
                             .build_float_compare(FloatPredicate::OEQ, left, right, "eq");
                     v.as_any_value_enum()
                 }
-                MLBinopKind::GrateThanEqual => {
+                MLBinOpKind::GrateThanEqual => {
                     let v =
                         self.builder
                             .build_float_compare(FloatPredicate::OGE, left, right, "gte");
                     v.as_any_value_enum()
                 }
-                MLBinopKind::GrateThan => {
+                MLBinOpKind::GrateThan => {
                     let v =
                         self.builder
                             .build_float_compare(FloatPredicate::OGT, left, right, "gt");
                     v.as_any_value_enum()
                 }
-                MLBinopKind::LessThanEqual => {
+                MLBinOpKind::LessThanEqual => {
                     let v =
                         self.builder
                             .build_float_compare(FloatPredicate::OLE, left, right, "lte");
                     v.as_any_value_enum()
                 }
-                MLBinopKind::LessThan => {
+                MLBinOpKind::LessThan => {
                     let v =
                         self.builder
                             .build_float_compare(FloatPredicate::OLT, left, right, "lt");
                     v.as_any_value_enum()
                 }
-                MLBinopKind::NotEqual => {
+                MLBinOpKind::NotEqual => {
                     let v =
                         self.builder
                             .build_float_compare(FloatPredicate::ONE, left, right, "neq");

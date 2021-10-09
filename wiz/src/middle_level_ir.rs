@@ -14,7 +14,7 @@ use crate::middle_level_ir::ml_decl::{
     MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar,
 };
 use crate::middle_level_ir::ml_expr::{
-    MLBinOp, MLBinopKind, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLMember, MLName, MLReturn,
+    MLBinOp, MLBinOpKind, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLMember, MLName, MLReturn,
     MLSubscript, MLTypeCast,
 };
 use crate::middle_level_ir::ml_file::MLFile;
@@ -491,17 +491,17 @@ impl HLIR2MLIR {
         MLBinOp {
             left: Box::new(self.expr(*left)),
             kind: match &*kind {
-                "+" => MLBinopKind::Plus,
-                "-" => MLBinopKind::Minus,
-                "*" => MLBinopKind::Mul,
-                "/" => MLBinopKind::Div,
-                "%" => MLBinopKind::Mod,
-                "==" => MLBinopKind::Equal,
-                ">=" => MLBinopKind::GrateThanEqual,
-                ">" => MLBinopKind::GrateThan,
-                "<=" => MLBinopKind::LessThanEqual,
-                "<" => MLBinopKind::LessThan,
-                "!=" => MLBinopKind::NotEqual,
+                "+" => MLBinOpKind::Plus,
+                "-" => MLBinOpKind::Minus,
+                "*" => MLBinOpKind::Mul,
+                "/" => MLBinOpKind::Div,
+                "%" => MLBinOpKind::Mod,
+                "==" => MLBinOpKind::Equal,
+                ">=" => MLBinOpKind::GrateThanEqual,
+                ">" => MLBinOpKind::GrateThan,
+                "<=" => MLBinOpKind::LessThanEqual,
+                "<" => MLBinOpKind::LessThan,
+                "!=" => MLBinOpKind::NotEqual,
                 k => {
                     eprintln!("Unknown operator '{:?}'", k);
                     exit(-1)
