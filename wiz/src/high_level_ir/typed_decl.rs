@@ -47,7 +47,7 @@ pub enum TypedArgDef {
 impl TypedArgDef {
     pub(crate) fn label(&self) -> String {
         match self {
-            TypedArgDef::Value(v) => v.name.clone(),
+            TypedArgDef::Value(v) => v.label.clone(),
             TypedArgDef::Self_(_) | TypedArgDef::RefSelf(_) => String::from("_"),
         }
     }

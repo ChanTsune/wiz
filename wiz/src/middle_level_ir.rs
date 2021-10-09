@@ -1,7 +1,8 @@
 use crate::ext::string::StringExt;
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_decl::{
-    TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct, TypedVar,
+    TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct,
+    TypedValueArgDef, TypedVar,
 };
 use crate::high_level_ir::typed_expr::{
     TypedBinOp, TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName,
@@ -14,7 +15,7 @@ use crate::middle_level_ir::ml_decl::{
     MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar,
 };
 use crate::middle_level_ir::ml_expr::{
-    MLBinOp, MLBinopKind, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLMember, MLName, MLReturn,
+    MLBinOp, MLBinOpKind, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLMember, MLName, MLReturn,
     MLSubscript, MLTypeCast,
 };
 use crate::middle_level_ir::ml_file::MLFile;
@@ -322,7 +323,12 @@ impl HLIR2MLIR {
         let mangled_name = if annotations.has_annotate("no_mangle") {
             name
         } else {
-            package_mangled_name
+            let fun_arg_label_type_mangled_name = self.fun_arg_label_type_name_mangling(&arg_defs);
+            if fun_arg_label_type_mangled_name.is_empty() {
+                package_mangled_name
+            } else {
+                package_mangled_name + "##" + &*fun_arg_label_type_mangled_name
+            }
         };
         self.context
             .set_declaration_annotations(mangled_name.clone(), annotations);
@@ -387,7 +393,13 @@ impl HLIR2MLIR {
                 })));
                 MLFun {
                     modifiers: vec![],
-                    name: self.package_name_mangling(&package, &name) + "::init",
+                    name: self.package_name_mangling(&package, &name)
+                        + "::init"
+                        + &*if i.args.is_empty() {
+                            String::new()
+                        } else {
+                            String::from("##") + &*self.fun_arg_label_type_name_mangling(&i.args)
+                        },
                     arg_defs: i.args.into_iter().map(|a| self.arg_def(a)).collect(),
                     return_type: type_.into_value_type(),
                     body: Some(MLFunBody { body }),
@@ -404,10 +416,18 @@ impl HLIR2MLIR {
                     body,
                     return_type,
                 } = mf;
+                let fun_arg_label_type_mangled_name = self.fun_arg_label_type_name_mangling(&args);
                 let args = args.into_iter().map(|a| self.arg_def(a)).collect();
                 MLFun {
                     modifiers: vec![],
-                    name: self.package_name_mangling(&package, &name) + "::" + &fname,
+                    name: self.package_name_mangling(&package, &name)
+                        + "::"
+                        + &fname
+                        + &*if fun_arg_label_type_mangled_name.is_empty() {
+                            String::new()
+                        } else {
+                            String::from("##") + &*fun_arg_label_type_mangled_name
+                        },
                     arg_defs: args,
                     return_type: self.type_(return_type.unwrap()).into_value_type(),
                     body: match body {
@@ -425,7 +445,7 @@ impl HLIR2MLIR {
             TypedExpr::Name(name) => MLExpr::Name(self.name(name)),
             TypedExpr::Literal(l) => MLExpr::Literal(self.literal(l)),
             TypedExpr::BinOp(b) => MLExpr::PrimitiveBinOp(self.binop(b)),
-            TypedExpr::UnaryOp { .. } => todo!(),
+            TypedExpr::UnaryOp(u) => todo!(),
             TypedExpr::Subscript(s) => self.subscript(s),
             TypedExpr::Member(m) => self.member(m),
             TypedExpr::Array(a) => todo!(),
@@ -435,7 +455,7 @@ impl HLIR2MLIR {
             TypedExpr::Call(c) => MLExpr::Call(self.call(c)),
             TypedExpr::If(i) => MLExpr::If(self.if_expr(i)),
             TypedExpr::When => todo!(),
-            TypedExpr::Lambda => todo!(),
+            TypedExpr::Lambda(l) => todo!(),
             TypedExpr::Return(r) => MLExpr::Return(self.return_expr(r)),
             TypedExpr::TypeCast(t) => MLExpr::PrimitiveTypeCast(self.type_cast(t)),
         }
@@ -491,17 +511,17 @@ impl HLIR2MLIR {
         MLBinOp {
             left: Box::new(self.expr(*left)),
             kind: match &*kind {
-                "+" => MLBinopKind::Plus,
-                "-" => MLBinopKind::Minus,
-                "*" => MLBinopKind::Mul,
-                "/" => MLBinopKind::Div,
-                "%" => MLBinopKind::Mod,
-                "==" => MLBinopKind::Equal,
-                ">=" => MLBinopKind::GrateThanEqual,
-                ">" => MLBinopKind::GrateThan,
-                "<=" => MLBinopKind::LessThanEqual,
-                "<" => MLBinopKind::LessThan,
-                "!=" => MLBinopKind::NotEqual,
+                "+" => MLBinOpKind::Plus,
+                "-" => MLBinOpKind::Minus,
+                "*" => MLBinOpKind::Mul,
+                "/" => MLBinOpKind::Div,
+                "%" => MLBinOpKind::Mod,
+                "==" => MLBinOpKind::Equal,
+                ">=" => MLBinOpKind::GrateThanEqual,
+                ">" => MLBinOpKind::GrateThan,
+                "<=" => MLBinOpKind::LessThanEqual,
+                "<" => MLBinOpKind::LessThan,
+                "!=" => MLBinOpKind::NotEqual,
                 k => {
                     eprintln!("Unknown operator '{:?}'", k);
                     exit(-1)
@@ -605,8 +625,42 @@ impl HLIR2MLIR {
             args,
             type_,
         } = c;
+        let target = match self.expr(*target) {
+            MLExpr::Name(MLName { name, type_ }) => {
+                let fun_arg_label_type_mangled_name =
+                    if self.context.declaration_has_annotation(&name, "no_mangle") {
+                        name
+                    } else {
+                        if args.is_empty() {
+                            name
+                        } else {
+                            name + "##"
+                                + &*self.fun_arg_label_type_name_mangling(
+                                    &args
+                                        .iter()
+                                        .map(|a| {
+                                            TypedArgDef::Value(TypedValueArgDef {
+                                                label: match &a.label {
+                                                    None => "_".to_string(),
+                                                    Some(l) => l.to_string(),
+                                                },
+                                                name: "".to_string(),
+                                                type_: a.arg.type_().unwrap(),
+                                            })
+                                        })
+                                        .collect(),
+                                )
+                        }
+                    };
+                MLExpr::Name(MLName {
+                    name: fun_arg_label_type_mangled_name,
+                    type_,
+                })
+            }
+            a => a,
+        };
         MLCall {
-            target: Box::new(self.expr(*target)),
+            target: Box::new(target),
             args: args
                 .into_iter()
                 .map(|a| MLCallArg {
@@ -677,7 +731,7 @@ impl HLIR2MLIR {
 
     fn fun_arg_label_type_name_mangling(&self, args: &Vec<TypedArgDef>) -> String {
         args.iter()
-            .map(|arg| arg.label() + &*arg.type_().unwrap().to_string())
+            .map(|arg| arg.label() + "#" + &*arg.type_().unwrap().to_string())
             .collect::<Vec<String>>()
             .join("##")
     }
