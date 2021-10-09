@@ -1,8 +1,6 @@
 use crate::ext::string::StringExt;
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
-use crate::high_level_ir::typed_decl::{
-    TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct, TypedVar,
-};
+use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct, TypedValueArgDef, TypedVar};
 use crate::high_level_ir::typed_expr::{
     TypedBinOp, TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName,
     TypedReturn, TypedSubscript, TypedTypeCast,
@@ -322,7 +320,12 @@ impl HLIR2MLIR {
         let mangled_name = if annotations.has_annotate("no_mangle") {
             name
         } else {
-            package_mangled_name
+            let fun_arg_label_type_mangled_name= self.fun_arg_label_type_name_mangling(&arg_defs);
+            if fun_arg_label_type_mangled_name.is_empty() {
+                package_mangled_name
+            } else {
+                package_mangled_name + "##" + &*fun_arg_label_type_mangled_name
+            }
         };
         self.context
             .set_declaration_annotations(mangled_name.clone(), annotations);
@@ -387,7 +390,11 @@ impl HLIR2MLIR {
                 })));
                 MLFun {
                     modifiers: vec![],
-                    name: self.package_name_mangling(&package, &name) + "::init",
+                    name: self.package_name_mangling(&package, &name) + "::init" + &*if i.args.is_empty() {
+                        String::new()
+                    } else {
+                        String::from("##") + &*self.fun_arg_label_type_name_mangling(&i.args)
+                    },
                     arg_defs: i.args.into_iter().map(|a| self.arg_def(a)).collect(),
                     return_type: type_.into_value_type(),
                     body: Some(MLFunBody { body }),
@@ -404,10 +411,15 @@ impl HLIR2MLIR {
                     body,
                     return_type,
                 } = mf;
+                let fun_arg_label_type_mangled_name= self.fun_arg_label_type_name_mangling(&args);
                 let args = args.into_iter().map(|a| self.arg_def(a)).collect();
                 MLFun {
                     modifiers: vec![],
-                    name: self.package_name_mangling(&package, &name) + "::" + &fname,
+                    name: self.package_name_mangling(&package, &name) + "::" + &fname + &*if fun_arg_label_type_mangled_name.is_empty() {
+                        String::new()
+                    } else {
+                        String::from("##") + &*fun_arg_label_type_mangled_name
+                    },
                     arg_defs: args,
                     return_type: self.type_(return_type.unwrap()).into_value_type(),
                     body: match body {
@@ -605,8 +617,33 @@ impl HLIR2MLIR {
             args,
             type_,
         } = c;
+        let target =
+        match self.expr(*target) {
+            MLExpr::Name(MLName { name, type_ }) => {
+                let fun_arg_label_type_mangled_name = if self.context.declaration_has_annotation(&name, "no_mangle") {
+                    name
+                } else {
+                    if args.is_empty() {
+                        name
+                    } else {
+                        name + "##" + &*self.fun_arg_label_type_name_mangling(&args.iter().map(|a| {
+                            TypedArgDef::Value(TypedValueArgDef {
+                                label: match &a.label {
+                                    None => { "_".to_string() }
+                                    Some(l) => { l.to_string() }
+                                },
+                                name: "".to_string(),
+                                type_: a.arg.type_().unwrap()
+                            })
+                        }).collect())
+                    }
+                };
+                MLExpr::Name(MLName { name: fun_arg_label_type_mangled_name, type_ })
+            },
+            a => a,
+        };
         MLCall {
-            target: Box::new(self.expr(*target)),
+            target: Box::new(target),
             args: args
                 .into_iter()
                 .map(|a| MLCallArg {
