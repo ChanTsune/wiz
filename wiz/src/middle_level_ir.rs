@@ -435,7 +435,7 @@ impl HLIR2MLIR {
             TypedExpr::Call(c) => MLExpr::Call(self.call(c)),
             TypedExpr::If(i) => MLExpr::If(self.if_expr(i)),
             TypedExpr::When => todo!(),
-            TypedExpr::Lambda => todo!(),
+            TypedExpr::Lambda(l) => todo!(),
             TypedExpr::Return(r) => MLExpr::Return(self.return_expr(r)),
             TypedExpr::TypeCast(t) => MLExpr::PrimitiveTypeCast(self.type_cast(t)),
         }
