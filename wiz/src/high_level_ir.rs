@@ -378,9 +378,7 @@ impl Ast2HLIR {
         match e {
             Expr::Name(n) => TypedExpr::Name(self.name_syntax(n)),
             Expr::Literal(literal) => TypedExpr::Literal(self.literal_syntax(literal)),
-            Expr::BinOp(b) => {
-                TypedExpr::BinOp(self.binary_operation_syntax(b))
-            }
+            Expr::BinOp(b) => TypedExpr::BinOp(self.binary_operation_syntax(b)),
             Expr::UnaryOp {
                 target,
                 prefix,
