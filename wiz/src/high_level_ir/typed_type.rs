@@ -67,9 +67,19 @@ impl TypedValueType {
 
 impl ToString for TypedValueType {
     fn to_string(&self) -> String {
-        match &self.package {
+        let fqn = match &self.package {
             None => self.name.clone(),
-            Some(pkg) => pkg.to_string(),
+            Some(pkg) => if pkg.is_global() {
+                self.name.clone()
+            } else {
+                pkg.to_string() + "::" + &*self.name
+            },
+        };
+        fqn + &match &self.type_args {
+            None => String::new(),
+            Some(a) => {
+                String::from("<") + &a.iter().map(|a|a.to_string()).collect::<Vec<String>>().join(",") + ">"
+            }
         }
     }
 }
