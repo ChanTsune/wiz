@@ -378,15 +378,8 @@ impl Ast2HLIR {
         match e {
             Expr::Name(n) => TypedExpr::Name(self.name_syntax(n)),
             Expr::Literal(literal) => TypedExpr::Literal(self.literal_syntax(literal)),
-            Expr::BinOp(BinaryOperationSyntax { left, kind, right }) => {
-                let left = Box::new(self.expr(*left));
-                let right = Box::new(self.expr(*right));
-                TypedExpr::BinOp(TypedBinOp {
-                    left: left,
-                    kind: kind.token,
-                    right: right,
-                    type_: None,
-                })
+            Expr::BinOp(b) => {
+                TypedExpr::BinOp(self.binary_operation_syntax(b))
             }
             Expr::UnaryOp {
                 target,
@@ -463,6 +456,18 @@ impl Ast2HLIR {
                 Some(Package::new(name_space))
             },
             name,
+            type_: None,
+        }
+    }
+
+    pub fn binary_operation_syntax(&self, b: BinaryOperationSyntax) -> TypedBinOp {
+        let BinaryOperationSyntax { left, kind, right } = b;
+        let left = Box::new(self.expr(*left));
+        let right = Box::new(self.expr(*right));
+        TypedBinOp {
+            left,
+            kind: kind.token,
+            right,
             type_: None,
         }
     }
