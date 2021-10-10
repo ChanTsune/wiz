@@ -4,13 +4,22 @@
 //     puts(item.description)
 // }
 
+fun println() {
+    putchar(10 as Int32)
+}
+
 fun println(_ item: String) {
     puts(item)
 }
 
-fun intPrintln(_ item: Int64) {
+fun print(_ item: Int64) {
     if 9 < item {
-        intPrintln(item / 10)
+        print(item / 10)
     }
     putchar(((item % 10)+48) as Int32)
+}
+
+fun println(_ item: Int64) {
+    print(item)
+    println()
 }
