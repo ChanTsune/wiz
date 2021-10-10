@@ -11,8 +11,8 @@ use nom::{AsChar, Compare, FindSubstring, IResult, InputIter, InputLength, Input
 use std::ops::{Range, RangeFrom};
 
 pub(crate) fn annotations<I>(s: I) -> IResult<I, AnnotationsSyntax>
-where
-    I: Slice<RangeFrom<usize>>
+    where
+        I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + Clone
@@ -21,7 +21,7 @@ where
         + InputTake
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-    <I as InputIter>::Item: AsChar + Copy,
+        <I as InputIter>::Item: AsChar + Copy,
 {
     map(
         tuple((
@@ -97,9 +97,9 @@ mod tests {
                     open: TokenSyntax::new("#[".to_string()),
                     annotations: vec![Annotation {
                         name: TokenSyntax::new("no_mangle".to_string()),
-                        trailing_comma: TokenSyntax::new("".to_string())
+                        trailing_comma: TokenSyntax::new("".to_string()),
                     }],
-                    close: TokenSyntax::new("]".to_string())
+                    close: TokenSyntax::new("]".to_string()),
                 }
             ))
         );
