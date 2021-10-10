@@ -11,8 +11,8 @@ use nom::{AsChar, Compare, FindSubstring, IResult, InputIter, InputLength, Input
 use std::ops::{Range, RangeFrom};
 
 pub(crate) fn annotations<I>(s: I) -> IResult<I, AnnotationsSyntax>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + Clone
@@ -21,7 +21,7 @@ pub(crate) fn annotations<I>(s: I) -> IResult<I, AnnotationsSyntax>
         + InputTake
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
+    <I as InputIter>::Item: AsChar + Copy,
 {
     map(
         tuple((
