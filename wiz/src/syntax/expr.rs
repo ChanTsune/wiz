@@ -10,11 +10,7 @@ pub enum Expr {
     Name(NameExprSyntax),
     Literal(LiteralSyntax),
     BinOp(BinaryOperationSyntax),
-    UnaryOp {
-        target: Box<Expr>,
-        prefix: bool,
-        kind: String,
-    },
+    UnaryOp(UnaryOperationSyntax),
     Subscript(SubscriptSyntax),
     Member {
         target: Box<Expr>,
@@ -52,8 +48,26 @@ pub struct NameExprSyntax {
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct BinaryOperationSyntax {
     pub(crate) left: Box<Expr>,
-    pub(crate) kind: TokenSyntax,
+    pub(crate) operator: TokenSyntax,
     pub(crate) right: Box<Expr>,
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub enum UnaryOperationSyntax {
+    Prefix(PrefixUnaryOperationSyntax),
+    Postfix(PostfixUnaryOperationSyntax),
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct PrefixUnaryOperationSyntax {
+    pub(crate) kind: TokenSyntax,
+    pub(crate) target: Box<Expr>,
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct PostfixUnaryOperationSyntax {
+    pub(crate) target: Box<Expr>,
+    pub(crate) operator: TokenSyntax,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]

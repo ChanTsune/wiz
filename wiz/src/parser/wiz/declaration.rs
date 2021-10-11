@@ -980,7 +980,7 @@ mod tests {
                         left: Box::new(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
                             "1".to_string()
                         )))),
-                        kind: TokenSyntax::new("+".to_string()),
+                        operator: TokenSyntax::new("+".to_string()),
                         right: Box::new(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
                             "1".to_string()
                         )))),

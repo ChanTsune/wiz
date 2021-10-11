@@ -433,7 +433,7 @@ mod tests {
                             name_space: vec![],
                             name: "a".to_string()
                         })),
-                        kind: TokenSyntax::new("<".to_string()),
+                        operator: TokenSyntax::new("<".to_string()),
                         right: Box::new(Expr::Name(NameExprSyntax {
                             name_space: vec![],
                             name: "b".to_string()
@@ -451,7 +451,7 @@ mod tests {
                                         name_space: vec![],
                                         name: "a".to_string()
                                     })),
-                                    kind: TokenSyntax::new("+".to_string()),
+                                    operator: TokenSyntax::new("+".to_string()),
                                     right: Box::new(Expr::Literal(LiteralSyntax::Integer(
                                         TokenSyntax::new("1".to_string())
                                     )))
@@ -484,7 +484,7 @@ mod tests {
                             name: "c".to_string(),
                             navigation_operator: ".".to_string()
                         }),
-                        kind: TokenSyntax::new("<".to_string()),
+                        operator: TokenSyntax::new("<".to_string()),
                         right: Box::new(Expr::Name(NameExprSyntax {
                             name_space: vec![],
                             name: "b".to_string()
@@ -502,7 +502,7 @@ mod tests {
                                         name_space: vec![],
                                         name: "a".to_string()
                                     })),
-                                    kind: TokenSyntax::new("+".to_string()),
+                                    operator: TokenSyntax::new("+".to_string()),
                                     right: Box::new(Expr::Literal(LiteralSyntax::Integer(
                                         TokenSyntax::new("1".to_string())
                                     )))

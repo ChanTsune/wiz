@@ -15,11 +15,7 @@ use crate::parser::wiz::operators::{
 use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_arguments};
 use crate::syntax::block::Block;
-use crate::syntax::expr::{
-    ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallExprSyntax, Expr,
-    IfExprSyntax, LambdaSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax, SubscriptSyntax,
-    TypeCastSyntax,
-};
+use crate::syntax::expr::{ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallExprSyntax, Expr, IfExprSyntax, LambdaSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax, SubscriptSyntax, TypeCastSyntax, PrefixUnaryOperationSyntax, UnaryOperationSyntax, PostfixUnaryOperationSyntax};
 use crate::syntax::literal::LiteralSyntax;
 use crate::syntax::stmt::Stmt;
 use crate::syntax::token::TokenSyntax;
@@ -470,7 +466,10 @@ where
         for suffix in suffixes {
             e = match suffix {
                 // TODO: impl
-                PostfixSuffix::Operator { .. } => e,
+                PostfixSuffix::Operator { kind } => Expr::UnaryOp(UnaryOperationSyntax::Postfix(PostfixUnaryOperationSyntax {
+                    target: Box::new(e),
+                    operator: TokenSyntax::new(kind)
+                })),
                 PostfixSuffix::TypeArgumentSuffix { .. } => e,
                 PostfixSuffix::CallSuffix {
                     args,
@@ -636,11 +635,10 @@ where
     map(
         tuple((opt(prefix_operator), postfix_expr)),
         |(op, postfix): (Option<I>, _)| match op {
-            Some(op) => Expr::UnaryOp {
+            Some(op) => Expr::UnaryOp(UnaryOperationSyntax::Prefix(PrefixUnaryOperationSyntax {
                 target: Box::new(postfix),
-                prefix: true,
-                kind: op.to_string(),
-            },
+                kind: TokenSyntax::new(op.to_string()),
+            })),
             None => postfix,
         },
     )(s)
@@ -654,7 +652,7 @@ where
     for (_, op, _, ex) in v {
         bin_op = Expr::BinOp(BinaryOperationSyntax {
             left: Box::new(bin_op),
-            kind: TokenSyntax::new(op.to_string()),
+            operator: TokenSyntax::new(op.to_string()),
             right: Box::new(ex),
         })
     }
@@ -1036,7 +1034,7 @@ where
                     P::IN { op, expr } => {
                         bin_op = Expr::BinOp(BinaryOperationSyntax {
                             left: Box::new(bin_op),
-                            kind: TokenSyntax::new(op),
+                            operator: TokenSyntax::new(op),
                             right: Box::new(expr),
                         })
                     }
@@ -1554,12 +1552,12 @@ mod tests {
                         left: Box::from(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
                             "1".to_string()
                         )))),
-                        kind: TokenSyntax::new("||".to_string()),
+                        operator: TokenSyntax::new("||".to_string()),
                         right: Box::from(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
                             "2".to_string()
                         ))))
                     })),
-                    kind: TokenSyntax::new("||".to_string()),
+                    operator: TokenSyntax::new("||".to_string()),
                     right: Box::from(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
                         "3".to_string()
                     ))))
@@ -1582,12 +1580,12 @@ mod tests {
                         left: Box::from(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
                             "1".to_string()
                         )))),
-                        kind: TokenSyntax::new("&&".to_string()),
+                        operator: TokenSyntax::new("&&".to_string()),
                         right: Box::from(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
                             "2".to_string()
                         ))))
                     })),
-                    kind: TokenSyntax::new("&&".to_string()),
+                    operator: TokenSyntax::new("&&".to_string()),
                     right: Box::from(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
                         "3".to_string()
                     ))))
