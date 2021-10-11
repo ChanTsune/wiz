@@ -5,7 +5,9 @@ use crate::parser::wiz::keywords::{
     as_keyword, fun_keyword, init_keyword, self_keyword, struct_keyword, use_keyword, val_keyword,
     var_keyword, where_keyword,
 };
-use crate::parser::wiz::lexical_structure::{identifier, trivia_piece_line_ending, whitespace0, whitespace1, whitespace_without_eol0};
+use crate::parser::wiz::lexical_structure::{
+    identifier, trivia_piece_line_ending, whitespace0, whitespace1, whitespace_without_eol0,
+};
 use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_parameters};
 use crate::syntax::annotation::Annotatable;
@@ -156,7 +158,11 @@ where
         opt(tuple((
             struct_property,
             whitespace_without_eol0,
-            many0(tuple((trivia_piece_line_ending, whitespace0, struct_property))),
+            many0(tuple((
+                trivia_piece_line_ending,
+                whitespace0,
+                struct_property,
+            ))),
             whitespace0,
         ))),
         |o| match o {

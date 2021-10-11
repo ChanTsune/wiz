@@ -385,8 +385,8 @@ where
 }
 
 pub fn trivia_piece_line_ending<I>(s: I) -> IResult<I, TriviaPiece>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + Clone
@@ -395,13 +395,9 @@ pub fn trivia_piece_line_ending<I>(s: I) -> IResult<I, TriviaPiece>
         + InputTake
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
+    <I as InputIter>::Item: AsChar + Copy,
 {
-    alt((
-        carriage_return_line_feeds,
-        newlines,
-        carriage_returns,
-    ))(s)
+    alt((carriage_return_line_feeds, newlines, carriage_returns))(s)
 }
 
 #[cfg(test)]
