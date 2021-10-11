@@ -11,10 +11,7 @@ use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedMemberFunction,
     TypedStruct, TypedValueArgDef, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{
-    TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember,
-    TypedLiteral, TypedName, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
-};
+use crate::high_level_ir::typed_expr::{TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp, TypedPrefixUnaryOp, TypedPostfixUnaryOp};
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedForStmt,
@@ -526,9 +523,27 @@ impl TypeResolver {
     }
 
     pub fn typed_unary_op(&mut self, u: TypedUnaryOp) -> Result<TypedUnaryOp> {
-        Result::Ok(TypedUnaryOp {
+        Result::Ok(match u {
+            TypedUnaryOp::Prefix(p) => {
+                TypedUnaryOp::Prefix(self.typed_prefix_unary_op(p)?)
+            }
+            TypedUnaryOp::Postfix(p) => {
+                TypedUnaryOp::Postfix(self.typed_postfix_unary_op(p)?)
+            }
+        })
+    }
+
+    pub fn typed_prefix_unary_op(&mut self, u: TypedPrefixUnaryOp) -> Result<TypedPrefixUnaryOp> {
+        Result::Ok(TypedPrefixUnaryOp {
             target: Box::new(self.expr(*u.target)?),
-            prefix: u.prefix,
+            kind: u.kind,
+            type_: u.type_,
+        })
+    }
+
+    pub fn typed_postfix_unary_op(&mut self, u: TypedPostfixUnaryOp) -> Result<TypedPostfixUnaryOp> {
+        Result::Ok(TypedPostfixUnaryOp {
+            target: Box::new(self.expr(*u.target)?),
             kind: u.kind,
             type_: u.type_,
         })

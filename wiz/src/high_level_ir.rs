@@ -3,10 +3,7 @@ use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedFun, TypedFunBody, TypedInitializer,
     TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedUse, TypedValueArgDef, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{
-    TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember,
-    TypedLambda, TypedLiteral, TypedName, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
-};
+use crate::high_level_ir::typed_expr::{TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLambda, TypedLiteral, TypedName, TypedPostfixUnaryOp, TypedPrefixUnaryOp, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp};
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedForStmt,
@@ -380,31 +377,7 @@ impl Ast2HLIR {
             Expr::Name(n) => TypedExpr::Name(self.name_syntax(n)),
             Expr::Literal(literal) => TypedExpr::Literal(self.literal_syntax(literal)),
             Expr::BinOp(b) => TypedExpr::BinOp(self.binary_operation_syntax(b)),
-            Expr::UnaryOp(u) => match u {
-                UnaryOperationSyntax::Prefix(p) => {
-                    let PrefixUnaryOperationSyntax {
-                        operator: kind,
-                        target,
-                    } = p;
-                    let target = self.expr(*target);
-                    TypedExpr::UnaryOp(TypedUnaryOp {
-                        target: Box::new(target),
-                        prefix: true,
-                        kind: kind.token,
-                        type_: None,
-                    })
-                }
-                UnaryOperationSyntax::Postfix(p) => {
-                    let PostfixUnaryOperationSyntax { target, operator } = p;
-                    let target = self.expr(*target);
-                    TypedExpr::UnaryOp(TypedUnaryOp {
-                        target: Box::new(target),
-                        prefix: false,
-                        kind: operator.token,
-                        type_: None,
-                    })
-                }
-            },
+            Expr::UnaryOp(u) => TypedExpr::UnaryOp(self.unary_operation_syntax(u)),
             Expr::Subscript(s) => TypedExpr::Subscript(self.subscript_syntax(s)),
             Expr::Member(m) => TypedExpr::Member(self.member_syntax(m)),
             Expr::Array(a) => TypedExpr::Array(self.array_syntax(a)),
@@ -471,6 +444,40 @@ impl Ast2HLIR {
             left,
             kind: kind.token,
             right,
+            type_: None,
+        }
+    }
+
+    pub fn unary_operation_syntax(&self, u: UnaryOperationSyntax) -> TypedUnaryOp {
+        match u {
+            UnaryOperationSyntax::Prefix(p) => {
+                TypedUnaryOp::Prefix(self.prefix_unary_operation_syntax(p))
+            }
+            UnaryOperationSyntax::Postfix(p) => {
+                TypedUnaryOp::Postfix(self.postfix_unary_operation_syntax(p))
+            }
+        }
+    }
+
+    pub fn prefix_unary_operation_syntax(&self, p: PrefixUnaryOperationSyntax) -> TypedPrefixUnaryOp {
+        let PrefixUnaryOperationSyntax {
+            operator,
+            target,
+        } = p;
+        let target = self.expr(*target);
+        TypedPrefixUnaryOp {
+            target: Box::new(target),
+            kind: operator.token,
+            type_: None,
+        }
+    }
+
+    pub fn postfix_unary_operation_syntax(&self, p: PostfixUnaryOperationSyntax) -> TypedPostfixUnaryOp {
+        let PostfixUnaryOperationSyntax { target, operator } = p;
+        let target = self.expr(*target);
+        TypedPostfixUnaryOp {
+            target: Box::new(target),
+            kind: operator.token,
             type_: None,
         }
     }
