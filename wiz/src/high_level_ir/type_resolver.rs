@@ -538,7 +538,7 @@ impl TypeResolver {
         Result::Ok(TypedPrefixUnaryOp {
             kind: u.kind,
             type_: target.type_(),
-            target ,
+            target,
         })
     }
 
