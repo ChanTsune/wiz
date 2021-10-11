@@ -19,11 +19,7 @@ use crate::syntax::decl::{
     Decl, FunSyntax, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax,
     StructSyntax, VarSyntax,
 };
-use crate::syntax::expr::{
-    ArraySyntax, BinaryOperationSyntax, CallExprSyntax, Expr, IfExprSyntax, LambdaSyntax,
-    NameExprSyntax, PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax, ReturnSyntax,
-    SubscriptSyntax, TypeCastSyntax, UnaryOperationSyntax,
-};
+use crate::syntax::expr::{ArraySyntax, BinaryOperationSyntax, CallExprSyntax, Expr, IfExprSyntax, LambdaSyntax, NameExprSyntax, PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax, ReturnSyntax, SubscriptSyntax, TypeCastSyntax, UnaryOperationSyntax, MemberSyntax};
 use crate::syntax::file::{FileSyntax, SourceSet, WizFile};
 use crate::syntax::fun::arg_def::ArgDef;
 use crate::syntax::fun::body_def::FunBody;
@@ -403,18 +399,8 @@ impl Ast2HLIR {
                 }
             },
             Expr::Subscript(s) => TypedExpr::Subscript(self.subscript_syntax(s)),
-            Expr::Member {
-                target,
-                name,
-                navigation_operator,
-            } => {
-                let target = self.expr(*target);
-                TypedExpr::Member(TypedInstanceMember {
-                    target: Box::new(target),
-                    name,
-                    is_safe: navigation_operator.ends_with("?"),
-                    type_: None,
-                })
+            Expr::Member(m) => {
+                TypedExpr::Member(self.member_syntax(m))
             }
             Expr::Array(a) => TypedExpr::Array(self.array_syntax(a)),
             Expr::Tuple { .. } => TypedExpr::Tuple,
@@ -497,6 +483,21 @@ impl Ast2HLIR {
         TypedSubscript {
             target,
             indexes,
+            type_: None,
+        }
+    }
+
+    pub fn member_syntax(&self, m: MemberSyntax) -> TypedInstanceMember {
+        let MemberSyntax {
+            target,
+            name,
+            navigation_operator,
+        } = m;
+        let target = self.expr(*target);
+        TypedInstanceMember {
+            target: Box::new(target),
+            name: name.token,
+            is_safe: navigation_operator.token.ends_with("?"),
             type_: None,
         }
     }

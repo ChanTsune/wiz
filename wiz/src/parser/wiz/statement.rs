@@ -411,7 +411,7 @@ mod tests {
         assignable_expr, assignment_stmt, directly_assignable_expr, file, while_stmt,
     };
     use crate::syntax::block::Block;
-    use crate::syntax::expr::{BinaryOperationSyntax, Expr, NameExprSyntax};
+    use crate::syntax::expr::{BinaryOperationSyntax, Expr, NameExprSyntax, MemberSyntax};
     use crate::syntax::file::FileSyntax;
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::stmt::{AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt};
@@ -476,14 +476,14 @@ mod tests {
                 "",
                 LoopStmt::While {
                     condition: Expr::BinOp(BinaryOperationSyntax {
-                        left: Box::new(Expr::Member {
+                        left: Box::new(Expr::Member(MemberSyntax {
                             target: Box::new(Expr::Name(NameExprSyntax {
                                 name_space: vec![],
                                 name: "a".to_string()
                             })),
-                            name: "c".to_string(),
-                            navigation_operator: ".".to_string()
-                        }),
+                            name: TokenSyntax::new("c".to_string()),
+                            navigation_operator: TokenSyntax::new(".".to_string())
+                        })),
                         operator: TokenSyntax::new("<".to_string()),
                         right: Box::new(Expr::Name(NameExprSyntax {
                             name_space: vec![],
@@ -521,14 +521,14 @@ mod tests {
             directly_assignable_expr("a.b"),
             Ok((
                 "",
-                Expr::Member {
+                Expr::Member(MemberSyntax {
                     target: Box::new(Expr::Name(NameExprSyntax {
                         name_space: vec![],
                         name: "a".to_string()
                     })),
-                    name: "b".to_string(),
-                    navigation_operator: ".".to_string()
-                }
+                    name: TokenSyntax::new("b".to_string()),
+                    navigation_operator: TokenSyntax::new(".".to_string())
+                })
             ))
         )
     }
@@ -539,14 +539,14 @@ mod tests {
             assignable_expr("a.b"),
             Ok((
                 "",
-                Expr::Member {
+                Expr::Member(MemberSyntax {
                     target: Box::new(Expr::Name(NameExprSyntax {
                         name_space: vec![],
                         name: "a".to_string()
                     })),
-                    name: "b".to_string(),
-                    navigation_operator: ".".to_string()
-                }
+                    name: TokenSyntax::new("b".to_string()),
+                    navigation_operator: TokenSyntax::new(".".to_string())
+                })
             ))
         )
     }
@@ -581,14 +581,14 @@ mod tests {
                         name_space: vec![],
                         name: "a".to_string()
                     }),
-                    value: Expr::Member {
+                    value: Expr::Member(MemberSyntax {
                         target: Box::new(Expr::Name(NameExprSyntax {
                             name_space: vec![],
                             name: "b".to_string()
                         })),
-                        name: "c".to_string(),
-                        navigation_operator: ".".to_string()
-                    }
+                        name: TokenSyntax::new("c".to_string()),
+                        navigation_operator: TokenSyntax::new(".".to_string())
+                    })
                 }))
             ))
         )
@@ -600,14 +600,14 @@ mod tests {
             Ok((
                 "",
                 Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax {
-                    target: Expr::Member {
+                    target: Expr::Member(MemberSyntax {
                         target: Box::new(Expr::Name(NameExprSyntax {
                             name_space: vec![],
                             name: "a".to_string()
                         })),
-                        name: "b".to_string(),
-                        navigation_operator: ".".to_string()
-                    },
+                        name: TokenSyntax::new("b".to_string()),
+                        navigation_operator: TokenSyntax::new(".".to_string())
+                    }),
                     value: Expr::Name(NameExprSyntax {
                         name_space: vec![],
                         name: "c".to_string()

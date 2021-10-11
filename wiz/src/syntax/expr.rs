@@ -12,11 +12,7 @@ pub enum Expr {
     BinOp(BinaryOperationSyntax),
     UnaryOp(UnaryOperationSyntax),
     Subscript(SubscriptSyntax),
-    Member {
-        target: Box<Expr>,
-        name: String,
-        navigation_operator: String,
-    },
+    Member(MemberSyntax),
     Array(ArraySyntax),
     Tuple {
         values: Vec<Expr>,
@@ -93,6 +89,13 @@ pub struct LambdaSyntax {
 pub struct SubscriptSyntax {
     pub(crate) target: Box<Expr>,
     pub(crate) idx_or_keys: Vec<Expr>,
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct MemberSyntax {
+    pub(crate) target: Box<Expr>,
+    pub(crate) name: TokenSyntax,
+    pub(crate) navigation_operator: TokenSyntax,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
