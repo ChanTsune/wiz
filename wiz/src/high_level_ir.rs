@@ -382,7 +382,7 @@ impl Ast2HLIR {
             Expr::BinOp(b) => TypedExpr::BinOp(self.binary_operation_syntax(b)),
             Expr::UnaryOp(u) => match u {
                 UnaryOperationSyntax::Prefix(p) => {
-                    let PrefixUnaryOperationSyntax { kind, target } = p;
+                    let PrefixUnaryOperationSyntax { operator: kind, target } = p;
                     let target = self.expr(*target);
                     TypedExpr::UnaryOp(TypedUnaryOp {
                         target: Box::new(target),

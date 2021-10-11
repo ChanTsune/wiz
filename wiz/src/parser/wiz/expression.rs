@@ -644,7 +644,7 @@ where
         |(op, postfix): (Option<I>, _)| match op {
             Some(op) => Expr::UnaryOp(UnaryOperationSyntax::Prefix(PrefixUnaryOperationSyntax {
                 target: Box::new(postfix),
-                kind: TokenSyntax::new(op.to_string()),
+                operator: TokenSyntax::new(op.to_string()),
             })),
             None => postfix,
         },

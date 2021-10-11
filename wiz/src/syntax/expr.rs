@@ -60,7 +60,7 @@ pub enum UnaryOperationSyntax {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct PrefixUnaryOperationSyntax {
-    pub(crate) kind: TokenSyntax,
+    pub(crate) operator: TokenSyntax,
     pub(crate) target: Box<Expr>,
 }
 
