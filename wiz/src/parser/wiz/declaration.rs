@@ -24,7 +24,7 @@ use crate::syntax::type_name::{TypeName, TypeParam};
 use crate::syntax::Syntax;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::{char, newline};
+use nom::character::complete::{char};
 use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
