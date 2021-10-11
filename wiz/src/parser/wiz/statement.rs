@@ -411,7 +411,7 @@ mod tests {
         assignable_expr, assignment_stmt, directly_assignable_expr, file, while_stmt,
     };
     use crate::syntax::block::Block;
-    use crate::syntax::expr::{BinaryOperationSyntax, Expr, NameExprSyntax, MemberSyntax};
+    use crate::syntax::expr::{BinaryOperationSyntax, Expr, MemberSyntax, NameExprSyntax};
     use crate::syntax::file::FileSyntax;
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::stmt::{AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt};

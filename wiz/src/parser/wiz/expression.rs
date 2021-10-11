@@ -15,7 +15,12 @@ use crate::parser::wiz::operators::{
 use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_arguments};
 use crate::syntax::block::Block;
-use crate::syntax::expr::{ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallExprSyntax, Expr, IfExprSyntax, LambdaSyntax, NameExprSyntax, PostfixSuffix, PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax, ReturnSyntax, SubscriptSyntax, TypeCastSyntax, UnaryOperationSyntax, MemberSyntax};
+use crate::syntax::expr::{
+    ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallExprSyntax, Expr,
+    IfExprSyntax, LambdaSyntax, MemberSyntax, NameExprSyntax, PostfixSuffix,
+    PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax, ReturnSyntax, SubscriptSyntax,
+    TypeCastSyntax, UnaryOperationSyntax,
+};
 use crate::syntax::literal::LiteralSyntax;
 use crate::syntax::stmt::Stmt;
 use crate::syntax::token::TokenSyntax;
@@ -485,11 +490,13 @@ where
                     target: Box::new(e),
                     idx_or_keys: indexes,
                 }),
-                PostfixSuffix::NavigationSuffix { navigation, name } => Expr::Member(MemberSyntax {
-                    target: Box::new(e),
-                    name: TokenSyntax::new(name),
-                    navigation_operator: TokenSyntax::new(navigation),
-                }),
+                PostfixSuffix::NavigationSuffix { navigation, name } => {
+                    Expr::Member(MemberSyntax {
+                        target: Box::new(e),
+                        name: TokenSyntax::new(name),
+                        navigation_operator: TokenSyntax::new(navigation),
+                    })
+                }
             }
         }
         e
@@ -1315,7 +1322,10 @@ mod tests {
         postfix_suffix, raw_string_literal, return_expr, string_literal, value_arguments,
     };
     use crate::syntax::block::Block;
-    use crate::syntax::expr::{ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallExprSyntax, Expr, IfExprSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax, MemberSyntax};
+    use crate::syntax::expr::{
+        ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallExprSyntax, Expr,
+        IfExprSyntax, MemberSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax,
+    };
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::token::TokenSyntax;
     use crate::syntax::trivia::{Trivia, TriviaPiece};
