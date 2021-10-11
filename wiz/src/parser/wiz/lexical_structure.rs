@@ -384,6 +384,26 @@ where
     ))(s)
 }
 
+pub fn trivia_piece_line_ending<I>(s: I) -> IResult<I, TriviaPiece>
+    where
+        I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+        <I as InputIter>::Item: AsChar + Copy,
+{
+    alt((
+        carriage_return_line_feeds,
+        newlines,
+        carriage_returns,
+    ))(s)
+}
+
 #[cfg(test)]
 mod tests {
     use crate::parser::wiz::lexical_structure::{
