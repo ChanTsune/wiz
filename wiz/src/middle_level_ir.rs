@@ -4,20 +4,14 @@ use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct,
     TypedValueArgDef, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{
-    TypedBinOp, TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName,
-    TypedReturn, TypedSubscript, TypedTypeCast,
-};
+use crate::high_level_ir::typed_expr::{TypedBinOp, TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp};
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
 use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
 use crate::middle_level_ir::ml_decl::{
     MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar,
 };
-use crate::middle_level_ir::ml_expr::{
-    MLBinOp, MLBinOpKind, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLMember, MLName, MLReturn,
-    MLSubscript, MLTypeCast,
-};
+use crate::middle_level_ir::ml_expr::{MLBinOp, MLBinOpKind, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLMember, MLName, MLReturn, MLSubscript, MLTypeCast, MLUnaryOp, MLUnaryOpKind};
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
 use crate::middle_level_ir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
@@ -445,7 +439,7 @@ impl HLIR2MLIR {
             TypedExpr::Name(name) => MLExpr::Name(self.name(name)),
             TypedExpr::Literal(l) => MLExpr::Literal(self.literal(l)),
             TypedExpr::BinOp(b) => MLExpr::PrimitiveBinOp(self.binop(b)),
-            TypedExpr::UnaryOp(u) => todo!(),
+            TypedExpr::UnaryOp(u) => MLExpr::PrimitiveUnaryOp(self.unary_op(u)),
             TypedExpr::Subscript(s) => self.subscript(s),
             TypedExpr::Member(m) => self.member(m),
             TypedExpr::Array(a) => todo!(),
@@ -529,6 +523,29 @@ impl HLIR2MLIR {
             },
             right: Box::new(self.expr(*right)),
             type_: self.type_(type_.unwrap()).into_value_type(),
+        }
+    }
+
+    pub fn unary_op(&mut self, u: TypedUnaryOp) -> MLUnaryOp {
+        match u {
+            TypedUnaryOp::Prefix(p) => {
+                let target = self.expr(*p.target);
+                MLUnaryOp {
+                    kind: match &*p.kind {
+                        "+" => {MLUnaryOpKind::Positive}
+                        "-" => {MLUnaryOpKind::Negative}
+                        "*" => {MLUnaryOpKind::DeRef}
+                        "&" => {MLUnaryOpKind::Ref}
+                        "!" => {MLUnaryOpKind::Not}
+                        _ => panic!()
+                    },
+                    type_: target.type_().into_value_type(),
+                    target: Box::new(target),
+                }
+            }
+            TypedUnaryOp::Postfix(p) => {
+                todo!()
+            }
         }
     }
 
