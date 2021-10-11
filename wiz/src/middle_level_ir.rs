@@ -4,14 +4,20 @@ use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct,
     TypedValueArgDef, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{TypedBinOp, TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp};
+use crate::high_level_ir::typed_expr::{
+    TypedBinOp, TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName,
+    TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
+};
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
 use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
 use crate::middle_level_ir::ml_decl::{
     MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar,
 };
-use crate::middle_level_ir::ml_expr::{MLBinOp, MLBinOpKind, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLMember, MLName, MLReturn, MLSubscript, MLTypeCast, MLUnaryOp, MLUnaryOpKind};
+use crate::middle_level_ir::ml_expr::{
+    MLBinOp, MLBinOpKind, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLMember, MLName, MLReturn,
+    MLSubscript, MLTypeCast, MLUnaryOp, MLUnaryOpKind,
+};
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
 use crate::middle_level_ir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
@@ -532,12 +538,12 @@ impl HLIR2MLIR {
                 let target = self.expr(*p.target);
                 MLUnaryOp {
                     kind: match &*p.kind {
-                        "+" => {MLUnaryOpKind::Positive}
-                        "-" => {MLUnaryOpKind::Negative}
-                        "*" => {MLUnaryOpKind::DeRef}
-                        "&" => {MLUnaryOpKind::Ref}
-                        "!" => {MLUnaryOpKind::Not}
-                        _ => panic!()
+                        "+" => MLUnaryOpKind::Positive,
+                        "-" => MLUnaryOpKind::Negative,
+                        "*" => MLUnaryOpKind::DeRef,
+                        "&" => MLUnaryOpKind::Ref,
+                        "!" => MLUnaryOpKind::Not,
+                        _ => panic!(),
                     },
                     type_: target.type_().into_value_type(),
                     target: Box::new(target),
