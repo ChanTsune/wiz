@@ -15,7 +15,12 @@ use crate::parser::wiz::operators::{
 use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_arguments};
 use crate::syntax::block::Block;
-use crate::syntax::expr::{ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallExprSyntax, Expr, IfExprSyntax, LambdaSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax, SubscriptSyntax, TypeCastSyntax, PrefixUnaryOperationSyntax, UnaryOperationSyntax, PostfixUnaryOperationSyntax};
+use crate::syntax::expr::{
+    ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallExprSyntax, Expr,
+    IfExprSyntax, LambdaSyntax, NameExprSyntax, PostfixSuffix, PostfixUnaryOperationSyntax,
+    PrefixUnaryOperationSyntax, ReturnSyntax, SubscriptSyntax, TypeCastSyntax,
+    UnaryOperationSyntax,
+};
 use crate::syntax::literal::LiteralSyntax;
 use crate::syntax::stmt::Stmt;
 use crate::syntax::token::TokenSyntax;
@@ -466,10 +471,12 @@ where
         for suffix in suffixes {
             e = match suffix {
                 // TODO: impl
-                PostfixSuffix::Operator { kind } => Expr::UnaryOp(UnaryOperationSyntax::Postfix(PostfixUnaryOperationSyntax {
-                    target: Box::new(e),
-                    operator: TokenSyntax::new(kind)
-                })),
+                PostfixSuffix::Operator { kind } => {
+                    Expr::UnaryOp(UnaryOperationSyntax::Postfix(PostfixUnaryOperationSyntax {
+                        target: Box::new(e),
+                        operator: TokenSyntax::new(kind),
+                    }))
+                }
                 PostfixSuffix::TypeArgumentSuffix { .. } => e,
                 PostfixSuffix::CallSuffix {
                     args,
