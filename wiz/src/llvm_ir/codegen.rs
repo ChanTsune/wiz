@@ -1,8 +1,5 @@
 use crate::middle_level_ir::ml_decl::{MLDecl, MLFun, MLStruct, MLVar};
-use crate::middle_level_ir::ml_expr::{
-    MLBinOp, MLBinOpKind, MLCall, MLExpr, MLIf, MLLiteral, MLMember, MLReturn, MLSubscript,
-    MLTypeCast, MLUnaryOp,
-};
+use crate::middle_level_ir::ml_expr::{MLBinOp, MLBinOpKind, MLCall, MLExpr, MLIf, MLLiteral, MLMember, MLReturn, MLSubscript, MLTypeCast, MLUnaryOp, MLUnaryOpKind};
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
 use crate::middle_level_ir::ml_type::{MLPrimitiveType, MLType, MLValueType};
@@ -113,7 +110,7 @@ impl<'ctx> CodeGen<'ctx> {
             MLExpr::Name(n) => self.get_from_environment(n.name).unwrap(),
             MLExpr::Literal(literal) => self.literal(literal),
             MLExpr::PrimitiveBinOp(b) => self.binop(b),
-            MLExpr::PrimitiveUnaryOp(u) => self.unaryop(u),
+            MLExpr::PrimitiveUnaryOp(u) => self.unary_op(u),
             MLExpr::PrimitiveSubscript(s) => self.subscript(s),
             MLExpr::Call(c) => self.call(c),
             MLExpr::Member(m) => self.member(m),
@@ -367,8 +364,29 @@ impl<'ctx> CodeGen<'ctx> {
         }
     }
 
-    pub fn unaryop(&self, u: MLUnaryOp) -> AnyValueEnum<'ctx> {
-        todo!()
+    pub fn unary_op(&mut self, u: MLUnaryOp) -> AnyValueEnum<'ctx> {
+        let target = self.expr(*u.target);
+        match target {
+            AnyValueEnum::ArrayValue(_) => {todo!()}
+            AnyValueEnum::IntValue(target) => {
+                match u.kind {
+                    MLUnaryOpKind::Negative => {todo!()}
+                    MLUnaryOpKind::Positive => {todo!()}
+                    MLUnaryOpKind::Not => {
+                        self.builder.build_not(target, "not")
+                    }
+                    MLUnaryOpKind::Ref => {todo!()}
+                    MLUnaryOpKind::DeRef => {todo!()}
+                }.as_any_value_enum()
+            }
+            AnyValueEnum::FloatValue(_) => {todo!()}
+            AnyValueEnum::PhiValue(_) => {todo!()}
+            AnyValueEnum::FunctionValue(_) => {todo!()}
+            AnyValueEnum::PointerValue(_) => {todo!()}
+            AnyValueEnum::StructValue(_) => {todo!()}
+            AnyValueEnum::VectorValue(_) => {todo!()}
+            AnyValueEnum::InstructionValue(_) => {todo!()}
+        }
     }
 
     pub fn subscript(&mut self, s: MLSubscript) -> AnyValueEnum<'ctx> {
