@@ -3,7 +3,11 @@ use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedFun, TypedFunBody, TypedInitializer,
     TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedUse, TypedValueArgDef, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLambda, TypedLiteral, TypedName, TypedPostfixUnaryOp, TypedPrefixUnaryOp, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp};
+use crate::high_level_ir::typed_expr::{
+    TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember,
+    TypedLambda, TypedLiteral, TypedName, TypedPostfixUnaryOp, TypedPrefixUnaryOp, TypedReturn,
+    TypedSubscript, TypedTypeCast, TypedUnaryOp,
+};
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedForStmt,
@@ -459,11 +463,11 @@ impl Ast2HLIR {
         }
     }
 
-    pub fn prefix_unary_operation_syntax(&self, p: PrefixUnaryOperationSyntax) -> TypedPrefixUnaryOp {
-        let PrefixUnaryOperationSyntax {
-            operator,
-            target,
-        } = p;
+    pub fn prefix_unary_operation_syntax(
+        &self,
+        p: PrefixUnaryOperationSyntax,
+    ) -> TypedPrefixUnaryOp {
+        let PrefixUnaryOperationSyntax { operator, target } = p;
         let target = self.expr(*target);
         TypedPrefixUnaryOp {
             target: Box::new(target),
@@ -472,7 +476,10 @@ impl Ast2HLIR {
         }
     }
 
-    pub fn postfix_unary_operation_syntax(&self, p: PostfixUnaryOperationSyntax) -> TypedPostfixUnaryOp {
+    pub fn postfix_unary_operation_syntax(
+        &self,
+        p: PostfixUnaryOperationSyntax,
+    ) -> TypedPostfixUnaryOp {
         let PostfixUnaryOperationSyntax { target, operator } = p;
         let target = self.expr(*target);
         TypedPostfixUnaryOp {

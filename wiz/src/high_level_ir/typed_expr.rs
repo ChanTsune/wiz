@@ -75,14 +75,14 @@ pub struct TypedBinOp {
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum TypedUnaryOp {
     Prefix(TypedPrefixUnaryOp),
-    Postfix(TypedPostfixUnaryOp)
+    Postfix(TypedPostfixUnaryOp),
 }
 
 impl TypedUnaryOp {
     pub(crate) fn type_(&self) -> Option<TypedType> {
         match self {
-            TypedUnaryOp::Prefix(p) => {p.type_.clone()}
-            TypedUnaryOp::Postfix(p) => {p.type_.clone()}
+            TypedUnaryOp::Prefix(p) => p.type_.clone(),
+            TypedUnaryOp::Postfix(p) => p.type_.clone(),
         }
     }
 }
