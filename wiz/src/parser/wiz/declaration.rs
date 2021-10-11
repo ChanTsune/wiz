@@ -6,7 +6,7 @@ use crate::parser::wiz::keywords::{
     var_keyword, where_keyword,
 };
 use crate::parser::wiz::lexical_structure::{
-    identifier, whitespace0, whitespace1, whitespace_without_eol0,
+    identifier, trivia_piece_line_ending, whitespace0, whitespace1, whitespace_without_eol0,
 };
 use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_parameters};
@@ -24,7 +24,7 @@ use crate::syntax::type_name::{TypeName, TypeParam};
 use crate::syntax::Syntax;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::{char, newline};
+use nom::character::complete::char;
 use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
@@ -158,7 +158,11 @@ where
         opt(tuple((
             struct_property,
             whitespace_without_eol0,
-            many0(tuple((newline, whitespace0, struct_property))),
+            many0(tuple((
+                trivia_piece_line_ending,
+                whitespace0,
+                struct_property,
+            ))),
             whitespace0,
         ))),
         |o| match o {
@@ -826,7 +830,7 @@ mod tests {
         Decl, FunSyntax, MethodSyntax, PackageName, StoredPropertySyntax, StructPropertySyntax,
         StructSyntax, UseSyntax, VarSyntax,
     };
-    use crate::syntax::expr::{Expr, NameExprSyntax, BinaryOperationSyntax};
+    use crate::syntax::expr::{BinaryOperationSyntax, Expr, NameExprSyntax};
     use crate::syntax::fun::arg_def::{ArgDef, ValueArgDef};
     use crate::syntax::fun::body_def::FunBody;
     use crate::syntax::literal::LiteralSyntax;

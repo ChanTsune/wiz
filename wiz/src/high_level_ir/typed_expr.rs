@@ -16,7 +16,7 @@ pub enum TypedExpr {
     Call(TypedCall),
     If(TypedIf),
     When,
-    Lambda,
+    Lambda(TypedLambda),
     Return(TypedReturn),
     TypeCast(TypedTypeCast),
 }
@@ -118,6 +118,12 @@ pub struct TypedIf {
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
+pub struct TypedLambda {
+    pub(crate) args: Vec<String>,
+    pub(crate) body: TypedBlock,
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypedReturn {
     pub(crate) value: Option<Box<TypedExpr>>,
 }
@@ -145,7 +151,7 @@ impl TypedExpr {
             TypedExpr::Call(c) => c.type_.clone(),
             TypedExpr::If(i) => i.type_.clone(),
             TypedExpr::When => None,
-            TypedExpr::Lambda => None,
+            TypedExpr::Lambda(l) => todo!(),
             TypedExpr::Return(r) => Some(r.type_()),
             TypedExpr::TypeCast(t) => t.type_.clone(),
         }

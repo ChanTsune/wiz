@@ -31,6 +31,7 @@ fun main() {
     var s = A.init(a: 1, b: 0)
     val b = 2
     while s.a < 15 {
+        std::builtin::println(s.a)
         if modBy2(s.a) == 0 {
             helloWorld()
         } else {

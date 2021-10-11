@@ -502,7 +502,7 @@ impl TypeResolver {
             TypedExpr::Call(c) => TypedExpr::Call(self.typed_call(c)?),
             TypedExpr::If(i) => TypedExpr::If(self.typed_if(i)?),
             TypedExpr::When => TypedExpr::When,
-            TypedExpr::Lambda => TypedExpr::Lambda,
+            TypedExpr::Lambda(l) => TypedExpr::Lambda(l),
             TypedExpr::Return(r) => TypedExpr::Return(self.typed_return(r)?),
             TypedExpr::TypeCast(t) => TypedExpr::TypeCast(self.typed_type_cast(t)?),
         })
