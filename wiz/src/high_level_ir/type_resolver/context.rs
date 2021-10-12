@@ -24,7 +24,7 @@ pub struct ResolverStruct {
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct NameSpace {
     children: HashMap<String, NameSpace>,
-    pub(crate) types: HashMap<String, ResolverStruct>,
+    types: HashMap<String, ResolverStruct>,
     pub(crate) values: HashMap<String, TypedType>,
 }
 
@@ -123,6 +123,14 @@ impl NameSpace {
             };
             self.children.get_mut(n).unwrap().set_child(ns);
         }
+    }
+
+    pub(crate) fn register_type(&mut self, name: String, s: ResolverStruct) {
+        self.types.insert(name, s);
+    }
+
+    pub(crate) fn get_type_mut(&mut self, name: &String) -> Option<&mut ResolverStruct> {
+        self.types.get_mut(name)
     }
 }
 

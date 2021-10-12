@@ -57,7 +57,7 @@ impl TypeResolver {
         for d in f.body.iter() {
             match d {
                 TypedDecl::Struct(s) => {
-                    ns.types.insert(s.name.clone(), ResolverStruct::new());
+                    ns.register_type(s.name.clone(), ResolverStruct::new());
                     ns.values.insert(
                         s.name.clone(),
                         TypedType::Type(TypedValueType {
@@ -354,7 +354,7 @@ impl TypeResolver {
             name: name.clone(),
             type_args: None,
         });
-        let rs = ns.types.get_mut(&*name).ok_or(ResolverError::from(format!(
+        let rs = ns.get_type_mut(&name).ok_or(ResolverError::from(format!(
             "Struct {:?} not exist. Maybe before preload",
             name
         )))?;
