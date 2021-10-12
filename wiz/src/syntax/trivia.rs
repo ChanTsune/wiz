@@ -42,7 +42,6 @@ impl ToString for TriviaPiece {
             TriviaPiece::BlockComment(s) => s.clone(),
             TriviaPiece::DocLineComment(s) => s.clone(),
             TriviaPiece::DocBlockComment(s) => s.clone(),
-            TriviaPiece::GarbageText(s) => s.clone(),
         }
     }
 }
