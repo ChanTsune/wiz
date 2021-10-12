@@ -58,7 +58,7 @@ impl TypeResolver {
             match d {
                 TypedDecl::Struct(s) => {
                     ns.register_type(s.name.clone(), ResolverStruct::new());
-                    ns.values.insert(
+                    ns.register_value(
                         s.name.clone(),
                         TypedType::Type(TypedValueType {
                             package: Some(Package {
@@ -113,7 +113,7 @@ impl TypeResolver {
             TypedDecl::Var(v) => {
                 let v = self.typed_var(v)?;
                 let namespace = self.context.get_current_namespace_mut()?;
-                namespace.values.insert(
+                namespace.register_value(
                     v.name,
                     v.type_
                         .ok_or(ResolverError::from("Cannot resolve variable type"))?,
@@ -123,8 +123,7 @@ impl TypeResolver {
                 let fun = self.preload_fun(f)?;
                 let namespace = self.context.get_current_namespace_mut()?;
                 namespace
-                    .values
-                    .insert(fun.name.clone(), fun.type_().unwrap());
+                    .register_value(fun.name.clone(), fun.type_().unwrap());
             }
             TypedDecl::Struct(_) => {}
             TypedDecl::Class => {}
@@ -145,7 +144,7 @@ impl TypeResolver {
             .map(|a| {
                 let a = self.typed_arg_def(a.clone())?;
                 let ns = self.context.get_current_namespace_mut()?;
-                ns.values.insert(
+                ns.register_value(
                     a.name(),
                     a.type_()
                         .ok_or(ResolverError::from("Can not resolve 'self type'"))?,
@@ -247,7 +246,7 @@ impl TypeResolver {
             value,
         };
         let namespace = self.context.get_current_namespace_mut()?;
-        namespace.values.insert(
+        namespace.register_value(
             v.name.clone(),
             v.type_
                 .clone()
@@ -304,7 +303,7 @@ impl TypeResolver {
             .map(|a| {
                 let a = self.typed_arg_def(a.clone())?;
                 let ns = self.context.get_current_namespace_mut()?;
-                ns.values.insert(
+                ns.register_value(
                     a.name(),
                     a.type_()
                         .ok_or(ResolverError::from("Can not resolve 'self type'"))?,
@@ -331,7 +330,7 @@ impl TypeResolver {
         let result = Result::Ok(fun);
         self.context.pop_name_space();
         let ns = self.context.get_current_namespace_mut()?;
-        ns.values.insert(fun_name, fun_type.unwrap());
+        ns.register_value(fun_name, fun_type.unwrap());
         result
     }
 
@@ -414,7 +413,7 @@ impl TypeResolver {
     fn typed_initializer(&mut self, i: TypedInitializer) -> Result<TypedInitializer> {
         let self_type = self.context.get_current_type();
         let ns = self.context.get_current_namespace_mut()?;
-        ns.values.insert(
+        ns.register_value(
             String::from("self"),
             self_type.ok_or(ResolverError::from("Can not resolve 'self type'"))?,
         );
@@ -425,7 +424,7 @@ impl TypeResolver {
                 .map(|a| {
                     let a = self.typed_arg_def(a)?;
                     let ns = self.context.get_current_namespace_mut()?;
-                    ns.values.insert(
+                    ns.register_value(
                         a.name(),
                         a.type_()
                             .ok_or(ResolverError::from("Can not resolve 'self type'"))?,
@@ -447,7 +446,7 @@ impl TypeResolver {
                 .map(|a| {
                     let a = self.typed_arg_def(a)?;
                     let ns = self.context.get_current_namespace_mut()?;
-                    ns.values.insert(
+                    ns.register_value(
                         a.name(),
                         a.type_()
                             .ok_or(ResolverError::from("Can not resolve `self`"))?,
