@@ -23,7 +23,7 @@ pub struct ResolverStruct {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct NameSpace {
-    pub(crate) children: HashMap<String, NameSpace>,
+    children: HashMap<String, NameSpace>,
     pub(crate) types: HashMap<String, ResolverStruct>,
     pub(crate) values: HashMap<String, TypedType>,
 }
