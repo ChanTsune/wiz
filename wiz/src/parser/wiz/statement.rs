@@ -444,7 +444,9 @@ mod tests {
                         }))
                     }),
                     block: BlockSyntax {
-                        open: TokenSyntax::new("{".to_string()).with_trailing_trivia(Trivia::from(vec![TriviaPiece::Newlines(1), TriviaPiece::Spaces(12)])),
+                        open: TokenSyntax::new("{".to_string()).with_trailing_trivia(Trivia::from(
+                            vec![TriviaPiece::Newlines(1), TriviaPiece::Spaces(12)]
+                        )),
                         body: vec![Stmt::Assignment(AssignmentStmt::Assignment(
                             AssignmentSyntax {
                                 target: Expr::Name(NameExprSyntax {
@@ -465,7 +467,9 @@ mod tests {
                                 })
                             }
                         ))],
-                        close: TokenSyntax::new("}".to_string()).with_leading_trivia(Trivia::from(vec![TriviaPiece::Newlines(1), TriviaPiece::Spaces(8)]))
+                        close: TokenSyntax::new("}".to_string()).with_leading_trivia(Trivia::from(
+                            vec![TriviaPiece::Newlines(1), TriviaPiece::Spaces(8)]
+                        ))
                     }
                 }
             ))
@@ -501,8 +505,9 @@ mod tests {
                         }))
                     }),
                     block: BlockSyntax {
-                        open: TokenSyntax::new("{".to_string())
-                            .with_trailing_trivia(Trivia::from(vec![TriviaPiece::Newlines(1), TriviaPiece::Spaces(12)])),
+                        open: TokenSyntax::new("{".to_string()).with_trailing_trivia(Trivia::from(
+                            vec![TriviaPiece::Newlines(1), TriviaPiece::Spaces(12)]
+                        )),
                         body: vec![Stmt::Assignment(AssignmentStmt::Assignment(
                             AssignmentSyntax {
                                 target: Expr::Name(NameExprSyntax {
@@ -523,7 +528,9 @@ mod tests {
                                 })
                             }
                         ))],
-                        close: TokenSyntax::new("}".to_string()).with_leading_trivia(Trivia::from(vec![TriviaPiece::Newlines(1), TriviaPiece::Spaces(8)]))
+                        close: TokenSyntax::new("}".to_string()).with_leading_trivia(Trivia::from(
+                            vec![TriviaPiece::Newlines(1), TriviaPiece::Spaces(8)]
+                        ))
                     }
                 }
             ))

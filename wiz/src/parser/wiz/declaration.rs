@@ -644,7 +644,7 @@ where
         |(open, ows, stmts, cws, close)| BlockSyntax {
             open: TokenSyntax::new(open.to_string()).with_trailing_trivia(ows),
             body: stmts,
-            close: TokenSyntax::new(close.to_string()).with_leading_trivia(cws)
+            close: TokenSyntax::new(close.to_string()).with_leading_trivia(cws),
         },
     )(s)
 }
@@ -870,10 +870,10 @@ mod tests {
     use crate::syntax::fun::body_def::FunBody;
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::stmt::Stmt;
-    use crate::syntax::Syntax;
     use crate::syntax::token::TokenSyntax;
     use crate::syntax::trivia::{Trivia, TriviaPiece};
     use crate::syntax::type_name::{SimpleTypeName, TypeName, TypeParam};
+    use crate::syntax::Syntax;
 
     #[test]
     fn test_struct_properties() {
@@ -979,7 +979,11 @@ mod tests {
                     args: vec![],
                     return_type: None,
                     body: Some(FunBody::Block {
-                        block: BlockSyntax { open: TokenSyntax::new("{".to_string()), body: vec![], close: TokenSyntax::new("}".to_string()) }
+                        block: BlockSyntax {
+                            open: TokenSyntax::new("{".to_string()),
+                            body: vec![],
+                            close: TokenSyntax::new("}".to_string())
+                        }
                     }),
                 })
             ))
@@ -988,11 +992,17 @@ mod tests {
 
     #[test]
     fn test_empty_block() {
-        assert_eq!(block("{}"), Ok(("", BlockSyntax {
-            open: TokenSyntax::new("{".to_string()),
-            body: vec![],
-            close: TokenSyntax::new("}".to_string())
-        })))
+        assert_eq!(
+            block("{}"),
+            Ok((
+                "",
+                BlockSyntax {
+                    open: TokenSyntax::new("{".to_string()),
+                    body: vec![],
+                    close: TokenSyntax::new("}".to_string())
+                }
+            ))
+        )
     }
 
     #[test]
@@ -1046,11 +1056,14 @@ mod tests {
             Ok((
                 "",
                 BlockSyntax {
-                    open: TokenSyntax::new("{".to_string()).with_trailing_trivia(Trivia::from(vec![TriviaPiece::Newlines(1), TriviaPiece::Spaces(4)])),
+                    open: TokenSyntax::new("{".to_string()).with_trailing_trivia(Trivia::from(
+                        vec![TriviaPiece::Newlines(1), TriviaPiece::Spaces(4)]
+                    )),
                     body: vec![Stmt::Expr(Expr::Literal(LiteralSyntax::Integer(
                         TokenSyntax::new("1".to_string())
                     )))],
-                    close: TokenSyntax::new("}".to_string()).with_leading_trivia(Trivia::from(TriviaPiece::Newlines(1)))
+                    close: TokenSyntax::new("}".to_string())
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Newlines(1)))
                 }
             ))
         )

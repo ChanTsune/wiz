@@ -431,7 +431,7 @@ where
                         map(if_expr, |ib| BlockSyntax {
                             open: TokenSyntax::new("".to_string()),
                             body: vec![Stmt::Expr(ib)],
-                            close: TokenSyntax::new("".to_string())
+                            close: TokenSyntax::new("".to_string()),
                         }),
                     )),
                 )),
@@ -1749,8 +1749,12 @@ mod tests {
                         name_space: vec![],
                         name: "a".to_string()
                     })),
-                    body: BlockSyntax { open: TokenSyntax::new("{".to_string()).with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                        body: vec![], close: TokenSyntax::new("}".to_string()) },
+                    body: BlockSyntax {
+                        open: TokenSyntax::new("{".to_string())
+                            .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        body: vec![],
+                        close: TokenSyntax::new("}".to_string())
+                    },
                     else_body: None
                 })
             ))
@@ -1769,12 +1773,14 @@ mod tests {
                         name: "a".to_string()
                     })),
                     body: BlockSyntax {
-                        open: TokenSyntax::new("{".to_string()).with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        open: TokenSyntax::new("{".to_string())
+                            .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                         body: vec![],
                         close: TokenSyntax::new("}".to_string())
                     },
                     else_body: Some(BlockSyntax {
-                        open: TokenSyntax::new("{".to_string()).with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        open: TokenSyntax::new("{".to_string())
+                            .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                         body: vec![],
                         close: TokenSyntax::new("}".to_string())
                     })
