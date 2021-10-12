@@ -156,10 +156,6 @@ impl ToString for TypedValueType {
 }
 
 impl TypedType {
-    fn builtin(name: &str) -> Self {
-        Self::Value(TypedValueType::builtin(name))
-    }
-
     pub fn noting() -> Self {
         Self::Value(TypedValueType::noting())
     }
