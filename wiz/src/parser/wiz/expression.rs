@@ -661,7 +661,9 @@ where
     for (lws, op, rws, ex) in v {
         bin_op = Expr::BinOp(BinaryOperationSyntax {
             left: Box::new(bin_op),
-            operator: TokenSyntax::new(op.to_string()).with_leading_trivia(lws).with_trailing_trivia(rws),
+            operator: TokenSyntax::new(op.to_string())
+                .with_leading_trivia(lws)
+                .with_trailing_trivia(rws),
             right: Box::new(ex),
         })
     }
