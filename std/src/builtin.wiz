@@ -20,6 +20,11 @@ fun print(_ item: Int64) {
 }
 
 fun println(_ item: Int64) {
-    print(item)
+    if item < 0 {
+        putchar(45 as Int32)
+        print(-item)
+    } else {
+        print(item)
+    }
     println()
 }
