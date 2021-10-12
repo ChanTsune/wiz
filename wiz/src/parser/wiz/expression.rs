@@ -429,7 +429,9 @@ where
                     alt((
                         block,
                         map(if_expr, |ib| BlockSyntax {
+                            open: TokenSyntax::new("".to_string()),
                             body: vec![Stmt::Expr(ib)],
+                            close: TokenSyntax::new("".to_string())
                         }),
                     )),
                 )),
@@ -1747,7 +1749,8 @@ mod tests {
                         name_space: vec![],
                         name: "a".to_string()
                     })),
-                    body: BlockSyntax { body: vec![] },
+                    body: BlockSyntax { open: TokenSyntax::new("{".to_string()).with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        body: vec![], close: TokenSyntax::new("}".to_string()) },
                     else_body: None
                 })
             ))
@@ -1765,8 +1768,16 @@ mod tests {
                         name_space: vec![],
                         name: "a".to_string()
                     })),
-                    body: BlockSyntax { body: vec![] },
-                    else_body: Some(BlockSyntax { body: vec![] })
+                    body: BlockSyntax {
+                        open: TokenSyntax::new("{".to_string()).with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        body: vec![],
+                        close: TokenSyntax::new("}".to_string())
+                    },
+                    else_body: Some(BlockSyntax {
+                        open: TokenSyntax::new("{".to_string()).with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        body: vec![],
+                        close: TokenSyntax::new("}".to_string())
+                    })
                 })
             ))
         )
