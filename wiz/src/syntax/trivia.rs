@@ -24,8 +24,6 @@ pub enum TriviaPiece {
     DocLineComment(String),
     /// A documentation block comment, starting with '/**' and ending with '*/'.
     DocBlockComment(String),
-    /// Any skipped garbage text.
-    GarbageText(String),
 }
 
 impl ToString for TriviaPiece {

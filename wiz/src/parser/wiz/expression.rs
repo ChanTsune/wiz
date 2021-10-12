@@ -658,10 +658,10 @@ where
     T: ToString,
 {
     let mut bin_op = e;
-    for (_, op, _, ex) in v {
+    for (lws, op, rws, ex) in v {
         bin_op = Expr::BinOp(BinaryOperationSyntax {
             left: Box::new(bin_op),
-            operator: TokenSyntax::new(op.to_string()),
+            operator: TokenSyntax::new(op.to_string()).with_leading_trivia(lws).with_trailing_trivia(rws),
             right: Box::new(ex),
         })
     }
