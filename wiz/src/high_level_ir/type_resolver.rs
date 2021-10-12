@@ -122,8 +122,7 @@ impl TypeResolver {
             TypedDecl::Fun(f) => {
                 let fun = self.preload_fun(f)?;
                 let namespace = self.context.get_current_namespace_mut()?;
-                namespace
-                    .register_value(fun.name.clone(), fun.type_().unwrap());
+                namespace.register_value(fun.name.clone(), fun.type_().unwrap());
             }
             TypedDecl::Struct(_) => {}
             TypedDecl::Class => {}
