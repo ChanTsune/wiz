@@ -17,6 +17,7 @@
 <struct_property> ::= <stored_property>
                 #       | <computed_property>
                     | <initializer>
+                    | <deitializer>
                     | <member_function>
 
 <stored_property> ::= <mutable_stored_property> | <immutable_stored_property>
@@ -26,6 +27,8 @@
 <stored_property_body> ::= <identifier> ":" <type>
 
 <initializer> =:: "init" <function_value_parameters> <function_body>
+
+<deitializer> =:: "deinit" <function_body>
 
 <member_function> =:: <modifiers>? "fun" <identifire> <type_parameters>? <function_value_parameters> (":" <type>)? <type_constraints>? <function_body>?
 

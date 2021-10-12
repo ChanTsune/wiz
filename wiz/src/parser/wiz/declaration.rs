@@ -1,10 +1,7 @@
 use crate::parser::wiz::annotation::annotations;
 use crate::parser::wiz::character::{ampersand, comma};
 use crate::parser::wiz::expression::expr;
-use crate::parser::wiz::keywords::{
-    as_keyword, fun_keyword, init_keyword, self_keyword, struct_keyword, use_keyword, val_keyword,
-    var_keyword, where_keyword,
-};
+use crate::parser::wiz::keywords::{as_keyword, deinit_keyword, fun_keyword, init_keyword, self_keyword, struct_keyword, use_keyword, val_keyword, var_keyword, where_keyword};
 use crate::parser::wiz::lexical_structure::{
     identifier, trivia_piece_line_ending, whitespace0, whitespace1, whitespace_without_eol0,
 };
@@ -12,10 +9,7 @@ use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_parameters};
 use crate::syntax::annotation::Annotatable;
 use crate::syntax::block::Block;
-use crate::syntax::decl::{
-    Decl, FunSyntax, InitializerSyntax, MethodSyntax, PackageName, StoredPropertySyntax,
-    StructPropertySyntax, StructSyntax, UseSyntax, VarSyntax,
-};
+use crate::syntax::decl::{Decl, DeinitializerSyntax, FunSyntax, InitializerSyntax, MethodSyntax, PackageName, StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax, VarSyntax};
 use crate::syntax::expr::Expr;
 use crate::syntax::fun::arg_def::{ArgDef, SelfArgDefSyntax, ValueArgDef};
 use crate::syntax::fun::body_def::FunBody;
@@ -178,6 +172,8 @@ where
 
 // <struct_property> ::= <stored_property>
 //                     | <initializer>
+//                     | <deinitializer>
+//                     | <member_function>
 pub fn struct_property<I>(s: I) -> IResult<I, StructPropertySyntax>
 where
     I: Slice<RangeFrom<usize>>
@@ -195,7 +191,7 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    alt((stored_property, initializer, member_function))(s)
+    alt((stored_property, initializer,deinitializer, member_function))(s)
 }
 
 // <stored_property> ::= <mutable_stored_property> | <immutable_stored_property>
@@ -320,6 +316,34 @@ where
             function_body,
         )),
         |(_, _, args, _, body)| StructPropertySyntax::Init(InitializerSyntax { args, body }),
+    )(s)
+}
+
+// <initializer> =:: "deinit" <function_body>
+pub fn deinitializer<I>(s: I) -> IResult<I, StructPropertySyntax>
+    where
+        I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+        <I as InputIter>::Item: AsChar + Copy,
+        <I as InputTakeAtPosition>::Item: AsChar,
+{
+    map(
+        tuple((
+            deinit_keyword,
+            whitespace0,
+            function_body,
+        )),
+        |(deinit, ws, body):(I, _, _)| StructPropertySyntax::Deinit(DeinitializerSyntax {deinit_keyword: TokenSyntax::new(deinit.to_string()).with_trailing_trivia(ws), body }),
     )(s)
 }
 

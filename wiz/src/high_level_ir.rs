@@ -272,6 +272,9 @@ impl Ast2HLIR {
                 StructPropertySyntax::Method(method) => {
                     member_functions.push(self.member_function(method))
                 }
+                StructPropertySyntax::Deinit(deinit) => {
+                    todo!("deinit {:?}", deinit)
+                }
             };
         }
         TypedStruct {
