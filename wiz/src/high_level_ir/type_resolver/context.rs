@@ -2,8 +2,8 @@ use crate::constants::UNSAFE_POINTER;
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_type::{Package, TypedType, TypedValueType};
-use std::collections::{HashMap, HashSet};
 use crate::utils::stacked_hash_map::StackedHashMap;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub(crate) struct ResolverTypeParam {
@@ -76,7 +76,7 @@ pub struct ResolverContext {
     subscripts: Vec<ResolverSubscript>,
     pub(crate) current_namespace: Vec<String>,
     current_type: Option<TypedType>,
-    local_stack: StackedHashMap<String, NameSpace>
+    local_stack: StackedHashMap<String, NameSpace>,
 }
 
 impl ResolverStruct {
@@ -166,7 +166,7 @@ impl ResolverContext {
             subscripts: vec![],
             current_namespace: vec![],
             current_type: None,
-            local_stack: StackedHashMap::from(HashMap::new())
+            local_stack: StackedHashMap::from(HashMap::new()),
         }
     }
 
