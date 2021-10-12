@@ -147,6 +147,7 @@ impl ResolverContext {
             match &t {
                 TypedType::Value(v) => {
                     ns.types.insert(v.name.clone(), ResolverStruct::new());
+                    ns.values.insert(v.name.clone(), TypedType::Type(v.clone()));
                 }
                 _ => {}
             };
