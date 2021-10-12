@@ -15,7 +15,7 @@ use crate::high_level_ir::typed_stmt::{
 };
 use crate::high_level_ir::typed_type::{Package, TypedType, TypedTypeParam, TypedValueType};
 use crate::syntax::annotation::AnnotationsSyntax;
-use crate::syntax::block::Block;
+use crate::syntax::block::BlockSyntax;
 use crate::syntax::decl::{
     Decl, FunSyntax, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax,
     StructSyntax, VarSyntax,
@@ -597,7 +597,7 @@ impl Ast2HLIR {
         }
     }
 
-    pub fn block(&self, block: Block) -> TypedBlock {
+    pub fn block(&self, block: BlockSyntax) -> TypedBlock {
         TypedBlock {
             body: block.body.into_iter().map(|s| self.stmt(s)).collect(),
         }

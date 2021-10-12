@@ -1,4 +1,4 @@
-use crate::syntax::block::Block;
+use crate::syntax::block::BlockSyntax;
 use crate::syntax::literal::LiteralSyntax;
 use crate::syntax::node::SyntaxNode;
 use crate::syntax::stmt::Stmt;
@@ -135,8 +135,8 @@ pub enum PostfixSuffix {
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct IfExprSyntax {
     pub(crate) condition: Box<Expr>,
-    pub(crate) body: Block,
-    pub(crate) else_body: Option<Block>,
+    pub(crate) body: BlockSyntax,
+    pub(crate) else_body: Option<BlockSyntax>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]

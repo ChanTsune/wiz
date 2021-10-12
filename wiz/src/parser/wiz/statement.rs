@@ -410,7 +410,7 @@ mod tests {
     use crate::parser::wiz::statement::{
         assignable_expr, assignment_stmt, directly_assignable_expr, file, while_stmt,
     };
-    use crate::syntax::block::Block;
+    use crate::syntax::block::BlockSyntax;
     use crate::syntax::expr::{BinaryOperationSyntax, Expr, MemberSyntax, NameExprSyntax};
     use crate::syntax::file::FileSyntax;
     use crate::syntax::literal::LiteralSyntax;
@@ -439,7 +439,7 @@ mod tests {
                             name: "b".to_string()
                         }))
                     }),
-                    block: Block {
+                    block: BlockSyntax {
                         body: vec![Stmt::Assignment(AssignmentStmt::Assignment(
                             AssignmentSyntax {
                                 target: Expr::Name(NameExprSyntax {
@@ -490,7 +490,7 @@ mod tests {
                             name: "b".to_string()
                         }))
                     }),
-                    block: Block {
+                    block: BlockSyntax {
                         body: vec![Stmt::Assignment(AssignmentStmt::Assignment(
                             AssignmentSyntax {
                                 target: Expr::Name(NameExprSyntax {

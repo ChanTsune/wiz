@@ -14,7 +14,7 @@ use crate::parser::wiz::operators::{
 };
 use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_arguments};
-use crate::syntax::block::Block;
+use crate::syntax::block::BlockSyntax;
 use crate::syntax::expr::{
     ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallExprSyntax, Expr,
     IfExprSyntax, LambdaSyntax, MemberSyntax, NameExprSyntax, PostfixSuffix,
@@ -428,7 +428,7 @@ where
                     whitespace0,
                     alt((
                         block,
-                        map(if_expr, |ib| Block {
+                        map(if_expr, |ib| BlockSyntax {
                             body: vec![Stmt::Expr(ib)],
                         }),
                     )),
@@ -1323,7 +1323,7 @@ mod tests {
         floating_point_literal, indexing_suffix, integer_literal, literal_expr, name_expr,
         postfix_suffix, raw_string_literal, return_expr, string_literal, value_arguments,
     };
-    use crate::syntax::block::Block;
+    use crate::syntax::block::BlockSyntax;
     use crate::syntax::expr::{
         ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallExprSyntax, Expr,
         IfExprSyntax, MemberSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax,
@@ -1738,7 +1738,7 @@ mod tests {
                         name_space: vec![],
                         name: "a".to_string()
                     })),
-                    body: Block { body: vec![] },
+                    body: BlockSyntax { body: vec![] },
                     else_body: None
                 })
             ))
@@ -1756,8 +1756,8 @@ mod tests {
                         name_space: vec![],
                         name: "a".to_string()
                     })),
-                    body: Block { body: vec![] },
-                    else_body: Some(Block { body: vec![] })
+                    body: BlockSyntax { body: vec![] },
+                    else_body: Some(BlockSyntax { body: vec![] })
                 })
             ))
         )

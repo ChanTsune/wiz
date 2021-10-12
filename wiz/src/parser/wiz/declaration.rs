@@ -11,7 +11,7 @@ use crate::parser::wiz::lexical_structure::{
 use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_parameters};
 use crate::syntax::annotation::Annotatable;
-use crate::syntax::block::Block;
+use crate::syntax::block::BlockSyntax;
 use crate::syntax::decl::{
     Decl, DeinitializerSyntax, FunSyntax, InitializerSyntax, MethodSyntax, PackageName,
     StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax, VarSyntax,
@@ -622,7 +622,7 @@ where
     ))(s)
 }
 
-pub fn block<I>(s: I) -> IResult<I, Block>
+pub fn block<I>(s: I) -> IResult<I, BlockSyntax>
 where
     I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
@@ -641,7 +641,7 @@ where
 {
     map(
         tuple((char('{'), whitespace0, stmts, whitespace0, char('}'))),
-        |(_, _, stmts, _, _)| Block { body: stmts },
+        |(_, _, stmts, _, _)| BlockSyntax { body: stmts },
     )(s)
 }
 
@@ -856,7 +856,7 @@ mod tests {
         block, function_body, function_decl, member_function, package_name, stored_property,
         struct_properties, struct_syntax, type_constraint, type_constraints, use_syntax, var_decl,
     };
-    use crate::syntax::block::Block;
+    use crate::syntax::block::BlockSyntax;
     use crate::syntax::decl::{
         Decl, FunSyntax, MethodSyntax, PackageName, StoredPropertySyntax, StructPropertySyntax,
         StructSyntax, UseSyntax, VarSyntax,
@@ -973,7 +973,7 @@ mod tests {
                     args: vec![],
                     return_type: None,
                     body: Some(FunBody::Block {
-                        block: Block { body: vec![] }
+                        block: BlockSyntax { body: vec![] }
                     }),
                 })
             ))
@@ -982,7 +982,7 @@ mod tests {
 
     #[test]
     fn test_empty_block() {
-        assert_eq!(block("{}"), Ok(("", Block { body: vec![] })))
+        assert_eq!(block("{}"), Ok(("", BlockSyntax { body: vec![] })))
     }
 
     #[test]
@@ -991,7 +991,7 @@ mod tests {
             block("{1}"),
             Ok((
                 "",
-                Block {
+                BlockSyntax {
                     body: vec![Stmt::Expr(Expr::Literal(LiteralSyntax::Integer(
                         TokenSyntax::new("1".to_string())
                     )))]
@@ -1006,7 +1006,7 @@ mod tests {
             block("{1+1}"),
             Ok((
                 "",
-                Block {
+                BlockSyntax {
                     body: vec![Stmt::Expr(Expr::BinOp(BinaryOperationSyntax {
                         left: Box::new(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
                             "1".to_string()
@@ -1031,7 +1031,7 @@ mod tests {
             ),
             Ok((
                 "",
-                Block {
+                BlockSyntax {
                     body: vec![Stmt::Expr(Expr::Literal(LiteralSyntax::Integer(
                         TokenSyntax::new("1".to_string())
                     )))]
@@ -1047,7 +1047,7 @@ mod tests {
             Ok((
                 "",
                 FunBody::Block {
-                    block: Block { body: vec![] }
+                    block: BlockSyntax { body: vec![] }
                 }
             ))
         )
@@ -1083,7 +1083,7 @@ mod tests {
                     arg_defs: vec![],
                     return_type: None,
                     body: Some(FunBody::Block {
-                        block: Block { body: vec![] }
+                        block: BlockSyntax { body: vec![] }
                     }),
                 })
             ))

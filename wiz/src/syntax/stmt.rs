@@ -1,5 +1,5 @@
 use super::node::SyntaxNode;
-use crate::syntax::block::Block;
+use crate::syntax::block::BlockSyntax;
 use crate::syntax::decl::Decl;
 use crate::syntax::expr::Expr;
 
@@ -36,11 +36,11 @@ pub struct AssignmentAndOperatorSyntax {
 pub enum LoopStmt {
     While {
         condition: Expr,
-        block: Block,
+        block: BlockSyntax,
     },
     For {
         values: Vec<String>,
         iterator: Expr,
-        block: Block,
+        block: BlockSyntax,
     },
 }
