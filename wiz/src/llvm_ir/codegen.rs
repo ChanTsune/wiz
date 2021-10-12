@@ -374,11 +374,9 @@ impl<'ctx> CodeGen<'ctx> {
                 todo!()
             }
             AnyValueEnum::IntValue(target) => match u.kind {
-                MLUnaryOpKind::Negative => {
-                    self.builder.build_int_neg(target, "negative")
-                }
+                MLUnaryOpKind::Negative => self.builder.build_int_neg(target, "negative"),
                 MLUnaryOpKind::Positive => {
-                    target                     // Do noting
+                    target // Do noting
                 }
                 MLUnaryOpKind::Not => self.builder.build_not(target, "not"),
                 MLUnaryOpKind::Ref => {
