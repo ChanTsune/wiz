@@ -3,6 +3,7 @@ use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_type::{Package, TypedType, TypedValueType};
 use std::collections::{HashMap, HashSet};
+use crate::utils::stacked_hash_map::StackedHashMap;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub(crate) struct ResolverTypeParam {
@@ -68,13 +69,14 @@ impl BinaryOperator {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Clone)]
 pub struct ResolverContext {
     name_space: NameSpace,
     binary_operators: HashMap<(BinaryOperator, TypedType, TypedType), TypedType>,
     subscripts: Vec<ResolverSubscript>,
     pub(crate) current_namespace: Vec<String>,
     current_type: Option<TypedType>,
+    local_stack: StackedHashMap<String, NameSpace>
 }
 
 impl ResolverStruct {
@@ -164,6 +166,7 @@ impl ResolverContext {
             subscripts: vec![],
             current_namespace: vec![],
             current_type: None,
+            local_stack: StackedHashMap::from(HashMap::new())
         }
     }
 
@@ -197,6 +200,18 @@ impl ResolverContext {
 
     pub fn clear_current_type(&mut self) {
         self.current_type = None
+    }
+
+    pub fn push_local_stack(&mut self) {
+        self.local_stack.push(HashMap::new());
+    }
+
+    pub fn pop_local_stack(&mut self) {
+        self.local_stack.pop();
+    }
+
+    pub fn clear_local_stack(&mut self) {
+        self.local_stack = StackedHashMap::from(HashMap::new())
     }
 
     pub fn resolve_member_type(&mut self, t: TypedType, name: String) -> Result<TypedType> {

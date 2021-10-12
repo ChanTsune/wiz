@@ -23,7 +23,7 @@ use crate::high_level_ir::typed_stmt::{
 };
 use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
 
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Clone)]
 pub(crate) struct TypeResolver {
     context: ResolverContext,
 }
