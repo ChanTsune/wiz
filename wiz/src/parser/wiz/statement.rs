@@ -415,9 +415,9 @@ mod tests {
     use crate::syntax::file::FileSyntax;
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::stmt::{AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt};
-    use crate::syntax::Syntax;
     use crate::syntax::token::TokenSyntax;
     use crate::syntax::trivia::{Trivia, TriviaPiece};
+    use crate::syntax::Syntax;
 
     #[test]
     fn test_while_stmt_with_bracket() {
@@ -437,8 +437,7 @@ mod tests {
                         })),
                         operator: TokenSyntax::new("<".to_string())
                             .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                            .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                        ,
+                            .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                         right: Box::new(Expr::Name(NameExprSyntax {
                             name_space: vec![],
                             name: "b".to_string()
@@ -458,8 +457,7 @@ mod tests {
                                     })),
                                     operator: TokenSyntax::new("+".to_string())
                                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                                    ,
+                                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                                     right: Box::new(Expr::Literal(LiteralSyntax::Integer(
                                         TokenSyntax::new("1".to_string())
                                     )))
@@ -494,8 +492,7 @@ mod tests {
                         })),
                         operator: TokenSyntax::new("<".to_string())
                             .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                            .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                        ,
+                            .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                         right: Box::new(Expr::Name(NameExprSyntax {
                             name_space: vec![],
                             name: "b".to_string()
@@ -515,8 +512,7 @@ mod tests {
                                     })),
                                     operator: TokenSyntax::new("+".to_string())
                                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                                    ,
+                                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                                     right: Box::new(Expr::Literal(LiteralSyntax::Integer(
                                         TokenSyntax::new("1".to_string())
                                     )))
