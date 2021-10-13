@@ -214,7 +214,7 @@ impl ResolverContext {
         self.get_namespace_mut(self.current_namespace.clone())
     }
 
-    pub fn get_namespace_mut(&mut self, ns: Vec<String>) -> Result<&mut NameSpace> {
+    fn get_namespace_mut(&mut self, ns: Vec<String>) -> Result<&mut NameSpace> {
         let msg = format!("NameSpace {:?} not exist", ns);
         self.name_space
             .get_child_mut(ns)
