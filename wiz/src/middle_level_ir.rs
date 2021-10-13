@@ -256,7 +256,7 @@ impl HLIR2MLIR {
                 let target = self.expr(a.target.clone());
                 let value = TypedExpr::BinOp(TypedBinOp {
                     left: Box::new(a.target.clone()),
-                    kind: a.operator.remove_last(),
+                    operator: a.operator.remove_last(),
                     right: Box::new(a.value),
                     type_: a.target.type_(),
                 });
@@ -504,7 +504,7 @@ impl HLIR2MLIR {
     pub fn binop(&mut self, b: TypedBinOp) -> MLBinOp {
         let TypedBinOp {
             left,
-            kind,
+            operator: kind,
             right,
             type_,
         } = b;

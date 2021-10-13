@@ -451,7 +451,7 @@ impl Ast2HLIR {
         let right = Box::new(self.expr(*right));
         TypedBinOp {
             left,
-            kind: kind.token,
+            operator: kind.token,
             right,
             type_: None,
         }

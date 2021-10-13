@@ -602,12 +602,12 @@ impl TypeResolver {
         };
         let type_ = self.context.resolve_binop_type(
             left.type_().unwrap(),
-            &*b.kind,
+            &*b.operator,
             right.type_().unwrap(),
         )?;
         Result::Ok(TypedBinOp {
             left: Box::new(left),
-            kind: b.kind,
+            operator: b.operator,
             right: Box::new(right),
             type_: Some(type_),
         })
