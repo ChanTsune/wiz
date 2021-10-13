@@ -5,7 +5,9 @@ use crate::parser::wiz::lexical_structure::{identifier, whitespace0, whitespace1
 use crate::parser::wiz::operators::{assignment_and_operator, assignment_operator};
 use crate::syntax::expr::{Expr, NameExprSyntax};
 use crate::syntax::file::FileSyntax;
-use crate::syntax::stmt::{AssignmentAndOperatorSyntax, AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt, WhileLoopSyntax};
+use crate::syntax::stmt::{
+    AssignmentAndOperatorSyntax, AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt, WhileLoopSyntax,
+};
 use nom::branch::alt;
 use nom::character::complete::char;
 use nom::combinator::map;
@@ -288,10 +290,12 @@ where
 {
     map(
         tuple((while_keyword, whitespace1, expr, whitespace1, block)),
-        |(_, _, e, _, b)| LoopStmt::While(WhileLoopSyntax {
-            condition: e,
-            block: b,
-        }),
+        |(_, _, e, _, b)| {
+            LoopStmt::While(WhileLoopSyntax {
+                condition: e,
+                block: b,
+            })
+        },
     )(s)
 }
 
