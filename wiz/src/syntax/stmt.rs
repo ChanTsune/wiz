@@ -23,6 +23,7 @@ pub enum AssignmentStmt {
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct AssignmentSyntax {
     pub(crate) target: Expr,
+    pub(crate) operator: TokenSyntax,
     pub(crate) value: Expr,
 }
 

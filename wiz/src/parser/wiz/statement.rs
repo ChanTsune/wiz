@@ -16,10 +16,11 @@ use nom::multi::many0;
 use nom::sequence::tuple;
 use nom::Err::Error;
 use nom::{
-    error, AsChar, Compare, CompareResult, ExtendInto, FindSubstring, IResult, InputIter,
+    error, AsChar, Compare, ExtendInto, FindSubstring, IResult, InputIter,
     InputLength, InputTake, InputTakeAtPosition, Offset, Slice,
 };
 use std::ops::{Range, RangeFrom};
+use crate::syntax::Syntax;
 
 pub fn decl_stmt<I>(s: I) -> IResult<I, Stmt>
 where
@@ -90,25 +91,27 @@ where
             whitespace0,
             expr,
         )),
-        |((target, _, op), _, value): ((_, _, I), _, _)| {
-            let r = op.compare("");
-            match r {
-                CompareResult::Ok => {
+        |((target, ws, op), ews, value): ((_, _, I), _, _)| {
+            let op = op.to_string();
+            match &*op {
+                "=" => {
                     Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax {
                         target,
+                        operator: TokenSyntax::new(op.to_string())
+                            .with_leading_trivia(ws)
+                            .with_trailing_trivia(ews),
                         value,
                     }))
                 }
-                CompareResult::Incomplete => Stmt::Assignment(
+                _ => Stmt::Assignment(
                     AssignmentStmt::AssignmentAndOperator(AssignmentAndOperatorSyntax {
                         target,
-                        operator: TokenSyntax::new(op.to_string()),
+                        operator: TokenSyntax::new(op.to_string())
+                            .with_leading_trivia(ws)
+                            .with_trailing_trivia(ews),
                         value,
                     }),
                 ),
-                CompareResult::Error => {
-                    panic!()
-                }
             }
         },
     )(s)
@@ -417,7 +420,7 @@ mod tests {
     use crate::syntax::expr::{BinaryOperationSyntax, Expr, MemberSyntax, NameExprSyntax};
     use crate::syntax::file::FileSyntax;
     use crate::syntax::literal::LiteralSyntax;
-    use crate::syntax::stmt::{AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt, WhileLoopSyntax};
+    use crate::syntax::stmt::{AssignmentAndOperatorSyntax, AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt, WhileLoopSyntax};
     use crate::syntax::token::TokenSyntax;
     use crate::syntax::trivia::{Trivia, TriviaPiece};
     use crate::syntax::Syntax;
@@ -456,6 +459,10 @@ mod tests {
                                     name_space: vec![],
                                     name: "a".to_string()
                                 }),
+                                operator: TokenSyntax::new("=".to_string())
+                                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                                    .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                                ,
                                 value: Expr::BinOp(BinaryOperationSyntax {
                                     left: Box::new(Expr::Name(NameExprSyntax {
                                         name_space: vec![],
@@ -517,6 +524,10 @@ mod tests {
                                     name_space: vec![],
                                     name: "a".to_string()
                                 }),
+                                operator: TokenSyntax::new("=".to_string())
+                                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                                    .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                                ,
                                 value: Expr::BinOp(BinaryOperationSyntax {
                                     left: Box::new(Expr::Name(NameExprSyntax {
                                         name_space: vec![],
@@ -587,6 +598,10 @@ mod tests {
                         name_space: vec![],
                         name: "a".to_string()
                     }),
+                    operator: TokenSyntax::new("=".to_string())
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                    ,
                     value: Expr::Name(NameExprSyntax {
                         name_space: vec![],
                         name: "b".to_string()
@@ -595,6 +610,7 @@ mod tests {
             ))
         )
     }
+
     #[test]
     fn test_assignment_struct_field() {
         assert_eq!(
@@ -606,6 +622,10 @@ mod tests {
                         name_space: vec![],
                         name: "a".to_string()
                     }),
+                    operator: TokenSyntax::new("=".to_string())
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                    ,
                     value: Expr::Member(MemberSyntax {
                         target: Box::new(Expr::Name(NameExprSyntax {
                             name_space: vec![],
@@ -618,6 +638,7 @@ mod tests {
             ))
         )
     }
+
     #[test]
     fn test_assignment_to_struct_field() {
         assert_eq!(
@@ -633,6 +654,10 @@ mod tests {
                         name: TokenSyntax::new("b".to_string()),
                         navigation_operator: TokenSyntax::new(".".to_string())
                     }),
+                    operator: TokenSyntax::new("=".to_string())
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                    ,
                     value: Expr::Name(NameExprSyntax {
                         name_space: vec![],
                         name: "c".to_string()
@@ -640,6 +665,18 @@ mod tests {
                 }))
             ))
         )
+    }
+
+    #[test]
+    fn test_assignment_and_operation() {
+        assert_eq!(assignment_stmt("a += 1"), Ok(("", Stmt::Assignment(AssignmentStmt::AssignmentAndOperator(AssignmentAndOperatorSyntax {
+            target: Expr::Name(NameExprSyntax { name_space: vec![], name: "a".to_string() }),
+            operator: TokenSyntax::new("+=".to_string())
+                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+            ,
+            value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new("1".to_string())))
+        })))))
     }
 
     #[test]
