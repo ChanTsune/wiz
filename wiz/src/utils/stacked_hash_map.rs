@@ -44,9 +44,9 @@ where
 }
 
 impl<K, V, S> StackedHashMap<K, V, S>
-    where
-        K: Hash + Eq,
-        S: BuildHasher + Default,
+where
+    K: Hash + Eq,
+    S: BuildHasher + Default,
 {
     pub(crate) fn into_map(self) -> HashMap<K, V, S> {
         self.map_stack.into_iter().flatten().collect()
@@ -55,8 +55,8 @@ impl<K, V, S> StackedHashMap<K, V, S>
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
     use crate::utils::stacked_hash_map::StackedHashMap;
+    use std::collections::HashMap;
 
     #[test]
     fn test_into_map() {
