@@ -4,6 +4,7 @@ use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_type::{Package, TypedType, TypedValueType};
 use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::{HashMap, HashSet};
+use crate::high_level_ir::typed_expr::TypedBinaryOperator;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub(crate) struct ResolverTypeParam {
@@ -53,38 +54,10 @@ struct ResolverUnary {
     return_type: TypedType,
 }
 
-#[derive(Debug, Eq, PartialEq, Clone, Hash)]
-enum BinaryOperator {
-    Add,
-    Sub,
-    Mul,
-    Div,
-    Mod,
-}
-
-impl From<&str> for BinaryOperator {
-    fn from(op: &str) -> Self {
-        match op {
-            "+" => Self::Add,
-            "-" => Self::Sub,
-            "*" => Self::Mul,
-            "/" => Self::Div,
-            "%" => Self::Mod,
-            _ => panic!("Undefined op kind {:?}", op),
-        }
-    }
-}
-
-impl BinaryOperator {
-    fn all() -> Vec<BinaryOperator> {
-        vec![Self::Add, Self::Sub, Self::Mul, Self::Div, Self::Mod]
-    }
-}
-
 #[derive(Debug, Clone)]
 pub struct ResolverContext {
     name_space: NameSpace,
-    binary_operators: HashMap<(BinaryOperator, TypedType, TypedType), TypedType>,
+    binary_operators: HashMap<(TypedBinaryOperator, TypedType, TypedType), TypedType>,
     subscripts: Vec<ResolverSubscript>,
     pub(crate) current_namespace: Vec<String>,
     current_type: Option<TypedType>,
@@ -225,7 +198,13 @@ impl ResolverContext {
             };
         }
         let mut bo = HashMap::new();
-        for op in BinaryOperator::all() {
+        for op in vec![TypedBinaryOperator::Add,
+                       TypedBinaryOperator::Sub,
+                       TypedBinaryOperator::Mul,
+                        TypedBinaryOperator::Div,
+            TypedBinaryOperator::Mod
+
+        ] {
             for t in TypedType::integer_types() {
                 bo.insert((op.clone(), t.clone(), t.clone()), t);
             }
@@ -378,18 +357,23 @@ impl ResolverContext {
     pub fn resolve_binop_type(
         &self,
         left: TypedType,
-        kind: &str,
+        kind: TypedBinaryOperator,
         right: TypedType,
     ) -> Result<TypedType> {
         match kind {
-            "<" | "<=" | ">" | ">=" | "==" | "!=" => Result::Ok(TypedType::bool()),
+            TypedBinaryOperator::Equal|
+            TypedBinaryOperator::GrateThanEqual|
+            TypedBinaryOperator::GrateThan|
+            TypedBinaryOperator::LessThanEqual|
+            TypedBinaryOperator::LessThan|
+            TypedBinaryOperator::NotEqual =>             Result::Ok(TypedType::bool()),
+            TypedBinaryOperator::InfixFunctionCall(_) => {todo!()}
             _ => {
-                let op_kind = BinaryOperator::from(kind);
-                let key = (op_kind, left, right);
-                self.binary_operators
-                    .get(&key)
-                    .map(|t| t.clone())
-                    .ok_or(ResolverError::from(format!("{:?} is not defined.", key)))
+                    let key = (kind, left, right);
+                    self.binary_operators
+                        .get(&key)
+                        .map(|t| t.clone())
+                        .ok_or(ResolverError::from(format!("{:?} is not defined.", key)))
             }
         }
     }

@@ -4,10 +4,7 @@ use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedMemberFunction,
     TypedStoredProperty, TypedStruct, TypedValueArgDef, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{
-    TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral,
-    TypedName, TypedReturn, TypedSubscript,
-};
+use crate::high_level_ir::typed_expr::{TypedBinaryOperator, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn, TypedSubscript};
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentStmt, TypedBlock, TypedStmt,
@@ -831,7 +828,7 @@ fn test_binop() {
                             value: "1".to_string(),
                             type_: Some(TypedType::int64()),
                         })),
-                        operator: "+".to_string(),
+                        operator: TypedBinaryOperator::Add,
                         right: Box::new(TypedExpr::Literal(TypedLiteral::Integer {
                             value: "2".to_string(),
                             type_: Some(TypedType::int64()),
@@ -938,7 +935,7 @@ fn test_if_else() {
                                     name: "i".to_string(),
                                     type_: Some(TypedType::int64())
                                 })),
-                                operator: "<=".to_string(),
+                                operator: TypedBinaryOperator::LessThanEqual,
                                 right: Box::new(TypedExpr::Literal(TypedLiteral::Integer {
                                     value: "0".to_string(),
                                     type_: Some(TypedType::int64())
@@ -1014,7 +1011,7 @@ fn test_if() {
                                 name: "i".to_string(),
                                 type_: Some(TypedType::int64())
                             })),
-                            operator: "<=".to_string(),
+                            operator: TypedBinaryOperator::LessThanEqual,
                             right: Box::new(TypedExpr::Literal(TypedLiteral::Integer {
                                 value: "0".to_string(),
                                 type_: Some(TypedType::int64())

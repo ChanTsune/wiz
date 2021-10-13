@@ -602,7 +602,7 @@ impl TypeResolver {
         };
         let type_ = self.context.resolve_binop_type(
             left.type_().unwrap(),
-            &*b.operator,
+            b.operator.clone(),
             right.type_().unwrap(),
         )?;
         Result::Ok(TypedBinOp {

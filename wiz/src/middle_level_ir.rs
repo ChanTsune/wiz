@@ -4,10 +4,7 @@ use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct,
     TypedValueArgDef, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{
-    TypedBinOp, TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName,
-    TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
-};
+use crate::high_level_ir::typed_expr::{TypedBinaryOperator, TypedBinOp, TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp};
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
 use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
@@ -256,7 +253,14 @@ impl HLIR2MLIR {
                 let target = self.expr(a.target.clone());
                 let value = TypedExpr::BinOp(TypedBinOp {
                     left: Box::new(a.target.clone()),
-                    operator: a.operator.remove_last(),
+                    operator: match &*a.operator.remove_last() {
+                        "+" => {TypedBinaryOperator::Add}
+                        "-" => {TypedBinaryOperator::Sub}
+                        "*" => TypedBinaryOperator::Mul,
+                        "/" => TypedBinaryOperator::Div,
+                        "%" => TypedBinaryOperator::Mod,
+                        _ => panic!()
+                    },
                     right: Box::new(a.value),
                     type_: a.target.type_(),
                 });
@@ -510,21 +514,20 @@ impl HLIR2MLIR {
         } = b;
         MLBinOp {
             left: Box::new(self.expr(*left)),
-            kind: match &*kind {
-                "+" => MLBinOpKind::Plus,
-                "-" => MLBinOpKind::Minus,
-                "*" => MLBinOpKind::Mul,
-                "/" => MLBinOpKind::Div,
-                "%" => MLBinOpKind::Mod,
-                "==" => MLBinOpKind::Equal,
-                ">=" => MLBinOpKind::GrateThanEqual,
-                ">" => MLBinOpKind::GrateThan,
-                "<=" => MLBinOpKind::LessThanEqual,
-                "<" => MLBinOpKind::LessThan,
-                "!=" => MLBinOpKind::NotEqual,
-                k => {
-                    eprintln!("Unknown operator '{:?}'", k);
-                    exit(-1)
+            kind: match kind {
+                TypedBinaryOperator::Add => MLBinOpKind::Plus,
+                TypedBinaryOperator::Sub => MLBinOpKind::Minus,
+                TypedBinaryOperator::Mul => MLBinOpKind::Mul,
+                TypedBinaryOperator::Div => MLBinOpKind::Div,
+                TypedBinaryOperator::Mod => MLBinOpKind::Mod,
+                TypedBinaryOperator::Equal => MLBinOpKind::Equal,
+                TypedBinaryOperator::GrateThanEqual => MLBinOpKind::GrateThanEqual,
+                TypedBinaryOperator::GrateThan => MLBinOpKind::GrateThan,
+                TypedBinaryOperator::LessThanEqual => MLBinOpKind::LessThanEqual,
+                TypedBinaryOperator::LessThan => MLBinOpKind::LessThan,
+                TypedBinaryOperator::NotEqual => MLBinOpKind::NotEqual,
+                TypedBinaryOperator::InfixFunctionCall(call) => {
+                    todo!("infix function call {:?}", call)
                 }
             },
             right: Box::new(self.expr(*right)),
