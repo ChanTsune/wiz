@@ -29,6 +29,12 @@ pub struct NameSpace {
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
+enum EnvValue {
+    NameSpace(NameSpace),
+    Value(TypedType),
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
 struct ResolverSubscript {
     target: TypedType,
     indexes: Vec<TypedType>,
@@ -76,7 +82,7 @@ pub struct ResolverContext {
     subscripts: Vec<ResolverSubscript>,
     pub(crate) current_namespace: Vec<String>,
     current_type: Option<TypedType>,
-    local_stack: StackedHashMap<String, NameSpace>,
+    local_stack: StackedHashMap<String, EnvValue>,
 }
 
 impl ResolverStruct {
@@ -135,6 +141,18 @@ impl NameSpace {
 
     pub(crate) fn register_value(&mut self, name: String, type_: TypedType) {
         self.values.insert(name, type_);
+    }
+}
+
+impl From<TypedType> for EnvValue {
+    fn from(typed_type: TypedType) -> Self {
+        Self::Value(typed_type)
+    }
+}
+
+impl From<NameSpace> for EnvValue {
+    fn from(ns: NameSpace) -> Self {
+        Self::NameSpace(ns)
     }
 }
 
