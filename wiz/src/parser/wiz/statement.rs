@@ -8,6 +8,7 @@ use crate::syntax::file::FileSyntax;
 use crate::syntax::stmt::{
     AssignmentAndOperatorSyntax, AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt, WhileLoopSyntax,
 };
+use crate::syntax::token::TokenSyntax;
 use nom::branch::alt;
 use nom::character::complete::char;
 use nom::combinator::map;
@@ -19,7 +20,6 @@ use nom::{
     InputLength, InputTake, InputTakeAtPosition, Offset, Slice,
 };
 use std::ops::{Range, RangeFrom};
-use crate::syntax::token::TokenSyntax;
 
 pub fn decl_stmt<I>(s: I) -> IResult<I, Stmt>
 where

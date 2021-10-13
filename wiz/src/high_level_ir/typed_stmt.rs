@@ -30,7 +30,7 @@ pub struct TypedAssignmentAndOperation {
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
-pub enum TypedAssignmentAndOperator{
+pub enum TypedAssignmentAndOperator {
     Add,
     Sub,
     Mul,
