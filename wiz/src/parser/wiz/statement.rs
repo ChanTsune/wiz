@@ -5,9 +5,7 @@ use crate::parser::wiz::lexical_structure::{identifier, whitespace0, whitespace1
 use crate::parser::wiz::operators::{assignment_and_operator, assignment_operator};
 use crate::syntax::expr::{Expr, NameExprSyntax};
 use crate::syntax::file::FileSyntax;
-use crate::syntax::stmt::{
-    AssignmentAndOperatorSyntax, AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt,
-};
+use crate::syntax::stmt::{AssignmentAndOperatorSyntax, AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt, WhileLoopSyntax};
 use nom::branch::alt;
 use nom::character::complete::char;
 use nom::combinator::map;
@@ -290,10 +288,10 @@ where
 {
     map(
         tuple((while_keyword, whitespace1, expr, whitespace1, block)),
-        |(_, _, e, _, b)| LoopStmt::While {
+        |(_, _, e, _, b)| LoopStmt::While(WhileLoopSyntax {
             condition: e,
             block: b,
-        },
+        }),
     )(s)
 }
 
@@ -414,7 +412,7 @@ mod tests {
     use crate::syntax::expr::{BinaryOperationSyntax, Expr, MemberSyntax, NameExprSyntax};
     use crate::syntax::file::FileSyntax;
     use crate::syntax::literal::LiteralSyntax;
-    use crate::syntax::stmt::{AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt};
+    use crate::syntax::stmt::{AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt, WhileLoopSyntax};
     use crate::syntax::token::TokenSyntax;
     use crate::syntax::trivia::{Trivia, TriviaPiece};
     use crate::syntax::Syntax;
@@ -429,7 +427,7 @@ mod tests {
             ),
             Ok((
                 "",
-                LoopStmt::While {
+                LoopStmt::While(WhileLoopSyntax {
                     condition: Expr::BinOp(BinaryOperationSyntax {
                         left: Box::new(Expr::Name(NameExprSyntax {
                             name_space: vec![],
@@ -471,7 +469,7 @@ mod tests {
                             vec![TriviaPiece::Newlines(1), TriviaPiece::Spaces(8)]
                         ))
                     }
-                }
+                })
             ))
         )
     }
@@ -486,7 +484,7 @@ mod tests {
             ),
             Ok((
                 "",
-                LoopStmt::While {
+                LoopStmt::While(WhileLoopSyntax {
                     condition: Expr::BinOp(BinaryOperationSyntax {
                         left: Box::new(Expr::Member(MemberSyntax {
                             target: Box::new(Expr::Name(NameExprSyntax {
@@ -532,7 +530,7 @@ mod tests {
                             vec![TriviaPiece::Newlines(1), TriviaPiece::Spaces(8)]
                         ))
                     }
-                }
+                })
             ))
         )
     }

@@ -34,13 +34,16 @@ pub struct AssignmentAndOperatorSyntax {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum LoopStmt {
-    While {
-        condition: Expr,
-        block: BlockSyntax,
-    },
+    While(WhileLoopSyntax),
     For {
         values: Vec<String>,
         iterator: Expr,
         block: BlockSyntax,
     },
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct WhileLoopSyntax {
+    pub(crate) condition: Expr,
+    pub(crate) block: BlockSyntax,
 }

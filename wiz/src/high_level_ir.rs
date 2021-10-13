@@ -29,7 +29,7 @@ use crate::syntax::file::{FileSyntax, SourceSet, WizFile};
 use crate::syntax::fun::arg_def::ArgDef;
 use crate::syntax::fun::body_def::FunBody;
 use crate::syntax::literal::LiteralSyntax;
-use crate::syntax::stmt::{AssignmentStmt, LoopStmt, Stmt};
+use crate::syntax::stmt::{AssignmentStmt, LoopStmt, Stmt, WhileLoopSyntax};
 use crate::syntax::type_name::{TypeName, TypeParam};
 use crate::utils::path_string_to_page_name;
 use std::option::Option::Some;
@@ -109,7 +109,7 @@ impl Ast2HLIR {
 
     pub fn loop_stmt(&self, l: LoopStmt) -> TypedLoopStmt {
         match l {
-            LoopStmt::While { condition, block } => TypedLoopStmt::While(TypedWhileLoopStmt {
+            LoopStmt::While(WhileLoopSyntax { condition, block }) => TypedLoopStmt::While(TypedWhileLoopStmt {
                 condition: self.expr(condition),
                 block: self.block(block),
             }),
