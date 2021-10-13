@@ -16,7 +16,7 @@ impl Syntax for BlockSyntax {
         Self {
             open: self.open.with_leading_trivia(trivia),
             body: self.body,
-            close: self.close
+            close: self.close,
         }
     }
 
@@ -24,7 +24,7 @@ impl Syntax for BlockSyntax {
         Self {
             open: self.open,
             body: self.body,
-            close: self.close.with_trailing_trivia(trivia)
+            close: self.close.with_trailing_trivia(trivia),
         }
     }
 }
