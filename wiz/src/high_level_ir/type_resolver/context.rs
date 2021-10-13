@@ -414,5 +414,4 @@ mod tests {
         assert_eq!(ns.name_space, vec![String::from("child"), String::from("grandchild"), String::from("grate-grandchild")]);
     }
 
-    }
 }
