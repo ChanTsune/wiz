@@ -218,7 +218,7 @@ impl ResolverContext {
         for t in TypedType::builtin_types() {
             match &t {
                 TypedType::Value(v) => {
-                    ns.types.insert(v.name.clone(), ResolverStruct::new());
+                    ns.register_type(v.name.clone(), ResolverStruct::new());
                     ns.register_value(v.name.clone(),TypedType::Type(v.clone()));
                 }
                 _ => {}
