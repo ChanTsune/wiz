@@ -23,6 +23,7 @@ pub struct ResolverStruct {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct NameSpace {
+    name_space: Vec<String>,
     children: HashMap<String, NameSpace>,
     types: HashMap<String, ResolverStruct>,
     values: HashMap<String, TypedType>,
@@ -103,8 +104,9 @@ impl ResolverStruct {
 }
 
 impl NameSpace {
-    fn new() -> Self {
+    fn new(name: Vec<String>) -> Self {
         Self {
+            name_space: name,
             children: Default::default(),
             types: Default::default(),
             values: Default::default(),
@@ -125,7 +127,9 @@ impl NameSpace {
         if !ns.is_empty() {
             let n = &ns.remove(0);
             if !self.children.contains_key(n) {
-                self.children.insert(n.clone(), NameSpace::new());
+                let mut name = self.name_space.clone();
+                name.push(n.clone());
+                self.children.insert(n.clone(), NameSpace::new(name));
             };
             self.children.get_mut(n).unwrap().set_child(ns);
         }
@@ -158,7 +162,7 @@ impl From<NameSpace> for EnvValue {
 
 impl ResolverContext {
     pub(crate) fn new() -> Self {
-        let mut ns = NameSpace::new();
+        let mut ns = NameSpace::new(vec![]);
 
         let mut rs_for_pointer = ResolverStruct::new();
         let mut tp_map_for_pointer = HashMap::new();
@@ -375,14 +379,40 @@ mod tests {
 
     #[test]
     fn test_name_space() {
-        let mut name_space = NameSpace::new();
+        let mut name_space = NameSpace::new(vec![]);
         name_space
             .values
             .insert(String::from("Int64"), TypedType::int64());
         name_space.set_child(vec![String::from("builtin")]);
         assert_eq!(
             name_space.get_child_mut(vec![String::from("builtin")]),
-            Some(&mut NameSpace::new())
-        )
+            Some(&mut NameSpace::new(vec![String::from("builtin")]))
+        );
+    }
+
+    #[test]
+    fn test_name_space_child_name_space() {
+        let mut name_space = NameSpace::new(vec![]);
+        name_space.set_child(vec![String::from("child")]);
+        let ns = name_space.get_child_mut(vec![String::from("child")]).unwrap();
+        assert_eq!(ns.name_space, vec![String::from("child")]);
+    }
+
+    #[test]
+    fn test_name_space_grandchild_name_space() {
+        let mut name_space = NameSpace::new(vec![]);
+        name_space.set_child(vec![String::from("child"), String::from("grandchild")]);
+        let ns = name_space.get_child_mut(vec![String::from("child"), String::from("grandchild")]).unwrap();
+        assert_eq!(ns.name_space, vec![String::from("child"), String::from("grandchild")]);
+    }
+
+    #[test]
+    fn test_name_space_grate_grandchild_name_space() {
+        let mut name_space = NameSpace::new(vec![]);
+        name_space.set_child(vec![String::from("child"), String::from("grandchild"), String::from("grate-grandchild")]);
+        let ns = name_space.get_child_mut(vec![String::from("child"), String::from("grandchild"), String::from("grate-grandchild")]).unwrap();
+        assert_eq!(ns.name_space, vec![String::from("child"), String::from("grandchild"), String::from("grate-grandchild")]);
+    }
+
     }
 }
