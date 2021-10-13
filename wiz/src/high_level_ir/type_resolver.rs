@@ -144,8 +144,10 @@ impl TypeResolver {
                 let a = self.typed_arg_def(a.clone())?;
                 self.context.register_to_env(
                     a.name(),
-                    EnvValue::from(a.type_()
-                        .ok_or(ResolverError::from("Can not resolve 'self type'"))?),
+                    EnvValue::from(
+                        a.type_()
+                            .ok_or(ResolverError::from("Can not resolve 'self type'"))?,
+                    ),
                 );
                 Result::Ok(a)
             })
@@ -245,9 +247,11 @@ impl TypeResolver {
         };
         self.context.register_to_env(
             v.name.clone(),
-            EnvValue::from(v.type_
-                .clone()
-                .ok_or(ResolverError::from("Cannot resolve variable type"))?),
+            EnvValue::from(
+                v.type_
+                    .clone()
+                    .ok_or(ResolverError::from("Cannot resolve variable type"))?,
+            ),
         );
         Result::Ok(v)
     }
@@ -304,7 +308,7 @@ impl TypeResolver {
                     EnvValue::from(
                         a.type_()
                             .ok_or(ResolverError::from("Can not resolve 'self type'"))?,
-                    )
+                    ),
                 );
                 Result::Ok(a)
             })
@@ -443,8 +447,10 @@ impl TypeResolver {
                     let a = self.typed_arg_def(a)?;
                     self.context.register_to_env(
                         a.name(),
-                        EnvValue::from(a.type_()
-                            .ok_or(ResolverError::from("Can not resolve `self`"))?),
+                        EnvValue::from(
+                            a.type_()
+                                .ok_or(ResolverError::from("Can not resolve `self`"))?,
+                        ),
                     );
                     Result::Ok(a)
                 })

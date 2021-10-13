@@ -31,7 +31,7 @@ pub struct NameSpace {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct NameEnvironment {
-    names: HashMap<String, (Vec<String>, EnvValue)>
+    names: HashMap<String, (Vec<String>, EnvValue)>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -154,25 +154,34 @@ impl NameSpace {
 }
 
 impl NameEnvironment {
-
     fn new() -> Self {
         Self {
-            names: Default::default()
+            names: Default::default(),
         }
     }
 
     fn use_values_from(&mut self, name_space: &NameSpace) {
-        self.names.extend(name_space.values.iter().map(|(k, v)|{
-            (k.clone(), (name_space.name_space.clone() ,EnvValue::from(v.clone())))
+        self.names.extend(name_space.values.iter().map(|(k, v)| {
+            (
+                k.clone(),
+                (name_space.name_space.clone(), EnvValue::from(v.clone())),
+            )
         }));
-        self.names.extend(name_space.children.iter().map(|(k, v)|{
-            (k.clone(), (name_space.name_space.clone() ,EnvValue::from(v.clone())))
+        self.names.extend(name_space.children.iter().map(|(k, v)| {
+            (
+                k.clone(),
+                (name_space.name_space.clone(), EnvValue::from(v.clone())),
+            )
         }));
     }
 
     fn use_values_from_local(&mut self, local_stack: &StackedHashMap<String, EnvValue>) {
         self.names.extend(
-            local_stack.clone().into_map().into_iter().map(|(k, v)|(k, (vec![], v)))
+            local_stack
+                .clone()
+                .into_map()
+                .into_iter()
+                .map(|(k, v)| (k, (vec![], v))),
         )
     }
 }
@@ -285,9 +294,7 @@ impl ResolverContext {
                 EnvValue::NameSpace(n) => {
                     todo!()
                 }
-                EnvValue::Value(v) => {
-                    ns.register_value(name,v)
-                }
+                EnvValue::Value(v) => ns.register_value(name, v),
             }
         } else {
             self.local_stack.insert(name, value);
@@ -354,17 +361,17 @@ impl ResolverContext {
             name
         )))?;
         match env_value {
-            (ns, EnvValue::NameSpace(child)) => {todo!("{:?}", child)}
-            (ns, EnvValue::Value(t)) => {
-                Result::Ok((
-                    t.clone(),
-                    if t.is_function_type() {
-                        Some(Package::new(ns.clone()))
-                    } else {
-                        None
-                    },
-                ))
+            (ns, EnvValue::NameSpace(child)) => {
+                todo!("{:?}", child)
             }
+            (ns, EnvValue::Value(t)) => Result::Ok((
+                t.clone(),
+                if t.is_function_type() {
+                    Some(Package::new(ns.clone()))
+                } else {
+                    None
+                },
+            )),
         }
     }
 
@@ -443,7 +450,9 @@ mod tests {
     fn test_name_space_child_name_space() {
         let mut name_space = NameSpace::new(vec![]);
         name_space.set_child(vec![String::from("child")]);
-        let ns = name_space.get_child_mut(vec![String::from("child")]).unwrap();
+        let ns = name_space
+            .get_child_mut(vec![String::from("child")])
+            .unwrap();
         assert_eq!(ns.name_space, vec![String::from("child")]);
     }
 
@@ -451,16 +460,38 @@ mod tests {
     fn test_name_space_grandchild_name_space() {
         let mut name_space = NameSpace::new(vec![]);
         name_space.set_child(vec![String::from("child"), String::from("grandchild")]);
-        let ns = name_space.get_child_mut(vec![String::from("child"), String::from("grandchild")]).unwrap();
-        assert_eq!(ns.name_space, vec![String::from("child"), String::from("grandchild")]);
+        let ns = name_space
+            .get_child_mut(vec![String::from("child"), String::from("grandchild")])
+            .unwrap();
+        assert_eq!(
+            ns.name_space,
+            vec![String::from("child"), String::from("grandchild")]
+        );
     }
 
     #[test]
     fn test_name_space_grate_grandchild_name_space() {
         let mut name_space = NameSpace::new(vec![]);
-        name_space.set_child(vec![String::from("child"), String::from("grandchild"), String::from("grate-grandchild")]);
-        let ns = name_space.get_child_mut(vec![String::from("child"), String::from("grandchild"), String::from("grate-grandchild")]).unwrap();
-        assert_eq!(ns.name_space, vec![String::from("child"), String::from("grandchild"), String::from("grate-grandchild")]);
+        name_space.set_child(vec![
+            String::from("child"),
+            String::from("grandchild"),
+            String::from("grate-grandchild"),
+        ]);
+        let ns = name_space
+            .get_child_mut(vec![
+                String::from("child"),
+                String::from("grandchild"),
+                String::from("grate-grandchild"),
+            ])
+            .unwrap();
+        assert_eq!(
+            ns.name_space,
+            vec![
+                String::from("child"),
+                String::from("grandchild"),
+                String::from("grate-grandchild")
+            ]
+        );
     }
 
     #[test]
@@ -469,10 +500,16 @@ mod tests {
 
         let env = context.get_current_name_environment();
 
-        assert_eq!(env.names.get("Int32"), Some(&(vec![],EnvValue::Value(TypedType::Type(TypedValueType {
-            package: Some(Package::global()),
-            name: "Int32".to_string(),
-            type_args: None
-        })))));
+        assert_eq!(
+            env.names.get("Int32"),
+            Some(&(
+                vec![],
+                EnvValue::Value(TypedType::Type(TypedValueType {
+                    package: Some(Package::global()),
+                    name: "Int32".to_string(),
+                    type_args: None
+                }))
+            ))
+        );
     }
 }
