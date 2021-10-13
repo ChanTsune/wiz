@@ -9,10 +9,7 @@ use crate::high_level_ir::typed_expr::{
     TypedPrefixUnaryOp, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
-use crate::high_level_ir::typed_stmt::{
-    TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedForStmt,
-    TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
-};
+use crate::high_level_ir::typed_stmt::{TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentAndOperator, TypedAssignmentStmt, TypedBlock, TypedForStmt, TypedLoopStmt, TypedStmt, TypedWhileLoopStmt};
 use crate::high_level_ir::typed_type::{Package, TypedType, TypedTypeParam, TypedValueType};
 use crate::syntax::annotation::AnnotationsSyntax;
 use crate::syntax::block::BlockSyntax;
@@ -100,7 +97,14 @@ impl Ast2HLIR {
             AssignmentStmt::AssignmentAndOperator(a) => {
                 TypedAssignmentStmt::AssignmentAndOperation(TypedAssignmentAndOperation {
                     target: self.expr(a.target),
-                    operator: a.operator,
+                    operator: match &*a.operator.token {
+                        "+=" => {TypedAssignmentAndOperator::Add}
+                        "-=" => {TypedAssignmentAndOperator::Sub}
+                        "*=" => {TypedAssignmentAndOperator::Mul}
+                        "/=" => {TypedAssignmentAndOperator::Div}
+                        "%=" => {TypedAssignmentAndOperator::Mod}
+                        o => panic!("unknown operator {:?}", o)
+                    },
                     value: self.expr(a.value),
                 })
             }

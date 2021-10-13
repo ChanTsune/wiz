@@ -25,8 +25,17 @@ pub struct TypedAssignment {
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypedAssignmentAndOperation {
     pub(crate) target: TypedExpr,
-    pub(crate) operator: String,
+    pub(crate) operator: TypedAssignmentAndOperator,
     pub(crate) value: TypedExpr,
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub enum TypedAssignmentAndOperator{
+    Add,
+    Sub,
+    Mul,
+    Div,
+    Mod,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]

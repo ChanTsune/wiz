@@ -2,6 +2,7 @@ use super::node::SyntaxNode;
 use crate::syntax::block::BlockSyntax;
 use crate::syntax::decl::Decl;
 use crate::syntax::expr::Expr;
+use crate::syntax::token::TokenSyntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Stmt {
@@ -28,7 +29,7 @@ pub struct AssignmentSyntax {
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct AssignmentAndOperatorSyntax {
     pub(crate) target: Expr,
-    pub(crate) operator: String,
+    pub(crate) operator: TokenSyntax,
     pub(crate) value: Expr,
 }
 

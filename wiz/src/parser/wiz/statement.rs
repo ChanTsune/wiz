@@ -19,6 +19,7 @@ use nom::{
     InputLength, InputTake, InputTakeAtPosition, Offset, Slice,
 };
 use std::ops::{Range, RangeFrom};
+use crate::syntax::token::TokenSyntax;
 
 pub fn decl_stmt<I>(s: I) -> IResult<I, Stmt>
 where
@@ -101,7 +102,7 @@ where
                 CompareResult::Incomplete => Stmt::Assignment(
                     AssignmentStmt::AssignmentAndOperator(AssignmentAndOperatorSyntax {
                         target,
-                        operator: op.to_string(),
+                        operator: TokenSyntax::new(op.to_string()),
                         value,
                     }),
                 ),

@@ -9,7 +9,7 @@ use crate::high_level_ir::typed_expr::{
     TypedLiteral, TypedName, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
-use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
+use crate::high_level_ir::typed_stmt::{TypedAssignmentAndOperator, TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
 use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
 use crate::middle_level_ir::ml_decl::{
     MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar,
@@ -256,13 +256,22 @@ impl HLIR2MLIR {
                 let target = self.expr(a.target.clone());
                 let value = TypedExpr::BinOp(TypedBinOp {
                     left: Box::new(a.target.clone()),
-                    operator: match &*a.operator.remove_last() {
-                        "+" => TypedBinaryOperator::Add,
-                        "-" => TypedBinaryOperator::Sub,
-                        "*" => TypedBinaryOperator::Mul,
-                        "/" => TypedBinaryOperator::Div,
-                        "%" => TypedBinaryOperator::Mod,
-                        _ => panic!(),
+                    operator: match a.operator {
+                        TypedAssignmentAndOperator::Add => {
+                            TypedBinaryOperator::Add
+                        }
+                        TypedAssignmentAndOperator::Sub => {
+                           TypedBinaryOperator::Sub
+                        }
+                        TypedAssignmentAndOperator::Mul => {
+                            TypedBinaryOperator::Mul
+                        }
+                        TypedAssignmentAndOperator::Div => {
+                           TypedBinaryOperator::Div
+                        }
+                        TypedAssignmentAndOperator::Mod => {
+                           TypedBinaryOperator::Mod
+                        }
                     },
                     right: Box::new(a.value),
                     type_: a.target.type_(),
