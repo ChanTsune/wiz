@@ -109,7 +109,7 @@ impl ResolverStruct {
 }
 
 impl NameSpace {
-    fn new(name: Vec<String>) -> Self {
+    pub(crate) fn new(name: Vec<String>) -> Self {
         Self {
             name_space: name,
             children: Default::default(),
@@ -118,7 +118,7 @@ impl NameSpace {
         }
     }
 
-    fn get_child_mut(&mut self, mut ns: Vec<String>) -> Option<&mut NameSpace> {
+    pub(crate) fn get_child_mut(&mut self, mut ns: Vec<String>) -> Option<&mut NameSpace> {
         if ns.is_empty() {
             Some(self)
         } else {
@@ -128,7 +128,7 @@ impl NameSpace {
         }
     }
 
-    fn set_child(&mut self, mut ns: Vec<String>) {
+    pub(crate) fn set_child(&mut self, mut ns: Vec<String>) {
         if !ns.is_empty() {
             let n = &ns.remove(0);
             if !self.children.contains_key(n) {
