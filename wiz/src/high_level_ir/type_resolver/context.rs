@@ -197,7 +197,7 @@ impl ResolverContext {
             subscripts: vec![],
             current_namespace: vec![],
             current_type: None,
-            local_stack: StackedHashMap::from(HashMap::new()),
+            local_stack: StackedHashMap::new(),
         }
     }
 
@@ -242,7 +242,7 @@ impl ResolverContext {
     }
 
     pub fn clear_local_stack(&mut self) {
-        self.local_stack = StackedHashMap::from(HashMap::new())
+        self.local_stack = StackedHashMap::new()
     }
 
     pub fn resolve_member_type(&mut self, t: TypedType, name: String) -> Result<TypedType> {
