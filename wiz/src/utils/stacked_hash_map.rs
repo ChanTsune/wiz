@@ -41,6 +41,10 @@ where
         }
         None
     }
+
+    pub(crate) fn stack_is_empty(&self) -> bool {
+        self.map_stack.is_empty()
+    }
 }
 
 impl<K, V, S> StackedHashMap<K, V, S>
@@ -71,5 +75,13 @@ mod tests {
         map.insert("1", 1);
         map.insert("2", 4);
         assert_eq!(smap.into_map(), map);
+    }
+
+    #[test]
+    fn test_stack_is_empty() {
+        let mut smap: StackedHashMap<&str, &str> = StackedHashMap::new();
+        assert!(smap.stack_is_empty());
+        smap.push(HashMap::new());
+        assert!(!smap.stack_is_empty());
     }
 }
