@@ -85,7 +85,7 @@ pub enum TypedBinaryOperator {
     LessThanEqual,
     LessThan,
     NotEqual,
-    InfixFunctionCall(String)
+    InfixFunctionCall(String),
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]

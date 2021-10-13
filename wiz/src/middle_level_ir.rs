@@ -4,7 +4,10 @@ use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct,
     TypedValueArgDef, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{TypedBinaryOperator, TypedBinOp, TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp};
+use crate::high_level_ir::typed_expr::{
+    TypedBinOp, TypedBinaryOperator, TypedCall, TypedExpr, TypedIf, TypedInstanceMember,
+    TypedLiteral, TypedName, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
+};
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
 use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
@@ -254,12 +257,12 @@ impl HLIR2MLIR {
                 let value = TypedExpr::BinOp(TypedBinOp {
                     left: Box::new(a.target.clone()),
                     operator: match &*a.operator.remove_last() {
-                        "+" => {TypedBinaryOperator::Add}
-                        "-" => {TypedBinaryOperator::Sub}
+                        "+" => TypedBinaryOperator::Add,
+                        "-" => TypedBinaryOperator::Sub,
                         "*" => TypedBinaryOperator::Mul,
                         "/" => TypedBinaryOperator::Div,
                         "%" => TypedBinaryOperator::Mod,
-                        _ => panic!()
+                        _ => panic!(),
                     },
                     right: Box::new(a.value),
                     type_: a.target.type_(),

@@ -3,7 +3,11 @@ use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedFun, TypedFunBody, TypedInitializer,
     TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedUse, TypedValueArgDef, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{TypedArray, TypedBinaryOperator, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLambda, TypedLiteral, TypedName, TypedPostfixUnaryOp, TypedPrefixUnaryOp, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp};
+use crate::high_level_ir::typed_expr::{
+    TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
+    TypedInstanceMember, TypedLambda, TypedLiteral, TypedName, TypedPostfixUnaryOp,
+    TypedPrefixUnaryOp, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
+};
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedForStmt,
@@ -448,7 +452,7 @@ impl Ast2HLIR {
         TypedBinOp {
             left,
             operator: match &*kind.token {
-                "+" => {TypedBinaryOperator::Add}
+                "+" => TypedBinaryOperator::Add,
                 "-" => TypedBinaryOperator::Sub,
                 "*" => TypedBinaryOperator::Mul,
                 "/" => TypedBinaryOperator::Div,
@@ -459,7 +463,7 @@ impl Ast2HLIR {
                 "<=" => TypedBinaryOperator::LessThanEqual,
                 "<" => TypedBinaryOperator::LessThan,
                 "!=" => TypedBinaryOperator::NotEqual,
-                _ => TypedBinaryOperator::InfixFunctionCall(kind.token)
+                _ => TypedBinaryOperator::InfixFunctionCall(kind.token),
             },
             right,
             type_: None,

@@ -1,10 +1,10 @@
 use crate::constants::UNSAFE_POINTER;
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
+use crate::high_level_ir::typed_expr::TypedBinaryOperator;
 use crate::high_level_ir::typed_type::{Package, TypedType, TypedValueType};
 use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::{HashMap, HashSet};
-use crate::high_level_ir::typed_expr::TypedBinaryOperator;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub(crate) struct ResolverTypeParam {
@@ -198,12 +198,12 @@ impl ResolverContext {
             };
         }
         let mut bo = HashMap::new();
-        for op in vec![TypedBinaryOperator::Add,
-                       TypedBinaryOperator::Sub,
-                       TypedBinaryOperator::Mul,
-                        TypedBinaryOperator::Div,
-            TypedBinaryOperator::Mod
-
+        for op in vec![
+            TypedBinaryOperator::Add,
+            TypedBinaryOperator::Sub,
+            TypedBinaryOperator::Mul,
+            TypedBinaryOperator::Div,
+            TypedBinaryOperator::Mod,
         ] {
             for t in TypedType::integer_types() {
                 bo.insert((op.clone(), t.clone(), t.clone()), t);
@@ -361,19 +361,21 @@ impl ResolverContext {
         right: TypedType,
     ) -> Result<TypedType> {
         match kind {
-            TypedBinaryOperator::Equal|
-            TypedBinaryOperator::GrateThanEqual|
-            TypedBinaryOperator::GrateThan|
-            TypedBinaryOperator::LessThanEqual|
-            TypedBinaryOperator::LessThan|
-            TypedBinaryOperator::NotEqual =>             Result::Ok(TypedType::bool()),
-            TypedBinaryOperator::InfixFunctionCall(_) => {todo!()}
+            TypedBinaryOperator::Equal
+            | TypedBinaryOperator::GrateThanEqual
+            | TypedBinaryOperator::GrateThan
+            | TypedBinaryOperator::LessThanEqual
+            | TypedBinaryOperator::LessThan
+            | TypedBinaryOperator::NotEqual => Result::Ok(TypedType::bool()),
+            TypedBinaryOperator::InfixFunctionCall(_) => {
+                todo!()
+            }
             _ => {
-                    let key = (kind, left, right);
-                    self.binary_operators
-                        .get(&key)
-                        .map(|t| t.clone())
-                        .ok_or(ResolverError::from(format!("{:?} is not defined.", key)))
+                let key = (kind, left, right);
+                self.binary_operators
+                    .get(&key)
+                    .map(|t| t.clone())
+                    .ok_or(ResolverError::from(format!("{:?} is not defined.", key)))
             }
         }
     }
