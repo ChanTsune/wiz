@@ -29,7 +29,7 @@ pub struct NameSpace {
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
-enum EnvValue {
+pub(crate) enum EnvValue {
     NameSpace(NameSpace),
     Value(TypedType),
 }
