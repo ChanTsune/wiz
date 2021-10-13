@@ -321,7 +321,7 @@ where
             whitespace0,
             function_body,
         )),
-        |(_, _, args, _, body)| StructPropertySyntax::Init(InitializerSyntax { args, body }),
+        |(init, ws, args, _, body):(I, _, _, _, _)| StructPropertySyntax::Init(InitializerSyntax { init_keyword: TokenSyntax::new(init.to_string()).with_trailing_trivia(ws), args, body }),
     )(s)
 }
 
