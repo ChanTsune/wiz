@@ -42,3 +42,34 @@ where
         None
     }
 }
+
+impl<K, V, S> StackedHashMap<K, V, S>
+    where
+        K: Hash + Eq,
+        S: BuildHasher + Default,
+{
+    pub(crate) fn into_map(self) -> HashMap<K, V, S> {
+        self.map_stack.into_iter().flatten().collect()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashMap;
+    use crate::utils::stacked_hash_map::StackedHashMap;
+
+    #[test]
+    fn test_into_map() {
+        let mut smap = StackedHashMap::new();
+        smap.push(HashMap::new());
+        smap.insert("1", 1);
+        smap.insert("2", 2);
+        smap.push(HashMap::new());
+        smap.insert("2", 4);
+
+        let mut map = HashMap::new();
+        map.insert("1", 1);
+        map.insert("2", 4);
+        assert_eq!(smap.into_map(), map);
+    }
+}
