@@ -30,6 +30,11 @@ pub struct NameSpace {
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
+pub struct NameEnvironment {
+    names: HashMap<String, (Vec<String>, EnvValue)>
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub(crate) enum EnvValue {
     NameSpace(NameSpace),
     Value(TypedType),
@@ -148,6 +153,30 @@ impl NameSpace {
     }
 }
 
+impl NameEnvironment {
+
+    fn new() -> Self {
+        Self {
+            names: Default::default()
+        }
+    }
+
+    fn use_values_from(&mut self, name_space: &NameSpace) {
+        self.names.extend(name_space.values.iter().map(|(k, v)|{
+            (k.clone(), (name_space.name_space.clone() ,EnvValue::from(v.clone())))
+        }));
+        self.names.extend(name_space.children.iter().map(|(k, v)|{
+            (k.clone(), (name_space.name_space.clone() ,EnvValue::from(v.clone())))
+        }));
+    }
+
+    fn use_values_from_local(&mut self, local_stack: &StackedHashMap<String, EnvValue>) {
+        self.names.extend(
+            local_stack.clone().into_map().into_iter().map(|(k, v)|(k, (vec![], v)))
+        )
+    }
+}
+
 impl From<TypedType> for EnvValue {
     fn from(typed_type: TypedType) -> Self {
         Self::Value(typed_type)
@@ -249,6 +278,30 @@ impl ResolverContext {
         self.local_stack = StackedHashMap::new()
     }
 
+    pub(crate) fn register_to_env(&mut self, name: String, value: EnvValue) {
+        if self.local_stack.stack_is_empty() {
+            let ns = self.get_current_namespace_mut().unwrap();
+            match value {
+                EnvValue::NameSpace(n) => {
+                    todo!()
+                }
+                EnvValue::Value(v) => {
+                    ns.register_value(name,v)
+                }
+            }
+        } else {
+            self.local_stack.insert(name, value);
+        }
+    }
+
+    pub fn get_current_name_environment(&mut self) -> NameEnvironment {
+        let mut env = NameEnvironment::new();
+        env.use_values_from(self.get_namespace_mut(vec![]).unwrap());
+        env.use_values_from(self.get_current_namespace_mut().unwrap());
+        env.use_values_from_local(&self.local_stack);
+        env
+    }
+
     pub fn resolve_member_type(&mut self, t: TypedType, name: String) -> Result<TypedType> {
         match &t {
             TypedType::Value(v) => {
@@ -295,28 +348,24 @@ impl ResolverContext {
                 Some(Package::new(name_space)),
             ));
         }
-        let mut cns = self.current_namespace.clone();
-        loop {
-            let ns = self.get_namespace_mut(cns.clone())?;
-            if let Some(t) = ns.values.get(&name) {
-                return Result::Ok((
+        let env = self.get_current_name_environment();
+        let env_value = env.names.get(&name).ok_or(ResolverError::from(format!(
+            "Cannot resolve name {:?}",
+            name
+        )))?;
+        match env_value {
+            (ns, EnvValue::NameSpace(child)) => {todo!("{:?}", child)}
+            (ns, EnvValue::Value(t)) => {
+                Result::Ok((
                     t.clone(),
                     if t.is_function_type() {
-                        Some(Package::new(cns))
+                        Some(Package::new(ns.clone()))
                     } else {
                         None
                     },
-                ));
+                ))
             }
-            if cns.is_empty() {
-                break;
-            }
-            cns.pop();
         }
-        Result::Err(ResolverError::from(format!(
-            "Cannot resolve name {:?}",
-            name
-        )))
     }
 
     pub fn resolve_binop_type(
@@ -374,8 +423,8 @@ impl ResolverContext {
 
 #[cfg(test)]
 mod tests {
-    use crate::high_level_ir::type_resolver::context::NameSpace;
-    use crate::high_level_ir::typed_type::TypedType;
+    use crate::high_level_ir::type_resolver::context::{EnvValue, NameSpace, ResolverContext};
+    use crate::high_level_ir::typed_type::{Package, TypedType, TypedValueType};
 
     #[test]
     fn test_name_space() {
@@ -414,4 +463,16 @@ mod tests {
         assert_eq!(ns.name_space, vec![String::from("child"), String::from("grandchild"), String::from("grate-grandchild")]);
     }
 
+    #[test]
+    fn test_context_name_environment() {
+        let mut context = ResolverContext::new();
+
+        let env = context.get_current_name_environment();
+
+        assert_eq!(env.names.get("Int32"), Some(&(vec![],EnvValue::Value(TypedType::Type(TypedValueType {
+            package: Some(Package::global()),
+            name: "Int32".to_string(),
+            type_args: None
+        })))));
+    }
 }

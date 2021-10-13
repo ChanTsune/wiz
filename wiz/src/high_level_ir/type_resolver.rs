@@ -4,7 +4,7 @@ pub mod result;
 #[cfg(test)]
 mod tests;
 
-use crate::high_level_ir::type_resolver::context::{ResolverContext, ResolverStruct};
+use crate::high_level_ir::type_resolver::context::{EnvValue, ResolverContext, ResolverStruct};
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_decl::{
@@ -136,17 +136,16 @@ impl TypeResolver {
 
     pub fn preload_fun(&mut self, f: TypedFun) -> Result<TypedFun> {
         let c_name_space = self.context.current_namespace.clone();
-        self.context.push_name_space(f.name.clone());
+        self.context.push_local_stack();
         let arg_defs = f
             .arg_defs
             .iter()
             .map(|a| {
                 let a = self.typed_arg_def(a.clone())?;
-                let ns = self.context.get_current_namespace_mut()?;
-                ns.register_value(
+                self.context.register_to_env(
                     a.name(),
-                    a.type_()
-                        .ok_or(ResolverError::from("Can not resolve 'self type'"))?,
+                    EnvValue::from(a.type_()
+                        .ok_or(ResolverError::from("Can not resolve 'self type'"))?),
                 );
                 Result::Ok(a)
             })
@@ -162,7 +161,7 @@ impl TypeResolver {
             body: None,
             return_type: Some(return_type),
         };
-        self.context.pop_name_space();
+        self.context.pop_local_stack();
         Result::Ok(fun)
     }
 
@@ -244,12 +243,11 @@ impl TypeResolver {
             type_: Some(v_type),
             value,
         };
-        let namespace = self.context.get_current_namespace_mut()?;
-        namespace.register_value(
+        self.context.register_to_env(
             v.name.clone(),
-            v.type_
+            EnvValue::from(v.type_
                 .clone()
-                .ok_or(ResolverError::from("Cannot resolve variable type"))?,
+                .ok_or(ResolverError::from("Cannot resolve variable type"))?),
         );
         Result::Ok(v)
     }
@@ -295,17 +293,18 @@ impl TypeResolver {
 
     pub fn typed_fun(&mut self, f: TypedFun) -> Result<TypedFun> {
         let c_name_space = self.context.current_namespace.clone();
-        self.context.push_name_space(f.name.clone());
+        self.context.push_local_stack();
         let arg_defs = f
             .arg_defs
             .iter()
             .map(|a| {
                 let a = self.typed_arg_def(a.clone())?;
-                let ns = self.context.get_current_namespace_mut()?;
-                ns.register_value(
+                self.context.register_to_env(
                     a.name(),
-                    a.type_()
-                        .ok_or(ResolverError::from("Can not resolve 'self type'"))?,
+                    EnvValue::from(
+                        a.type_()
+                            .ok_or(ResolverError::from("Can not resolve 'self type'"))?,
+                    )
                 );
                 Result::Ok(a)
             })
@@ -327,7 +326,7 @@ impl TypeResolver {
         let fun_name = fun.name.clone();
         let fun_type = fun.type_();
         let result = Result::Ok(fun);
-        self.context.pop_name_space();
+        self.context.pop_local_stack();
         let ns = self.context.get_current_namespace_mut()?;
         ns.register_value(fun_name, fun_type.unwrap());
         result
@@ -382,7 +381,6 @@ impl TypeResolver {
             );
         }
         self.context.set_current_type(this_type);
-        self.context.push_name_space(name.clone());
         let init = init
             .into_iter()
             .map(|i| self.typed_initializer(i))
@@ -395,7 +393,6 @@ impl TypeResolver {
             .collect::<Result<Vec<TypedMemberFunction>>>()?;
         let static_function = static_function.into_iter().collect();
         self.context.clear_current_type();
-        self.context.pop_name_space();
         Result::Ok(TypedStruct {
             annotations,
             package: Some(Package::new(self.context.current_namespace.clone())),
@@ -436,7 +433,7 @@ impl TypeResolver {
     }
 
     fn typed_member_function(&mut self, mf: TypedMemberFunction) -> Result<TypedMemberFunction> {
-        self.context.push_name_space(mf.name.clone());
+        self.context.push_local_stack();
         let result = Result::Ok(TypedMemberFunction {
             name: mf.name,
             args: mf
@@ -444,11 +441,10 @@ impl TypeResolver {
                 .into_iter()
                 .map(|a| {
                     let a = self.typed_arg_def(a)?;
-                    let ns = self.context.get_current_namespace_mut()?;
-                    ns.register_value(
+                    self.context.register_to_env(
                         a.name(),
-                        a.type_()
-                            .ok_or(ResolverError::from("Can not resolve `self`"))?,
+                        EnvValue::from(a.type_()
+                            .ok_or(ResolverError::from("Can not resolve `self`"))?),
                     );
                     Result::Ok(a)
                 })
@@ -465,7 +461,7 @@ impl TypeResolver {
                 }
             },
         });
-        self.context.pop_name_space();
+        self.context.pop_local_stack();
         result
     }
 
