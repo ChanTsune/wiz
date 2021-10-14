@@ -91,6 +91,16 @@ impl NameSpace {
         }
     }
 
+    pub(crate) fn get_child(&self, mut ns: Vec<String>) -> Option<&NameSpace> {
+        if ns.is_empty() {
+            Some(self)
+        } else {
+            let n = ns.remove(0);
+            let m = self.children.get(&*n)?;
+            m.get_child(ns)
+        }
+    }
+
     pub(crate) fn get_child_mut(&mut self, mut ns: Vec<String>) -> Option<&mut NameSpace> {
         if ns.is_empty() {
             Some(self)
