@@ -310,8 +310,7 @@ impl ResolverContext {
             TypedType::Value(v) => {
                 let ns = self.get_namespace_mut(v.package.clone().unwrap().names)?;
                 let rs = ns
-                    .types
-                    .get(&v.name)
+                    .get_type(&v.name)
                     .ok_or(ResolverError::from(format!("Can not resolve type {:?}", t)))?;
                 rs.stored_properties
                     .get(&name)
@@ -406,7 +405,7 @@ impl ResolverContext {
             let ns = self.get_namespace_mut(cns.clone())?;
             match &typ {
                 TypedType::Value(v) | TypedType::Reference(v) => {
-                    if let Some(_) = ns.types.get(&v.name) {
+                    if let Some(_) = ns.get_type(&v.name) {
                         return Result::Ok(TypedType::Value(TypedValueType {
                             package: Some(Package { names: cns.clone() }),
                             name: v.name.clone(),
