@@ -138,6 +138,10 @@ impl NameSpace {
     pub(crate) fn register_value(&mut self, name: String, type_: TypedType) {
         self.values.insert(name, type_);
     }
+
+    pub(crate) fn get_value(&self, name: &String) -> Option<&TypedType> {
+        self.values.get(name)
+    }
 }
 
 impl NameEnvironment {
@@ -336,8 +340,8 @@ impl ResolverContext {
         if !name_space.is_empty() {
             let ns = self.get_namespace_mut(name_space.clone())?;
             return Result::Ok((
-                ns.values
-                    .get(&name)
+                ns
+                    .get_value(&name)
                     .ok_or(ResolverError::from(format!(
                         "Cannot resolve name {:?}",
                         name
