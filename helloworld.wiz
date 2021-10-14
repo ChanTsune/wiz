@@ -3,19 +3,6 @@ struct A {
     val b: Int64
 }
 
-struct UInt8Vector {
-    var ptr: UnsafePointer<UInt8>
-    var length: UInt64
-    var capacity: UInt64
-
-    init() {
-        self.capacity = 0
-        self.ptr = malloc(0)
-        self.length = 0
-    }
-
-}
-
 fun helloWorld(): Unit {
     std::builtin::println("Hello world!")
 }
@@ -27,7 +14,7 @@ fun modBy2(_ n: Int64): Int64 {
 fun modBy2Expr(_ n: Int64) = n % 2
 
 fun main() {
-    val vector = UInt8Vector.init()
+    val vector = std::collection::vector::UInt8Vector.init()
     var s = A.init(a: 1, b: 0)
     val b = 2
     while !(s.a >= 15) {
