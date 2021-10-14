@@ -195,8 +195,7 @@ impl ResolverContext {
             },
         );
         rs_for_pointer.type_params = Some(tp_map_for_pointer);
-        ns.types
-            .insert(String::from(UNSAFE_POINTER), rs_for_pointer);
+        ns.register_type(String::from(UNSAFE_POINTER), rs_for_pointer);
 
         for t in TypedType::builtin_types() {
             match &t {
