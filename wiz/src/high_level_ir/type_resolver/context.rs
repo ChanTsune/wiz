@@ -340,8 +340,7 @@ impl ResolverContext {
         if !name_space.is_empty() {
             let ns = self.get_namespace_mut(name_space.clone())?;
             return Result::Ok((
-                ns
-                    .get_value(&name)
+                ns.get_value(&name)
                     .ok_or(ResolverError::from(format!(
                         "Cannot resolve name {:?}",
                         name
