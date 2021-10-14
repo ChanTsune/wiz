@@ -316,7 +316,8 @@ impl ResolverContext {
             }
             TypedType::Type(v) => {
                 let ns = self.get_namespace_mut(v.package.clone().unwrap().names)?;
-                let rs = ns.get_type(&v.name)
+                let rs = ns
+                    .get_type(&v.name)
                     .ok_or(ResolverError::from(format!("Can not resolve type {:?}", t)))?;
                 rs.static_functions
                     .get(&name)
