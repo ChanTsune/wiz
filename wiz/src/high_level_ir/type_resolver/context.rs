@@ -127,6 +127,10 @@ impl NameSpace {
         self.types.insert(name, s);
     }
 
+    pub(crate) fn get_type(&self, name: &String) -> Option<&ResolverStruct> {
+        self.types.get(name)
+    }
+
     pub(crate) fn get_type_mut(&mut self, name: &String) -> Option<&mut ResolverStruct> {
         self.types.get_mut(name)
     }
@@ -312,9 +316,7 @@ impl ResolverContext {
             }
             TypedType::Type(v) => {
                 let ns = self.get_namespace_mut(v.package.clone().unwrap().names)?;
-                let rs = ns
-                    .types
-                    .get(&v.name)
+                let rs = ns.get_type(&v.name)
                     .ok_or(ResolverError::from(format!("Can not resolve type {:?}", t)))?;
                 rs.static_functions
                     .get(&name)
