@@ -333,29 +333,32 @@ impl ResolverContext {
 
     pub fn resolve_name_type(
         &mut self,
-        name_space: Vec<String>,
+        mut name_space: Vec<String>,
         name: String,
     ) -> Result<(TypedType, Option<Package>)> {
-        if !name_space.is_empty() {
-            let ns = self.get_namespace_mut(name_space.clone())?;
-            return Result::Ok((
-                ns.get_value(&name)
-                    .ok_or(ResolverError::from(format!(
-                        "Cannot resolve name {:?}",
-                        name
-                    )))?
-                    .clone(),
-                Some(Package::new(name_space)),
-            ));
-        }
+        let (name, name_space, n) = if name_space.is_empty() {
+            (name, name_space, None)
+        } else {
+            (name_space.remove(0), name_space, Some(name))
+        };
         let env = self.get_current_name_environment();
         let env_value = env.names.get(&name).ok_or(ResolverError::from(format!(
             "Cannot resolve name {:?}",
             name
         )))?;
         match env_value {
-            (ns, EnvValue::NameSpace(child)) => {
-                todo!("{:?}", child)
+            (_, EnvValue::NameSpace(child)) => {
+                let n = n.unwrap();
+                let ns = child.get_child(name_space.clone()).ok_or(ResolverError::from(format!("Cannot resolve namespace {:?}", name_space)))?;
+                let t = ns.get_value(&n).ok_or(ResolverError::from(format!("Cannot resolve name {:?}", n)))?;
+                Result::Ok((
+                    t.clone(),
+                    if t.is_function_type() {
+                        Some(Package::new(ns.name_space.clone()))
+                    } else {
+                        None
+                    }
+                    ))
             }
             (ns, EnvValue::Value(t)) => Result::Ok((
                 t.clone(),
