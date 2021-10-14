@@ -349,16 +349,23 @@ impl ResolverContext {
         match env_value {
             (_, EnvValue::NameSpace(child)) => {
                 let n = n.unwrap();
-                let ns = child.get_child(name_space.clone()).ok_or(ResolverError::from(format!("Cannot resolve namespace {:?}", name_space)))?;
-                let t = ns.get_value(&n).ok_or(ResolverError::from(format!("Cannot resolve name {:?}", n)))?;
+                let ns = child
+                    .get_child(name_space.clone())
+                    .ok_or(ResolverError::from(format!(
+                        "Cannot resolve namespace {:?}",
+                        name_space
+                    )))?;
+                let t = ns
+                    .get_value(&n)
+                    .ok_or(ResolverError::from(format!("Cannot resolve name {:?}", n)))?;
                 Result::Ok((
                     t.clone(),
                     if t.is_function_type() {
                         Some(Package::new(ns.name_space.clone()))
                     } else {
                         None
-                    }
-                    ))
+                    },
+                ))
             }
             (ns, EnvValue::Value(t)) => Result::Ok((
                 t.clone(),
