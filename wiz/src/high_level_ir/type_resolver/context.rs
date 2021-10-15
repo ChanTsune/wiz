@@ -2,10 +2,11 @@ use crate::constants::UNSAFE_POINTER;
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_expr::TypedBinaryOperator;
-use crate::high_level_ir::typed_type::{Package, TypedType, TypedValueType};
+use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
 use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::{HashMap, HashSet};
 use std::option::Option::Some;
+use crate::high_level_ir::typed_decl::{TypedArgDef, TypedValueArgDef};
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub(crate) struct ResolverTypeParam {
@@ -427,14 +428,14 @@ impl ResolverContext {
         }
     }
 
-    pub fn full_type_name(&mut self, typ: TypedType) -> Result<TypedType> {
+    pub fn full_type_name(&self, typ: TypedType) -> Result<TypedType> {
         // TODO: change impl
         if typ.is_primitive() {
             return Result::Ok(typ);
         };
         let mut cns = self.current_namespace.clone();
         loop {
-            let ns = self.get_namespace_mut(cns.clone())?;
+            let ns = self.get_namespace(cns.clone())?;
             match &typ {
                 TypedType::Value(v) | TypedType::Reference(v) => {
                     if let Some(_) = ns.get_type(&v.name) {
@@ -444,6 +445,28 @@ impl ResolverContext {
                             type_args: v.type_args.clone(),
                         }));
                     };
+                }
+                TypedType::Function(f) => {
+                    return Result::Ok(TypedType::Function(Box::new(TypedFunctionType {
+                        arguments: f.arguments.clone().into_iter().map(|a|{
+                            Result::Ok(match a {
+                                TypedArgDef::Value(v) => {
+                                    TypedArgDef::Value(TypedValueArgDef {
+                                        label: v.label,
+                                        name: v.name,
+                                        type_: self.full_type_name(v.type_)?
+                                    })
+                                }
+                                TypedArgDef::Self_(_) => {
+                                    TypedArgDef::Self_(self.current_type.clone())
+                                }
+                                TypedArgDef::RefSelf(_) => {
+                                    TypedArgDef::RefSelf(self.current_type.clone())
+                                }
+                            })
+                        }).collect::<Result<Vec<TypedArgDef>>>()?,
+                        return_type: self.full_type_name(f.return_type.clone())?
+                    })))
                 }
                 _ => {
                     todo!("Dose not impl")
