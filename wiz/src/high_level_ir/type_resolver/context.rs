@@ -5,6 +5,7 @@ use crate::high_level_ir::typed_expr::TypedBinaryOperator;
 use crate::high_level_ir::typed_type::{Package, TypedType, TypedValueType};
 use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::{HashMap, HashSet};
+use std::option::Option::Some;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub(crate) struct ResolverTypeParam {
@@ -77,7 +78,15 @@ impl ResolverStruct {
     }
 
     pub(crate) fn get_instance_member_type(&self, name: &String) -> Option<&TypedType> {
-        self.stored_properties.get(name)
+        if let Some(t) = self.stored_properties.get(name) {
+            Some(t)
+        } else if let Some(t) = self.computed_properties.get(name) {
+            Some(t)
+        } else if let Some(t) = self.member_functions.get(name) {
+            Some(t)
+        } else {
+            None
+        }
     }
 
     pub fn is_generic(&self) -> bool {
