@@ -1790,6 +1790,34 @@ mod tests {
     }
 
     #[test]
+    fn test_if_expr_with_else_empty() {
+        assert_eq!(
+            expr(r"if a { } else { }"),
+            Ok((
+                "",
+                Expr::If(IfExprSyntax {
+                    condition: Box::new(Expr::Name(NameExprSyntax {
+                        name_space: vec![],
+                        name: "a".to_string()
+                    })),
+                    body: BlockSyntax {
+                        open: TokenSyntax::new("{".to_string())
+                            .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        body: vec![],
+                        close: TokenSyntax::new("}".to_string())
+                    },
+                    else_body: Some(BlockSyntax {
+                        open: TokenSyntax::new("{".to_string())
+                            .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        body: vec![],
+                        close: TokenSyntax::new("}".to_string())
+                    })
+                })
+            ))
+        )
+    }
+
+    #[test]
     fn test_return() {
         assert_eq!(
             return_expr("return name"),
