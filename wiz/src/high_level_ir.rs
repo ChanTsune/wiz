@@ -293,7 +293,7 @@ impl Ast2HLIR {
             type_params: s
                 .type_params
                 .map(|v| v.into_iter().map(|tp| self.type_param(tp)).collect()),
-            init: initializers,
+            initializers,
             stored_properties,
             computed_properties,
             member_functions,
@@ -313,13 +313,13 @@ impl Ast2HLIR {
                 })
             })
             .collect();
-        if s.init.is_empty() {
+        if s.initializers.is_empty() {
             let struct_type = TypedValueType {
                 package: Some(Package::global()),
                 name: s.name.clone(),
                 type_args: None,
             };
-            s.init.push(TypedInitializer {
+            s.initializers.push(TypedInitializer {
                 args,
                 body: TypedFunBody::Block(TypedBlock {
                     body: s

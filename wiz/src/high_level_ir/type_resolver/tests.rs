@@ -74,7 +74,7 @@ fn test_unsafe_pointer() {
                     package: Some(Package::new(vec![String::from("test")])),
                     name: "A".to_string(),
                     type_params: None,
-                    init: vec![TypedInitializer {
+                    initializers: vec![TypedInitializer {
                         args: vec![TypedArgDef::Value(TypedValueArgDef {
                             label: "a".to_string(),
                             name: "a".to_string(),
@@ -197,7 +197,7 @@ fn test_struct_stored_property() {
                     package: Some(Package::new(vec![String::from("test")])),
                     name: "A".to_string(),
                     type_params: None,
-                    init: vec![TypedInitializer {
+                    initializers: vec![TypedInitializer {
                         args: vec![TypedArgDef::Value(TypedValueArgDef {
                             label: "a".to_string(),
                             name: "a".to_string(),
@@ -320,7 +320,7 @@ fn test_struct_init() {
                     package: Some(Package::new(vec![String::from("test")])),
                     name: "A".to_string(),
                     type_params: None,
-                    init: vec![TypedInitializer {
+                    initializers: vec![TypedInitializer {
                         args: vec![TypedArgDef::Value(TypedValueArgDef {
                             label: "a".to_string(),
                             name: "a".to_string(),
@@ -479,7 +479,7 @@ fn test_struct_member_function() {
                 package: Some(Package::new(vec![String::from("test")])),
                 name: "A".to_string(),
                 type_params: None,
-                init: vec![TypedInitializer {
+                initializers: vec![TypedInitializer {
                     args: vec![TypedArgDef::Value(TypedValueArgDef {
                         label: "a".to_string(),
                         name: "a".to_string(),
@@ -591,7 +591,7 @@ fn test_struct_member_function_call() {
                     package: Some(Package::new(vec![String::from("test")])),
                     name: "A".to_string(),
                     type_params: None,
-                    init: vec![TypedInitializer {
+                    initializers: vec![TypedInitializer {
                         args: vec![TypedArgDef::Value(TypedValueArgDef {
                             label: "a".to_string(),
                             name: "a".to_string(),

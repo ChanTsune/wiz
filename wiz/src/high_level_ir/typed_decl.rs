@@ -84,7 +84,7 @@ pub struct TypedStruct {
     pub(crate) package: Option<Package>,
     pub(crate) name: String,
     pub(crate) type_params: Option<Vec<TypedTypeParam>>,
-    pub(crate) init: Vec<TypedInitializer>,
+    pub(crate) initializers: Vec<TypedInitializer>,
     pub(crate) stored_properties: Vec<TypedStoredProperty>,
     pub(crate) computed_properties: Vec<TypedComputedProperty>,
     pub(crate) member_functions: Vec<TypedMemberFunction>,

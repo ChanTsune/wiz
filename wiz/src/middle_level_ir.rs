@@ -355,7 +355,7 @@ impl HLIR2MLIR {
             package,
             name,
             type_params,
-            init,
+            initializers,
             stored_properties,
             computed_properties,
             member_functions,
@@ -376,7 +376,7 @@ impl HLIR2MLIR {
         let value_type = MLValueType::Struct(struct_.name.clone());
         self.context.add_struct(value_type.clone(), struct_.clone());
 
-        let init: Vec<MLFun> = init
+        let init: Vec<MLFun> = initializers
             .into_iter()
             .map(|i| {
                 let type_ = MLType::Value(value_type.clone());

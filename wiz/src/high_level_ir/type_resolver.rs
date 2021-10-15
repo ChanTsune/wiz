@@ -175,7 +175,7 @@ impl TypeResolver {
             package,
             name,
             type_params,
-            init,
+            initializers,
             stored_properties,
             computed_properties,
             member_functions,
@@ -209,7 +209,7 @@ impl TypeResolver {
             rs.static_functions
                 .insert(sf.name.clone(), sf.type_().unwrap());
         }
-        for ini in init.iter() {
+        for ini in initializers.iter() {
             rs.static_functions.insert(
                 String::from("init"),
                 TypedType::Function(Box::new(TypedFunctionType {
@@ -224,7 +224,7 @@ impl TypeResolver {
             package,
             name,
             type_params,
-            init,
+            initializers,
             stored_properties,
             computed_properties,
             member_functions,
@@ -407,7 +407,7 @@ impl TypeResolver {
             package: _,
             name,
             type_params,
-            init,                // TODO
+            initializers,                // TODO
             stored_properties,   // TODO
             computed_properties, // TODO
             member_functions,    // TODO
@@ -420,7 +420,7 @@ impl TypeResolver {
             type_args: None,
         });
         self.context.set_current_type(this_type);
-        let init = init
+        let initializers = initializers
             .into_iter()
             .map(|i| self.typed_initializer(i))
             .collect::<Result<Vec<TypedInitializer>>>()?;
@@ -437,7 +437,7 @@ impl TypeResolver {
             package: Some(Package::new(self.context.current_namespace.clone())),
             name,
             type_params,
-            init,
+            initializers,
             stored_properties,
             computed_properties,
             member_functions,
