@@ -8,4 +8,13 @@ struct UInt8Vector {
         self.ptr = malloc(0)
         self.length = 0
     }
+
+    fun push(&self, element: UInt8): Unit {
+        if self.capacity <= self.length {
+            val newCapacity = if self.capacity == 0 { 4 } else { self.capacity * 2 }
+            self.ptr = realloc(self.ptr, newCapacity)
+        }
+        self.ptr[self.length] = element
+        self.length += 1
+    }
 }
