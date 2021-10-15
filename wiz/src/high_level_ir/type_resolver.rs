@@ -124,7 +124,9 @@ impl TypeResolver {
                 let namespace = self.context.get_current_namespace_mut()?;
                 namespace.register_value(fun.name.clone(), fun.type_().unwrap());
             }
-            TypedDecl::Struct(_) => {}
+            TypedDecl::Struct(s) => {
+                let _ = self.preload_struct(s)?;
+            }
             TypedDecl::Class => {}
             TypedDecl::Enum => {}
             TypedDecl::Protocol => {}
@@ -165,6 +167,69 @@ impl TypeResolver {
         };
         self.context.pop_local_stack();
         Result::Ok(fun)
+    }
+
+    pub fn preload_struct(&mut self, s: TypedStruct) -> Result<TypedStruct> {
+        let TypedStruct {
+            annotations,
+            package,
+            name,
+            type_params,
+            init,
+            stored_properties,
+            computed_properties,
+            member_functions,
+            static_function,
+        } = s;
+        let current_namespace = self.context.current_namespace.clone();
+        let ns = self.context.get_current_namespace_mut()?;
+        let this_type = TypedType::Value(TypedValueType {
+            package: Some(Package::new(current_namespace)),
+            name: name.clone(),
+            type_args: None,
+        });
+        let rs = ns.get_type_mut(&name).ok_or(ResolverError::from(format!(
+            "Struct {:?} not exist. Maybe before preload",
+            name
+        )))?;
+
+        for sp in stored_properties.iter() {
+            rs.stored_properties
+                .insert(sp.name.clone(), sp.type_.clone());
+        }
+        for cp in computed_properties.iter() {
+            rs.computed_properties
+                .insert(cp.name.clone(), cp.type_.clone());
+        }
+        for mf in member_functions.iter() {
+            rs.member_functions
+                .insert(mf.name.clone(), mf.type_().unwrap());
+        }
+        for sf in static_function.iter() {
+            rs.static_functions
+                .insert(sf.name.clone(), sf.type_().unwrap());
+        }
+        for ini in init.iter() {
+            rs.static_functions.insert(
+                String::from("init"),
+                TypedType::Function(Box::new(TypedFunctionType {
+                    arguments: ini.args.clone(),
+                    return_type: this_type.clone(),
+                })),
+            );
+        }
+
+        Result::Ok(TypedStruct {
+            annotations,
+            package,
+            name,
+            type_params,
+            init,
+            stored_properties,
+            computed_properties,
+            member_functions,
+            static_function,
+        })
     }
 
     pub fn source_set(&mut self, s: TypedSourceSet) -> Result<TypedSourceSet> {
@@ -349,41 +414,11 @@ impl TypeResolver {
             static_function,     // TODO
         } = s;
         let current_namespace = self.context.current_namespace.clone();
-        let ns = self.context.get_current_namespace_mut()?;
         let this_type = TypedType::Value(TypedValueType {
             package: Some(Package::new(current_namespace)),
             name: name.clone(),
             type_args: None,
         });
-        let rs = ns.get_type_mut(&name).ok_or(ResolverError::from(format!(
-            "Struct {:?} not exist. Maybe before preload",
-            name
-        )))?;
-        for sp in stored_properties.iter() {
-            rs.stored_properties
-                .insert(sp.name.clone(), sp.type_.clone());
-        }
-        for cp in computed_properties.iter() {
-            rs.computed_properties
-                .insert(cp.name.clone(), cp.type_.clone());
-        }
-        for mf in member_functions.iter() {
-            rs.member_functions
-                .insert(mf.name.clone(), mf.type_().unwrap());
-        }
-        for sf in static_function.iter() {
-            rs.static_functions
-                .insert(sf.name.clone(), sf.type_().unwrap());
-        }
-        for ini in init.iter() {
-            rs.static_functions.insert(
-                String::from("init"),
-                TypedType::Function(Box::new(TypedFunctionType {
-                    arguments: ini.args.clone(),
-                    return_type: this_type.clone(),
-                })),
-            );
-        }
         self.context.set_current_type(this_type);
         let init = init
             .into_iter()
