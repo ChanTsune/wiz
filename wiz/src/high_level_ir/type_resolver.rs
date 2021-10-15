@@ -169,7 +169,7 @@ impl TypeResolver {
         Result::Ok(fun)
     }
 
-    pub fn preload_struct(&mut self, s: TypedStruct) -> Result<TypedStruct> {
+    pub fn preload_struct(&mut self, s: TypedStruct) -> Result<()> {
         let TypedStruct {
             annotations,
             package,
@@ -219,17 +219,7 @@ impl TypeResolver {
             );
         }
 
-        Result::Ok(TypedStruct {
-            annotations,
-            package,
-            name,
-            type_params,
-            initializers,
-            stored_properties,
-            computed_properties,
-            member_functions,
-            static_function,
-        })
+        Result::Ok(())
     }
 
     pub fn source_set(&mut self, s: TypedSourceSet) -> Result<TypedSourceSet> {
