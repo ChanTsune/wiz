@@ -171,10 +171,10 @@ impl TypeResolver {
 
     pub fn preload_struct(&mut self, s: TypedStruct) -> Result<()> {
         let TypedStruct {
-            annotations:_,
-            package:_,
+            annotations: _,
+            package: _,
             name,
-            type_params:_,
+            type_params: _,
             initializers,
             stored_properties,
             computed_properties,
@@ -195,8 +195,7 @@ impl TypeResolver {
                 "Struct {:?} not exist. Maybe before preload",
                 name
             )))?;
-            rs.stored_properties
-                .insert(stored_property.name, type_);
+            rs.stored_properties.insert(stored_property.name, type_);
         }
         for computed_property in computed_properties.into_iter() {
             let type_ = self.context.full_type_name(computed_property.type_)?;
@@ -205,18 +204,18 @@ impl TypeResolver {
                 "Struct {:?} not exist. Maybe before preload",
                 name
             )))?;
-            rs.computed_properties
-                .insert(computed_property.name, type_);
+            rs.computed_properties.insert(computed_property.name, type_);
         }
         for member_function in member_functions.into_iter() {
-            let type_ = self.context.full_type_name(member_function.type_().unwrap())?;
+            let type_ = self
+                .context
+                .full_type_name(member_function.type_().unwrap())?;
             let ns = self.context.get_current_namespace_mut()?;
             let rs = ns.get_type_mut(&name).ok_or(ResolverError::from(format!(
                 "Struct {:?} not exist. Maybe before preload",
                 name
             )))?;
-            rs.member_functions
-                .insert(member_function.name, type_);
+            rs.member_functions.insert(member_function.name, type_);
         }
         for sf in static_function.iter() {
             let ns = self.context.get_current_namespace_mut()?;
