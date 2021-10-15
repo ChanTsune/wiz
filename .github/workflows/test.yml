@@ -25,6 +25,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
+            C:/Program Files/LLVM
             ./llvm
           key: llvm-11
       - name: Install LLVM and Clang
