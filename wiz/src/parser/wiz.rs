@@ -22,11 +22,11 @@ pub fn parse_from_string(string: &str) -> Result<WizFile> {
     return match file(Span::from(string)) {
         Ok((s, f)) => {
             if !s.is_empty() {
-                return Result::Err(ParseError::ParseError(String::from(format!(
+                return Result::Err(ParseError::ParseError(format!(
                     "{:?}{}",
                     Location::from(s),
                     s
-                ))));
+                )));
             }
             Result::Ok(WizFile {
                 name: String::new(),
@@ -57,10 +57,10 @@ pub fn parse_from_file_path(path: &Path) -> Result<WizFile> {
 
 pub fn read_package_from_path(path: &Path) -> Result<SourceSet> {
     if !path.is_dir() {
-        Result::Err(ParseError::ParseError(String::from(format!(
+        Result::Err(ParseError::ParseError(format!(
             "{:?} is not package dir",
             path
-        ))))
+        )))
     } else {
         let dir = fs::read_dir(path)?;
         for item in dir.into_iter() {
