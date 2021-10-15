@@ -621,12 +621,8 @@ impl HLIR2MLIR {
                         type_,
                     })
                 } else {
-                    MLExpr::Call(MLCall {
-                        target: Box::new(MLExpr::Name(MLName {
-                            name: target.type_().into_value_type().name() + "." + &*name,
-                            type_: type_.clone(),
-                        })),
-                        args: vec![],
+                    MLExpr::Name(MLName {
+                        name: target.type_().into_value_type().name() + "::" + &*name,
                         type_,
                     })
                 }
