@@ -1764,7 +1764,11 @@ mod tests {
     #[test]
     fn test_if_expr_with_else() {
         assert_eq!(
-            expr(r"if a { } else { }"),
+            expr(r"if self.capacity <= self.length {
+            val newCapacity = if self.capacity == 0 { 4 } else { self.capacity * 2 }
+            self.ptr = realloc(self.ptr newCapacity)
+        }
+"),
             Ok((
                 "",
                 Expr::If(IfExprSyntax {
