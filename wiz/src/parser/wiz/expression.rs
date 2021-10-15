@@ -1320,7 +1320,11 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::expression::{array_expr, boolean_literal, conjunction_expr, disjunction_expr, equality_expr, expr, floating_point_literal, if_expr, indexing_suffix, integer_literal, literal_expr, name_expr, postfix_suffix, raw_string_literal, return_expr, string_literal, value_arguments};
+    use crate::parser::wiz::expression::{
+        array_expr, boolean_literal, conjunction_expr, disjunction_expr, equality_expr, expr,
+        floating_point_literal, if_expr, indexing_suffix, integer_literal, literal_expr, name_expr,
+        postfix_suffix, raw_string_literal, return_expr, string_literal, value_arguments,
+    };
     use crate::syntax::block::BlockSyntax;
     use crate::syntax::decl::{Decl, VarSyntax};
     use crate::syntax::expr::{
@@ -1784,45 +1788,63 @@ mod tests {
                         }))
                     })),
                     body: BlockSyntax {
-                        open: TokenSyntax::new("{".to_string())
-                            .with_trailing_trivia(Trivia::from(vec![TriviaPiece::Newlines(1),TriviaPiece::Spaces(12)])),
-                        body: vec![
-                            Stmt::Decl(Decl::Var(VarSyntax {
-                                annotations: None,
-                                is_mut: false,
-                                name: "newCapacity".to_string(),
-                                type_: None,
-                                value: Expr::If(IfExprSyntax {
-                                    condition: Box::new(Expr::BinOp(BinaryOperationSyntax {
-                                        left: Box::new(Expr::Name(NameExprSyntax { name_space: vec![], name: "capacity".to_string() })),
-                                        operator: TokenSyntax::new("==".to_string())
-                                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                                            .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                                        right: Box::new(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new("0".to_string()))))
+                        open: TokenSyntax::new("{".to_string()).with_trailing_trivia(Trivia::from(
+                            vec![TriviaPiece::Newlines(1), TriviaPiece::Spaces(12)]
+                        )),
+                        body: vec![Stmt::Decl(Decl::Var(VarSyntax {
+                            annotations: None,
+                            is_mut: false,
+                            name: "newCapacity".to_string(),
+                            type_: None,
+                            value: Expr::If(IfExprSyntax {
+                                condition: Box::new(Expr::BinOp(BinaryOperationSyntax {
+                                    left: Box::new(Expr::Name(NameExprSyntax {
+                                        name_space: vec![],
+                                        name: "capacity".to_string()
                                     })),
-                                    body: BlockSyntax {
-                                        open: TokenSyntax::new("{".to_string())
-                                            .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                                        body: vec![Stmt::Expr(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new("4".to_string()))))],
-                                        close: TokenSyntax::new("}".to_string()).with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                                    },
-                                    else_body: Some(BlockSyntax {
-                                        open: TokenSyntax::new("{".to_string())
-                                            .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                                        body: vec![Stmt::Expr(Expr::BinOp(BinaryOperationSyntax {
-                                            left: Box::new(Expr::Name(NameExprSyntax { name_space: vec![], name: "capacity".to_string() })),
-                                            operator: TokenSyntax::new("*".to_string())
-                                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                                                .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                                            right: Box::new(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new("2".to_string()))))
-                                        }))],
-                                        close: TokenSyntax::new("}".to_string()).with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                                    })
+                                    operator: TokenSyntax::new("==".to_string())
+                                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                                    right: Box::new(Expr::Literal(LiteralSyntax::Integer(
+                                        TokenSyntax::new("0".to_string())
+                                    )))
+                                })),
+                                body: BlockSyntax {
+                                    open: TokenSyntax::new("{".to_string())
+                                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                                    body: vec![Stmt::Expr(Expr::Literal(LiteralSyntax::Integer(
+                                        TokenSyntax::new("4".to_string())
+                                    )))],
+                                    close: TokenSyntax::new("}".to_string())
+                                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                                },
+                                else_body: Some(BlockSyntax {
+                                    open: TokenSyntax::new("{".to_string())
+                                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                                    body: vec![Stmt::Expr(Expr::BinOp(BinaryOperationSyntax {
+                                        left: Box::new(Expr::Name(NameExprSyntax {
+                                            name_space: vec![],
+                                            name: "capacity".to_string()
+                                        })),
+                                        operator: TokenSyntax::new("*".to_string())
+                                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(
+                                                1
+                                            )))
+                                            .with_trailing_trivia(Trivia::from(
+                                                TriviaPiece::Spaces(1)
+                                            )),
+                                        right: Box::new(Expr::Literal(LiteralSyntax::Integer(
+                                            TokenSyntax::new("2".to_string())
+                                        )))
+                                    }))],
+                                    close: TokenSyntax::new("}".to_string())
+                                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
                                 })
-                            }))
-                        ],
-                        close: TokenSyntax::new("}".to_string())
-                            .with_leading_trivia(Trivia::from(vec![TriviaPiece::Newlines(1), TriviaPiece::Spaces(8)]))
+                            })
+                        }))],
+                        close: TokenSyntax::new("}".to_string()).with_leading_trivia(Trivia::from(
+                            vec![TriviaPiece::Newlines(1), TriviaPiece::Spaces(8)]
+                        ))
                     },
                     else_body: None
                 })
