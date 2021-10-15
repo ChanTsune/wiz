@@ -407,7 +407,7 @@ impl TypeResolver {
             package: _,
             name,
             type_params,
-            initializers,                // TODO
+            initializers,        // TODO
             stored_properties,   // TODO
             computed_properties, // TODO
             member_functions,    // TODO
