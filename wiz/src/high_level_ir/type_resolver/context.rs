@@ -76,6 +76,10 @@ impl ResolverStruct {
         }
     }
 
+    pub(crate) fn get_instance_member_type(&self, name: &String) -> Option<&TypedType> {
+        self.stored_properties.get(name)
+    }
+
     pub fn is_generic(&self) -> bool {
         self.type_params != None
     }
@@ -312,8 +316,7 @@ impl ResolverContext {
                 let rs = ns
                     .get_type(&v.name)
                     .ok_or(ResolverError::from(format!("Can not resolve type {:?}", t)))?;
-                rs.stored_properties
-                    .get(&name)
+                rs.get_instance_member_type(&name)
                     .map(|it| it.clone())
                     .ok_or(ResolverError::from(format!("{:?} not has {:?}", t, name)))
             }
