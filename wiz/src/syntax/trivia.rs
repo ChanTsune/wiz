@@ -35,9 +35,7 @@ impl ToString for TriviaPiece {
             TriviaPiece::FormFeeds(i) => String::from('\x0c').repeat(*i as usize),
             TriviaPiece::Newlines(i) => String::from('\n').repeat(*i as usize),
             TriviaPiece::CarriageReturns(i) => String::from('\r').repeat(*i as usize),
-            TriviaPiece::CarriageReturnLineFeeds(i) => {
-                String::from("\r\n").repeat(*i as usize)
-            }
+            TriviaPiece::CarriageReturnLineFeeds(i) => String::from("\r\n").repeat(*i as usize),
             TriviaPiece::LineComment(s) => s.clone(),
             TriviaPiece::BlockComment(s) => s.clone(),
             TriviaPiece::DocLineComment(s) => s.clone(),
