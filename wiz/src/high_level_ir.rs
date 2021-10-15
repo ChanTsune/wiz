@@ -587,7 +587,7 @@ impl Ast2HLIR {
         let type_ = if else_body == None {
             TypedType::noting()
         } else {
-            block.type_().unwrap_or(TypedType::noting())
+            block.type_().unwrap_or_else(TypedType::noting)
         };
         TypedIf {
             condition: Box::new(self.expr(*condition)),
