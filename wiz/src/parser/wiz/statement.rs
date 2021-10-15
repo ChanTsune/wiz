@@ -39,7 +39,7 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(decl, |d| Stmt::Decl(d))(s)
+    map(decl, Stmt::Decl)(s)
 }
 
 pub fn expr_stmt<I>(s: I) -> IResult<I, Stmt>
@@ -59,7 +59,7 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(expr, |e| Stmt::Expr(e))(s)
+    map(expr, Stmt::Expr)(s)
 }
 
 /*
@@ -270,7 +270,7 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(alt((for_stmt, while_stmt)), |l| Stmt::Loop(l))(s)
+    map(alt((for_stmt, while_stmt)), Stmt::Loop)(s)
 }
 
 pub fn while_stmt<I>(s: I) -> IResult<I, LoopStmt>
