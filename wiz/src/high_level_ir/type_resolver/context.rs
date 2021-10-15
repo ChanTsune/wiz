@@ -272,6 +272,17 @@ impl ResolverContext {
             .ok_or(ResolverError::from(msg))
     }
 
+    pub fn get_current_namespace(&self) -> Result<&NameSpace> {
+        self.get_namespace(self.current_namespace.clone())
+    }
+
+    fn get_namespace(&self, ns: Vec<String>) -> Result<&NameSpace> {
+        let msg = format!("NameSpace {:?} not exist", ns);
+        self.name_space
+            .get_child(ns)
+            .ok_or(ResolverError::from(msg))
+    }
+
     pub fn get_current_type(&self) -> Option<TypedType> {
         self.current_type.clone()
     }
