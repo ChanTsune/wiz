@@ -12,16 +12,26 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2.3.4
-      - uses: actions/cache@v2
+      - name: Cache cargo
+        uses: actions/cache@v2
         with:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            target          
+            ./wiz/target          
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Cache LLVM and Clang
+        id: cache-llvm
+        uses: actions/cache@v2
+        with:
+          path: |
+            C:/Program Files/LLVM
+            ./llvm
+          key: llvm-11
       - name: Install LLVM and Clang
         uses: KyleMayes/install-llvm-action@v1
         with:
           version: "11.0"
+          cached: ${{ steps.cache-llvm.outputs.cache-hit }}
       - name: run test
         run: cd wiz && cargo test && cargo run -- ../helloworld.wiz -o out.ll && clang out.ll
