@@ -20,9 +20,17 @@ jobs:
             ~/.cargo/git
             ./wiz/target          
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Cache LLVM and Clang
+        id: cache-llvm
+        uses: actions/cache@v2
+        with:
+          path: |
+            ./llvm
+          key: llvm-11
       - name: Install LLVM and Clang
         uses: KyleMayes/install-llvm-action@v1
         with:
           version: "11.0"
+          cached: ${{ steps.cache-llvm.outputs.cache-hit }}
       - name: run test
         run: cd wiz && cargo test && cargo run -- ../helloworld.wiz -o out.ll && clang out.ll
