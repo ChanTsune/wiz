@@ -1715,7 +1715,7 @@ mod tests {
     #[test]
     fn test_call_expr_with_label() {
         assert_eq!(
-            expr("puts(string: \"Hello, World\")"),
+            expr(r#"puts(string: "Hello, World")"#),
             Ok((
                 "",
                 Expr::Call(CallExprSyntax {
