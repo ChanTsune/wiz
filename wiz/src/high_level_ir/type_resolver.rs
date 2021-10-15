@@ -171,10 +171,10 @@ impl TypeResolver {
 
     pub fn preload_struct(&mut self, s: TypedStruct) -> Result<()> {
         let TypedStruct {
-            annotations,
-            package,
+            annotations:_,
+            package:_,
             name,
-            type_params,
+            type_params:_,
             initializers,
             stored_properties,
             computed_properties,
@@ -182,34 +182,57 @@ impl TypeResolver {
             static_function,
         } = s;
         let current_namespace = self.context.current_namespace.clone();
-        let ns = self.context.get_current_namespace_mut()?;
         let this_type = TypedType::Value(TypedValueType {
             package: Some(Package::new(current_namespace)),
             name: name.clone(),
             type_args: None,
         });
-        let rs = ns.get_type_mut(&name).ok_or(ResolverError::from(format!(
-            "Struct {:?} not exist. Maybe before preload",
-            name
-        )))?;
-
-        for sp in stored_properties.iter() {
+        self.context.set_current_type(this_type.clone());
+        for stored_property in stored_properties.into_iter() {
+            let type_ = self.context.full_type_name(stored_property.type_)?;
+            let ns = self.context.get_current_namespace_mut()?;
+            let rs = ns.get_type_mut(&name).ok_or(ResolverError::from(format!(
+                "Struct {:?} not exist. Maybe before preload",
+                name
+            )))?;
             rs.stored_properties
-                .insert(sp.name.clone(), sp.type_.clone());
+                .insert(stored_property.name, type_);
         }
-        for cp in computed_properties.iter() {
+        for computed_property in computed_properties.into_iter() {
+            let type_ = self.context.full_type_name(computed_property.type_)?;
+            let ns = self.context.get_current_namespace_mut()?;
+            let rs = ns.get_type_mut(&name).ok_or(ResolverError::from(format!(
+                "Struct {:?} not exist. Maybe before preload",
+                name
+            )))?;
             rs.computed_properties
-                .insert(cp.name.clone(), cp.type_.clone());
+                .insert(computed_property.name, type_);
         }
-        for mf in member_functions.iter() {
+        for member_function in member_functions.into_iter() {
+            let type_ = self.context.full_type_name(member_function.type_().unwrap())?;
+            let ns = self.context.get_current_namespace_mut()?;
+            let rs = ns.get_type_mut(&name).ok_or(ResolverError::from(format!(
+                "Struct {:?} not exist. Maybe before preload",
+                name
+            )))?;
             rs.member_functions
-                .insert(mf.name.clone(), mf.type_().unwrap());
+                .insert(member_function.name, type_);
         }
         for sf in static_function.iter() {
+            let ns = self.context.get_current_namespace_mut()?;
+            let rs = ns.get_type_mut(&name).ok_or(ResolverError::from(format!(
+                "Struct {:?} not exist. Maybe before preload",
+                name
+            )))?;
             rs.static_functions
                 .insert(sf.name.clone(), sf.type_().unwrap());
         }
         for ini in initializers.iter() {
+            let ns = self.context.get_current_namespace_mut()?;
+            let rs = ns.get_type_mut(&name).ok_or(ResolverError::from(format!(
+                "Struct {:?} not exist. Maybe before preload",
+                name
+            )))?;
             rs.static_functions.insert(
                 String::from("init"),
                 TypedType::Function(Box::new(TypedFunctionType {

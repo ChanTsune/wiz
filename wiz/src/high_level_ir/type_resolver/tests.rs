@@ -692,7 +692,13 @@ fn test_struct_member_function_call() {
                                 name: "getA".to_string(),
                                 is_safe: false,
                                 type_: Some(TypedType::Function(Box::new(TypedFunctionType {
-                                    arguments: vec![TypedArgDef::RefSelf(None)],
+                                    arguments: vec![TypedArgDef::RefSelf(Some(TypedType::Value(
+                                        TypedValueType {
+                                            package: Some(Package::new(vec![String::from("test")])),
+                                            name: "A".to_string(),
+                                            type_args: None
+                                        }
+                                    )))],
                                     return_type: TypedType::int64()
                                 })))
                             })),
