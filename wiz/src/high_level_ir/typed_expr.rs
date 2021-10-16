@@ -128,7 +128,7 @@ pub struct TypedPostfixUnaryOp {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum TypedPostfixUnaryOperator {
-    Unwrap
+    Unwrap,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
