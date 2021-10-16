@@ -3,10 +3,7 @@ use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct,
     TypedValueArgDef, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{
-    TypedBinOp, TypedBinaryOperator, TypedCall, TypedExpr, TypedIf, TypedInstanceMember,
-    TypedLiteral, TypedName, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
-};
+use crate::high_level_ir::typed_expr::{TypedBinOp, TypedBinaryOperator, TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp, TypedCallArg};
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{
     TypedAssignmentAndOperator, TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt,
@@ -607,50 +604,66 @@ impl HLIR2MLIR {
             is_safe,
             type_,
         } = m;
-        match target.type_().unwrap() {
-            TypedType::Value(_) => {
-                let target = self.expr(*target);
-                let type_ = self.type_(type_.unwrap());
-                let is_stored = self
-                    .context
-                    .struct_has_field(&target.type_().into_value_type(), &name);
-                if is_stored {
-                    MLExpr::Member(MLMember {
-                        target: Box::new(target),
-                        name,
-                        type_,
-                    })
-                } else {
-                    MLExpr::Name(MLName {
-                        name: target.type_().into_value_type().name() + "::" + &*name,
-                        type_,
-                    })
-                }
-            }
-            TypedType::Function(f) => {
-                todo!("Member function access => {:?}", f)
-            }
-            TypedType::Type(t) => {
-                let type_ = self.type_(type_.unwrap());
-                MLExpr::Name(MLName {
-                    name: self.package_name_mangling(&t.package, &*t.name) + "::" + &*name,
-                    type_,
-                })
-            }
-            TypedType::Reference(t) => {
-                todo!()
-            }
-        }
-        // else field as function call etc...
+        let target = self.expr(*target);
+        let type_ = self.type_(type_.unwrap());
+        MLExpr::Member(MLMember {
+            target: Box::new(target),
+            name,
+            type_,
+        })
     }
 
     pub fn call(&mut self, c: TypedCall) -> MLCall {
         let TypedCall {
             target,
-            args,
+            mut args,
             type_,
         } = c;
-        let target = match self.expr(*target) {
+        let target = match *target {
+            TypedExpr::Member(m) => {
+                let TypedInstanceMember {
+                    target, name, is_safe, type_
+                } = m;
+                match target.type_().unwrap() {
+                    TypedType::Value(v) => {
+                        let target_type = self.value_type(v);
+                        let is_stored = self
+                            .context
+                            .struct_has_field(&target_type, &name);
+                        if is_stored {
+                            let target = self.expr(*target);
+                            let type_ = self.type_(type_.unwrap());
+                            MLExpr::Member(MLMember {
+                                target: Box::new(target),
+                                name,
+                                type_,
+                            })
+                        } else {
+                            args.insert(0, TypedCallArg {
+                                label: None,
+                                arg: target,
+                                is_vararg: false
+                            });
+                            MLExpr::Name(MLName {
+                                name: target_type.name() + "::" + &*name,
+                                type_: MLType::Value(target_type),
+                            })
+                        }
+                    }
+                    TypedType::Function(_) => {todo!()}
+                    TypedType::Type(t) => {
+                        let type_ = self.type_(type_.unwrap());
+                        MLExpr::Name(MLName {
+                            name: self.package_name_mangling(&t.package, &*t.name) + "::" + &*name,
+                            type_,
+                        })
+                    }
+                    TypedType::Reference(v) => {todo!()}
+                }
+            }
+            t => self.expr(t)
+        };
+        let target = match target {
             MLExpr::Name(MLName { name, type_ }) => {
                 let fun_arg_label_type_mangled_name =
                     if self.context.declaration_has_annotation(&name, "no_mangle") {
