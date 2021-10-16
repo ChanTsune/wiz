@@ -3,7 +3,11 @@ use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct,
     TypedValueArgDef, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{TypedBinOp, TypedBinaryOperator, TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp, TypedCallArg};
+use crate::high_level_ir::typed_expr::{
+    TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
+    TypedInstanceMember, TypedLiteral, TypedName, TypedReturn, TypedSubscript, TypedTypeCast,
+    TypedUnaryOp,
+};
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{
     TypedAssignmentAndOperator, TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt,
@@ -622,14 +626,15 @@ impl HLIR2MLIR {
         let target = match *target {
             TypedExpr::Member(m) => {
                 let TypedInstanceMember {
-                    target, name, is_safe, type_
+                    target,
+                    name,
+                    is_safe,
+                    type_,
                 } = m;
                 match target.type_().unwrap() {
                     TypedType::Value(v) => {
                         let target_type = self.value_type(v);
-                        let is_stored = self
-                            .context
-                            .struct_has_field(&target_type, &name);
+                        let is_stored = self.context.struct_has_field(&target_type, &name);
                         if is_stored {
                             let target = self.expr(*target);
                             let type_ = self.type_(type_.unwrap());
@@ -639,18 +644,23 @@ impl HLIR2MLIR {
                                 type_,
                             })
                         } else {
-                            args.insert(0, TypedCallArg {
-                                label: None,
-                                arg: target,
-                                is_vararg: false
-                            });
+                            args.insert(
+                                0,
+                                TypedCallArg {
+                                    label: None,
+                                    arg: target,
+                                    is_vararg: false,
+                                },
+                            );
                             MLExpr::Name(MLName {
                                 name: target_type.name() + "::" + &*name,
                                 type_: MLType::Value(target_type),
                             })
                         }
                     }
-                    TypedType::Function(_) => {todo!()}
+                    TypedType::Function(_) => {
+                        todo!()
+                    }
                     TypedType::Type(t) => {
                         let type_ = self.type_(type_.unwrap());
                         MLExpr::Name(MLName {
@@ -658,10 +668,12 @@ impl HLIR2MLIR {
                             type_,
                         })
                     }
-                    TypedType::Reference(v) => {todo!()}
+                    TypedType::Reference(v) => {
+                        todo!()
+                    }
                 }
             }
-            t => self.expr(t)
+            t => self.expr(t),
         };
         let target = match target {
             MLExpr::Name(MLName { name, type_ }) => {
