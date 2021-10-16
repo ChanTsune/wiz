@@ -3,11 +3,7 @@ use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedFun, TypedFunBody, TypedInitializer,
     TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedUse, TypedValueArgDef, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{
-    TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
-    TypedInstanceMember, TypedLambda, TypedLiteral, TypedName, TypedPostfixUnaryOp,
-    TypedPrefixUnaryOp, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
-};
+use crate::high_level_ir::typed_expr::{TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLambda, TypedLiteral, TypedName, TypedPostfixUnaryOp, TypedPrefixUnaryOp, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp, TypedPrefixUnaryOperator, TypedPostfixUnaryOperator};
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentAndOperator, TypedAssignmentStmt,
@@ -496,7 +492,14 @@ impl Ast2HLIR {
         let target = self.expr(*target);
         TypedPrefixUnaryOp {
             target: Box::new(target),
-            kind: operator.token,
+            operator: match &*operator.token {
+                "+" => TypedPrefixUnaryOperator::Positive,
+                "-" => TypedPrefixUnaryOperator::Negative,
+                "*" => TypedPrefixUnaryOperator::Dereference,
+                "&" => TypedPrefixUnaryOperator::Reference,
+                "!" => TypedPrefixUnaryOperator::Not,
+                _ => panic!(),
+            },
             type_: None,
         }
     }
@@ -509,7 +512,10 @@ impl Ast2HLIR {
         let target = self.expr(*target);
         TypedPostfixUnaryOp {
             target: Box::new(target),
-            kind: operator.token,
+            operator: match &*operator.token {
+                "!!" => TypedPostfixUnaryOperator::Unwrap,
+                _ => panic!()
+            },
             type_: None,
         }
     }

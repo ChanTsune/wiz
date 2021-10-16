@@ -583,7 +583,7 @@ impl TypeResolver {
     pub fn typed_prefix_unary_op(&mut self, u: TypedPrefixUnaryOp) -> Result<TypedPrefixUnaryOp> {
         let target = Box::new(self.expr(*u.target)?);
         Result::Ok(TypedPrefixUnaryOp {
-            kind: u.kind,
+            operator: u.operator,
             type_: target.type_(),
             target,
         })
@@ -595,7 +595,7 @@ impl TypeResolver {
     ) -> Result<TypedPostfixUnaryOp> {
         let target = Box::new(self.expr(*u.target)?);
         Result::Ok(TypedPostfixUnaryOp {
-            kind: u.kind,
+            operator: u.operator,
             type_: target.type_(),
             target,
         })

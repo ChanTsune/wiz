@@ -106,15 +106,29 @@ impl TypedUnaryOp {
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypedPrefixUnaryOp {
     pub(crate) target: Box<TypedExpr>,
-    pub(crate) kind: String,
+    pub(crate) operator: TypedPrefixUnaryOperator,
     pub(crate) type_: Option<TypedType>,
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub enum TypedPrefixUnaryOperator {
+    Negative,
+    Positive,
+    Not,
+    Reference,
+    Dereference,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypedPostfixUnaryOp {
     pub(crate) target: Box<TypedExpr>,
-    pub(crate) kind: String,
+    pub(crate) operator: TypedPostfixUnaryOperator,
     pub(crate) type_: Option<TypedType>,
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub enum TypedPostfixUnaryOperator {
+    Unwrap
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
