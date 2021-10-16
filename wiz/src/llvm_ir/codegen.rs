@@ -555,7 +555,9 @@ impl<'ctx> CodeGen<'ctx> {
     }
 
     pub fn type_cast(&mut self, t: MLTypeCast) -> AnyValueEnum<'ctx> {
+        let target_type = t.target.type_().into_value_type();
         let target = self.expr(*t.target);
+        let target = self.load_if_pointer_value(target, &target_type);
         match target {
             // AnyValueEnum::ArrayValue(_) => {}
             AnyValueEnum::IntValue(i) => {
