@@ -55,6 +55,70 @@ impl ToString for Package {
 }
 
 impl TypedValueType {
+    fn builtin(name: &str) -> Self {
+        Self {
+            package: Some(Package::global()),
+            name: String::from(name),
+            type_args: None,
+        }
+    }
+
+    pub(crate) fn noting() -> Self {
+        Self::builtin("Noting")
+    }
+
+    pub(crate) fn unit() -> Self {
+        Self::builtin("Unit")
+    }
+
+    pub(crate) fn int8() -> Self {
+        Self::builtin("Int8")
+    }
+
+    pub(crate) fn int16() -> Self {
+        Self::builtin("Int16")
+    }
+
+    pub(crate) fn int32() -> Self {
+        Self::builtin("Int32")
+    }
+
+    pub(crate) fn int64() -> Self {
+        Self::builtin("Int64")
+    }
+
+    pub(crate) fn uint8() -> Self {
+        Self::builtin("UInt8")
+    }
+
+    pub(crate) fn uint16() -> Self {
+        Self::builtin("UInt16")
+    }
+
+    pub(crate) fn uint32() -> Self {
+        Self::builtin("UInt32")
+    }
+
+    pub(crate) fn uint64() -> Self {
+        Self::builtin("UInt64")
+    }
+
+    pub(crate) fn float() -> Self {
+        Self::builtin("Float")
+    }
+
+    pub(crate) fn double() -> Self {
+        Self::builtin("Double")
+    }
+
+    pub(crate) fn bool() -> Self {
+        Self::builtin("Bool")
+    }
+
+    pub(crate) fn string() -> Self {
+        Self::builtin("String")
+    }
+
     pub(crate) fn is_unsafe_pointer(&self) -> bool {
         self.name == UNSAFE_POINTER
             && if let Some(pkg) = &self.package {
@@ -92,72 +156,64 @@ impl ToString for TypedValueType {
 }
 
 impl TypedType {
-    fn builtin(name: &str) -> TypedType {
-        TypedType::Value(TypedValueType {
-            package: Some(Package::global()),
-            name: String::from(name),
-            type_args: None,
-        })
+    pub fn noting() -> Self {
+        Self::Value(TypedValueType::noting())
     }
 
-    pub fn noting() -> TypedType {
-        Self::builtin("Noting")
+    pub fn unit() -> Self {
+        Self::Value(TypedValueType::unit())
     }
 
-    pub fn unit() -> TypedType {
-        Self::builtin("Unit")
+    pub fn int8() -> Self {
+        Self::Value(TypedValueType::int8())
     }
 
-    pub fn int8() -> TypedType {
-        Self::builtin("Int8")
+    pub fn int16() -> Self {
+        Self::Value(TypedValueType::int16())
     }
 
-    pub fn int16() -> TypedType {
-        Self::builtin("Int16")
+    pub fn int32() -> Self {
+        Self::Value(TypedValueType::int32())
     }
 
-    pub fn int32() -> TypedType {
-        Self::builtin("Int32")
+    pub fn int64() -> Self {
+        Self::Value(TypedValueType::int64())
     }
 
-    pub fn int64() -> TypedType {
-        Self::builtin("Int64")
+    pub fn uint8() -> Self {
+        Self::Value(TypedValueType::uint8())
     }
 
-    pub fn uint8() -> TypedType {
-        Self::builtin("UInt8")
+    pub fn uint16() -> Self {
+        Self::Value(TypedValueType::uint16())
     }
 
-    pub fn uint16() -> TypedType {
-        Self::builtin("UInt16")
+    pub fn uint32() -> Self {
+        Self::Value(TypedValueType::uint32())
     }
 
-    pub fn uint32() -> TypedType {
-        Self::builtin("UInt32")
+    pub fn uint64() -> Self {
+        Self::Value(TypedValueType::uint64())
     }
 
-    pub fn uint64() -> TypedType {
-        Self::builtin("UInt64")
+    pub fn float() -> Self {
+        Self::Value(TypedValueType::float())
     }
 
-    pub fn float() -> TypedType {
-        Self::builtin("Float")
+    pub fn double() -> Self {
+        Self::Value(TypedValueType::double())
     }
 
-    pub fn double() -> TypedType {
-        Self::builtin("Double")
+    pub fn bool() -> Self {
+        Self::Value(TypedValueType::bool())
     }
 
-    pub fn bool() -> TypedType {
-        Self::builtin("Bool")
+    pub fn string() -> Self {
+        Self::Value(TypedValueType::string())
     }
 
-    pub fn string() -> TypedType {
-        Self::builtin("String")
-    }
-
-    pub fn unsafe_pointer(typ: TypedType) -> TypedType {
-        TypedType::Value(TypedValueType {
+    pub fn unsafe_pointer(typ: TypedType) -> Self {
+        Self::Value(TypedValueType {
             package: Some(Package::global()),
             name: UNSAFE_POINTER.to_string(),
             type_args: Some(vec![typ]),

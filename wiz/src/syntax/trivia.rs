@@ -24,27 +24,22 @@ pub enum TriviaPiece {
     DocLineComment(String),
     /// A documentation block comment, starting with '/**' and ending with '*/'.
     DocBlockComment(String),
-    /// Any skipped garbage text.
-    GarbageText(String),
 }
 
 impl ToString for TriviaPiece {
     fn to_string(&self) -> String {
         match self {
-            TriviaPiece::Spaces(i) => String::from(' ').repeat(i.clone() as usize),
-            TriviaPiece::Tabs(i) => String::from('\t').repeat(i.clone() as usize),
-            TriviaPiece::VerticalTabs(i) => String::from('\x0b').repeat(i.clone() as usize),
-            TriviaPiece::FormFeeds(i) => String::from('\x0c').repeat(i.clone() as usize),
-            TriviaPiece::Newlines(i) => String::from('\n').repeat(i.clone() as usize),
-            TriviaPiece::CarriageReturns(i) => String::from('\r').repeat(i.clone() as usize),
-            TriviaPiece::CarriageReturnLineFeeds(i) => {
-                String::from("\r\n").repeat(i.clone() as usize)
-            }
+            TriviaPiece::Spaces(i) => String::from(' ').repeat(*i as usize),
+            TriviaPiece::Tabs(i) => String::from('\t').repeat(*i as usize),
+            TriviaPiece::VerticalTabs(i) => String::from('\x0b').repeat(*i as usize),
+            TriviaPiece::FormFeeds(i) => String::from('\x0c').repeat(*i as usize),
+            TriviaPiece::Newlines(i) => String::from('\n').repeat(*i as usize),
+            TriviaPiece::CarriageReturns(i) => String::from('\r').repeat(*i as usize),
+            TriviaPiece::CarriageReturnLineFeeds(i) => String::from("\r\n").repeat(*i as usize),
             TriviaPiece::LineComment(s) => s.clone(),
             TriviaPiece::BlockComment(s) => s.clone(),
             TriviaPiece::DocLineComment(s) => s.clone(),
             TriviaPiece::DocBlockComment(s) => s.clone(),
-            TriviaPiece::GarbageText(s) => s.clone(),
         }
     }
 }

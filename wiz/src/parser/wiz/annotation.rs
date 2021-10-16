@@ -97,9 +97,9 @@ mod tests {
                     open: TokenSyntax::new("#[".to_string()),
                     annotations: vec![Annotation {
                         name: TokenSyntax::new("no_mangle".to_string()),
-                        trailing_comma: TokenSyntax::new("".to_string())
+                        trailing_comma: TokenSyntax::new("".to_string()),
                     }],
-                    close: TokenSyntax::new("]".to_string())
+                    close: TokenSyntax::new("]".to_string()),
                 }
             ))
         );

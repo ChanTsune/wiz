@@ -78,6 +78,13 @@ where
     tag("init")(s)
 }
 
+pub fn deinit_keyword<I>(s: I) -> IResult<I, I>
+where
+    I: InputTake + Compare<&'static str>,
+{
+    tag("deinit")(s)
+}
+
 pub fn use_keyword<I>(s: I) -> IResult<I, I>
 where
     I: InputTake + Compare<&'static str>,
@@ -130,9 +137,10 @@ where
 #[cfg(test)]
 mod tests {
     use crate::parser::wiz::keywords::{
-        as_keyword, else_keyword, extern_keyword, false_keyword, for_keyword, fun_keyword,
-        if_keyword, in_keyword, init_keyword, return_keyword, self_keyword, struct_keyword,
-        true_keyword, use_keyword, val_keyword, var_keyword, where_keyword, while_keyword,
+        as_keyword, deinit_keyword, else_keyword, extern_keyword, false_keyword, for_keyword,
+        fun_keyword, if_keyword, in_keyword, init_keyword, return_keyword, self_keyword,
+        struct_keyword, true_keyword, use_keyword, val_keyword, var_keyword, where_keyword,
+        while_keyword,
     };
 
     #[test]
@@ -188,6 +196,11 @@ mod tests {
     #[test]
     fn test_init_keyword() {
         assert_eq!(init_keyword("init"), Ok(("", "init")))
+    }
+
+    #[test]
+    fn test_deinit_keyword() {
+        assert_eq!(deinit_keyword("deinit"), Ok(("", "deinit")))
     }
 
     #[test]

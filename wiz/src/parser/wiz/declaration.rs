@@ -2,19 +2,19 @@ use crate::parser::wiz::annotation::annotations;
 use crate::parser::wiz::character::{ampersand, comma};
 use crate::parser::wiz::expression::expr;
 use crate::parser::wiz::keywords::{
-    as_keyword, fun_keyword, init_keyword, self_keyword, struct_keyword, use_keyword, val_keyword,
-    var_keyword, where_keyword,
+    as_keyword, deinit_keyword, fun_keyword, init_keyword, self_keyword, struct_keyword,
+    use_keyword, val_keyword, var_keyword, where_keyword,
 };
 use crate::parser::wiz::lexical_structure::{
-    identifier, whitespace0, whitespace1, whitespace_without_eol0,
+    identifier, trivia_piece_line_ending, whitespace0, whitespace1, whitespace_without_eol0,
 };
 use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_parameters};
 use crate::syntax::annotation::Annotatable;
-use crate::syntax::block::Block;
+use crate::syntax::block::BlockSyntax;
 use crate::syntax::decl::{
-    Decl, FunSyntax, InitializerSyntax, MethodSyntax, PackageName, StoredPropertySyntax,
-    StructPropertySyntax, StructSyntax, UseSyntax, VarSyntax,
+    Decl, DeinitializerSyntax, FunSyntax, InitializerSyntax, MethodSyntax, PackageName,
+    StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax, VarSyntax,
 };
 use crate::syntax::expr::Expr;
 use crate::syntax::fun::arg_def::{ArgDef, SelfArgDefSyntax, ValueArgDef};
@@ -24,7 +24,7 @@ use crate::syntax::type_name::{TypeName, TypeParam};
 use crate::syntax::Syntax;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::{char, newline};
+use nom::character::complete::char;
 use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
@@ -158,7 +158,11 @@ where
         opt(tuple((
             struct_property,
             whitespace_without_eol0,
-            many0(tuple((newline, whitespace0, struct_property))),
+            many0(tuple((
+                trivia_piece_line_ending,
+                whitespace0,
+                struct_property,
+            ))),
             whitespace0,
         ))),
         |o| match o {
@@ -174,6 +178,8 @@ where
 
 // <struct_property> ::= <stored_property>
 //                     | <initializer>
+//                     | <deinitializer>
+//                     | <member_function>
 pub fn struct_property<I>(s: I) -> IResult<I, StructPropertySyntax>
 where
     I: Slice<RangeFrom<usize>>
@@ -191,7 +197,7 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    alt((stored_property, initializer, member_function))(s)
+    alt((stored_property, initializer, deinitializer, member_function))(s)
 }
 
 // <stored_property> ::= <mutable_stored_property> | <immutable_stored_property>
@@ -315,7 +321,42 @@ where
             whitespace0,
             function_body,
         )),
-        |(_, _, args, _, body)| StructPropertySyntax::Init(InitializerSyntax { args, body }),
+        |(init, ws, args, _, body): (I, _, _, _, _)| {
+            StructPropertySyntax::Init(InitializerSyntax {
+                init_keyword: TokenSyntax::new(init.to_string()).with_trailing_trivia(ws),
+                args,
+                body,
+            })
+        },
+    )(s)
+}
+
+// <initializer> =:: "deinit" <function_body>
+pub fn deinitializer<I>(s: I) -> IResult<I, StructPropertySyntax>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
+    map(
+        tuple((deinit_keyword, whitespace0, function_body)),
+        |(deinit, ws, body): (I, _, _)| {
+            StructPropertySyntax::Deinit(DeinitializerSyntax {
+                deinit_keyword: TokenSyntax::new(deinit.to_string()).with_trailing_trivia(ws),
+                body,
+            })
+        },
     )(s)
 }
 
@@ -587,7 +628,7 @@ where
     ))(s)
 }
 
-pub fn block<I>(s: I) -> IResult<I, Block>
+pub fn block<I>(s: I) -> IResult<I, BlockSyntax>
 where
     I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
@@ -606,7 +647,11 @@ where
 {
     map(
         tuple((char('{'), whitespace0, stmts, whitespace0, char('}'))),
-        |(_, _, stmts, _, _)| Block { body: stmts },
+        |(open, ows, stmts, cws, close)| BlockSyntax {
+            open: TokenSyntax::new(open.to_string()).with_trailing_trivia(ows),
+            body: stmts,
+            close: TokenSyntax::new(close.to_string()).with_leading_trivia(cws),
+        },
     )(s)
 }
 
@@ -821,7 +866,7 @@ mod tests {
         block, function_body, function_decl, member_function, package_name, stored_property,
         struct_properties, struct_syntax, type_constraint, type_constraints, use_syntax, var_decl,
     };
-    use crate::syntax::block::Block;
+    use crate::syntax::block::BlockSyntax;
     use crate::syntax::decl::{
         Decl, FunSyntax, MethodSyntax, PackageName, StoredPropertySyntax, StructPropertySyntax,
         StructSyntax, UseSyntax, VarSyntax,
@@ -832,7 +877,9 @@ mod tests {
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::stmt::Stmt;
     use crate::syntax::token::TokenSyntax;
+    use crate::syntax::trivia::{Trivia, TriviaPiece};
     use crate::syntax::type_name::{SimpleTypeName, TypeName, TypeParam};
+    use crate::syntax::Syntax;
 
     #[test]
     fn test_struct_properties() {
@@ -938,7 +985,11 @@ mod tests {
                     args: vec![],
                     return_type: None,
                     body: Some(FunBody::Block {
-                        block: Block { body: vec![] }
+                        block: BlockSyntax {
+                            open: TokenSyntax::new("{".to_string()),
+                            body: vec![],
+                            close: TokenSyntax::new("}".to_string())
+                        }
                     }),
                 })
             ))
@@ -947,7 +998,17 @@ mod tests {
 
     #[test]
     fn test_empty_block() {
-        assert_eq!(block("{}"), Ok(("", Block { body: vec![] })))
+        assert_eq!(
+            block("{}"),
+            Ok((
+                "",
+                BlockSyntax {
+                    open: TokenSyntax::new("{".to_string()),
+                    body: vec![],
+                    close: TokenSyntax::new("}".to_string())
+                }
+            ))
+        )
     }
 
     #[test]
@@ -956,10 +1017,12 @@ mod tests {
             block("{1}"),
             Ok((
                 "",
-                Block {
+                BlockSyntax {
+                    open: TokenSyntax::new("{".to_string()),
                     body: vec![Stmt::Expr(Expr::Literal(LiteralSyntax::Integer(
                         TokenSyntax::new("1".to_string())
-                    )))]
+                    )))],
+                    close: TokenSyntax::new("}".to_string())
                 }
             ))
         )
@@ -971,16 +1034,18 @@ mod tests {
             block("{1+1}"),
             Ok((
                 "",
-                Block {
+                BlockSyntax {
+                    open: TokenSyntax::new("{".to_string()),
                     body: vec![Stmt::Expr(Expr::BinOp(BinaryOperationSyntax {
                         left: Box::new(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
                             "1".to_string()
                         )))),
-                        kind: TokenSyntax::new("+".to_string()),
+                        operator: TokenSyntax::new("+".to_string()),
                         right: Box::new(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
                             "1".to_string()
                         )))),
-                    }))]
+                    }))],
+                    close: TokenSyntax::new("}".to_string())
                 }
             ))
         )
@@ -996,10 +1061,15 @@ mod tests {
             ),
             Ok((
                 "",
-                Block {
+                BlockSyntax {
+                    open: TokenSyntax::new("{".to_string()).with_trailing_trivia(Trivia::from(
+                        vec![TriviaPiece::Newlines(1), TriviaPiece::Spaces(4)]
+                    )),
                     body: vec![Stmt::Expr(Expr::Literal(LiteralSyntax::Integer(
                         TokenSyntax::new("1".to_string())
-                    )))]
+                    )))],
+                    close: TokenSyntax::new("}".to_string())
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Newlines(1)))
                 }
             ))
         )
@@ -1012,7 +1082,11 @@ mod tests {
             Ok((
                 "",
                 FunBody::Block {
-                    block: Block { body: vec![] }
+                    block: BlockSyntax {
+                        open: TokenSyntax::new("{".to_string()),
+                        body: vec![],
+                        close: TokenSyntax::new("}".to_string())
+                    }
                 }
             ))
         )
@@ -1048,7 +1122,11 @@ mod tests {
                     arg_defs: vec![],
                     return_type: None,
                     body: Some(FunBody::Block {
-                        block: Block { body: vec![] }
+                        block: BlockSyntax {
+                            open: TokenSyntax::new("{".to_string()),
+                            body: vec![],
+                            close: TokenSyntax::new("}".to_string())
+                        }
                     }),
                 })
             ))

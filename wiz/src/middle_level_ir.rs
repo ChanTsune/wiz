@@ -1,22 +1,24 @@
-use crate::ext::string::StringExt;
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct,
     TypedValueArgDef, TypedVar,
 };
 use crate::high_level_ir::typed_expr::{
-    TypedBinOp, TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName,
-    TypedReturn, TypedSubscript, TypedTypeCast,
+    TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
+    TypedInstanceMember, TypedLiteral, TypedName, TypedReturn, TypedSubscript, TypedTypeCast,
+    TypedUnaryOp,
 };
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
-use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
+use crate::high_level_ir::typed_stmt::{
+    TypedAssignmentAndOperator, TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt,
+};
 use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
 use crate::middle_level_ir::ml_decl::{
     MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar,
 };
 use crate::middle_level_ir::ml_expr::{
     MLBinOp, MLBinOpKind, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLMember, MLName, MLReturn,
-    MLSubscript, MLTypeCast,
+    MLSubscript, MLTypeCast, MLUnaryOp, MLUnaryOpKind,
 };
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
@@ -256,7 +258,13 @@ impl HLIR2MLIR {
                 let target = self.expr(a.target.clone());
                 let value = TypedExpr::BinOp(TypedBinOp {
                     left: Box::new(a.target.clone()),
-                    kind: a.operator.remove_last(),
+                    operator: match a.operator {
+                        TypedAssignmentAndOperator::Add => TypedBinaryOperator::Add,
+                        TypedAssignmentAndOperator::Sub => TypedBinaryOperator::Sub,
+                        TypedAssignmentAndOperator::Mul => TypedBinaryOperator::Mul,
+                        TypedAssignmentAndOperator::Div => TypedBinaryOperator::Div,
+                        TypedAssignmentAndOperator::Mod => TypedBinaryOperator::Mod,
+                    },
                     right: Box::new(a.value),
                     type_: a.target.type_(),
                 });
@@ -348,7 +356,7 @@ impl HLIR2MLIR {
             package,
             name,
             type_params,
-            init,
+            initializers,
             stored_properties,
             computed_properties,
             member_functions,
@@ -369,7 +377,7 @@ impl HLIR2MLIR {
         let value_type = MLValueType::Struct(struct_.name.clone());
         self.context.add_struct(value_type.clone(), struct_.clone());
 
-        let init: Vec<MLFun> = init
+        let init: Vec<MLFun> = initializers
             .into_iter()
             .map(|i| {
                 let type_ = MLType::Value(value_type.clone());
@@ -445,7 +453,7 @@ impl HLIR2MLIR {
             TypedExpr::Name(name) => MLExpr::Name(self.name(name)),
             TypedExpr::Literal(l) => MLExpr::Literal(self.literal(l)),
             TypedExpr::BinOp(b) => MLExpr::PrimitiveBinOp(self.binop(b)),
-            TypedExpr::UnaryOp(u) => todo!(),
+            TypedExpr::UnaryOp(u) => MLExpr::PrimitiveUnaryOp(self.unary_op(u)),
             TypedExpr::Subscript(s) => self.subscript(s),
             TypedExpr::Member(m) => self.member(m),
             TypedExpr::Array(a) => todo!(),
@@ -504,31 +512,53 @@ impl HLIR2MLIR {
     pub fn binop(&mut self, b: TypedBinOp) -> MLBinOp {
         let TypedBinOp {
             left,
-            kind,
+            operator: kind,
             right,
             type_,
         } = b;
         MLBinOp {
             left: Box::new(self.expr(*left)),
-            kind: match &*kind {
-                "+" => MLBinOpKind::Plus,
-                "-" => MLBinOpKind::Minus,
-                "*" => MLBinOpKind::Mul,
-                "/" => MLBinOpKind::Div,
-                "%" => MLBinOpKind::Mod,
-                "==" => MLBinOpKind::Equal,
-                ">=" => MLBinOpKind::GrateThanEqual,
-                ">" => MLBinOpKind::GrateThan,
-                "<=" => MLBinOpKind::LessThanEqual,
-                "<" => MLBinOpKind::LessThan,
-                "!=" => MLBinOpKind::NotEqual,
-                k => {
-                    eprintln!("Unknown operator '{:?}'", k);
-                    exit(-1)
+            kind: match kind {
+                TypedBinaryOperator::Add => MLBinOpKind::Plus,
+                TypedBinaryOperator::Sub => MLBinOpKind::Minus,
+                TypedBinaryOperator::Mul => MLBinOpKind::Mul,
+                TypedBinaryOperator::Div => MLBinOpKind::Div,
+                TypedBinaryOperator::Mod => MLBinOpKind::Mod,
+                TypedBinaryOperator::Equal => MLBinOpKind::Equal,
+                TypedBinaryOperator::GrateThanEqual => MLBinOpKind::GrateThanEqual,
+                TypedBinaryOperator::GrateThan => MLBinOpKind::GrateThan,
+                TypedBinaryOperator::LessThanEqual => MLBinOpKind::LessThanEqual,
+                TypedBinaryOperator::LessThan => MLBinOpKind::LessThan,
+                TypedBinaryOperator::NotEqual => MLBinOpKind::NotEqual,
+                TypedBinaryOperator::InfixFunctionCall(call) => {
+                    todo!("infix function call {:?}", call)
                 }
             },
             right: Box::new(self.expr(*right)),
             type_: self.type_(type_.unwrap()).into_value_type(),
+        }
+    }
+
+    pub fn unary_op(&mut self, u: TypedUnaryOp) -> MLUnaryOp {
+        match u {
+            TypedUnaryOp::Prefix(p) => {
+                let target = self.expr(*p.target);
+                MLUnaryOp {
+                    kind: match &*p.kind {
+                        "+" => MLUnaryOpKind::Positive,
+                        "-" => MLUnaryOpKind::Negative,
+                        "*" => MLUnaryOpKind::DeRef,
+                        "&" => MLUnaryOpKind::Ref,
+                        "!" => MLUnaryOpKind::Not,
+                        _ => panic!(),
+                    },
+                    type_: target.type_().into_value_type(),
+                    target: Box::new(target),
+                }
+            }
+            TypedUnaryOp::Postfix(p) => {
+                todo!()
+            }
         }
     }
 
@@ -578,54 +608,74 @@ impl HLIR2MLIR {
             is_safe,
             type_,
         } = m;
-        match target.type_().unwrap() {
-            TypedType::Value(_) => {
-                let target = self.expr(*target);
-                let type_ = self.type_(type_.unwrap());
-                let is_stored = self
-                    .context
-                    .struct_has_field(&target.type_().into_value_type(), &name);
-                if is_stored {
-                    MLExpr::Member(MLMember {
-                        target: Box::new(target),
-                        name,
-                        type_,
-                    })
-                } else {
-                    MLExpr::Call(MLCall {
-                        target: Box::new(MLExpr::Name(MLName {
-                            name: target.type_().into_value_type().name() + "." + &*name,
-                            type_: type_.clone(),
-                        })),
-                        args: vec![],
-                        type_,
-                    })
-                }
-            }
-            TypedType::Function(f) => {
-                todo!("Member function access => {:?}", f)
-            }
-            TypedType::Type(t) => {
-                let type_ = self.type_(type_.unwrap());
-                MLExpr::Name(MLName {
-                    name: self.package_name_mangling(&t.package, &*t.name) + "::" + &*name,
-                    type_,
-                })
-            }
-            TypedType::Reference(t) => {
-                todo!()
-            }
-        }
-        // else field as function call etc...
+        let target = self.expr(*target);
+        let type_ = self.type_(type_.unwrap());
+        MLExpr::Member(MLMember {
+            target: Box::new(target),
+            name,
+            type_,
+        })
     }
 
     pub fn call(&mut self, c: TypedCall) -> MLCall {
         let TypedCall {
             target,
-            args,
+            mut args,
             type_,
         } = c;
-        let target = match self.expr(*target) {
+        let target = match *target {
+            TypedExpr::Member(m) => {
+                let TypedInstanceMember {
+                    target,
+                    name,
+                    is_safe,
+                    type_,
+                } = m;
+                match target.type_().unwrap() {
+                    TypedType::Value(v) => {
+                        let target_type = self.value_type(v);
+                        let is_stored = self.context.struct_has_field(&target_type, &name);
+                        if is_stored {
+                            let target = self.expr(*target);
+                            let type_ = self.type_(type_.unwrap());
+                            MLExpr::Member(MLMember {
+                                target: Box::new(target),
+                                name,
+                                type_,
+                            })
+                        } else {
+                            args.insert(
+                                0,
+                                TypedCallArg {
+                                    label: None,
+                                    arg: target,
+                                    is_vararg: false,
+                                },
+                            );
+                            MLExpr::Name(MLName {
+                                name: target_type.name() + "::" + &*name,
+                                type_: MLType::Value(target_type),
+                            })
+                        }
+                    }
+                    TypedType::Function(_) => {
+                        todo!()
+                    }
+                    TypedType::Type(t) => {
+                        let type_ = self.type_(type_.unwrap());
+                        MLExpr::Name(MLName {
+                            name: self.package_name_mangling(&t.package, &*t.name) + "::" + &*name,
+                            type_,
+                        })
+                    }
+                    TypedType::Reference(v) => {
+                        todo!()
+                    }
+                }
+            }
+            t => self.expr(t),
+        };
+        let target = match target {
             MLExpr::Name(MLName { name, type_ }) => {
                 let fun_arg_label_type_mangled_name =
                     if self.context.declaration_has_annotation(&name, "no_mangle") {

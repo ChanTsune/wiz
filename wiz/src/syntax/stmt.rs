@@ -1,7 +1,8 @@
 use super::node::SyntaxNode;
-use crate::syntax::block::Block;
+use crate::syntax::block::BlockSyntax;
 use crate::syntax::decl::Decl;
 use crate::syntax::expr::Expr;
+use crate::syntax::token::TokenSyntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Stmt {
@@ -22,25 +23,29 @@ pub enum AssignmentStmt {
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct AssignmentSyntax {
     pub(crate) target: Expr,
+    pub(crate) operator: TokenSyntax,
     pub(crate) value: Expr,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct AssignmentAndOperatorSyntax {
     pub(crate) target: Expr,
-    pub(crate) operator: String,
+    pub(crate) operator: TokenSyntax,
     pub(crate) value: Expr,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum LoopStmt {
-    While {
-        condition: Expr,
-        block: Block,
-    },
+    While(WhileLoopSyntax),
     For {
         values: Vec<String>,
         iterator: Expr,
-        block: Block,
+        block: BlockSyntax,
     },
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct WhileLoopSyntax {
+    pub(crate) condition: Expr,
+    pub(crate) block: BlockSyntax,
 }

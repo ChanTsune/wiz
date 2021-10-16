@@ -41,4 +41,47 @@ where
         }
         None
     }
+
+    pub(crate) fn stack_is_empty(&self) -> bool {
+        self.map_stack.is_empty()
+    }
+}
+
+impl<K, V, S> StackedHashMap<K, V, S>
+where
+    K: Hash + Eq,
+    S: BuildHasher + Default,
+{
+    pub(crate) fn into_map(self) -> HashMap<K, V, S> {
+        self.map_stack.into_iter().flatten().collect()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::utils::stacked_hash_map::StackedHashMap;
+    use std::collections::HashMap;
+
+    #[test]
+    fn test_into_map() {
+        let mut smap = StackedHashMap::new();
+        smap.push(HashMap::new());
+        smap.insert("1", 1);
+        smap.insert("2", 2);
+        smap.push(HashMap::new());
+        smap.insert("2", 4);
+
+        let mut map = HashMap::new();
+        map.insert("1", 1);
+        map.insert("2", 4);
+        assert_eq!(smap.into_map(), map);
+    }
+
+    #[test]
+    fn test_stack_is_empty() {
+        let mut smap: StackedHashMap<&str, &str> = StackedHashMap::new();
+        assert!(smap.stack_is_empty());
+        smap.push(HashMap::new());
+        assert!(!smap.stack_is_empty());
+    }
 }

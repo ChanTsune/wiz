@@ -6,8 +6,10 @@ use crate::parser::wiz::operators::{assignment_and_operator, assignment_operator
 use crate::syntax::expr::{Expr, NameExprSyntax};
 use crate::syntax::file::FileSyntax;
 use crate::syntax::stmt::{
-    AssignmentAndOperatorSyntax, AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt,
+    AssignmentAndOperatorSyntax, AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt, WhileLoopSyntax,
 };
+use crate::syntax::token::TokenSyntax;
+use crate::syntax::Syntax;
 use nom::branch::alt;
 use nom::character::complete::char;
 use nom::combinator::map;
@@ -15,8 +17,8 @@ use nom::multi::many0;
 use nom::sequence::tuple;
 use nom::Err::Error;
 use nom::{
-    error, AsChar, Compare, CompareResult, ExtendInto, FindSubstring, IResult, InputIter,
-    InputLength, InputTake, InputTakeAtPosition, Offset, Slice,
+    error, AsChar, Compare, ExtendInto, FindSubstring, IResult, InputIter, InputLength, InputTake,
+    InputTakeAtPosition, Offset, Slice,
 };
 use std::ops::{Range, RangeFrom};
 
@@ -37,7 +39,7 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(decl, |d| Stmt::Decl(d))(s)
+    map(decl, Stmt::Decl)(s)
 }
 
 pub fn expr_stmt<I>(s: I) -> IResult<I, Stmt>
@@ -57,7 +59,7 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(expr, |e| Stmt::Expr(e))(s)
+    map(expr, Stmt::Expr)(s)
 }
 
 /*
@@ -89,25 +91,25 @@ where
             whitespace0,
             expr,
         )),
-        |((target, _, op), _, value): ((_, _, I), _, _)| {
-            let r = op.compare("");
-            match r {
-                CompareResult::Ok => {
-                    Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax {
+        |((target, ws, op), ews, value): ((_, _, I), _, _)| {
+            let op = op.to_string();
+            match &*op {
+                "=" => Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax {
+                    target,
+                    operator: TokenSyntax::new(op.to_string())
+                        .with_leading_trivia(ws)
+                        .with_trailing_trivia(ews),
+                    value,
+                })),
+                _ => Stmt::Assignment(AssignmentStmt::AssignmentAndOperator(
+                    AssignmentAndOperatorSyntax {
                         target,
+                        operator: TokenSyntax::new(op.to_string())
+                            .with_leading_trivia(ws)
+                            .with_trailing_trivia(ews),
                         value,
-                    }))
-                }
-                CompareResult::Incomplete => Stmt::Assignment(
-                    AssignmentStmt::AssignmentAndOperator(AssignmentAndOperatorSyntax {
-                        target,
-                        operator: op.to_string(),
-                        value,
-                    }),
-                ),
-                CompareResult::Error => {
-                    panic!()
-                }
+                    },
+                )),
             }
         },
     )(s)
@@ -268,7 +270,7 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(alt((for_stmt, while_stmt)), |l| Stmt::Loop(l))(s)
+    map(alt((for_stmt, while_stmt)), Stmt::Loop)(s)
 }
 
 pub fn while_stmt<I>(s: I) -> IResult<I, LoopStmt>
@@ -290,9 +292,11 @@ where
 {
     map(
         tuple((while_keyword, whitespace1, expr, whitespace1, block)),
-        |(_, _, e, _, b)| LoopStmt::While {
-            condition: e,
-            block: b,
+        |(_, _, e, _, b)| {
+            LoopStmt::While(WhileLoopSyntax {
+                condition: e,
+                block: b,
+            })
         },
     )(s)
 }
@@ -410,12 +414,17 @@ mod tests {
     use crate::parser::wiz::statement::{
         assignable_expr, assignment_stmt, directly_assignable_expr, file, while_stmt,
     };
-    use crate::syntax::block::Block;
-    use crate::syntax::expr::{BinaryOperationSyntax, Expr, NameExprSyntax};
+    use crate::syntax::block::BlockSyntax;
+    use crate::syntax::expr::{BinaryOperationSyntax, Expr, MemberSyntax, NameExprSyntax};
     use crate::syntax::file::FileSyntax;
     use crate::syntax::literal::LiteralSyntax;
-    use crate::syntax::stmt::{AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt};
+    use crate::syntax::stmt::{
+        AssignmentAndOperatorSyntax, AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt,
+        WhileLoopSyntax,
+    };
     use crate::syntax::token::TokenSyntax;
+    use crate::syntax::trivia::{Trivia, TriviaPiece};
+    use crate::syntax::Syntax;
 
     #[test]
     fn test_while_stmt_with_bracket() {
@@ -427,39 +436,52 @@ mod tests {
             ),
             Ok((
                 "",
-                LoopStmt::While {
+                LoopStmt::While(WhileLoopSyntax {
                     condition: Expr::BinOp(BinaryOperationSyntax {
                         left: Box::new(Expr::Name(NameExprSyntax {
                             name_space: vec![],
                             name: "a".to_string()
                         })),
-                        kind: TokenSyntax::new("<".to_string()),
+                        operator: TokenSyntax::new("<".to_string())
+                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                            .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                         right: Box::new(Expr::Name(NameExprSyntax {
                             name_space: vec![],
                             name: "b".to_string()
                         }))
                     }),
-                    block: Block {
+                    block: BlockSyntax {
+                        open: TokenSyntax::new("{".to_string()).with_trailing_trivia(Trivia::from(
+                            vec![TriviaPiece::Newlines(1), TriviaPiece::Spaces(12)]
+                        )),
                         body: vec![Stmt::Assignment(AssignmentStmt::Assignment(
                             AssignmentSyntax {
                                 target: Expr::Name(NameExprSyntax {
                                     name_space: vec![],
                                     name: "a".to_string()
                                 }),
+                                operator: TokenSyntax::new("=".to_string())
+                                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                                    .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                                 value: Expr::BinOp(BinaryOperationSyntax {
                                     left: Box::new(Expr::Name(NameExprSyntax {
                                         name_space: vec![],
                                         name: "a".to_string()
                                     })),
-                                    kind: TokenSyntax::new("+".to_string()),
+                                    operator: TokenSyntax::new("+".to_string())
+                                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                                     right: Box::new(Expr::Literal(LiteralSyntax::Integer(
                                         TokenSyntax::new("1".to_string())
                                     )))
                                 })
                             }
-                        ))]
+                        ))],
+                        close: TokenSyntax::new("}".to_string()).with_leading_trivia(Trivia::from(
+                            vec![TriviaPiece::Newlines(1), TriviaPiece::Spaces(8)]
+                        ))
                     }
-                }
+                })
             ))
         )
     }
@@ -474,43 +496,56 @@ mod tests {
             ),
             Ok((
                 "",
-                LoopStmt::While {
+                LoopStmt::While(WhileLoopSyntax {
                     condition: Expr::BinOp(BinaryOperationSyntax {
-                        left: Box::new(Expr::Member {
+                        left: Box::new(Expr::Member(MemberSyntax {
                             target: Box::new(Expr::Name(NameExprSyntax {
                                 name_space: vec![],
                                 name: "a".to_string()
                             })),
-                            name: "c".to_string(),
-                            navigation_operator: ".".to_string()
-                        }),
-                        kind: TokenSyntax::new("<".to_string()),
+                            name: TokenSyntax::new("c".to_string()),
+                            navigation_operator: TokenSyntax::new(".".to_string())
+                        })),
+                        operator: TokenSyntax::new("<".to_string())
+                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                            .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                         right: Box::new(Expr::Name(NameExprSyntax {
                             name_space: vec![],
                             name: "b".to_string()
                         }))
                     }),
-                    block: Block {
+                    block: BlockSyntax {
+                        open: TokenSyntax::new("{".to_string()).with_trailing_trivia(Trivia::from(
+                            vec![TriviaPiece::Newlines(1), TriviaPiece::Spaces(12)]
+                        )),
                         body: vec![Stmt::Assignment(AssignmentStmt::Assignment(
                             AssignmentSyntax {
                                 target: Expr::Name(NameExprSyntax {
                                     name_space: vec![],
                                     name: "a".to_string()
                                 }),
+                                operator: TokenSyntax::new("=".to_string())
+                                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                                    .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                                 value: Expr::BinOp(BinaryOperationSyntax {
                                     left: Box::new(Expr::Name(NameExprSyntax {
                                         name_space: vec![],
                                         name: "a".to_string()
                                     })),
-                                    kind: TokenSyntax::new("+".to_string()),
+                                    operator: TokenSyntax::new("+".to_string())
+                                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                                     right: Box::new(Expr::Literal(LiteralSyntax::Integer(
                                         TokenSyntax::new("1".to_string())
                                     )))
                                 })
                             }
-                        ))]
+                        ))],
+                        close: TokenSyntax::new("}".to_string()).with_leading_trivia(Trivia::from(
+                            vec![TriviaPiece::Newlines(1), TriviaPiece::Spaces(8)]
+                        ))
                     }
-                }
+                })
             ))
         )
     }
@@ -521,14 +556,14 @@ mod tests {
             directly_assignable_expr("a.b"),
             Ok((
                 "",
-                Expr::Member {
+                Expr::Member(MemberSyntax {
                     target: Box::new(Expr::Name(NameExprSyntax {
                         name_space: vec![],
                         name: "a".to_string()
                     })),
-                    name: "b".to_string(),
-                    navigation_operator: ".".to_string()
-                }
+                    name: TokenSyntax::new("b".to_string()),
+                    navigation_operator: TokenSyntax::new(".".to_string())
+                })
             ))
         )
     }
@@ -539,14 +574,14 @@ mod tests {
             assignable_expr("a.b"),
             Ok((
                 "",
-                Expr::Member {
+                Expr::Member(MemberSyntax {
                     target: Box::new(Expr::Name(NameExprSyntax {
                         name_space: vec![],
                         name: "a".to_string()
                     })),
-                    name: "b".to_string(),
-                    navigation_operator: ".".to_string()
-                }
+                    name: TokenSyntax::new("b".to_string()),
+                    navigation_operator: TokenSyntax::new(".".to_string())
+                })
             ))
         )
     }
@@ -562,6 +597,9 @@ mod tests {
                         name_space: vec![],
                         name: "a".to_string()
                     }),
+                    operator: TokenSyntax::new("=".to_string())
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     value: Expr::Name(NameExprSyntax {
                         name_space: vec![],
                         name: "b".to_string()
@@ -570,6 +608,7 @@ mod tests {
             ))
         )
     }
+
     #[test]
     fn test_assignment_struct_field() {
         assert_eq!(
@@ -581,18 +620,22 @@ mod tests {
                         name_space: vec![],
                         name: "a".to_string()
                     }),
-                    value: Expr::Member {
+                    operator: TokenSyntax::new("=".to_string())
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    value: Expr::Member(MemberSyntax {
                         target: Box::new(Expr::Name(NameExprSyntax {
                             name_space: vec![],
                             name: "b".to_string()
                         })),
-                        name: "c".to_string(),
-                        navigation_operator: ".".to_string()
-                    }
+                        name: TokenSyntax::new("c".to_string()),
+                        navigation_operator: TokenSyntax::new(".".to_string())
+                    })
                 }))
             ))
         )
     }
+
     #[test]
     fn test_assignment_to_struct_field() {
         assert_eq!(
@@ -600,19 +643,46 @@ mod tests {
             Ok((
                 "",
                 Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax {
-                    target: Expr::Member {
+                    target: Expr::Member(MemberSyntax {
                         target: Box::new(Expr::Name(NameExprSyntax {
                             name_space: vec![],
                             name: "a".to_string()
                         })),
-                        name: "b".to_string(),
-                        navigation_operator: ".".to_string()
-                    },
+                        name: TokenSyntax::new("b".to_string()),
+                        navigation_operator: TokenSyntax::new(".".to_string())
+                    }),
+                    operator: TokenSyntax::new("=".to_string())
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     value: Expr::Name(NameExprSyntax {
                         name_space: vec![],
                         name: "c".to_string()
                     }),
                 }))
+            ))
+        )
+    }
+
+    #[test]
+    fn test_assignment_and_operation() {
+        assert_eq!(
+            assignment_stmt("a += 1"),
+            Ok((
+                "",
+                Stmt::Assignment(AssignmentStmt::AssignmentAndOperator(
+                    AssignmentAndOperatorSyntax {
+                        target: Expr::Name(NameExprSyntax {
+                            name_space: vec![],
+                            name: "a".to_string()
+                        }),
+                        operator: TokenSyntax::new("+=".to_string())
+                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                            .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
+                            "1".to_string()
+                        )))
+                    }
+                ))
             ))
         )
     }

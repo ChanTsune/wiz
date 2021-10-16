@@ -4,30 +4,32 @@ use crate::high_level_ir::typed_decl::{
     TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedUse, TypedValueArgDef, TypedVar,
 };
 use crate::high_level_ir::typed_expr::{
-    TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember,
-    TypedLambda, TypedLiteral, TypedName, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
+    TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
+    TypedInstanceMember, TypedLambda, TypedLiteral, TypedName, TypedPostfixUnaryOp,
+    TypedPrefixUnaryOp, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{
-    TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedForStmt,
-    TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
+    TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentAndOperator, TypedAssignmentStmt,
+    TypedBlock, TypedForStmt, TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
 };
 use crate::high_level_ir::typed_type::{Package, TypedType, TypedTypeParam, TypedValueType};
 use crate::syntax::annotation::AnnotationsSyntax;
-use crate::syntax::block::Block;
+use crate::syntax::block::BlockSyntax;
 use crate::syntax::decl::{
     Decl, FunSyntax, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax,
     StructSyntax, VarSyntax,
 };
 use crate::syntax::expr::{
     ArraySyntax, BinaryOperationSyntax, CallExprSyntax, Expr, IfExprSyntax, LambdaSyntax,
-    NameExprSyntax, ReturnSyntax, SubscriptSyntax, TypeCastSyntax,
+    MemberSyntax, NameExprSyntax, PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax,
+    ReturnSyntax, SubscriptSyntax, TypeCastSyntax, UnaryOperationSyntax,
 };
 use crate::syntax::file::{FileSyntax, SourceSet, WizFile};
 use crate::syntax::fun::arg_def::ArgDef;
 use crate::syntax::fun::body_def::FunBody;
 use crate::syntax::literal::LiteralSyntax;
-use crate::syntax::stmt::{AssignmentStmt, LoopStmt, Stmt};
+use crate::syntax::stmt::{AssignmentStmt, LoopStmt, Stmt, WhileLoopSyntax};
 use crate::syntax::type_name::{TypeName, TypeParam};
 use crate::utils::path_string_to_page_name;
 use std::option::Option::Some;
@@ -98,7 +100,14 @@ impl Ast2HLIR {
             AssignmentStmt::AssignmentAndOperator(a) => {
                 TypedAssignmentStmt::AssignmentAndOperation(TypedAssignmentAndOperation {
                     target: self.expr(a.target),
-                    operator: a.operator,
+                    operator: match &*a.operator.token {
+                        "+=" => TypedAssignmentAndOperator::Add,
+                        "-=" => TypedAssignmentAndOperator::Sub,
+                        "*=" => TypedAssignmentAndOperator::Mul,
+                        "/=" => TypedAssignmentAndOperator::Div,
+                        "%=" => TypedAssignmentAndOperator::Mod,
+                        o => panic!("unknown operator {:?}", o),
+                    },
                     value: self.expr(a.value),
                 })
             }
@@ -107,10 +116,12 @@ impl Ast2HLIR {
 
     pub fn loop_stmt(&self, l: LoopStmt) -> TypedLoopStmt {
         match l {
-            LoopStmt::While { condition, block } => TypedLoopStmt::While(TypedWhileLoopStmt {
-                condition: self.expr(condition),
-                block: self.block(block),
-            }),
+            LoopStmt::While(WhileLoopSyntax { condition, block }) => {
+                TypedLoopStmt::While(TypedWhileLoopStmt {
+                    condition: self.expr(condition),
+                    block: self.block(block),
+                })
+            }
             LoopStmt::For {
                 values,
                 iterator,
@@ -270,6 +281,9 @@ impl Ast2HLIR {
                 StructPropertySyntax::Method(method) => {
                     member_functions.push(self.member_function(method))
                 }
+                StructPropertySyntax::Deinit(deinit) => {
+                    todo!("deinit {:?}", deinit)
+                }
             };
         }
         TypedStruct {
@@ -279,7 +293,7 @@ impl Ast2HLIR {
             type_params: s
                 .type_params
                 .map(|v| v.into_iter().map(|tp| self.type_param(tp)).collect()),
-            init: initializers,
+            initializers,
             stored_properties,
             computed_properties,
             member_functions,
@@ -299,13 +313,13 @@ impl Ast2HLIR {
                 })
             })
             .collect();
-        if s.init.is_empty() {
+        if s.initializers.is_empty() {
             let struct_type = TypedValueType {
                 package: Some(Package::global()),
                 name: s.name.clone(),
                 type_args: None,
             };
-            s.init.push(TypedInitializer {
+            s.initializers.push(TypedInitializer {
                 args,
                 body: TypedFunBody::Block(TypedBlock {
                     body: s
@@ -379,33 +393,9 @@ impl Ast2HLIR {
             Expr::Name(n) => TypedExpr::Name(self.name_syntax(n)),
             Expr::Literal(literal) => TypedExpr::Literal(self.literal_syntax(literal)),
             Expr::BinOp(b) => TypedExpr::BinOp(self.binary_operation_syntax(b)),
-            Expr::UnaryOp {
-                target,
-                prefix,
-                kind,
-            } => {
-                let target = self.expr(*target);
-                TypedExpr::UnaryOp(TypedUnaryOp {
-                    target: Box::new(target),
-                    prefix: prefix,
-                    kind: kind,
-                    type_: None,
-                })
-            }
+            Expr::UnaryOp(u) => TypedExpr::UnaryOp(self.unary_operation_syntax(u)),
             Expr::Subscript(s) => TypedExpr::Subscript(self.subscript_syntax(s)),
-            Expr::Member {
-                target,
-                name,
-                navigation_operator,
-            } => {
-                let target = self.expr(*target);
-                TypedExpr::Member(TypedInstanceMember {
-                    target: Box::new(target),
-                    name,
-                    is_safe: navigation_operator.ends_with("?"),
-                    type_: None,
-                })
-            }
+            Expr::Member(m) => TypedExpr::Member(self.member_syntax(m)),
             Expr::Array(a) => TypedExpr::Array(self.array_syntax(a)),
             Expr::Tuple { .. } => TypedExpr::Tuple,
             Expr::Dict { .. } => TypedExpr::Dict,
@@ -459,13 +449,67 @@ impl Ast2HLIR {
     }
 
     pub fn binary_operation_syntax(&self, b: BinaryOperationSyntax) -> TypedBinOp {
-        let BinaryOperationSyntax { left, kind, right } = b;
+        let BinaryOperationSyntax {
+            left,
+            operator: kind,
+            right,
+        } = b;
         let left = Box::new(self.expr(*left));
         let right = Box::new(self.expr(*right));
         TypedBinOp {
             left,
-            kind: kind.token,
+            operator: match &*kind.token {
+                "+" => TypedBinaryOperator::Add,
+                "-" => TypedBinaryOperator::Sub,
+                "*" => TypedBinaryOperator::Mul,
+                "/" => TypedBinaryOperator::Div,
+                "%" => TypedBinaryOperator::Mod,
+                "==" => TypedBinaryOperator::Equal,
+                ">=" => TypedBinaryOperator::GrateThanEqual,
+                ">" => TypedBinaryOperator::GrateThan,
+                "<=" => TypedBinaryOperator::LessThanEqual,
+                "<" => TypedBinaryOperator::LessThan,
+                "!=" => TypedBinaryOperator::NotEqual,
+                _ => TypedBinaryOperator::InfixFunctionCall(kind.token),
+            },
             right,
+            type_: None,
+        }
+    }
+
+    pub fn unary_operation_syntax(&self, u: UnaryOperationSyntax) -> TypedUnaryOp {
+        match u {
+            UnaryOperationSyntax::Prefix(p) => {
+                TypedUnaryOp::Prefix(self.prefix_unary_operation_syntax(p))
+            }
+            UnaryOperationSyntax::Postfix(p) => {
+                TypedUnaryOp::Postfix(self.postfix_unary_operation_syntax(p))
+            }
+        }
+    }
+
+    pub fn prefix_unary_operation_syntax(
+        &self,
+        p: PrefixUnaryOperationSyntax,
+    ) -> TypedPrefixUnaryOp {
+        let PrefixUnaryOperationSyntax { operator, target } = p;
+        let target = self.expr(*target);
+        TypedPrefixUnaryOp {
+            target: Box::new(target),
+            kind: operator.token,
+            type_: None,
+        }
+    }
+
+    pub fn postfix_unary_operation_syntax(
+        &self,
+        p: PostfixUnaryOperationSyntax,
+    ) -> TypedPostfixUnaryOp {
+        let PostfixUnaryOperationSyntax { target, operator } = p;
+        let target = self.expr(*target);
+        TypedPostfixUnaryOp {
+            target: Box::new(target),
+            kind: operator.token,
             type_: None,
         }
     }
@@ -483,6 +527,21 @@ impl Ast2HLIR {
         TypedSubscript {
             target,
             indexes,
+            type_: None,
+        }
+    }
+
+    pub fn member_syntax(&self, m: MemberSyntax) -> TypedInstanceMember {
+        let MemberSyntax {
+            target,
+            name,
+            navigation_operator,
+        } = m;
+        let target = self.expr(*target);
+        TypedInstanceMember {
+            target: Box::new(target),
+            name: name.token,
+            is_safe: navigation_operator.token.ends_with("?"),
             type_: None,
         }
     }
@@ -528,7 +587,7 @@ impl Ast2HLIR {
         let type_ = if else_body == None {
             TypedType::noting()
         } else {
-            block.type_().unwrap_or(TypedType::noting())
+            block.type_().unwrap_or_else(TypedType::noting)
         };
         TypedIf {
             condition: Box::new(self.expr(*condition)),
@@ -560,7 +619,7 @@ impl Ast2HLIR {
         }
     }
 
-    pub fn block(&self, block: Block) -> TypedBlock {
+    pub fn block(&self, block: BlockSyntax) -> TypedBlock {
         TypedBlock {
             body: block.body.into_iter().map(|s| self.stmt(s)).collect(),
         }

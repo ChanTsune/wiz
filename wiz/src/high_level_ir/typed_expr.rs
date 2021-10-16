@@ -67,15 +67,52 @@ pub enum TypedLiteral {
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypedBinOp {
     pub(crate) left: Box<TypedExpr>,
-    pub(crate) kind: String,
+    pub(crate) operator: TypedBinaryOperator,
     pub(crate) right: Box<TypedExpr>,
     pub(crate) type_: Option<TypedType>,
 }
 
+#[derive(Debug, Eq, PartialEq, Clone, Hash)]
+pub enum TypedBinaryOperator {
+    Add,
+    Sub,
+    Mul,
+    Div,
+    Mod,
+    Equal,
+    GrateThanEqual,
+    GrateThan,
+    LessThanEqual,
+    LessThan,
+    NotEqual,
+    InfixFunctionCall(String),
+}
+
 #[derive(Debug, Eq, PartialEq, Clone)]
-pub struct TypedUnaryOp {
+pub enum TypedUnaryOp {
+    Prefix(TypedPrefixUnaryOp),
+    Postfix(TypedPostfixUnaryOp),
+}
+
+impl TypedUnaryOp {
+    pub(crate) fn type_(&self) -> Option<TypedType> {
+        match self {
+            TypedUnaryOp::Prefix(p) => p.type_.clone(),
+            TypedUnaryOp::Postfix(p) => p.type_.clone(),
+        }
+    }
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct TypedPrefixUnaryOp {
     pub(crate) target: Box<TypedExpr>,
-    pub(crate) prefix: bool,
+    pub(crate) kind: String,
+    pub(crate) type_: Option<TypedType>,
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct TypedPostfixUnaryOp {
+    pub(crate) target: Box<TypedExpr>,
     pub(crate) kind: String,
     pub(crate) type_: Option<TypedType>,
 }
@@ -141,7 +178,7 @@ impl TypedExpr {
             TypedExpr::Name(name) => name.type_.clone(),
             TypedExpr::Literal(l) => l.type_(),
             TypedExpr::BinOp(b) => b.type_.clone(),
-            TypedExpr::UnaryOp(u) => u.type_.clone(),
+            TypedExpr::UnaryOp(u) => u.type_(),
             TypedExpr::Subscript(s) => s.type_.clone(),
             TypedExpr::Member(m) => m.type_.clone(),
             TypedExpr::Array(a) => a.type_.clone(),

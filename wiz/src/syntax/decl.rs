@@ -95,6 +95,7 @@ pub enum StructPropertySyntax {
     StoredProperty(StoredPropertySyntax),
     ComputedProperty,
     Init(InitializerSyntax),
+    Deinit(DeinitializerSyntax),
     Method(MethodSyntax),
 }
 
@@ -107,7 +108,14 @@ pub struct StoredPropertySyntax {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct InitializerSyntax {
+    pub(crate) init_keyword: TokenSyntax,
     pub(crate) args: Vec<ArgDef>,
+    pub(crate) body: FunBody,
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct DeinitializerSyntax {
+    pub(crate) deinit_keyword: TokenSyntax,
     pub(crate) body: FunBody,
 }
 
