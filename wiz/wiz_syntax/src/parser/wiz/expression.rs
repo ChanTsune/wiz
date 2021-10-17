@@ -805,7 +805,7 @@ where
             )),
         )),
         |(ta, (args, tl))| PostfixSuffix::CallSuffix {
-            args: args.unwrap_or(vec![]),
+            args: args.unwrap_or_default(),
             tailing_lambda: tl,
         },
     )(s)
@@ -842,14 +842,12 @@ where
         )),
         |(_, args_t, _)| {
             let mut args = vec![];
-            match args_t {
-                Some((a, ags, _)) => {
-                    args.insert(args.len(), a);
-                    for (_, ar) in ags {
-                        args.insert(args.len(), ar);
-                    }
-                }
-                None => {}
+            if let Some((a, ags, _)) = args_t {
+                args = args.into_iter().chain(
+                    vec![a]
+                ).chain(
+                    ags.into_iter().map(|(_,ar)|ar)
+                ).collect();
             };
             args
         },
