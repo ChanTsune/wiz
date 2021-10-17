@@ -546,9 +546,9 @@ where
     <I as InputTakeAtPosition>::Item: AsChar,
 {
     alt((
-        map(postfix_operator, |s: I| PostfixSuffix::Operator(
-            s.to_string(),
-            )),
+        map(postfix_operator, |s: I| {
+            PostfixSuffix::Operator(s.to_string())
+        }),
         map(type_arguments, |type_names| {
             PostfixSuffix::TypeArgumentSuffix { types: type_names }
         }),
