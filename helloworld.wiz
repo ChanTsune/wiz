@@ -24,7 +24,7 @@ fun main() {
         } else {
             std::builtin::println("Welcome to Wiz!!")
         }
-        s.a = s.a + if modBy2Expr(s.a) == 0 { 1 } else { 3 }
+        s.a += if modBy2Expr(s.a) == 0 { 1 } else { 3 }
     }
     val c = s.a + b
     val file = fopen("./tmp.tmp", "wb")
