@@ -11,7 +11,7 @@ pub enum TypeName {
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct NameSpacedTypeName {
     pub name_space: NameSpaceSyntax,
-    pub type_name: TypeName
+    pub type_name: TypeName,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
