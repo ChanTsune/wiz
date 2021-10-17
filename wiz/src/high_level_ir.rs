@@ -255,6 +255,9 @@ impl Ast2HLIR {
                     todo!()
                 }
             }
+            TypeName::NameSpaced(_) => {
+                todo!()
+            }
         }
     }
 
