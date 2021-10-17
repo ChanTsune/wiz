@@ -125,7 +125,7 @@ where
                         )),
                         |(_, code): (char, I)| -> char {
                             decode_utf16(vec![u16::from_str_radix(&*code.to_string(), 16).unwrap()])
-                                .nth(0)
+                                .next()
                                 .unwrap()
                                 .unwrap_or(REPLACEMENT_CHARACTER)
                         },
