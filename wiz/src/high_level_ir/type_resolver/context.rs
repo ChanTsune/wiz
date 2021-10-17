@@ -422,8 +422,8 @@ impl ResolverContext {
                 let key = (kind, left, right);
                 self.binary_operators
                     .get(&key)
-                    .map(|t| t.clone())
-                    .ok_or(ResolverError::from(format!("{:?} is not defined.", key)))
+                    .cloned()
+                    .ok_or_else(||ResolverError::from(format!("{:?} is not defined.", key)))
             }
         }
     }
