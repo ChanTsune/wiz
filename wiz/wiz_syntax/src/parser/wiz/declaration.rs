@@ -238,7 +238,7 @@ where
         tuple((var_keyword, stored_property_body)),
         |(_, (name, _, typ))| StoredPropertySyntax {
             is_mut: true,
-            name: name,
+            name,
             type_: typ,
         },
     )(s)
@@ -262,7 +262,7 @@ where
         tuple((val_keyword, stored_property_body)),
         |(_, (name, _, typ))| StoredPropertySyntax {
             is_mut: false,
-            name: name,
+            name,
             type_: typ,
         },
     )(s)
@@ -395,11 +395,11 @@ where
         |(f, _, name, type_params, args, _, return_type, _, t_constraints, _, body)| {
             StructPropertySyntax::Method(MethodSyntax {
                 // modifiers: vec![],
-                name: name,
+                name,
                 type_params,
                 args,
                 return_type: return_type.map(|(_, _, t)| t),
-                body: body,
+                body,
             })
         },
     )(s)
@@ -515,7 +515,7 @@ where
                         None => name.clone(),
                         Some((label, _)) => label,
                     },
-                    name: name,
+                    name,
                     type_name: typ,
                 })
             },
