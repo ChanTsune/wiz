@@ -1,4 +1,4 @@
-use std::fmt::{Arguments, Result, Write, write};
+use std::fmt::{write, Arguments, Result, Write};
 
 pub struct Formatter<'a> {
     indent_level: usize,
