@@ -671,7 +671,7 @@ impl<'ctx> CodeGen<'ctx> {
             type_,
             value,
         } = v;
-        let v_type = type_.clone().into_value_type();
+        let v_type = type_.into_value_type();
         let value = self.expr(value);
         let value = self.load_if_pointer_value(value, &v_type);
         match value {
