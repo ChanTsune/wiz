@@ -113,9 +113,7 @@ pub struct ArrayElementSyntax {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum PostfixSuffix {
-    Operator {
-        kind: String,
-    },
+    Operator(String),
     TypeArgumentSuffix {
         types: Vec<TypeName>,
     },

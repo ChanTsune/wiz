@@ -469,7 +469,7 @@ where
         for suffix in suffixes {
             e = match suffix {
                 // TODO: impl
-                PostfixSuffix::Operator { kind } => {
+                PostfixSuffix::Operator(kind) => {
                     Expr::UnaryOp(UnaryOperationSyntax::Postfix(PostfixUnaryOperationSyntax {
                         target: Box::new(e),
                         operator: TokenSyntax::new(kind),
@@ -546,9 +546,9 @@ where
     <I as InputTakeAtPosition>::Item: AsChar,
 {
     alt((
-        map(postfix_operator, |s: I| PostfixSuffix::Operator {
-            kind: s.to_string(),
-        }),
+        map(postfix_operator, |s: I| PostfixSuffix::Operator(
+            s.to_string(),
+            )),
         map(type_arguments, |type_names| {
             PostfixSuffix::TypeArgumentSuffix { types: type_names }
         }),
