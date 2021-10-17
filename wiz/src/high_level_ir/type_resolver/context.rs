@@ -423,7 +423,7 @@ impl ResolverContext {
                 self.binary_operators
                     .get(&key)
                     .cloned()
-                    .ok_or_else(||ResolverError::from(format!("{:?} is not defined.", key)))
+                    .ok_or_else(|| ResolverError::from(format!("{:?} is not defined.", key)))
             }
         }
     }
