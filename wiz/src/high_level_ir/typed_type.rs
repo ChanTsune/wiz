@@ -291,6 +291,10 @@ impl TypedType {
     pub fn is_boolean(&self) -> bool {
         Self::bool().eq(self)
     }
+
+    pub fn is_string(&self) -> bool {
+        Self::string().eq(self)
+    }
 }
 
 impl ToString for TypedType {
