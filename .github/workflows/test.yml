@@ -33,5 +33,7 @@ jobs:
         with:
           version: "11.0"
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
-      - name: run test
+      - name: run test wiz_syntax
+        run: cd wiz/wiz_syntax && cargo test
+      - name: run test wizc
         run: cd wiz && cargo test && cargo run -- ../helloworld.wiz -o out.ll && clang out.ll
