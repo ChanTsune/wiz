@@ -16,7 +16,7 @@ use inkwell::support::LLVMString;
 use inkwell::types::{AnyType, AnyTypeEnum, BasicType, BasicTypeEnum};
 use inkwell::values::{AnyValue, AnyValueEnum, BasicValueEnum, FunctionValue};
 use inkwell::{AddressSpace, FloatPredicate, IntPredicate};
-use nom::lib::std::convert::TryFrom;
+use std::convert::TryFrom;
 use std::collections::HashMap;
 use std::path::Path;
 use std::process::exit;
