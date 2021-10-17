@@ -47,7 +47,7 @@ impl<'a> Write for Formatter<'a> {
         self.buf.write_char(c)
     }
 
-    fn write_fmt(self: &mut Self, args: Arguments<'_>) -> Result {
+    fn write_fmt(&mut self, args: Arguments<'_>) -> Result {
         write(self, args)
     }
 }
