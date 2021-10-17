@@ -843,11 +843,11 @@ where
         |(_, args_t, _)| {
             let mut args = vec![];
             if let Some((a, ags, _)) = args_t {
-                args = args.into_iter().chain(
-                    vec![a]
-                ).chain(
-                    ags.into_iter().map(|(_,ar)|ar)
-                ).collect();
+                args = args
+                    .into_iter()
+                    .chain(vec![a])
+                    .chain(ags.into_iter().map(|(_, ar)| ar))
+                    .collect();
             };
             args
         },
