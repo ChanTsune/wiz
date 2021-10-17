@@ -885,10 +885,7 @@ where
         |(_, arg_label, is_vararg, arg)| CallArg {
             label: arg_label.map(|(label, _, _, _)| label),
             arg: Box::new(arg),
-            is_vararg: match is_vararg {
-                None => false,
-                Some(_) => true,
-            },
+            is_vararg: is_vararg.is_some(),
         },
     )(s)
 }
