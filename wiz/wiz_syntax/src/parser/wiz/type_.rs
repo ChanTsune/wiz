@@ -1,6 +1,6 @@
-use crate::parser::wiz::character::{ampersand, comma, dot};
+use crate::parser::wiz::character::{ampersand, comma};
 use crate::parser::wiz::lexical_structure::{identifier, whitespace0};
-use crate::syntax::type_name::{DecoratedTypeName, SimpleTypeName, TypeName, TypeParam};
+use crate::syntax::type_name::{DecoratedTypeName, NameSpacedTypeName, SimpleTypeName, TypeName, TypeParam};
 use nom::branch::alt;
 use nom::character::complete::char;
 use nom::combinator::{map, opt};
@@ -8,10 +8,17 @@ use nom::multi::many0;
 use nom::sequence::tuple;
 use nom::{AsChar, Compare, FindSubstring, IResult, InputIter, InputLength, InputTake, Slice};
 use std::ops::{Range, RangeFrom};
+use crate::parser::wiz::name_space::name_space;
 
 pub fn type_<I>(s: I) -> IResult<I, TypeName>
 where
-    I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
+    I: Slice<RangeFrom<usize>>
+    + InputIter
+    + InputTake
+    + InputLength
+    + Clone
+    + ToString
+    + Compare<&'static str>,
     <I as InputIter>::Item: AsChar,
 {
     alt((
@@ -25,7 +32,13 @@ where
 
 pub fn parenthesized_type<I>(s: I) -> IResult<I, TypeName>
 where
-    I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
+    I: Slice<RangeFrom<usize>>
+    + InputIter
+    + InputTake
+    + InputLength
+    + Clone
+    + ToString
+    + Compare<&'static str>,
     <I as InputIter>::Item: AsChar,
 {
     map(tuple((char('('), type_, char(')'))), |(_, type_, _)| type_)(s)
@@ -33,7 +46,13 @@ where
 
 pub fn pointer_type<I>(s: I) -> IResult<I, TypeName>
 where
-    I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
+    I: Slice<RangeFrom<usize>>
+    + InputIter
+    + InputTake
+    + InputLength
+    + Clone
+    + ToString
+    + Compare<&'static str>,
     <I as InputIter>::Item: AsChar,
 {
     map(
@@ -49,7 +68,13 @@ where
 
 pub fn reference_type<I>(s: I) -> IResult<I, TypeName>
 where
-    I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
+    I: Slice<RangeFrom<usize>>
+    + InputIter
+    + InputTake
+    + InputLength
+    + Clone
+    + ToString
+    + Compare<&'static str>,
     <I as InputIter>::Item: AsChar,
 {
     map(
@@ -65,7 +90,13 @@ where
 
 pub fn type_reference<I>(s: I) -> IResult<I, TypeName>
 where
-    I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
+    I: Slice<RangeFrom<usize>>
+    + InputIter
+    + InputTake
+    + InputLength
+    + Clone
+    + ToString
+    + Compare<&'static str>,
     <I as InputIter>::Item: AsChar,
 {
     user_type(s)
@@ -73,21 +104,33 @@ where
 
 pub fn user_type<I>(s: I) -> IResult<I, TypeName>
 where
-    I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
+    I: Slice<RangeFrom<usize>>
+    + InputIter
+    + InputTake
+    + InputLength
+    + Clone
+    + ToString
+    + Compare<&'static str>,
     <I as InputIter>::Item: AsChar,
 {
     map(
-        tuple((simple_user_type, many0(tuple((dot, simple_user_type))))),
-        |(p, chs)| {
-            // TODO: use chs
-            p
+        tuple((name_space, simple_user_type)),
+        |(name_space, type_name)| {
+            if name_space.is_empty() {
+                type_name
+            } else { 
+                TypeName::NameSpaced(Box::new(NameSpacedTypeName {
+                    name_space,
+                    type_name,
+                }))
+            }
         },
     )(s)
 }
 
 pub fn simple_user_type<I>(s: I) -> IResult<I, TypeName>
 where
-    I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
+    I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone + ToString + Compare<&'static str>,
     <I as InputIter>::Item: AsChar,
 {
     map(tuple((identifier, opt(type_arguments))), |(name, args)| {
@@ -104,7 +147,7 @@ where
 
 pub fn type_arguments<I>(s: I) -> IResult<I, Vec<TypeName>>
 where
-    I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
+    I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone + ToString + Compare<&'static str>,
     <I as InputIter>::Item: AsChar,
 {
     map(

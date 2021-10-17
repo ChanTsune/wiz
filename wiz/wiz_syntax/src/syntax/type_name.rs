@@ -1,9 +1,17 @@
+use crate::syntax::name_space::NameSpaceSyntax;
 use crate::syntax::node::SyntaxNode;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum TypeName {
+    NameSpaced(Box<NameSpacedTypeName>),
     Simple(SimpleTypeName),
     Decorated(Box<DecoratedTypeName>),
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct NameSpacedTypeName {
+    pub name_space: NameSpaceSyntax,
+    pub type_name: TypeName
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]

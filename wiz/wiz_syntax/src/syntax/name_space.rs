@@ -9,6 +9,10 @@ impl NameSpaceSyntax {
     pub fn new() -> Self {
         Self { elements: vec![] }
     }
+
+    pub(crate) fn is_empty(&self) -> bool {
+        self.elements.is_empty()
+    }
 }
 
 impl Default for NameSpaceSyntax {
