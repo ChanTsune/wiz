@@ -114,7 +114,6 @@ fn test_unsafe_pointer() {
                     }],
                     computed_properties: vec![],
                     member_functions: vec![],
-                    static_function: vec![]
                 }),
                 TypedDecl::Fun(TypedFun {
                     annotations: TypedAnnotations::new(),
@@ -237,7 +236,6 @@ fn test_struct_stored_property() {
                     }],
                     computed_properties: vec![],
                     member_functions: vec![],
-                    static_function: vec![]
                 }),
                 TypedDecl::Fun(TypedFun {
                     annotations: TypedAnnotations::new(),
@@ -360,7 +358,6 @@ fn test_struct_init() {
                     }],
                     computed_properties: vec![],
                     member_functions: vec![],
-                    static_function: vec![],
                 }),
                 TypedDecl::Fun(TypedFun {
                     annotations: TypedAnnotations::new(),
@@ -548,7 +545,6 @@ fn test_struct_member_function() {
                     })),
                     return_type: Some(TypedType::int64())
                 }],
-                static_function: vec![],
             }),],
         })
     );
@@ -660,7 +656,6 @@ fn test_struct_member_function_call() {
                         })),
                         return_type: Some(TypedType::int64())
                     }],
-                    static_function: vec![],
                 }),
                 TypedDecl::Fun(TypedFun {
                     annotations: TypedAnnotations::new(),
