@@ -21,4 +21,14 @@ struct UInt8Vector {
         self.ptr[self.length] = element
         self.length += 1
     }
+
+    fun pop(&self): UInt8 {
+        if self.isEmpty() {
+            return -1 as UInt8
+        }
+        val r = self.ptr[self.length - 1]
+        self.length -= 1
+        return r
+    }
+
 }
