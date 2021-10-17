@@ -1,4 +1,4 @@
-use std::fmt::{Arguments, Result, Write};
+use std::fmt::{Arguments, Result, Write, write};
 
 pub struct Formatter<'a> {
     indent_level: usize,
@@ -48,6 +48,6 @@ impl<'a> Write for Formatter<'a> {
     }
 
     fn write_fmt(self: &mut Self, args: Arguments<'_>) -> Result {
-        todo!()
+        write(self, args)
     }
 }
