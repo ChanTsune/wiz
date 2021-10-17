@@ -37,15 +37,15 @@ impl SyntaxNode for Expr {}
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct NameExprSyntax {
-    pub(crate) name_space: Vec<String>,
-    pub(crate) name: String,
+    pub name_space: Vec<String>,
+    pub name: String,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct BinaryOperationSyntax {
-    pub(crate) left: Box<Expr>,
-    pub(crate) operator: TokenSyntax,
-    pub(crate) right: Box<Expr>,
+    pub left: Box<Expr>,
+    pub operator: TokenSyntax,
+    pub right: Box<Expr>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -56,66 +56,64 @@ pub enum UnaryOperationSyntax {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct PrefixUnaryOperationSyntax {
-    pub(crate) operator: TokenSyntax,
-    pub(crate) target: Box<Expr>,
+    pub operator: TokenSyntax,
+    pub target: Box<Expr>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct PostfixUnaryOperationSyntax {
-    pub(crate) target: Box<Expr>,
-    pub(crate) operator: TokenSyntax,
+    pub target: Box<Expr>,
+    pub operator: TokenSyntax,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct CallExprSyntax {
-    pub(crate) target: Box<Expr>,
-    pub(crate) args: Vec<CallArg>,
-    pub(crate) tailing_lambda: Option<LambdaSyntax>,
+    pub target: Box<Expr>,
+    pub args: Vec<CallArg>,
+    pub tailing_lambda: Option<LambdaSyntax>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct CallArg {
-    pub(crate) label: Option<String>,
-    pub(crate) arg: Box<Expr>,
-    pub(crate) is_vararg: bool,
+    pub label: Option<String>,
+    pub arg: Box<Expr>,
+    pub is_vararg: bool,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct LambdaSyntax {
-    pub(crate) stmts: Vec<Stmt>,
+    pub stmts: Vec<Stmt>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct SubscriptSyntax {
-    pub(crate) target: Box<Expr>,
-    pub(crate) idx_or_keys: Vec<Expr>,
+    pub target: Box<Expr>,
+    pub idx_or_keys: Vec<Expr>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MemberSyntax {
-    pub(crate) target: Box<Expr>,
-    pub(crate) name: TokenSyntax,
-    pub(crate) navigation_operator: TokenSyntax,
+    pub target: Box<Expr>,
+    pub name: TokenSyntax,
+    pub navigation_operator: TokenSyntax,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct ArraySyntax {
-    pub(crate) open: TokenSyntax,
-    pub(crate) values: Vec<ArrayElementSyntax>,
-    pub(crate) close: TokenSyntax,
+    pub open: TokenSyntax,
+    pub values: Vec<ArrayElementSyntax>,
+    pub close: TokenSyntax,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct ArrayElementSyntax {
-    pub(crate) element: Expr,
-    pub(crate) trailing_comma: TokenSyntax,
+    pub element: Expr,
+    pub trailing_comma: TokenSyntax,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum PostfixSuffix {
-    Operator {
-        kind: String,
-    },
+    Operator(String),
     TypeArgumentSuffix {
         types: Vec<TypeName>,
     },
@@ -134,20 +132,20 @@ pub enum PostfixSuffix {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct IfExprSyntax {
-    pub(crate) condition: Box<Expr>,
-    pub(crate) body: BlockSyntax,
-    pub(crate) else_body: Option<BlockSyntax>,
+    pub condition: Box<Expr>,
+    pub body: BlockSyntax,
+    pub else_body: Option<BlockSyntax>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct ReturnSyntax {
-    pub(crate) return_keyword: TokenSyntax,
-    pub(crate) value: Option<Box<Expr>>,
+    pub return_keyword: TokenSyntax,
+    pub value: Option<Box<Expr>>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypeCastSyntax {
-    pub(crate) target: Box<Expr>,
-    pub(crate) operator: String,
-    pub(crate) type_: TypeName,
+    pub target: Box<Expr>,
+    pub operator: String,
+    pub type_: TypeName,
 }

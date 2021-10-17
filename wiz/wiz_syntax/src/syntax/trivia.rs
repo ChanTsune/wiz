@@ -55,6 +55,12 @@ impl Trivia {
     }
 }
 
+impl Default for Trivia {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Add<Trivia> for Trivia {
     type Output = Trivia;
 

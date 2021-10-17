@@ -82,7 +82,7 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(struct_syntax, |struct_syntax| Decl::Struct(struct_syntax))(s)
+    map(struct_syntax, Decl::Struct)(s)
 }
 
 // <struct_decl> ::= "struct" <identifier> <type_parameters>? "{" <struct_properties> "}"
@@ -216,7 +216,7 @@ where
 {
     map(
         alt((mutable_stored_property, immutable_stored_property)),
-        |stored_property| StructPropertySyntax::StoredProperty(stored_property),
+        StructPropertySyntax::StoredProperty,
     )(s)
 }
 
@@ -238,7 +238,7 @@ where
         tuple((var_keyword, stored_property_body)),
         |(_, (name, _, typ))| StoredPropertySyntax {
             is_mut: true,
-            name: name,
+            name,
             type_: typ,
         },
     )(s)
@@ -262,7 +262,7 @@ where
         tuple((val_keyword, stored_property_body)),
         |(_, (name, _, typ))| StoredPropertySyntax {
             is_mut: false,
-            name: name,
+            name,
             type_: typ,
         },
     )(s)
@@ -395,11 +395,11 @@ where
         |(f, _, name, type_params, args, _, return_type, _, t_constraints, _, body)| {
             StructPropertySyntax::Method(MethodSyntax {
                 // modifiers: vec![],
-                name: name,
+                name,
                 type_params,
                 args,
                 return_type: return_type.map(|(_, _, t)| t),
-                body: body,
+                body,
             })
         },
     )(s)
@@ -515,7 +515,7 @@ where
                         None => name.clone(),
                         Some((label, _)) => label,
                     },
-                    name: name,
+                    name,
                     type_name: typ,
                 })
             },
@@ -676,7 +676,7 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(var_syntax, |v| Decl::Var(v))(s)
+    map(var_syntax, Decl::Var)(s)
 }
 
 pub fn var_syntax<I>(s: I) -> IResult<I, VarSyntax>
@@ -804,7 +804,7 @@ where
         + Compare<&'static str>,
     <I as InputIter>::Item: AsChar + Copy,
 {
-    map(use_syntax, |u| Decl::Use(u))(s)
+    map(use_syntax, Decl::Use)(s)
 }
 
 // <use> ::= "use" <package_name> ("as" <identifier>)?

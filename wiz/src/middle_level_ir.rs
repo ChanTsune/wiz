@@ -5,8 +5,8 @@ use crate::high_level_ir::typed_decl::{
 };
 use crate::high_level_ir::typed_expr::{
     TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
-    TypedInstanceMember, TypedLiteral, TypedName, TypedReturn, TypedSubscript, TypedTypeCast,
-    TypedUnaryOp,
+    TypedInstanceMember, TypedLiteral, TypedName, TypedPrefixUnaryOperator, TypedReturn,
+    TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{
@@ -544,13 +544,12 @@ impl HLIR2MLIR {
             TypedUnaryOp::Prefix(p) => {
                 let target = self.expr(*p.target);
                 MLUnaryOp {
-                    kind: match &*p.kind {
-                        "+" => MLUnaryOpKind::Positive,
-                        "-" => MLUnaryOpKind::Negative,
-                        "*" => MLUnaryOpKind::DeRef,
-                        "&" => MLUnaryOpKind::Ref,
-                        "!" => MLUnaryOpKind::Not,
-                        _ => panic!(),
+                    kind: match p.operator {
+                        TypedPrefixUnaryOperator::Positive => MLUnaryOpKind::Positive,
+                        TypedPrefixUnaryOperator::Negative => MLUnaryOpKind::Negative,
+                        TypedPrefixUnaryOperator::Dereference => MLUnaryOpKind::DeRef,
+                        TypedPrefixUnaryOperator::Reference => MLUnaryOpKind::Ref,
+                        TypedPrefixUnaryOperator::Not => MLUnaryOpKind::Not,
                     },
                     type_: target.type_().into_value_type(),
                     target: Box::new(target),

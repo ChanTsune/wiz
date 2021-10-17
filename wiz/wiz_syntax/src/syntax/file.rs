@@ -9,13 +9,13 @@ pub enum SourceSet {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct WizFile {
-    pub(crate) name: String,
-    pub(crate) syntax: FileSyntax,
+    pub name: String,
+    pub syntax: FileSyntax,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct FileSyntax {
-    pub(crate) body: Vec<Decl>,
+    pub body: Vec<Decl>,
 }
 
 impl SyntaxNode for FileSyntax {}

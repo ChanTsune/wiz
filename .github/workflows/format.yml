@@ -14,8 +14,10 @@ jobs:
             ~/.cargo/git
             target          
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - name: run format
+      - name: run format wizc
         run: cd wiz && cargo fmt
+      - name: run format wiz_syntax
+        run: cd wiz/wiz_syntax && cargo fmt
       - name: Commit changes
         uses: EndBug/add-and-commit@v7.4.0
         with:

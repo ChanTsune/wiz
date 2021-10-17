@@ -25,7 +25,7 @@ where
         + Compare<&'static str>,
     <I as InputIter>::Item: AsChar + Copy,
 {
-    map(many0(trivia_piece), |v| Trivia::from(v))(s)
+    map(many0(trivia_piece), Trivia::from)(s)
 }
 
 pub fn whitespace1<I>(s: I) -> IResult<I, Trivia>
@@ -41,7 +41,7 @@ where
         + Compare<&'static str>,
     <I as InputIter>::Item: AsChar + Copy,
 {
-    map(many1(trivia_piece), |v| Trivia::from(v))(s)
+    map(many1(trivia_piece), Trivia::from)(s)
 }
 
 pub fn whitespace_without_eol0<I>(s: I) -> IResult<I, Trivia>
@@ -57,7 +57,7 @@ where
         + Compare<&'static str>,
     <I as InputIter>::Item: AsChar + Copy,
 {
-    map(many0(trivia_piece_without_line_ending), |v| Trivia::from(v))(s)
+    map(many0(trivia_piece_without_line_ending), Trivia::from)(s)
 }
 
 fn line_comment_start<I>(s: I) -> IResult<I, I>
@@ -134,7 +134,7 @@ where
         + ToString,
     <I as InputIter>::Item: AsChar + Copy,
 {
-    map(_line_comment, |c| TriviaPiece::LineComment(c))(s)
+    map(_line_comment, TriviaPiece::LineComment)(s)
 }
 
 fn doc_line_comment<I>(s: I) -> IResult<I, TriviaPiece>
@@ -148,7 +148,7 @@ where
         + ToString,
     <I as InputIter>::Item: AsChar + Copy,
 {
-    map(_doc_line_comment, |c| TriviaPiece::DocLineComment(c))(s)
+    map(_doc_line_comment, TriviaPiece::DocLineComment)(s)
 }
 
 fn block_comment_start<I>(input: I) -> IResult<I, I>
@@ -211,14 +211,14 @@ pub fn block_comment<I>(input: I) -> IResult<I, TriviaPiece>
 where
     I: InputTake + FindSubstring<&'static str> + Compare<&'static str> + ToString + Clone,
 {
-    map(_block_comment, |s| TriviaPiece::BlockComment(s))(input)
+    map(_block_comment, TriviaPiece::BlockComment)(input)
 }
 
 pub fn doc_block_comment<I>(input: I) -> IResult<I, TriviaPiece>
 where
     I: InputTake + FindSubstring<&'static str> + Compare<&'static str> + ToString + Clone,
 {
-    map(_doc_block_comment, |s| TriviaPiece::DocBlockComment(s))(input)
+    map(_doc_block_comment, TriviaPiece::DocBlockComment)(input)
 }
 
 pub fn identifier_head<I>(s: I) -> IResult<I, char>
@@ -242,7 +242,7 @@ where
     I: Slice<RangeFrom<usize>> + InputIter + InputTake + InputLength + Clone,
     <I as InputIter>::Item: AsChar,
 {
-    map(many0(identifier_character), |c| String::from_iter(c))(s)
+    map(many0(identifier_character), String::from_iter)(s)
 }
 
 pub fn identifier<I>(s: I) -> IResult<I, String>

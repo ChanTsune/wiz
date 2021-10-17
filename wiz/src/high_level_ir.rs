@@ -6,7 +6,8 @@ use crate::high_level_ir::typed_decl::{
 use crate::high_level_ir::typed_expr::{
     TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
     TypedInstanceMember, TypedLambda, TypedLiteral, TypedName, TypedPostfixUnaryOp,
-    TypedPrefixUnaryOp, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
+    TypedPostfixUnaryOperator, TypedPrefixUnaryOp, TypedPrefixUnaryOperator, TypedReturn,
+    TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{
@@ -14,25 +15,25 @@ use crate::high_level_ir::typed_stmt::{
     TypedBlock, TypedForStmt, TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
 };
 use crate::high_level_ir::typed_type::{Package, TypedType, TypedTypeParam, TypedValueType};
-use crate::syntax::annotation::AnnotationsSyntax;
-use crate::syntax::block::BlockSyntax;
-use crate::syntax::decl::{
+use crate::utils::path_string_to_page_name;
+use std::option::Option::Some;
+use wiz_syntax::syntax::annotation::AnnotationsSyntax;
+use wiz_syntax::syntax::block::BlockSyntax;
+use wiz_syntax::syntax::decl::{
     Decl, FunSyntax, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax,
     StructSyntax, VarSyntax,
 };
-use crate::syntax::expr::{
+use wiz_syntax::syntax::expr::{
     ArraySyntax, BinaryOperationSyntax, CallExprSyntax, Expr, IfExprSyntax, LambdaSyntax,
     MemberSyntax, NameExprSyntax, PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax,
     ReturnSyntax, SubscriptSyntax, TypeCastSyntax, UnaryOperationSyntax,
 };
-use crate::syntax::file::{FileSyntax, SourceSet, WizFile};
-use crate::syntax::fun::arg_def::ArgDef;
-use crate::syntax::fun::body_def::FunBody;
-use crate::syntax::literal::LiteralSyntax;
-use crate::syntax::stmt::{AssignmentStmt, LoopStmt, Stmt, WhileLoopSyntax};
-use crate::syntax::type_name::{TypeName, TypeParam};
-use crate::utils::path_string_to_page_name;
-use std::option::Option::Some;
+use wiz_syntax::syntax::file::{FileSyntax, SourceSet, WizFile};
+use wiz_syntax::syntax::fun::arg_def::ArgDef;
+use wiz_syntax::syntax::fun::body_def::FunBody;
+use wiz_syntax::syntax::literal::LiteralSyntax;
+use wiz_syntax::syntax::stmt::{AssignmentStmt, LoopStmt, Stmt, WhileLoopSyntax};
+use wiz_syntax::syntax::type_name::{TypeName, TypeParam};
 
 pub mod type_resolver;
 pub mod typed_annotation;
@@ -496,7 +497,14 @@ impl Ast2HLIR {
         let target = self.expr(*target);
         TypedPrefixUnaryOp {
             target: Box::new(target),
-            kind: operator.token,
+            operator: match &*operator.token {
+                "+" => TypedPrefixUnaryOperator::Positive,
+                "-" => TypedPrefixUnaryOperator::Negative,
+                "*" => TypedPrefixUnaryOperator::Dereference,
+                "&" => TypedPrefixUnaryOperator::Reference,
+                "!" => TypedPrefixUnaryOperator::Not,
+                _ => panic!(),
+            },
             type_: None,
         }
     }
@@ -509,7 +517,10 @@ impl Ast2HLIR {
         let target = self.expr(*target);
         TypedPostfixUnaryOp {
             target: Box::new(target),
-            kind: operator.token,
+            operator: match &*operator.token {
+                "!!" => TypedPostfixUnaryOperator::Unwrap,
+                _ => panic!(),
+            },
             type_: None,
         }
     }

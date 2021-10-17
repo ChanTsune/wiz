@@ -3,13 +3,13 @@ use crate::syntax::Syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TokenSyntax {
-    pub(crate) leading_trivia: Trivia,
-    pub(crate) token: String,
-    pub(crate) trailing_trivia: Trivia,
+    pub leading_trivia: Trivia,
+    pub token: String,
+    pub trailing_trivia: Trivia,
 }
 
 impl TokenSyntax {
-    pub(crate) fn new(token: String) -> Self {
+    pub fn new(token: String) -> Self {
         Self {
             leading_trivia: Trivia::new(),
             token,

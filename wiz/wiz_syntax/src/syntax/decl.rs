@@ -43,11 +43,11 @@ impl SyntaxNode for Decl {}
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct VarSyntax {
-    pub(crate) annotations: Option<AnnotationsSyntax>,
-    pub(crate) is_mut: bool,
-    pub(crate) name: String,
-    pub(crate) type_: Option<TypeName>,
-    pub(crate) value: Expr,
+    pub annotations: Option<AnnotationsSyntax>,
+    pub is_mut: bool,
+    pub name: String,
+    pub type_: Option<TypeName>,
+    pub value: Expr,
 }
 
 impl Annotatable for VarSyntax {
@@ -59,13 +59,13 @@ impl Annotatable for VarSyntax {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct FunSyntax {
-    pub(crate) annotations: Option<AnnotationsSyntax>,
-    pub(crate) modifiers: Vec<String>,
-    pub(crate) name: String,
-    pub(crate) type_params: Option<Vec<TypeParam>>,
-    pub(crate) arg_defs: Vec<ArgDef>,
-    pub(crate) return_type: Option<TypeName>,
-    pub(crate) body: Option<FunBody>,
+    pub annotations: Option<AnnotationsSyntax>,
+    pub modifiers: Vec<String>,
+    pub name: String,
+    pub type_params: Option<Vec<TypeParam>>,
+    pub arg_defs: Vec<ArgDef>,
+    pub return_type: Option<TypeName>,
+    pub body: Option<FunBody>,
 }
 
 impl Annotatable for FunSyntax {
@@ -77,10 +77,10 @@ impl Annotatable for FunSyntax {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct StructSyntax {
-    pub(crate) annotations: Option<AnnotationsSyntax>,
-    pub(crate) name: String,
-    pub(crate) type_params: Option<Vec<TypeParam>>,
-    pub(crate) properties: Vec<StructPropertySyntax>,
+    pub annotations: Option<AnnotationsSyntax>,
+    pub name: String,
+    pub type_params: Option<Vec<TypeParam>>,
+    pub properties: Vec<StructPropertySyntax>,
 }
 
 impl Annotatable for StructSyntax {
@@ -101,38 +101,38 @@ pub enum StructPropertySyntax {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct StoredPropertySyntax {
-    pub(crate) is_mut: bool,
-    pub(crate) name: String,
-    pub(crate) type_: TypeName,
+    pub is_mut: bool,
+    pub name: String,
+    pub type_: TypeName,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct InitializerSyntax {
-    pub(crate) init_keyword: TokenSyntax,
-    pub(crate) args: Vec<ArgDef>,
-    pub(crate) body: FunBody,
+    pub init_keyword: TokenSyntax,
+    pub args: Vec<ArgDef>,
+    pub body: FunBody,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct DeinitializerSyntax {
-    pub(crate) deinit_keyword: TokenSyntax,
-    pub(crate) body: FunBody,
+    pub deinit_keyword: TokenSyntax,
+    pub body: FunBody,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MethodSyntax {
-    pub(crate) name: String,
-    pub(crate) args: Vec<ArgDef>,
-    pub(crate) type_params: Option<Vec<TypeParam>>,
-    pub(crate) body: Option<FunBody>,
-    pub(crate) return_type: Option<TypeName>,
+    pub name: String,
+    pub args: Vec<ArgDef>,
+    pub type_params: Option<Vec<TypeParam>>,
+    pub body: Option<FunBody>,
+    pub return_type: Option<TypeName>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct UseSyntax {
-    pub(crate) annotations: Option<AnnotationsSyntax>,
-    pub(crate) package_name: PackageName,
-    pub(crate) alias: Option<String>,
+    pub annotations: Option<AnnotationsSyntax>,
+    pub package_name: PackageName,
+    pub alias: Option<String>,
 }
 
 impl Annotatable for UseSyntax {
@@ -144,16 +144,16 @@ impl Annotatable for UseSyntax {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct PackageName {
-    pub(crate) names: Vec<String>,
+    pub names: Vec<String>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct ExternCSyntax {
-    pub(crate) annotations: Option<AnnotationsSyntax>,
-    pub(crate) extern_keyword: TokenSyntax,
-    pub(crate) left_brace: TokenSyntax,
-    pub(crate) declarations: Vec<Decl>,
-    pub(crate) right_brace: TokenSyntax,
+    pub annotations: Option<AnnotationsSyntax>,
+    pub extern_keyword: TokenSyntax,
+    pub left_brace: TokenSyntax,
+    pub declarations: Vec<Decl>,
+    pub right_brace: TokenSyntax,
 }
 
 impl Annotatable for ExternCSyntax {

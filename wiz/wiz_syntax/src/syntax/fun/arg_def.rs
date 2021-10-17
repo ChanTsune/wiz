@@ -12,13 +12,13 @@ impl SyntaxNode for ArgDef {}
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct ValueArgDef {
-    pub(crate) label: String,
-    pub(crate) name: String,
-    pub(crate) type_name: TypeName,
+    pub label: String,
+    pub name: String,
+    pub type_name: TypeName,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct SelfArgDefSyntax {
-    pub(crate) reference: Option<TokenSyntax>,
-    pub(crate) self_: TokenSyntax,
+    pub reference: Option<TokenSyntax>,
+    pub self_: TokenSyntax,
 }

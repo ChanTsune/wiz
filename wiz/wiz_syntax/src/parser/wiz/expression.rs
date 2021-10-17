@@ -125,7 +125,7 @@ where
                         )),
                         |(_, code): (char, I)| -> char {
                             decode_utf16(vec![u16::from_str_radix(&*code.to_string(), 16).unwrap()])
-                                .nth(0)
+                                .next()
                                 .unwrap()
                                 .unwrap_or(REPLACEMENT_CHARACTER)
                         },
@@ -147,11 +147,7 @@ where
     I: InputTake + Compare<&'static str> + Clone + ToString,
 {
     map(alt((true_keyword, false_keyword)), |b: I| {
-        LiteralSyntax::Boolean(TokenSyntax {
-            leading_trivia: Trivia::new(),
-            token: b.to_string(),
-            trailing_trivia: Trivia::new(),
-        })
+        LiteralSyntax::Boolean(TokenSyntax::new(b.to_string()))
     })(s)
 }
 
@@ -179,7 +175,7 @@ where
             string_literal,
             raw_string_literal,
         )),
-        |l| Expr::Literal(l),
+        Expr::Literal,
     )(s)
 }
 
@@ -261,7 +257,7 @@ where
         |(r, ws, e): (I, _, _)| {
             Expr::Return(ReturnSyntax {
                 return_keyword: TokenSyntax::new(r.to_string()).with_trailing_trivia(ws),
-                value: e.map(|i| Box::new(i)),
+                value: e.map(Box::new),
             })
         },
     )(s)
@@ -473,7 +469,7 @@ where
         for suffix in suffixes {
             e = match suffix {
                 // TODO: impl
-                PostfixSuffix::Operator { kind } => {
+                PostfixSuffix::Operator(kind) => {
                     Expr::UnaryOp(UnaryOperationSyntax::Postfix(PostfixUnaryOperationSyntax {
                         target: Box::new(e),
                         operator: TokenSyntax::new(kind),
@@ -550,8 +546,8 @@ where
     <I as InputTakeAtPosition>::Item: AsChar,
 {
     alt((
-        map(postfix_operator, |s: I| PostfixSuffix::Operator {
-            kind: s.to_string(),
+        map(postfix_operator, |s: I| {
+            PostfixSuffix::Operator(s.to_string())
         }),
         map(type_arguments, |type_names| {
             PostfixSuffix::TypeArgumentSuffix { types: type_names }
@@ -805,7 +801,7 @@ where
             )),
         )),
         |(ta, (args, tl))| PostfixSuffix::CallSuffix {
-            args: args.unwrap_or(vec![]),
+            args: args.unwrap_or_default(),
             tailing_lambda: tl,
         },
     )(s)
@@ -842,14 +838,12 @@ where
         )),
         |(_, args_t, _)| {
             let mut args = vec![];
-            match args_t {
-                Some((a, ags, _)) => {
-                    args.insert(args.len(), a);
-                    for (_, ar) in ags {
-                        args.insert(args.len(), ar);
-                    }
-                }
-                None => {}
+            if let Some((a, ags, _)) = args_t {
+                args = args
+                    .into_iter()
+                    .chain(vec![a])
+                    .chain(ags.into_iter().map(|(_, ar)| ar))
+                    .collect();
             };
             args
         },
@@ -885,10 +879,7 @@ where
         |(_, arg_label, is_vararg, arg)| CallArg {
             label: arg_label.map(|(label, _, _, _)| label),
             arg: Box::new(arg),
-            is_vararg: match is_vararg {
-                None => false,
-                Some(_) => true,
-            },
+            is_vararg: is_vararg.is_some(),
         },
     )(s)
 }
@@ -1440,11 +1431,7 @@ mod tests {
             boolean_literal("true"),
             Ok((
                 "",
-                LiteralSyntax::Boolean(TokenSyntax {
-                    leading_trivia: Trivia::new(),
-                    token: "true".to_string(),
-                    trailing_trivia: Trivia::new()
-                })
+                LiteralSyntax::Boolean(TokenSyntax::new("true".to_string()))
             ))
         )
     }

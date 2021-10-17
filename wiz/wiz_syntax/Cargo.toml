@@ -1,5 +1,5 @@
 [package]
-name = "wizc"
+name = "wiz_syntax"
 version = "0.0.0"
 authors = ["ChanTsune <41658782+ChanTsune@users.noreply.github.com>"]
 edition = "2018"
@@ -7,7 +7,5 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-inkwell = { git = "https://github.com/TheDan64/inkwell", branch = "master", features = ["llvm11-0"] }
-either ="1.6.1"
-clap = "2.33.3"
-wiz_syntax = { path = "./wiz_syntax" }
+nom = "7.0.0"
+nom_locate = "4.0.0"

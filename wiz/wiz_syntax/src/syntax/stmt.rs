@@ -22,16 +22,16 @@ pub enum AssignmentStmt {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct AssignmentSyntax {
-    pub(crate) target: Expr,
-    pub(crate) operator: TokenSyntax,
-    pub(crate) value: Expr,
+    pub target: Expr,
+    pub operator: TokenSyntax,
+    pub value: Expr,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct AssignmentAndOperatorSyntax {
-    pub(crate) target: Expr,
-    pub(crate) operator: TokenSyntax,
-    pub(crate) value: Expr,
+    pub target: Expr,
+    pub operator: TokenSyntax,
+    pub value: Expr,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -46,6 +46,6 @@ pub enum LoopStmt {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct WhileLoopSyntax {
-    pub(crate) condition: Expr,
-    pub(crate) block: BlockSyntax,
+    pub condition: Expr,
+    pub block: BlockSyntax,
 }
