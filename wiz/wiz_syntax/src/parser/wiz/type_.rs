@@ -247,14 +247,25 @@ where
 mod tests {
     use crate::parser::wiz::type_::{pointer_type, reference_type, type_parameter, user_type};
     use crate::syntax::name_space::NameSpaceSyntax;
-    use crate::syntax::type_name::{DecoratedTypeName, NameSpacedTypeName, SimpleTypeName, TypeName, TypeParam};
+    use crate::syntax::type_name::{
+        DecoratedTypeName, NameSpacedTypeName, SimpleTypeName, TypeName, TypeParam,
+    };
 
     #[test]
     fn test_name_spaced_type() {
-        assert_eq!(user_type("std::builtin::String"), Ok(("", TypeName::NameSpaced(Box::new(NameSpacedTypeName {
-            name_space: NameSpaceSyntax::from(vec!["std", "builtin"]),
-            type_name: TypeName::Simple(SimpleTypeName { name: "String".to_string(), type_args: None })
-        })))));
+        assert_eq!(
+            user_type("std::builtin::String"),
+            Ok((
+                "",
+                TypeName::NameSpaced(Box::new(NameSpacedTypeName {
+                    name_space: NameSpaceSyntax::from(vec!["std", "builtin"]),
+                    type_name: TypeName::Simple(SimpleTypeName {
+                        name: "String".to_string(),
+                        type_args: None
+                    })
+                }))
+            ))
+        );
     }
 
     #[test]
