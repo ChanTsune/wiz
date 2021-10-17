@@ -360,7 +360,6 @@ impl HLIR2MLIR {
             stored_properties,
             computed_properties,
             member_functions,
-            static_function,
         } = s;
         let mut ns = self.context.current_name_space.clone();
         ns.push(name.clone());

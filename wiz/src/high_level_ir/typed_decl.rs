@@ -88,7 +88,6 @@ pub struct TypedStruct {
     pub(crate) stored_properties: Vec<TypedStoredProperty>,
     pub(crate) computed_properties: Vec<TypedComputedProperty>,
     pub(crate) member_functions: Vec<TypedMemberFunction>,
-    pub(crate) static_function: Vec<TypedFun>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]

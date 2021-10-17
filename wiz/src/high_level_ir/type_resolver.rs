@@ -179,7 +179,6 @@ impl TypeResolver {
             stored_properties,
             computed_properties,
             member_functions,
-            static_function,
         } = s;
         let current_namespace = self.context.current_namespace.clone();
         let this_type = TypedType::Value(TypedValueType {
@@ -216,15 +215,6 @@ impl TypeResolver {
                 name
             )))?;
             rs.member_functions.insert(member_function.name, type_);
-        }
-        for sf in static_function.iter() {
-            let ns = self.context.get_current_namespace_mut()?;
-            let rs = ns.get_type_mut(&name).ok_or(ResolverError::from(format!(
-                "Struct {:?} not exist. Maybe before preload",
-                name
-            )))?;
-            rs.static_functions
-                .insert(sf.name.clone(), sf.type_().unwrap());
         }
         for ini in initializers.iter() {
             let ns = self.context.get_current_namespace_mut()?;
@@ -423,7 +413,6 @@ impl TypeResolver {
             stored_properties,   // TODO
             computed_properties, // TODO
             member_functions,    // TODO
-            static_function,     // TODO
         } = s;
         let current_namespace = self.context.current_namespace.clone();
         let this_type = TypedType::Value(TypedValueType {
@@ -442,7 +431,6 @@ impl TypeResolver {
             .into_iter()
             .map(|m| self.typed_member_function(m))
             .collect::<Result<Vec<TypedMemberFunction>>>()?;
-        let static_function = static_function.into_iter().collect();
         self.context.clear_current_type();
         Result::Ok(TypedStruct {
             annotations,
@@ -453,7 +441,6 @@ impl TypeResolver {
             stored_properties,
             computed_properties,
             member_functions,
-            static_function,
         })
     }
 
@@ -852,7 +839,7 @@ impl TypeResolver {
             block,
         } = f;
         Result::Ok(TypedForStmt {
-            values: values,
+            values,
             iterator: self.expr(iterator)?,
             block: self.typed_block(block)?,
         })
