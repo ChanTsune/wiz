@@ -5,8 +5,6 @@ use crate::high_level_ir::Ast2HLIR;
 use crate::llvm_ir::codegen::{CodeGen, MLContext};
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::HLIR2MLIR;
-use wiz_syntax::parser::wiz::{parse_from_file_path, parse_from_file_path_str, read_package_from_path};
-use wiz_syntax::syntax::file::WizFile;
 use clap::{App, Arg};
 use inkwell::context::Context;
 use inkwell::execution_engine::JitFunction;
@@ -17,6 +15,10 @@ use std::path::Path;
 use std::process::exit;
 use std::result;
 use wiz_syntax::parser;
+use wiz_syntax::parser::wiz::{
+    parse_from_file_path, parse_from_file_path_str, read_package_from_path,
+};
+use wiz_syntax::syntax::file::WizFile;
 
 mod constants;
 mod ext;

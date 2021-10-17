@@ -1,4 +1,3 @@
-use wiz_syntax::parser::wiz::parse_from_string;
 use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::Ast2HLIR;
 use crate::middle_level_ir::ml_decl::{
@@ -11,6 +10,7 @@ use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLStmt};
 use crate::middle_level_ir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
 use crate::middle_level_ir::HLIR2MLIR;
+use wiz_syntax::parser::wiz::parse_from_string;
 
 #[test]
 fn test_empty() {

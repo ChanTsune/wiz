@@ -15,6 +15,8 @@ use crate::high_level_ir::typed_stmt::{
     TypedBlock, TypedForStmt, TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
 };
 use crate::high_level_ir::typed_type::{Package, TypedType, TypedTypeParam, TypedValueType};
+use crate::utils::path_string_to_page_name;
+use std::option::Option::Some;
 use wiz_syntax::syntax::annotation::AnnotationsSyntax;
 use wiz_syntax::syntax::block::BlockSyntax;
 use wiz_syntax::syntax::decl::{
@@ -32,8 +34,6 @@ use wiz_syntax::syntax::fun::body_def::FunBody;
 use wiz_syntax::syntax::literal::LiteralSyntax;
 use wiz_syntax::syntax::stmt::{AssignmentStmt, LoopStmt, Stmt, WhileLoopSyntax};
 use wiz_syntax::syntax::type_name::{TypeName, TypeParam};
-use crate::utils::path_string_to_page_name;
-use std::option::Option::Some;
 
 pub mod type_resolver;
 pub mod typed_annotation;
