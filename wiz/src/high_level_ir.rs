@@ -437,6 +437,7 @@ impl Ast2HLIR {
 
     pub fn name_syntax(&self, n: NameExprSyntax) -> TypedName {
         let NameExprSyntax { name_space, name } = n;
+        let name_space = name_space.elements.into_iter().map(|e|e.name.token).collect::<Vec<String>>();
         TypedName {
             package: if name_space.is_empty() {
                 None

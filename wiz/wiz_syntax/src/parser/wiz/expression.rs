@@ -39,6 +39,7 @@ use nom::{
 };
 use std::char::{decode_utf16, REPLACEMENT_CHARACTER};
 use std::ops::{Range, RangeFrom};
+use crate::parser::wiz::name_space::name_space;
 
 pub fn integer_literal<I>(s: I) -> IResult<I, LiteralSyntax>
 where
@@ -179,21 +180,6 @@ where
     )(s)
 }
 
-pub fn name_space<I>(s: I) -> IResult<I, Vec<String>>
-where
-    I: Slice<RangeFrom<usize>>
-        + InputIter
-        + InputTake
-        + InputLength
-        + Clone
-        + Compare<&'static str>,
-    <I as InputIter>::Item: AsChar,
-{
-    map(many0(tuple((identifier, tag("::")))), |ns| {
-        ns.into_iter().map(|(i, _)| i).collect()
-    })(s)
-}
-
 pub fn name_expr<I>(s: I) -> IResult<I, Expr>
 where
     I: Slice<RangeFrom<usize>>
@@ -201,12 +187,13 @@ where
         + InputTake
         + InputLength
         + Clone
+        + ToString
         + Compare<&'static str>,
     <I as InputIter>::Item: AsChar,
 {
-    map(tuple((name_space, identifier)), |(ns, name)| {
+    map(tuple((name_space, identifier)), |(name_space, name)| {
         Expr::Name(NameExprSyntax {
-            name_space: ns,
+            name_space,
             name,
         })
     })(s)
@@ -1323,6 +1310,7 @@ mod tests {
         IfExprSyntax, MemberSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax,
     };
     use crate::syntax::literal::LiteralSyntax;
+    use crate::syntax::name_space::NameSpaceSyntax;
     use crate::syntax::stmt::Stmt;
     use crate::syntax::token::TokenSyntax;
     use crate::syntax::trivia::{Trivia, TriviaPiece};
@@ -1443,7 +1431,7 @@ mod tests {
             Ok((
                 "",
                 Expr::Name(NameExprSyntax {
-                    name_space: vec![String::from("std"), String::from("builtin")],
+                    name_space: NameSpaceSyntax::from(vec!["std", "builtin"]),
                     name: "println".to_string()
                 })
             ))
