@@ -147,11 +147,7 @@ where
     I: InputTake + Compare<&'static str> + Clone + ToString,
 {
     map(alt((true_keyword, false_keyword)), |b: I| {
-        LiteralSyntax::Boolean(TokenSyntax {
-            leading_trivia: Trivia::new(),
-            token: b.to_string(),
-            trailing_trivia: Trivia::new(),
-        })
+        LiteralSyntax::Boolean(TokenSyntax::new(b.to_string()))
     })(s)
 }
 
@@ -1435,11 +1431,7 @@ mod tests {
             boolean_literal("true"),
             Ok((
                 "",
-                LiteralSyntax::Boolean(TokenSyntax {
-                    leading_trivia: Trivia::new(),
-                    token: "true".to_string(),
-                    trailing_trivia: Trivia::new()
-                })
+                LiteralSyntax::Boolean(TokenSyntax::new("true".to_string()))
             ))
         )
     }
