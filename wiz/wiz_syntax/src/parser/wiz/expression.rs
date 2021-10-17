@@ -179,7 +179,7 @@ where
             string_literal,
             raw_string_literal,
         )),
-        |l| Expr::Literal(l),
+        Expr::Literal,
     )(s)
 }
 
@@ -261,7 +261,7 @@ where
         |(r, ws, e): (I, _, _)| {
             Expr::Return(ReturnSyntax {
                 return_keyword: TokenSyntax::new(r.to_string()).with_trailing_trivia(ws),
-                value: e.map(|i| Box::new(i)),
+                value: e.map(Box::new),
             })
         },
     )(s)
