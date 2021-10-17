@@ -50,12 +50,18 @@ mod tests {
 
     #[test]
     fn test_name_space_element() {
-        assert_eq!(name_space_element("name::"), Ok(("", NameSpaceElementSyntax::from("name"))));
+        assert_eq!(
+            name_space_element("name::"),
+            Ok(("", NameSpaceElementSyntax::from("name")))
+        );
     }
 
     #[test]
     fn test_name_space() {
         assert_eq!(name_space(""), Ok(("", NameSpaceSyntax::default())));
-        assert_eq!(name_space("a::b::"), Ok(("", NameSpaceSyntax::from(vec!["a", "b"]))));
+        assert_eq!(
+            name_space("a::b::"),
+            Ok(("", NameSpaceSyntax::from(vec!["a", "b"])))
+        );
     }
 }
