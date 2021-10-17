@@ -6,9 +6,9 @@ use crate::syntax::Syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct BlockSyntax {
-    pub(crate) open: TokenSyntax,
-    pub(crate) body: Vec<Stmt>,
-    pub(crate) close: TokenSyntax,
+    pub open: TokenSyntax,
+    pub body: Vec<Stmt>,
+    pub close: TokenSyntax,
 }
 
 impl Syntax for BlockSyntax {

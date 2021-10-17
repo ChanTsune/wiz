@@ -10,7 +10,7 @@ use nom::sequence::tuple;
 use nom::{AsChar, Compare, FindSubstring, IResult, InputIter, InputLength, InputTake, Slice};
 use std::ops::{Range, RangeFrom};
 
-pub(crate) fn annotations<I>(s: I) -> IResult<I, AnnotationsSyntax>
+pub fn annotations<I>(s: I) -> IResult<I, AnnotationsSyntax>
 where
     I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
