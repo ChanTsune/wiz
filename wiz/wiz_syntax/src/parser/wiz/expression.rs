@@ -6,6 +6,7 @@ use crate::parser::wiz::keywords::{
 use crate::parser::wiz::lexical_structure::{
     identifier, whitespace0, whitespace1, whitespace_without_eol0,
 };
+use crate::parser::wiz::name_space::name_space;
 use crate::parser::wiz::operators::{
     additive_operator, as_operator, comparison_operator, conjunction_operator,
     disjunction_operator, elvis_operator, equality_operator, in_operator, is_operator,
@@ -39,7 +40,6 @@ use nom::{
 };
 use std::char::{decode_utf16, REPLACEMENT_CHARACTER};
 use std::ops::{Range, RangeFrom};
-use crate::parser::wiz::name_space::name_space;
 
 pub fn integer_literal<I>(s: I) -> IResult<I, LiteralSyntax>
 where
@@ -192,10 +192,7 @@ where
     <I as InputIter>::Item: AsChar,
 {
     map(tuple((name_space, identifier)), |(name_space, name)| {
-        Expr::Name(NameExprSyntax {
-            name_space,
-            name,
-        })
+        Expr::Name(NameExprSyntax { name_space, name })
     })(s)
 }
 
