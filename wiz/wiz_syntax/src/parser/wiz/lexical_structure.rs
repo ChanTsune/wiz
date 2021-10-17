@@ -41,7 +41,7 @@ where
         + Compare<&'static str>,
     <I as InputIter>::Item: AsChar + Copy,
 {
-    map(many1(trivia_piece),Trivia::from)(s)
+    map(many1(trivia_piece), Trivia::from)(s)
 }
 
 pub fn whitespace_without_eol0<I>(s: I) -> IResult<I, Trivia>
@@ -134,7 +134,7 @@ where
         + ToString,
     <I as InputIter>::Item: AsChar + Copy,
 {
-    map(_line_comment,  TriviaPiece::LineComment)(s)
+    map(_line_comment, TriviaPiece::LineComment)(s)
 }
 
 fn doc_line_comment<I>(s: I) -> IResult<I, TriviaPiece>
