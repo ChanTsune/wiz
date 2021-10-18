@@ -15,6 +15,7 @@ use crate::high_level_ir::typed_stmt::{
     TypedBlock, TypedForStmt, TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
 };
 use crate::high_level_ir::typed_type::{Package, TypedType, TypedTypeParam, TypedValueType};
+use crate::high_level_ir::typed_use::TypedUse;
 use crate::utils::path_string_to_page_name;
 use std::option::Option::Some;
 use wiz_syntax::syntax::annotation::AnnotationsSyntax;
@@ -34,7 +35,6 @@ use wiz_syntax::syntax::fun::body_def::FunBody;
 use wiz_syntax::syntax::literal::LiteralSyntax;
 use wiz_syntax::syntax::stmt::{AssignmentStmt, LoopStmt, Stmt, WhileLoopSyntax};
 use wiz_syntax::syntax::type_name::{TypeName, TypeParam};
-use crate::high_level_ir::typed_use::TypedUse;
 
 pub mod type_resolver;
 pub mod typed_annotation;
@@ -63,9 +63,7 @@ impl Ast2HLIR {
     }
 
     pub fn file(&mut self, f: WizFile) -> TypedFile {
-        let WizFile {
-            name, syntax
-        } = f;
+        let WizFile { name, syntax } = f;
         let mut uses = vec![];
         let mut others = vec![];
         for l in syntax.body.into_iter() {
@@ -79,9 +77,7 @@ impl Ast2HLIR {
         TypedFile {
             name: path_string_to_page_name(name),
             uses,
-            body: self.file_syntax(FileSyntax {
-                body: others
-            }),
+            body: self.file_syntax(FileSyntax { body: others }),
         }
     }
 
@@ -166,7 +162,9 @@ impl Ast2HLIR {
             Decl::Enum { .. } => TypedDecl::Enum,
             Decl::Protocol { .. } => TypedDecl::Protocol,
             Decl::Extension { .. } => TypedDecl::Extension,
-            Decl::Use(_) => {panic!("Never execution branch executed!!")}
+            Decl::Use(_) => {
+                panic!("Never execution branch executed!!")
+            }
         }
     }
 
