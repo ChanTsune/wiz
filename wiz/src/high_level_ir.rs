@@ -1,7 +1,7 @@
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedFun, TypedFunBody, TypedInitializer,
-    TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedUse, TypedValueArgDef, TypedVar,
+    TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedValueArgDef, TypedVar,
 };
 use crate::high_level_ir::typed_expr::{
     TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
@@ -34,6 +34,7 @@ use wiz_syntax::syntax::fun::body_def::FunBody;
 use wiz_syntax::syntax::literal::LiteralSyntax;
 use wiz_syntax::syntax::stmt::{AssignmentStmt, LoopStmt, Stmt, WhileLoopSyntax};
 use wiz_syntax::syntax::type_name::{TypeName, TypeParam};
+use crate::high_level_ir::typed_use::TypedUse;
 
 pub mod type_resolver;
 pub mod typed_annotation;
@@ -42,6 +43,7 @@ pub mod typed_expr;
 pub mod typed_file;
 pub mod typed_stmt;
 pub mod typed_type;
+pub mod typed_use;
 
 pub struct Ast2HLIR;
 
@@ -61,9 +63,25 @@ impl Ast2HLIR {
     }
 
     pub fn file(&mut self, f: WizFile) -> TypedFile {
+        let WizFile {
+            name, syntax
+        } = f;
+        let mut uses = vec![];
+        let mut others = vec![];
+        for l in syntax.body.into_iter() {
+            if let Decl::Use(u) = l {
+                uses.push(self.use_syntax(u));
+            } else {
+                others.push(l);
+            }
+        }
+
         TypedFile {
-            name: path_string_to_page_name(f.name),
-            body: self.file_syntax(f.syntax),
+            name: path_string_to_page_name(name),
+            uses,
+            body: self.file_syntax(FileSyntax {
+                body: others
+            }),
         }
     }
 
@@ -148,7 +166,7 @@ impl Ast2HLIR {
             Decl::Enum { .. } => TypedDecl::Enum,
             Decl::Protocol { .. } => TypedDecl::Protocol,
             Decl::Extension { .. } => TypedDecl::Extension,
-            Decl::Use(u) => TypedDecl::Use(self.use_syntax(u)),
+            Decl::Use(_) => {panic!("Never execution branch executed!!")}
         }
     }
 
@@ -249,7 +267,7 @@ impl Ast2HLIR {
                     todo!()
                 }
             }
-            TypeName::NameSpaced(_) => {
+            TypeName::NameSpaced(n) => {
                 todo!()
             }
         }
