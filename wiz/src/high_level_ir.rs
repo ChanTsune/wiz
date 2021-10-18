@@ -19,7 +19,10 @@ use crate::utils::path_string_to_page_name;
 use std::option::Option::Some;
 use wiz_syntax::syntax::annotation::AnnotationsSyntax;
 use wiz_syntax::syntax::block::BlockSyntax;
-use wiz_syntax::syntax::decl::{Decl, FunSyntax, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax, VarSyntax};
+use wiz_syntax::syntax::decl::{
+    Decl, FunSyntax, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax,
+    StructSyntax, UseSyntax, VarSyntax,
+};
 use wiz_syntax::syntax::expr::{
     ArraySyntax, BinaryOperationSyntax, CallExprSyntax, Expr, IfExprSyntax, LambdaSyntax,
     MemberSyntax, NameExprSyntax, PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax,
