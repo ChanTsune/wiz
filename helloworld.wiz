@@ -1,4 +1,5 @@
 use std::builtin::println
+use std::collection::vector::UInt8Vector
 
 struct A {
     var a: Int64
@@ -16,7 +17,7 @@ fun modBy2(_ n: Int64): Int64 {
 fun modBy2Expr(_ n: Int64) = n % 2
 
 fun main() {
-    val vector = std::collection::vector::UInt8Vector.init()
+    val vector = UInt8Vector.init()
     var s = A.init(a: 1, b: 0)
     val b = 2
     while !(s.a >= 15) {
