@@ -36,6 +36,7 @@ fn test_empty() {
         f,
         Result::Ok(TypedFile {
             name: "test".to_string(),
+            uses: vec![],
             body: vec![]
         })
     );
@@ -68,6 +69,7 @@ fn test_unsafe_pointer() {
         f,
         Result::Ok(TypedFile {
             name: "test".to_string(),
+            uses: vec![],
             body: vec![
                 TypedDecl::Struct(TypedStruct {
                     annotations: TypedAnnotations::new(),
@@ -190,6 +192,7 @@ fn test_struct_stored_property() {
         f,
         Result::Ok(TypedFile {
             name: "test".to_string(),
+            uses: vec![],
             body: vec![
                 TypedDecl::Struct(TypedStruct {
                     annotations: TypedAnnotations::new(),
@@ -312,6 +315,7 @@ fn test_struct_init() {
         f,
         Result::Ok(TypedFile {
             name: "test".to_string(),
+            uses: vec![],
             body: vec![
                 TypedDecl::Struct(TypedStruct {
                     annotations: TypedAnnotations::new(),
@@ -471,6 +475,7 @@ fn test_struct_member_function() {
         f,
         Result::Ok(TypedFile {
             name: "test".to_string(),
+            uses: vec![],
             body: vec![TypedDecl::Struct(TypedStruct {
                 annotations: TypedAnnotations::new(),
                 package: Some(Package::new(vec![String::from("test")])),
@@ -581,6 +586,7 @@ fn test_struct_member_function_call() {
         f,
         Result::Ok(TypedFile {
             name: "test".to_string(),
+            uses: vec![],
             body: vec![
                 TypedDecl::Struct(TypedStruct {
                     annotations: TypedAnnotations::new(),
@@ -729,6 +735,7 @@ fn test_expr_function_with_no_arg() {
         f,
         Result::Ok(TypedFile {
             name: "test".to_string(),
+            uses: vec![],
             body: vec![TypedDecl::Fun(TypedFun {
                 annotations: TypedAnnotations::new(),
                 package: Some(Package::new(vec![String::from("test")])),
@@ -769,6 +776,7 @@ fn test_expr_function_with_arg() {
         f,
         Result::Ok(TypedFile {
             name: "test".to_string(),
+            uses: vec![],
             body: vec![TypedDecl::Fun(TypedFun {
                 annotations: TypedAnnotations::new(),
                 package: Some(Package::new(vec![String::from("test")])),
@@ -815,6 +823,7 @@ fn test_function_call() {
         f,
         Result::Ok(TypedFile {
             name: "test".to_string(),
+            uses: vec![],
             body: vec![
                 TypedDecl::Fun(TypedFun {
                     annotations: TypedAnnotations::new(),
@@ -882,6 +891,7 @@ fn test_return_integer_literal() {
         f,
         Result::Ok(TypedFile {
             name: "test".to_string(),
+            uses: vec![],
             body: vec![TypedDecl::Fun(TypedFun {
                 annotations: TypedAnnotations::new(),
                 package: Some(Package::new(vec![String::from("test")])),
@@ -926,6 +936,7 @@ fn test_return_floating_point_literal() {
         f,
         Result::Ok(TypedFile {
             name: "test".to_string(),
+            uses: vec![],
             body: vec![TypedDecl::Fun(TypedFun {
                 annotations: TypedAnnotations::new(),
                 package: Some(Package::new(vec![String::from("test")])),
@@ -972,6 +983,7 @@ fn test_binop() {
         f,
         Result::Ok(TypedFile {
             name: "test".to_string(),
+            uses: vec![],
             body: vec![TypedDecl::Fun(TypedFun {
                 annotations: TypedAnnotations::new(),
                 package: Some(Package::new(vec![String::from("test")])),
@@ -1020,6 +1032,7 @@ fn test_subscript() {
         f,
         Result::Ok(TypedFile {
             name: "test".to_string(),
+            uses: vec![],
             body: vec![TypedDecl::Fun(TypedFun {
                 annotations: TypedAnnotations::new(),
                 package: Some(Package::new(vec![String::from("test")])),
@@ -1072,6 +1085,7 @@ fn test_if_else() {
         f,
         Result::Ok(TypedFile {
             name: "test".to_string(),
+            uses: vec![],
             body: vec![TypedDecl::Fun(TypedFun {
                 annotations: TypedAnnotations::new(),
                 package: Some(Package::new(vec![String::from("test")])),
@@ -1149,6 +1163,7 @@ fn test_if() {
         f,
         Result::Ok(TypedFile {
             name: "test".to_string(),
+            uses: vec![],
             body: vec![TypedDecl::Fun(TypedFun {
                 annotations: TypedAnnotations::new(),
                 package: Some(Package::new(vec![String::from("test")])),
