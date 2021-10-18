@@ -336,7 +336,8 @@ impl ResolverContext {
                 let name = u.pop().unwrap();
                 let s = self.get_namespace(u.clone()).unwrap();
                 let t = s.get_value(&name);
-                env.names.insert(name, (u, EnvValue::Value(t.cloned().unwrap())));
+                env.names
+                    .insert(name, (u, EnvValue::Value(t.cloned().unwrap())));
             };
         }
         env.use_values_from_local(&self.local_stack);
@@ -390,10 +391,10 @@ impl ResolverContext {
             (name_space.remove(0), name_space, Some(name))
         };
         let env = self.get_current_name_environment();
-        let env_value = env.names.get(&name).ok_or_else(||ResolverError::from(format!(
-            "Cannot resolve name => {:?}",
-            name
-        )))?;
+        let env_value = env
+            .names
+            .get(&name)
+            .ok_or_else(|| ResolverError::from(format!("Cannot resolve name => {:?}", name)))?;
         match env_value {
             (_, EnvValue::NameSpace(child)) => {
                 let n = n.unwrap();
