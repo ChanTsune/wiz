@@ -254,6 +254,9 @@ impl TypeResolver {
         if name != String::from("builtin.ll") {
             self.context.push_name_space(f.name.clone());
         };
+        for u in f.uses.iter() {
+            self.context.use_name_space(u.package.names.clone());
+        }
         let result = Result::Ok(TypedFile {
             name: f.name,
             uses: vec![],
@@ -263,6 +266,9 @@ impl TypeResolver {
                 .map(|s| self.decl(s))
                 .collect::<Result<Vec<TypedDecl>>>()?,
         });
+        for u in f.uses.into_iter() {
+            self.context.unuse_name_space(u.package.names);
+        }
         if name != String::from("builtin.ll") {
             self.context.pop_name_space();
         };

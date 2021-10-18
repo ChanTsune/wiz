@@ -328,6 +328,17 @@ impl ResolverContext {
         let mut env = NameEnvironment::new();
         env.use_values_from(self.get_namespace(vec![]).unwrap());
         env.use_values_from(self.get_current_namespace().unwrap());
+        for mut u in self.used_name_space.iter().cloned() {
+            if let Result::Ok(n) = self.get_namespace(u.clone()) {
+                let name = u.pop().unwrap();
+                env.names.insert(name, (u, EnvValue::NameSpace(n.clone())));
+            } else {
+                let name = u.pop().unwrap();
+                let s = self.get_namespace(u.clone()).unwrap();
+                let t = s.get_value(&name);
+                env.names.insert(name, (u, EnvValue::Value(t.cloned().unwrap())));
+            };
+        }
         env.use_values_from_local(&self.local_stack);
         env
     }
@@ -379,8 +390,8 @@ impl ResolverContext {
             (name_space.remove(0), name_space, Some(name))
         };
         let env = self.get_current_name_environment();
-        let env_value = env.names.get(&name).ok_or(ResolverError::from(format!(
-            "Cannot resolve name {:?}",
+        let env_value = env.names.get(&name).ok_or_else(||ResolverError::from(format!(
+            "Cannot resolve name => {:?}",
             name
         )))?;
         match env_value {
