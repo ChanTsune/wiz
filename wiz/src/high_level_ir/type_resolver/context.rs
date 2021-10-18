@@ -58,6 +58,7 @@ struct ResolverUnary {
 
 #[derive(Debug, Clone)]
 pub struct ResolverContext {
+    used_name_space: Vec<Vec<String>>,
     name_space: NameSpace,
     binary_operators: HashMap<(TypedBinaryOperator, TypedType, TypedType), TypedType>,
     subscripts: Vec<ResolverSubscript>,
@@ -244,6 +245,7 @@ impl ResolverContext {
             }
         }
         Self {
+            used_name_space: Default::default(),
             name_space: ns,
             binary_operators: bo,
             subscripts: Default::default(),
@@ -328,6 +330,17 @@ impl ResolverContext {
         env.use_values_from(self.get_current_namespace().unwrap());
         env.use_values_from_local(&self.local_stack);
         env
+    }
+
+    pub(crate) fn use_name_space(&mut self, n: Vec<String>) {
+        self.used_name_space.push(n);
+    }
+
+    pub(crate) fn unuse_name_space(&mut self, n: Vec<String>) {
+        let i = self.used_name_space.iter().rposition(|i|i.eq(&n));
+        if let Some(i) = i{
+            self.used_name_space.remove(i);
+        };
     }
 
     pub fn resolve_member_type(&mut self, t: TypedType, name: String) -> Result<TypedType> {
