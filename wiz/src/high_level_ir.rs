@@ -19,10 +19,7 @@ use crate::utils::path_string_to_page_name;
 use std::option::Option::Some;
 use wiz_syntax::syntax::annotation::AnnotationsSyntax;
 use wiz_syntax::syntax::block::BlockSyntax;
-use wiz_syntax::syntax::decl::{
-    Decl, FunSyntax, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax,
-    StructSyntax, VarSyntax,
-};
+use wiz_syntax::syntax::decl::{Decl, FunSyntax, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax, VarSyntax};
 use wiz_syntax::syntax::expr::{
     ArraySyntax, BinaryOperationSyntax, CallExprSyntax, Expr, IfExprSyntax, LambdaSyntax,
     MemberSyntax, NameExprSyntax, PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax,
@@ -148,13 +145,7 @@ impl Ast2HLIR {
             Decl::Enum { .. } => TypedDecl::Enum,
             Decl::Protocol { .. } => TypedDecl::Protocol,
             Decl::Extension { .. } => TypedDecl::Extension,
-            Decl::Use(u) => TypedDecl::Use(TypedUse {
-                annotations: self.annotations(u.annotations),
-                package: Package {
-                    names: u.package_name.names,
-                },
-                alias: u.alias,
-            }),
+            Decl::Use(u) => TypedDecl::Use(self.use_syntax(u)),
         }
     }
 
@@ -388,6 +379,16 @@ impl Ast2HLIR {
                 .map(|tps| tps.into_iter().map(|p| self.type_param(p)).collect()),
             body: fb,
             return_type: rt,
+        }
+    }
+
+    pub fn use_syntax(&self, u: UseSyntax) -> TypedUse {
+        TypedUse {
+            annotations: self.annotations(u.annotations),
+            package: Package {
+                names: u.package_name.names,
+            },
+            alias: u.alias,
         }
     }
 
