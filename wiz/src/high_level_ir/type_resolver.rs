@@ -412,7 +412,7 @@ impl TypeResolver {
             initializers,        // TODO
             stored_properties,   // TODO
             computed_properties, // TODO
-            member_functions,    // TODO
+            member_functions,
         } = s;
         let current_namespace = self.context.current_namespace.clone();
         let this_type = TypedType::Value(TypedValueType {
