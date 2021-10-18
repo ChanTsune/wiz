@@ -1,3 +1,5 @@
+use std::builtin::println
+
 struct A {
     var a: Int64
     val b: Int64
@@ -22,7 +24,7 @@ fun main() {
         if modBy2(s.a) == 0 {
             helloWorld()
         } else {
-            std::builtin::println("Welcome to Wiz!!")
+            println("Welcome to Wiz!!")
         }
         s.a += if modBy2Expr(s.a) == 0 { 1 } else { 3 }
     }
