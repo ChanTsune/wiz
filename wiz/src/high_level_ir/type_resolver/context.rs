@@ -322,10 +322,10 @@ impl ResolverContext {
         }
     }
 
-    pub fn get_current_name_environment(&mut self) -> NameEnvironment {
+    pub fn get_current_name_environment(&self) -> NameEnvironment {
         let mut env = NameEnvironment::new();
-        env.use_values_from(self.get_namespace_mut(vec![]).unwrap());
-        env.use_values_from(self.get_current_namespace_mut().unwrap());
+        env.use_values_from(self.get_namespace(vec![]).unwrap());
+        env.use_values_from(self.get_current_namespace().unwrap());
         env.use_values_from_local(&self.local_stack);
         env
     }
