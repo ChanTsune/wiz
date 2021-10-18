@@ -12,7 +12,6 @@ pub enum TypedDecl {
     Enum,
     Protocol,
     Extension,
-    Use(TypedUse),
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -115,13 +114,6 @@ pub struct TypedMemberFunction {
     pub(crate) type_params: Option<Vec<TypedTypeParam>>,
     pub(crate) body: Option<TypedFunBody>,
     pub(crate) return_type: Option<TypedType>,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct TypedUse {
-    pub(crate) annotations: TypedAnnotations,
-    pub(crate) package: Package,
-    pub(crate) alias: Option<String>,
 }
 
 impl TypedFun {

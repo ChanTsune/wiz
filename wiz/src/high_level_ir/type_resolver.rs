@@ -7,10 +7,7 @@ mod tests;
 use crate::high_level_ir::type_resolver::context::{EnvValue, ResolverContext, ResolverStruct};
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
-use crate::high_level_ir::typed_decl::{
-    TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedMemberFunction,
-    TypedStruct, TypedValueArgDef, TypedVar,
-};
+use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedMemberFunction, TypedStruct, TypedValueArgDef, TypedVar};
 use crate::high_level_ir::typed_expr::{
     TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember,
     TypedLiteral, TypedName, TypedPostfixUnaryOp, TypedPrefixUnaryOp, TypedReturn, TypedSubscript,
@@ -22,6 +19,7 @@ use crate::high_level_ir::typed_stmt::{
     TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
 };
 use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
+use crate::high_level_ir::typed_use::TypedUse;
 
 #[derive(Debug, Clone)]
 pub(crate) struct TypeResolver {
@@ -131,7 +129,6 @@ impl TypeResolver {
             TypedDecl::Enum => {}
             TypedDecl::Protocol => {}
             TypedDecl::Extension => {}
-            TypedDecl::Use(_) => {}
         }
         Result::Ok(())
     }
@@ -256,6 +253,7 @@ impl TypeResolver {
         };
         let result = Result::Ok(TypedFile {
             name: f.name,
+            uses: vec![],
             body: f
                 .body
                 .into_iter()
@@ -277,7 +275,6 @@ impl TypeResolver {
             TypedDecl::Enum => TypedDecl::Enum,
             TypedDecl::Protocol => TypedDecl::Protocol,
             TypedDecl::Extension => TypedDecl::Extension,
-            TypedDecl::Use(u) => TypedDecl::Use(u),
         })
     }
 
