@@ -246,8 +246,8 @@ impl ResolverContext {
         Self {
             name_space: ns,
             binary_operators: bo,
-            subscripts: vec![],
-            current_namespace: vec![],
+            subscripts: Default::default(),
+            current_namespace: Default::default(),
             current_type: None,
             local_stack: StackedHashMap::new(),
         }
