@@ -32,5 +32,5 @@ fun main() {
     val file = fopen("./tmp.tmp", "wb")
     fwrite("File write from wiz\n", 1, 20, file)
     fclose(file)
-    std::builtin::println("...bye")
+    println("...bye")
 }
