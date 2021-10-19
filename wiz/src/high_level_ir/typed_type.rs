@@ -48,6 +48,12 @@ impl Package {
     }
 }
 
+impl<T> From<Vec<T>> for Package where T: ToString{
+    fn from(names: Vec<T>) -> Self {
+        Self::new(names.into_iter().map(|name|name.to_string()).collect())
+    }
+}
+
 impl ToString for Package {
     fn to_string(&self) -> String {
         self.names.join("::")
