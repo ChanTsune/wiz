@@ -5,7 +5,7 @@ use std::option::Option::Some;
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub enum TypedPackage {
     Raw(Package),
-    Resolved(Package)
+    Resolved(Package),
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
@@ -51,15 +51,19 @@ impl TypedPackage {
 
     pub(crate) fn into_raw(self) -> Package {
         match self {
-            TypedPackage::Raw(p) => {p}
-            TypedPackage::Resolved(_) => {panic!()}
+            TypedPackage::Raw(p) => p,
+            TypedPackage::Resolved(_) => {
+                panic!()
+            }
         }
     }
 
     pub(crate) fn into_resolved(self) -> Package {
         match self {
-            TypedPackage::Raw(_) => {panic!()}
-            TypedPackage::Resolved(p) => {p}
+            TypedPackage::Raw(_) => {
+                panic!()
+            }
+            TypedPackage::Resolved(p) => p,
         }
     }
 }
