@@ -53,7 +53,9 @@ where
     T: ToString,
 {
     fn from(names: Vec<T>) -> Self {
-        Self::new(names.into_iter().map(|name| name.to_string()).collect())
+        Self {
+            names: names.into_iter().map(|name| name.to_string()).collect()
+        }
     }
 }
 
