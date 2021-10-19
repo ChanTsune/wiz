@@ -54,7 +54,7 @@ where
 {
     fn from(names: Vec<T>) -> Self {
         Self {
-            names: names.into_iter().map(|name| name.to_string()).collect()
+            names: names.into_iter().map(|name| name.to_string()).collect(),
         }
     }
 }
