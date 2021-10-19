@@ -3,6 +3,12 @@ use crate::high_level_ir::typed_decl::TypedArgDef;
 use std::option::Option::Some;
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
+pub enum TypedPackage {
+    Raw(Package),
+    Resolved(Package)
+}
+
+#[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub struct Package {
     pub(crate) names: Vec<String>,
 }
@@ -32,6 +38,30 @@ pub struct TypedFunctionType {
 pub struct TypedTypeParam {
     pub(crate) name: String,
     pub(crate) type_constraint: Vec<TypedType>,
+}
+
+impl TypedPackage {
+    pub(crate) fn is_raw(&self) -> bool {
+        matches!(self, Self::Raw(_))
+    }
+
+    pub(crate) fn is_resolved(&self) -> bool {
+        matches!(self, Self::Resolved(_))
+    }
+
+    pub(crate) fn into_raw(self) -> Package {
+        match self {
+            TypedPackage::Raw(p) => {p}
+            TypedPackage::Resolved(_) => {panic!()}
+        }
+    }
+
+    pub(crate) fn into_resolved(self) -> Package {
+        match self {
+            TypedPackage::Raw(_) => {panic!()}
+            TypedPackage::Resolved(p) => {p}
+        }
+    }
 }
 
 impl Package {
