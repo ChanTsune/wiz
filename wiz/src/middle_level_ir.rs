@@ -301,7 +301,6 @@ impl HLIR2MLIR {
             TypedDecl::Enum => exit(-1),
             TypedDecl::Protocol => exit(-1),
             TypedDecl::Extension => exit(-1),
-            TypedDecl::Use(_) => vec![],
         }
     }
 
@@ -360,7 +359,6 @@ impl HLIR2MLIR {
             stored_properties,
             computed_properties,
             member_functions,
-            static_function,
         } = s;
         let mut ns = self.context.current_name_space.clone();
         ns.push(name.clone());

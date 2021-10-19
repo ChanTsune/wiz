@@ -1,3 +1,6 @@
+use std::builtin::println
+use std::collection::vector::UInt8Vector
+
 struct A {
     var a: Int64
     val b: Int64
@@ -14,21 +17,21 @@ fun modBy2(_ n: Int64): Int64 {
 fun modBy2Expr(_ n: Int64) = n % 2
 
 fun main() {
-    val vector = std::collection::vector::UInt8Vector.init()
+    val vector = UInt8Vector.init()
     var s = A.init(a: 1, b: 0)
     val b = 2
     while !(s.a >= 15) {
-        std::builtin::println(s.a)
+        println(s.a)
         if modBy2(s.a) == 0 {
             helloWorld()
         } else {
-            std::builtin::println("Welcome to Wiz!!")
+            println("Welcome to Wiz!!")
         }
-        s.a = s.a + if modBy2Expr(s.a) == 0 { 1 } else { 3 }
+        s.a += if modBy2Expr(s.a) == 0 { 1 } else { 3 }
     }
     val c = s.a + b
     val file = fopen("./tmp.tmp", "wb")
     fwrite("File write from wiz\n", 1, 20, file)
     fclose(file)
-    std::builtin::println("...bye")
+    println("...bye")
 }

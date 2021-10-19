@@ -14,6 +14,7 @@ pub mod declaration;
 pub mod expression;
 pub mod keywords;
 pub mod lexical_structure;
+pub mod name_space;
 pub mod operators;
 pub mod statement;
 pub mod type_;

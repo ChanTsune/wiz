@@ -1,7 +1,7 @@
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedFun, TypedFunBody, TypedInitializer,
-    TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedUse, TypedValueArgDef, TypedVar,
+    TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedValueArgDef, TypedVar,
 };
 use crate::high_level_ir::typed_expr::{
     TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
@@ -15,13 +15,14 @@ use crate::high_level_ir::typed_stmt::{
     TypedBlock, TypedForStmt, TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
 };
 use crate::high_level_ir::typed_type::{Package, TypedType, TypedTypeParam, TypedValueType};
+use crate::high_level_ir::typed_use::TypedUse;
 use crate::utils::path_string_to_page_name;
 use std::option::Option::Some;
 use wiz_syntax::syntax::annotation::AnnotationsSyntax;
 use wiz_syntax::syntax::block::BlockSyntax;
 use wiz_syntax::syntax::decl::{
     Decl, FunSyntax, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax,
-    StructSyntax, VarSyntax,
+    StructSyntax, UseSyntax, VarSyntax,
 };
 use wiz_syntax::syntax::expr::{
     ArraySyntax, BinaryOperationSyntax, CallExprSyntax, Expr, IfExprSyntax, LambdaSyntax,
@@ -42,6 +43,7 @@ pub mod typed_expr;
 pub mod typed_file;
 pub mod typed_stmt;
 pub mod typed_type;
+pub mod typed_use;
 
 pub struct Ast2HLIR;
 
@@ -61,9 +63,21 @@ impl Ast2HLIR {
     }
 
     pub fn file(&mut self, f: WizFile) -> TypedFile {
+        let WizFile { name, syntax } = f;
+        let mut uses = vec![];
+        let mut others = vec![];
+        for l in syntax.body.into_iter() {
+            if let Decl::Use(u) = l {
+                uses.push(self.use_syntax(u));
+            } else {
+                others.push(l);
+            }
+        }
+
         TypedFile {
-            name: path_string_to_page_name(f.name),
-            body: self.file_syntax(f.syntax),
+            name: path_string_to_page_name(name),
+            uses,
+            body: self.file_syntax(FileSyntax { body: others }),
         }
     }
 
@@ -148,13 +162,9 @@ impl Ast2HLIR {
             Decl::Enum { .. } => TypedDecl::Enum,
             Decl::Protocol { .. } => TypedDecl::Protocol,
             Decl::Extension { .. } => TypedDecl::Extension,
-            Decl::Use(u) => TypedDecl::Use(TypedUse {
-                annotations: self.annotations(u.annotations),
-                package: Package {
-                    names: u.package_name.names,
-                },
-                alias: u.alias,
-            }),
+            Decl::Use(_) => {
+                panic!("Never execution branch executed!!")
+            }
         }
     }
 
@@ -255,6 +265,9 @@ impl Ast2HLIR {
                     todo!()
                 }
             }
+            TypeName::NameSpaced(n) => {
+                todo!()
+            }
         }
     }
 
@@ -298,7 +311,6 @@ impl Ast2HLIR {
             stored_properties,
             computed_properties,
             member_functions,
-            static_function: vec![],
         }
     }
 
@@ -389,6 +401,16 @@ impl Ast2HLIR {
         }
     }
 
+    pub fn use_syntax(&self, u: UseSyntax) -> TypedUse {
+        TypedUse {
+            annotations: self.annotations(u.annotations),
+            package: Package {
+                names: u.package_name.names,
+            },
+            alias: u.alias,
+        }
+    }
+
     pub fn expr(&self, e: Expr) -> TypedExpr {
         match e {
             Expr::Name(n) => TypedExpr::Name(self.name_syntax(n)),
@@ -438,6 +460,11 @@ impl Ast2HLIR {
 
     pub fn name_syntax(&self, n: NameExprSyntax) -> TypedName {
         let NameExprSyntax { name_space, name } = n;
+        let name_space = name_space
+            .elements
+            .into_iter()
+            .map(|e| e.name.token)
+            .collect::<Vec<String>>();
         TypedName {
             package: if name_space.is_empty() {
                 None
@@ -552,7 +579,7 @@ impl Ast2HLIR {
         TypedInstanceMember {
             target: Box::new(target),
             name: name.token,
-            is_safe: navigation_operator.token.ends_with("?"),
+            is_safe: navigation_operator.token.ends_with('?'),
             type_: None,
         }
     }
@@ -625,7 +652,7 @@ impl Ast2HLIR {
     pub fn type_cast(&self, t: TypeCastSyntax) -> TypedTypeCast {
         TypedTypeCast {
             target: Box::new(self.expr(*t.target)),
-            is_safe: t.operator.ends_with("?"),
+            is_safe: t.operator.ends_with('?'),
             type_: Some(self.type_(t.type_)),
         }
     }

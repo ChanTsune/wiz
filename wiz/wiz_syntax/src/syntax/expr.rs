@@ -1,5 +1,6 @@
 use crate::syntax::block::BlockSyntax;
 use crate::syntax::literal::LiteralSyntax;
+use crate::syntax::name_space::NameSpaceSyntax;
 use crate::syntax::node::SyntaxNode;
 use crate::syntax::stmt::Stmt;
 use crate::syntax::token::TokenSyntax;
@@ -37,7 +38,7 @@ impl SyntaxNode for Expr {}
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct NameExprSyntax {
-    pub name_space: Vec<String>,
+    pub name_space: NameSpaceSyntax,
     pub name: String,
 }
 

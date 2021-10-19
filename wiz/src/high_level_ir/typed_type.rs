@@ -48,6 +48,17 @@ impl Package {
     }
 }
 
+impl<T> From<Vec<T>> for Package
+where
+    T: ToString,
+{
+    fn from(names: Vec<T>) -> Self {
+        Self {
+            names: names.into_iter().map(|name| name.to_string()).collect(),
+        }
+    }
+}
+
 impl ToString for Package {
     fn to_string(&self) -> String {
         self.names.join("::")
@@ -290,6 +301,10 @@ impl TypedType {
 
     pub fn is_boolean(&self) -> bool {
         Self::bool().eq(self)
+    }
+
+    pub fn is_string(&self) -> bool {
+        Self::string().eq(self)
     }
 }
 

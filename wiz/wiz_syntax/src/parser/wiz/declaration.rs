@@ -1100,7 +1100,7 @@ mod tests {
                 "",
                 FunBody::Expr {
                     expr: Expr::Name(NameExprSyntax {
-                        name_space: vec![],
+                        name_space: Default::default(),
                         name: "name".to_string()
                     })
                 }

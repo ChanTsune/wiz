@@ -6,6 +6,7 @@ use crate::parser::wiz::keywords::{
 use crate::parser::wiz::lexical_structure::{
     identifier, whitespace0, whitespace1, whitespace_without_eol0,
 };
+use crate::parser::wiz::name_space::name_space;
 use crate::parser::wiz::operators::{
     additive_operator, as_operator, comparison_operator, conjunction_operator,
     disjunction_operator, elvis_operator, equality_operator, in_operator, is_operator,
@@ -179,21 +180,6 @@ where
     )(s)
 }
 
-pub fn name_space<I>(s: I) -> IResult<I, Vec<String>>
-where
-    I: Slice<RangeFrom<usize>>
-        + InputIter
-        + InputTake
-        + InputLength
-        + Clone
-        + Compare<&'static str>,
-    <I as InputIter>::Item: AsChar,
-{
-    map(many0(tuple((identifier, tag("::")))), |ns| {
-        ns.into_iter().map(|(i, _)| i).collect()
-    })(s)
-}
-
 pub fn name_expr<I>(s: I) -> IResult<I, Expr>
 where
     I: Slice<RangeFrom<usize>>
@@ -201,14 +187,12 @@ where
         + InputTake
         + InputLength
         + Clone
+        + ToString
         + Compare<&'static str>,
     <I as InputIter>::Item: AsChar,
 {
-    map(tuple((name_space, identifier)), |(ns, name)| {
-        Expr::Name(NameExprSyntax {
-            name_space: ns,
-            name,
-        })
+    map(tuple((name_space, identifier)), |(name_space, name)| {
+        Expr::Name(NameExprSyntax { name_space, name })
     })(s)
 }
 
@@ -800,7 +784,7 @@ where
                 map(value_arguments, |v| (Option::Some(v), Option::None)),
             )),
         )),
-        |(ta, (args, tl))| PostfixSuffix::CallSuffix {
+        |(type_args, (args, tl))| PostfixSuffix::CallSuffix {
             args: args.unwrap_or_default(),
             tailing_lambda: tl,
         },
@@ -1323,6 +1307,7 @@ mod tests {
         IfExprSyntax, MemberSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax,
     };
     use crate::syntax::literal::LiteralSyntax;
+    use crate::syntax::name_space::NameSpaceSyntax;
     use crate::syntax::stmt::Stmt;
     use crate::syntax::token::TokenSyntax;
     use crate::syntax::trivia::{Trivia, TriviaPiece};
@@ -1443,7 +1428,7 @@ mod tests {
             Ok((
                 "",
                 Expr::Name(NameExprSyntax {
-                    name_space: vec![String::from("std"), String::from("builtin")],
+                    name_space: NameSpaceSyntax::from(vec!["std", "builtin"]),
                     name: "println".to_string()
                 })
             ))
@@ -1460,7 +1445,7 @@ mod tests {
                     open: TokenSyntax::new("[".to_string()),
                     values: vec![ArrayElementSyntax {
                         element: Expr::Name(NameExprSyntax {
-                            name_space: vec![],
+                            name_space: Default::default(),
                             name: "a".to_string()
                         }),
                         trailing_comma: TokenSyntax::new("".to_string())
@@ -1478,7 +1463,7 @@ mod tests {
                     values: vec![
                         ArrayElementSyntax {
                             element: Expr::Name(NameExprSyntax {
-                                name_space: vec![],
+                                name_space: Default::default(),
                                 name: "a".to_string()
                             }),
                             trailing_comma: TokenSyntax::new(",".to_string())
@@ -1486,7 +1471,7 @@ mod tests {
                         },
                         ArrayElementSyntax {
                             element: Expr::Name(NameExprSyntax {
-                                name_space: vec![],
+                                name_space: Default::default(),
                                 name: "b".to_string()
                             }),
                             trailing_comma: TokenSyntax::new("".to_string())
@@ -1504,7 +1489,7 @@ mod tests {
                     open: TokenSyntax::new("[".to_string()),
                     values: vec![ArrayElementSyntax {
                         element: Expr::Name(NameExprSyntax {
-                            name_space: vec![],
+                            name_space: Default::default(),
                             name: "a".to_string()
                         }),
                         trailing_comma: TokenSyntax::new(",".to_string())
@@ -1522,7 +1507,7 @@ mod tests {
                     values: vec![
                         ArrayElementSyntax {
                             element: Expr::Name(NameExprSyntax {
-                                name_space: vec![],
+                                name_space: Default::default(),
                                 name: "a".to_string()
                             }),
                             trailing_comma: TokenSyntax::new(",".to_string())
@@ -1530,7 +1515,7 @@ mod tests {
                         },
                         ArrayElementSyntax {
                             element: Expr::Name(NameExprSyntax {
-                                name_space: vec![],
+                                name_space: Default::default(),
                                 name: "b".to_string()
                             }),
                             trailing_comma: TokenSyntax::new(",".to_string())
@@ -1665,7 +1650,7 @@ mod tests {
                 "",
                 Expr::Call(CallExprSyntax {
                     target: Box::new(Expr::Name(NameExprSyntax {
-                        name_space: vec![],
+                        name_space: Default::default(),
                         name: "puts".to_string()
                     })),
                     args: vec![],
@@ -1683,7 +1668,7 @@ mod tests {
                 "",
                 Expr::Call(CallExprSyntax {
                     target: Box::new(Expr::Name(NameExprSyntax {
-                        name_space: vec![],
+                        name_space: Default::default(),
                         name: "puts".to_string()
                     })),
                     args: vec![CallArg {
@@ -1709,7 +1694,7 @@ mod tests {
                 "",
                 Expr::Call(CallExprSyntax {
                     target: Box::new(Expr::Name(NameExprSyntax {
-                        name_space: vec![],
+                        name_space: Default::default(),
                         name: "puts".to_string()
                     })),
                     args: vec![CallArg {
@@ -1735,7 +1720,7 @@ mod tests {
                 "",
                 Expr::If(IfExprSyntax {
                     condition: Box::new(Expr::Name(NameExprSyntax {
-                        name_space: vec![],
+                        name_space: Default::default(),
                         name: "a".to_string()
                     })),
                     body: BlockSyntax {
@@ -1763,14 +1748,14 @@ mod tests {
                 Expr::If(IfExprSyntax {
                     condition: Box::new(Expr::BinOp(BinaryOperationSyntax {
                         left: Box::new(Expr::Name(NameExprSyntax {
-                            name_space: vec![],
+                            name_space: Default::default(),
                             name: "capacity".to_string()
                         })),
                         operator: TokenSyntax::new("<=".to_string())
                             .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
                             .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                         right: Box::new(Expr::Name(NameExprSyntax {
-                            name_space: vec![],
+                            name_space: Default::default(),
                             name: "length".to_string()
                         }))
                     })),
@@ -1786,7 +1771,7 @@ mod tests {
                             value: Expr::If(IfExprSyntax {
                                 condition: Box::new(Expr::BinOp(BinaryOperationSyntax {
                                     left: Box::new(Expr::Name(NameExprSyntax {
-                                        name_space: vec![],
+                                        name_space: Default::default(),
                                         name: "capacity".to_string()
                                     })),
                                     operator: TokenSyntax::new("==".to_string())
@@ -1810,7 +1795,7 @@ mod tests {
                                         .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                                     body: vec![Stmt::Expr(Expr::BinOp(BinaryOperationSyntax {
                                         left: Box::new(Expr::Name(NameExprSyntax {
-                                            name_space: vec![],
+                                            name_space: Default::default(),
                                             name: "capacity".to_string()
                                         })),
                                         operator: TokenSyntax::new("*".to_string())
@@ -1847,7 +1832,7 @@ mod tests {
                 "",
                 Expr::If(IfExprSyntax {
                     condition: Box::new(Expr::Name(NameExprSyntax {
-                        name_space: vec![],
+                        name_space: Default::default(),
                         name: "a".to_string()
                     })),
                     body: BlockSyntax {
@@ -1877,7 +1862,7 @@ mod tests {
                     return_keyword: TokenSyntax::new(String::from("return"))
                         .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     value: Some(Box::new(Expr::Name(NameExprSyntax {
-                        name_space: vec![],
+                        name_space: Default::default(),
                         name: "name".to_string()
                     })))
                 })
@@ -1893,7 +1878,7 @@ mod tests {
                 "",
                 Expr::Member(MemberSyntax {
                     target: Box::new(Expr::Name(NameExprSyntax {
-                        name_space: vec![],
+                        name_space: Default::default(),
                         name: "a".to_string()
                     })),
                     name: TokenSyntax::new("b".to_string()),
@@ -1911,7 +1896,7 @@ mod tests {
                 "",
                 PostfixSuffix::IndexingSuffix {
                     indexes: vec![Expr::Name(NameExprSyntax {
-                        name_space: vec![],
+                        name_space: Default::default(),
                         name: "a".to_string()
                     }),]
                 }
@@ -1924,11 +1909,11 @@ mod tests {
                 PostfixSuffix::IndexingSuffix {
                     indexes: vec![
                         Expr::Name(NameExprSyntax {
-                            name_space: vec![],
+                            name_space: Default::default(),
                             name: "a".to_string()
                         }),
                         Expr::Name(NameExprSyntax {
-                            name_space: vec![],
+                            name_space: Default::default(),
                             name: "b".to_string()
                         }),
                     ]
@@ -1942,11 +1927,11 @@ mod tests {
                 PostfixSuffix::IndexingSuffix {
                     indexes: vec![
                         Expr::Name(NameExprSyntax {
-                            name_space: vec![],
+                            name_space: Default::default(),
                             name: "a".to_string()
                         }),
                         Expr::Name(NameExprSyntax {
-                            name_space: vec![],
+                            name_space: Default::default(),
                             name: "b".to_string()
                         }),
                     ]

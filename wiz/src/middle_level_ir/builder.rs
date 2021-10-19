@@ -28,7 +28,7 @@ impl MLIRModuleBuilder {
     ) -> Option<&mut MLFun> {
         self.add_function(MLFun {
             modifiers: vec![],
-            name: name.clone(),
+            name,
             arg_defs: args,
             return_type,
             body: None,
