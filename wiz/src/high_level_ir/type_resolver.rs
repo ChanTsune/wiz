@@ -214,19 +214,18 @@ impl TypeResolver {
             rs.member_functions.insert(member_function.name, type_);
         }
         for ini in initializers.iter() {
-            let type_ = self.context.full_type_name(TypedType::Function(Box::new(TypedFunctionType {
-                arguments: ini.args.clone(),
-                return_type: this_type.clone(),
-            })))?;
+            let type_ =
+                self.context
+                    .full_type_name(TypedType::Function(Box::new(TypedFunctionType {
+                        arguments: ini.args.clone(),
+                        return_type: this_type.clone(),
+                    })))?;
             let ns = self.context.get_current_namespace_mut()?;
             let rs = ns.get_type_mut(&name).ok_or(ResolverError::from(format!(
                 "Struct {:?} not exist. Maybe before preload",
                 name
             )))?;
-            rs.static_functions.insert(
-                String::from("init"),
-                type_,
-            );
+            rs.static_functions.insert(String::from("init"), type_);
         }
 
         Result::Ok(())
