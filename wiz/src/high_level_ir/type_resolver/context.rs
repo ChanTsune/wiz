@@ -3,7 +3,9 @@ use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_decl::{TypedArgDef, TypedValueArgDef};
 use crate::high_level_ir::typed_expr::TypedBinaryOperator;
-use crate::high_level_ir::typed_type::{TypedPackage, Package, TypedFunctionType, TypedType, TypedValueType};
+use crate::high_level_ir::typed_type::{
+    Package, TypedFunctionType, TypedPackage, TypedType, TypedValueType,
+};
 use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::{HashMap, HashSet};
 use std::option::Option::Some;

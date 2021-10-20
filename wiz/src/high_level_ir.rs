@@ -14,7 +14,9 @@ use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentAndOperator, TypedAssignmentStmt,
     TypedBlock, TypedForStmt, TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
 };
-use crate::high_level_ir::typed_type::{Package, TypedPackage, TypedType, TypedTypeParam, TypedValueType};
+use crate::high_level_ir::typed_type::{
+    Package, TypedPackage, TypedType, TypedTypeParam, TypedValueType,
+};
 use crate::high_level_ir::typed_use::TypedUse;
 use crate::utils::path_string_to_page_name;
 use std::option::Option::Some;
@@ -267,14 +269,21 @@ impl Ast2HLIR {
             }
             TypeName::NameSpaced(n) => {
                 let NameSpacedTypeName {
-                    name_space, type_name
+                    name_space,
+                    type_name,
                 } = *n;
                 let type_name = match type_name {
-                    TypeName::Simple(s) => {s}
-                    _ => panic!()
+                    TypeName::Simple(s) => s,
+                    _ => panic!(),
                 };
                 TypedType::Value(TypedValueType {
-                    package: TypedPackage::Raw(Package::from(name_space.elements.into_iter().map(|i|i.name.token).collect::<Vec<String>>())),
+                    package: TypedPackage::Raw(Package::from(
+                        name_space
+                            .elements
+                            .into_iter()
+                            .map(|i| i.name.token)
+                            .collect::<Vec<String>>(),
+                    )),
                     name: type_name.name,
                     type_args: type_name
                         .type_args

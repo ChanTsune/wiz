@@ -12,7 +12,9 @@ use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{
     TypedAssignmentAndOperator, TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt,
 };
-use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedPackage, TypedType, TypedValueType};
+use crate::high_level_ir::typed_type::{
+    Package, TypedFunctionType, TypedPackage, TypedType, TypedValueType,
+};
 use crate::middle_level_ir::ml_decl::{
     MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar,
 };

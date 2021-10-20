@@ -21,7 +21,9 @@ use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedForStmt,
     TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
 };
-use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedPackage, TypedType, TypedValueType};
+use crate::high_level_ir::typed_type::{
+    Package, TypedFunctionType, TypedPackage, TypedType, TypedValueType,
+};
 use crate::high_level_ir::typed_use::TypedUse;
 
 #[derive(Debug, Clone)]
@@ -563,8 +565,10 @@ impl TypeResolver {
     pub fn typed_name(&mut self, n: TypedName) -> Result<TypedName> {
         let (type_, package) = self.context.resolve_name_type(
             match n.package {
-                TypedPackage::Raw(p) => {p.names}
-                TypedPackage::Resolved(_) => {panic!()}
+                TypedPackage::Raw(p) => p.names,
+                TypedPackage::Resolved(_) => {
+                    panic!()
+                }
             },
             n.name.clone(),
         )?;

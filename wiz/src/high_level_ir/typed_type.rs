@@ -177,8 +177,7 @@ impl TypedValueType {
 impl ToString for TypedValueType {
     fn to_string(&self) -> String {
         let fqn = match &self.package {
-            TypedPackage::Raw(pkg)|
-            TypedPackage::Resolved(pkg) => {
+            TypedPackage::Raw(pkg) | TypedPackage::Resolved(pkg) => {
                 if pkg.is_global() {
                     self.name.clone()
                 } else {
