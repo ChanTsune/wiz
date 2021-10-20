@@ -467,7 +467,12 @@ impl ResolverContext {
                         return Result::Ok(TypedType::Value(TypedValueType {
                             package: Some(Package { names: cns.clone() }),
                             name: v.name.clone(),
-                            type_args: v.type_args.clone(),
+                            type_args: match v.type_args.clone() {
+                                None => {None}
+                                Some(v) => {
+                                    Some(v.into_iter().map(|i|self.full_type_name(i)).collect::<Result<Vec<TypedType>>>()?)
+                                }
+                            },
                         }));
                     };
                 }
