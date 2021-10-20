@@ -455,9 +455,6 @@ impl ResolverContext {
 
     pub fn full_type_name(&self, typ: TypedType) -> Result<TypedType> {
         // TODO: change impl
-        if typ.is_primitive() {
-            return Result::Ok(typ);
-        };
         let mut cns = self.current_namespace.clone();
         loop {
             let ns = self.get_namespace(cns.clone())?;
