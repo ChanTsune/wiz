@@ -7,7 +7,10 @@ mod tests;
 use crate::high_level_ir::type_resolver::context::{EnvValue, ResolverContext, ResolverStruct};
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
-use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedValueArgDef, TypedVar};
+use crate::high_level_ir::typed_decl::{
+    TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedMemberFunction,
+    TypedStoredProperty, TypedStruct, TypedValueArgDef, TypedVar,
+};
 use crate::high_level_ir::typed_expr::{
     TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember,
     TypedLiteral, TypedName, TypedPostfixUnaryOp, TypedPrefixUnaryOp, TypedReturn, TypedSubscript,
@@ -428,9 +431,10 @@ impl TypeResolver {
             .into_iter()
             .map(|i| self.typed_initializer(i))
             .collect::<Result<Vec<TypedInitializer>>>()?;
-        let stored_properties = stored_properties.into_iter().map(|s|{
-            self.typed_stored_property(s)
-        }).collect::<Result<Vec<TypedStoredProperty>>>()?;
+        let stored_properties = stored_properties
+            .into_iter()
+            .map(|s| self.typed_stored_property(s))
+            .collect::<Result<Vec<TypedStoredProperty>>>()?;
         let computed_properties = computed_properties.into_iter().collect();
         let member_functions = member_functions
             .into_iter()
@@ -476,12 +480,10 @@ impl TypeResolver {
     }
 
     fn typed_stored_property(&mut self, s: TypedStoredProperty) -> Result<TypedStoredProperty> {
-        let TypedStoredProperty {
-            name, type_
-        } = s;
+        let TypedStoredProperty { name, type_ } = s;
         Result::Ok(TypedStoredProperty {
             name,
-            type_: self.context.full_type_name(type_)?
+            type_: self.context.full_type_name(type_)?,
         })
     }
 
