@@ -12,7 +12,7 @@ use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{
     TypedAssignmentAndOperator, TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt,
 };
-use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
+use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedPackage, TypedType, TypedValueType};
 use crate::middle_level_ir::ml_decl::{
     MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar,
 };
@@ -125,7 +125,7 @@ impl HLIR2MLIR {
                 }
             }
         } else {
-            let mut pkg = t.package.clone().unwrap().names;
+            let mut pkg = t.package.clone().into_resolved().names;
             if pkg.is_empty() {
                 match &*t.name {
                     "Noting" => MLValueType::Primitive(MLPrimitiveType::Noting),
@@ -764,15 +764,15 @@ impl HLIR2MLIR {
         }
     }
 
-    fn package_name_mangling(&self, package: &Option<Package>, name: &str) -> String {
-        if let Some(pkg) = package {
+    fn package_name_mangling(&self, package: &TypedPackage, name: &str) -> String {
+        if let TypedPackage::Resolved(pkg) = package {
             if pkg.is_global() || name == "main" {
                 String::from(name)
             } else {
                 pkg.to_string() + "::" + name
             }
         } else {
-            String::from(name)
+            panic!("pkg name mangling failed => {:?}, {}", package, name)
         }
     }
 

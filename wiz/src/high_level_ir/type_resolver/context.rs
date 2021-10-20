@@ -3,7 +3,7 @@ use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_decl::{TypedArgDef, TypedValueArgDef};
 use crate::high_level_ir::typed_expr::TypedBinaryOperator;
-use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
+use crate::high_level_ir::typed_type::{TypedPackage, Package, TypedFunctionType, TypedType, TypedValueType};
 use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::{HashMap, HashSet};
 use std::option::Option::Some;
@@ -358,7 +358,7 @@ impl ResolverContext {
     pub fn resolve_member_type(&mut self, t: TypedType, name: String) -> Result<TypedType> {
         match &t {
             TypedType::Value(v) => {
-                let ns = self.get_namespace_mut(v.package.clone().unwrap().names)?;
+                let ns = self.get_namespace_mut(v.package.clone().into_resolved().names)?;
                 let rs = ns
                     .get_type(&v.name)
                     .ok_or(ResolverError::from(format!("Can not resolve type {:?}", t)))?;
@@ -367,7 +367,7 @@ impl ResolverContext {
                     .ok_or(ResolverError::from(format!("{:?} not has {:?}", t, name)))
             }
             TypedType::Type(v) => {
-                let ns = self.get_namespace_mut(v.package.clone().unwrap().names)?;
+                let ns = self.get_namespace_mut(v.package.clone().into_resolved().names)?;
                 let rs = ns
                     .get_type(&v.name)
                     .ok_or(ResolverError::from(format!("Can not resolve type {:?}", t)))?;
@@ -384,7 +384,7 @@ impl ResolverContext {
         &mut self,
         mut name_space: Vec<String>,
         name: String,
-    ) -> Result<(TypedType, Option<Package>)> {
+    ) -> Result<(TypedType, TypedPackage)> {
         let (name, name_space, n) = if name_space.is_empty() {
             (name, name_space, None)
         } else {
@@ -410,18 +410,18 @@ impl ResolverContext {
                 Result::Ok((
                     t.clone(),
                     if t.is_function_type() {
-                        Some(Package::new(ns.name_space.clone()))
+                        TypedPackage::Resolved(Package::from(ns.name_space.clone()))
                     } else {
-                        None
+                        TypedPackage::Resolved(Package::global())
                     },
                 ))
             }
             (ns, EnvValue::Value(t)) => Result::Ok((
                 t.clone(),
                 if t.is_function_type() {
-                    Some(Package::new(ns.clone()))
+                    TypedPackage::Resolved(Package::from(ns.clone()))
                 } else {
-                    None
+                    TypedPackage::Resolved(Package::global())
                 },
             )),
         }
@@ -462,7 +462,7 @@ impl ResolverContext {
                 TypedType::Value(v) | TypedType::Reference(v) => {
                     if let Some(_) = ns.get_type(&v.name) {
                         return Result::Ok(TypedType::Value(TypedValueType {
-                            package: Some(Package { names: cns.clone() }),
+                            package: TypedPackage::Resolved(Package::from(cns.clone())),
                             name: v.name.clone(),
                             type_args: match v.type_args.clone() {
                                 None => None,
@@ -519,7 +519,7 @@ impl ResolverContext {
 #[cfg(test)]
 mod tests {
     use crate::high_level_ir::type_resolver::context::{EnvValue, NameSpace, ResolverContext};
-    use crate::high_level_ir::typed_type::{Package, TypedType, TypedValueType};
+    use crate::high_level_ir::typed_type::{Package, TypedPackage, TypedType, TypedValueType};
 
     #[test]
     fn test_name_space() {
@@ -593,7 +593,7 @@ mod tests {
             Some(&(
                 vec![],
                 EnvValue::Value(TypedType::Type(TypedValueType {
-                    package: Some(Package::global()),
+                    package: TypedPackage::Resolved(Package::global()),
                     name: "Int32".to_string(),
                     type_args: None
                 }))

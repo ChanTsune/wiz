@@ -12,7 +12,7 @@ use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentStmt, TypedBlock, TypedStmt,
 };
-use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
+use crate::high_level_ir::typed_type::{TypedPackage ,Package, TypedFunctionType, TypedType, TypedValueType};
 use crate::high_level_ir::Ast2HLIR;
 use wiz_syntax::parser::wiz::parse_from_string;
 
@@ -73,7 +73,7 @@ fn test_unsafe_pointer() {
             body: vec![
                 TypedDecl::Struct(TypedStruct {
                     annotations: TypedAnnotations::new(),
-                    package: Some(Package::new(vec![String::from("test")])),
+                    package: TypedPackage::Resolved(Package::from(vec!["test"])),
                     name: "A".to_string(),
                     type_params: None,
                     initializers: vec![TypedInitializer {
@@ -87,12 +87,10 @@ fn test_unsafe_pointer() {
                                 TypedAssignment {
                                     target: TypedExpr::Member(TypedInstanceMember {
                                         target: Box::new(TypedExpr::Name(TypedName {
-                                            package: None,
+                                            package: TypedPackage::Resolved(Package::global()),
                                             name: "self".to_string(),
                                             type_: Some(TypedType::Value(TypedValueType {
-                                                package: Some(Package {
-                                                    names: vec![String::from("test")]
-                                                }),
+                                                package: TypedPackage::Resolved(Package::from(vec!["test"])),
                                                 name: "A".to_string(),
                                                 type_args: None
                                             }))
@@ -102,7 +100,7 @@ fn test_unsafe_pointer() {
                                         type_: Some(TypedType::unsafe_pointer(TypedType::uint8()))
                                     }),
                                     value: TypedExpr::Name(TypedName {
-                                        package: None,
+                                        package: TypedPackage::Resolved(Package::new()),
                                         name: "a".to_string(),
                                         type_: Some(TypedType::unsafe_pointer(TypedType::uint8()))
                                     })
@@ -119,7 +117,7 @@ fn test_unsafe_pointer() {
                 }),
                 TypedDecl::Fun(TypedFun {
                     annotations: TypedAnnotations::new(),
-                    package: Some(Package::new(vec![String::from("test")])),
+                    package: TypedPackage::Resolved(Package::from(vec!["test"])),
                     modifiers: vec![],
                     name: "function".to_string(),
                     type_params: None,
@@ -127,9 +125,7 @@ fn test_unsafe_pointer() {
                         label: "_".to_string(),
                         name: "a".to_string(),
                         type_: TypedType::Value(TypedValueType {
-                            package: Some(Package {
-                                names: vec![String::from("test")]
-                            }),
+                            package: TypedPackage::Resolved(Package::from(vec!["test"])),
                             name: "A".to_string(),
                             type_args: None
                         })
@@ -137,18 +133,18 @@ fn test_unsafe_pointer() {
                     body: Option::Some(TypedFunBody::Block(TypedBlock {
                         body: vec![TypedStmt::Decl(TypedDecl::Var(TypedVar {
                             annotations: TypedAnnotations::new(),
-                            package: None,
+                            package: TypedPackage::Resolved(Package::new()),
                             is_mut: false,
                             name: "a".to_string(),
                             type_: Some(TypedType::unsafe_pointer(TypedType::uint8())),
                             value: TypedExpr::Member(TypedInstanceMember {
                                 target: Box::new(TypedExpr::Name(TypedName {
-                                    package: None,
+                                    package: TypedPackage::Resolved(Package::new()),
                                     name: "a".to_string(),
                                     type_: Some(TypedType::Value(TypedValueType {
-                                        package: Some(Package {
-                                            names: vec![String::from("test")]
-                                        }),
+                                        package: TypedPackage::Resolved(Package::from(
+                                            vec!["test"])
+                                        ),
                                         name: "A".to_string(),
                                         type_args: None
                                     }))
@@ -196,7 +192,7 @@ fn test_struct_stored_property() {
             body: vec![
                 TypedDecl::Struct(TypedStruct {
                     annotations: TypedAnnotations::new(),
-                    package: Some(Package::new(vec![String::from("test")])),
+                    package: TypedPackage::Resolved(Package::from(vec!["test"])),
                     name: "A".to_string(),
                     type_params: None,
                     initializers: vec![TypedInitializer {
@@ -210,12 +206,12 @@ fn test_struct_stored_property() {
                                 TypedAssignment {
                                     target: TypedExpr::Member(TypedInstanceMember {
                                         target: Box::new(TypedExpr::Name(TypedName {
-                                            package: None,
+                                            package: TypedPackage::Resolved(Package::new()),
                                             name: "self".to_string(),
                                             type_: Some(TypedType::Value(TypedValueType {
-                                                package: Some(Package {
-                                                    names: vec![String::from("test")]
-                                                }),
+                                                package: TypedPackage::Resolved(Package::from(
+                                                    vec!["test"]
+                                                )),
                                                 name: "A".to_string(),
                                                 type_args: None
                                             }))
@@ -225,7 +221,7 @@ fn test_struct_stored_property() {
                                         type_: Some(TypedType::int64())
                                     }),
                                     value: TypedExpr::Name(TypedName {
-                                        package: None,
+                                        package: TypedPackage::Resolved(Package::new()),
                                         name: "a".to_string(),
                                         type_: Some(TypedType::int64())
                                     })
@@ -242,7 +238,7 @@ fn test_struct_stored_property() {
                 }),
                 TypedDecl::Fun(TypedFun {
                     annotations: TypedAnnotations::new(),
-                    package: Some(Package::new(vec![String::from("test")])),
+                    package: TypedPackage::Resolved(Package::from(vec!["test"])),
                     modifiers: vec![],
                     name: "function".to_string(),
                     type_params: None,
@@ -250,9 +246,9 @@ fn test_struct_stored_property() {
                         label: "_".to_string(),
                         name: "a".to_string(),
                         type_: TypedType::Value(TypedValueType {
-                            package: Some(Package {
-                                names: vec![String::from("test")]
-                            }),
+                            package: TypedPackage::Resolved(Package::from(
+                                vec!["test"]
+                            )),
                             name: "A".to_string(),
                             type_args: None
                         })
@@ -260,18 +256,18 @@ fn test_struct_stored_property() {
                     body: Option::Some(TypedFunBody::Block(TypedBlock {
                         body: vec![TypedStmt::Decl(TypedDecl::Var(TypedVar {
                             annotations: TypedAnnotations::new(),
-                            package: None,
+                            package: TypedPackage::Resolved(Package::new()),
                             is_mut: false,
                             name: "a".to_string(),
                             type_: Some(TypedType::int64()),
                             value: TypedExpr::Member(TypedInstanceMember {
                                 target: Box::new(TypedExpr::Name(TypedName {
-                                    package: None,
+                                    package: TypedPackage::Resolved(Package::new()),
                                     name: "a".to_string(),
                                     type_: Some(TypedType::Value(TypedValueType {
-                                        package: Some(Package {
-                                            names: vec![String::from("test")]
-                                        }),
+                                        package: TypedPackage::Resolved(Package::from(
+                                            vec!["test"]
+                                        )),
                                         name: "A".to_string(),
                                         type_args: None
                                     }))
@@ -319,7 +315,7 @@ fn test_struct_init() {
             body: vec![
                 TypedDecl::Struct(TypedStruct {
                     annotations: TypedAnnotations::new(),
-                    package: Some(Package::new(vec![String::from("test")])),
+                    package: TypedPackage::Resolved(Package::from(vec!["test"])),
                     name: "A".to_string(),
                     type_params: None,
                     initializers: vec![TypedInitializer {
@@ -333,12 +329,12 @@ fn test_struct_init() {
                                 TypedAssignment {
                                     target: TypedExpr::Member(TypedInstanceMember {
                                         target: Box::new(TypedExpr::Name(TypedName {
-                                            package: None,
+                                            package: TypedPackage::Resolved(Package::new()),
                                             name: "self".to_string(),
                                             type_: Some(TypedType::Value(TypedValueType {
-                                                package: Some(Package {
-                                                    names: vec![String::from("test")]
-                                                }),
+                                                package: TypedPackage::Resolved(Package::from(
+                                                    vec!["test"]
+                                                )),
                                                 name: "A".to_string(),
                                                 type_args: None
                                             }))
@@ -348,7 +344,7 @@ fn test_struct_init() {
                                         type_: Some(TypedType::int64())
                                     }),
                                     value: TypedExpr::Name(TypedName {
-                                        package: None,
+                                        package: TypedPackage::Resolved(Package::new()),
                                         name: "a".to_string(),
                                         type_: Some(TypedType::int64())
                                     })
@@ -365,7 +361,7 @@ fn test_struct_init() {
                 }),
                 TypedDecl::Fun(TypedFun {
                     annotations: TypedAnnotations::new(),
-                    package: Some(Package::new(vec![String::from("test")])),
+                    package: TypedPackage::Resolved(Package::from(vec!["test"])),
                     modifiers: vec![],
                     name: "function".to_string(),
                     type_params: None,
@@ -373,9 +369,9 @@ fn test_struct_init() {
                         label: "_".to_string(),
                         name: "a".to_string(),
                         type_: TypedType::Value(TypedValueType {
-                            package: Some(Package {
-                                names: vec![String::from("test")],
-                            }),
+                            package: TypedPackage::Resolved(Package::from(
+                                vec!["test"],
+                            )),
                             name: "A".to_string(),
                             type_args: None,
                         }),
@@ -383,25 +379,25 @@ fn test_struct_init() {
                     body: Option::Some(TypedFunBody::Block(TypedBlock {
                         body: vec![TypedStmt::Decl(TypedDecl::Var(TypedVar {
                             annotations: TypedAnnotations::new(),
-                            package: None,
+                            package: TypedPackage::Resolved(Package::new()),
                             is_mut: false,
                             name: "a".to_string(),
                             type_: Some(TypedType::Value(TypedValueType {
-                                package: Some(Package {
-                                    names: vec![String::from("test")]
-                                }),
+                                package: TypedPackage::Resolved(Package::from(
+                                    vec!["test"]
+                                )),
                                 name: "A".to_string(),
                                 type_args: None
                             })),
                             value: TypedExpr::Call(TypedCall {
                                 target: Box::new(TypedExpr::Member(TypedInstanceMember {
                                     target: Box::new(TypedExpr::Name(TypedName {
-                                        package: None,
+                                        package: TypedPackage::Resolved(Package::new()),
                                         name: "A".to_string(),
                                         type_: Some(TypedType::Type(TypedValueType {
-                                            package: Some(Package {
-                                                names: vec![String::from("test")]
-                                            }),
+                                            package: TypedPackage::Resolved(Package::from(
+                                                vec!["test"]
+                                            )),
                                             name: "A".to_string(),
                                             type_args: None
                                         })),
@@ -415,9 +411,9 @@ fn test_struct_init() {
                                             type_: TypedType::int64()
                                         })],
                                         return_type: TypedType::Value(TypedValueType {
-                                            package: Some(Package {
-                                                names: vec![String::from("test")]
-                                            }),
+                                            package: TypedPackage::Resolved(Package::from(
+                                                vec!["test"]
+                                            )),
                                             name: "A".to_string(),
                                             type_args: None
                                         })
@@ -432,9 +428,9 @@ fn test_struct_init() {
                                     is_vararg: false
                                 }],
                                 type_: Some(TypedType::Value(TypedValueType {
-                                    package: Some(Package {
-                                        names: vec![String::from("test")]
-                                    }),
+                                    package: TypedPackage::Resolved(Package::from(
+                                        vec!["test"]
+                                    )),
                                     name: "A".to_string(),
                                     type_args: None
                                 }))
@@ -478,7 +474,7 @@ fn test_struct_member_function() {
             uses: vec![],
             body: vec![TypedDecl::Struct(TypedStruct {
                 annotations: TypedAnnotations::new(),
-                package: Some(Package::new(vec![String::from("test")])),
+                package: TypedPackage::Resolved(Package::from(vec!["test"])),
                 name: "A".to_string(),
                 type_params: None,
                 initializers: vec![TypedInitializer {
@@ -492,12 +488,10 @@ fn test_struct_member_function() {
                             TypedAssignment {
                                 target: TypedExpr::Member(TypedInstanceMember {
                                     target: Box::new(TypedExpr::Name(TypedName {
-                                        package: None,
+                                        package: TypedPackage::Resolved(Package::new()),
                                         name: "self".to_string(),
                                         type_: Some(TypedType::Value(TypedValueType {
-                                            package: Some(Package {
-                                                names: vec![String::from("test")]
-                                            }),
+                                            package: TypedPackage::Resolved(Package::from(vec!["test"])),
                                             name: "A".to_string(),
                                             type_args: None
                                         }))
@@ -507,7 +501,7 @@ fn test_struct_member_function() {
                                     type_: Some(TypedType::int64())
                                 }),
                                 value: TypedExpr::Name(TypedName {
-                                    package: None,
+                                    package: TypedPackage::Resolved(Package::new()),
                                     name: "a".to_string(),
                                     type_: Some(TypedType::int64())
                                 })
@@ -524,7 +518,7 @@ fn test_struct_member_function() {
                     name: "getA".to_string(),
                     args: vec![TypedArgDef::RefSelf(Some(TypedType::Value(
                         TypedValueType {
-                            package: Some(Package::new(vec![String::from("test")])),
+                            package: TypedPackage::Resolved(Package::from(vec!["test"])),
                             name: "A".to_string(),
                             type_args: None
                         }
@@ -534,10 +528,10 @@ fn test_struct_member_function() {
                         body: vec![TypedStmt::Expr(TypedExpr::Return(TypedReturn {
                             value: Some(Box::new(TypedExpr::Member(TypedInstanceMember {
                                 target: Box::new(TypedExpr::Name(TypedName {
-                                    package: None,
+                                    package: TypedPackage::Resolved(Package::new()),
                                     name: "self".to_string(),
                                     type_: Some(TypedType::Value(TypedValueType {
-                                        package: Some(Package::new(vec![String::from("test")])),
+                                        package: TypedPackage::Resolved(Package::from(vec!["test"])),
                                         name: "A".to_string(),
                                         type_args: None
                                     }))
@@ -590,7 +584,7 @@ fn test_struct_member_function_call() {
             body: vec![
                 TypedDecl::Struct(TypedStruct {
                     annotations: TypedAnnotations::new(),
-                    package: Some(Package::new(vec![String::from("test")])),
+                    package: TypedPackage::Resolved(Package::from(vec!["test"])),
                     name: "A".to_string(),
                     type_params: None,
                     initializers: vec![TypedInitializer {
@@ -604,12 +598,10 @@ fn test_struct_member_function_call() {
                                 TypedAssignment {
                                     target: TypedExpr::Member(TypedInstanceMember {
                                         target: Box::new(TypedExpr::Name(TypedName {
-                                            package: None,
+                                            package: TypedPackage::Resolved(Package::new()),
                                             name: "self".to_string(),
                                             type_: Some(TypedType::Value(TypedValueType {
-                                                package: Some(Package {
-                                                    names: vec![String::from("test")]
-                                                }),
+                                                package: TypedPackage::Resolved(Package::from(vec!["test"])),
                                                 name: "A".to_string(),
                                                 type_args: None
                                             }))
@@ -619,7 +611,7 @@ fn test_struct_member_function_call() {
                                         type_: Some(TypedType::int64())
                                     }),
                                     value: TypedExpr::Name(TypedName {
-                                        package: None,
+                                        package: TypedPackage::Resolved(Package::new()),
                                         name: "a".to_string(),
                                         type_: Some(TypedType::int64())
                                     })
@@ -636,7 +628,7 @@ fn test_struct_member_function_call() {
                         name: "getA".to_string(),
                         args: vec![TypedArgDef::RefSelf(Some(TypedType::Value(
                             TypedValueType {
-                                package: Some(Package::new(vec![String::from("test")])),
+                                package: TypedPackage::Resolved(Package::from(vec!["test"])),
                                 name: "A".to_string(),
                                 type_args: None
                             }
@@ -646,10 +638,10 @@ fn test_struct_member_function_call() {
                             body: vec![TypedStmt::Expr(TypedExpr::Return(TypedReturn {
                                 value: Some(Box::new(TypedExpr::Member(TypedInstanceMember {
                                     target: Box::new(TypedExpr::Name(TypedName {
-                                        package: None,
+                                        package: TypedPackage::Resolved(Package::new()),
                                         name: "self".to_string(),
                                         type_: Some(TypedType::Value(TypedValueType {
-                                            package: Some(Package::new(vec![String::from("test")])),
+                                            package: TypedPackage::Resolved(Package::from(vec!["test"])),
                                             name: "A".to_string(),
                                             type_args: None
                                         }))
@@ -665,7 +657,7 @@ fn test_struct_member_function_call() {
                 }),
                 TypedDecl::Fun(TypedFun {
                     annotations: TypedAnnotations::new(),
-                    package: Some(Package::new(vec![String::from("test")])),
+                    package: TypedPackage::Resolved(Package::from(vec!["test"])),
                     modifiers: vec![],
                     name: "function".to_string(),
                     type_params: None,
@@ -673,7 +665,7 @@ fn test_struct_member_function_call() {
                         label: "_".to_string(),
                         name: "a".to_string(),
                         type_: TypedType::Value(TypedValueType {
-                            package: Some(Package::new(vec![String::from("test")])),
+                            package: TypedPackage::Resolved(Package::from(vec!["test"])),
                             name: "A".to_string(),
                             type_args: None
                         })
@@ -682,10 +674,10 @@ fn test_struct_member_function_call() {
                         body: vec![TypedStmt::Expr(TypedExpr::Call(TypedCall {
                             target: Box::new(TypedExpr::Member(TypedInstanceMember {
                                 target: Box::new(TypedExpr::Name(TypedName {
-                                    package: None,
+                                    package: TypedPackage::Resolved(Package::new()),
                                     name: "a".to_string(),
                                     type_: Some(TypedType::Value(TypedValueType {
-                                        package: Some(Package::new(vec![String::from("test")])),
+                                        package: TypedPackage::Resolved(Package::from(vec!["test"])),
                                         name: "A".to_string(),
                                         type_args: None
                                     }))
@@ -695,7 +687,7 @@ fn test_struct_member_function_call() {
                                 type_: Some(TypedType::Function(Box::new(TypedFunctionType {
                                     arguments: vec![TypedArgDef::RefSelf(Some(TypedType::Value(
                                         TypedValueType {
-                                            package: Some(Package::new(vec![String::from("test")])),
+                                            package: TypedPackage::Resolved(Package::from(vec!["test"])),
                                             name: "A".to_string(),
                                             type_args: None
                                         }
@@ -738,7 +730,7 @@ fn test_expr_function_with_no_arg() {
             uses: vec![],
             body: vec![TypedDecl::Fun(TypedFun {
                 annotations: TypedAnnotations::new(),
-                package: Some(Package::new(vec![String::from("test")])),
+                package: TypedPackage::Resolved(Package::from(vec!["test"])),
                 modifiers: vec![],
                 name: "function".to_string(),
                 type_params: None,
@@ -779,7 +771,7 @@ fn test_expr_function_with_arg() {
             uses: vec![],
             body: vec![TypedDecl::Fun(TypedFun {
                 annotations: TypedAnnotations::new(),
-                package: Some(Package::new(vec![String::from("test")])),
+                package: TypedPackage::Resolved(Package::from(vec!["test"])),
                 modifiers: vec![],
                 name: "function".to_string(),
                 type_params: None,
@@ -789,7 +781,7 @@ fn test_expr_function_with_arg() {
                     type_: TypedType::int32()
                 })],
                 body: Some(TypedFunBody::Expr(TypedExpr::Name(TypedName {
-                    package: None,
+                    package: TypedPackage::Resolved(Package::new()),
                     name: "i".to_string(),
                     type_: Some(TypedType::int32())
                 }))),
@@ -827,7 +819,7 @@ fn test_function_call() {
             body: vec![
                 TypedDecl::Fun(TypedFun {
                     annotations: TypedAnnotations::new(),
-                    package: Some(Package::new(vec![String::from("test")])),
+                    package: TypedPackage::Resolved(Package::from(vec!["test"])),
                     modifiers: vec![],
                     name: "target_function".to_string(),
                     type_params: None,
@@ -842,7 +834,7 @@ fn test_function_call() {
                 }),
                 TypedDecl::Fun(TypedFun {
                     annotations: TypedAnnotations::new(),
-                    package: Some(Package::new(vec![String::from("test")])),
+                    package: TypedPackage::Resolved(Package::from(vec!["test"])),
                     modifiers: vec![],
                     name: "main".to_string(),
                     type_params: None,
@@ -850,7 +842,7 @@ fn test_function_call() {
                     body: Some(TypedFunBody::Block(TypedBlock {
                         body: vec![TypedStmt::Expr(TypedExpr::Call(TypedCall {
                             target: Box::new(TypedExpr::Name(TypedName {
-                                package: Some(Package::new(vec![String::from("test")])),
+                                package: TypedPackage::Resolved(Package::from(vec!["test"])),
                                 name: "target_function".to_string(),
                                 type_: Some(TypedType::Function(Box::new(TypedFunctionType {
                                     arguments: vec![],
@@ -894,7 +886,7 @@ fn test_return_integer_literal() {
             uses: vec![],
             body: vec![TypedDecl::Fun(TypedFun {
                 annotations: TypedAnnotations::new(),
-                package: Some(Package::new(vec![String::from("test")])),
+                package: TypedPackage::Resolved(Package::from(vec!["test"])),
                 modifiers: vec![],
                 name: "sample".to_string(),
                 type_params: None,
@@ -939,7 +931,7 @@ fn test_return_floating_point_literal() {
             uses: vec![],
             body: vec![TypedDecl::Fun(TypedFun {
                 annotations: TypedAnnotations::new(),
-                package: Some(Package::new(vec![String::from("test")])),
+                package: TypedPackage::Resolved(Package::from(vec!["test"])),
                 modifiers: vec![],
                 name: "sample".to_string(),
                 type_params: None,
@@ -986,7 +978,7 @@ fn test_binop() {
             uses: vec![],
             body: vec![TypedDecl::Fun(TypedFun {
                 annotations: TypedAnnotations::new(),
-                package: Some(Package::new(vec![String::from("test")])),
+                package: TypedPackage::Resolved(Package::from(vec!["test"])),
                 modifiers: vec![],
                 name: "sample".to_string(),
                 type_params: None,
@@ -1035,7 +1027,7 @@ fn test_subscript() {
             uses: vec![],
             body: vec![TypedDecl::Fun(TypedFun {
                 annotations: TypedAnnotations::new(),
-                package: Some(Package::new(vec![String::from("test")])),
+                package: TypedPackage::Resolved(Package::from(vec!["test"])),
                 modifiers: vec![],
                 name: "get_first".to_string(),
                 type_params: None,
@@ -1046,7 +1038,7 @@ fn test_subscript() {
                 })],
                 body: Option::from(TypedFunBody::Expr(TypedExpr::Subscript(TypedSubscript {
                     target: Box::new(TypedExpr::Name(TypedName {
-                        package: None,
+                        package: TypedPackage::Resolved(Package::new()),
                         name: "p".to_string(),
                         type_: Some(TypedType::unsafe_pointer(TypedType::uint8()))
                     })),
@@ -1088,7 +1080,7 @@ fn test_if_else() {
             uses: vec![],
             body: vec![TypedDecl::Fun(TypedFun {
                 annotations: TypedAnnotations::new(),
-                package: Some(Package::new(vec![String::from("test")])),
+                package: TypedPackage::Resolved(Package::from(vec!["test"])),
                 modifiers: vec![],
                 name: "test_if".to_string(),
                 type_params: None,
@@ -1102,7 +1094,7 @@ fn test_if_else() {
                         value: Some(Box::new(TypedExpr::If(TypedIf {
                             condition: Box::new(TypedExpr::BinOp(TypedBinOp {
                                 left: Box::new(TypedExpr::Name(TypedName {
-                                    package: None,
+                                    package: TypedPackage::Resolved(Package::new()),
                                     name: "i".to_string(),
                                     type_: Some(TypedType::int64())
                                 })),
@@ -1124,7 +1116,7 @@ fn test_if_else() {
                             type_: Some(TypedType::int64()),
                             else_body: Some(TypedBlock {
                                 body: vec![TypedStmt::Expr(TypedExpr::Name(TypedName {
-                                    package: None,
+                                    package: TypedPackage::Resolved(Package::new()),
                                     name: "i".to_string(),
                                     type_: Some(TypedType::int64())
                                 }))]
@@ -1166,7 +1158,7 @@ fn test_if() {
             uses: vec![],
             body: vec![TypedDecl::Fun(TypedFun {
                 annotations: TypedAnnotations::new(),
-                package: Some(Package::new(vec![String::from("test")])),
+                package: TypedPackage::Resolved(Package::from(vec!["test"])),
                 modifiers: vec![],
                 name: "test_if".to_string(),
                 type_params: None,
@@ -1179,7 +1171,7 @@ fn test_if() {
                     body: vec![TypedStmt::Expr(TypedExpr::If(TypedIf {
                         condition: Box::new(TypedExpr::BinOp(TypedBinOp {
                             left: Box::new(TypedExpr::Name(TypedName {
-                                package: None,
+                                package: TypedPackage::Resolved(Package::new()),
                                 name: "i".to_string(),
                                 type_: Some(TypedType::int64())
                             })),
@@ -1193,7 +1185,7 @@ fn test_if() {
                         body: TypedBlock {
                             body: vec![TypedStmt::Decl(TypedDecl::Var(TypedVar {
                                 annotations: TypedAnnotations::new(),
-                                package: None,
+                                package: TypedPackage::Resolved(Package::new()),
                                 is_mut: false,
                                 name: "p".to_string(),
                                 type_: Some(TypedType::int64()),

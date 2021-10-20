@@ -21,7 +21,7 @@ use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedForStmt,
     TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
 };
-use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
+use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedPackage, TypedType, TypedValueType};
 use crate::high_level_ir::typed_use::TypedUse;
 
 #[derive(Debug, Clone)]
@@ -62,9 +62,9 @@ impl TypeResolver {
                     ns.register_value(
                         s.name.clone(),
                         TypedType::Type(TypedValueType {
-                            package: Some(Package {
-                                names: current_namespace.clone(),
-                            }),
+                            package: TypedPackage::Resolved(Package::from(
+                                current_namespace.clone(),
+                            )),
                             name: s.name.clone(),
                             type_args: None,
                         }),
@@ -157,7 +157,7 @@ impl TypeResolver {
         let return_type = self.typed_function_return_type(&f)?;
         let fun = TypedFun {
             annotations: f.annotations,
-            package: Some(Package::new(c_name_space)),
+            package: TypedPackage::Resolved(Package::from(c_name_space)),
             modifiers: f.modifiers,
             name: f.name,
             type_params: f.type_params, // TODO
@@ -182,7 +182,7 @@ impl TypeResolver {
         } = s;
         let current_namespace = self.context.current_namespace.clone();
         let this_type = TypedType::Value(TypedValueType {
-            package: Some(Package::new(current_namespace)),
+            package: TypedPackage::Resolved(Package::from(current_namespace)),
             name: name.clone(),
             type_args: None,
         });
@@ -312,7 +312,7 @@ impl TypeResolver {
         }?;
         let v = TypedVar {
             annotations: t.annotations,
-            package: None,
+            package: TypedPackage::Resolved(Package::new()),
             is_mut: t.is_mut,
             name: t.name,
             type_: Some(v_type),
@@ -389,7 +389,7 @@ impl TypeResolver {
         let return_type = self.typed_function_return_type(&f)?;
         let fun = TypedFun {
             annotations: f.annotations,
-            package: Some(Package::new(c_name_space)),
+            package: TypedPackage::Resolved(Package::from(c_name_space)),
             modifiers: f.modifiers,
             name: f.name,
             type_params: f.type_params, // TODO
@@ -415,14 +415,14 @@ impl TypeResolver {
             package: _,
             name,
             type_params,
-            initializers,        // TODO
-            stored_properties,   // TODO
+            initializers,
+            stored_properties,
             computed_properties, // TODO
             member_functions,
         } = s;
         let current_namespace = self.context.current_namespace.clone();
         let this_type = TypedType::Value(TypedValueType {
-            package: Some(Package::new(current_namespace)),
+            package: TypedPackage::Resolved(Package::from(current_namespace)),
             name: name.clone(),
             type_args: None,
         });
@@ -443,7 +443,7 @@ impl TypeResolver {
         self.context.clear_current_type();
         Result::Ok(TypedStruct {
             annotations,
-            package: Some(Package::new(self.context.current_namespace.clone())),
+            package: TypedPackage::Resolved(Package::from(self.context.current_namespace.clone())),
             name,
             type_params,
             initializers,
@@ -563,10 +563,8 @@ impl TypeResolver {
     pub fn typed_name(&mut self, n: TypedName) -> Result<TypedName> {
         let (type_, package) = self.context.resolve_name_type(
             match n.package {
-                None => {
-                    vec![]
-                }
-                Some(p) => p.names,
+                TypedPackage::Raw(p) => {p.names}
+                TypedPackage::Resolved(_) => {panic!()}
             },
             n.name.clone(),
         )?;

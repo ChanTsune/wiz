@@ -1,7 +1,7 @@
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_expr::TypedExpr;
 use crate::high_level_ir::typed_stmt::TypedBlock;
-use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedTypeParam};
+use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedPackage, TypedType, TypedTypeParam};
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum TypedDecl {
@@ -17,7 +17,7 @@ pub enum TypedDecl {
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypedVar {
     pub(crate) annotations: TypedAnnotations,
-    pub(crate) package: Option<Package>,
+    pub(crate) package: TypedPackage,
     pub(crate) is_mut: bool,
     pub(crate) name: String,
     pub(crate) type_: Option<TypedType>,
@@ -27,7 +27,7 @@ pub struct TypedVar {
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypedFun {
     pub(crate) annotations: TypedAnnotations,
-    pub(crate) package: Option<Package>,
+    pub(crate) package: TypedPackage,
     pub(crate) modifiers: Vec<String>,
     pub(crate) name: String,
     pub(crate) type_params: Option<Vec<TypedTypeParam>>,
@@ -80,7 +80,7 @@ pub enum TypedFunBody {
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypedStruct {
     pub(crate) annotations: TypedAnnotations,
-    pub(crate) package: Option<Package>,
+    pub(crate) package: TypedPackage,
     pub(crate) name: String,
     pub(crate) type_params: Option<Vec<TypedTypeParam>>,
     pub(crate) initializers: Vec<TypedInitializer>,
