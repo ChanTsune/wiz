@@ -44,7 +44,7 @@ impl SyntaxNode for Decl {}
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct VarSyntax {
     pub annotations: Option<AnnotationsSyntax>,
-    pub is_mut: bool,
+    pub mutability_keyword: TokenSyntax,
     pub name: String,
     pub type_: Option<TypeName>,
     pub value: Expr,
