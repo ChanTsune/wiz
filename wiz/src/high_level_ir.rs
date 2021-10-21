@@ -173,7 +173,7 @@ impl Ast2HLIR {
         TypedVar {
             annotations: self.annotations(v.annotations),
             package: None,
-            is_mut: v.is_mut,
+            is_mut: v.mutability_keyword.token == "var",
             name: v.name,
             type_: None,
             value: expr,

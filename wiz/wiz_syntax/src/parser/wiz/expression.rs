@@ -1765,7 +1765,8 @@ mod tests {
                         )),
                         body: vec![Stmt::Decl(Decl::Var(VarSyntax {
                             annotations: None,
-                            is_mut: false,
+                            mutability_keyword: TokenSyntax::new("val".to_string())
+                                .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                             name: "newCapacity".to_string(),
                             type_: None,
                             value: Expr::If(IfExprSyntax {
