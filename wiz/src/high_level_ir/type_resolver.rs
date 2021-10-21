@@ -9,7 +9,7 @@ use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedMemberFunction,
-    TypedStruct, TypedValueArgDef, TypedVar,
+    TypedStoredProperty, TypedStruct, TypedValueArgDef, TypedVar,
 };
 use crate::high_level_ir::typed_expr::{
     TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember,
@@ -21,7 +21,9 @@ use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedForStmt,
     TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
 };
-use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedType, TypedValueType};
+use crate::high_level_ir::typed_type::{
+    Package, TypedFunctionType, TypedPackage, TypedType, TypedValueType,
+};
 use crate::high_level_ir::typed_use::TypedUse;
 
 #[derive(Debug, Clone)]
@@ -62,9 +64,9 @@ impl TypeResolver {
                     ns.register_value(
                         s.name.clone(),
                         TypedType::Type(TypedValueType {
-                            package: Some(Package {
-                                names: current_namespace.clone(),
-                            }),
+                            package: TypedPackage::Resolved(Package::from(
+                                current_namespace.clone(),
+                            )),
                             name: s.name.clone(),
                             type_args: None,
                         }),
@@ -100,8 +102,14 @@ impl TypeResolver {
         if name != String::from("builtin.ll") {
             self.context.push_name_space(f.name.clone());
         };
+        for u in f.uses.iter() {
+            self.context.use_name_space(u.package.names.clone());
+        }
         for d in f.body {
             self.preload_decl(d)?;
+        }
+        for u in f.uses.iter() {
+            self.context.use_name_space(u.package.names.clone());
         }
         if name != String::from("builtin.ll") {
             self.context.pop_name_space();
@@ -157,7 +165,7 @@ impl TypeResolver {
         let return_type = self.typed_function_return_type(&f)?;
         let fun = TypedFun {
             annotations: f.annotations,
-            package: Some(Package::new(c_name_space)),
+            package: TypedPackage::Resolved(Package::from(c_name_space)),
             modifiers: f.modifiers,
             name: f.name,
             type_params: f.type_params, // TODO
@@ -182,7 +190,7 @@ impl TypeResolver {
         } = s;
         let current_namespace = self.context.current_namespace.clone();
         let this_type = TypedType::Value(TypedValueType {
-            package: Some(Package::new(current_namespace)),
+            package: TypedPackage::Resolved(Package::from(current_namespace)),
             name: name.clone(),
             type_args: None,
         });
@@ -217,18 +225,18 @@ impl TypeResolver {
             rs.member_functions.insert(member_function.name, type_);
         }
         for ini in initializers.iter() {
+            let type_ =
+                self.context
+                    .full_type_name(TypedType::Function(Box::new(TypedFunctionType {
+                        arguments: ini.args.clone(),
+                        return_type: this_type.clone(),
+                    })))?;
             let ns = self.context.get_current_namespace_mut()?;
             let rs = ns.get_type_mut(&name).ok_or(ResolverError::from(format!(
                 "Struct {:?} not exist. Maybe before preload",
                 name
             )))?;
-            rs.static_functions.insert(
-                String::from("init"),
-                TypedType::Function(Box::new(TypedFunctionType {
-                    arguments: ini.args.clone(),
-                    return_type: this_type.clone(),
-                })),
-            );
+            rs.static_functions.insert(String::from("init"), type_);
         }
 
         Result::Ok(())
@@ -312,7 +320,7 @@ impl TypeResolver {
         }?;
         let v = TypedVar {
             annotations: t.annotations,
-            package: None,
+            package: TypedPackage::Resolved(Package::new()),
             is_mut: t.is_mut,
             name: t.name,
             type_: Some(v_type),
@@ -389,7 +397,7 @@ impl TypeResolver {
         let return_type = self.typed_function_return_type(&f)?;
         let fun = TypedFun {
             annotations: f.annotations,
-            package: Some(Package::new(c_name_space)),
+            package: TypedPackage::Resolved(Package::from(c_name_space)),
             modifiers: f.modifiers,
             name: f.name,
             type_params: f.type_params, // TODO
@@ -415,14 +423,14 @@ impl TypeResolver {
             package: _,
             name,
             type_params,
-            initializers,        // TODO
-            stored_properties,   // TODO
+            initializers,
+            stored_properties,
             computed_properties, // TODO
             member_functions,
         } = s;
         let current_namespace = self.context.current_namespace.clone();
         let this_type = TypedType::Value(TypedValueType {
-            package: Some(Package::new(current_namespace)),
+            package: TypedPackage::Resolved(Package::from(current_namespace)),
             name: name.clone(),
             type_args: None,
         });
@@ -431,7 +439,10 @@ impl TypeResolver {
             .into_iter()
             .map(|i| self.typed_initializer(i))
             .collect::<Result<Vec<TypedInitializer>>>()?;
-        let stored_properties = stored_properties.into_iter().collect();
+        let stored_properties = stored_properties
+            .into_iter()
+            .map(|s| self.typed_stored_property(s))
+            .collect::<Result<Vec<TypedStoredProperty>>>()?;
         let computed_properties = computed_properties.into_iter().collect();
         let member_functions = member_functions
             .into_iter()
@@ -440,7 +451,7 @@ impl TypeResolver {
         self.context.clear_current_type();
         Result::Ok(TypedStruct {
             annotations,
-            package: Some(Package::new(self.context.current_namespace.clone())),
+            package: TypedPackage::Resolved(Package::from(self.context.current_namespace.clone())),
             name,
             type_params,
             initializers,
@@ -473,6 +484,14 @@ impl TypeResolver {
                 })
                 .collect::<Result<Vec<TypedArgDef>>>()?,
             body: self.typed_fun_body(i.body)?,
+        })
+    }
+
+    fn typed_stored_property(&mut self, s: TypedStoredProperty) -> Result<TypedStoredProperty> {
+        let TypedStoredProperty { name, type_ } = s;
+        Result::Ok(TypedStoredProperty {
+            name,
+            type_: self.context.full_type_name(type_)?,
         })
     }
 
@@ -552,10 +571,10 @@ impl TypeResolver {
     pub fn typed_name(&mut self, n: TypedName) -> Result<TypedName> {
         let (type_, package) = self.context.resolve_name_type(
             match n.package {
-                None => {
-                    vec![]
+                TypedPackage::Raw(p) => p.names,
+                TypedPackage::Resolved(_) => {
+                    panic!()
                 }
-                Some(p) => p.names,
             },
             n.name.clone(),
         )?;

@@ -3,6 +3,12 @@ use crate::high_level_ir::typed_decl::TypedArgDef;
 use std::option::Option::Some;
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
+pub enum TypedPackage {
+    Raw(Package),
+    Resolved(Package),
+}
+
+#[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub struct Package {
     pub(crate) names: Vec<String>,
 }
@@ -17,7 +23,7 @@ pub enum TypedType {
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub struct TypedValueType {
-    pub(crate) package: Option<Package>,
+    pub(crate) package: TypedPackage,
     pub(crate) name: String,
     pub(crate) type_args: Option<Vec<TypedType>>,
 }
@@ -34,9 +40,37 @@ pub struct TypedTypeParam {
     pub(crate) type_constraint: Vec<TypedType>,
 }
 
+impl TypedPackage {
+    pub(crate) fn is_raw(&self) -> bool {
+        matches!(self, Self::Raw(_))
+    }
+
+    pub(crate) fn is_resolved(&self) -> bool {
+        matches!(self, Self::Resolved(_))
+    }
+
+    pub(crate) fn into_raw(self) -> Package {
+        match self {
+            TypedPackage::Raw(p) => p,
+            TypedPackage::Resolved(_) => {
+                panic!()
+            }
+        }
+    }
+
+    pub(crate) fn into_resolved(self) -> Package {
+        match self {
+            TypedPackage::Raw(_) => {
+                panic!()
+            }
+            TypedPackage::Resolved(p) => p,
+        }
+    }
+}
+
 impl Package {
-    pub(crate) fn new(names: Vec<String>) -> Self {
-        Self { names }
+    pub(crate) fn new() -> Self {
+        Self { names: vec![] }
     }
 
     pub(crate) fn global() -> Self {
@@ -68,7 +102,7 @@ impl ToString for Package {
 impl TypedValueType {
     fn builtin(name: &str) -> Self {
         Self {
-            package: Some(Package::global()),
+            package: TypedPackage::Resolved(Package::global()),
             name: String::from(name),
             type_args: None,
         }
@@ -132,7 +166,7 @@ impl TypedValueType {
 
     pub(crate) fn is_unsafe_pointer(&self) -> bool {
         self.name == UNSAFE_POINTER
-            && if let Some(pkg) = &self.package {
+            && if let TypedPackage::Resolved(pkg) = &self.package {
                 pkg.is_global()
             } else {
                 false
@@ -143,8 +177,7 @@ impl TypedValueType {
 impl ToString for TypedValueType {
     fn to_string(&self) -> String {
         let fqn = match &self.package {
-            None => self.name.clone(),
-            Some(pkg) => {
+            TypedPackage::Raw(pkg) | TypedPackage::Resolved(pkg) => {
                 if pkg.is_global() {
                     self.name.clone()
                 } else {
@@ -225,7 +258,7 @@ impl TypedType {
 
     pub fn unsafe_pointer(typ: TypedType) -> Self {
         Self::Value(TypedValueType {
-            package: Some(Package::global()),
+            package: TypedPackage::Resolved(Package::global()),
             name: UNSAFE_POINTER.to_string(),
             type_args: Some(vec![typ]),
         })

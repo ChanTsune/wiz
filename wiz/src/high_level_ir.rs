@@ -14,7 +14,9 @@ use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentAndOperator, TypedAssignmentStmt,
     TypedBlock, TypedForStmt, TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
 };
-use crate::high_level_ir::typed_type::{Package, TypedType, TypedTypeParam, TypedValueType};
+use crate::high_level_ir::typed_type::{
+    Package, TypedPackage, TypedType, TypedTypeParam, TypedValueType,
+};
 use crate::high_level_ir::typed_use::TypedUse;
 use crate::utils::path_string_to_page_name;
 use std::option::Option::Some;
@@ -34,7 +36,7 @@ use wiz_syntax::syntax::fun::arg_def::ArgDef;
 use wiz_syntax::syntax::fun::body_def::FunBody;
 use wiz_syntax::syntax::literal::LiteralSyntax;
 use wiz_syntax::syntax::stmt::{AssignmentStmt, LoopStmt, Stmt, WhileLoopSyntax};
-use wiz_syntax::syntax::type_name::{TypeName, TypeParam};
+use wiz_syntax::syntax::type_name::{NameSpacedTypeName, TypeName, TypeParam};
 
 pub mod type_resolver;
 pub mod typed_annotation;
@@ -172,7 +174,7 @@ impl Ast2HLIR {
         let expr = self.expr(v.value);
         TypedVar {
             annotations: self.annotations(v.annotations),
-            package: None,
+            package: TypedPackage::Raw(Package::new()),
             is_mut: v.mutability_keyword.token == "var",
             name: v.name,
             type_: None,
@@ -210,7 +212,7 @@ impl Ast2HLIR {
 
         TypedFun {
             annotations: self.annotations(f.annotations),
-            package: None,
+            package: TypedPackage::Raw(Package::new()),
             modifiers: f.modifiers,
             name: f.name,
             type_params: f.type_params.map(|v| {
@@ -240,7 +242,7 @@ impl Ast2HLIR {
     pub fn type_(&self, tn: TypeName) -> TypedType {
         match tn {
             TypeName::Simple(stn) => TypedType::Value(TypedValueType {
-                package: Some(Package::global()),
+                package: TypedPackage::Raw(Package::new()),
                 name: stn.name,
                 type_args: stn
                     .type_args
@@ -266,7 +268,27 @@ impl Ast2HLIR {
                 }
             }
             TypeName::NameSpaced(n) => {
-                todo!()
+                let NameSpacedTypeName {
+                    name_space,
+                    type_name,
+                } = *n;
+                let type_name = match type_name {
+                    TypeName::Simple(s) => s,
+                    _ => panic!(),
+                };
+                TypedType::Value(TypedValueType {
+                    package: TypedPackage::Raw(Package::from(
+                        name_space
+                            .elements
+                            .into_iter()
+                            .map(|i| i.name.token)
+                            .collect::<Vec<String>>(),
+                    )),
+                    name: type_name.name,
+                    type_args: type_name
+                        .type_args
+                        .map(|v| v.into_iter().map(|t| self.type_(t)).collect()),
+                })
             }
         }
     }
@@ -302,7 +324,7 @@ impl Ast2HLIR {
         }
         TypedStruct {
             annotations: self.annotations(s.annotations),
-            package: None,
+            package: TypedPackage::Raw(Package::new()),
             name: s.name,
             type_params: s
                 .type_params
@@ -328,7 +350,7 @@ impl Ast2HLIR {
             .collect();
         if s.initializers.is_empty() {
             let struct_type = TypedValueType {
-                package: Some(Package::global()),
+                package: TypedPackage::Raw(Package::new()),
                 name: s.name.clone(),
                 type_args: None,
             };
@@ -343,7 +365,7 @@ impl Ast2HLIR {
                                 TypedAssignment {
                                     target: TypedExpr::Member(TypedInstanceMember {
                                         target: Box::new(TypedExpr::Name(TypedName {
-                                            package: None,
+                                            package: TypedPackage::Raw(Package::new()),
                                             name: "self".to_string(),
                                             type_: Some(TypedType::Value(struct_type.clone())),
                                         })),
@@ -352,7 +374,7 @@ impl Ast2HLIR {
                                         type_: Some(p.type_.clone()),
                                     }),
                                     value: TypedExpr::Name(TypedName {
-                                        package: None,
+                                        package: TypedPackage::Raw(Package::new()),
                                         name: p.name.clone(),
                                         type_: Some(p.type_.clone()),
                                     }),
@@ -467,9 +489,9 @@ impl Ast2HLIR {
             .collect::<Vec<String>>();
         TypedName {
             package: if name_space.is_empty() {
-                None
+                TypedPackage::Raw(Package::new())
             } else {
-                Some(Package::new(name_space))
+                TypedPackage::Raw(Package::from(name_space))
             },
             name,
             type_: None,

@@ -73,6 +73,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
 
     let mut type_resolver = TypeResolver::new();
 
+    // detect types
     for hlir in builtin_hlir.iter() {
         type_resolver.detect_type(hlir)?;
     }
@@ -83,6 +84,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         type_resolver.detect_type(hlir)?;
     }
 
+    // preload decls
     for hlir in builtin_hlir.iter() {
         type_resolver.preload_file(hlir.clone())?;
     }
@@ -92,6 +94,13 @@ fn main() -> result::Result<(), Box<dyn Error>> {
     for hlir in hlfiles.iter() {
         type_resolver.preload_file(hlir.clone())?;
     }
+
+    // resolve types
+
+    let builtin_hlir = builtin_hlir
+        .into_iter()
+        .map(|f| type_resolver.file(f))
+        .collect::<Result<Vec<TypedFile>>>()?;
 
     let std_hlir = type_resolver.source_set(std_hlir)?;
 
