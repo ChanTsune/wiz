@@ -696,60 +696,12 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    alt((var, val))(s)
-}
-
-pub fn var<I>(s: I) -> IResult<I, VarSyntax>
-where
-    I: Slice<RangeFrom<usize>>
-        + Slice<Range<usize>>
-        + InputIter
-        + Clone
-        + InputLength
-        + ToString
-        + InputTake
-        + Offset
-        + InputTakeAtPosition
-        + ExtendInto<Item = char, Extender = String>
-        + FindSubstring<&'static str>
-        + Compare<&'static str>,
-    <I as InputIter>::Item: AsChar + Copy,
-    <I as InputTakeAtPosition>::Item: AsChar,
-{
     map(
-        tuple((var_keyword, whitespace1, var_body)),
-        |(_, _, (name, t, e))| VarSyntax {
+        tuple((alt((var_keyword, val_keyword)), whitespace1, var_body)),
+        |(mutability_keyword, ws, (name, t, e)): (I, _, _)| VarSyntax {
             annotations: None,
-            is_mut: true,
-            name,
-            type_: t,
-            value: e,
-        },
-    )(s)
-}
-
-pub fn val<I>(s: I) -> IResult<I, VarSyntax>
-where
-    I: Slice<RangeFrom<usize>>
-        + Slice<Range<usize>>
-        + InputIter
-        + Clone
-        + InputLength
-        + ToString
-        + InputTake
-        + Offset
-        + InputTakeAtPosition
-        + ExtendInto<Item = char, Extender = String>
-        + FindSubstring<&'static str>
-        + Compare<&'static str>,
-    <I as InputIter>::Item: AsChar + Copy,
-    <I as InputTakeAtPosition>::Item: AsChar,
-{
-    map(
-        tuple((val_keyword, whitespace1, var_body)),
-        |(_, _, (name, t, e))| VarSyntax {
-            annotations: None,
-            is_mut: false,
+            mutability_keyword: TokenSyntax::new(mutability_keyword.to_string())
+                .with_trailing_trivia(ws),
             name,
             type_: t,
             value: e,
@@ -1199,7 +1151,8 @@ mod tests {
                 "",
                 Decl::Var(VarSyntax {
                     annotations: None,
-                    is_mut: false,
+                    mutability_keyword: TokenSyntax::new("val".to_string())
+                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     name: "a".to_string(),
                     type_: Some(TypeName::Simple(SimpleTypeName {
                         name: "Int".to_string(),
@@ -1219,7 +1172,8 @@ mod tests {
                 "",
                 Decl::Var(VarSyntax {
                     annotations: None,
-                    is_mut: false,
+                    mutability_keyword: TokenSyntax::new("val".to_string())
+                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     name: "a".to_string(),
                     type_: None,
                     value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new("1".to_string())))
