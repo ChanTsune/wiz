@@ -698,9 +698,10 @@ where
 {
     map(
         tuple((alt((var_keyword, val_keyword)), whitespace1, var_body)),
-        |(mutability_keyword, ws, (name, t, e)):(I, _, _)| VarSyntax {
+        |(mutability_keyword, ws, (name, t, e)): (I, _, _)| VarSyntax {
             annotations: None,
-            mutability_keyword: TokenSyntax::new(mutability_keyword.to_string()).with_trailing_trivia(ws),
+            mutability_keyword: TokenSyntax::new(mutability_keyword.to_string())
+                .with_trailing_trivia(ws),
             name,
             type_: t,
             value: e,
