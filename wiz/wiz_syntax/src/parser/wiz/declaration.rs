@@ -12,13 +12,13 @@ use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_parameters};
 use crate::syntax::annotation::Annotatable;
 use crate::syntax::block::BlockSyntax;
+use crate::syntax::decl::fun::arg_def::{ArgDef, SelfArgDefSyntax, ValueArgDef};
+use crate::syntax::decl::fun::body_def::FunBody;
 use crate::syntax::decl::{
     Decl, DeinitializerSyntax, FunSyntax, InitializerSyntax, MethodSyntax, PackageName,
     StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax, VarSyntax,
 };
 use crate::syntax::expr::Expr;
-use crate::syntax::decl::fun::arg_def::{ArgDef, SelfArgDefSyntax, ValueArgDef};
-use crate::syntax::decl::fun::body_def::FunBody;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::type_name::{TypeName, TypeParam};
 use crate::syntax::Syntax;
@@ -818,13 +818,13 @@ mod tests {
         struct_properties, struct_syntax, type_constraint, type_constraints, use_syntax, var_decl,
     };
     use crate::syntax::block::BlockSyntax;
+    use crate::syntax::decl::fun::arg_def::{ArgDef, ValueArgDef};
+    use crate::syntax::decl::fun::body_def::FunBody;
     use crate::syntax::decl::{
         Decl, FunSyntax, MethodSyntax, PackageName, StoredPropertySyntax, StructPropertySyntax,
         StructSyntax, UseSyntax, VarSyntax,
     };
     use crate::syntax::expr::{BinaryOperationSyntax, Expr, NameExprSyntax};
-    use crate::syntax::decl::fun::arg_def::{ArgDef, ValueArgDef};
-    use crate::syntax::decl::fun::body_def::FunBody;
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::stmt::Stmt;
     use crate::syntax::token::TokenSyntax;
