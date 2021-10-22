@@ -32,8 +32,8 @@ use wiz_syntax::syntax::expr::{
     ReturnSyntax, SubscriptSyntax, TypeCastSyntax, UnaryOperationSyntax,
 };
 use wiz_syntax::syntax::file::{FileSyntax, SourceSet, WizFile};
-use wiz_syntax::syntax::fun::arg_def::ArgDef;
-use wiz_syntax::syntax::fun::body_def::FunBody;
+use wiz_syntax::syntax::decl::fun::arg_def::ArgDef;
+use wiz_syntax::syntax::decl::fun::body_def::FunBody;
 use wiz_syntax::syntax::literal::LiteralSyntax;
 use wiz_syntax::syntax::stmt::{AssignmentStmt, LoopStmt, Stmt, WhileLoopSyntax};
 use wiz_syntax::syntax::type_name::{NameSpacedTypeName, TypeName, TypeParam};
