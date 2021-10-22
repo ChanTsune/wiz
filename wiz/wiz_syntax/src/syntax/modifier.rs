@@ -2,14 +2,12 @@ use crate::syntax::token::TokenSyntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct ModifiersSyntax {
-    pub modifiers: Vec<TokenSyntax>
+    pub modifiers: Vec<TokenSyntax>,
 }
 
 impl ModifiersSyntax {
     pub fn new() -> Self {
-        Self {
-            modifiers: vec![]
-        }
+        Self { modifiers: vec![] }
     }
 }
 
@@ -19,10 +17,13 @@ impl Default for ModifiersSyntax {
     }
 }
 
-impl <T> From<Vec<T>> for ModifiersSyntax where T: ToString {
+impl<T> From<Vec<T>> for ModifiersSyntax
+where
+    T: ToString,
+{
     fn from(modifiers: Vec<T>) -> Self {
         Self {
-            modifiers: modifiers.into_iter().map(TokenSyntax::from).collect()
+            modifiers: modifiers.into_iter().map(TokenSyntax::from).collect(),
         }
     }
 }

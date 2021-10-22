@@ -6,13 +6,13 @@ pub mod decl;
 pub mod expr;
 pub mod file;
 pub mod literal;
+pub mod modifier;
 pub mod name_space;
 pub mod node;
 pub mod stmt;
 pub mod token;
 pub mod trivia;
 pub mod type_name;
-pub mod modifier;
 
 pub trait Syntax {
     fn with_leading_trivia(self, trivia: Trivia) -> Self;
