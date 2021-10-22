@@ -1,5 +1,6 @@
 use crate::syntax::name_space::NameSpaceSyntax;
 use crate::syntax::node::SyntaxNode;
+use crate::syntax::token::TokenSyntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum TypeName {
@@ -22,7 +23,7 @@ pub struct SimpleTypeName {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct DecoratedTypeName {
-    pub decoration: String,
+    pub decoration: TokenSyntax,
     pub type_: TypeName,
 }
 

@@ -11,6 +11,7 @@ use nom::multi::many0;
 use nom::sequence::tuple;
 use nom::{AsChar, Compare, FindSubstring, IResult, InputIter, InputLength, InputTake, Slice};
 use std::ops::{Range, RangeFrom};
+use crate::syntax::token::TokenSyntax;
 
 pub fn type_<I>(s: I) -> IResult<I, TypeName>
 where
@@ -25,8 +26,7 @@ where
 {
     alt((
         parenthesized_type,
-        pointer_type,
-        reference_type,
+        map(decorated_type,|t|TypeName::Decorated(Box::new(t))),
         type_reference,
         // function_type,
     ))(s)
@@ -46,46 +46,24 @@ where
     map(tuple((char('('), type_, char(')'))), |(_, type_, _)| type_)(s)
 }
 
-pub fn pointer_type<I>(s: I) -> IResult<I, TypeName>
-where
-    I: Slice<RangeFrom<usize>>
+pub fn decorated_type<I>(s: I) -> IResult<I, DecoratedTypeName>
+    where
+        I: Slice<RangeFrom<usize>>
         + InputIter
         + InputTake
         + InputLength
         + Clone
         + ToString
         + Compare<&'static str>,
-    <I as InputIter>::Item: AsChar,
+        <I as InputIter>::Item: AsChar,
 {
     map(
-        tuple((char('*'), alt((type_reference, parenthesized_type)))),
+        tuple((alt((char('*'), ampersand)), alt((type_reference, parenthesized_type)))),
         |(p, type_name)| {
-            TypeName::Decorated(Box::new(DecoratedTypeName {
-                decoration: p.to_string(),
+            DecoratedTypeName {
+                decoration: TokenSyntax::from(p),
                 type_: type_name,
-            }))
-        },
-    )(s)
-}
-
-pub fn reference_type<I>(s: I) -> IResult<I, TypeName>
-where
-    I: Slice<RangeFrom<usize>>
-        + InputIter
-        + InputTake
-        + InputLength
-        + Clone
-        + ToString
-        + Compare<&'static str>,
-    <I as InputIter>::Item: AsChar,
-{
-    map(
-        tuple((ampersand, alt((type_reference, parenthesized_type)))),
-        |(a, type_name)| {
-            TypeName::Decorated(Box::new(DecoratedTypeName {
-                decoration: a.to_string(),
-                type_: type_name,
-            }))
+            }
         },
     )(s)
 }
@@ -245,8 +223,9 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::type_::{pointer_type, reference_type, type_parameter, user_type};
+    use crate::parser::wiz::type_::{decorated_type, type_parameter, user_type};
     use crate::syntax::name_space::NameSpaceSyntax;
+    use crate::syntax::token::TokenSyntax;
     use crate::syntax::type_name::{
         DecoratedTypeName, NameSpacedTypeName, SimpleTypeName, TypeName, TypeParam,
     };
@@ -271,16 +250,16 @@ mod tests {
     #[test]
     fn test_pointer_type() {
         assert_eq!(
-            pointer_type("*T"),
+            decorated_type("*T"),
             Ok((
                 "",
-                TypeName::Decorated(Box::new(DecoratedTypeName {
-                    decoration: "*".to_string(),
+                DecoratedTypeName {
+                    decoration: TokenSyntax::from("*"),
                     type_: TypeName::Simple(SimpleTypeName {
                         name: "T".to_string(),
                         type_args: None
                     })
-                }))
+                }
             ))
         );
     }
@@ -288,16 +267,16 @@ mod tests {
     #[test]
     fn test_reference_type() {
         assert_eq!(
-            reference_type("&T"),
+            decorated_type("&T"),
             Ok((
                 "",
-                TypeName::Decorated(Box::new(DecoratedTypeName {
-                    decoration: "&".to_string(),
+                DecoratedTypeName {
+                    decoration: TokenSyntax::from("&"),
                     type_: TypeName::Simple(SimpleTypeName {
                         name: "T".to_string(),
                         type_args: None
                     })
-                }))
+                }
             ))
         );
     }
