@@ -121,7 +121,7 @@ where
 {
     map(tuple((identifier, opt(type_arguments))), |(name, args)| {
         TypeName::Simple(SimpleTypeName {
-            name,
+            name: TokenSyntax::from(name),
             type_args: args,
         })
     })(s)
@@ -239,7 +239,7 @@ mod tests {
                 TypeName::NameSpaced(Box::new(NameSpacedTypeName {
                     name_space: NameSpaceSyntax::from(vec!["std", "builtin"]),
                     type_name: TypeName::Simple(SimpleTypeName {
-                        name: "String".to_string(),
+                        name: TokenSyntax::from("String"),
                         type_args: None
                     })
                 }))
@@ -256,7 +256,7 @@ mod tests {
                 DecoratedTypeName {
                     decoration: TokenSyntax::from("*"),
                     type_: TypeName::Simple(SimpleTypeName {
-                        name: "T".to_string(),
+                        name: TokenSyntax::from("T"),
                         type_args: None
                     })
                 }
@@ -273,7 +273,7 @@ mod tests {
                 DecoratedTypeName {
                     decoration: TokenSyntax::from("&"),
                     type_: TypeName::Simple(SimpleTypeName {
-                        name: "T".to_string(),
+                        name: TokenSyntax::from("T"),
                         type_args: None
                     })
                 }
@@ -304,7 +304,7 @@ mod tests {
                 TypeParam {
                     name: "T".to_string(),
                     type_constraints: Some(TypeName::Simple(SimpleTypeName {
-                        name: "Int".to_string(),
+                        name: TokenSyntax::from("Int"),
                         type_args: None
                     }))
                 }
@@ -317,7 +317,7 @@ mod tests {
                 TypeParam {
                     name: "T".to_string(),
                     type_constraints: Some(TypeName::Simple(SimpleTypeName {
-                        name: "Int".to_string(),
+                        name: TokenSyntax::from("Int"),
                         type_args: None
                     }))
                 }
@@ -330,7 +330,7 @@ mod tests {
                 TypeParam {
                     name: "T".to_string(),
                     type_constraints: Some(TypeName::Simple(SimpleTypeName {
-                        name: "Int".to_string(),
+                        name: TokenSyntax::from("Int"),
                         type_args: None
                     }))
                 }
@@ -343,7 +343,7 @@ mod tests {
                 TypeParam {
                     name: "T".to_string(),
                     type_constraints: Some(TypeName::Simple(SimpleTypeName {
-                        name: "Int".to_string(),
+                        name: TokenSyntax::from("Int"),
                         type_args: None
                     }))
                 }

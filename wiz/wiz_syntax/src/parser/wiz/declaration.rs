@@ -852,7 +852,7 @@ mod tests {
                         is_mut: false,
                         name: "a".to_string(),
                         type_: TypeName::Simple(SimpleTypeName {
-                            name: "Int64".to_string(),
+                            name: TokenSyntax::from("Int64"),
                             type_args: None
                         })
                     }),
@@ -860,7 +860,7 @@ mod tests {
                         is_mut: false,
                         name: "b".to_string(),
                         type_: TypeName::Simple(SimpleTypeName {
-                            name: "Int64".to_string(),
+                            name: TokenSyntax::from("Int64"),
                             type_args: None
                         })
                     }),
@@ -879,7 +879,7 @@ mod tests {
                     is_mut: false,
                     name: "a".to_string(),
                     type_: TypeName::Simple(SimpleTypeName {
-                        name: "Int64".to_string(),
+                        name: TokenSyntax::from("Int64"),
                         type_args: None
                     })
                 })
@@ -893,7 +893,7 @@ mod tests {
                     is_mut: true,
                     name: "a".to_string(),
                     type_: TypeName::Simple(SimpleTypeName {
-                        name: "Int64".to_string(),
+                        name: TokenSyntax::from("Int64"),
                         type_args: None
                     })
                 })
@@ -919,7 +919,7 @@ mod tests {
                         is_mut: true,
                         name: "a".to_string(),
                         type_: TypeName::Simple(SimpleTypeName {
-                            name: "String".to_string(),
+                            name: TokenSyntax::from("String"),
                             type_args: None
                         })
                     })]
@@ -1109,12 +1109,12 @@ mod tests {
                         label: "_".to_string(),
                         name: "item".to_string(),
                         type_name: TypeName::Simple(SimpleTypeName {
-                            name: "String".to_string(),
+                            name: TokenSyntax::from("String"),
                             type_args: None
                         })
                     })],
                     return_type: Some(TypeName::Simple(SimpleTypeName {
-                        name: "Unit".to_string(),
+                        name: TokenSyntax::from("Unit"),
                         type_args: None
                     })),
                     body: None,
@@ -1140,12 +1140,12 @@ mod tests {
                         label: "item".to_string(),
                         name: "item".to_string(),
                         type_name: TypeName::Simple(SimpleTypeName {
-                            name: "String".to_string(),
+                            name: TokenSyntax::from("String"),
                             type_args: None
                         })
                     })],
                     return_type: Some(TypeName::Simple(SimpleTypeName {
-                        name: "Unit".to_string(),
+                        name: TokenSyntax::from("Unit"),
                         type_args: None
                     })),
                     body: None,
@@ -1166,7 +1166,7 @@ mod tests {
                         .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     name: TokenSyntax::from("a"),
                     type_: Some(TypeName::Simple(SimpleTypeName {
-                        name: "Int".to_string(),
+                        name: TokenSyntax::from("Int"),
                         type_args: None
                     })),
                     value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("1")))
@@ -1202,7 +1202,7 @@ mod tests {
                 TypeParam {
                     name: "T".to_string(),
                     type_constraints: Some(TypeName::Simple(SimpleTypeName {
-                        name: "Printable".to_string(),
+                        name: TokenSyntax::from("Printable"),
                         type_args: None
                     }))
                 }
@@ -1219,7 +1219,7 @@ mod tests {
                 vec![TypeParam {
                     name: "T".to_string(),
                     type_constraints: Some(TypeName::Simple(SimpleTypeName {
-                        name: "Printable".to_string(),
+                        name: TokenSyntax::from("Printable"),
                         type_args: None
                     }))
                 },]
@@ -1233,14 +1233,14 @@ mod tests {
                     TypeParam {
                         name: "T".to_string(),
                         type_constraints: Some(TypeName::Simple(SimpleTypeName {
-                            name: "Printable".to_string(),
+                            name: TokenSyntax::from("Printable"),
                             type_args: None
                         }))
                     },
                     TypeParam {
                         name: "T".to_string(),
                         type_constraints: Some(TypeName::Simple(SimpleTypeName {
-                            name: "DebugPrintable".to_string(),
+                            name: TokenSyntax::from("DebugPrintable"),
                             type_args: None
                         }))
                     }
@@ -1255,14 +1255,14 @@ mod tests {
                     TypeParam {
                         name: "T".to_string(),
                         type_constraints: Some(TypeName::Simple(SimpleTypeName {
-                            name: "Printable".to_string(),
+                            name: TokenSyntax::from("Printable"),
                             type_args: None
                         }))
                     },
                     TypeParam {
                         name: "T".to_string(),
                         type_constraints: Some(TypeName::Simple(SimpleTypeName {
-                            name: "DebugPrintable".to_string(),
+                            name: TokenSyntax::from("DebugPrintable"),
                             type_args: None
                         }))
                     }

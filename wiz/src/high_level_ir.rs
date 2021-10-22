@@ -245,7 +245,7 @@ impl Ast2HLIR {
         match tn {
             TypeName::Simple(stn) => TypedType::Value(TypedValueType {
                 package: TypedPackage::Raw(Package::new()),
-                name: stn.name,
+                name: stn.name.token,
                 type_args: stn
                     .type_args
                     .map(|v| v.into_iter().map(|t| self.type_(t)).collect()),
@@ -286,7 +286,7 @@ impl Ast2HLIR {
                             .map(|i| i.name.token)
                             .collect::<Vec<String>>(),
                     )),
-                    name: type_name.name,
+                    name: type_name.name.token,
                     type_args: type_name
                         .type_args
                         .map(|v| v.into_iter().map(|t| self.type_(t)).collect()),

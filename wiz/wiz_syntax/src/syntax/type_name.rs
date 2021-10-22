@@ -17,7 +17,7 @@ pub struct NameSpacedTypeName {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct SimpleTypeName {
-    pub name: String,
+    pub name: TokenSyntax,
     pub type_args: Option<Vec<TypeName>>,
 }
 
