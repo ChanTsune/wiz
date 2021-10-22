@@ -12,9 +12,9 @@ use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_parameters};
 use crate::syntax::annotation::Annotatable;
 use crate::syntax::block::BlockSyntax;
-use crate::syntax::decl::fun::arg_def::{ArgDef, SelfArgDefSyntax, ValueArgDef};
-use crate::syntax::decl::fun::body_def::FunBody;
-use crate::syntax::decl::fun::FunSyntax;
+use crate::syntax::decl::fun_syntax::arg_def::{ArgDef, SelfArgDefSyntax, ValueArgDef};
+use crate::syntax::decl::fun_syntax::body_def::FunBody;
+use crate::syntax::decl::fun_syntax::FunSyntax;
 use crate::syntax::decl::var::VarSyntax;
 use crate::syntax::decl::{
     Decl, DeinitializerSyntax, InitializerSyntax, MethodSyntax, PackageName, StoredPropertySyntax,
@@ -820,9 +820,9 @@ mod tests {
         struct_properties, struct_syntax, type_constraint, type_constraints, use_syntax, var_decl,
     };
     use crate::syntax::block::BlockSyntax;
-    use crate::syntax::decl::fun::arg_def::{ArgDef, ValueArgDef};
-    use crate::syntax::decl::fun::body_def::FunBody;
-    use crate::syntax::decl::fun::FunSyntax;
+    use crate::syntax::decl::fun_syntax::arg_def::{ArgDef, ValueArgDef};
+    use crate::syntax::decl::fun_syntax::body_def::FunBody;
+    use crate::syntax::decl::fun_syntax::FunSyntax;
     use crate::syntax::decl::var::VarSyntax;
     use crate::syntax::decl::{
         Decl, MethodSyntax, PackageName, StoredPropertySyntax, StructPropertySyntax, StructSyntax,
