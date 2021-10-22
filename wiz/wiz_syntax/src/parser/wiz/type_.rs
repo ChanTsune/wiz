@@ -1,6 +1,7 @@
 use crate::parser::wiz::character::{ampersand, comma};
 use crate::parser::wiz::lexical_structure::{identifier, whitespace0};
 use crate::parser::wiz::name_space::name_space;
+use crate::syntax::token::TokenSyntax;
 use crate::syntax::type_name::{
     DecoratedTypeName, NameSpacedTypeName, SimpleTypeName, TypeName, TypeParam,
 };
@@ -11,7 +12,6 @@ use nom::multi::many0;
 use nom::sequence::tuple;
 use nom::{AsChar, Compare, FindSubstring, IResult, InputIter, InputLength, InputTake, Slice};
 use std::ops::{Range, RangeFrom};
-use crate::syntax::token::TokenSyntax;
 
 pub fn type_<I>(s: I) -> IResult<I, TypeName>
 where
@@ -26,7 +26,7 @@ where
 {
     alt((
         parenthesized_type,
-        map(decorated_type,|t|TypeName::Decorated(Box::new(t))),
+        map(decorated_type, |t| TypeName::Decorated(Box::new(t))),
         type_reference,
         // function_type,
     ))(s)
@@ -47,23 +47,24 @@ where
 }
 
 pub fn decorated_type<I>(s: I) -> IResult<I, DecoratedTypeName>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + InputIter
         + InputTake
         + InputLength
         + Clone
         + ToString
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar,
+    <I as InputIter>::Item: AsChar,
 {
     map(
-        tuple((alt((char('*'), ampersand)), alt((type_reference, parenthesized_type)))),
-        |(p, type_name)| {
-            DecoratedTypeName {
-                decoration: TokenSyntax::from(p),
-                type_: type_name,
-            }
+        tuple((
+            alt((char('*'), ampersand)),
+            alt((type_reference, parenthesized_type)),
+        )),
+        |(p, type_name)| DecoratedTypeName {
+            decoration: TokenSyntax::from(p),
+            type_: type_name,
         },
     )(s)
 }
