@@ -251,7 +251,7 @@ impl Ast2HLIR {
                     .map(|v| v.into_iter().map(|t| self.type_(t)).collect()),
             }),
             TypeName::Decorated(d) => {
-                if d.decoration == "&" {
+                if d.decoration.token == "&" {
                     let t = self.type_(d.type_);
                     match t {
                         TypedType::Value(v) => TypedType::Reference(v),
