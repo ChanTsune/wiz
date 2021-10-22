@@ -701,7 +701,7 @@ where
         |(mutability_keyword, ws, (name, t, e)): (I, _, _)| VarSyntax {
             annotations: None,
             mutability_keyword: TokenSyntax::from(mutability_keyword).with_trailing_trivia(ws),
-            name,
+            name: TokenSyntax::from(name),
             type_: t,
             value: e,
         },
@@ -1153,7 +1153,7 @@ mod tests {
                     annotations: None,
                     mutability_keyword: TokenSyntax::from("val")
                         .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    name: "a".to_string(),
+                    name: TokenSyntax::from("a"),
                     type_: Some(TypeName::Simple(SimpleTypeName {
                         name: "Int".to_string(),
                         type_args: None
@@ -1174,7 +1174,7 @@ mod tests {
                     annotations: None,
                     mutability_keyword: TokenSyntax::from("val")
                         .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    name: "a".to_string(),
+                    name: TokenSyntax::from("a"),
                     type_: None,
                     value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("1")))
                 })

@@ -1749,7 +1749,7 @@ mod tests {
                             annotations: None,
                             mutability_keyword: TokenSyntax::from("val")
                                 .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                            name: "newCapacity".to_string(),
+                            name: TokenSyntax::from("newCapacity"),
                             type_: None,
                             value: Expr::If(IfExprSyntax {
                                 condition: Box::new(Expr::BinOp(BinaryOperationSyntax {

@@ -176,7 +176,7 @@ impl Ast2HLIR {
             annotations: self.annotations(v.annotations),
             package: TypedPackage::Raw(Package::new()),
             is_mut: v.mutability_keyword.token == "var",
-            name: v.name,
+            name: v.name.token,
             type_: None,
             value: expr,
         }
