@@ -22,6 +22,8 @@ use crate::utils::path_string_to_page_name;
 use std::option::Option::Some;
 use wiz_syntax::syntax::annotation::AnnotationsSyntax;
 use wiz_syntax::syntax::block::BlockSyntax;
+use wiz_syntax::syntax::decl::fun::arg_def::ArgDef;
+use wiz_syntax::syntax::decl::fun::body_def::FunBody;
 use wiz_syntax::syntax::decl::{
     Decl, FunSyntax, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax,
     StructSyntax, UseSyntax, VarSyntax,
@@ -32,8 +34,6 @@ use wiz_syntax::syntax::expr::{
     ReturnSyntax, SubscriptSyntax, TypeCastSyntax, UnaryOperationSyntax,
 };
 use wiz_syntax::syntax::file::{FileSyntax, SourceSet, WizFile};
-use wiz_syntax::syntax::decl::fun::arg_def::ArgDef;
-use wiz_syntax::syntax::decl::fun::body_def::FunBody;
 use wiz_syntax::syntax::literal::LiteralSyntax;
 use wiz_syntax::syntax::stmt::{AssignmentStmt, LoopStmt, Stmt, WhileLoopSyntax};
 use wiz_syntax::syntax::type_name::{NameSpacedTypeName, TypeName, TypeParam};
