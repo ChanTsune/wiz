@@ -12,6 +12,7 @@ pub mod body_def;
 pub struct FunSyntax {
     pub annotations: Option<AnnotationsSyntax>,
     pub modifiers: ModifiersSyntax,
+    pub fun_keyword: TokenSyntax,
     pub name: TokenSyntax,
     pub type_params: Option<Vec<TypeParam>>,
     pub arg_defs: Vec<ArgDef>,

@@ -442,10 +442,11 @@ where
             whitespace0,
             opt(function_body),
         )),
-        |(f, _, name, type_params, args, _, return_type, _, t_constraints, _, body)| {
+        |(f, ws, name, type_params, args, _, return_type, _, t_constraints, _, body)| {
             Decl::Fun(FunSyntax {
                 annotations: None,
                 modifiers: Default::default(),
+                fun_keyword: TokenSyntax::from(f).with_trailing_trivia(ws),
                 name: TokenSyntax::from(name),
                 type_params,
                 arg_defs: args,
@@ -1073,6 +1074,7 @@ mod tests {
                 Decl::Fun(FunSyntax {
                     annotations: None,
                     modifiers: Default::default(),
+                    fun_keyword: TokenSyntax::from("fun").with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     name: TokenSyntax::from("function"),
                     type_params: None,
                     arg_defs: vec![],
@@ -1098,6 +1100,7 @@ mod tests {
                 Decl::Fun(FunSyntax {
                     annotations: None,
                     modifiers: Default::default(),
+                    fun_keyword: TokenSyntax::from("fun").with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     name: TokenSyntax::from("puts"),
                     type_params: None,
                     arg_defs: vec![ArgDef::Value(ValueArgDef {
@@ -1127,6 +1130,7 @@ mod tests {
                 Decl::Fun(FunSyntax {
                     annotations: None,
                     modifiers: Default::default(),
+                    fun_keyword: TokenSyntax::from("fun").with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     name: TokenSyntax::from("puts"),
                     type_params: None,
                     arg_defs: vec![ArgDef::Value(ValueArgDef {
