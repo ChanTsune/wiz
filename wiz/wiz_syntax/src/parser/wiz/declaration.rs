@@ -446,7 +446,7 @@ where
             Decl::Fun(FunSyntax {
                 annotations: None,
                 modifiers: Default::default(),
-                name,
+                name: TokenSyntax::from(name),
                 type_params,
                 arg_defs: args,
                 return_type: return_type.map(|(_, _, t)| t),
@@ -1073,7 +1073,7 @@ mod tests {
                 Decl::Fun(FunSyntax {
                     annotations: None,
                     modifiers: Default::default(),
-                    name: "function".to_string(),
+                    name: TokenSyntax::from("function"),
                     type_params: None,
                     arg_defs: vec![],
                     return_type: None,
@@ -1098,7 +1098,7 @@ mod tests {
                 Decl::Fun(FunSyntax {
                     annotations: None,
                     modifiers: Default::default(),
-                    name: "puts".to_string(),
+                    name: TokenSyntax::from("puts"),
                     type_params: None,
                     arg_defs: vec![ArgDef::Value(ValueArgDef {
                         label: "_".to_string(),
@@ -1127,7 +1127,7 @@ mod tests {
                 Decl::Fun(FunSyntax {
                     annotations: None,
                     modifiers: Default::default(),
-                    name: "puts".to_string(),
+                    name: TokenSyntax::from("puts"),
                     type_params: None,
                     arg_defs: vec![ArgDef::Value(ValueArgDef {
                         label: "item".to_string(),

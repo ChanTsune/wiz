@@ -216,7 +216,7 @@ impl Ast2HLIR {
             annotations: self.annotations(f.annotations),
             package: TypedPackage::Raw(Package::new()),
             modifiers: f.modifiers.modifiers.into_iter().map(|m| m.token).collect(),
-            name: f.name,
+            name: f.name.token,
             type_params: f.type_params.map(|v| {
                 v.into_iter()
                     .map(|p| TypedTypeParam {
