@@ -1,10 +1,14 @@
-use super::node::SyntaxNode;
+use fun::arg_def::ArgDef;
+use fun::body_def::FunBody;
+
 use crate::syntax::annotation::{Annotatable, AnnotationsSyntax};
 use crate::syntax::expr::Expr;
-use crate::syntax::fun::arg_def::ArgDef;
-use crate::syntax::fun::body_def::FunBody;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::type_name::{TypeName, TypeParam};
+
+use super::node::SyntaxNode;
+
+pub mod fun;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Decl {

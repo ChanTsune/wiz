@@ -17,8 +17,8 @@ use crate::syntax::decl::{
     StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax, VarSyntax,
 };
 use crate::syntax::expr::Expr;
-use crate::syntax::fun::arg_def::{ArgDef, SelfArgDefSyntax, ValueArgDef};
-use crate::syntax::fun::body_def::FunBody;
+use crate::syntax::decl::fun::arg_def::{ArgDef, SelfArgDefSyntax, ValueArgDef};
+use crate::syntax::decl::fun::body_def::FunBody;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::type_name::{TypeName, TypeParam};
 use crate::syntax::Syntax;
@@ -823,8 +823,8 @@ mod tests {
         StructSyntax, UseSyntax, VarSyntax,
     };
     use crate::syntax::expr::{BinaryOperationSyntax, Expr, NameExprSyntax};
-    use crate::syntax::fun::arg_def::{ArgDef, ValueArgDef};
-    use crate::syntax::fun::body_def::FunBody;
+    use crate::syntax::decl::fun::arg_def::{ArgDef, ValueArgDef};
+    use crate::syntax::decl::fun::body_def::FunBody;
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::stmt::Stmt;
     use crate::syntax::token::TokenSyntax;
