@@ -14,9 +14,10 @@ use crate::syntax::annotation::Annotatable;
 use crate::syntax::block::BlockSyntax;
 use crate::syntax::decl::fun::arg_def::{ArgDef, SelfArgDefSyntax, ValueArgDef};
 use crate::syntax::decl::fun::body_def::FunBody;
+use crate::syntax::decl::fun::FunSyntax;
 use crate::syntax::decl::{
-    Decl, DeinitializerSyntax, InitializerSyntax, MethodSyntax, PackageName,
-    StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax, VarSyntax,
+    Decl, DeinitializerSyntax, InitializerSyntax, MethodSyntax, PackageName, StoredPropertySyntax,
+    StructPropertySyntax, StructSyntax, UseSyntax, VarSyntax,
 };
 use crate::syntax::expr::Expr;
 use crate::syntax::token::TokenSyntax;
@@ -33,7 +34,6 @@ use nom::{
     InputTakeAtPosition, Offset, Slice,
 };
 use std::ops::{Range, RangeFrom};
-use crate::syntax::decl::fun::FunSyntax;
 
 pub fn decl<I>(s: I) -> IResult<I, Decl>
 where
@@ -821,11 +821,11 @@ mod tests {
     use crate::syntax::block::BlockSyntax;
     use crate::syntax::decl::fun::arg_def::{ArgDef, ValueArgDef};
     use crate::syntax::decl::fun::body_def::FunBody;
-    use crate::syntax::decl::{
-        Decl, MethodSyntax, PackageName, StoredPropertySyntax, StructPropertySyntax,
-        StructSyntax, UseSyntax, VarSyntax,
-    };
     use crate::syntax::decl::fun::FunSyntax;
+    use crate::syntax::decl::{
+        Decl, MethodSyntax, PackageName, StoredPropertySyntax, StructPropertySyntax, StructSyntax,
+        UseSyntax, VarSyntax,
+    };
     use crate::syntax::expr::{BinaryOperationSyntax, Expr, NameExprSyntax};
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::stmt::Stmt;

@@ -6,7 +6,6 @@ use crate::syntax::type_name::{TypeName, TypeParam};
 pub mod arg_def;
 pub mod body_def;
 
-
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct FunSyntax {
     pub annotations: Option<AnnotationsSyntax>,
