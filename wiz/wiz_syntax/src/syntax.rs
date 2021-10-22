@@ -12,6 +12,7 @@ pub mod stmt;
 pub mod token;
 pub mod trivia;
 pub mod type_name;
+pub mod modifier;
 
 pub trait Syntax {
     fn with_leading_trivia(self, trivia: Trivia) -> Self;
