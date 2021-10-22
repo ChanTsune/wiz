@@ -1,15 +1,15 @@
-use fun::arg_def::ArgDef;
-use fun::body_def::FunBody;
+use fun_syntax::arg_def::ArgDef;
+use fun_syntax::body_def::FunBody;
 
 use crate::syntax::annotation::{Annotatable, AnnotationsSyntax};
-use crate::syntax::decl::fun::FunSyntax;
+use crate::syntax::decl::fun_syntax::FunSyntax;
 use crate::syntax::decl::var::VarSyntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::type_name::{TypeName, TypeParam};
 
 use super::node::SyntaxNode;
 
-pub mod fun;
+pub mod fun_syntax;
 pub mod var;
 
 #[derive(Debug, Eq, PartialEq, Clone)]

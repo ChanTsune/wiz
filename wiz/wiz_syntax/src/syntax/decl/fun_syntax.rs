@@ -1,6 +1,6 @@
 use crate::syntax::annotation::{Annotatable, AnnotationsSyntax};
-use crate::syntax::decl::fun::arg_def::ArgDef;
-use crate::syntax::decl::fun::body_def::FunBody;
+use crate::syntax::decl::fun_syntax::arg_def::ArgDef;
+use crate::syntax::decl::fun_syntax::body_def::FunBody;
 use crate::syntax::modifier::ModifiersSyntax;
 use crate::syntax::type_name::{TypeName, TypeParam};
 
