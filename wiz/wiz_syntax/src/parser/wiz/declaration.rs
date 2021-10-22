@@ -323,7 +323,7 @@ where
         )),
         |(init, ws, args, _, body): (I, _, _, _, _)| {
             StructPropertySyntax::Init(InitializerSyntax {
-                init_keyword: TokenSyntax::new(init.to_string()).with_trailing_trivia(ws),
+                init_keyword: TokenSyntax::from(init).with_trailing_trivia(ws),
                 args,
                 body,
             })
@@ -353,7 +353,7 @@ where
         tuple((deinit_keyword, whitespace0, function_body)),
         |(deinit, ws, body): (I, _, _)| {
             StructPropertySyntax::Deinit(DeinitializerSyntax {
-                deinit_keyword: TokenSyntax::new(deinit.to_string()).with_trailing_trivia(ws),
+                deinit_keyword: TokenSyntax::from(deinit).with_trailing_trivia(ws),
                 body,
             })
         },
@@ -524,8 +524,8 @@ where
             tuple((opt(ampersand), whitespace0, self_keyword)),
             |(amp, ws, s): (_, _, I)| {
                 ArgDef::Self_(SelfArgDefSyntax {
-                    reference: amp.map(|a| TokenSyntax::new(a.to_string())),
-                    self_: TokenSyntax::new(s.to_string()).with_leading_trivia(ws),
+                    reference: amp.map(|a| TokenSyntax::from(a)),
+                    self_: TokenSyntax::from(s).with_leading_trivia(ws),
                 })
             },
         ),
@@ -648,9 +648,9 @@ where
     map(
         tuple((char('{'), whitespace0, stmts, whitespace0, char('}'))),
         |(open, ows, stmts, cws, close)| BlockSyntax {
-            open: TokenSyntax::new(open.to_string()).with_trailing_trivia(ows),
+            open: TokenSyntax::from(open).with_trailing_trivia(ows),
             body: stmts,
-            close: TokenSyntax::new(close.to_string()).with_leading_trivia(cws),
+            close: TokenSyntax::from(close).with_leading_trivia(cws),
         },
     )(s)
 }
@@ -700,7 +700,7 @@ where
         tuple((alt((var_keyword, val_keyword)), whitespace1, var_body)),
         |(mutability_keyword, ws, (name, t, e)): (I, _, _)| VarSyntax {
             annotations: None,
-            mutability_keyword: TokenSyntax::new(mutability_keyword.to_string())
+            mutability_keyword: TokenSyntax::from(mutability_keyword)
                 .with_trailing_trivia(ws),
             name,
             type_: t,
@@ -938,9 +938,9 @@ mod tests {
                     return_type: None,
                     body: Some(FunBody::Block {
                         block: BlockSyntax {
-                            open: TokenSyntax::new("{".to_string()),
+                            open: TokenSyntax::from("{"),
                             body: vec![],
-                            close: TokenSyntax::new("}".to_string())
+                            close: TokenSyntax::from("}")
                         }
                     }),
                 })
@@ -955,9 +955,9 @@ mod tests {
             Ok((
                 "",
                 BlockSyntax {
-                    open: TokenSyntax::new("{".to_string()),
+                    open: TokenSyntax::from("{"),
                     body: vec![],
-                    close: TokenSyntax::new("}".to_string())
+                    close: TokenSyntax::from("}")
                 }
             ))
         )
@@ -970,11 +970,11 @@ mod tests {
             Ok((
                 "",
                 BlockSyntax {
-                    open: TokenSyntax::new("{".to_string()),
+                    open: TokenSyntax::from("{"),
                     body: vec![Stmt::Expr(Expr::Literal(LiteralSyntax::Integer(
-                        TokenSyntax::new("1".to_string())
+                        TokenSyntax::from("1")
                     )))],
-                    close: TokenSyntax::new("}".to_string())
+                    close: TokenSyntax::from("}")
                 }
             ))
         )
@@ -987,17 +987,17 @@ mod tests {
             Ok((
                 "",
                 BlockSyntax {
-                    open: TokenSyntax::new("{".to_string()),
+                    open: TokenSyntax::from("{"),
                     body: vec![Stmt::Expr(Expr::BinOp(BinaryOperationSyntax {
-                        left: Box::new(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
-                            "1".to_string()
+                        left: Box::new(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from(
+                            "1"
                         )))),
-                        operator: TokenSyntax::new("+".to_string()),
-                        right: Box::new(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new(
-                            "1".to_string()
+                        operator: TokenSyntax::from("+"),
+                        right: Box::new(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from(
+                            "1"
                         )))),
                     }))],
-                    close: TokenSyntax::new("}".to_string())
+                    close: TokenSyntax::from("}")
                 }
             ))
         )
@@ -1014,13 +1014,13 @@ mod tests {
             Ok((
                 "",
                 BlockSyntax {
-                    open: TokenSyntax::new("{".to_string()).with_trailing_trivia(Trivia::from(
+                    open: TokenSyntax::from("{").with_trailing_trivia(Trivia::from(
                         vec![TriviaPiece::Newlines(1), TriviaPiece::Spaces(4)]
                     )),
                     body: vec![Stmt::Expr(Expr::Literal(LiteralSyntax::Integer(
-                        TokenSyntax::new("1".to_string())
+                        TokenSyntax::from("1")
                     )))],
-                    close: TokenSyntax::new("}".to_string())
+                    close: TokenSyntax::from("}")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Newlines(1)))
                 }
             ))
@@ -1035,9 +1035,9 @@ mod tests {
                 "",
                 FunBody::Block {
                     block: BlockSyntax {
-                        open: TokenSyntax::new("{".to_string()),
+                        open: TokenSyntax::from("{"),
                         body: vec![],
-                        close: TokenSyntax::new("}".to_string())
+                        close: TokenSyntax::from("}")
                     }
                 }
             ))
@@ -1075,9 +1075,9 @@ mod tests {
                     return_type: None,
                     body: Some(FunBody::Block {
                         block: BlockSyntax {
-                            open: TokenSyntax::new("{".to_string()),
+                            open: TokenSyntax::from("{"),
                             body: vec![],
-                            close: TokenSyntax::new("}".to_string())
+                            close: TokenSyntax::from("}")
                         }
                     }),
                 })
@@ -1151,14 +1151,14 @@ mod tests {
                 "",
                 Decl::Var(VarSyntax {
                     annotations: None,
-                    mutability_keyword: TokenSyntax::new("val".to_string())
+                    mutability_keyword: TokenSyntax::from("val")
                         .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     name: "a".to_string(),
                     type_: Some(TypeName::Simple(SimpleTypeName {
                         name: "Int".to_string(),
                         type_args: None
                     })),
-                    value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new("1".to_string())))
+                    value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("1")))
                 })
             ))
         )
@@ -1172,11 +1172,11 @@ mod tests {
                 "",
                 Decl::Var(VarSyntax {
                     annotations: None,
-                    mutability_keyword: TokenSyntax::new("val".to_string())
+                    mutability_keyword: TokenSyntax::from("val")
                         .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     name: "a".to_string(),
                     type_: None,
-                    value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::new("1".to_string())))
+                    value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("1")))
                 })
             ))
         )

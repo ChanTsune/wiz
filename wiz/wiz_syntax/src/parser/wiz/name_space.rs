@@ -37,8 +37,8 @@ where
 {
     map(tuple((identifier, tag("::"))), |(i, sep): (_, I)| {
         NameSpaceElementSyntax {
-            name: TokenSyntax::new(i),
-            separator: TokenSyntax::new(sep.to_string()),
+            name: TokenSyntax::from(i),
+            separator: TokenSyntax::from(sep),
         }
     })(s)
 }

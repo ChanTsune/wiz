@@ -47,8 +47,8 @@ where
 {
     fn from(name: T) -> Self {
         Self {
-            name: TokenSyntax::new(name.to_string()),
-            separator: TokenSyntax::new("::".to_string()),
+            name: TokenSyntax::from(name),
+            separator: TokenSyntax::from("::"),
         }
     }
 }

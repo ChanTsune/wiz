@@ -51,7 +51,7 @@ where
             }
             let mut elements = vec![];
             for (idx, e) in expers.into_iter().enumerate() {
-                let mut trailing_comma = TokenSyntax::new(match cmas.get(idx) {
+                let mut trailing_comma = TokenSyntax::from(match cmas.get(idx) {
                     None => String::new(),
                     Some(c) => c.to_string(),
                 });
@@ -68,14 +68,14 @@ where
                     }
                 }
                 elements.push(Annotation {
-                    name: TokenSyntax::new(e.to_string()),
+                    name: TokenSyntax::from(e),
                     trailing_comma,
                 })
             }
             AnnotationsSyntax {
-                open: TokenSyntax::new(open.to_string()).with_trailing_trivia(ows),
+                open: TokenSyntax::from(open).with_trailing_trivia(ows),
                 annotations: elements,
-                close: TokenSyntax::new(close.to_string()).with_leading_trivia(cws),
+                close: TokenSyntax::from(close).with_leading_trivia(cws),
             }
         },
     )(s)
@@ -94,12 +94,12 @@ mod tests {
             Ok((
                 "",
                 AnnotationsSyntax {
-                    open: TokenSyntax::new("#[".to_string()),
+                    open: TokenSyntax::from("#["),
                     annotations: vec![Annotation {
-                        name: TokenSyntax::new("no_mangle".to_string()),
-                        trailing_comma: TokenSyntax::new("".to_string()),
+                        name: TokenSyntax::from("no_mangle"),
+                        trailing_comma: TokenSyntax::from(""),
                     }],
-                    close: TokenSyntax::new("]".to_string()),
+                    close: TokenSyntax::from("]"),
                 }
             ))
         );

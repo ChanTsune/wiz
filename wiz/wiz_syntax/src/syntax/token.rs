@@ -9,16 +9,22 @@ pub struct TokenSyntax {
 }
 
 impl TokenSyntax {
-    pub fn new(token: String) -> Self {
+    pub fn new() -> Self {
+        Self::from("")
+    }
+}
+
+impl<T> From<T> for TokenSyntax where T: ToString {
+    fn from(token: T) -> Self {
         Self {
             leading_trivia: Trivia::new(),
-            token,
+            token: token.to_string(),
             trailing_trivia: Trivia::new(),
         }
     }
 }
 
-impl ToString for TokenSyntax {
+impl TokenSyntax {
     fn to_string(&self) -> String {
         self.leading_trivia.to_string() + &*self.token + &*self.trailing_trivia.to_string()
     }
