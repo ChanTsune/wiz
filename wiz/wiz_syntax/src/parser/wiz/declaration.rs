@@ -444,7 +444,7 @@ where
         |(f, _, name, type_params, args, _, return_type, _, t_constraints, _, body)| {
             Decl::Fun(FunSyntax {
                 annotations: None,
-                modifiers: vec![],
+                modifiers: Default::default(),
                 name,
                 type_params,
                 arg_defs: args,
@@ -1070,7 +1070,7 @@ mod tests {
                 "",
                 Decl::Fun(FunSyntax {
                     annotations: None,
-                    modifiers: vec![],
+                    modifiers: Default::default(),
                     name: "function".to_string(),
                     type_params: None,
                     arg_defs: vec![],
@@ -1095,7 +1095,7 @@ mod tests {
                 "",
                 Decl::Fun(FunSyntax {
                     annotations: None,
-                    modifiers: vec![],
+                    modifiers: Default::default(),
                     name: "puts".to_string(),
                     type_params: None,
                     arg_defs: vec![ArgDef::Value(ValueArgDef {
@@ -1124,7 +1124,7 @@ mod tests {
                 "",
                 Decl::Fun(FunSyntax {
                     annotations: None,
-                    modifiers: vec![],
+                    modifiers: Default::default(),
                     name: "puts".to_string(),
                     type_params: None,
                     arg_defs: vec![ArgDef::Value(ValueArgDef {
