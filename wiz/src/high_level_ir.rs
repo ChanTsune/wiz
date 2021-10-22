@@ -25,11 +25,11 @@ use wiz_syntax::syntax::block::BlockSyntax;
 use wiz_syntax::syntax::decl::fun::arg_def::ArgDef;
 use wiz_syntax::syntax::decl::fun::body_def::FunBody;
 use wiz_syntax::syntax::decl::fun::FunSyntax;
+use wiz_syntax::syntax::decl::var::VarSyntax;
 use wiz_syntax::syntax::decl::{
     Decl, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax,
     StructSyntax, UseSyntax,
 };
-use wiz_syntax::syntax::decl::var::VarSyntax;
 use wiz_syntax::syntax::expr::{
     ArraySyntax, BinaryOperationSyntax, CallExprSyntax, Expr, IfExprSyntax, LambdaSyntax,
     MemberSyntax, NameExprSyntax, PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax,
