@@ -14,7 +14,10 @@ impl TokenSyntax {
     }
 }
 
-impl<T> From<T> for TokenSyntax where T: ToString {
+impl<T> From<T> for TokenSyntax
+where
+    T: ToString,
+{
     fn from(token: T) -> Self {
         Self {
             leading_trivia: Trivia::new(),

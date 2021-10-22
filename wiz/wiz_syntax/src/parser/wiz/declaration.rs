@@ -700,8 +700,7 @@ where
         tuple((alt((var_keyword, val_keyword)), whitespace1, var_body)),
         |(mutability_keyword, ws, (name, t, e)): (I, _, _)| VarSyntax {
             annotations: None,
-            mutability_keyword: TokenSyntax::from(mutability_keyword)
-                .with_trailing_trivia(ws),
+            mutability_keyword: TokenSyntax::from(mutability_keyword).with_trailing_trivia(ws),
             name,
             type_: t,
             value: e,
@@ -1014,9 +1013,10 @@ mod tests {
             Ok((
                 "",
                 BlockSyntax {
-                    open: TokenSyntax::from("{").with_trailing_trivia(Trivia::from(
-                        vec![TriviaPiece::Newlines(1), TriviaPiece::Spaces(4)]
-                    )),
+                    open: TokenSyntax::from("{").with_trailing_trivia(Trivia::from(vec![
+                        TriviaPiece::Newlines(1),
+                        TriviaPiece::Spaces(4)
+                    ])),
                     body: vec![Stmt::Expr(Expr::Literal(LiteralSyntax::Integer(
                         TokenSyntax::from("1")
                     )))],

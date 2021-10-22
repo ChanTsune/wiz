@@ -451,9 +451,10 @@ mod tests {
                         }))
                     }),
                     block: BlockSyntax {
-                        open: TokenSyntax::from("{").with_trailing_trivia(Trivia::from(
-                            vec![TriviaPiece::Newlines(1), TriviaPiece::Spaces(12)]
-                        )),
+                        open: TokenSyntax::from("{").with_trailing_trivia(Trivia::from(vec![
+                            TriviaPiece::Newlines(1),
+                            TriviaPiece::Spaces(12)
+                        ])),
                         body: vec![Stmt::Assignment(AssignmentStmt::Assignment(
                             AssignmentSyntax {
                                 target: Expr::Name(NameExprSyntax {
@@ -477,9 +478,10 @@ mod tests {
                                 })
                             }
                         ))],
-                        close: TokenSyntax::from("}").with_leading_trivia(Trivia::from(
-                            vec![TriviaPiece::Newlines(1), TriviaPiece::Spaces(8)]
-                        ))
+                        close: TokenSyntax::from("}").with_leading_trivia(Trivia::from(vec![
+                            TriviaPiece::Newlines(1),
+                            TriviaPiece::Spaces(8)
+                        ]))
                     }
                 })
             ))
@@ -515,9 +517,10 @@ mod tests {
                         }))
                     }),
                     block: BlockSyntax {
-                        open: TokenSyntax::from("{").with_trailing_trivia(Trivia::from(
-                            vec![TriviaPiece::Newlines(1), TriviaPiece::Spaces(12)]
-                        )),
+                        open: TokenSyntax::from("{").with_trailing_trivia(Trivia::from(vec![
+                            TriviaPiece::Newlines(1),
+                            TriviaPiece::Spaces(12)
+                        ])),
                         body: vec![Stmt::Assignment(AssignmentStmt::Assignment(
                             AssignmentSyntax {
                                 target: Expr::Name(NameExprSyntax {
@@ -541,9 +544,10 @@ mod tests {
                                 })
                             }
                         ))],
-                        close: TokenSyntax::from("}").with_leading_trivia(Trivia::from(
-                            vec![TriviaPiece::Newlines(1), TriviaPiece::Spaces(8)]
-                        ))
+                        close: TokenSyntax::from("}").with_leading_trivia(Trivia::from(vec![
+                            TriviaPiece::Newlines(1),
+                            TriviaPiece::Spaces(8)
+                        ]))
                     }
                 })
             ))
@@ -678,9 +682,7 @@ mod tests {
                         operator: TokenSyntax::from("+=")
                             .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
                             .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                        value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from(
-                            "1"
-                        )))
+                        value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("1")))
                     }
                 ))
             ))

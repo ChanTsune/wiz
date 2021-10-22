@@ -47,9 +47,7 @@ where
     <I as InputIter>::Item: AsChar,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(digit1, |n: I| {
-        LiteralSyntax::Integer(TokenSyntax::from(n))
-    })(s)
+    map(digit1, |n: I| LiteralSyntax::Integer(TokenSyntax::from(n)))(s)
 }
 
 pub fn floating_point_literal<I>(s: I) -> IResult<I, LiteralSyntax>
@@ -1317,17 +1315,11 @@ mod tests {
     fn test_integer_literal() {
         assert_eq!(
             integer_literal("1"),
-            Ok((
-                "",
-                LiteralSyntax::Integer(TokenSyntax::from("1"))
-            ))
+            Ok(("", LiteralSyntax::Integer(TokenSyntax::from("1"))))
         );
         assert_eq!(
             integer_literal("12"),
-            Ok((
-                "",
-                LiteralSyntax::Integer(TokenSyntax::from("12"))
-            ))
+            Ok(("", LiteralSyntax::Integer(TokenSyntax::from("12"))))
         );
     }
 
@@ -1335,17 +1327,11 @@ mod tests {
     fn test_floating_point_literal() {
         assert_eq!(
             floating_point_literal("1.0"),
-            Ok((
-                "",
-                LiteralSyntax::FloatingPoint(TokenSyntax::from("1.0"))
-            ))
+            Ok(("", LiteralSyntax::FloatingPoint(TokenSyntax::from("1.0"))))
         );
         assert_eq!(
             floating_point_literal("12.0"),
-            Ok((
-                "",
-                LiteralSyntax::FloatingPoint(TokenSyntax::from("12.0"))
-            ))
+            Ok(("", LiteralSyntax::FloatingPoint(TokenSyntax::from("12.0"))))
         );
         assert_eq!(
             floating_point_literal("13847.03478"),
@@ -1362,8 +1348,7 @@ mod tests {
             literal_expr("1.1"),
             Ok((
                 "",
-                Expr::Literal(LiteralSyntax::FloatingPoint(TokenSyntax::from("1.1")
-                ))
+                Expr::Literal(LiteralSyntax::FloatingPoint(TokenSyntax::from("1.1")))
             ))
         );
     }
@@ -1413,10 +1398,7 @@ mod tests {
     fn test_boolean_literal() {
         assert_eq!(
             boolean_literal("true"),
-            Ok((
-                "",
-                LiteralSyntax::Boolean(TokenSyntax::from("true"))
-            ))
+            Ok(("", LiteralSyntax::Boolean(TokenSyntax::from("true"))))
         )
     }
 
@@ -1759,9 +1741,10 @@ mod tests {
                         }))
                     })),
                     body: BlockSyntax {
-                        open: TokenSyntax::from("{").with_trailing_trivia(Trivia::from(
-                            vec![TriviaPiece::Newlines(1), TriviaPiece::Spaces(12)]
-                        )),
+                        open: TokenSyntax::from("{").with_trailing_trivia(Trivia::from(vec![
+                            TriviaPiece::Newlines(1),
+                            TriviaPiece::Spaces(12)
+                        ])),
                         body: vec![Stmt::Decl(Decl::Var(VarSyntax {
                             annotations: None,
                             mutability_keyword: TokenSyntax::from("val")
@@ -1814,9 +1797,10 @@ mod tests {
                                 })
                             })
                         }))],
-                        close: TokenSyntax::from("}").with_leading_trivia(Trivia::from(
-                            vec![TriviaPiece::Newlines(1), TriviaPiece::Spaces(8)]
-                        ))
+                        close: TokenSyntax::from("}").with_leading_trivia(Trivia::from(vec![
+                            TriviaPiece::Newlines(1),
+                            TriviaPiece::Spaces(8)
+                        ]))
                     },
                     else_body: None
                 })
