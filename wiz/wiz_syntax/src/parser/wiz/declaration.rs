@@ -1074,7 +1074,8 @@ mod tests {
                 Decl::Fun(FunSyntax {
                     annotations: None,
                     modifiers: Default::default(),
-                    fun_keyword: TokenSyntax::from("fun").with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    fun_keyword: TokenSyntax::from("fun")
+                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     name: TokenSyntax::from("function"),
                     type_params: None,
                     arg_defs: vec![],
@@ -1100,7 +1101,8 @@ mod tests {
                 Decl::Fun(FunSyntax {
                     annotations: None,
                     modifiers: Default::default(),
-                    fun_keyword: TokenSyntax::from("fun").with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    fun_keyword: TokenSyntax::from("fun")
+                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     name: TokenSyntax::from("puts"),
                     type_params: None,
                     arg_defs: vec![ArgDef::Value(ValueArgDef {
@@ -1130,7 +1132,8 @@ mod tests {
                 Decl::Fun(FunSyntax {
                     annotations: None,
                     modifiers: Default::default(),
-                    fun_keyword: TokenSyntax::from("fun").with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    fun_keyword: TokenSyntax::from("fun")
+                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     name: TokenSyntax::from("puts"),
                     type_params: None,
                     arg_defs: vec![ArgDef::Value(ValueArgDef {
