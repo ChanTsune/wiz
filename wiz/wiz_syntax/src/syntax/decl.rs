@@ -3,13 +3,14 @@ use fun::body_def::FunBody;
 
 use crate::syntax::annotation::{Annotatable, AnnotationsSyntax};
 use crate::syntax::decl::fun::FunSyntax;
-use crate::syntax::expr::Expr;
+use crate::syntax::decl::var::VarSyntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::type_name::{TypeName, TypeParam};
 
 use super::node::SyntaxNode;
 
 pub mod fun;
+pub mod var;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Decl {
@@ -45,22 +46,6 @@ impl Annotatable for Decl {
 }
 
 impl SyntaxNode for Decl {}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct VarSyntax {
-    pub annotations: Option<AnnotationsSyntax>,
-    pub mutability_keyword: TokenSyntax,
-    pub name: TokenSyntax,
-    pub type_: Option<TypeName>,
-    pub value: Expr,
-}
-
-impl Annotatable for VarSyntax {
-    fn with_annotation(mut self, a: AnnotationsSyntax) -> Self {
-        self.annotations = Some(a);
-        self
-    }
-}
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct StructSyntax {

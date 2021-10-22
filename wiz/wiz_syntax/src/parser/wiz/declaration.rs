@@ -17,7 +17,7 @@ use crate::syntax::decl::fun::body_def::FunBody;
 use crate::syntax::decl::fun::FunSyntax;
 use crate::syntax::decl::{
     Decl, DeinitializerSyntax, InitializerSyntax, MethodSyntax, PackageName, StoredPropertySyntax,
-    StructPropertySyntax, StructSyntax, UseSyntax, VarSyntax,
+    StructPropertySyntax, StructSyntax, UseSyntax,
 };
 use crate::syntax::expr::Expr;
 use crate::syntax::token::TokenSyntax;
@@ -34,6 +34,7 @@ use nom::{
     InputTakeAtPosition, Offset, Slice,
 };
 use std::ops::{Range, RangeFrom};
+use crate::syntax::decl::var::VarSyntax;
 
 pub fn decl<I>(s: I) -> IResult<I, Decl>
 where
@@ -824,8 +825,9 @@ mod tests {
     use crate::syntax::decl::fun::FunSyntax;
     use crate::syntax::decl::{
         Decl, MethodSyntax, PackageName, StoredPropertySyntax, StructPropertySyntax, StructSyntax,
-        UseSyntax, VarSyntax,
+        UseSyntax,
     };
+    use crate::syntax::decl::var::VarSyntax;
     use crate::syntax::expr::{BinaryOperationSyntax, Expr, NameExprSyntax};
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::stmt::Stmt;
