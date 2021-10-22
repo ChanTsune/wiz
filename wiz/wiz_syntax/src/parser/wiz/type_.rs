@@ -216,7 +216,7 @@ where
             opt(tuple((char(':'), whitespace0, type_))),
         )),
         |(name, _, typ)| TypeParam {
-            name,
+            name: TokenSyntax::from(name),
             type_constraints: typ.map(|(_, _, t)| t),
         },
     )(s)
@@ -289,7 +289,7 @@ mod tests {
             Ok((
                 "",
                 TypeParam {
-                    name: "T".to_string(),
+                    name: TokenSyntax::from("T"),
                     type_constraints: None
                 }
             ))
@@ -303,7 +303,7 @@ mod tests {
             Ok((
                 "",
                 TypeParam {
-                    name: "T".to_string(),
+                    name: TokenSyntax::from("T"),
                     type_constraints: Some(TypeName::Simple(SimpleTypeName {
                         name: TokenSyntax::from("Int"),
                         type_args: None
@@ -316,7 +316,7 @@ mod tests {
             Ok((
                 "",
                 TypeParam {
-                    name: "T".to_string(),
+                    name: TokenSyntax::from("T"),
                     type_constraints: Some(TypeName::Simple(SimpleTypeName {
                         name: TokenSyntax::from("Int"),
                         type_args: None
@@ -329,7 +329,7 @@ mod tests {
             Ok((
                 "",
                 TypeParam {
-                    name: "T".to_string(),
+                    name: TokenSyntax::from("T"),
                     type_constraints: Some(TypeName::Simple(SimpleTypeName {
                         name: TokenSyntax::from("Int"),
                         type_args: None
@@ -342,7 +342,7 @@ mod tests {
             Ok((
                 "",
                 TypeParam {
-                    name: "T".to_string(),
+                    name: TokenSyntax::from("T"),
                     type_constraints: Some(TypeName::Simple(SimpleTypeName {
                         name: TokenSyntax::from("Int"),
                         type_args: None
