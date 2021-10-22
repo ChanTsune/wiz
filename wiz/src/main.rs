@@ -53,7 +53,6 @@ fn main() -> result::Result<(), Box<dyn Error>> {
 
     let std_package_source_set = read_package_from_path(Path::new("../std"))?;
 
-
     let mut ast2hlir = Ast2HLIR::new();
 
     let builtin_hlir: Vec<TypedFile> = builtin_syntax
