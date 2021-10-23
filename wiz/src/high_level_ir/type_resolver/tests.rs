@@ -514,7 +514,7 @@ fn test_struct_member_function() {
                 computed_properties: vec![],
                 member_functions: vec![TypedMemberFunction {
                     name: "getA".to_string(),
-                    args: vec![TypedArgDef::RefSelf(Some(TypedType::Value(
+                    arg_defs: vec![TypedArgDef::RefSelf(Some(TypedType::Value(
                         TypedValueType {
                             package: TypedPackage::Resolved(Package::from(vec!["test"])),
                             name: "A".to_string(),
@@ -628,7 +628,7 @@ fn test_struct_member_function_call() {
                     computed_properties: vec![],
                     member_functions: vec![TypedMemberFunction {
                         name: "getA".to_string(),
-                        args: vec![TypedArgDef::RefSelf(Some(TypedType::Value(
+                        arg_defs: vec![TypedArgDef::RefSelf(Some(TypedType::Value(
                             TypedValueType {
                                 package: TypedPackage::Resolved(Package::from(vec!["test"])),
                                 name: "A".to_string(),

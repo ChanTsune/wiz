@@ -112,8 +112,8 @@ pub struct TypedComputedProperty {
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypedMemberFunction {
     pub(crate) name: String,
-    pub(crate) args: Vec<TypedArgDef>,
     pub(crate) type_params: Option<Vec<TypedTypeParam>>,
+    pub(crate) arg_defs: Vec<TypedArgDef>,
     pub(crate) body: Option<TypedFunBody>,
     pub(crate) return_type: Option<TypedType>,
 }
@@ -133,7 +133,7 @@ impl TypedMemberFunction {
     pub(crate) fn type_(&self) -> Option<TypedType> {
         match &self.return_type {
             Some(return_type) => Some(TypedType::Function(Box::new(TypedFunctionType {
-                arguments: self.args.clone(),
+                arguments: self.arg_defs.clone(),
                 return_type: return_type.clone(),
             }))),
             None => None,

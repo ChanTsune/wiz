@@ -419,7 +419,7 @@ impl HLIR2MLIR {
             .map(|mf| {
                 let TypedMemberFunction {
                     name: fname,
-                    args,
+                    arg_defs: args,
                     type_params,
                     body,
                     return_type,

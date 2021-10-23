@@ -423,7 +423,7 @@ impl Ast2HLIR {
         let fb = body.map(|b| self.fun_body(b));
         TypedMemberFunction {
             name: name,
-            args: args.into_iter().map(|a| self.arg_def(a)).collect(),
+            arg_defs: args.into_iter().map(|a| self.arg_def(a)).collect(),
             type_params: type_params
                 .map(|tps| tps.into_iter().map(|p| self.type_param(p)).collect()),
             body: fb,
