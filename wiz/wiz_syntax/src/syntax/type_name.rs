@@ -168,6 +168,5 @@ impl Syntax for TypeConstraintSyntax {
     }
 }
 
-
 pub type TypeArgumentListSyntax = ListSyntax<TypeName>;
 pub type TypeArgumentElementSyntax = ElementSyntax<TypeName>;

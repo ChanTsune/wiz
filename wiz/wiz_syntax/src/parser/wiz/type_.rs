@@ -2,7 +2,11 @@ use crate::parser::wiz::character::{ampersand, comma};
 use crate::parser::wiz::lexical_structure::{identifier, whitespace0};
 use crate::parser::wiz::name_space::name_space;
 use crate::syntax::token::TokenSyntax;
-use crate::syntax::type_name::{DecoratedTypeName, NameSpacedTypeName, SimpleTypeName, TypeArgumentElementSyntax, TypeArgumentListSyntax, TypeConstraintSyntax, TypeName, TypeParam, TypeParameterElementSyntax, TypeParameterListSyntax};
+use crate::syntax::type_name::{
+    DecoratedTypeName, NameSpacedTypeName, SimpleTypeName, TypeArgumentElementSyntax,
+    TypeArgumentListSyntax, TypeConstraintSyntax, TypeName, TypeParam, TypeParameterElementSyntax,
+    TypeParameterListSyntax,
+};
 use crate::syntax::Syntax;
 use nom::branch::alt;
 use nom::character::complete::char;
@@ -159,13 +163,13 @@ where
     map(
         tuple((
             char('<'),
-            many0(tuple((whitespace0, type_,whitespace0 ,comma))),
+            many0(tuple((whitespace0, type_, whitespace0, comma))),
             whitespace0,
             opt(type_),
             whitespace0,
             char('>'),
         )),
-        |(open, t, ws, typ,tws, close)| {
+        |(open, t, ws, typ, tws, close)| {
             let mut close = TokenSyntax::from(close);
             let mut elements: Vec<_> = t
                 .into_iter()
@@ -189,7 +193,7 @@ where
             TypeArgumentListSyntax {
                 open: TokenSyntax::from(open),
                 elements,
-                close
+                close,
             }
         },
     )(s)
