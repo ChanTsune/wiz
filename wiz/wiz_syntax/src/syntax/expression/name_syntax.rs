@@ -1,8 +1,8 @@
 use crate::syntax::name_space::NameSpaceSyntax;
 use crate::syntax::node::SyntaxNode;
-use crate::syntax::Syntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
+use crate::syntax::Syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct NameExprSyntax {
