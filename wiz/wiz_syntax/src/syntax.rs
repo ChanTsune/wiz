@@ -3,7 +3,7 @@ use crate::syntax::trivia::Trivia;
 pub mod annotation;
 pub mod block;
 pub mod decl;
-pub mod expr;
+pub mod expression;
 pub mod file;
 pub mod literal;
 pub mod modifier;

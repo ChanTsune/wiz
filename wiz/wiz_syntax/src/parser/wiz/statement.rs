@@ -3,7 +3,7 @@ use crate::parser::wiz::expression::{expr, postfix_expr, prefix_expr};
 use crate::parser::wiz::keywords::{for_keyword, in_keyword, while_keyword};
 use crate::parser::wiz::lexical_structure::{identifier, whitespace0, whitespace1};
 use crate::parser::wiz::operators::{assignment_and_operator, assignment_operator};
-use crate::syntax::expr::{Expr, NameExprSyntax};
+use crate::syntax::expression::{Expr, NameExprSyntax};
 use crate::syntax::file::FileSyntax;
 use crate::syntax::stmt::{
     AssignmentAndOperatorSyntax, AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt, WhileLoopSyntax,
@@ -415,7 +415,7 @@ mod tests {
         assignable_expr, assignment_stmt, directly_assignable_expr, file, while_stmt,
     };
     use crate::syntax::block::BlockSyntax;
-    use crate::syntax::expr::{BinaryOperationSyntax, Expr, MemberSyntax, NameExprSyntax};
+    use crate::syntax::expression::{BinaryOperationSyntax, Expr, MemberSyntax, NameExprSyntax};
     use crate::syntax::file::FileSyntax;
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::stmt::{

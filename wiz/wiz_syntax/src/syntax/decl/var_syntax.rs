@@ -1,5 +1,5 @@
 use crate::syntax::annotation::{Annotatable, AnnotationsSyntax};
-use crate::syntax::expr::Expr;
+use crate::syntax::expression::Expr;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::type_name::TypeName;
 

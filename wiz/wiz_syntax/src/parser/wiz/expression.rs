@@ -16,7 +16,7 @@ use crate::parser::wiz::operators::{
 use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_arguments};
 use crate::syntax::block::BlockSyntax;
-use crate::syntax::expr::{
+use crate::syntax::expression::{
     ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallExprSyntax, Expr,
     IfExprSyntax, LambdaSyntax, MemberSyntax, NameExprSyntax, PostfixSuffix,
     PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax, ReturnSyntax, SubscriptSyntax,
@@ -1260,7 +1260,7 @@ mod tests {
     use crate::syntax::block::BlockSyntax;
     use crate::syntax::decl::var_syntax::VarSyntax;
     use crate::syntax::decl::Decl;
-    use crate::syntax::expr::{
+    use crate::syntax::expression::{
         ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallExprSyntax, Expr,
         IfExprSyntax, MemberSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax,
     };

@@ -20,7 +20,7 @@ use crate::syntax::decl::{
     Decl, DeinitializerSyntax, InitializerSyntax, MethodSyntax, PackageName, StoredPropertySyntax,
     StructPropertySyntax, StructSyntax, UseSyntax,
 };
-use crate::syntax::expr::Expr;
+use crate::syntax::expression::Expr;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::type_name::{TypeConstraintSyntax, TypeName, TypeParam};
 use crate::syntax::Syntax;
@@ -832,7 +832,7 @@ mod tests {
         Decl, MethodSyntax, PackageName, StoredPropertySyntax, StructPropertySyntax, StructSyntax,
         UseSyntax,
     };
-    use crate::syntax::expr::{BinaryOperationSyntax, Expr, NameExprSyntax};
+    use crate::syntax::expression::{BinaryOperationSyntax, Expr, NameExprSyntax};
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::stmt::Stmt;
     use crate::syntax::token::TokenSyntax;

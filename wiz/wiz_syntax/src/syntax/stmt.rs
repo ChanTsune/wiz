@@ -1,7 +1,7 @@
 use super::node::SyntaxNode;
 use crate::syntax::block::BlockSyntax;
 use crate::syntax::decl::Decl;
-use crate::syntax::expr::Expr;
+use crate::syntax::expression::Expr;
 use crate::syntax::token::TokenSyntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]

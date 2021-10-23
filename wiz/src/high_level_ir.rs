@@ -30,7 +30,7 @@ use wiz_syntax::syntax::decl::{
     Decl, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax,
     StructSyntax, UseSyntax,
 };
-use wiz_syntax::syntax::expr::{
+use wiz_syntax::syntax::expression::{
     ArraySyntax, BinaryOperationSyntax, CallExprSyntax, Expr, IfExprSyntax, LambdaSyntax,
     MemberSyntax, NameExprSyntax, PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax,
     ReturnSyntax, SubscriptSyntax, TypeCastSyntax, UnaryOperationSyntax,
