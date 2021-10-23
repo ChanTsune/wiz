@@ -514,11 +514,8 @@ where
             )),
             |(_, label, name, _, _, _, typ)| {
                 ArgDef::Value(ValueArgDef {
-                    label: match label {
-                        None => name.clone(),
-                        Some((label, _)) => label,
-                    },
-                    name,
+                    label: label.map(|(label, ws)|{TokenSyntax::from(label).with_trailing_trivia(ws)}),
+                    name: TokenSyntax::from(name),
                     type_name: typ,
                 })
             },
@@ -1106,8 +1103,8 @@ mod tests {
                     name: TokenSyntax::from("puts"),
                     type_params: None,
                     arg_defs: vec![ArgDef::Value(ValueArgDef {
-                        label: "_".to_string(),
-                        name: "item".to_string(),
+                        label: Some(TokenSyntax::from("_").with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1)))),
+                        name: TokenSyntax::from("item"),
                         type_name: TypeName::Simple(SimpleTypeName {
                             name: TokenSyntax::from("String"),
                             type_args: None
@@ -1137,8 +1134,8 @@ mod tests {
                     name: TokenSyntax::from("puts"),
                     type_params: None,
                     arg_defs: vec![ArgDef::Value(ValueArgDef {
-                        label: "item".to_string(),
-                        name: "item".to_string(),
+                        label: None,
+                        name: TokenSyntax::from("item"),
                         type_name: TypeName::Simple(SimpleTypeName {
                             name: TokenSyntax::from("String"),
                             type_args: None

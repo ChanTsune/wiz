@@ -12,8 +12,8 @@ impl SyntaxNode for ArgDef {}
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct ValueArgDef {
-    pub label: String,
-    pub name: String,
+    pub label: Option<TokenSyntax>,
+    pub name: TokenSyntax,
     pub type_name: TypeName,
 }
 

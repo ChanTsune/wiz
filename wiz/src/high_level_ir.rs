@@ -38,6 +38,7 @@ use wiz_syntax::syntax::expr::{
 use wiz_syntax::syntax::file::{FileSyntax, SourceSet, WizFile};
 use wiz_syntax::syntax::literal::LiteralSyntax;
 use wiz_syntax::syntax::stmt::{AssignmentStmt, LoopStmt, Stmt, WhileLoopSyntax};
+use wiz_syntax::syntax::token::TokenSyntax;
 use wiz_syntax::syntax::type_name::{NameSpacedTypeName, TypeName, TypeParam};
 
 pub mod type_resolver;
@@ -187,8 +188,11 @@ impl Ast2HLIR {
     pub fn arg_def(&self, a: ArgDef) -> TypedArgDef {
         match a {
             ArgDef::Value(a) => TypedArgDef::Value(TypedValueArgDef {
-                label: a.label,
-                name: a.name,
+                label: match a.label {
+                    None => {a.name.token.clone()}
+                    Some(label) => {label.token}
+                },
+                name: a.name.token,
                 type_: self.type_(a.type_name),
             }),
             ArgDef::Self_(s) => match s.reference {
