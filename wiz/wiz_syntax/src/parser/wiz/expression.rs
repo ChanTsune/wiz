@@ -190,7 +190,10 @@ where
     <I as InputIter>::Item: AsChar,
 {
     map(tuple((name_space, identifier)), |(name_space, name)| {
-        Expr::Name(NameExprSyntax { name_space, name: TokenSyntax::from(name) })
+        Expr::Name(NameExprSyntax {
+            name_space,
+            name: TokenSyntax::from(name),
+        })
     })(s)
 }
 
