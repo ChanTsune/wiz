@@ -1,6 +1,9 @@
+pub(crate) mod name_syntax;
+
+pub use self::name_syntax::NameExprSyntax;
+
 use crate::syntax::block::BlockSyntax;
 use crate::syntax::literal::LiteralSyntax;
-use crate::syntax::name_space::NameSpaceSyntax;
 use crate::syntax::node::SyntaxNode;
 use crate::syntax::stmt::Stmt;
 use crate::syntax::token::TokenSyntax;
@@ -137,30 +140,6 @@ impl Syntax for Expr {
 }
 
 impl SyntaxNode for Expr {}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct NameExprSyntax {
-    pub name_space: NameSpaceSyntax,
-    pub name: TokenSyntax,
-}
-
-impl Syntax for NameExprSyntax {
-    fn with_leading_trivia(self, trivia: Trivia) -> Self {
-        Self {
-            name_space: self.name_space.with_leading_trivia(trivia),
-            name: self.name,
-        }
-    }
-
-    fn with_trailing_trivia(self, trivia: Trivia) -> Self {
-        Self {
-            name_space: self.name_space,
-            name: self.name.with_trailing_trivia(trivia),
-        }
-    }
-}
-
-impl SyntaxNode for NameExprSyntax {}
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct BinaryOperationSyntax {
