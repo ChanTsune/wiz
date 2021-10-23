@@ -39,7 +39,7 @@ impl SyntaxNode for Expr {}
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct NameExprSyntax {
     pub name_space: NameSpaceSyntax,
-    pub name: String,
+    pub name: TokenSyntax,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]

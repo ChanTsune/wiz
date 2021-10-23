@@ -509,7 +509,7 @@ impl Ast2HLIR {
             } else {
                 TypedPackage::Raw(Package::from(name_space))
             },
-            name,
+            name: name.token,
             type_: None,
         }
     }

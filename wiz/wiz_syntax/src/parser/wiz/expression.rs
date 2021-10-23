@@ -190,7 +190,7 @@ where
     <I as InputIter>::Item: AsChar,
 {
     map(tuple((name_space, identifier)), |(name_space, name)| {
-        Expr::Name(NameExprSyntax { name_space, name })
+        Expr::Name(NameExprSyntax { name_space, name: TokenSyntax::from(name) })
     })(s)
 }
 
@@ -1411,7 +1411,7 @@ mod tests {
                 "",
                 Expr::Name(NameExprSyntax {
                     name_space: NameSpaceSyntax::from(vec!["std", "builtin"]),
-                    name: "println".to_string()
+                    name: TokenSyntax::from("println")
                 })
             ))
         )
@@ -1428,7 +1428,7 @@ mod tests {
                     values: vec![ArrayElementSyntax {
                         element: Expr::Name(NameExprSyntax {
                             name_space: Default::default(),
-                            name: "a".to_string()
+                            name: TokenSyntax::from("a")
                         }),
                         trailing_comma: TokenSyntax::new()
                     }],
@@ -1446,7 +1446,7 @@ mod tests {
                         ArrayElementSyntax {
                             element: Expr::Name(NameExprSyntax {
                                 name_space: Default::default(),
-                                name: "a".to_string()
+                                name: TokenSyntax::from("a")
                             }),
                             trailing_comma: TokenSyntax::from(",")
                                 .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1)))
@@ -1454,7 +1454,7 @@ mod tests {
                         ArrayElementSyntax {
                             element: Expr::Name(NameExprSyntax {
                                 name_space: Default::default(),
-                                name: "b".to_string()
+                                name: TokenSyntax::from("b")
                             }),
                             trailing_comma: TokenSyntax::new()
                         }
@@ -1472,7 +1472,7 @@ mod tests {
                     values: vec![ArrayElementSyntax {
                         element: Expr::Name(NameExprSyntax {
                             name_space: Default::default(),
-                            name: "a".to_string()
+                            name: TokenSyntax::from("a")
                         }),
                         trailing_comma: TokenSyntax::from(",")
                     }],
@@ -1490,7 +1490,7 @@ mod tests {
                         ArrayElementSyntax {
                             element: Expr::Name(NameExprSyntax {
                                 name_space: Default::default(),
-                                name: "a".to_string()
+                                name: TokenSyntax::from("a")
                             }),
                             trailing_comma: TokenSyntax::from(",")
                                 .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1)))
@@ -1498,7 +1498,7 @@ mod tests {
                         ArrayElementSyntax {
                             element: Expr::Name(NameExprSyntax {
                                 name_space: Default::default(),
-                                name: "b".to_string()
+                                name: TokenSyntax::from("b")
                             }),
                             trailing_comma: TokenSyntax::from(",")
                         }
@@ -1633,7 +1633,7 @@ mod tests {
                 Expr::Call(CallExprSyntax {
                     target: Box::new(Expr::Name(NameExprSyntax {
                         name_space: Default::default(),
-                        name: "puts".to_string()
+                        name: TokenSyntax::from("puts")
                     })),
                     args: vec![],
                     tailing_lambda: None,
@@ -1651,7 +1651,7 @@ mod tests {
                 Expr::Call(CallExprSyntax {
                     target: Box::new(Expr::Name(NameExprSyntax {
                         name_space: Default::default(),
-                        name: "puts".to_string()
+                        name: TokenSyntax::from("puts")
                     })),
                     args: vec![CallArg {
                         label: None,
@@ -1677,7 +1677,7 @@ mod tests {
                 Expr::Call(CallExprSyntax {
                     target: Box::new(Expr::Name(NameExprSyntax {
                         name_space: Default::default(),
-                        name: "puts".to_string()
+                        name: TokenSyntax::from("puts")
                     })),
                     args: vec![CallArg {
                         label: Some(String::from("string")),
@@ -1703,7 +1703,7 @@ mod tests {
                 Expr::If(IfExprSyntax {
                     condition: Box::new(Expr::Name(NameExprSyntax {
                         name_space: Default::default(),
-                        name: "a".to_string()
+                        name: TokenSyntax::from("a")
                     })),
                     body: BlockSyntax {
                         open: TokenSyntax::from("{")
@@ -1731,14 +1731,14 @@ mod tests {
                     condition: Box::new(Expr::BinOp(BinaryOperationSyntax {
                         left: Box::new(Expr::Name(NameExprSyntax {
                             name_space: Default::default(),
-                            name: "capacity".to_string()
+                            name: TokenSyntax::from("capacity")
                         })),
                         operator: TokenSyntax::from("<=")
                             .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
                             .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                         right: Box::new(Expr::Name(NameExprSyntax {
                             name_space: Default::default(),
-                            name: "length".to_string()
+                            name: TokenSyntax::from("length")
                         }))
                     })),
                     body: BlockSyntax {
@@ -1756,7 +1756,7 @@ mod tests {
                                 condition: Box::new(Expr::BinOp(BinaryOperationSyntax {
                                     left: Box::new(Expr::Name(NameExprSyntax {
                                         name_space: Default::default(),
-                                        name: "capacity".to_string()
+                                        name: TokenSyntax::from("capacity")
                                     })),
                                     operator: TokenSyntax::from("==")
                                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
@@ -1780,7 +1780,7 @@ mod tests {
                                     body: vec![Stmt::Expr(Expr::BinOp(BinaryOperationSyntax {
                                         left: Box::new(Expr::Name(NameExprSyntax {
                                             name_space: Default::default(),
-                                            name: "capacity".to_string()
+                                            name: TokenSyntax::from("capacity")
                                         })),
                                         operator: TokenSyntax::from("*")
                                             .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(
@@ -1818,7 +1818,7 @@ mod tests {
                 Expr::If(IfExprSyntax {
                     condition: Box::new(Expr::Name(NameExprSyntax {
                         name_space: Default::default(),
-                        name: "a".to_string()
+                        name: TokenSyntax::from("a")
                     })),
                     body: BlockSyntax {
                         open: TokenSyntax::from("{")
@@ -1848,7 +1848,7 @@ mod tests {
                         .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     value: Some(Box::new(Expr::Name(NameExprSyntax {
                         name_space: Default::default(),
-                        name: "name".to_string()
+                        name: TokenSyntax::from("name")
                     })))
                 })
             ))
@@ -1864,7 +1864,7 @@ mod tests {
                 Expr::Member(MemberSyntax {
                     target: Box::new(Expr::Name(NameExprSyntax {
                         name_space: Default::default(),
-                        name: "a".to_string()
+                        name: TokenSyntax::from("a")
                     })),
                     name: TokenSyntax::from("b"),
                     navigation_operator: TokenSyntax::from(".")
@@ -1882,7 +1882,7 @@ mod tests {
                 PostfixSuffix::IndexingSuffix {
                     indexes: vec![Expr::Name(NameExprSyntax {
                         name_space: Default::default(),
-                        name: "a".to_string()
+                        name: TokenSyntax::from("a")
                     }),]
                 }
             ))
@@ -1895,11 +1895,11 @@ mod tests {
                     indexes: vec![
                         Expr::Name(NameExprSyntax {
                             name_space: Default::default(),
-                            name: "a".to_string()
+                            name: TokenSyntax::from("a")
                         }),
                         Expr::Name(NameExprSyntax {
                             name_space: Default::default(),
-                            name: "b".to_string()
+                            name: TokenSyntax::from("b")
                         }),
                     ]
                 }
@@ -1913,11 +1913,11 @@ mod tests {
                     indexes: vec![
                         Expr::Name(NameExprSyntax {
                             name_space: Default::default(),
-                            name: "a".to_string()
+                            name: TokenSyntax::from("a")
                         }),
                         Expr::Name(NameExprSyntax {
                             name_space: Default::default(),
-                            name: "b".to_string()
+                            name: TokenSyntax::from("b")
                         }),
                     ]
                 }

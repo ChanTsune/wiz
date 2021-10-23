@@ -141,7 +141,7 @@ where
         map(identifier, |name| {
             Expr::Name(NameExprSyntax {
                 name_space: Default::default(),
-                name,
+                name: TokenSyntax::from(name),
             })
         }),
         map(parenthesized_directly_assignable_expr, |e| e),
@@ -440,14 +440,14 @@ mod tests {
                     condition: Expr::BinOp(BinaryOperationSyntax {
                         left: Box::new(Expr::Name(NameExprSyntax {
                             name_space: Default::default(),
-                            name: "a".to_string()
+                            name: TokenSyntax::from("a")
                         })),
                         operator: TokenSyntax::from("<")
                             .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
                             .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                         right: Box::new(Expr::Name(NameExprSyntax {
                             name_space: Default::default(),
-                            name: "b".to_string()
+                            name: TokenSyntax::from("b")
                         }))
                     }),
                     block: BlockSyntax {
@@ -459,7 +459,7 @@ mod tests {
                             AssignmentSyntax {
                                 target: Expr::Name(NameExprSyntax {
                                     name_space: Default::default(),
-                                    name: "a".to_string()
+                                    name: TokenSyntax::from("a")
                                 }),
                                 operator: TokenSyntax::from("=")
                                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
@@ -467,7 +467,7 @@ mod tests {
                                 value: Expr::BinOp(BinaryOperationSyntax {
                                     left: Box::new(Expr::Name(NameExprSyntax {
                                         name_space: Default::default(),
-                                        name: "a".to_string()
+                                        name: TokenSyntax::from("a")
                                     })),
                                     operator: TokenSyntax::from("+")
                                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
@@ -503,7 +503,7 @@ mod tests {
                         left: Box::new(Expr::Member(MemberSyntax {
                             target: Box::new(Expr::Name(NameExprSyntax {
                                 name_space: Default::default(),
-                                name: "a".to_string()
+                                name: TokenSyntax::from("a")
                             })),
                             name: TokenSyntax::from("c"),
                             navigation_operator: TokenSyntax::from(".")
@@ -513,7 +513,7 @@ mod tests {
                             .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                         right: Box::new(Expr::Name(NameExprSyntax {
                             name_space: Default::default(),
-                            name: "b".to_string()
+                            name: TokenSyntax::from("b")
                         }))
                     }),
                     block: BlockSyntax {
@@ -525,7 +525,7 @@ mod tests {
                             AssignmentSyntax {
                                 target: Expr::Name(NameExprSyntax {
                                     name_space: Default::default(),
-                                    name: "a".to_string()
+                                    name: TokenSyntax::from("a")
                                 }),
                                 operator: TokenSyntax::from("=")
                                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
@@ -533,7 +533,7 @@ mod tests {
                                 value: Expr::BinOp(BinaryOperationSyntax {
                                     left: Box::new(Expr::Name(NameExprSyntax {
                                         name_space: Default::default(),
-                                        name: "a".to_string()
+                                        name: TokenSyntax::from("a")
                                     })),
                                     operator: TokenSyntax::from("+")
                                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
@@ -563,7 +563,7 @@ mod tests {
                 Expr::Member(MemberSyntax {
                     target: Box::new(Expr::Name(NameExprSyntax {
                         name_space: Default::default(),
-                        name: "a".to_string()
+                        name: TokenSyntax::from("a")
                     })),
                     name: TokenSyntax::from("b"),
                     navigation_operator: TokenSyntax::from(".")
@@ -581,7 +581,7 @@ mod tests {
                 Expr::Member(MemberSyntax {
                     target: Box::new(Expr::Name(NameExprSyntax {
                         name_space: Default::default(),
-                        name: "a".to_string()
+                        name: TokenSyntax::from("a")
                     })),
                     name: TokenSyntax::from("b"),
                     navigation_operator: TokenSyntax::from(".")
@@ -599,14 +599,14 @@ mod tests {
                 Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax {
                     target: Expr::Name(NameExprSyntax {
                         name_space: Default::default(),
-                        name: "a".to_string()
+                        name: TokenSyntax::from("a")
                     }),
                     operator: TokenSyntax::from("=")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
                         .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     value: Expr::Name(NameExprSyntax {
                         name_space: Default::default(),
-                        name: "b".to_string()
+                        name: TokenSyntax::from("b")
                     })
                 }))
             ))
@@ -622,7 +622,7 @@ mod tests {
                 Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax {
                     target: Expr::Name(NameExprSyntax {
                         name_space: Default::default(),
-                        name: "a".to_string()
+                        name: TokenSyntax::from("a")
                     }),
                     operator: TokenSyntax::from("=")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
@@ -630,7 +630,7 @@ mod tests {
                     value: Expr::Member(MemberSyntax {
                         target: Box::new(Expr::Name(NameExprSyntax {
                             name_space: Default::default(),
-                            name: "b".to_string()
+                            name: TokenSyntax::from("b")
                         })),
                         name: TokenSyntax::from("c"),
                         navigation_operator: TokenSyntax::from(".")
@@ -650,7 +650,7 @@ mod tests {
                     target: Expr::Member(MemberSyntax {
                         target: Box::new(Expr::Name(NameExprSyntax {
                             name_space: Default::default(),
-                            name: "a".to_string()
+                            name: TokenSyntax::from("a")
                         })),
                         name: TokenSyntax::from("b"),
                         navigation_operator: TokenSyntax::from(".")
@@ -660,7 +660,7 @@ mod tests {
                         .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     value: Expr::Name(NameExprSyntax {
                         name_space: Default::default(),
-                        name: "c".to_string()
+                        name: TokenSyntax::from("c")
                     }),
                 }))
             ))
@@ -677,7 +677,7 @@ mod tests {
                     AssignmentAndOperatorSyntax {
                         target: Expr::Name(NameExprSyntax {
                             name_space: Default::default(),
-                            name: "a".to_string()
+                            name: TokenSyntax::from("a")
                         }),
                         operator: TokenSyntax::from("+=")
                             .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))

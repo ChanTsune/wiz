@@ -1061,7 +1061,7 @@ mod tests {
                 FunBody::Expr {
                     expr: Expr::Name(NameExprSyntax {
                         name_space: Default::default(),
-                        name: "name".to_string()
+                        name: TokenSyntax::from("name")
                     })
                 }
             ))
