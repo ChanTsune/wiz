@@ -1,3 +1,4 @@
+use crate::syntax::list::{ElementSyntax, ListSyntax};
 use crate::syntax::name_space::NameSpaceSyntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
@@ -104,12 +105,8 @@ impl Syntax for DecoratedTypeName {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct TypeParameterListSyntax {
-    pub open: TokenSyntax,
-    pub elements: Vec<TypeParameterElementSyntax>,
-    pub close: TokenSyntax,
-}
+pub type TypeParameterListSyntax = ListSyntax<TypeParam>;
+pub type TypeParameterElementSyntax = ElementSyntax<TypeParam>;
 
 impl TypeParameterListSyntax {
     fn new() -> Self {
@@ -117,52 +114,6 @@ impl TypeParameterListSyntax {
             open: TokenSyntax::from("<"),
             elements: vec![],
             close: TokenSyntax::from(">"),
-        }
-    }
-}
-
-impl Syntax for TypeParameterListSyntax {
-    fn with_leading_trivia(self, trivia: Trivia) -> Self {
-        Self {
-            open: self.open.with_leading_trivia(trivia),
-            elements: self.elements,
-            close: self.close,
-        }
-    }
-
-    fn with_trailing_trivia(self, trivia: Trivia) -> Self {
-        Self {
-            open: self.open,
-            elements: self.elements,
-            close: self.close.with_trailing_trivia(trivia),
-        }
-    }
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct TypeParameterElementSyntax {
-    pub element: TypeParam,
-    pub trailing_comma: Option<TokenSyntax>,
-}
-
-impl Syntax for TypeParameterElementSyntax {
-    fn with_leading_trivia(self, trivia: Trivia) -> Self {
-        Self {
-            element: self.element.with_leading_trivia(trivia),
-            trailing_comma: self.trailing_comma,
-        }
-    }
-
-    fn with_trailing_trivia(self, trivia: Trivia) -> Self {
-        match self.trailing_comma {
-            None => Self {
-                element: self.element.with_trailing_trivia(trivia),
-                trailing_comma: None,
-            },
-            Some(trailing_comma) => Self {
-                element: self.element,
-                trailing_comma: Some(trailing_comma.with_trailing_trivia(trivia)),
-            },
         }
     }
 }
