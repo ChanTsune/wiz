@@ -26,56 +26,38 @@ where
     map(
         tuple((
             tag("#["),
+            many0(tuple((whitespace0, identifier, whitespace0, comma))),
             whitespace0,
-            identifier,
-            whitespace0,
-            many0(tuple((comma, whitespace0, identifier, whitespace0))),
-            opt(comma),
+            opt(identifier),
             whitespace0,
             tag("]"),
         )),
-        |(open, ows, e, ws, v, c, cws, close): (I, _, _, _, _, _, _, I)| {
-            let mut cmas = vec![];
-            let mut lwss = vec![ws];
-            let mut expers = vec![e];
-            let mut twss = vec![];
-            for (cma, tws, e, lws) in v.into_iter() {
-                cmas.push(cma);
-                twss.push(tws);
-                expers.push(e);
-                lwss.push(lws);
-            }
-            match c {
-                None => {}
-                Some(c) => cmas.push(c),
-            }
-            let mut elements = vec![];
-            for (idx, e) in expers.into_iter().enumerate() {
-                let mut trailing_comma = TokenSyntax::from(match cmas.get(idx) {
-                    None => String::new(),
-                    Some(c) => c.to_string(),
-                });
-                match lwss.get(idx) {
-                    None => {}
-                    Some(e) => {
-                        trailing_comma = trailing_comma.with_leading_trivia(e.clone());
-                    }
-                };
-                match twss.get(idx) {
-                    None => {}
-                    Some(e) => {
-                        trailing_comma = trailing_comma.with_trailing_trivia(e.clone());
-                    }
+        |(open, v, ws, a, tws, close): (I, _, _, _, _, I)| {
+            let mut close = TokenSyntax::from(close);
+            let mut annotations: Vec<_> = v.into_iter().map(|(lws, a, rws, cma)|{
+                Annotation {
+                    name: TokenSyntax::from(a).with_leading_trivia(lws),
+                    trailing_comma: Some(TokenSyntax::from(cma).with_leading_trivia(rws))
                 }
-                elements.push(Annotation {
-                    name: TokenSyntax::from(e),
-                    trailing_comma,
-                })
-            }
+            }).collect();
+
+            match a {
+                None => {
+                    close = close.with_leading_trivia(ws + tws);
+                }
+                Some(p) => {
+                    annotations.push(Annotation {
+                        name: TokenSyntax::from(p).with_leading_trivia(ws),
+                        trailing_comma: None,
+                    });
+                    close = close.with_leading_trivia(tws);
+                }
+            };
+
             AnnotationsSyntax {
-                open: TokenSyntax::from(open).with_trailing_trivia(ows),
-                annotations: elements,
-                close: TokenSyntax::from(close).with_leading_trivia(cws),
+                open: TokenSyntax::from(open),
+                annotations,
+                close,
             }
         },
     )(s)
@@ -97,7 +79,7 @@ mod tests {
                     open: TokenSyntax::from("#["),
                     annotations: vec![Annotation {
                         name: TokenSyntax::from("no_mangle"),
-                        trailing_comma: TokenSyntax::from(""),
+                        trailing_comma: None,
                     }],
                     close: TokenSyntax::from("]"),
                 }

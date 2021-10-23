@@ -14,5 +14,5 @@ pub struct AnnotationsSyntax {
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct Annotation {
     pub name: TokenSyntax,
-    pub trailing_comma: TokenSyntax,
+    pub trailing_comma: Option<TokenSyntax>,
 }
