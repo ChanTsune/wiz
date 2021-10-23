@@ -29,7 +29,7 @@ where
         Self {
             elements: names
                 .into_iter()
-                .map(|n| NameSpaceElementSyntax::from(n))
+                .map(NameSpaceElementSyntax::from)
                 .collect(),
         }
     }

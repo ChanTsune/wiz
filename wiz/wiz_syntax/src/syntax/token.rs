@@ -14,6 +14,12 @@ impl TokenSyntax {
     }
 }
 
+impl Default for TokenSyntax {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<T> From<T> for TokenSyntax
 where
     T: ToString,
