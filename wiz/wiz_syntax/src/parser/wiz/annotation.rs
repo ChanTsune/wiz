@@ -34,12 +34,13 @@ where
         )),
         |(open, v, ws, a, tws, close): (I, _, _, _, _, I)| {
             let mut close = TokenSyntax::from(close);
-            let mut annotations: Vec<_> = v.into_iter().map(|(lws, a, rws, cma)|{
-                Annotation {
+            let mut annotations: Vec<_> = v
+                .into_iter()
+                .map(|(lws, a, rws, cma)| Annotation {
                     name: TokenSyntax::from(a).with_leading_trivia(lws),
-                    trailing_comma: Some(TokenSyntax::from(cma).with_leading_trivia(rws))
-                }
-            }).collect();
+                    trailing_comma: Some(TokenSyntax::from(cma).with_leading_trivia(rws)),
+                })
+                .collect();
 
             match a {
                 None => {
