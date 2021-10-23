@@ -599,7 +599,7 @@ where
         tuple((identifier, whitespace0, char(':'), whitespace0, type_)),
         |(id, _, _, _, typ)| TypeParam {
             name: TokenSyntax::from(id),
-            type_constraints: Some(typ),
+            type_constraint: Some(typ),
         },
     )(s)
 }
@@ -1202,7 +1202,7 @@ mod tests {
                 "",
                 TypeParam {
                     name: TokenSyntax::from("T"),
-                    type_constraints: Some(TypeName::Simple(SimpleTypeName {
+                    type_constraint: Some(TypeName::Simple(SimpleTypeName {
                         name: TokenSyntax::from("Printable"),
                         type_args: None
                     }))
@@ -1219,7 +1219,7 @@ mod tests {
                 "",
                 vec![TypeParam {
                     name: TokenSyntax::from("T"),
-                    type_constraints: Some(TypeName::Simple(SimpleTypeName {
+                    type_constraint: Some(TypeName::Simple(SimpleTypeName {
                         name: TokenSyntax::from("Printable"),
                         type_args: None
                     }))
@@ -1233,14 +1233,14 @@ mod tests {
                 vec![
                     TypeParam {
                         name: TokenSyntax::from("T"),
-                        type_constraints: Some(TypeName::Simple(SimpleTypeName {
+                        type_constraint: Some(TypeName::Simple(SimpleTypeName {
                             name: TokenSyntax::from("Printable"),
                             type_args: None
                         }))
                     },
                     TypeParam {
                         name: TokenSyntax::from("T"),
-                        type_constraints: Some(TypeName::Simple(SimpleTypeName {
+                        type_constraint: Some(TypeName::Simple(SimpleTypeName {
                             name: TokenSyntax::from("DebugPrintable"),
                             type_args: None
                         }))
@@ -1255,14 +1255,14 @@ mod tests {
                 vec![
                     TypeParam {
                         name: TokenSyntax::from("T"),
-                        type_constraints: Some(TypeName::Simple(SimpleTypeName {
+                        type_constraint: Some(TypeName::Simple(SimpleTypeName {
                             name: TokenSyntax::from("Printable"),
                             type_args: None
                         }))
                     },
                     TypeParam {
                         name: TokenSyntax::from("T"),
-                        type_constraints: Some(TypeName::Simple(SimpleTypeName {
+                        type_constraint: Some(TypeName::Simple(SimpleTypeName {
                             name: TokenSyntax::from("DebugPrintable"),
                             type_args: None
                         }))

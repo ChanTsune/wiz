@@ -225,7 +225,7 @@ impl Ast2HLIR {
                 v.into_iter()
                     .map(|p| TypedTypeParam {
                         name: p.name.token,
-                        type_constraint: match p.type_constraints {
+                        type_constraint: match p.type_constraint {
                             None => {
                                 vec![]
                             }
@@ -302,7 +302,7 @@ impl Ast2HLIR {
     fn type_param(&self, tp: TypeParam) -> TypedTypeParam {
         TypedTypeParam {
             name: tp.name.token,
-            type_constraint: tp.type_constraints.map_or(vec![], |v| vec![self.type_(v)]),
+            type_constraint: tp.type_constraint.map_or(vec![], |v| vec![self.type_(v)]),
         }
     }
 

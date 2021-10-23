@@ -217,7 +217,7 @@ where
         )),
         |(name, _, typ)| TypeParam {
             name: TokenSyntax::from(name),
-            type_constraints: typ.map(|(_, _, t)| t),
+            type_constraint: typ.map(|(_, _, t)| t),
         },
     )(s)
 }
@@ -290,7 +290,7 @@ mod tests {
                 "",
                 TypeParam {
                     name: TokenSyntax::from("T"),
-                    type_constraints: None
+                    type_constraint: None
                 }
             ))
         );
@@ -304,7 +304,7 @@ mod tests {
                 "",
                 TypeParam {
                     name: TokenSyntax::from("T"),
-                    type_constraints: Some(TypeName::Simple(SimpleTypeName {
+                    type_constraint: Some(TypeName::Simple(SimpleTypeName {
                         name: TokenSyntax::from("Int"),
                         type_args: None
                     }))
@@ -317,7 +317,7 @@ mod tests {
                 "",
                 TypeParam {
                     name: TokenSyntax::from("T"),
-                    type_constraints: Some(TypeName::Simple(SimpleTypeName {
+                    type_constraint: Some(TypeName::Simple(SimpleTypeName {
                         name: TokenSyntax::from("Int"),
                         type_args: None
                     }))
@@ -330,7 +330,7 @@ mod tests {
                 "",
                 TypeParam {
                     name: TokenSyntax::from("T"),
-                    type_constraints: Some(TypeName::Simple(SimpleTypeName {
+                    type_constraint: Some(TypeName::Simple(SimpleTypeName {
                         name: TokenSyntax::from("Int"),
                         type_args: None
                     }))
@@ -343,7 +343,7 @@ mod tests {
                 "",
                 TypeParam {
                     name: TokenSyntax::from("T"),
-                    type_constraints: Some(TypeName::Simple(SimpleTypeName {
+                    type_constraint: Some(TypeName::Simple(SimpleTypeName {
                         name: TokenSyntax::from("Int"),
                         type_args: None
                     }))
