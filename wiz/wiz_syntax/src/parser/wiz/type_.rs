@@ -2,7 +2,11 @@ use crate::parser::wiz::character::{ampersand, comma};
 use crate::parser::wiz::lexical_structure::{identifier, whitespace0};
 use crate::parser::wiz::name_space::name_space;
 use crate::syntax::token::TokenSyntax;
-use crate::syntax::type_name::{DecoratedTypeName, NameSpacedTypeName, SimpleTypeName, TypeConstraintSyntax, TypeName, TypeParam};
+use crate::syntax::type_name::{
+    DecoratedTypeName, NameSpacedTypeName, SimpleTypeName, TypeConstraintSyntax, TypeName,
+    TypeParam,
+};
+use crate::syntax::Syntax;
 use nom::branch::alt;
 use nom::character::complete::char;
 use nom::combinator::{map, opt};
@@ -10,7 +14,6 @@ use nom::multi::many0;
 use nom::sequence::tuple;
 use nom::{AsChar, Compare, FindSubstring, IResult, InputIter, InputLength, InputTake, Slice};
 use std::ops::{Range, RangeFrom};
-use crate::syntax::Syntax;
 
 pub fn type_<I>(s: I) -> IResult<I, TypeName>
 where
@@ -215,11 +218,11 @@ where
         )),
         |(name, typ)| TypeParam {
             name: TokenSyntax::from(name),
-            type_constraint: typ.map(|(lws,c , ws, t)| TypeConstraintSyntax {
+            type_constraint: typ.map(|(lws, c, ws, t)| TypeConstraintSyntax {
                 sep: TokenSyntax::from(c)
                     .with_leading_trivia(lws)
                     .with_trailing_trivia(ws),
-                constraint: t
+                constraint: t,
             }),
         },
     )(s)
@@ -229,10 +232,13 @@ where
 mod tests {
     use crate::parser::wiz::type_::{decorated_type, type_parameter, user_type};
     use crate::syntax::name_space::NameSpaceSyntax;
-    use crate::syntax::Syntax;
     use crate::syntax::token::TokenSyntax;
-    use crate::syntax::trivia::{Trivia,TriviaPiece};
-    use crate::syntax::type_name::{DecoratedTypeName, NameSpacedTypeName, SimpleTypeName, TypeConstraintSyntax, TypeName, TypeParam};
+    use crate::syntax::trivia::{Trivia, TriviaPiece};
+    use crate::syntax::type_name::{
+        DecoratedTypeName, NameSpacedTypeName, SimpleTypeName, TypeConstraintSyntax, TypeName,
+        TypeParam,
+    };
+    use crate::syntax::Syntax;
 
     #[test]
     fn test_name_spaced_type() {
@@ -341,7 +347,8 @@ mod tests {
                 TypeParam {
                     name: TokenSyntax::from("T"),
                     type_constraint: Some(TypeConstraintSyntax {
-                        sep: TokenSyntax::from(":").with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        sep: TokenSyntax::from(":")
+                            .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                         constraint: TypeName::Simple(SimpleTypeName {
                             name: TokenSyntax::from("Int"),
                             type_args: None
@@ -359,7 +366,7 @@ mod tests {
                     type_constraint: Some(TypeConstraintSyntax {
                         sep: TokenSyntax::from(":")
                             .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                            .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                         constraint: TypeName::Simple(SimpleTypeName {
                             name: TokenSyntax::from("Int"),
                             type_args: None

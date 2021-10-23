@@ -600,8 +600,10 @@ where
         |(id, lws, sep, rws, typ)| TypeParam {
             name: TokenSyntax::from(id),
             type_constraint: Some(TypeConstraintSyntax {
-                sep: TokenSyntax::from(sep).with_leading_trivia(lws).with_trailing_trivia(rws),
-                constraint: typ
+                sep: TokenSyntax::from(sep)
+                    .with_leading_trivia(lws)
+                    .with_trailing_trivia(rws),
+                constraint: typ,
             }),
         },
     )(s)
@@ -1206,7 +1208,8 @@ mod tests {
                 TypeParam {
                     name: TokenSyntax::from("T"),
                     type_constraint: Some(TypeConstraintSyntax {
-                        sep: TokenSyntax::from(":").with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        sep: TokenSyntax::from(":")
+                            .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                         constraint: TypeName::Simple(SimpleTypeName {
                             name: TokenSyntax::from("Printable"),
                             type_args: None
@@ -1244,7 +1247,8 @@ mod tests {
                     TypeParam {
                         name: TokenSyntax::from("T"),
                         type_constraint: Some(TypeConstraintSyntax {
-                            sep: TokenSyntax::from(":").with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                            sep: TokenSyntax::from(":")
+                                .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                             constraint: TypeName::Simple(SimpleTypeName {
                                 name: TokenSyntax::from("Printable"),
                                 type_args: None
@@ -1254,7 +1258,8 @@ mod tests {
                     TypeParam {
                         name: TokenSyntax::from("T"),
                         type_constraint: Some(TypeConstraintSyntax {
-                            sep: TokenSyntax::from(":").with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                            sep: TokenSyntax::from(":")
+                                .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                             constraint: TypeName::Simple(SimpleTypeName {
                                 name: TokenSyntax::from("DebugPrintable"),
                                 type_args: None
@@ -1272,7 +1277,8 @@ mod tests {
                     TypeParam {
                         name: TokenSyntax::from("T"),
                         type_constraint: Some(TypeConstraintSyntax {
-                            sep: TokenSyntax::from(":").with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                            sep: TokenSyntax::from(":")
+                                .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                             constraint: TypeName::Simple(SimpleTypeName {
                                 name: TokenSyntax::from("Printable"),
                                 type_args: None
@@ -1282,7 +1288,8 @@ mod tests {
                     TypeParam {
                         name: TokenSyntax::from("T"),
                         type_constraint: Some(TypeConstraintSyntax {
-                            sep: TokenSyntax::from(":").with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                            sep: TokenSyntax::from(":")
+                                .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                             constraint: TypeName::Simple(SimpleTypeName {
                                 name: TokenSyntax::from("DebugPrintable"),
                                 type_args: None

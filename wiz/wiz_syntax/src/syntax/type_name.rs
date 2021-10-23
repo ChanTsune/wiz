@@ -40,9 +40,7 @@ impl SyntaxNode for TypeParam {}
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypeConstraintSyntax {
     pub sep: TokenSyntax,
-    pub constraint: TypeName
+    pub constraint: TypeName,
 }
 
-impl SyntaxNode for TypeConstraintSyntax {
-    
-}
+impl SyntaxNode for TypeConstraintSyntax {}
