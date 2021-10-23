@@ -222,10 +222,10 @@ impl Ast2HLIR {
             modifiers: f.modifiers.modifiers.into_iter().map(|m| m.token).collect(),
             name: f.name.token,
             type_params: f.type_params.map(|v| {
-                v.into_iter()
+                v.elements.into_iter()
                     .map(|p| TypedTypeParam {
-                        name: p.name.token,
-                        type_constraint: match p.type_constraint {
+                        name: p.element.name.token,
+                        type_constraint: match p.element.type_constraint {
                             None => {
                                 vec![]
                             }
@@ -336,7 +336,7 @@ impl Ast2HLIR {
             name: s.name,
             type_params: s
                 .type_params
-                .map(|v| v.into_iter().map(|tp| self.type_param(tp)).collect()),
+                .map(|v| v.elements.into_iter().map(|tp| self.type_param(tp.element)).collect()),
             initializers,
             stored_properties,
             computed_properties,
@@ -422,10 +422,10 @@ impl Ast2HLIR {
         let rt = return_type.map(|r| self.type_(r));
         let fb = body.map(|b| self.fun_body(b));
         TypedMemberFunction {
-            name: name,
+            name,
             arg_defs: args.into_iter().map(|a| self.arg_def(a)).collect(),
             type_params: type_params
-                .map(|tps| tps.into_iter().map(|p| self.type_param(p)).collect()),
+                .map(|tps| tps.elements.into_iter().map(|p| self.type_param(p.element)).collect()),
             body: fb,
             return_type: rt,
         }

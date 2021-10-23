@@ -5,7 +5,7 @@ use crate::syntax::annotation::{Annotatable, AnnotationsSyntax};
 use crate::syntax::decl::fun_syntax::FunSyntax;
 use crate::syntax::decl::var_syntax::VarSyntax;
 use crate::syntax::token::TokenSyntax;
-use crate::syntax::type_name::{TypeName, TypeParam};
+use crate::syntax::type_name::{TypeName, TypeParameterListSyntax};
 
 use super::node::SyntaxNode;
 
@@ -51,7 +51,7 @@ impl SyntaxNode for Decl {}
 pub struct StructSyntax {
     pub annotations: Option<AnnotationsSyntax>,
     pub name: String,
-    pub type_params: Option<Vec<TypeParam>>,
+    pub type_params: Option<TypeParameterListSyntax>,
     pub properties: Vec<StructPropertySyntax>,
 }
 
@@ -95,7 +95,7 @@ pub struct DeinitializerSyntax {
 pub struct MethodSyntax {
     pub name: String,
     pub args: Vec<ArgDef>,
-    pub type_params: Option<Vec<TypeParam>>,
+    pub type_params: Option<TypeParameterListSyntax>,
     pub body: Option<FunBody>,
     pub return_type: Option<TypeName>,
 }
