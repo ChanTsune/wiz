@@ -2,10 +2,7 @@ use crate::parser::wiz::character::{ampersand, comma};
 use crate::parser::wiz::lexical_structure::{identifier, whitespace0};
 use crate::parser::wiz::name_space::name_space;
 use crate::syntax::token::TokenSyntax;
-use crate::syntax::type_name::{
-    DecoratedTypeName, NameSpacedTypeName, SimpleTypeName, TypeConstraintSyntax, TypeName,
-    TypeParam, TypeParameterElementSyntax, TypeParameterListSyntax,
-};
+use crate::syntax::type_name::{DecoratedTypeName, NameSpacedTypeName, SimpleTypeName, TypeArgumentElementSyntax, TypeArgumentListSyntax, TypeConstraintSyntax, TypeName, TypeParam, TypeParameterElementSyntax, TypeParameterListSyntax};
 use crate::syntax::Syntax;
 use nom::branch::alt;
 use nom::character::complete::char;
@@ -18,13 +15,15 @@ use std::ops::{Range, RangeFrom};
 pub fn type_<I>(s: I) -> IResult<I, TypeName>
 where
     I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
         + InputIter
         + InputTake
         + InputLength
         + Clone
         + ToString
+        + FindSubstring<&'static str>
         + Compare<&'static str>,
-    <I as InputIter>::Item: AsChar,
+    <I as InputIter>::Item: AsChar + Copy,
 {
     alt((
         parenthesized_type,
@@ -37,13 +36,15 @@ where
 pub fn parenthesized_type<I>(s: I) -> IResult<I, TypeName>
 where
     I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
         + InputIter
         + InputTake
         + InputLength
         + Clone
         + ToString
+        + FindSubstring<&'static str>
         + Compare<&'static str>,
-    <I as InputIter>::Item: AsChar,
+    <I as InputIter>::Item: AsChar + Copy,
 {
     map(tuple((char('('), type_, char(')'))), |(_, type_, _)| type_)(s)
 }
@@ -51,13 +52,15 @@ where
 pub fn decorated_type<I>(s: I) -> IResult<I, DecoratedTypeName>
 where
     I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
         + InputIter
         + InputTake
         + InputLength
         + Clone
         + ToString
+        + FindSubstring<&'static str>
         + Compare<&'static str>,
-    <I as InputIter>::Item: AsChar,
+    <I as InputIter>::Item: AsChar + Copy,
 {
     map(
         tuple((
@@ -74,13 +77,15 @@ where
 pub fn type_reference<I>(s: I) -> IResult<I, TypeName>
 where
     I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
         + InputIter
         + InputTake
         + InputLength
         + Clone
         + ToString
+        + FindSubstring<&'static str>
         + Compare<&'static str>,
-    <I as InputIter>::Item: AsChar,
+    <I as InputIter>::Item: AsChar + Copy,
 {
     user_type(s)
 }
@@ -88,13 +93,15 @@ where
 pub fn user_type<I>(s: I) -> IResult<I, TypeName>
 where
     I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
         + InputIter
         + InputTake
         + InputLength
         + Clone
         + ToString
+        + FindSubstring<&'static str>
         + Compare<&'static str>,
-    <I as InputIter>::Item: AsChar,
+    <I as InputIter>::Item: AsChar + Copy,
 {
     map(
         tuple((name_space, simple_user_type)),
@@ -114,13 +121,15 @@ where
 pub fn simple_user_type<I>(s: I) -> IResult<I, TypeName>
 where
     I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
         + InputIter
         + InputTake
         + InputLength
         + Clone
         + ToString
+        + FindSubstring<&'static str>
         + Compare<&'static str>,
-    <I as InputIter>::Item: AsChar,
+    <I as InputIter>::Item: AsChar + Copy,
 {
     map(tuple((identifier, opt(type_arguments))), |(name, args)| {
         TypeName::Simple(SimpleTypeName {
@@ -134,30 +143,54 @@ where
 //
 // }
 
-pub fn type_arguments<I>(s: I) -> IResult<I, Vec<TypeName>>
+pub fn type_arguments<I>(s: I) -> IResult<I, TypeArgumentListSyntax>
 where
     I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
         + InputIter
         + InputTake
         + InputLength
         + Clone
         + ToString
+        + FindSubstring<&'static str>
         + Compare<&'static str>,
-    <I as InputIter>::Item: AsChar,
+    <I as InputIter>::Item: AsChar + Copy,
 {
     map(
         tuple((
             char('<'),
-            type_,
-            many0(tuple((comma, type_))),
-            opt(comma),
+            many0(tuple((whitespace0, type_,whitespace0 ,comma))),
+            whitespace0,
+            opt(type_),
+            whitespace0,
             char('>'),
         )),
-        |(_, t, ts, _, _)| {
-            vec![t]
+        |(open, t, ws, typ,tws, close)| {
+            let mut close = TokenSyntax::from(close);
+            let mut elements: Vec<_> = t
                 .into_iter()
-                .chain(ts.into_iter().map(|(_, b)| b))
-                .collect()
+                .map(|(lws, tp, rws, com)| TypeArgumentElementSyntax {
+                    element: tp.with_leading_trivia(lws),
+                    trailing_comma: Some(TokenSyntax::from(com).with_leading_trivia(rws)),
+                })
+                .collect();
+            match typ {
+                None => {
+                    close = close.with_leading_trivia(ws + tws);
+                }
+                Some(p) => {
+                    elements.push(TypeArgumentElementSyntax {
+                        element: p.with_leading_trivia(ws),
+                        trailing_comma: None,
+                    });
+                    close = close.with_leading_trivia(tws);
+                }
+            };
+            TypeArgumentListSyntax {
+                open: TokenSyntax::from(open),
+                elements,
+                close
+            }
         },
     )(s)
 }

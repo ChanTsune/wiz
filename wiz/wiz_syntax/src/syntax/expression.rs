@@ -9,7 +9,7 @@ use crate::syntax::literal::LiteralSyntax;
 use crate::syntax::stmt::Stmt;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
-use crate::syntax::type_name::TypeName;
+use crate::syntax::type_name::{TypeArgumentListSyntax, TypeName};
 use crate::syntax::Syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -202,9 +202,7 @@ pub struct ArrayElementSyntax {
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum PostfixSuffix {
     Operator(String),
-    TypeArgumentSuffix {
-        types: Vec<TypeName>,
-    },
+    TypeArgumentSuffix(TypeArgumentListSyntax),
     CallSuffix {
         args: Vec<CallArg>,
         tailing_lambda: Option<LambdaSyntax>,

@@ -490,9 +490,9 @@ where
         map(postfix_operator, |s: I| {
             PostfixSuffix::Operator(s.to_string())
         }),
-        map(type_arguments, |type_names| {
-            PostfixSuffix::TypeArgumentSuffix { types: type_names }
-        }),
+        map(type_arguments,
+            PostfixSuffix::TypeArgumentSuffix
+        ),
         call_suffix,
         indexing_suffix,
         navigation_suffix,

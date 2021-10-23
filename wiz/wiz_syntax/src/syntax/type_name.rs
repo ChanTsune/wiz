@@ -58,7 +58,7 @@ impl Syntax for NameSpacedTypeName {
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct SimpleTypeName {
     pub name: TokenSyntax,
-    pub type_args: Option<Vec<TypeName>>,
+    pub type_args: Option<TypeArgumentListSyntax>,
 }
 
 impl Syntax for SimpleTypeName {
@@ -77,7 +77,7 @@ impl Syntax for SimpleTypeName {
             },
             Some(type_args) => Self {
                 name: self.name,
-                type_args: Some(todo!()),
+                type_args: Some(type_args.with_trailing_trivia(trivia)),
             },
         }
     }
@@ -167,3 +167,7 @@ impl Syntax for TypeConstraintSyntax {
         }
     }
 }
+
+
+pub type TypeArgumentListSyntax = ListSyntax<TypeName>;
+pub type TypeArgumentElementSyntax = ElementSyntax<TypeName>;
