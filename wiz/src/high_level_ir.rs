@@ -189,8 +189,8 @@ impl Ast2HLIR {
         match a {
             ArgDef::Value(a) => TypedArgDef::Value(TypedValueArgDef {
                 label: match a.label {
-                    None => {a.name.token.clone()}
-                    Some(label) => {label.token}
+                    None => a.name.token.clone(),
+                    Some(label) => label.token,
                 },
                 name: a.name.token,
                 type_: self.type_(a.type_name),
