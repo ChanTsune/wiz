@@ -32,7 +32,17 @@ impl SyntaxNode for TypeName {}
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypeParam {
     pub name: TokenSyntax,
-    pub type_constraint: Option<TypeName>,
+    pub type_constraint: Option<TypeConstraintSyntax>,
 }
 
 impl SyntaxNode for TypeParam {}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct TypeConstraintSyntax {
+    pub sep: TokenSyntax,
+    pub constraint: TypeName
+}
+
+impl SyntaxNode for TypeConstraintSyntax {
+    
+}

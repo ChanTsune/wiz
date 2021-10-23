@@ -22,7 +22,7 @@ use crate::syntax::decl::{
 };
 use crate::syntax::expr::Expr;
 use crate::syntax::token::TokenSyntax;
-use crate::syntax::type_name::{TypeName, TypeParam};
+use crate::syntax::type_name::{TypeConstraintSyntax, TypeName, TypeParam};
 use crate::syntax::Syntax;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
@@ -597,9 +597,12 @@ where
 {
     map(
         tuple((identifier, whitespace0, char(':'), whitespace0, type_)),
-        |(id, _, _, _, typ)| TypeParam {
+        |(id, lws, sep, rws, typ)| TypeParam {
             name: TokenSyntax::from(id),
-            type_constraint: Some(typ),
+            type_constraint: Some(TypeConstraintSyntax {
+                sep: TokenSyntax::from(sep).with_leading_trivia(lws).with_trailing_trivia(rws),
+                constraint: typ
+            }),
         },
     )(s)
 }
@@ -832,7 +835,7 @@ mod tests {
     use crate::syntax::stmt::Stmt;
     use crate::syntax::token::TokenSyntax;
     use crate::syntax::trivia::{Trivia, TriviaPiece};
-    use crate::syntax::type_name::{SimpleTypeName, TypeName, TypeParam};
+    use crate::syntax::type_name::{SimpleTypeName, TypeConstraintSyntax, TypeName, TypeParam};
     use crate::syntax::Syntax;
 
     #[test]
@@ -1202,10 +1205,13 @@ mod tests {
                 "",
                 TypeParam {
                     name: TokenSyntax::from("T"),
-                    type_constraint: Some(TypeName::Simple(SimpleTypeName {
-                        name: TokenSyntax::from("Printable"),
-                        type_args: None
-                    }))
+                    type_constraint: Some(TypeConstraintSyntax {
+                        sep: TokenSyntax::from(":").with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        constraint: TypeName::Simple(SimpleTypeName {
+                            name: TokenSyntax::from("Printable"),
+                            type_args: None
+                        })
+                    })
                 }
             ))
         )
@@ -1219,10 +1225,14 @@ mod tests {
                 "",
                 vec![TypeParam {
                     name: TokenSyntax::from("T"),
-                    type_constraint: Some(TypeName::Simple(SimpleTypeName {
-                        name: TokenSyntax::from("Printable"),
-                        type_args: None
-                    }))
+                    type_constraint: Some(TypeConstraintSyntax {
+                        sep: TokenSyntax::from(":")
+                            .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        constraint: TypeName::Simple(SimpleTypeName {
+                            name: TokenSyntax::from("Printable"),
+                            type_args: None
+                        })
+                    })
                 },]
             ))
         );
@@ -1233,17 +1243,23 @@ mod tests {
                 vec![
                     TypeParam {
                         name: TokenSyntax::from("T"),
-                        type_constraint: Some(TypeName::Simple(SimpleTypeName {
-                            name: TokenSyntax::from("Printable"),
-                            type_args: None
-                        }))
+                        type_constraint: Some(TypeConstraintSyntax {
+                            sep: TokenSyntax::from(":").with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                            constraint: TypeName::Simple(SimpleTypeName {
+                                name: TokenSyntax::from("Printable"),
+                                type_args: None
+                            })
+                        })
                     },
                     TypeParam {
                         name: TokenSyntax::from("T"),
-                        type_constraint: Some(TypeName::Simple(SimpleTypeName {
-                            name: TokenSyntax::from("DebugPrintable"),
-                            type_args: None
-                        }))
+                        type_constraint: Some(TypeConstraintSyntax {
+                            sep: TokenSyntax::from(":").with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                            constraint: TypeName::Simple(SimpleTypeName {
+                                name: TokenSyntax::from("DebugPrintable"),
+                                type_args: None
+                            })
+                        })
                     }
                 ]
             ))
@@ -1255,17 +1271,23 @@ mod tests {
                 vec![
                     TypeParam {
                         name: TokenSyntax::from("T"),
-                        type_constraint: Some(TypeName::Simple(SimpleTypeName {
-                            name: TokenSyntax::from("Printable"),
-                            type_args: None
-                        }))
+                        type_constraint: Some(TypeConstraintSyntax {
+                            sep: TokenSyntax::from(":").with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                            constraint: TypeName::Simple(SimpleTypeName {
+                                name: TokenSyntax::from("Printable"),
+                                type_args: None
+                            })
+                        })
                     },
                     TypeParam {
                         name: TokenSyntax::from("T"),
-                        type_constraint: Some(TypeName::Simple(SimpleTypeName {
-                            name: TokenSyntax::from("DebugPrintable"),
-                            type_args: None
-                        }))
+                        type_constraint: Some(TypeConstraintSyntax {
+                            sep: TokenSyntax::from(":").with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                            constraint: TypeName::Simple(SimpleTypeName {
+                                name: TokenSyntax::from("DebugPrintable"),
+                                type_args: None
+                            })
+                        })
                     }
                 ]
             ))
