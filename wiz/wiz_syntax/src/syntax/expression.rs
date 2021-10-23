@@ -6,7 +6,6 @@ pub use self::name_syntax::NameExprSyntax;
 
 use crate::syntax::block::BlockSyntax;
 use crate::syntax::literal::LiteralSyntax;
-use crate::syntax::node::SyntaxNode;
 use crate::syntax::stmt::Stmt;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
@@ -136,8 +135,6 @@ impl Syntax for Expr {
         }
     }
 }
-
-impl SyntaxNode for Expr {}
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum UnaryOperationSyntax {

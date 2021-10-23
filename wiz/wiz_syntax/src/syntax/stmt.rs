@@ -1,8 +1,9 @@
-use super::node::SyntaxNode;
 use crate::syntax::block::BlockSyntax;
 use crate::syntax::decl::Decl;
 use crate::syntax::expression::Expr;
+use crate::syntax::Syntax;
 use crate::syntax::token::TokenSyntax;
+use crate::syntax::trivia::Trivia;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Stmt {
@@ -12,7 +13,15 @@ pub enum Stmt {
     Loop(LoopStmt),
 }
 
-impl SyntaxNode for Stmt {}
+impl Syntax for Stmt {
+    fn with_leading_trivia(self, trivia: Trivia) -> Self {
+        todo!()
+    }
+
+    fn with_trailing_trivia(self, trivia: Trivia) -> Self {
+        todo!()
+    }
+}
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum AssignmentStmt {

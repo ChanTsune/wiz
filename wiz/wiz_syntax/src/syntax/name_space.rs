@@ -1,4 +1,3 @@
-use crate::syntax::node::SyntaxNode;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::Syntax;
@@ -41,8 +40,6 @@ impl Syntax for NameSpaceSyntax {
         }
     }
 }
-
-impl SyntaxNode for NameSpaceSyntax {}
 
 impl Default for NameSpaceSyntax {
     fn default() -> Self {

@@ -1,5 +1,4 @@
 use crate::syntax::name_space::NameSpaceSyntax;
-use crate::syntax::node::SyntaxNode;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::Syntax;
@@ -29,7 +28,15 @@ pub struct DecoratedTypeName {
     pub type_: TypeName,
 }
 
-impl SyntaxNode for TypeName {}
+impl Syntax for TypeName {
+    fn with_leading_trivia(self, trivia: Trivia) -> Self {
+        todo!()
+    }
+
+    fn with_trailing_trivia(self, trivia: Trivia) -> Self {
+        todo!()
+    }
+}
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypeParameterListSyntax {
@@ -48,7 +55,15 @@ impl TypeParameterListSyntax {
     }
 }
 
-impl SyntaxNode for TypeParameterListSyntax {}
+impl Syntax for TypeParameterListSyntax {
+    fn with_leading_trivia(self, trivia: Trivia) -> Self {
+        todo!()
+    }
+
+    fn with_trailing_trivia(self, trivia: Trivia) -> Self {
+        todo!()
+    }
+}
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypeParameterElementSyntax {
@@ -56,7 +71,15 @@ pub struct TypeParameterElementSyntax {
     pub trailing_comma: Option<TokenSyntax>,
 }
 
-impl SyntaxNode for TypeParameterElementSyntax {}
+impl Syntax for TypeParameterElementSyntax {
+    fn with_leading_trivia(self, trivia: Trivia) -> Self {
+        todo!()
+    }
+
+    fn with_trailing_trivia(self, trivia: Trivia) -> Self {
+        todo!()
+    }
+}
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypeParam {
@@ -92,12 +115,18 @@ impl Syntax for TypeParam {
     }
 }
 
-impl SyntaxNode for TypeParam {}
-
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypeConstraintSyntax {
     pub sep: TokenSyntax,
     pub constraint: TypeName,
 }
 
-impl SyntaxNode for TypeConstraintSyntax {}
+impl Syntax for TypeConstraintSyntax {
+    fn with_leading_trivia(self, trivia: Trivia) -> Self {
+        todo!()
+    }
+
+    fn with_trailing_trivia(self, trivia: Trivia) -> Self {
+        todo!()
+    }
+}

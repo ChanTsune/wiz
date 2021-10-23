@@ -4,10 +4,11 @@ use fun_syntax::body_def::FunBody;
 use crate::syntax::annotation::{Annotatable, AnnotationsSyntax};
 use crate::syntax::decl::fun_syntax::FunSyntax;
 use crate::syntax::decl::var_syntax::VarSyntax;
+use crate::syntax::Syntax;
 use crate::syntax::token::TokenSyntax;
+use crate::syntax::trivia::Trivia;
 use crate::syntax::type_name::{TypeName, TypeParameterListSyntax};
 
-use super::node::SyntaxNode;
 
 pub mod fun_syntax;
 pub mod var_syntax;
@@ -45,7 +46,15 @@ impl Annotatable for Decl {
     }
 }
 
-impl SyntaxNode for Decl {}
+impl Syntax for Decl {
+    fn with_leading_trivia(self, trivia: Trivia) -> Self {
+        todo!()
+    }
+
+    fn with_trailing_trivia(self, trivia: Trivia) -> Self {
+        todo!()
+    }
+}
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct StructSyntax {

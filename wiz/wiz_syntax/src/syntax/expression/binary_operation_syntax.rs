@@ -1,5 +1,4 @@
 use crate::syntax::expression::Expr;
-use crate::syntax::node::SyntaxNode;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::Syntax;
@@ -28,5 +27,3 @@ impl Syntax for BinaryOperationSyntax {
         }
     }
 }
-
-impl SyntaxNode for BinaryOperationSyntax {}

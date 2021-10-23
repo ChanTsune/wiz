@@ -1,5 +1,4 @@
 use crate::syntax::name_space::NameSpaceSyntax;
-use crate::syntax::node::SyntaxNode;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::Syntax;
@@ -25,5 +24,3 @@ impl Syntax for NameExprSyntax {
         }
     }
 }
-
-impl SyntaxNode for NameExprSyntax {}

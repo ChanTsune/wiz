@@ -1,5 +1,6 @@
+use crate::syntax::Syntax;
+use crate::syntax::trivia::Trivia;
 use super::decl::Decl;
-use super::node::SyntaxNode;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum SourceSet {
@@ -18,4 +19,12 @@ pub struct FileSyntax {
     pub body: Vec<Decl>,
 }
 
-impl SyntaxNode for FileSyntax {}
+impl Syntax for FileSyntax {
+    fn with_leading_trivia(self, trivia: Trivia) -> Self {
+        todo!()
+    }
+
+    fn with_trailing_trivia(self, trivia: Trivia) -> Self {
+        todo!()
+    }
+}
