@@ -248,78 +248,6 @@ where
     )(s)
 }
 
-pub fn array_elements<I>(s: I) -> IResult<I, Vec<ArrayElementSyntax>>
-where
-    I: Slice<RangeFrom<usize>>
-        + Slice<Range<usize>>
-        + InputIter
-        + Clone
-        + InputLength
-        + ToString
-        + InputTake
-        + Offset
-        + InputTakeAtPosition
-        + ExtendInto<Item = char, Extender = String>
-        + FindSubstring<&'static str>
-        + Compare<&'static str>,
-    <I as InputIter>::Item: AsChar + Copy,
-    <I as InputTakeAtPosition>::Item: AsChar,
-{
-    map(
-        opt(tuple((
-            expr,
-            whitespace0,
-            many0(tuple((comma, whitespace0, expr, whitespace0))),
-            opt(comma),
-        ))),
-        |i| match i {
-            None => {
-                vec![]
-            }
-            Some((e, ws, v, c)) => {
-                let mut cmas = vec![];
-                let mut lwss = vec![ws];
-                let mut expers = vec![e];
-                let mut twss = vec![];
-                for (cma, tws, e, lws) in v.into_iter() {
-                    cmas.push(cma);
-                    twss.push(tws);
-                    expers.push(e);
-                    lwss.push(lws);
-                }
-                match c {
-                    None => {}
-                    Some(c) => cmas.push(c),
-                }
-                let mut elements = vec![];
-                for (idx, e) in expers.into_iter().enumerate() {
-                    let mut trailing_comma = TokenSyntax::from(match cmas.get(idx) {
-                        None => String::new(),
-                        Some(c) => c.to_string(),
-                    });
-                    match lwss.get(idx) {
-                        None => {}
-                        Some(e) => {
-                            trailing_comma = trailing_comma.with_leading_trivia(e.clone());
-                        }
-                    };
-                    match twss.get(idx) {
-                        None => {}
-                        Some(e) => {
-                            trailing_comma = trailing_comma.with_trailing_trivia(e.clone());
-                        }
-                    }
-                    elements.push(ArrayElementSyntax {
-                        element: e,
-                        trailing_comma,
-                    })
-                }
-                elements
-            }
-        },
-    )(s)
-}
-
 pub fn array_expr<I>(s: I) -> IResult<I, Expr>
 where
     I: Slice<RangeFrom<usize>>
@@ -338,12 +266,39 @@ where
     <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
-        tuple((tag("["), whitespace0, array_elements, whitespace0, tag("]"))),
-        |(open, ows, elements, cws, close): (I, _, _, _, I)| {
+        tuple((
+            tag("["),
+            many0(tuple((whitespace0, expr, whitespace0, comma))),
+            whitespace0,
+            opt(expr),
+            whitespace0,
+            tag("]")
+        )),
+        |(open, elements, ws, element, tws, close): (I, _, _, _,_, I)| {
+            let mut close = TokenSyntax::from(close);
+            let mut elements: Vec<_> = elements.into_iter().map(|(lws, e, rws, c)|{
+                ArrayElementSyntax {
+                    element: e.with_leading_trivia(lws),
+                    trailing_comma: Some(TokenSyntax::from(c).with_leading_trivia(rws)),
+                }
+            }).collect();
+            match element {
+                None => {
+                    close = close.with_leading_trivia(ws + tws);
+                }
+                Some(e) => {
+                    elements.push(ArrayElementSyntax {
+                        element: e.with_leading_trivia(ws),
+                        trailing_comma: None,
+                    });
+                    close = close.with_leading_trivia(tws);
+                }
+            };
+
             Expr::Array(ArraySyntax {
-                open: TokenSyntax::from(open).with_trailing_trivia(ows),
+                open: TokenSyntax::from(open),
                 values: elements,
-                close: TokenSyntax::from(close).with_leading_trivia(cws),
+                close,
             })
         },
     )(s)
@@ -1433,7 +1388,7 @@ mod tests {
                             name_space: Default::default(),
                             name: TokenSyntax::from("a")
                         }),
-                        trailing_comma: TokenSyntax::new()
+                        trailing_comma: None
                     }],
                     close: TokenSyntax::from("]")
                 })
@@ -1451,15 +1406,14 @@ mod tests {
                                 name_space: Default::default(),
                                 name: TokenSyntax::from("a")
                             }),
-                            trailing_comma: TokenSyntax::from(",")
-                                .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                            trailing_comma: Some(TokenSyntax::from(","))
                         },
                         ArrayElementSyntax {
                             element: Expr::Name(NameExprSyntax {
                                 name_space: Default::default(),
                                 name: TokenSyntax::from("b")
-                            }),
-                            trailing_comma: TokenSyntax::new()
+                            }.with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))),
+                            trailing_comma: None
                         }
                     ],
                     close: TokenSyntax::from("]")
@@ -1477,7 +1431,7 @@ mod tests {
                             name_space: Default::default(),
                             name: TokenSyntax::from("a")
                         }),
-                        trailing_comma: TokenSyntax::from(",")
+                        trailing_comma: Some(TokenSyntax::from(","))
                     }],
                     close: TokenSyntax::from("]")
                 })
@@ -1495,15 +1449,14 @@ mod tests {
                                 name_space: Default::default(),
                                 name: TokenSyntax::from("a")
                             }),
-                            trailing_comma: TokenSyntax::from(",")
-                                .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                            trailing_comma: Some(TokenSyntax::from(","))
                         },
                         ArrayElementSyntax {
                             element: Expr::Name(NameExprSyntax {
                                 name_space: Default::default(),
                                 name: TokenSyntax::from("b")
-                            }),
-                            trailing_comma: TokenSyntax::from(",")
+                            }.with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))),
+                            trailing_comma: Some(TokenSyntax::from(","))
                         }
                     ],
                     close: TokenSyntax::from("]")

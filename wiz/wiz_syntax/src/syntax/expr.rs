@@ -3,7 +3,9 @@ use crate::syntax::literal::LiteralSyntax;
 use crate::syntax::name_space::NameSpaceSyntax;
 use crate::syntax::node::SyntaxNode;
 use crate::syntax::stmt::Stmt;
+use crate::syntax::Syntax;
 use crate::syntax::token::TokenSyntax;
+use crate::syntax::trivia::Trivia;
 use crate::syntax::type_name::TypeName;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -34,12 +36,76 @@ pub enum Expr {
     TypeCast(TypeCastSyntax),
 }
 
+impl Syntax for Expr {
+    fn with_leading_trivia(self, trivia: Trivia) -> Self {
+        match self {
+            Expr::Name(n) => Expr::Name(n.with_leading_trivia(trivia)),
+            Expr::Literal(_) => {todo!()}
+            Expr::BinOp(_) => {todo!()}
+            Expr::UnaryOp(_) => {todo!()}
+            Expr::Subscript(_) => {todo!()}
+            Expr::Member(_) => {todo!()}
+            Expr::Array(_) => {todo!()}
+            Expr::Tuple { .. } => {todo!()}
+            Expr::Dict { .. } => {todo!()}
+            Expr::StringBuilder { .. } => {todo!()}
+            Expr::Call(_) => {todo!()}
+            Expr::If(_) => {todo!()}
+            Expr::When { .. } => {todo!()}
+            Expr::Lambda(_) => {todo!()}
+            Expr::Return(_) => {todo!()}
+            Expr::TypeCast(_) => {todo!()}
+        }
+    }
+
+    fn with_trailing_trivia(self, trivia: Trivia) -> Self {
+        match self {
+            Expr::Name(n) => Expr::Name(n.with_trailing_trivia(trivia)),
+            Expr::Literal(_) => {todo!()}
+            Expr::BinOp(_) => {todo!()}
+            Expr::UnaryOp(_) => {todo!()}
+            Expr::Subscript(_) => {todo!()}
+            Expr::Member(_) => {todo!()}
+            Expr::Array(_) => {todo!()}
+            Expr::Tuple { .. } => {todo!()}
+            Expr::Dict { .. } => {todo!()}
+            Expr::StringBuilder { .. } => {todo!()}
+            Expr::Call(_) => {todo!()}
+            Expr::If(_) => {todo!()}
+            Expr::When { .. } => {todo!()}
+            Expr::Lambda(_) => {todo!()}
+            Expr::Return(_) => {todo!()}
+            Expr::TypeCast(_) => {todo!()}
+        }
+    }
+}
+
 impl SyntaxNode for Expr {}
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct NameExprSyntax {
     pub name_space: NameSpaceSyntax,
     pub name: TokenSyntax,
+}
+
+impl Syntax for NameExprSyntax {
+    fn with_leading_trivia(self, trivia: Trivia) -> Self {
+        Self {
+            name_space: self.name_space.with_leading_trivia(trivia),
+            name: self.name
+        }
+    }
+
+    fn with_trailing_trivia(self, trivia: Trivia) -> Self {
+        Self {
+            name_space: self.name_space,
+            name: self.name.with_trailing_trivia(trivia)
+        }
+    }
+}
+
+impl SyntaxNode for NameExprSyntax {
+
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -109,7 +175,7 @@ pub struct ArraySyntax {
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct ArrayElementSyntax {
     pub element: Expr,
-    pub trailing_comma: TokenSyntax,
+    pub trailing_comma: Option<TokenSyntax>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
