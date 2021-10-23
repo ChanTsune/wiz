@@ -362,7 +362,7 @@ where
     )(s)
 }
 
-// <member_function> =:: <modifiers>? "fun" <identifire> <type_parameters>? <function_value_parameters> (":" <type>)? <type_constraints>? <function_body>?
+// <member_function> =:: <modifiers>? "fun" <identifier> <type_parameters>? <function_value_parameters> (":" <type>)? <type_constraints>? <function_body>?
 pub fn member_function<I>(s: I) -> IResult<I, StructPropertySyntax>
 where
     I: Slice<RangeFrom<usize>>

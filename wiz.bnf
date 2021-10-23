@@ -30,7 +30,7 @@
 
 <deitializer> =:: "deinit" <function_body>
 
-<member_function> =:: <modifiers>? "fun" <identifire> <type_parameters>? <function_value_parameters> (":" <type>)? <type_constraints>? <function_body>?
+<member_function> =:: <modifiers>? "fun" <identifier> <type_parameters>? <function_value_parameters> (":" <type>)? <type_constraints>? <function_body>?
 
 <var_decl> ::= <value>
         | <variable>
@@ -38,7 +38,7 @@
 <value> ::= "val" <var_body>
 <variable> ::= "var" <var_body>
 
-<var_body> ::= <identifire> (":" <type>)? "=" <expr>
+<var_body> ::= <identifier> (":" <type>)? "=" <expr>
 
 <modifiers> ::= <modifier>+
 
@@ -49,7 +49,7 @@
                       | 'infix'
                       | 'inline'
 
-<fun_decl> ::= <modifiers>? "fun" <identifire> <type_parameters>? <function_value_parameters> (":" <type>)? <type_constraints>? <function_body>?
+<fun_decl> ::= <modifiers>? "fun" <identifier> <type_parameters>? <function_value_parameters> (":" <type>)? <type_constraints>? <function_body>?
 
 <function_value_parameters> ::= "(" (<function_value_parameter> ("," <function_value_parameter>)* ","?)? ")"
 
@@ -71,8 +71,8 @@
 
 <arg_def> ::= <arg_label> <white_spaces> <arg_name> ":" <type_name>
 
-<arg_label> ::= <identifire>
-<arg_name> ::= <identifire> 
+<arg_label> ::= <identifier>
+<arg_name> ::= <identifier> 
 
 <use> ::= "use" <package_name> ("as" <identifier>)?
 
@@ -114,7 +114,7 @@
 
 <expr_stmt> ::= <expr> <eol>
 
-<type_name> ::= <identifire>
+<type_name> ::= <identifier>
 
 <type_parameters> ::= "<" <type_parameter> ("," <type_parameter>)* ","? ">"
 
@@ -223,9 +223,9 @@
 
 <parenthesized_expr> ::= "(" <white_spaces> <expr> <white_spaces> ")"
 
-<name_expr> ::= (<name_space>)? <identifire>
+<name_expr> ::= (<name_space>)? <identifier>
 
-<name_space> ::= (<identifire> "::")+
+<name_space> ::= (<identifier> "::")+
 
 <literal_expr> ::= <integer_literal>
             # | <floating_point_literal>
@@ -253,10 +253,10 @@
            | <digit>
 <digit> ::= "0-9"
 
-<identifire> ::= <identifire_head> | <identifire_head> <identifire_items>
-<identifire_items> ::= <identifire_item> | <identifire_item> <identifire_items>
-<identifire_head> ::= "a-zA-Z" | "_"
-<identifire_item> ::= <identifire_head> | "_" | <digit>
+<identifier> ::= <identifier_head> | <identifier_head> <identifier_items>
+<identifier_items> ::= <identifier_item> | <identifier_item> <identifier_items>
+<identifier_head> ::= "a-zA-Z" | "_"
+<identifier_item> ::= <identifier_head> | "_" | <digit>
 
 <white_spaces> ::= <white_space> <white_spaces>
                  | <white_space>
