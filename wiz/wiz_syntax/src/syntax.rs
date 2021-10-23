@@ -1,5 +1,5 @@
-use std::fmt::Debug;
 use crate::syntax::trivia::Trivia;
+use std::fmt::Debug;
 
 pub mod annotation;
 pub mod block;

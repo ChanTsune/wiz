@@ -1,6 +1,6 @@
-use crate::syntax::Syntax;
-use crate::syntax::trivia::Trivia;
 use super::decl::Decl;
+use crate::syntax::trivia::Trivia;
+use crate::syntax::Syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum SourceSet {

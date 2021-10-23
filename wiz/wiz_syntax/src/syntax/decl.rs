@@ -4,11 +4,10 @@ use fun_syntax::body_def::FunBody;
 use crate::syntax::annotation::{Annotatable, AnnotationsSyntax};
 use crate::syntax::decl::fun_syntax::FunSyntax;
 use crate::syntax::decl::var_syntax::VarSyntax;
-use crate::syntax::Syntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::type_name::{TypeName, TypeParameterListSyntax};
-
+use crate::syntax::Syntax;
 
 pub mod fun_syntax;
 pub mod var_syntax;
