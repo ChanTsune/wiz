@@ -1,5 +1,7 @@
-pub(crate) mod name_syntax;
+mod name_syntax;
+mod binary_operation_syntax;
 
+pub use self::binary_operation_syntax::BinaryOperationSyntax;
 pub use self::name_syntax::NameExprSyntax;
 
 use crate::syntax::block::BlockSyntax;
@@ -44,9 +46,7 @@ impl Syntax for Expr {
         match self {
             Expr::Name(n) => Expr::Name(n.with_leading_trivia(trivia)),
             Expr::Literal(l) => Expr::Literal(l.with_leading_trivia(trivia)),
-            Expr::BinOp(_) => {
-                todo!()
-            }
+            Expr::BinOp(b) => Expr::BinOp(b.with_leading_trivia(trivia)),
             Expr::UnaryOp(_) => {
                 todo!()
             }
@@ -93,9 +93,7 @@ impl Syntax for Expr {
         match self {
             Expr::Name(n) => Expr::Name(n.with_trailing_trivia(trivia)),
             Expr::Literal(l) => Expr::Literal(l.with_trailing_trivia(trivia)),
-            Expr::BinOp(_) => {
-                todo!()
-            }
+            Expr::BinOp(b) => Expr::BinOp(b.with_trailing_trivia(trivia)),
             Expr::UnaryOp(_) => {
                 todo!()
             }
@@ -140,13 +138,6 @@ impl Syntax for Expr {
 }
 
 impl SyntaxNode for Expr {}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct BinaryOperationSyntax {
-    pub left: Box<Expr>,
-    pub operator: TokenSyntax,
-    pub right: Box<Expr>,
-}
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum UnaryOperationSyntax {
