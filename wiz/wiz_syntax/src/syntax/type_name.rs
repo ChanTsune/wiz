@@ -1,8 +1,8 @@
 use crate::syntax::name_space::NameSpaceSyntax;
 use crate::syntax::node::SyntaxNode;
-use crate::syntax::Syntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
+use crate::syntax::Syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum TypeName {
@@ -35,7 +35,7 @@ impl SyntaxNode for TypeName {}
 pub struct TypeParameterListSyntax {
     pub open: TokenSyntax,
     pub elements: Vec<TypeParameterElementSyntax>,
-    pub close: TokenSyntax
+    pub close: TokenSyntax,
 }
 
 impl TypeParameterListSyntax {
@@ -48,19 +48,15 @@ impl TypeParameterListSyntax {
     }
 }
 
-impl SyntaxNode for TypeParameterListSyntax {
-    
-}
+impl SyntaxNode for TypeParameterListSyntax {}
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypeParameterElementSyntax {
     pub element: TypeParam,
-    pub trailing_comma: Option<TokenSyntax>
+    pub trailing_comma: Option<TokenSyntax>,
 }
 
-impl SyntaxNode for TypeParameterElementSyntax {
-    
-}
+impl SyntaxNode for TypeParameterElementSyntax {}
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypeParam {
@@ -78,17 +74,19 @@ impl Syntax for TypeParam {
 
     fn with_trailing_trivia(self, trivia: Trivia) -> Self {
         match self.type_constraint {
-            None => {Self {
+            None => Self {
                 name: self.name.with_trailing_trivia(trivia),
-                type_constraint: None
-            }}
+                type_constraint: None,
+            },
             Some(type_constraint) => {
-                todo!(r"
+                todo!(
+                    r"
                 Self {{
                     name: self.name,
                     type_constraint: Some(type_constraint.with_trailing_trivia(trivia))
                 }}
-                ")
+                "
+                )
             }
         }
     }

@@ -222,7 +222,8 @@ impl Ast2HLIR {
             modifiers: f.modifiers.modifiers.into_iter().map(|m| m.token).collect(),
             name: f.name.token,
             type_params: f.type_params.map(|v| {
-                v.elements.into_iter()
+                v.elements
+                    .into_iter()
                     .map(|p| TypedTypeParam {
                         name: p.element.name.token,
                         type_constraint: match p.element.type_constraint {
@@ -334,9 +335,12 @@ impl Ast2HLIR {
             annotations: self.annotations(s.annotations),
             package: TypedPackage::Raw(Package::new()),
             name: s.name,
-            type_params: s
-                .type_params
-                .map(|v| v.elements.into_iter().map(|tp| self.type_param(tp.element)).collect()),
+            type_params: s.type_params.map(|v| {
+                v.elements
+                    .into_iter()
+                    .map(|tp| self.type_param(tp.element))
+                    .collect()
+            }),
             initializers,
             stored_properties,
             computed_properties,
@@ -424,8 +428,12 @@ impl Ast2HLIR {
         TypedMemberFunction {
             name,
             arg_defs: args.into_iter().map(|a| self.arg_def(a)).collect(),
-            type_params: type_params
-                .map(|tps| tps.elements.into_iter().map(|p| self.type_param(p.element)).collect()),
+            type_params: type_params.map(|tps| {
+                tps.elements
+                    .into_iter()
+                    .map(|p| self.type_param(p.element))
+                    .collect()
+            }),
             body: fb,
             return_type: rt,
         }
