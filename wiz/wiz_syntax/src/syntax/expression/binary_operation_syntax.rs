@@ -1,8 +1,8 @@
 use crate::syntax::expression::Expr;
 use crate::syntax::node::SyntaxNode;
-use crate::syntax::Syntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
+use crate::syntax::Syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct BinaryOperationSyntax {
@@ -16,7 +16,7 @@ impl Syntax for BinaryOperationSyntax {
         Self {
             left: Box::new(self.left.with_leading_trivia(trivia)),
             operator: self.operator,
-            right: self.right
+            right: self.right,
         }
     }
 
@@ -24,11 +24,9 @@ impl Syntax for BinaryOperationSyntax {
         Self {
             left: self.left,
             operator: self.operator,
-            right: Box::new(self.right.with_trailing_trivia(trivia))
+            right: Box::new(self.right.with_trailing_trivia(trivia)),
         }
     }
 }
 
-impl SyntaxNode for BinaryOperationSyntax {
-
-}
+impl SyntaxNode for BinaryOperationSyntax {}

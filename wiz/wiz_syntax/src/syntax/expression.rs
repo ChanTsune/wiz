@@ -1,5 +1,5 @@
-mod name_syntax;
 mod binary_operation_syntax;
+mod name_syntax;
 
 pub use self::binary_operation_syntax::BinaryOperationSyntax;
 pub use self::name_syntax::NameExprSyntax;
