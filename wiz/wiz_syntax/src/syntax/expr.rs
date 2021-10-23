@@ -40,9 +40,7 @@ impl Syntax for Expr {
     fn with_leading_trivia(self, trivia: Trivia) -> Self {
         match self {
             Expr::Name(n) => Expr::Name(n.with_leading_trivia(trivia)),
-            Expr::Literal(_) => {
-                todo!()
-            }
+            Expr::Literal(l) => Expr::Literal(l.with_leading_trivia(trivia)),
             Expr::BinOp(_) => {
                 todo!()
             }
@@ -91,9 +89,7 @@ impl Syntax for Expr {
     fn with_trailing_trivia(self, trivia: Trivia) -> Self {
         match self {
             Expr::Name(n) => Expr::Name(n.with_trailing_trivia(trivia)),
-            Expr::Literal(_) => {
-                todo!()
-            }
+            Expr::Literal(l) => Expr::Literal(l.with_trailing_trivia(trivia)),
             Expr::BinOp(_) => {
                 todo!()
             }
