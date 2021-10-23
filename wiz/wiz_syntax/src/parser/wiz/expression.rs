@@ -272,16 +272,17 @@ where
             whitespace0,
             opt(expr),
             whitespace0,
-            tag("]")
+            tag("]"),
         )),
-        |(open, elements, ws, element, tws, close): (I, _, _, _,_, I)| {
+        |(open, elements, ws, element, tws, close): (I, _, _, _, _, I)| {
             let mut close = TokenSyntax::from(close);
-            let mut elements: Vec<_> = elements.into_iter().map(|(lws, e, rws, c)|{
-                ArrayElementSyntax {
+            let mut elements: Vec<_> = elements
+                .into_iter()
+                .map(|(lws, e, rws, c)| ArrayElementSyntax {
                     element: e.with_leading_trivia(lws),
                     trailing_comma: Some(TokenSyntax::from(c).with_leading_trivia(rws)),
-                }
-            }).collect();
+                })
+                .collect();
             match element {
                 None => {
                     close = close.with_leading_trivia(ws + tws);
@@ -1409,10 +1410,13 @@ mod tests {
                             trailing_comma: Some(TokenSyntax::from(","))
                         },
                         ArrayElementSyntax {
-                            element: Expr::Name(NameExprSyntax {
-                                name_space: Default::default(),
-                                name: TokenSyntax::from("b")
-                            }.with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))),
+                            element: Expr::Name(
+                                NameExprSyntax {
+                                    name_space: Default::default(),
+                                    name: TokenSyntax::from("b")
+                                }
+                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                            ),
                             trailing_comma: None
                         }
                     ],
@@ -1452,10 +1456,13 @@ mod tests {
                             trailing_comma: Some(TokenSyntax::from(","))
                         },
                         ArrayElementSyntax {
-                            element: Expr::Name(NameExprSyntax {
-                                name_space: Default::default(),
-                                name: TokenSyntax::from("b")
-                            }.with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))),
+                            element: Expr::Name(
+                                NameExprSyntax {
+                                    name_space: Default::default(),
+                                    name: TokenSyntax::from("b")
+                                }
+                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                            ),
                             trailing_comma: Some(TokenSyntax::from(","))
                         }
                     ],

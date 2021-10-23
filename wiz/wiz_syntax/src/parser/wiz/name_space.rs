@@ -22,7 +22,7 @@ where
     map(many0(name_space_element), |elements| NameSpaceSyntax {
         leading_trivia: Default::default(),
         elements,
-        trailing_trivia: Default::default()
+        trailing_trivia: Default::default(),
     })(s)
 }
 
