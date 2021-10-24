@@ -298,7 +298,7 @@ where
 
             Expr::Array(ArraySyntax {
                 open: TokenSyntax::from(open),
-                values: elements,
+                elements,
                 close,
             })
         },
@@ -1383,7 +1383,7 @@ mod tests {
                 "",
                 Expr::Array(ArraySyntax {
                     open: TokenSyntax::from("["),
-                    values: vec![ArrayElementSyntax {
+                    elements: vec![ArrayElementSyntax {
                         element: Expr::Name(NameExprSyntax {
                             name_space: Default::default(),
                             name: TokenSyntax::from("a")
@@ -1400,7 +1400,7 @@ mod tests {
                 "",
                 Expr::Array(ArraySyntax {
                     open: TokenSyntax::from("["),
-                    values: vec![
+                    elements: vec![
                         ArrayElementSyntax {
                             element: Expr::Name(NameExprSyntax {
                                 name_space: Default::default(),
@@ -1429,7 +1429,7 @@ mod tests {
                 "",
                 Expr::Array(ArraySyntax {
                     open: TokenSyntax::from("["),
-                    values: vec![ArrayElementSyntax {
+                    elements: vec![ArrayElementSyntax {
                         element: Expr::Name(NameExprSyntax {
                             name_space: Default::default(),
                             name: TokenSyntax::from("a")
@@ -1446,7 +1446,7 @@ mod tests {
                 "",
                 Expr::Array(ArraySyntax {
                     open: TokenSyntax::from("["),
-                    values: vec![
+                    elements: vec![
                         ArrayElementSyntax {
                             element: Expr::Name(NameExprSyntax {
                                 name_space: Default::default(),

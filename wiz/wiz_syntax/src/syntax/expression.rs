@@ -1,7 +1,9 @@
 mod binary_operation_syntax;
 mod name_syntax;
 mod type_cast_syntax;
+mod array_syntax;
 
+pub use self::array_syntax::{ArraySyntax, ArrayElementSyntax};
 pub use self::binary_operation_syntax::BinaryOperationSyntax;
 pub use self::name_syntax::NameExprSyntax;
 pub use self::type_cast_syntax::TypeCastSyntax;
@@ -57,8 +59,8 @@ impl Syntax for Expr {
             Expr::Member(_) => {
                 todo!()
             }
-            Expr::Array(_) => {
-                todo!()
+            Expr::Array(a) => {
+                Expr::Array(a.with_leading_trivia(trivia))
             }
             Expr::Tuple { .. } => {
                 todo!()
@@ -102,8 +104,8 @@ impl Syntax for Expr {
             Expr::Member(_) => {
                 todo!()
             }
-            Expr::Array(_) => {
-                todo!()
+            Expr::Array(a) => {
+                Expr::Array(a.with_trailing_trivia(trivia))
             }
             Expr::Tuple { .. } => {
                 todo!()
@@ -182,19 +184,6 @@ pub struct MemberSyntax {
     pub target: Box<Expr>,
     pub name: TokenSyntax,
     pub navigation_operator: TokenSyntax,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct ArraySyntax {
-    pub open: TokenSyntax,
-    pub values: Vec<ArrayElementSyntax>,
-    pub close: TokenSyntax,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct ArrayElementSyntax {
-    pub element: Expr,
-    pub trailing_comma: Option<TokenSyntax>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
