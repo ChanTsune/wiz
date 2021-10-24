@@ -8,7 +8,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2.3.5
       - name: run format wizc
-        run: cd wiz && cargo fmt
+        run: cd wiz/wizc && cargo fmt
       - name: run format wiz_syntax
         run: cd wiz/wiz_syntax && cargo fmt
       - name: Commit changes

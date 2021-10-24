@@ -30,7 +30,7 @@ mod utils;
 type MainFunc = unsafe extern "C" fn() -> u8;
 
 fn get_builtin_syntax() -> parser::result::Result<Vec<WizFile>> {
-    let builtin_dir = std::fs::read_dir(Path::new("../builtin")).unwrap();
+    let builtin_dir = std::fs::read_dir(Path::new("../../builtin")).unwrap();
     builtin_dir
         .flatten()
         .map(|p| p.path())
@@ -49,9 +49,13 @@ fn main() -> result::Result<(), Box<dyn Error>> {
     let inputs = matches.values_of_lossy("input").unwrap();
     let output = matches.value_of("output");
 
+    println!("=== parse files ===");
+
     let builtin_syntax = get_builtin_syntax()?;
 
-    let std_package_source_set = read_package_from_path(Path::new("../std"))?;
+    let std_package_source_set = read_package_from_path(Path::new("../../std"))?;
+
+    println!("=== convert to hlir ===");
 
     let mut ast2hlir = Ast2HLIR::new();
 
@@ -69,8 +73,11 @@ fn main() -> result::Result<(), Box<dyn Error>> {
 
     let hlfiles: Vec<TypedFile> = ast_files.into_iter().map(|f| ast2hlir.file(f)).collect();
 
+    println!("=== resolve type ===");
+
     let mut type_resolver = TypeResolver::new();
 
+    println!("===== detect types =====");
     // detect types
     for hlir in builtin_hlir.iter() {
         type_resolver.detect_type(hlir)?;
@@ -82,6 +89,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         type_resolver.detect_type(hlir)?;
     }
 
+    println!("===== preload decls =====");
     // preload decls
     for hlir in builtin_hlir.iter() {
         type_resolver.preload_file(hlir.clone())?;
@@ -93,6 +101,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         type_resolver.preload_file(hlir.clone())?;
     }
 
+    println!("===== resolve types =====");
     // resolve types
     let builtin_hlir = builtin_hlir
         .into_iter()
@@ -105,6 +114,8 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         .into_iter()
         .map(|f| type_resolver.file(f))
         .collect::<Result<Vec<TypedFile>>>()?;
+
+    println!("===== convert to mlir =====");
 
     let mut hlir2mlir = HLIR2MLIR::new();
 

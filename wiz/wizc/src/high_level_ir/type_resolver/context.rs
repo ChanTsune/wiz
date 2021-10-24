@@ -473,7 +473,6 @@ impl ResolverContext {
         Result::Ok(match type_.package {
             TypedPackage::Raw(p) => {
                 if p.names.is_empty() {
-                    println!("Env => {:?}", env.types);
                     let (ns, t) =
                         env.types
                             .get(&type_.name)
