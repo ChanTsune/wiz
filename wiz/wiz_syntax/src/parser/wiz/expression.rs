@@ -433,7 +433,7 @@ where
                     Expr::Member(MemberSyntax {
                         target: Box::new(e),
                         name,
-                        navigation_operator:navigation,
+                        navigation_operator: navigation,
                     })
                 }
             }
