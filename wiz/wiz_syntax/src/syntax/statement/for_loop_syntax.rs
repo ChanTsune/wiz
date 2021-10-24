@@ -1,8 +1,8 @@
 use crate::syntax::block::BlockSyntax;
 use crate::syntax::expression::Expr;
-use crate::syntax::Syntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
+use crate::syntax::Syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct ForLoopSyntax {
@@ -20,7 +20,7 @@ impl Syntax for ForLoopSyntax {
             values: self.values,
             in_keyword: self.in_keyword,
             iterator: self.iterator,
-            block: self.block
+            block: self.block,
         }
     }
 
@@ -30,7 +30,7 @@ impl Syntax for ForLoopSyntax {
             values: self.values,
             in_keyword: self.in_keyword,
             iterator: self.iterator,
-            block: self.block.with_trailing_trivia(trivia)
+            block: self.block.with_trailing_trivia(trivia),
         }
     }
 }
