@@ -251,9 +251,12 @@ impl Ast2HLIR {
             TypeName::Simple(stn) => TypedType::Value(TypedValueType {
                 package: TypedPackage::Raw(Package::new()),
                 name: stn.name.token,
-                type_args: stn
-                    .type_args
-                    .map(|v| v.elements.into_iter().map(|t| self.type_(t.element)).collect()),
+                type_args: stn.type_args.map(|v| {
+                    v.elements
+                        .into_iter()
+                        .map(|t| self.type_(t.element))
+                        .collect()
+                }),
             }),
             TypeName::Decorated(d) => {
                 if d.decoration.token == "&" {
@@ -292,9 +295,12 @@ impl Ast2HLIR {
                             .collect::<Vec<String>>(),
                     )),
                     name: type_name.name.token,
-                    type_args: type_name
-                        .type_args
-                        .map(|v| v.elements.into_iter().map(|t| self.type_(t.element)).collect()),
+                    type_args: type_name.type_args.map(|v| {
+                        v.elements
+                            .into_iter()
+                            .map(|t| self.type_(t.element))
+                            .collect()
+                    }),
                 })
             }
         }
