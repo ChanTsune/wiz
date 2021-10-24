@@ -340,7 +340,7 @@ impl Ast2HLIR {
         TypedStruct {
             annotations: self.annotations(s.annotations),
             package: TypedPackage::Raw(Package::new()),
-            name: s.name,
+            name: s.name.token,
             type_params: s.type_params.map(|v| {
                 v.elements
                     .into_iter()

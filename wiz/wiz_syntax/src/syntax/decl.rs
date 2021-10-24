@@ -59,7 +59,7 @@ impl Syntax for Decl {
 pub struct StructSyntax {
     pub annotations: Option<AnnotationsSyntax>,
     pub struct_keyword: TokenSyntax,
-    pub name: String,
+    pub name: TokenSyntax,
     pub type_params: Option<TypeParameterListSyntax>,
     pub properties: Vec<StructPropertySyntax>,
 }
