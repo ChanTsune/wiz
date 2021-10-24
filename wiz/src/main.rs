@@ -53,8 +53,6 @@ fn main() -> result::Result<(), Box<dyn Error>> {
 
     let std_package_source_set = read_package_from_path(Path::new("../std"))?;
 
-    println!("{:?}", std_package_source_set);
-
     let mut ast2hlir = Ast2HLIR::new();
 
     let builtin_hlir: Vec<TypedFile> = builtin_syntax
@@ -96,15 +94,12 @@ fn main() -> result::Result<(), Box<dyn Error>> {
     }
 
     // resolve types
-
     let builtin_hlir = builtin_hlir
         .into_iter()
         .map(|f| type_resolver.file(f))
         .collect::<Result<Vec<TypedFile>>>()?;
 
     let std_hlir = type_resolver.source_set(std_hlir)?;
-
-    println!("{:?}", std_hlir);
 
     let hlfiles = hlfiles
         .into_iter()

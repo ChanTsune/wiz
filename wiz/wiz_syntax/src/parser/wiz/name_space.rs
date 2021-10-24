@@ -20,7 +20,9 @@ where
     <I as InputIter>::Item: AsChar,
 {
     map(many0(name_space_element), |elements| NameSpaceSyntax {
+        leading_trivia: Default::default(),
         elements,
+        trailing_trivia: Default::default(),
     })(s)
 }
 
@@ -37,8 +39,8 @@ where
 {
     map(tuple((identifier, tag("::"))), |(i, sep): (_, I)| {
         NameSpaceElementSyntax {
-            name: TokenSyntax::new(i),
-            separator: TokenSyntax::new(sep.to_string()),
+            name: TokenSyntax::from(i),
+            separator: TokenSyntax::from(sep),
         }
     })(s)
 }

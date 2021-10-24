@@ -1,5 +1,4 @@
-use crate::syntax::node::SyntaxNode;
-use crate::syntax::stmt::Stmt;
+use crate::syntax::statement::Stmt;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::Syntax;
@@ -28,5 +27,3 @@ impl Syntax for BlockSyntax {
         }
     }
 }
-
-impl SyntaxNode for BlockSyntax {}

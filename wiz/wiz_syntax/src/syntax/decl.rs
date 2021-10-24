@@ -1,10 +1,16 @@
-use super::node::SyntaxNode;
+use fun_syntax::arg_def::ArgDef;
+use fun_syntax::body_def::FunBody;
+
 use crate::syntax::annotation::{Annotatable, AnnotationsSyntax};
-use crate::syntax::expr::Expr;
-use crate::syntax::fun::arg_def::ArgDef;
-use crate::syntax::fun::body_def::FunBody;
+use crate::syntax::decl::fun_syntax::FunSyntax;
+use crate::syntax::decl::var_syntax::VarSyntax;
 use crate::syntax::token::TokenSyntax;
-use crate::syntax::type_name::{TypeName, TypeParam};
+use crate::syntax::trivia::Trivia;
+use crate::syntax::type_name::{TypeConstraintsSyntax, TypeName, TypeParameterListSyntax};
+use crate::syntax::Syntax;
+
+pub mod fun_syntax;
+pub mod var_syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Decl {
@@ -39,47 +45,72 @@ impl Annotatable for Decl {
     }
 }
 
-impl SyntaxNode for Decl {}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct VarSyntax {
-    pub annotations: Option<AnnotationsSyntax>,
-    pub mutability_keyword: TokenSyntax,
-    pub name: String,
-    pub type_: Option<TypeName>,
-    pub value: Expr,
-}
-
-impl Annotatable for VarSyntax {
-    fn with_annotation(mut self, a: AnnotationsSyntax) -> Self {
-        self.annotations = Some(a);
-        self
+impl Syntax for Decl {
+    fn with_leading_trivia(self, trivia: Trivia) -> Self {
+        match self {
+            Decl::Var(_) => {
+                todo!()
+            }
+            Decl::Fun(_) => {
+                todo!()
+            }
+            Decl::Struct(_) => {
+                todo!()
+            }
+            Decl::ExternC(_) => {
+                todo!()
+            }
+            Decl::Enum { .. } => {
+                todo!()
+            }
+            Decl::Protocol { .. } => {
+                todo!()
+            }
+            Decl::Extension { .. } => {
+                todo!()
+            }
+            Decl::Use(_) => {
+                todo!()
+            }
+        }
     }
-}
 
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct FunSyntax {
-    pub annotations: Option<AnnotationsSyntax>,
-    pub modifiers: Vec<String>,
-    pub name: String,
-    pub type_params: Option<Vec<TypeParam>>,
-    pub arg_defs: Vec<ArgDef>,
-    pub return_type: Option<TypeName>,
-    pub body: Option<FunBody>,
-}
-
-impl Annotatable for FunSyntax {
-    fn with_annotation(mut self, a: AnnotationsSyntax) -> Self {
-        self.annotations = Some(a);
-        self
+    fn with_trailing_trivia(self, trivia: Trivia) -> Self {
+        match self {
+            Decl::Var(_) => {
+                todo!()
+            }
+            Decl::Fun(_) => {
+                todo!()
+            }
+            Decl::Struct(_) => {
+                todo!()
+            }
+            Decl::ExternC(_) => {
+                todo!()
+            }
+            Decl::Enum { .. } => {
+                todo!()
+            }
+            Decl::Protocol { .. } => {
+                todo!()
+            }
+            Decl::Extension { .. } => {
+                todo!()
+            }
+            Decl::Use(_) => {
+                todo!()
+            }
+        }
     }
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct StructSyntax {
     pub annotations: Option<AnnotationsSyntax>,
-    pub name: String,
-    pub type_params: Option<Vec<TypeParam>>,
+    pub struct_keyword: TokenSyntax,
+    pub name: TokenSyntax,
+    pub type_params: Option<TypeParameterListSyntax>,
     pub properties: Vec<StructPropertySyntax>,
 }
 
@@ -101,8 +132,8 @@ pub enum StructPropertySyntax {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct StoredPropertySyntax {
-    pub is_mut: bool,
-    pub name: String,
+    pub mutability_keyword: TokenSyntax,
+    pub name: TokenSyntax,
     pub type_: TypeName,
 }
 
@@ -121,11 +152,13 @@ pub struct DeinitializerSyntax {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MethodSyntax {
-    pub name: String,
+    pub fun_keyword: TokenSyntax,
+    pub name: TokenSyntax,
+    pub type_params: Option<TypeParameterListSyntax>,
     pub args: Vec<ArgDef>,
-    pub type_params: Option<Vec<TypeParam>>,
-    pub body: Option<FunBody>,
     pub return_type: Option<TypeName>,
+    pub type_constraints: Option<TypeConstraintsSyntax>,
+    pub body: Option<FunBody>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]

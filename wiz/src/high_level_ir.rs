@@ -22,20 +22,25 @@ use crate::utils::path_string_to_page_name;
 use std::option::Option::Some;
 use wiz_syntax::syntax::annotation::AnnotationsSyntax;
 use wiz_syntax::syntax::block::BlockSyntax;
+use wiz_syntax::syntax::decl::fun_syntax::arg_def::ArgDef;
+use wiz_syntax::syntax::decl::fun_syntax::body_def::FunBody;
+use wiz_syntax::syntax::decl::fun_syntax::FunSyntax;
+use wiz_syntax::syntax::decl::var_syntax::VarSyntax;
 use wiz_syntax::syntax::decl::{
-    Decl, FunSyntax, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax,
-    StructSyntax, UseSyntax, VarSyntax,
+    Decl, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax,
+    StructSyntax, UseSyntax,
 };
-use wiz_syntax::syntax::expr::{
+use wiz_syntax::syntax::expression::{
     ArraySyntax, BinaryOperationSyntax, CallExprSyntax, Expr, IfExprSyntax, LambdaSyntax,
     MemberSyntax, NameExprSyntax, PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax,
     ReturnSyntax, SubscriptSyntax, TypeCastSyntax, UnaryOperationSyntax,
 };
 use wiz_syntax::syntax::file::{FileSyntax, SourceSet, WizFile};
-use wiz_syntax::syntax::fun::arg_def::ArgDef;
-use wiz_syntax::syntax::fun::body_def::FunBody;
 use wiz_syntax::syntax::literal::LiteralSyntax;
-use wiz_syntax::syntax::stmt::{AssignmentStmt, LoopStmt, Stmt, WhileLoopSyntax};
+use wiz_syntax::syntax::statement::{
+    AssignmentStmt, ForLoopSyntax, LoopStmt, Stmt, WhileLoopSyntax,
+};
+use wiz_syntax::syntax::token::TokenSyntax;
 use wiz_syntax::syntax::type_name::{NameSpacedTypeName, TypeName, TypeParam};
 
 pub mod type_resolver;
@@ -139,12 +144,14 @@ impl Ast2HLIR {
                     block: self.block(block),
                 })
             }
-            LoopStmt::For {
+            LoopStmt::For(ForLoopSyntax {
+                for_keyword: _,
                 values,
+                in_keyword: _,
                 iterator,
                 block,
-            } => TypedLoopStmt::For(TypedForStmt {
-                values,
+            }) => TypedLoopStmt::For(TypedForStmt {
+                values: values.into_iter().map(|i| i.token).collect(),
                 iterator: self.expr(iterator),
                 block: self.block(block),
             }),
@@ -176,7 +183,7 @@ impl Ast2HLIR {
             annotations: self.annotations(v.annotations),
             package: TypedPackage::Raw(Package::new()),
             is_mut: v.mutability_keyword.token == "var",
-            name: v.name,
+            name: v.name.token,
             type_: None,
             value: expr,
         }
@@ -185,8 +192,11 @@ impl Ast2HLIR {
     pub fn arg_def(&self, a: ArgDef) -> TypedArgDef {
         match a {
             ArgDef::Value(a) => TypedArgDef::Value(TypedValueArgDef {
-                label: a.label,
-                name: a.name,
+                label: match a.label {
+                    None => a.name.token.clone(),
+                    Some(label) => label.token,
+                },
+                name: a.name.token,
                 type_: self.type_(a.type_name),
             }),
             ArgDef::Self_(s) => match s.reference {
@@ -213,18 +223,19 @@ impl Ast2HLIR {
         TypedFun {
             annotations: self.annotations(f.annotations),
             package: TypedPackage::Raw(Package::new()),
-            modifiers: f.modifiers,
-            name: f.name,
+            modifiers: f.modifiers.modifiers.into_iter().map(|m| m.token).collect(),
+            name: f.name.token,
             type_params: f.type_params.map(|v| {
-                v.into_iter()
+                v.elements
+                    .into_iter()
                     .map(|p| TypedTypeParam {
-                        name: p.name,
-                        type_constraint: match p.type_constraints {
+                        name: p.element.name.token,
+                        type_constraint: match p.element.type_constraint {
                             None => {
                                 vec![]
                             }
                             Some(tn) => {
-                                vec![self.type_(tn)]
+                                vec![self.type_(tn.constraint)]
                             }
                         },
                     })
@@ -243,13 +254,16 @@ impl Ast2HLIR {
         match tn {
             TypeName::Simple(stn) => TypedType::Value(TypedValueType {
                 package: TypedPackage::Raw(Package::new()),
-                name: stn.name,
-                type_args: stn
-                    .type_args
-                    .map(|v| v.into_iter().map(|t| self.type_(t)).collect()),
+                name: stn.name.token,
+                type_args: stn.type_args.map(|v| {
+                    v.elements
+                        .into_iter()
+                        .map(|t| self.type_(t.element))
+                        .collect()
+                }),
             }),
             TypeName::Decorated(d) => {
-                if d.decoration == "&" {
+                if d.decoration.token == "&" {
                     let t = self.type_(d.type_);
                     match t {
                         TypedType::Value(v) => TypedType::Reference(v),
@@ -284,10 +298,13 @@ impl Ast2HLIR {
                             .map(|i| i.name.token)
                             .collect::<Vec<String>>(),
                     )),
-                    name: type_name.name,
-                    type_args: type_name
-                        .type_args
-                        .map(|v| v.into_iter().map(|t| self.type_(t)).collect()),
+                    name: type_name.name.token,
+                    type_args: type_name.type_args.map(|v| {
+                        v.elements
+                            .into_iter()
+                            .map(|t| self.type_(t.element))
+                            .collect()
+                    }),
                 })
             }
         }
@@ -295,8 +312,10 @@ impl Ast2HLIR {
 
     fn type_param(&self, tp: TypeParam) -> TypedTypeParam {
         TypedTypeParam {
-            name: tp.name,
-            type_constraint: tp.type_constraints.map_or(vec![], |v| vec![self.type_(v)]),
+            name: tp.name.token,
+            type_constraint: tp
+                .type_constraint
+                .map_or(vec![], |v| vec![self.type_(v.constraint)]),
         }
     }
 
@@ -325,10 +344,13 @@ impl Ast2HLIR {
         TypedStruct {
             annotations: self.annotations(s.annotations),
             package: TypedPackage::Raw(Package::new()),
-            name: s.name,
-            type_params: s
-                .type_params
-                .map(|v| v.into_iter().map(|tp| self.type_param(tp)).collect()),
+            name: s.name.token,
+            type_params: s.type_params.map(|v| {
+                v.elements
+                    .into_iter()
+                    .map(|tp| self.type_param(tp.element))
+                    .collect()
+            }),
             initializers,
             stored_properties,
             computed_properties,
@@ -390,7 +412,7 @@ impl Ast2HLIR {
 
     pub fn stored_property_syntax(&self, p: StoredPropertySyntax) -> TypedStoredProperty {
         TypedStoredProperty {
-            name: p.name,
+            name: p.name.token,
             type_: self.type_(p.type_),
         }
     }
@@ -404,20 +426,26 @@ impl Ast2HLIR {
 
     pub fn member_function(&self, member_function: MethodSyntax) -> TypedMemberFunction {
         let MethodSyntax {
+            fun_keyword: _,
             name,
-            args,
             type_params,
-            body,
+            args,
             return_type,
+            type_constraints,
+            body,
         } = member_function;
 
         let rt = return_type.map(|r| self.type_(r));
         let fb = body.map(|b| self.fun_body(b));
         TypedMemberFunction {
-            name: name,
-            args: args.into_iter().map(|a| self.arg_def(a)).collect(),
-            type_params: type_params
-                .map(|tps| tps.into_iter().map(|p| self.type_param(p)).collect()),
+            name: name.token,
+            arg_defs: args.into_iter().map(|a| self.arg_def(a)).collect(),
+            type_params: type_params.map(|tps| {
+                tps.elements
+                    .into_iter()
+                    .map(|p| self.type_param(p.element))
+                    .collect()
+            }),
             body: fb,
             return_type: rt,
         }
@@ -493,7 +521,7 @@ impl Ast2HLIR {
             } else {
                 TypedPackage::Raw(Package::from(name_space))
             },
-            name,
+            name: name.token,
             type_: None,
         }
     }
@@ -576,7 +604,11 @@ impl Ast2HLIR {
 
     pub fn array_syntax(&self, a: ArraySyntax) -> TypedArray {
         TypedArray {
-            elements: a.values.into_iter().map(|e| self.expr(e.element)).collect(),
+            elements: a
+                .elements
+                .into_iter()
+                .map(|e| self.expr(e.element))
+                .collect(),
             type_: None,
         }
     }
@@ -674,7 +706,7 @@ impl Ast2HLIR {
     pub fn type_cast(&self, t: TypeCastSyntax) -> TypedTypeCast {
         TypedTypeCast {
             target: Box::new(self.expr(*t.target)),
-            is_safe: t.operator.ends_with('?'),
+            is_safe: t.operator.token.ends_with('?'),
             type_: Some(self.type_(t.type_)),
         }
     }

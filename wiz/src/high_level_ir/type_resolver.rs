@@ -499,8 +499,8 @@ impl TypeResolver {
         self.context.push_local_stack();
         let result = Result::Ok(TypedMemberFunction {
             name: mf.name,
-            args: mf
-                .args
+            arg_defs: mf
+                .arg_defs
                 .into_iter()
                 .map(|a| {
                     let a = self.typed_arg_def(a)?;

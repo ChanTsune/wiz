@@ -1,5 +1,5 @@
 use crate::syntax::block::BlockSyntax;
-use crate::syntax::expr::Expr;
+use crate::syntax::expression::Expr;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum FunBody {
