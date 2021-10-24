@@ -919,7 +919,8 @@ mod tests {
                 StructSyntax {
                     annotations: None,
                     struct_keyword: TokenSyntax::from("struct"),
-                    name: TokenSyntax::from("A").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    name: TokenSyntax::from("A")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     type_params: None,
                     properties: vec![StructPropertySyntax::StoredProperty(StoredPropertySyntax {
                         is_mut: true,
