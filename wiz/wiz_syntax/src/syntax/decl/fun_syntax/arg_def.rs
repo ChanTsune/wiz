@@ -13,14 +13,14 @@ impl Syntax for ArgDef {
     fn with_leading_trivia(self, trivia: Trivia) -> Self {
         match self {
             ArgDef::Value(v) => ArgDef::Value(v.with_leading_trivia(trivia)),
-            ArgDef::Self_(s) => ArgDef::Self_(s.with_leading_trivia(trivia))
+            ArgDef::Self_(s) => ArgDef::Self_(s.with_leading_trivia(trivia)),
         }
     }
 
     fn with_trailing_trivia(self, trivia: Trivia) -> Self {
         match self {
             ArgDef::Value(v) => ArgDef::Value(v.with_trailing_trivia(trivia)),
-            ArgDef::Self_(s) => ArgDef::Self_(s.with_trailing_trivia(trivia))
+            ArgDef::Self_(s) => ArgDef::Self_(s.with_trailing_trivia(trivia)),
         }
     }
 }
@@ -35,20 +35,16 @@ pub struct ValueArgDef {
 impl Syntax for ValueArgDef {
     fn with_leading_trivia(self, trivia: Trivia) -> Self {
         match self.label {
-            Some(label) => {
-                Self {
-                    label: Some(label.with_leading_trivia(trivia)),
-                    name: self.name,
-                    type_name: self.type_name
-                }
-            }
-            None => {
-                Self {
-                    label: None,
-                    name: self.name.with_leading_trivia(trivia),
-                    type_name: self.type_name
-                }
-            }
+            Some(label) => Self {
+                label: Some(label.with_leading_trivia(trivia)),
+                name: self.name,
+                type_name: self.type_name,
+            },
+            None => Self {
+                label: None,
+                name: self.name.with_leading_trivia(trivia),
+                type_name: self.type_name,
+            },
         }
     }
 
@@ -56,7 +52,7 @@ impl Syntax for ValueArgDef {
         Self {
             label: self.label,
             name: self.name,
-            type_name: self.type_name.with_trailing_trivia(trivia)
+            type_name: self.type_name.with_trailing_trivia(trivia),
         }
     }
 }
@@ -70,25 +66,21 @@ pub struct SelfArgDefSyntax {
 impl Syntax for SelfArgDefSyntax {
     fn with_leading_trivia(self, trivia: Trivia) -> Self {
         match self.reference {
-            None => {
-                Self {
-                    reference: None,
-                    self_: self.self_.with_leading_trivia(trivia)
-                }
-            }
-            Some(reference) => {
-                Self {
-                    reference: Some(reference.with_leading_trivia(trivia)),
-                    self_: self.self_
-                }
-            }
+            None => Self {
+                reference: None,
+                self_: self.self_.with_leading_trivia(trivia),
+            },
+            Some(reference) => Self {
+                reference: Some(reference.with_leading_trivia(trivia)),
+                self_: self.self_,
+            },
         }
     }
 
     fn with_trailing_trivia(self, trivia: Trivia) -> Self {
         Self {
             reference: self.reference,
-            self_: self.self_.with_trailing_trivia(trivia)
+            self_: self.self_.with_trailing_trivia(trivia),
         }
     }
 }
