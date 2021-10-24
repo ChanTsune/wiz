@@ -940,8 +940,8 @@ where
     <I as InputTakeAtPosition>::Item: AsChar,
 {
     enum P {
-        IN { op: String, expr: Expr },
-        IS { op: String, type_: TypeName },
+        IN { op: TokenSyntax, expr: Expr },
+        IS { op: TokenSyntax, type_: TypeName },
     }
     map(
         tuple((
@@ -949,16 +949,16 @@ where
             many0(alt((
                 map(
                     tuple((whitespace1, in_operator, whitespace1, elvis_expr)),
-                    |(_, op, _, expr): (_, I, _, _)| P::IN {
-                        op: op.to_string(),
-                        expr,
+                    |(ows, op, ews, expr): (_, I, _, _)| P::IN {
+                        op: TokenSyntax::from(op).with_leading_trivia(ows),
+                        expr: expr.with_leading_trivia(ews),
                     },
                 ),
                 map(
                     tuple((whitespace1, is_operator, whitespace1, type_)),
-                    |(_, op, _, type_): (_, I, _, _)| P::IS {
-                        op: op.to_string(),
-                        type_,
+                    |(ows, op, ews, type_): (_, I, _, _)| P::IS {
+                        op: TokenSyntax::from(op).with_leading_trivia(ows),
+                        type_: type_.with_leading_trivia(ews),
                     },
                 ),
             ))),
@@ -968,6 +968,7 @@ where
             for p in v {
                 match p {
                     P::IS { op, type_ } => {
+                        // TODO introduce type check syntax
                         bin_op = Expr::TypeCast(TypeCastSyntax {
                             target: Box::new(bin_op),
                             operator: op,
@@ -977,7 +978,7 @@ where
                     P::IN { op, expr } => {
                         bin_op = Expr::BinOp(BinaryOperationSyntax {
                             left: Box::new(bin_op),
-                            operator: TokenSyntax::from(op),
+                            operator: op,
                             right: Box::new(expr),
                         })
                     }
@@ -1188,7 +1189,7 @@ where
             for (_, op, _, typ) in v {
                 bin_op = Expr::TypeCast(TypeCastSyntax {
                     target: Box::new(bin_op),
-                    operator: op.to_string(),
+                    operator: TokenSyntax::from(op),
                     type_: typ,
                 })
             }

@@ -1,15 +1,17 @@
 mod binary_operation_syntax;
 mod name_syntax;
+mod type_cast_syntax;
 
 pub use self::binary_operation_syntax::BinaryOperationSyntax;
 pub use self::name_syntax::NameExprSyntax;
+pub use self::type_cast_syntax::TypeCastSyntax;
 
 use crate::syntax::block::BlockSyntax;
 use crate::syntax::literal::LiteralSyntax;
 use crate::syntax::stmt::Stmt;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
-use crate::syntax::type_name::{TypeArgumentListSyntax, TypeName};
+use crate::syntax::type_name::{TypeArgumentListSyntax};
 use crate::syntax::Syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -227,11 +229,4 @@ pub struct IfExprSyntax {
 pub struct ReturnSyntax {
     pub return_keyword: TokenSyntax,
     pub value: Option<Box<Expr>>,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct TypeCastSyntax {
-    pub target: Box<Expr>,
-    pub operator: String,
-    pub type_: TypeName,
 }

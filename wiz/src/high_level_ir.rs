@@ -696,7 +696,7 @@ impl Ast2HLIR {
     pub fn type_cast(&self, t: TypeCastSyntax) -> TypedTypeCast {
         TypedTypeCast {
             target: Box::new(self.expr(*t.target)),
-            is_safe: t.operator.ends_with('?'),
+            is_safe: t.operator.token.ends_with('?'),
             type_: Some(self.type_(t.type_)),
         }
     }
