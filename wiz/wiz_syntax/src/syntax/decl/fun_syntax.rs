@@ -3,7 +3,7 @@ use crate::syntax::decl::fun_syntax::arg_def::ArgDef;
 use crate::syntax::decl::fun_syntax::body_def::FunBody;
 use crate::syntax::modifier::ModifiersSyntax;
 use crate::syntax::token::TokenSyntax;
-use crate::syntax::type_name::{TypeName, TypeParameterListSyntax};
+use crate::syntax::type_name::{TypeConstraintsSyntax, TypeName, TypeParameterListSyntax};
 
 pub mod arg_def;
 pub mod body_def;
@@ -17,6 +17,7 @@ pub struct FunSyntax {
     pub type_params: Option<TypeParameterListSyntax>,
     pub arg_defs: Vec<ArgDef>,
     pub return_type: Option<TypeName>,
+    pub type_constraints: Option<TypeConstraintsSyntax>,
     pub body: Option<FunBody>,
 }
 

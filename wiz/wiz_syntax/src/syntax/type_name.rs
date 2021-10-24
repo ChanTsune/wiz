@@ -170,3 +170,12 @@ impl Syntax for TypeConstraintSyntax {
 
 pub type TypeArgumentListSyntax = ListSyntax<TypeName>;
 pub type TypeArgumentElementSyntax = ElementSyntax<TypeName>;
+
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct TypeConstraintsSyntax {
+    pub where_keyword: TokenSyntax,
+    pub type_constraints: Vec<TypeConstraintElementSyntax>,
+}
+
+pub type TypeConstraintElementSyntax = ElementSyntax<TypeParam>;
