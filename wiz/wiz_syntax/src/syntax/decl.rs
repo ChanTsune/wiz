@@ -48,27 +48,59 @@ impl Annotatable for Decl {
 impl Syntax for Decl {
     fn with_leading_trivia(self, trivia: Trivia) -> Self {
         match self {
-            Decl::Var(_) => {todo!()}
-            Decl::Fun(_) => {todo!()}
-            Decl::Struct(_) => {todo!()}
-            Decl::ExternC(_) => {todo!()}
-            Decl::Enum { .. } => {todo!()}
-            Decl::Protocol { .. } => {todo!()}
-            Decl::Extension { .. } => {todo!()}
-            Decl::Use(_) => {todo!()}
+            Decl::Var(_) => {
+                todo!()
+            }
+            Decl::Fun(_) => {
+                todo!()
+            }
+            Decl::Struct(_) => {
+                todo!()
+            }
+            Decl::ExternC(_) => {
+                todo!()
+            }
+            Decl::Enum { .. } => {
+                todo!()
+            }
+            Decl::Protocol { .. } => {
+                todo!()
+            }
+            Decl::Extension { .. } => {
+                todo!()
+            }
+            Decl::Use(_) => {
+                todo!()
+            }
         }
     }
 
     fn with_trailing_trivia(self, trivia: Trivia) -> Self {
         match self {
-            Decl::Var(_) => {todo!()}
-            Decl::Fun(_) => {todo!()}
-            Decl::Struct(_) => {todo!()}
-            Decl::ExternC(_) => {todo!()}
-            Decl::Enum { .. } => {todo!()}
-            Decl::Protocol { .. } => {todo!()}
-            Decl::Extension { .. } => {todo!()}
-            Decl::Use(_) => {todo!()}
+            Decl::Var(_) => {
+                todo!()
+            }
+            Decl::Fun(_) => {
+                todo!()
+            }
+            Decl::Struct(_) => {
+                todo!()
+            }
+            Decl::ExternC(_) => {
+                todo!()
+            }
+            Decl::Enum { .. } => {
+                todo!()
+            }
+            Decl::Protocol { .. } => {
+                todo!()
+            }
+            Decl::Extension { .. } => {
+                todo!()
+            }
+            Decl::Use(_) => {
+                todo!()
+            }
         }
     }
 }

@@ -16,19 +16,27 @@ pub enum Stmt {
 impl Syntax for Stmt {
     fn with_leading_trivia(self, trivia: Trivia) -> Self {
         match self {
-            Stmt::Decl(d) => {Stmt::Decl(d.with_leading_trivia(trivia))}
-            Stmt::Expr(e) => {Stmt::Expr(e.with_leading_trivia(trivia))}
-            Stmt::Assignment(_) => {todo!()}
-            Stmt::Loop(_) => {todo!()}
+            Stmt::Decl(d) => Stmt::Decl(d.with_leading_trivia(trivia)),
+            Stmt::Expr(e) => Stmt::Expr(e.with_leading_trivia(trivia)),
+            Stmt::Assignment(_) => {
+                todo!()
+            }
+            Stmt::Loop(_) => {
+                todo!()
+            }
         }
     }
 
     fn with_trailing_trivia(self, trivia: Trivia) -> Self {
         match self {
-            Stmt::Decl(d) => {Stmt::Decl(d.with_trailing_trivia(trivia))}
-            Stmt::Expr(e) => {Stmt::Expr(e.with_trailing_trivia(trivia))}
-            Stmt::Assignment(_) => {todo!()}
-            Stmt::Loop(_) => {todo!()}
+            Stmt::Decl(d) => Stmt::Decl(d.with_trailing_trivia(trivia)),
+            Stmt::Expr(e) => Stmt::Expr(e.with_trailing_trivia(trivia)),
+            Stmt::Assignment(_) => {
+                todo!()
+            }
+            Stmt::Loop(_) => {
+                todo!()
+            }
         }
     }
 }
