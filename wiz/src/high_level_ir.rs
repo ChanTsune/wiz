@@ -422,6 +422,7 @@ impl Ast2HLIR {
 
     pub fn member_function(&self, member_function: MethodSyntax) -> TypedMemberFunction {
         let MethodSyntax {
+            fun_keyword: _,
             name,
             args,
             type_params,
