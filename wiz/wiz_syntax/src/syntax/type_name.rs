@@ -181,7 +181,7 @@ impl Syntax for TypeConstraintsSyntax {
     fn with_leading_trivia(self, trivia: Trivia) -> Self {
         Self {
             where_keyword: self.where_keyword.with_leading_trivia(trivia),
-            type_constraints: self.type_constraints
+            type_constraints: self.type_constraints,
         }
     }
 
@@ -189,15 +189,15 @@ impl Syntax for TypeConstraintsSyntax {
         if self.type_constraints.is_empty() {
             Self {
                 where_keyword: self.where_keyword.with_trailing_trivia(trivia),
-                type_constraints: self.type_constraints
+                type_constraints: self.type_constraints,
             }
         } else {
             let mut type_constraints = self.type_constraints.clone();
-            let t =  type_constraints.pop().unwrap().with_trailing_trivia(trivia);
+            let t = type_constraints.pop().unwrap().with_trailing_trivia(trivia);
             type_constraints.push(t);
             Self {
                 where_keyword: self.where_keyword,
-                type_constraints
+                type_constraints,
             }
         }
     }
