@@ -84,8 +84,8 @@ impl Syntax for Expr {
             Expr::Return(_) => {
                 todo!()
             }
-            Expr::TypeCast(_) => {
-                todo!()
+            Expr::TypeCast(t) => {
+                Expr::TypeCast(t.with_leading_trivia(trivia))
             }
         }
     }
@@ -131,8 +131,8 @@ impl Syntax for Expr {
             Expr::Return(_) => {
                 todo!()
             }
-            Expr::TypeCast(_) => {
-                todo!()
+            Expr::TypeCast(t) => {
+                Expr::TypeCast(t.with_trailing_trivia(trivia))
             }
         }
     }
