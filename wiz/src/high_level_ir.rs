@@ -253,7 +253,7 @@ impl Ast2HLIR {
                 name: stn.name.token,
                 type_args: stn
                     .type_args
-                    .map(|v| v.into_iter().map(|t| self.type_(t)).collect()),
+                    .map(|v| v.elements.into_iter().map(|t| self.type_(t.element)).collect()),
             }),
             TypeName::Decorated(d) => {
                 if d.decoration.token == "&" {
@@ -294,7 +294,7 @@ impl Ast2HLIR {
                     name: type_name.name.token,
                     type_args: type_name
                         .type_args
-                        .map(|v| v.into_iter().map(|t| self.type_(t)).collect()),
+                        .map(|v| v.elements.into_iter().map(|t| self.type_(t.element)).collect()),
                 })
             }
         }
