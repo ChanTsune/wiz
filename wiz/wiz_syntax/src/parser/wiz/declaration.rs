@@ -396,11 +396,11 @@ where
             whitespace0,
             opt(function_body),
         )),
-        |(f, _, name, type_params, args, _, return_type, _, t_constraints, _, body)| {
+        |(f, nws, name, type_params, args, _, return_type, _, t_constraints, _, body)| {
             StructPropertySyntax::Method(MethodSyntax {
                 // modifiers: vec![],
                 fun_keyword: TokenSyntax::from(f),
-                name,
+                name: TokenSyntax::from(name).with_leading_trivia(nws),
                 type_params,
                 args,
                 return_type: return_type.map(|(_, _, t)| t),
@@ -945,7 +945,7 @@ mod tests {
                 StructPropertySyntax::Method(MethodSyntax {
                     // modifiers: vec![],
                     fun_keyword: TokenSyntax::from("fun"),
-                    name: "function".to_string(),
+                    name: TokenSyntax::from("function").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     type_params: None,
                     args: vec![],
                     return_type: None,

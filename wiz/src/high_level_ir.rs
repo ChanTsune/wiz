@@ -433,7 +433,7 @@ impl Ast2HLIR {
         let rt = return_type.map(|r| self.type_(r));
         let fb = body.map(|b| self.fun_body(b));
         TypedMemberFunction {
-            name,
+            name: name.token,
             arg_defs: args.into_iter().map(|a| self.arg_def(a)).collect(),
             type_params: type_params.map(|tps| {
                 tps.elements
