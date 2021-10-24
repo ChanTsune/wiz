@@ -22,7 +22,9 @@ use crate::syntax::decl::{
 };
 use crate::syntax::expression::Expr;
 use crate::syntax::token::TokenSyntax;
-use crate::syntax::type_name::{TypeConstraintElementSyntax, TypeConstraintsSyntax, TypeConstraintSyntax, TypeName, TypeParam};
+use crate::syntax::type_name::{
+    TypeConstraintElementSyntax, TypeConstraintSyntax, TypeConstraintsSyntax, TypeName, TypeParam,
+};
 use crate::syntax::Syntax;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
@@ -575,16 +577,17 @@ where
             opt(type_constraint),
         )),
         |(where_keyword, ws, t, lws, ts)| {
-            let mut type_constraints:Vec<_> = t.into_iter().map(|(lws,ta, rws, c)|{
-                TypeConstraintElementSyntax {
+            let mut type_constraints: Vec<_> = t
+                .into_iter()
+                .map(|(lws, ta, rws, c)| TypeConstraintElementSyntax {
                     element: ta.with_leading_trivia(lws),
-                    trailing_comma: Some(TokenSyntax::from(c).with_leading_trivia(rws))
-                }
-            }).collect();
+                    trailing_comma: Some(TokenSyntax::from(c).with_leading_trivia(rws)),
+                })
+                .collect();
             if let Some(ts) = ts {
                 type_constraints.push(TypeConstraintElementSyntax {
                     element: ts.with_leading_trivia(lws),
-                    trailing_comma: None
+                    trailing_comma: None,
                 })
             };
             if !type_constraints.is_empty() {
@@ -593,7 +596,7 @@ where
             };
             TypeConstraintsSyntax {
                 where_keyword: TokenSyntax::from(where_keyword),
-                type_constraints
+                type_constraints,
             }
         },
     )(s)
@@ -854,7 +857,10 @@ mod tests {
     use crate::syntax::stmt::Stmt;
     use crate::syntax::token::TokenSyntax;
     use crate::syntax::trivia::{Trivia, TriviaPiece};
-    use crate::syntax::type_name::{SimpleTypeName, TypeConstraintElementSyntax, TypeConstraintsSyntax, TypeConstraintSyntax, TypeName, TypeParam};
+    use crate::syntax::type_name::{
+        SimpleTypeName, TypeConstraintElementSyntax, TypeConstraintSyntax, TypeConstraintsSyntax,
+        TypeName, TypeParam,
+    };
     use crate::syntax::Syntax;
 
     #[test]
@@ -1254,7 +1260,8 @@ mod tests {
                     where_keyword: TokenSyntax::from("where"),
                     type_constraints: vec![TypeConstraintElementSyntax {
                         element: TypeParam {
-                            name: TokenSyntax::from("T").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                            name: TokenSyntax::from("T")
+                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                             type_constraint: Some(TypeConstraintSyntax {
                                 sep: TokenSyntax::from(":")
                                     .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
@@ -1278,21 +1285,23 @@ mod tests {
                     type_constraints: vec![
                         TypeConstraintElementSyntax {
                             element: TypeParam {
-                            name: TokenSyntax::from("T").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                            type_constraint: Some(TypeConstraintSyntax {
-                                sep: TokenSyntax::from(":")
-                                    .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                                constraint: TypeName::Simple(SimpleTypeName {
-                                    name: TokenSyntax::from("Printable"),
-                                    type_args: None
+                                name: TokenSyntax::from("T")
+                                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                                type_constraint: Some(TypeConstraintSyntax {
+                                    sep: TokenSyntax::from(":")
+                                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                                    constraint: TypeName::Simple(SimpleTypeName {
+                                        name: TokenSyntax::from("Printable"),
+                                        type_args: None
+                                    })
                                 })
-                            })
-                        },
+                            },
                             trailing_comma: Some(TokenSyntax::from(","))
                         },
                         TypeConstraintElementSyntax {
                             element: TypeParam {
-                                name: TokenSyntax::from("T").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                                name: TokenSyntax::from("T")
+                                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                                 type_constraint: Some(TypeConstraintSyntax {
                                     sep: TokenSyntax::from(":")
                                         .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
@@ -1301,8 +1310,7 @@ mod tests {
                                         type_args: None
                                     })
                                 })
-                            }
-                            ,
+                            },
                             trailing_comma: None
                         }
                     ]
@@ -1318,7 +1326,8 @@ mod tests {
                     type_constraints: vec![
                         TypeConstraintElementSyntax {
                             element: TypeParam {
-                                name: TokenSyntax::from("T").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                                name: TokenSyntax::from("T")
+                                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                                 type_constraint: Some(TypeConstraintSyntax {
                                     sep: TokenSyntax::from(":")
                                         .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
@@ -1332,7 +1341,8 @@ mod tests {
                         },
                         TypeConstraintElementSyntax {
                             element: TypeParam {
-                                name: TokenSyntax::from("T").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                                name: TokenSyntax::from("T")
+                                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                                 type_constraint: Some(TypeConstraintSyntax {
                                     sep: TokenSyntax::from(":")
                                         .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
@@ -1341,8 +1351,7 @@ mod tests {
                                         type_args: None
                                     })
                                 })
-                            }
-                            ,
+                            },
                             trailing_comma: Some(TokenSyntax::from(","))
                         }
                     ]
