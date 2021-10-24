@@ -416,7 +416,7 @@ where
                         operator: TokenSyntax::from(kind),
                     }))
                 }
-                PostfixSuffix::TypeArgumentSuffix { .. } => e,
+                PostfixSuffix::TypeArgumentSuffix(_) => e,
                 PostfixSuffix::CallSuffix {
                     args,
                     tailing_lambda,
@@ -432,8 +432,8 @@ where
                 PostfixSuffix::NavigationSuffix { navigation, name } => {
                     Expr::Member(MemberSyntax {
                         target: Box::new(e),
-                        name: TokenSyntax::from(name),
-                        navigation_operator: TokenSyntax::from(navigation),
+                        name,
+                        navigation_operator:navigation,
                     })
                 }
             }
@@ -516,8 +516,8 @@ where
     map(
         tuple((member_access_operator, identifier)),
         |(op, name): (I, _)| PostfixSuffix::NavigationSuffix {
-            navigation: op.to_string(),
-            name,
+            navigation: TokenSyntax::from(op),
+            name: TokenSyntax::from(name),
         },
     )(s)
 }

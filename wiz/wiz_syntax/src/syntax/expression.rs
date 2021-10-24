@@ -194,8 +194,8 @@ pub enum PostfixSuffix {
         indexes: Vec<Expr>,
     },
     NavigationSuffix {
-        navigation: String,
-        name: String,
+        navigation: TokenSyntax,
+        name: TokenSyntax,
     },
 }
 
