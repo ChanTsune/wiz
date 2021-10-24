@@ -424,10 +424,11 @@ impl Ast2HLIR {
         let MethodSyntax {
             fun_keyword: _,
             name,
-            args,
             type_params,
-            body,
+            args,
             return_type,
+            type_constraints,
+            body,
         } = member_function;
 
         let rt = return_type.map(|r| self.type_(r));

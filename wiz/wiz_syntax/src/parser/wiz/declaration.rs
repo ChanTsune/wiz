@@ -398,14 +398,15 @@ where
             whitespace0,
             opt(function_body),
         )),
-        |(f, nws, name, type_params, args, _, return_type, _, t_constraints, _, body)| {
+        |(f, nws, name, type_params, args, _, return_type, _, type_constraints, _, body)| {
             StructPropertySyntax::Method(MethodSyntax {
                 // modifiers: vec![],
                 fun_keyword: TokenSyntax::from(f),
                 name: TokenSyntax::from(name).with_leading_trivia(nws),
-                type_params,
                 args,
+                type_params,
                 return_type: return_type.map(|(_, _, t)| t),
+                type_constraints,
                 body,
             })
         },
@@ -970,6 +971,7 @@ mod tests {
                     type_params: None,
                     args: vec![],
                     return_type: None,
+                    type_constraints: None,
                     body: Some(FunBody::Block {
                         block: BlockSyntax {
                             open: TokenSyntax::from("{"),

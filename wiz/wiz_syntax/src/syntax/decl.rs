@@ -6,7 +6,7 @@ use crate::syntax::decl::fun_syntax::FunSyntax;
 use crate::syntax::decl::var_syntax::VarSyntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
-use crate::syntax::type_name::{TypeName, TypeParameterListSyntax};
+use crate::syntax::type_name::{TypeConstraintsSyntax, TypeName, TypeParameterListSyntax};
 use crate::syntax::Syntax;
 
 pub mod fun_syntax;
@@ -104,10 +104,11 @@ pub struct DeinitializerSyntax {
 pub struct MethodSyntax {
     pub fun_keyword: TokenSyntax,
     pub name: TokenSyntax,
-    pub args: Vec<ArgDef>,
     pub type_params: Option<TypeParameterListSyntax>,
-    pub body: Option<FunBody>,
+    pub args: Vec<ArgDef>,
     pub return_type: Option<TypeName>,
+    pub type_constraints: Option<TypeConstraintsSyntax>,
+    pub body: Option<FunBody>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
