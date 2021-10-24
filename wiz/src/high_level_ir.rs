@@ -37,7 +37,9 @@ use wiz_syntax::syntax::expression::{
 };
 use wiz_syntax::syntax::file::{FileSyntax, SourceSet, WizFile};
 use wiz_syntax::syntax::literal::LiteralSyntax;
-use wiz_syntax::syntax::statement::{AssignmentStmt, ForLoopSyntax, LoopStmt, Stmt, WhileLoopSyntax};
+use wiz_syntax::syntax::statement::{
+    AssignmentStmt, ForLoopSyntax, LoopStmt, Stmt, WhileLoopSyntax,
+};
 use wiz_syntax::syntax::token::TokenSyntax;
 use wiz_syntax::syntax::type_name::{NameSpacedTypeName, TypeName, TypeParam};
 
@@ -145,11 +147,11 @@ impl Ast2HLIR {
             LoopStmt::For(ForLoopSyntax {
                 for_keyword: _,
                 values,
-                in_keyword:_,
+                in_keyword: _,
                 iterator,
                 block,
             }) => TypedLoopStmt::For(TypedForStmt {
-                values: values.into_iter().map(|i|i.token).collect(),
+                values: values.into_iter().map(|i| i.token).collect(),
                 iterator: self.expr(iterator),
                 block: self.block(block),
             }),

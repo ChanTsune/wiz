@@ -5,7 +5,10 @@ use crate::parser::wiz::lexical_structure::{identifier, whitespace0, whitespace1
 use crate::parser::wiz::operators::{assignment_and_operator, assignment_operator};
 use crate::syntax::expression::{Expr, NameExprSyntax};
 use crate::syntax::file::FileSyntax;
-use crate::syntax::statement::{AssignmentAndOperatorSyntax, AssignmentStmt, AssignmentSyntax, ForLoopSyntax, LoopStmt, Stmt, WhileLoopSyntax};
+use crate::syntax::statement::{
+    AssignmentAndOperatorSyntax, AssignmentStmt, AssignmentSyntax, ForLoopSyntax, LoopStmt, Stmt,
+    WhileLoopSyntax,
+};
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::Syntax;
 use nom::branch::alt;
@@ -328,13 +331,15 @@ where
             whitespace1,
             block,
         )),
-        |(for_keyword, _, value, _, in_keyword, _, iterator, _, block)| LoopStmt::For(ForLoopSyntax {
-            for_keyword: TokenSyntax::from(for_keyword),
-            values: vec![TokenSyntax::from(value)],
-            in_keyword: TokenSyntax::from(in_keyword),
-            iterator,
-            block,
-        }),
+        |(for_keyword, _, value, _, in_keyword, _, iterator, _, block)| {
+            LoopStmt::For(ForLoopSyntax {
+                for_keyword: TokenSyntax::from(for_keyword),
+                values: vec![TokenSyntax::from(value)],
+                in_keyword: TokenSyntax::from(in_keyword),
+                iterator,
+                block,
+            })
+        },
     )(s)
 }
 
