@@ -11,7 +11,7 @@ use crate::syntax::literal::LiteralSyntax;
 use crate::syntax::stmt::Stmt;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
-use crate::syntax::type_name::{TypeArgumentListSyntax};
+use crate::syntax::type_name::TypeArgumentListSyntax;
 use crate::syntax::Syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]

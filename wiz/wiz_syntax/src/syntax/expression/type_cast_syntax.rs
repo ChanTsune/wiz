@@ -1,8 +1,8 @@
 use crate::syntax::expression::Expr;
-use crate::syntax::Syntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::type_name::TypeName;
+use crate::syntax::Syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypeCastSyntax {
@@ -16,7 +16,7 @@ impl Syntax for TypeCastSyntax {
         Self {
             target: Box::new(self.target.with_leading_trivia(trivia)),
             operator: self.operator,
-            type_: self.type_
+            type_: self.type_,
         }
     }
 
@@ -24,7 +24,7 @@ impl Syntax for TypeCastSyntax {
         Self {
             target: self.target,
             operator: self.operator,
-            type_: self.type_.with_trailing_trivia(trivia)
+            type_: self.type_.with_trailing_trivia(trivia),
         }
     }
 }
