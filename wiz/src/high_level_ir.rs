@@ -408,7 +408,7 @@ impl Ast2HLIR {
 
     pub fn stored_property_syntax(&self, p: StoredPropertySyntax) -> TypedStoredProperty {
         TypedStoredProperty {
-            name: p.name,
+            name: p.name.token,
             type_: self.type_(p.type_),
         }
     }

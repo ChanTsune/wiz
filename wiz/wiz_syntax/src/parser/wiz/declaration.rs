@@ -240,9 +240,9 @@ where
 {
     map(
         tuple((var_keyword, stored_property_body)),
-        |(_, (name, _, typ))| StoredPropertySyntax {
-            is_mut: true,
-            name,
+        |(var, (name, _, typ))| StoredPropertySyntax {
+            mutability_keyword: TokenSyntax::from(var),
+            name: TokenSyntax::from(name),
             type_: typ,
         },
     )(s)
@@ -264,9 +264,9 @@ where
 {
     map(
         tuple((val_keyword, stored_property_body)),
-        |(_, (name, _, typ))| StoredPropertySyntax {
-            is_mut: false,
-            name,
+        |(val, (name, _, typ))| StoredPropertySyntax {
+            mutability_keyword: TokenSyntax::from(val),
+            name: TokenSyntax::from(name),
             type_: typ,
         },
     )(s)
@@ -855,16 +855,16 @@ mod tests {
                 "",
                 vec![
                     StructPropertySyntax::StoredProperty(StoredPropertySyntax {
-                        is_mut: false,
-                        name: "a".to_string(),
+                        mutability_keyword: TokenSyntax::from("val"),
+                        name: TokenSyntax::from("a"),
                         type_: TypeName::Simple(SimpleTypeName {
                             name: TokenSyntax::from("Int64"),
                             type_args: None
                         })
                     }),
                     StructPropertySyntax::StoredProperty(StoredPropertySyntax {
-                        is_mut: false,
-                        name: "b".to_string(),
+                        mutability_keyword: TokenSyntax::from("val"),
+                        name: TokenSyntax::from("b"),
                         type_: TypeName::Simple(SimpleTypeName {
                             name: TokenSyntax::from("Int64"),
                             type_args: None
@@ -882,8 +882,8 @@ mod tests {
             Ok((
                 "",
                 StructPropertySyntax::StoredProperty(StoredPropertySyntax {
-                    is_mut: false,
-                    name: "a".to_string(),
+                    mutability_keyword: TokenSyntax::from("val"),
+                    name: TokenSyntax::from("a"),
                     type_: TypeName::Simple(SimpleTypeName {
                         name: TokenSyntax::from("Int64"),
                         type_args: None
@@ -896,8 +896,8 @@ mod tests {
             Ok((
                 "",
                 StructPropertySyntax::StoredProperty(StoredPropertySyntax {
-                    is_mut: true,
-                    name: "a".to_string(),
+                    mutability_keyword: TokenSyntax::from("var"),
+                    name: TokenSyntax::from("a"),
                     type_: TypeName::Simple(SimpleTypeName {
                         name: TokenSyntax::from("Int64"),
                         type_args: None
@@ -924,8 +924,8 @@ mod tests {
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     type_params: None,
                     properties: vec![StructPropertySyntax::StoredProperty(StoredPropertySyntax {
-                        is_mut: true,
-                        name: "a".to_string(),
+                        mutability_keyword: TokenSyntax::from("var"),
+                        name: TokenSyntax::from("a"),
                         type_: TypeName::Simple(SimpleTypeName {
                             name: TokenSyntax::from("String"),
                             type_args: None

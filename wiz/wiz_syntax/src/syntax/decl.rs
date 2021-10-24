@@ -82,8 +82,8 @@ pub enum StructPropertySyntax {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct StoredPropertySyntax {
-    pub is_mut: bool,
-    pub name: String,
+    pub mutability_keyword: TokenSyntax,
+    pub name: TokenSyntax,
     pub type_: TypeName,
 }
 
