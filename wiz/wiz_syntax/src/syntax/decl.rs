@@ -58,6 +58,7 @@ impl Syntax for Decl {
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct StructSyntax {
     pub annotations: Option<AnnotationsSyntax>,
+    pub struct_keyword: TokenSyntax,
     pub name: String,
     pub type_params: Option<TypeParameterListSyntax>,
     pub properties: Vec<StructPropertySyntax>,

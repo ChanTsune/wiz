@@ -121,15 +121,17 @@ where
                 char('}'),
             ))),
         )),
-        |(_, _, name, _, params, body)| match body {
+        |(struct_keyword, _, name, _, params, body)| match body {
             Some((_, _, _, properties, _, _)) => StructSyntax {
                 annotations: None,
+                struct_keyword: TokenSyntax::from(struct_keyword),
                 name,
                 type_params: params,
                 properties,
             },
             None => StructSyntax {
                 annotations: None,
+                struct_keyword: TokenSyntax::from(struct_keyword),
                 name,
                 type_params: params,
                 properties: vec![],
@@ -916,6 +918,7 @@ mod tests {
                 "",
                 StructSyntax {
                     annotations: None,
+                    struct_keyword: TokenSyntax::from("struct"),
                     name: "A".to_string(),
                     type_params: None,
                     properties: vec![StructPropertySyntax::StoredProperty(StoredPropertySyntax {
