@@ -598,7 +598,11 @@ impl Ast2HLIR {
 
     pub fn array_syntax(&self, a: ArraySyntax) -> TypedArray {
         TypedArray {
-            elements: a.elements.into_iter().map(|e| self.expr(e.element)).collect(),
+            elements: a
+                .elements
+                .into_iter()
+                .map(|e| self.expr(e.element))
+                .collect(),
             type_: None,
         }
     }

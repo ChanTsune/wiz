@@ -1,9 +1,9 @@
+mod array_syntax;
 mod binary_operation_syntax;
 mod name_syntax;
 mod type_cast_syntax;
-mod array_syntax;
 
-pub use self::array_syntax::{ArraySyntax, ArrayElementSyntax};
+pub use self::array_syntax::{ArrayElementSyntax, ArraySyntax};
 pub use self::binary_operation_syntax::BinaryOperationSyntax;
 pub use self::name_syntax::NameExprSyntax;
 pub use self::type_cast_syntax::TypeCastSyntax;
@@ -59,9 +59,7 @@ impl Syntax for Expr {
             Expr::Member(_) => {
                 todo!()
             }
-            Expr::Array(a) => {
-                Expr::Array(a.with_leading_trivia(trivia))
-            }
+            Expr::Array(a) => Expr::Array(a.with_leading_trivia(trivia)),
             Expr::Tuple { .. } => {
                 todo!()
             }
@@ -104,9 +102,7 @@ impl Syntax for Expr {
             Expr::Member(_) => {
                 todo!()
             }
-            Expr::Array(a) => {
-                Expr::Array(a.with_trailing_trivia(trivia))
-            }
+            Expr::Array(a) => Expr::Array(a.with_trailing_trivia(trivia)),
             Expr::Tuple { .. } => {
                 todo!()
             }
