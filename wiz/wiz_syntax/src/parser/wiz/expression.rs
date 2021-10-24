@@ -739,9 +739,18 @@ where
                 map(value_arguments, |v| (Option::Some(v), Option::None)),
             )),
         )),
-        |(type_args, (args, tl))| PostfixSuffix::CallSuffix {
-            args: args.unwrap_or_default(),
-            tailing_lambda: tl,
+        |(type_args, (args, tl))| {
+            match type_args {
+                Some(_) => {
+                    todo!("will execute line?")
+                }
+                None => {
+                    PostfixSuffix::CallSuffix {
+                        args: args.unwrap_or_default(),
+                        tailing_lambda: tl,
+                    }
+                }
+            }
         },
     )(s)
 }
