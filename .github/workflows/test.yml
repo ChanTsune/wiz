@@ -36,6 +36,8 @@ jobs:
       - name: run test wiz_syntax
         run: cd wiz/wiz_syntax && cargo test
       - name: run test wizc
-        run: cd wiz && cargo test
+        run: cd wiz/wizc && cargo test
       - name: run wizc compile
-        run: cd wiz && cargo run -- ../helloworld.wiz -o out.ll && clang out.ll
+        run: cd wiz/wizc && cargo run -- ../../helloworld.wiz -o ../../out.ll
+      - name: run llvm-ir compile
+        run: clang out.ll
