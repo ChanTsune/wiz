@@ -945,7 +945,8 @@ mod tests {
                 StructPropertySyntax::Method(MethodSyntax {
                     // modifiers: vec![],
                     fun_keyword: TokenSyntax::from("fun"),
-                    name: TokenSyntax::from("function").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    name: TokenSyntax::from("function")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     type_params: None,
                     args: vec![],
                     return_type: None,
