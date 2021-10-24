@@ -102,6 +102,7 @@ pub struct DeinitializerSyntax {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MethodSyntax {
+    pub fun_keyword: TokenSyntax,
     pub name: String,
     pub args: Vec<ArgDef>,
     pub type_params: Option<TypeParameterListSyntax>,

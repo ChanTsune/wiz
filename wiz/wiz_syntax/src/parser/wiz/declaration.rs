@@ -399,6 +399,7 @@ where
         |(f, _, name, type_params, args, _, return_type, _, t_constraints, _, body)| {
             StructPropertySyntax::Method(MethodSyntax {
                 // modifiers: vec![],
+                fun_keyword: TokenSyntax::from(f),
                 name,
                 type_params,
                 args,
@@ -943,6 +944,7 @@ mod tests {
                 "",
                 StructPropertySyntax::Method(MethodSyntax {
                     // modifiers: vec![],
+                    fun_keyword: TokenSyntax::from("fun"),
                     name: "function".to_string(),
                     type_params: None,
                     args: vec![],
