@@ -10,7 +10,7 @@ pub use self::type_cast_syntax::TypeCastSyntax;
 
 use crate::syntax::block::BlockSyntax;
 use crate::syntax::literal::LiteralSyntax;
-use crate::syntax::stmt::Stmt;
+use crate::syntax::statement::Stmt;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::type_name::TypeArgumentListSyntax;

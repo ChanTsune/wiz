@@ -855,7 +855,7 @@ mod tests {
     };
     use crate::syntax::expression::{BinaryOperationSyntax, Expr, NameExprSyntax};
     use crate::syntax::literal::LiteralSyntax;
-    use crate::syntax::stmt::Stmt;
+    use crate::syntax::statement::Stmt;
     use crate::syntax::token::TokenSyntax;
     use crate::syntax::trivia::{Trivia, TriviaPiece};
     use crate::syntax::type_name::{

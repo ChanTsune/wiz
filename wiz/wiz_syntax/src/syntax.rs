@@ -10,7 +10,7 @@ mod list;
 pub mod literal;
 pub mod modifier;
 pub mod name_space;
-pub mod stmt;
+pub mod statement;
 pub mod token;
 pub mod trivia;
 pub mod type_name;

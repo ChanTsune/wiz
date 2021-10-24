@@ -1,3 +1,7 @@
+mod for_loop_syntax;
+
+pub use self::for_loop_syntax::ForLoopSyntax;
+
 use crate::syntax::block::BlockSyntax;
 use crate::syntax::decl::Decl;
 use crate::syntax::expression::Expr;
@@ -64,11 +68,7 @@ pub struct AssignmentAndOperatorSyntax {
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum LoopStmt {
     While(WhileLoopSyntax),
-    For {
-        values: Vec<String>,
-        iterator: Expr,
-        block: BlockSyntax,
-    },
+    For(ForLoopSyntax),
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]

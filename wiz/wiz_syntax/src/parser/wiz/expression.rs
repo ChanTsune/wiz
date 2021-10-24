@@ -23,7 +23,7 @@ use crate::syntax::expression::{
     TypeCastSyntax, UnaryOperationSyntax,
 };
 use crate::syntax::literal::LiteralSyntax;
-use crate::syntax::stmt::Stmt;
+use crate::syntax::statement::Stmt;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::type_name::TypeName;
@@ -1270,7 +1270,7 @@ mod tests {
     };
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::name_space::NameSpaceSyntax;
-    use crate::syntax::stmt::Stmt;
+    use crate::syntax::statement::Stmt;
     use crate::syntax::token::TokenSyntax;
     use crate::syntax::trivia::{Trivia, TriviaPiece};
     use crate::syntax::Syntax;
