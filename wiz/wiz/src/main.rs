@@ -11,8 +11,24 @@ use std::process::exit;
 
 fn _main() -> Result<(), Box<dyn Error>> {
     let app = App::new("wiz")
-        .subcommand(SubCommand::with_name("new").arg(Arg::with_name("project_name").required(true)))
-        .subcommand(SubCommand::with_name("init"));
+        .subcommand(
+            SubCommand::with_name("new")
+                .arg(Arg::with_name("path").required(true))
+                .arg(
+                    Arg::with_name("quite")
+                        .short("q")
+                        .long("quite")
+                        .help("No output printed to stdout"),
+                ).help("Create a new wiz package at <path>"),
+        )
+        .subcommand(
+            SubCommand::with_name("init").arg(
+                Arg::with_name("quite")
+                    .short("q")
+                    .long("quite")
+                    .help("No output printed to stdout"),
+            ).help("Create a new wiz package in an current directory."),
+        );
     let matches = app.get_matches();
     match matches.subcommand() {
         ("new", Some(option)) => {

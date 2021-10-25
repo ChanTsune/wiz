@@ -11,10 +11,12 @@ pub(crate) fn new_command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn E
     current.push(project_dir);
     create_dir_all(&current)?;
     create_project(&current, project_dir)?;
-    println!(
-        "{} project at {}",
-        Color::Green.bold().paint("Created"),
-        current.display()
-    );
+    if !options.is_present("quite") {
+        println!(
+            "{} project at {}",
+            Color::Green.bold().paint("Created"),
+            current.display()
+        );
+    };
     Ok(())
 }

@@ -8,10 +8,12 @@ pub(crate) fn init_command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn 
     let current = current_dir()?;
     let project_name = current.iter().last();
     create_project(&current, project_name.unwrap().to_str().unwrap())?;
-    println!(
-        "{} project at {}",
-        Color::Green.bold().paint("Created"),
-        current.display()
-    );
+    if !options.is_present("quite") {
+        println!(
+            "{} project at {}",
+            Color::Green.bold().paint("Created"),
+            current.display()
+        );
+    };
     Ok(())
 }
