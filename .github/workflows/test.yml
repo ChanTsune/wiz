@@ -33,6 +33,8 @@ jobs:
         with:
           version: "11.0"
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
+      - name: run test wiz
+        run: cd wiz/wiz && cargo test --release
       - name: run test wiz_syntax
         run: cd wiz/wiz_syntax && cargo test --release
       - name: run test wizc
