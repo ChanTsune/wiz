@@ -19,15 +19,18 @@ fn _main() -> Result<(), Box<dyn Error>> {
                         .short("q")
                         .long("quite")
                         .help("No output printed to stdout"),
-                ).help("Create a new wiz package at <path>"),
+                )
+                .help("Create a new wiz package at <path>"),
         )
         .subcommand(
-            SubCommand::with_name("init").arg(
-                Arg::with_name("quite")
-                    .short("q")
-                    .long("quite")
-                    .help("No output printed to stdout"),
-            ).help("Create a new wiz package in an current directory."),
+            SubCommand::with_name("init")
+                .arg(
+                    Arg::with_name("quite")
+                        .short("q")
+                        .long("quite")
+                        .help("No output printed to stdout"),
+                )
+                .help("Create a new wiz package in an current directory."),
         );
     let matches = app.get_matches();
     match matches.subcommand() {
