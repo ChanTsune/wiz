@@ -25,20 +25,26 @@ pub(crate) fn create_project(path: &PathBuf, project_name: &str) -> Result<(), B
     let mut path = path.clone();
     path.push("Package.wiz");
     let mut package_wiz = BufWriter::new(File::create(&path)?);
-    writeln!(package_wiz, r#"
+    writeln!(
+        package_wiz,
+        r#"
 val package = Package.init(
     name: {:?},
-)"#, project_name)?;
+)"#,
+        project_name
+    )?;
     path.pop();
 
     path.push("src");
     create_dir_all(&path)?;
     path.push("main.wiz");
     let mut main_wiz = BufWriter::new(File::create(&path)?);
-    writeln!(main_wiz,
-             r#"
+    writeln!(
+        main_wiz,
+        r#"
 fun main() {{
     println("Hello world!")
-}}"#)?;
+}}"#
+    )?;
     Ok(())
 }
