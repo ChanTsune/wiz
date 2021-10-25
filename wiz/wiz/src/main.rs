@@ -1,13 +1,13 @@
+mod common;
 mod init;
 mod new;
-mod common;
 
 use crate::init::init_command;
 use crate::new::new_command;
+use ansi_term::Color;
 use clap::{App, Arg, ArgMatches, SubCommand};
 use std::error::Error;
 use std::process::exit;
-use ansi_term::Color;
 
 fn _main() -> Result<(), Box<dyn Error>> {
     let app = App::new("wiz")

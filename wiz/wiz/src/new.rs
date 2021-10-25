@@ -1,9 +1,9 @@
+use crate::common::create_project;
 use ansi_term::Color;
 use clap::ArgMatches;
 use std::env::current_dir;
 use std::error::Error;
 use std::fs::create_dir_all;
-use crate::common::create_project;
 
 pub(crate) fn new_command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn Error>> {
     let mut current = current_dir()?;

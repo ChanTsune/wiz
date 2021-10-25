@@ -11,13 +11,14 @@ impl Display for WizError {
     }
 }
 
-impl Error for WizError {
-
-}
+impl Error for WizError {}
 
 pub(crate) fn create_project(path: &PathBuf, project_name: &str) -> Result<(), Box<dyn Error>> {
     if !path.read_dir()?.next().is_none() {
-        return Err(Box::new(WizError(format!("`{}` is not empty", path.display()))))
+        return Err(Box::new(WizError(format!(
+            "`{}` is not empty",
+            path.display()
+        ))));
     };
     Ok(())
 }
