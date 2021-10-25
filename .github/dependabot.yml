@@ -10,6 +10,14 @@ updates:
     schedule:
       interval: "daily"
   - package-ecosystem: "cargo"
-    directory: "/wiz/"
+    directory: "/wiz/wiz"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "cargo"
+    directory: "/wiz/wiz_syntax"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "cargo"
+    directory: "/wiz/wizc"
     schedule:
       interval: "daily"
