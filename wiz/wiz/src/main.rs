@@ -14,7 +14,7 @@ fn _main() -> Result<(), Box<dyn Error>> {
     let app = App::new("wiz")
         .settings(&[
             AppSettings::ArgRequiredElseHelp,
-            AppSettings::AllowExternalSubcommands
+            AppSettings::AllowExternalSubcommands,
         ])
         .subcommand(
             SubCommand::with_name("new")
