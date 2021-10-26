@@ -31,7 +31,7 @@ fn _main() -> Result<(), Box<dyn Error>> {
                         .help("No output printed to stdout"),
                 )
                 .help("Create a new wiz package in an current directory."),
-        );
+        ).arg(Arg::with_name("subcommand"));
     let matches = app.get_matches();
     match matches.subcommand() {
         ("new", Some(option)) => {
@@ -40,7 +40,12 @@ fn _main() -> Result<(), Box<dyn Error>> {
         ("init", Some(option)) => {
             init_command("init", option)?;
         }
-        _ => {}
+        _ => {
+            if let Some(external_command) = matches.value_of("subcommand") {
+                println!("wiz-{}", external_command)
+            } else {
+            };
+        }
     }
     Ok(())
 }
