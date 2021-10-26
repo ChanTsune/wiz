@@ -3,21 +3,12 @@ use std::fmt::{Debug, Display, Formatter};
 use std::fs::{create_dir_all, File};
 use std::io::{BufWriter, Write};
 use std::path::PathBuf;
+use crate::error::WizError;
 
-#[derive(Debug)]
-struct WizError(String);
-
-impl Display for WizError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str(&self.0)
-    }
-}
-
-impl Error for WizError {}
 
 pub(crate) fn create_project(path: &PathBuf, project_name: &str) -> Result<(), Box<dyn Error>> {
     if !path.read_dir()?.next().is_none() {
-        return Err(Box::new(WizError(format!(
+        return Err(Box::new(WizError::from(format!(
             "`{}` is not empty",
             path.display()
         ))));
