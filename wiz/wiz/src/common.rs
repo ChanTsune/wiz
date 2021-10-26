@@ -1,10 +1,9 @@
+use crate::error::WizError;
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
 use std::fs::{create_dir_all, File};
 use std::io::{BufWriter, Write};
 use std::path::PathBuf;
-use crate::error::WizError;
-
 
 pub(crate) fn create_project(path: &PathBuf, project_name: &str) -> Result<(), Box<dyn Error>> {
     if !path.read_dir()?.next().is_none() {

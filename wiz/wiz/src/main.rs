@@ -1,9 +1,9 @@
 mod build;
 mod common;
+mod error;
 mod external_subcommand;
 mod init;
 mod new;
-mod error;
 
 use crate::build::build_command;
 use crate::init::init_command;

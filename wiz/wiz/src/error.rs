@@ -20,23 +20,19 @@ impl Error for WizError {}
 
 #[derive(Debug)]
 pub(crate) struct ProcessError {
-    pub(crate) code: Option<i32>
+    pub(crate) code: Option<i32>,
 }
 
 impl ProcessError {
     pub(crate) fn new(code: Option<i32>) -> Self {
-        Self {
-            code
-        }
+        Self { code }
     }
     pub(crate) fn code(code: i32) -> Self {
         Self::new(Some(code))
     }
 }
 
-impl Error for ProcessError {
-
-}
+impl Error for ProcessError {}
 
 impl Display for ProcessError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {

@@ -1,9 +1,9 @@
+use crate::error::{ProcessError, WizError};
 use clap::ArgMatches;
 use std::env;
 use std::error::Error;
 use std::os::unix::process::CommandExt;
 use std::process::Command;
-use crate::error::{ProcessError, WizError};
 
 pub(crate) fn try_execute(cmd: &str, options: &ArgMatches) -> Result<(), Box<dyn Error>> {
     let executable = format!("wiz-{}{}", cmd, env::consts::EXE_SUFFIX);
