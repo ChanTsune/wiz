@@ -46,7 +46,7 @@ fn _main() -> Result<(), Box<dyn Error>> {
             init_command("init", option)?;
         }
         (cmd, Some(option)) => {
-            println!("Exc => {}", cmd);
+            external_subcommand::try_execute(cmd, option)?;
         }
         _ => {
             panic!()

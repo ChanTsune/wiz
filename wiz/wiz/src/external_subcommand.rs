@@ -1,7 +1,11 @@
+use std::env;
 use clap::ArgMatches;
 use std::error::Error;
 
-fn try_execute(cmd: &str, options: &ArgMatches) -> Result<(), Box<dyn Error>> {
-    println!("external command {} {:?}", cmd, options);
+pub(crate) fn try_execute(cmd: &str, options: &ArgMatches) -> Result<(), Box<dyn Error>> {
+    let executable = format!("wiz-{}{}", cmd, env::consts::EXE_SUFFIX);
+    println!("external command {} {:?}", executable, options);
+    let current_exe_path = env::current_exe()?;
+    println!("{}", current_exe_path.display());
     Ok(())
 }
