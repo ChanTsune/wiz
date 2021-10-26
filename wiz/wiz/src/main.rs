@@ -5,7 +5,7 @@ mod new;
 use crate::init::init_command;
 use crate::new::new_command;
 use ansi_term::Color;
-use clap::{App, Arg, ArgMatches, SubCommand};
+use clap::{App, Arg, SubCommand};
 use std::error::Error;
 use std::process::exit;
 

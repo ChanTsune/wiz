@@ -1,5 +1,5 @@
 use std::error::Error;
-use std::fmt::{Debug, Display, Formatter, Pointer};
+use std::fmt::{Debug, Display, Formatter};
 use std::fs::{create_dir_all, File};
 use std::io::{BufWriter, Write};
 use std::path::PathBuf;
