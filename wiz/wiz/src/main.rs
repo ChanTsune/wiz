@@ -31,7 +31,8 @@ fn _main() -> Result<(), Box<dyn Error>> {
                         .help("No output printed to stdout"),
                 )
                 .help("Create a new wiz package in an current directory."),
-        ).arg(Arg::with_name("subcommand"));
+        )
+        .arg(Arg::with_name("subcommand"));
     let matches = app.get_matches();
     match matches.subcommand() {
         ("new", Some(option)) => {
