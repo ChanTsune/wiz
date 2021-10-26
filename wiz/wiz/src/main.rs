@@ -1,16 +1,21 @@
 mod common;
+mod external_subcommand;
 mod init;
 mod new;
 
 use crate::init::init_command;
 use crate::new::new_command;
 use ansi_term::Color;
-use clap::{App, Arg, SubCommand};
+use clap::{App, AppSettings, Arg, SubCommand};
 use std::error::Error;
 use std::process::exit;
 
 fn _main() -> Result<(), Box<dyn Error>> {
     let app = App::new("wiz")
+        .settings(&[
+            AppSettings::ArgRequiredElseHelp,
+            AppSettings::AllowExternalSubcommands
+        ])
         .subcommand(
             SubCommand::with_name("new")
                 .arg(Arg::with_name("path").required(true))
@@ -31,8 +36,7 @@ fn _main() -> Result<(), Box<dyn Error>> {
                         .help("No output printed to stdout"),
                 )
                 .help("Create a new wiz package in an current directory."),
-        )
-        .arg(Arg::with_name("subcommand"));
+        );
     let matches = app.get_matches();
     match matches.subcommand() {
         ("new", Some(option)) => {
@@ -41,11 +45,11 @@ fn _main() -> Result<(), Box<dyn Error>> {
         ("init", Some(option)) => {
             init_command("init", option)?;
         }
+        (cmd, Some(option)) => {
+            println!("Exc => {}", cmd);
+        }
         _ => {
-            if let Some(external_command) = matches.value_of("subcommand") {
-                println!("wiz-{}", external_command)
-            } else {
-            };
+            panic!()
         }
     }
     Ok(())
