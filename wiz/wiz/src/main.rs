@@ -1,16 +1,16 @@
+mod build;
 mod common;
 mod external_subcommand;
 mod init;
 mod new;
-mod build;
 
+use crate::build::build_command;
 use crate::init::init_command;
 use crate::new::new_command;
 use ansi_term::Color;
 use clap::{App, AppSettings, Arg, SubCommand};
 use std::error::Error;
 use std::process::exit;
-use crate::build::build_command;
 
 fn _main() -> Result<(), Box<dyn Error>> {
     let app = App::new("wiz")
@@ -38,15 +38,15 @@ fn _main() -> Result<(), Box<dyn Error>> {
                         .help("No output printed to stdout"),
                 )
                 .help("Create a new wiz package in an current directory."),
-        ).subcommand(
-        SubCommand::with_name("build")
-            .arg(
+        )
+        .subcommand(
+            SubCommand::with_name("build").arg(
                 Arg::with_name("quite")
                     .short("q")
                     .long("quite")
                     .help("No output printed to stdout"),
-            )
-    );
+            ),
+        );
     let matches = app.get_matches();
     match matches.subcommand() {
         ("new", Some(option)) => {
