@@ -15,6 +15,7 @@ use std::process::exit;
 
 fn _main() -> Result<(), Box<dyn Error>> {
     let app = App::new("wiz")
+        .about("Wiz's package manager")
         .settings(&[
             AppSettings::ArgRequiredElseHelp,
             AppSettings::AllowExternalSubcommands,
@@ -28,7 +29,7 @@ fn _main() -> Result<(), Box<dyn Error>> {
                         .long("quite")
                         .help("No output printed to stdout"),
                 )
-                .help("Create a new wiz package at <path>"),
+                .about("Create a new wiz package at <path>"),
         )
         .subcommand(
             SubCommand::with_name("init")
@@ -38,7 +39,7 @@ fn _main() -> Result<(), Box<dyn Error>> {
                         .long("quite")
                         .help("No output printed to stdout"),
                 )
-                .help("Create a new wiz package in an current directory."),
+                .about("Create a new wiz package in an current directory."),
         )
         .subcommand(
             SubCommand::with_name("build").arg(
