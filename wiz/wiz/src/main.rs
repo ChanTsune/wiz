@@ -39,7 +39,7 @@ fn _main() -> Result<(), Box<dyn Error>> {
                         .long("quite")
                         .help("No output printed to stdout"),
                 )
-                .about("Create a new wiz package in an current directory."),
+                .about("Create a new wiz package in an current directory"),
         )
         .subcommand(
             SubCommand::with_name("build").arg(
@@ -47,7 +47,7 @@ fn _main() -> Result<(), Box<dyn Error>> {
                     .short("q")
                     .long("quite")
                     .help("No output printed to stdout"),
-            ),
+            ).about("Compile the current package"),
         );
     let matches = app.get_matches();
     match matches.subcommand() {
