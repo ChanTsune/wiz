@@ -2,7 +2,7 @@ use crate::error::WizError;
 use std::error::Error;
 use std::fs::{create_dir_all, File};
 use std::io::{BufWriter, Write};
-use std::path::{Path};
+use std::path::Path;
 
 pub(crate) fn create_project(path: &Path, project_name: &str) -> Result<(), Box<dyn Error>> {
     if path.read_dir()?.next().is_some() {
