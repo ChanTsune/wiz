@@ -42,12 +42,14 @@ fn _main() -> Result<(), Box<dyn Error>> {
                 .about("Create a new wiz package in an current directory"),
         )
         .subcommand(
-            SubCommand::with_name("build").arg(
-                Arg::with_name("quite")
-                    .short("q")
-                    .long("quite")
-                    .help("No output printed to stdout"),
-            ).about("Compile the current package"),
+            SubCommand::with_name("build")
+                .arg(
+                    Arg::with_name("quite")
+                        .short("q")
+                        .long("quite")
+                        .help("No output printed to stdout"),
+                )
+                .about("Compile the current package"),
         );
     let matches = app.get_matches();
     match matches.subcommand() {
