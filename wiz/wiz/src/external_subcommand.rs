@@ -1,4 +1,4 @@
-use crate::error::{ProcessError, WizError};
+use crate::error::{ProcessError};
 use clap::ArgMatches;
 use std::env;
 use std::error::Error;
