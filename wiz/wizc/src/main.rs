@@ -40,7 +40,7 @@ fn get_builtin_syntax() -> parser::result::Result<Vec<WizFile>> {
 }
 
 fn main() -> result::Result<(), Box<dyn Error>> {
-    let app = App::new("wiz")
+    let app = App::new("wizc")
         .arg(Arg::with_name("input").required(true).multiple(true))
         .arg(Arg::with_name("output").short("o").takes_value(true))
         .arg(Arg::with_name("execute").short("e").takes_value(true));
