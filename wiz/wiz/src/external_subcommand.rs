@@ -9,7 +9,6 @@ pub(crate) fn try_execute(cmd: &str, options: &ArgMatches) -> Result<(), Box<dyn
     let mut args = vec![cmd];
     args.extend(options.values_of("").unwrap_or_default());
     let executable = format!("wiz-{}{}", cmd, env::consts::EXE_SUFFIX);
-    println!("external command {} {:?}", executable, args);
     let mut current_exe_path = env::current_exe()?;
     let _ = current_exe_path.pop();
     current_exe_path.push(executable);
