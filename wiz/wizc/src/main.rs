@@ -44,8 +44,18 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         .arg(Arg::with_name("input").required(true).multiple(true))
         .arg(Arg::with_name("output").short("o").takes_value(true))
         .arg(Arg::with_name("execute").short("e").takes_value(true))
-        .arg(Arg::with_name("path").short("p").takes_value(true).multiple(true))
-        .arg(Arg::with_name("L").short("L").takes_value(true).multiple(true));
+        .arg(
+            Arg::with_name("path")
+                .short("p")
+                .takes_value(true)
+                .multiple(true),
+        )
+        .arg(
+            Arg::with_name("L")
+                .short("L")
+                .takes_value(true)
+                .multiple(true),
+        );
     let matches = app.get_matches();
     let inputs = matches.values_of_lossy("input").unwrap();
     let output = matches.value_of("output");
