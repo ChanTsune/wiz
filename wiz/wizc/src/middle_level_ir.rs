@@ -43,7 +43,6 @@ mod tests;
 
 struct HLIR2MLIRContext {
     declaration_annotations: HashMap<String, TypedAnnotations>,
-    generic_structs: StackedHashMap<String, TypedStruct>,
     structs: HashMap<MLValueType, MLStruct>,
     current_name_space: Vec<String>,
 }
@@ -56,7 +55,6 @@ impl HLIR2MLIRContext {
     fn new() -> Self {
         Self {
             declaration_annotations: Default::default(),
-            generic_structs: StackedHashMap::from(HashMap::new()),
             structs: Default::default(),
             current_name_space: vec![],
         }
@@ -176,29 +174,6 @@ impl HLIR2MLIR {
                 }
             },
         }
-    }
-
-    pub fn get_parameterized_struct(
-        &self,
-        name: String,
-        params: Vec<String>,
-    ) -> Option<(MLStruct, Vec<MLFun>)> {
-        let struct_ = self.context.generic_structs.get(&name)?;
-        let struct_name = struct_.name.clone() + "<" + &params.join(",") + ">";
-        Some((
-            MLStruct {
-                name: struct_name,
-                fields: struct_
-                    .stored_properties
-                    .iter()
-                    .map(|p| MLField {
-                        name: p.name.clone(),
-                        type_: self.type_(p.type_.clone()).into_value_type(),
-                    })
-                    .collect(),
-            },
-            vec![],
-        ))
     }
 
     pub fn source_set(&mut self, s: TypedSourceSet) -> Vec<MLFile> {
