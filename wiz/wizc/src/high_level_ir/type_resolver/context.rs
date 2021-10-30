@@ -339,21 +339,30 @@ impl ResolverContext {
         env.use_values_from(self.get_namespace(vec![]).unwrap());
         env.use_values_from(self.get_current_namespace().unwrap());
         for mut u in self.used_name_space.iter().cloned() {
-            if let Result::Ok(n) = self.get_namespace(u.clone()) {
-                let name = u.pop().unwrap();
-                env.names.insert(name, (u, EnvValue::NameSpace(n.clone())));
-            } else {
-                let name = u.pop().unwrap();
-                let s = self.get_namespace(u.clone()).unwrap();
-                if let Some(t) = s.get_type(&name) {
-                    env.types.insert(name.clone(), (u.clone(), t.clone()));
-                };
-                if let Some(t) = s.get_value(&name) {
-                    env.names.insert(name, (u, EnvValue::Value(t.clone())));
+            if u.last().is_some() && u.last().unwrap() == "*" {
+                let _ = u.pop();
+                if let Result::Ok(n) = self.get_namespace(u.clone()) {
+                    env.use_values_from(n);
                 } else {
-                    panic!("Can not find name {:?}", name)
+                    panic!("Can not resolve name space {:?}", u);
+                }
+            } else {
+                if let Result::Ok(n) = self.get_namespace(u.clone()) {
+                    let name = u.pop().unwrap();
+                    env.names.insert(name, (u, EnvValue::NameSpace(n.clone())));
+                } else {
+                    let name = u.pop().unwrap();
+                    let s = self.get_namespace(u.clone()).unwrap();
+                    if let Some(t) = s.get_type(&name) {
+                        env.types.insert(name.clone(), (u.clone(), t.clone()));
+                    };
+                    if let Some(t) = s.get_value(&name) {
+                        env.names.insert(name, (u, EnvValue::Value(t.clone())));
+                    } else {
+                        panic!("Can not find name {:?}", name)
+                    };
                 };
-            };
+            }
         }
         env.use_values_from_local(&self.local_stack);
         env
