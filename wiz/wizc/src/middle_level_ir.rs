@@ -47,10 +47,6 @@ struct HLIR2MLIRContext {
     current_name_space: Vec<String>,
 }
 
-pub struct HLIR2MLIR {
-    context: HLIR2MLIRContext,
-}
-
 impl HLIR2MLIRContext {
     fn new() -> Self {
         Self {
@@ -98,6 +94,10 @@ impl HLIR2MLIRContext {
     pub(crate) fn pop_name_space(&mut self) {
         self.current_name_space.pop();
     }
+}
+
+pub struct HLIR2MLIR {
+    context: HLIR2MLIRContext,
 }
 
 impl HLIR2MLIR {
@@ -337,10 +337,8 @@ impl HLIR2MLIR {
             computed_properties,
             member_functions,
         } = s;
-        let mut ns = self.context.current_name_space.clone();
-        ns.push(name.clone());
         let struct_ = MLStruct {
-            name: ns.join("::"),
+            name: self.package_name_mangling(&package, &name),
             fields: stored_properties
                 .into_iter()
                 .map(|p| MLField {
