@@ -58,9 +58,9 @@ where
 }
 
 impl<K, V, S> Default for StackedHashMap<K, V, S>
-    where
-        K: Hash + Eq,
-        S: BuildHasher,
+where
+    K: Hash + Eq,
+    S: BuildHasher,
 {
     fn default() -> Self {
         Self::new()
@@ -68,16 +68,15 @@ impl<K, V, S> Default for StackedHashMap<K, V, S>
 }
 
 impl<K, V, S> StackedHashMap<K, V, S>
-    where
-        K: Hash + Eq,
-        V: Default,
-        S: BuildHasher + Default,
+where
+    K: Hash + Eq,
+    V: Default,
+    S: BuildHasher + Default,
 {
     pub(crate) fn push_default(&mut self) {
         self.push(Default::default())
     }
 }
-
 
 #[cfg(test)]
 mod tests {
