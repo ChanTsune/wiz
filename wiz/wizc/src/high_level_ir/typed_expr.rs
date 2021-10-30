@@ -1,5 +1,5 @@
 use crate::high_level_ir::typed_stmt::TypedBlock;
-use crate::high_level_ir::typed_type::{Package, TypedPackage, TypedType};
+use crate::high_level_ir::typed_type::{TypedPackage, TypedType};
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum TypedExpr {

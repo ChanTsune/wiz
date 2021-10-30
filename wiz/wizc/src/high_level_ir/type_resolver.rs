@@ -24,7 +24,6 @@ use crate::high_level_ir::typed_stmt::{
 use crate::high_level_ir::typed_type::{
     Package, TypedFunctionType, TypedPackage, TypedType, TypedValueType,
 };
-use crate::high_level_ir::typed_use::TypedUse;
 
 #[derive(Debug, Clone)]
 pub(crate) struct TypeResolver {
