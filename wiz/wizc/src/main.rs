@@ -18,7 +18,6 @@ use wiz_syntax::parser;
 use wiz_syntax::parser::wiz::{
     parse_from_file_path, parse_from_file_path_str, read_package_from_path,
 };
-use wiz_syntax::syntax::file::WizFile;
 
 mod constants;
 mod ext;
@@ -66,10 +65,10 @@ fn main() -> result::Result<(), Box<dyn Error>> {
 
     let std_hlir = ast2hlir.source_set(std_package_source_set);
 
-    let ast_files: Vec<WizFile> = inputs
+    let ast_files = inputs
         .iter()
         .map(|s| parse_from_file_path_str(s))
-        .collect::<parser::result::Result<Vec<WizFile>>>()?;
+        .collect::<parser::result::Result<Vec<_>>>()?;
 
     let hlfiles: Vec<TypedFile> = ast_files.into_iter().map(|f| ast2hlir.file(f)).collect();
 
