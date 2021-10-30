@@ -76,6 +76,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
     println!("=== resolve type ===");
 
     let mut type_resolver = TypeResolver::new();
+    type_resolver.global_use(vec!["builtin.ll"]);
 
     println!("===== detect types =====");
     // detect types

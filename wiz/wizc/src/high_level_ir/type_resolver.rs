@@ -38,6 +38,10 @@ impl TypeResolver {
         }
     }
 
+    pub(crate) fn global_use<T>(&mut self, name_space: Vec<T>) where T: ToString {
+        self.context.use_name_space(name_space.into_iter().map(|n|n.to_string()).collect())
+    }
+
     pub fn detect_type_from_source_set(&mut self, s: &TypedSourceSet) -> Result<()> {
         match s {
             TypedSourceSet::File(f) => self.detect_type(f),
@@ -98,10 +102,7 @@ impl TypeResolver {
     }
 
     pub fn preload_file(&mut self, f: TypedFile) -> Result<()> {
-        let name = f.name.clone();
-        if name != String::from("builtin.ll") {
-            self.context.push_name_space(f.name.clone());
-        };
+        self.context.push_name_space(f.name.clone());
         for u in f.uses.iter() {
             self.context.use_name_space(u.package.names.clone());
         }
@@ -111,9 +112,7 @@ impl TypeResolver {
         for u in f.uses.iter() {
             self.context.use_name_space(u.package.names.clone());
         }
-        if name != String::from("builtin.ll") {
-            self.context.pop_name_space();
-        };
+        self.context.pop_name_space();
         Result::Ok(())
     }
 
