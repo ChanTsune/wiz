@@ -1,9 +1,10 @@
 mod build;
-mod common;
+mod core;
 mod error;
 mod external_subcommand;
 mod init;
 mod new;
+mod subcommand;
 
 use crate::build::build_command;
 use crate::init::init_command;
@@ -23,34 +24,23 @@ fn _main() -> Result<(), Box<dyn Error>> {
         ])
         .subcommand(
             SubCommand::with_name("new")
-                .arg(Arg::with_name("path").required(true))
-                .arg(
-                    Arg::with_name("quite")
-                        .short("q")
-                        .long("quite")
-                        .help("No output printed to stdout"),
-                )
-                .about("Create a new wiz package at <path>"),
+                .about("Create a new wiz package at <path>")
+                .arg(Arg::with_name("path").required(true)),
         )
         .subcommand(
-            SubCommand::with_name("init")
-                .arg(
-                    Arg::with_name("quite")
-                        .short("q")
-                        .long("quite")
-                        .help("No output printed to stdout"),
-                )
-                .about("Create a new wiz package in an current directory"),
+            SubCommand::with_name("init").about("Create a new wiz package in an current directory"),
         )
         .subcommand(
             SubCommand::with_name("build")
-                .arg(
-                    Arg::with_name("quite")
-                        .short("q")
-                        .long("quite")
-                        .help("No output printed to stdout"),
-                )
-                .about("Compile the current package"),
+                .about("Compile the current package")
+                .arg(Arg::with_name("target-dir").help("Directory for all generated artifacts")),
+        )
+        .arg(
+            Arg::with_name("quite")
+                .short("q")
+                .long("quite")
+                .help("No output printed to stdout")
+                .global(true),
         );
     let matches = app.get_matches();
     match matches.subcommand() {
