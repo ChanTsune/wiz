@@ -1,15 +1,18 @@
+use crate::error::{CliError, ProcessError};
 use std::env;
 use std::error::Error;
 use std::os::unix::process::CommandExt;
 use std::process::Command;
-use crate::error::{CliError, ProcessError};
 
-pub(crate) fn execute(executable: &str, args:&[&str]) -> Result<(), Box<dyn Error>> {
+pub(crate) fn execute(executable: &str, args: &[&str]) -> Result<(), Box<dyn Error>> {
     let mut current_exe_path = env::current_exe()?;
     let _ = current_exe_path.pop();
     current_exe_path.push(executable);
     if !current_exe_path.exists() {
-        return Err(Box::new(CliError::from(format!("command `{}` can not find", executable))))
+        return Err(Box::new(CliError::from(format!(
+            "command `{}` can not find",
+            executable
+        ))));
     }
     let mut command = Command::new(current_exe_path.as_os_str());
     command.args(args);
