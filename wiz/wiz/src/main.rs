@@ -30,7 +30,9 @@ fn _main() -> Result<(), Box<dyn Error>> {
         .subcommand(
             SubCommand::with_name("init").about("Create a new wiz package in an current directory"),
         )
-        .subcommand(SubCommand::with_name("build").about("Compile the current package"))
+        .subcommand(SubCommand::with_name("build").about("Compile the current package")
+            .arg(Arg::with_name("target-dir").help("Directory for all generated artifacts"))
+        )
         .arg(
             Arg::with_name("quite")
                 .short("q")
