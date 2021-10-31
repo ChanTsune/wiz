@@ -28,13 +28,9 @@ fn _main() -> Result<(), Box<dyn Error>> {
                 .arg(Arg::with_name("path").required(true)),
         )
         .subcommand(
-            SubCommand::with_name("init")
-                .about("Create a new wiz package in an current directory"),
+            SubCommand::with_name("init").about("Create a new wiz package in an current directory"),
         )
-        .subcommand(
-            SubCommand::with_name("build")
-                .about("Compile the current package"),
-        )
+        .subcommand(SubCommand::with_name("build").about("Compile the current package"))
         .arg(
             Arg::with_name("quite")
                 .short("q")
