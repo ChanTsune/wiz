@@ -13,7 +13,7 @@ use crate::high_level_ir::typed_stmt::{
     TypedAssignmentAndOperator, TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt,
 };
 use crate::high_level_ir::typed_type::{
-    Package, TypedFunctionType, TypedPackage, TypedType, TypedValueType,
+    TypedFunctionType, TypedPackage, TypedType, TypedValueType,
 };
 use crate::middle_level_ir::ml_decl::{
     MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar,
@@ -25,7 +25,6 @@ use crate::middle_level_ir::ml_expr::{
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
 use crate::middle_level_ir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
-use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::HashMap;
 use std::option::Option::Some;
 use std::process::exit;
@@ -43,20 +42,14 @@ mod tests;
 
 struct HLIR2MLIRContext {
     declaration_annotations: HashMap<String, TypedAnnotations>,
-    generic_structs: StackedHashMap<String, TypedStruct>,
     structs: HashMap<MLValueType, MLStruct>,
     current_name_space: Vec<String>,
-}
-
-pub struct HLIR2MLIR {
-    context: HLIR2MLIRContext,
 }
 
 impl HLIR2MLIRContext {
     fn new() -> Self {
         Self {
             declaration_annotations: Default::default(),
-            generic_structs: StackedHashMap::from(HashMap::new()),
             structs: Default::default(),
             current_name_space: vec![],
         }
@@ -100,6 +93,10 @@ impl HLIR2MLIRContext {
     pub(crate) fn pop_name_space(&mut self) {
         self.current_name_space.pop();
     }
+}
+
+pub struct HLIR2MLIR {
+    context: HLIR2MLIRContext,
 }
 
 impl HLIR2MLIR {
@@ -176,29 +173,6 @@ impl HLIR2MLIR {
                 }
             },
         }
-    }
-
-    pub fn get_parameterized_struct(
-        &self,
-        name: String,
-        params: Vec<String>,
-    ) -> Option<(MLStruct, Vec<MLFun>)> {
-        let struct_ = self.context.generic_structs.get(&name)?;
-        let struct_name = struct_.name.clone() + "<" + &params.join(",") + ">";
-        Some((
-            MLStruct {
-                name: struct_name,
-                fields: struct_
-                    .stored_properties
-                    .iter()
-                    .map(|p| MLField {
-                        name: p.name.clone(),
-                        type_: self.type_(p.type_.clone()).into_value_type(),
-                    })
-                    .collect(),
-            },
-            vec![],
-        ))
     }
 
     pub fn source_set(&mut self, s: TypedSourceSet) -> Vec<MLFile> {
@@ -362,10 +336,8 @@ impl HLIR2MLIR {
             computed_properties,
             member_functions,
         } = s;
-        let mut ns = self.context.current_name_space.clone();
-        ns.push(name.clone());
         let struct_ = MLStruct {
-            name: ns.join("::"),
+            name: self.package_name_mangling(&package, &name),
             fields: stored_properties
                 .into_iter()
                 .map(|p| MLField {
@@ -470,14 +442,13 @@ impl HLIR2MLIR {
     }
 
     pub fn name(&self, n: TypedName) -> MLName {
-        let package_mangled_name = self.package_name_mangling(&n.package, &*n.name);
         let mangled_name = if self
             .context
-            .declaration_has_annotation(&package_mangled_name, "no_mangle")
+            .declaration_has_annotation(&n.name, "no_mangle")
         {
             n.name
         } else {
-            package_mangled_name
+            self.package_name_mangling(&n.package, &*n.name)
         };
         MLName {
             name: mangled_name,

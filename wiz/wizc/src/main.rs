@@ -11,7 +11,7 @@ use inkwell::execution_engine::JitFunction;
 use inkwell::OptimizationLevel;
 use std::error::Error;
 use std::option::Option::Some;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::exit;
 use std::result;
 use wiz_syntax::parser;
@@ -29,61 +29,98 @@ mod utils;
 
 type MainFunc = unsafe extern "C" fn() -> u8;
 
-fn get_builtin_syntax() -> parser::result::Result<Vec<WizFile>> {
-    let builtin_dir = std::fs::read_dir(Path::new("../../builtin")).unwrap();
-    builtin_dir
-        .flatten()
-        .map(|p| p.path())
-        .filter(|path| path.ends_with("builtin.ll.wiz"))
-        .map(|path| parse_from_file_path(path.as_path()))
-        .collect::<parser::result::Result<Vec<WizFile>>>()
+fn get_builtin_find_path() -> PathBuf {
+    let mut std_path = PathBuf::from(env!("HOME"));
+    std_path.push(".wiz");
+    std_path.push("lib");
+    std_path.push("src");
+    std_path
+}
+
+fn get_find_paths() -> Vec<PathBuf> {
+    vec![get_builtin_find_path()]
+}
+
+fn get_builtin_lib() -> Vec<&'static str> {
+    vec!["core", "std"]
 }
 
 fn main() -> result::Result<(), Box<dyn Error>> {
     let app = App::new("wizc")
         .arg(Arg::with_name("input").required(true).multiple(true))
         .arg(Arg::with_name("output").short("o").takes_value(true))
-        .arg(Arg::with_name("execute").short("e").takes_value(true));
-
+        .arg(Arg::with_name("execute").short("e").takes_value(true))
+        .arg(
+            Arg::with_name("path")
+                .short("p")
+                .takes_value(true)
+                .multiple(true),
+        )
+        .arg(
+            Arg::with_name("L")
+                .short("L")
+                .takes_value(true)
+                .multiple(true),
+        );
     let matches = app.get_matches();
     let inputs = matches.values_of_lossy("input").unwrap();
     let output = matches.value_of("output");
+    let paths = matches.values_of_lossy("path").unwrap_or_default();
 
     println!("=== parse files ===");
 
-    let builtin_syntax = get_builtin_syntax()?;
+    let mut lib_paths = vec![];
 
-    let std_package_source_set = read_package_from_path(Path::new("../../std"))?;
+    for l in get_builtin_lib() {
+        for mut p in get_find_paths()
+            .into_iter()
+            .chain(paths.iter().map(PathBuf::from))
+        {
+            p.push(l);
+            p.push("Package.wiz");
+            if p.exists() {
+                p.pop();
+                println!("`{}` found at {}", l, p.display());
+                lib_paths.push(p);
+                break;
+            } else {
+                p.pop();
+                println!("`{}` Not found at {}", l, p.display());
+            }
+        }
+    }
+
+    let source_sets = lib_paths
+        .into_iter()
+        .map(|p| read_package_from_path(p.as_path()))
+        .collect::<parser::result::Result<Vec<_>>>()?;
 
     println!("=== convert to hlir ===");
 
     let mut ast2hlir = Ast2HLIR::new();
 
-    let builtin_hlir: Vec<TypedFile> = builtin_syntax
+    let std_hlir: Vec<_> = source_sets
         .into_iter()
-        .map(|w| ast2hlir.file(w))
+        .map(|s| ast2hlir.source_set(s))
         .collect();
 
-    let std_hlir = ast2hlir.source_set(std_package_source_set);
-
-    let ast_files: Vec<WizFile> = inputs
+    let ast_files = inputs
         .iter()
         .map(|s| parse_from_file_path_str(s))
-        .collect::<parser::result::Result<Vec<WizFile>>>()?;
+        .collect::<parser::result::Result<Vec<_>>>()?;
 
     let hlfiles: Vec<TypedFile> = ast_files.into_iter().map(|f| ast2hlir.file(f)).collect();
 
     println!("=== resolve type ===");
 
     let mut type_resolver = TypeResolver::new();
+    type_resolver.global_use(vec!["core", "builtin", "*"]);
 
     println!("===== detect types =====");
     // detect types
-    for hlir in builtin_hlir.iter() {
-        type_resolver.detect_type(hlir)?;
+    for s in std_hlir.iter() {
+        type_resolver.detect_type_from_source_set(s)?;
     }
-
-    type_resolver.detect_type_from_source_set(&std_hlir)?;
 
     for hlir in hlfiles.iter() {
         type_resolver.detect_type(hlir)?;
@@ -91,11 +128,9 @@ fn main() -> result::Result<(), Box<dyn Error>> {
 
     println!("===== preload decls =====");
     // preload decls
-    for hlir in builtin_hlir.iter() {
-        type_resolver.preload_file(hlir.clone())?;
+    for hlir in std_hlir.iter() {
+        type_resolver.preload_source_set(hlir.clone())?;
     }
-
-    type_resolver.preload_source_set(std_hlir.clone())?;
 
     for hlir in hlfiles.iter() {
         type_resolver.preload_file(hlir.clone())?;
@@ -103,12 +138,11 @@ fn main() -> result::Result<(), Box<dyn Error>> {
 
     println!("===== resolve types =====");
     // resolve types
-    let builtin_hlir = builtin_hlir
-        .into_iter()
-        .map(|f| type_resolver.file(f))
-        .collect::<Result<Vec<TypedFile>>>()?;
 
-    let std_hlir = type_resolver.source_set(std_hlir)?;
+    let std_hlir: Vec<_> = std_hlir
+        .into_iter()
+        .map(|s| type_resolver.source_set(s))
+        .collect::<Result<Vec<_>>>()?;
 
     let hlfiles = hlfiles
         .into_iter()
@@ -119,12 +153,11 @@ fn main() -> result::Result<(), Box<dyn Error>> {
 
     let mut hlir2mlir = HLIR2MLIR::new();
 
-    let builtin_mlir: Vec<MLFile> = builtin_hlir
+    let std_mlir = std_hlir
         .into_iter()
-        .map(|w| hlir2mlir.file(w))
-        .collect();
-
-    let std_mlir = hlir2mlir.source_set(std_hlir);
+        .map(|w| hlir2mlir.source_set(w))
+        .flatten()
+        .collect::<Vec<_>>();
 
     for m in std_mlir.iter() {
         println!("==== {} ====", m.name);
@@ -150,10 +183,6 @@ fn main() -> result::Result<(), Box<dyn Error>> {
             execution_engine,
             ml_context: MLContext::new(),
         };
-
-        for m in builtin_mlir.iter() {
-            codegen.file(m.clone());
-        }
 
         for m in std_mlir.iter() {
             codegen.file(m.clone());

@@ -17,6 +17,12 @@ impl TypedAnnotations {
     }
 }
 
+impl Default for TypedAnnotations {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl From<Vec<String>> for TypedAnnotations {
     fn from(annotations: Vec<String>) -> Self {
         Self { annotations }

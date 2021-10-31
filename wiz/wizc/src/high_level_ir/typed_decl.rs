@@ -2,7 +2,7 @@ use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_expr::TypedExpr;
 use crate::high_level_ir::typed_stmt::TypedBlock;
 use crate::high_level_ir::typed_type::{
-    Package, TypedFunctionType, TypedPackage, TypedType, TypedTypeParam,
+    TypedFunctionType, TypedPackage, TypedType, TypedTypeParam,
 };
 
 #[derive(Debug, Eq, PartialEq, Clone)]

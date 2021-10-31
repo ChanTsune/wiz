@@ -40,6 +40,6 @@ jobs:
       - name: run test wizc
         run: cd wiz/wizc && cargo test --release
       - name: run wizc compile
-        run: cd wiz/wizc && cargo run --release -- ../../helloworld.wiz -o ../../out.ll
+        run: cd wiz/wizc && cargo run --release -- ../../helloworld.wiz -o ../../out.ll -p ../../
       - name: run llvm-ir compile
         run: clang out.ll

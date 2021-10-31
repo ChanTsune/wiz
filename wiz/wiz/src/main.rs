@@ -9,12 +9,13 @@ use crate::build::build_command;
 use crate::init::init_command;
 use crate::new::new_command;
 use ansi_term::Color;
-use clap::{App, AppSettings, Arg, SubCommand};
+use clap::{crate_version, App, AppSettings, Arg, SubCommand};
 use std::error::Error;
 use std::process::exit;
 
 fn _main() -> Result<(), Box<dyn Error>> {
     let app = App::new("wiz")
+        .version(crate_version!())
         .about("Wiz's package manager")
         .settings(&[
             AppSettings::ArgRequiredElseHelp,
