@@ -308,13 +308,13 @@ impl HLIR2MLIR {
         } else {
             let fun_arg_label_type_mangled_name = self.fun_arg_label_type_name_mangling(&arg_defs);
             if fun_arg_label_type_mangled_name.is_empty() {
-                package_mangled_name.clone()
+                package_mangled_name
             } else {
-                package_mangled_name.clone() + "##" + &*fun_arg_label_type_mangled_name
+                package_mangled_name + "##" + &*fun_arg_label_type_mangled_name
             }
         };
         self.context
-            .set_declaration_annotations(package_mangled_name, annotations);
+            .set_declaration_annotations(mangled_name.clone(), annotations);
         let args = arg_defs.into_iter().map(|a| self.arg_def(a)).collect();
         MLFun {
             modifiers,
@@ -442,14 +442,13 @@ impl HLIR2MLIR {
     }
 
     pub fn name(&self, n: TypedName) -> MLName {
-        let package_mangled_name = self.package_name_mangling(&n.package, &*n.name);
         let mangled_name = if self
             .context
-            .declaration_has_annotation(&package_mangled_name, "no_mangle")
+            .declaration_has_annotation(&n.name, "no_mangle")
         {
             n.name
         } else {
-            package_mangled_name
+            self.package_name_mangling(&n.package, &*n.name)
         };
         MLName {
             name: mangled_name,
