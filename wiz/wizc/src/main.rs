@@ -72,14 +72,17 @@ fn main() -> result::Result<(), Box<dyn Error>> {
     let mut lib_paths = vec![];
 
     for l in get_builtin_lib() {
-        for mut p in get_find_paths().into_iter().chain(paths.iter().map(PathBuf::from)) {
+        for mut p in get_find_paths()
+            .into_iter()
+            .chain(paths.iter().map(PathBuf::from))
+        {
             p.push(l);
             p.push("Package.wiz");
             if p.exists() {
                 p.pop();
                 println!("`{}` found at {}", l, p.display());
                 lib_paths.push(p);
-                break
+                break;
             } else {
                 p.pop();
                 println!("`{}` Not found at {}", l, p.display());
@@ -87,18 +90,19 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         }
     }
 
-
-    let source_sets = lib_paths.into_iter().map(|p|{
-        read_package_from_path(p.as_path())
-    }).collect::<parser::result::Result<Vec<_>>>()?;
+    let source_sets = lib_paths
+        .into_iter()
+        .map(|p| read_package_from_path(p.as_path()))
+        .collect::<parser::result::Result<Vec<_>>>()?;
 
     println!("=== convert to hlir ===");
 
     let mut ast2hlir = Ast2HLIR::new();
 
-    let std_hlir:Vec<_> = source_sets.into_iter().map(|s|{
-        ast2hlir.source_set(s)
-    }).collect();
+    let std_hlir: Vec<_> = source_sets
+        .into_iter()
+        .map(|s| ast2hlir.source_set(s))
+        .collect();
 
     let ast_files = inputs
         .iter()
@@ -110,7 +114,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
     println!("=== resolve type ===");
 
     let mut type_resolver = TypeResolver::new();
-    type_resolver.global_use(vec!["core","builtin", "*"]);
+    type_resolver.global_use(vec!["core", "builtin", "*"]);
 
     println!("===== detect types =====");
     // detect types
@@ -135,8 +139,9 @@ fn main() -> result::Result<(), Box<dyn Error>> {
     println!("===== resolve types =====");
     // resolve types
 
-    let std_hlir:Vec<_> = std_hlir.into_iter()
-        .map(|s|type_resolver.source_set(s))
+    let std_hlir: Vec<_> = std_hlir
+        .into_iter()
+        .map(|s| type_resolver.source_set(s))
         .collect::<Result<Vec<_>>>()?;
 
     let hlfiles = hlfiles
@@ -148,10 +153,11 @@ fn main() -> result::Result<(), Box<dyn Error>> {
 
     let mut hlir2mlir = HLIR2MLIR::new();
 
-    let std_mlir = std_hlir.into_iter()
-        .map(|w|hlir2mlir.source_set(w))
-        .flatten().collect::<Vec<_>>()
-        ;
+    let std_mlir = std_hlir
+        .into_iter()
+        .map(|w| hlir2mlir.source_set(w))
+        .flatten()
+        .collect::<Vec<_>>();
 
     for m in std_mlir.iter() {
         println!("==== {} ====", m.name);
