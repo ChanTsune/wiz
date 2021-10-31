@@ -1,5 +1,5 @@
 mod build;
-mod common;
+mod core;
 mod error;
 mod external_subcommand;
 mod init;

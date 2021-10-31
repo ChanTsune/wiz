@@ -1,4 +1,4 @@
-use crate::common::create_project;
+use crate::core::create_project;
 use ansi_term::Color;
 use clap::ArgMatches;
 use std::env::current_dir;
