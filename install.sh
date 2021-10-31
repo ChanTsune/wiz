@@ -30,7 +30,7 @@ build_install() {
 
 install_builtin_lib() {
     mkdir -p "$LIB_DIR/src"
-    copy_lib_src builtin
+    copy_lib_src core
     copy_lib_src std
 }
 
