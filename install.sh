@@ -12,7 +12,7 @@ main() {
     build_install "wiz"
     build_install "wizc"
 
-    install_std_lib
+    install_builtin_lib
 
     echo "Installation completed at $BIN_DIR"
     echo "Add $BIN_DIR to your PATH"
@@ -28,10 +28,14 @@ build_install() {
     popd
 }
 
-install_std_lib() {
+install_builtin_lib() {
     mkdir -p "$LIB_DIR/src"
-    cp -r std "$LIB_DIR/src/std"
-    cp -r builtin "$LIB_DIR/src/builtin"
+    copy_lib_src builtin
+    copy_lib_src std
+}
+
+copy_lib_src() {
+    cp -r "$1" "$LIB_DIR/src/$1"
 }
 
 main
