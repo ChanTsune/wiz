@@ -1,5 +1,5 @@
-use std::env;
 use clap::ArgMatches;
+use std::env;
 use std::error::Error;
 
 pub(crate) fn build_command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn Error>> {
