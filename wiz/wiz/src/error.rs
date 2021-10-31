@@ -2,21 +2,27 @@ use std::error::Error;
 use std::fmt::{Display, Formatter};
 
 #[derive(Debug)]
-pub(crate) struct WizError(String);
+pub(crate) struct CliError(String);
 
-impl From<String> for WizError {
+impl From<String> for CliError {
     fn from(message: String) -> Self {
         Self(message)
     }
 }
 
-impl Display for WizError {
+impl From<&str> for CliError {
+    fn from(message: &str) -> Self {
+        Self(message.to_string())
+    }
+}
+
+impl Display for CliError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str(&self.0)
     }
 }
 
-impl Error for WizError {}
+impl Error for CliError {}
 
 #[derive(Debug)]
 pub(crate) struct ProcessError {
