@@ -13,7 +13,7 @@ use std::error::Error;
 use std::option::Option::Some;
 use std::path::{Path, PathBuf};
 use std::process::exit;
-use std::result;
+use std::{env, result};
 use wiz_syntax::parser;
 use wiz_syntax::parser::wiz::{
     parse_from_file_path, parse_from_file_path_str, read_package_from_path,
@@ -68,6 +68,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
     let matches = app.get_matches();
     let inputs = matches.values_of_lossy("input").unwrap();
     let output = matches.value_of("output");
+    let out_dir = matches.value_of("out-dir");
     let paths = matches.values_of_lossy("path").unwrap_or_default();
 
     println!("=== parse files ===");
@@ -191,6 +192,8 @@ fn main() -> result::Result<(), Box<dyn Error>> {
             codegen.file(m.clone());
         }
 
+        codegen.file(mlfile.clone());
+
         let output = if let Some(output) = output {
             if inputs.len() == 1 {
                 String::from(output)
@@ -204,11 +207,12 @@ fn main() -> result::Result<(), Box<dyn Error>> {
             String::from(output_path.to_str().unwrap())
         };
 
-        codegen.file(mlfile.clone());
+        let mut out_path = out_dir.map(PathBuf::from).unwrap_or_else(||env::current_dir().unwrap());
+        out_path.push(output);
 
-        println!("Output Path -> {:?}", output);
+        println!("Output Path -> {:?}", out_path);
 
-        codegen.print_to_file(Path::new(&output))?;
+        codegen.print_to_file(out_path)?;
 
         if let Some(fun_name) = matches.value_of("execute") {
             unsafe {
