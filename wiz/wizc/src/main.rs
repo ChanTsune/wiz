@@ -48,7 +48,10 @@ fn get_builtin_lib() -> Vec<&'static str> {
 fn main() -> result::Result<(), Box<dyn Error>> {
     let app = App::new("wizc")
         .arg(Arg::with_name("input").required(true).multiple(true))
+        .arg(Arg::with_name("name").long("name").takes_value(true))
+        .arg(Arg::with_name("type").long("type").takes_value(true))
         .arg(Arg::with_name("output").short("o").takes_value(true))
+        .arg(Arg::with_name("out-dir").long("out-dir").takes_value(true))
         .arg(Arg::with_name("execute").short("e").takes_value(true))
         .arg(
             Arg::with_name("path")
