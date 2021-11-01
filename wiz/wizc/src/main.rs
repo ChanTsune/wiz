@@ -207,7 +207,9 @@ fn main() -> result::Result<(), Box<dyn Error>> {
             String::from(output_path.to_str().unwrap())
         };
 
-        let mut out_path = out_dir.map(PathBuf::from).unwrap_or_else(||env::current_dir().unwrap());
+        let mut out_path = out_dir
+            .map(PathBuf::from)
+            .unwrap_or_else(|| env::current_dir().unwrap());
         out_path.push(output);
 
         println!("Output Path -> {:?}", out_path);
