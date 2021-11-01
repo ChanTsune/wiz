@@ -3,11 +3,10 @@ use clap::ArgMatches;
 use std::env;
 use std::error::Error;
 use std::fs::create_dir_all;
-use std::path::{Path, PathBuf};
+use std::option::Option::Some;
+use std::path::PathBuf;
 
 pub(crate) fn build_command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn Error>> {
-    let wizc = "wizc";
-    let mut args = vec![wizc];
     let target_dir = if let Some(target_dir) = options.value_of("target-dir") {
         let d = PathBuf::from(target_dir);
         if d.exists() && !d.is_dir() {
@@ -23,7 +22,13 @@ pub(crate) fn build_command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn
         current_dir.push("target");
         current_dir
     };
-    args.extend(["--target-dir", &target_dir.to_str().unwrap()]);
+    let name = options.value_of("name");
+
+    let mut args = vec![];
+    args.extend(["--out-dir", &target_dir.to_str().unwrap()]);
+    if let Some(name) = name {
+        args.extend(["--name", name])
+    };
     create_dir_all(&target_dir)?;
-    super::subcommand::execute(wizc, &args)
+    super::subcommand::execute("wizc", &args)
 }
