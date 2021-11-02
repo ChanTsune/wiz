@@ -75,6 +75,11 @@ fn main() -> result::Result<(), Box<dyn Error>> {
     let output = matches.value_of("output");
     let out_dir = matches.value_of("out-dir");
     let paths = matches.values_of_lossy("path").unwrap_or_default();
+    let type_ = matches.value_of("type");
+
+    if let Some(type_) = type_ {
+        let name = matches.value_of("name").unwrap();
+    };
 
     println!("=== parse files ===");
 
