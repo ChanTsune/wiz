@@ -28,11 +28,11 @@ main() {
 }
 
 build_install() {
-    pushd .
+    TMP="$(pwd)"
     cd "wiz/$1"
     cargo build --release
     cp "target/release/$1" "$BIN_DIR/$1"
-    popd
+    cd "$TMP"
 }
 
 install_builtin_lib() {
