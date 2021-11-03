@@ -6,26 +6,41 @@ LIB_DIR="$WIZ_HOME/lib"
 
 echo "WIZ_HOME=$WIZ_HOME"
 echo "BIN_DIR=$BIN_DIR"
+echo "LIB_DIR=$LIB_DIR"
 
 main() {
+    need_cmd mkdir
+    need_cmd touch
+    need_cmd cat
+    need_cmd cp
+    need_cmd echo
+    need_cmd cargo
+
     mkdir -p "$BIN_DIR"
     build_install "wiz"
     build_install "wizc"
 
     install_builtin_lib
 
+    install_shell_env
+
     echo "Installation completed at $BIN_DIR"
-    echo "Add $BIN_DIR to your PATH"
-    echo 'export WIZ_HOME=$HOME/.wiz'
-    echo 'PATH="$WIZ_HOME/bin:$PATH"'
+    ENV_SCRIPT=". \"\$HOME/.wiz/env\""
+    touch ~/.zshrc
+    case "$(cat ~/.zshrc)" in
+        *"$ENV_SCRIPT"*)
+        ;;
+        *)
+        echo "$ENV_SCRIPT" >> ~/.zshrc
+    esac
 }
 
 build_install() {
-    pushd .
+    TMP="$(pwd)"
     cd "wiz/$1"
     cargo build --release
     cp "target/release/$1" "$BIN_DIR/$1"
-    popd
+    cd "$TMP"
 }
 
 install_builtin_lib() {
@@ -34,8 +49,27 @@ install_builtin_lib() {
     copy_lib_src std
 }
 
+install_shell_env() {
+    cp env "$WIZ_HOME"
+}
+
 copy_lib_src() {
     cp -r "$1" "$LIB_DIR/src/$1"
+}
+
+err() {
+    echo "$1" >&2
+    exit 1
+}
+
+need_cmd() {
+    if ! check_cmd "$1"; then
+        err "need '$1' (command not found)"
+    fi
+}
+
+check_cmd() {
+    command -v "$1" > /dev/null 2>&1
 }
 
 main
