@@ -1,6 +1,5 @@
 mod build;
 mod core;
-mod error;
 mod external_subcommand;
 mod init;
 mod new;
@@ -10,7 +9,7 @@ use crate::build::build_command;
 use crate::init::init_command;
 use crate::new::new_command;
 use ansi_term::Color;
-use clap::{crate_version, App, AppSettings, Arg, SubCommand};
+use clap::{App, AppSettings, Arg, crate_version, SubCommand};
 use std::error::Error;
 use std::process::exit;
 

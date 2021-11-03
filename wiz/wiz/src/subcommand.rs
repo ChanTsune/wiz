@@ -1,4 +1,4 @@
-use crate::error::{CliError, ProcessError};
+use crate::core::error::{CliError, ProcessError};
 use std::env;
 use std::error::Error;
 use std::os::unix::process::CommandExt;
