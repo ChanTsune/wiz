@@ -9,6 +9,11 @@ echo "BIN_DIR=$BIN_DIR"
 echo "LIB_DIR=$LIB_DIR"
 
 main() {
+    need_cmd mkdir
+    need_cmd cp
+    need_cmd echo
+    need_cmd cargo
+
     mkdir -p "$BIN_DIR"
     build_install "wiz"
     build_install "wizc"
@@ -47,6 +52,21 @@ install_shell_env() {
 
 copy_lib_src() {
     cp -r "$1" "$LIB_DIR/src/$1"
+}
+
+err() {
+    echo "$1" >&2
+    exit 1
+}
+
+need_cmd() {
+    if ! check_cmd "$1"; then
+        err "need '$1' (command not found)"
+    fi
+}
+
+check_cmd() {
+    command -v "$1" > /dev/null 2>&1
 }
 
 main
