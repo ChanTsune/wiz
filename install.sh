@@ -18,7 +18,13 @@ main() {
     install_shell_env
 
     echo "Installation completed at $BIN_DIR"
-    echo ". \"\$HOME/.wiz/env\"" >> ~/.zshrc
+    ENV_SCRIPT=". \"\$HOME/.wiz/env\""
+    case "$(cat ~/.zshrc)" in
+        *"$ENV_SCRIPT"*)
+        ;;
+        *)
+        echo "$ENV_SCRIPT" >> ~/.zshrc
+    esac
 }
 
 build_install() {
