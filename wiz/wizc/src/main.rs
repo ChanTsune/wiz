@@ -1,9 +1,7 @@
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::type_resolver::TypeResolver;
-use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::Ast2HLIR;
 use crate::llvm_ir::codegen::{CodeGen, MLContext};
-use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::HLIR2MLIR;
 use clap::{App, Arg};
 use inkwell::context::Context;
@@ -12,13 +10,12 @@ use inkwell::OptimizationLevel;
 use std::error::Error;
 use std::option::Option::Some;
 use std::path::{Path, PathBuf};
-use std::process::exit;
 use std::{env, result};
 use wiz_syntax::parser;
 use wiz_syntax::parser::wiz::{
-    parse_from_file_path, parse_from_file_path_str, read_package_from_path,
+    parse_from_file_path, read_package_from_path,
 };
-use wiz_syntax::syntax::file::{SourceSet, WizFile};
+use wiz_syntax::syntax::file::{SourceSet};
 
 mod constants;
 mod ext;
