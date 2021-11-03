@@ -18,7 +18,7 @@ use wiz_syntax::parser;
 use wiz_syntax::parser::wiz::{
     parse_from_file_path, parse_from_file_path_str, read_package_from_path,
 };
-use wiz_syntax::syntax::file::WizFile;
+use wiz_syntax::syntax::file::{SourceSet, WizFile};
 
 mod constants;
 mod ext;
@@ -46,8 +46,9 @@ fn get_builtin_lib() -> Vec<&'static str> {
 }
 
 fn main() -> result::Result<(), Box<dyn Error>> {
+    println!("Args {:?}", env::args());
     let app = App::new("wizc")
-        .arg(Arg::with_name("input").required(true).multiple(true))
+        .arg(Arg::with_name("input").required(true))
         .arg(Arg::with_name("name").long("name").takes_value(true))
         .arg(
             Arg::with_name("type")
@@ -71,14 +72,18 @@ fn main() -> result::Result<(), Box<dyn Error>> {
                 .multiple(true),
         );
     let matches = app.get_matches();
-    let inputs = matches.values_of_lossy("input").unwrap();
+    let input = matches.value_of("input").unwrap();
     let output = matches.value_of("output");
     let out_dir = matches.value_of("out-dir");
     let paths = matches.values_of_lossy("path").unwrap_or_default();
-    let type_ = matches.value_of("type");
+    let input = Path::new(input);
 
-    if let Some(type_) = type_ {
+    let input_source = if input.is_dir() {
+        let type_ = matches.value_of("type").unwrap();
         let name = matches.value_of("name").unwrap();
+        read_package_from_path(input)?
+    } else {
+        SourceSet::File(parse_from_file_path(input)?)
     };
 
     println!("=== parse files ===");
@@ -118,12 +123,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         .map(|s| ast2hlir.source_set(s))
         .collect();
 
-    let ast_files = inputs
-        .iter()
-        .map(|s| parse_from_file_path_str(s))
-        .collect::<parser::result::Result<Vec<_>>>()?;
-
-    let hlfiles: Vec<TypedFile> = ast_files.into_iter().map(|f| ast2hlir.file(f)).collect();
+    let hlfiles = ast2hlir.source_set(input_source);
 
     println!("=== resolve type ===");
 
@@ -136,9 +136,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         type_resolver.detect_type_from_source_set(s)?;
     }
 
-    for hlir in hlfiles.iter() {
-        type_resolver.detect_type(hlir)?;
-    }
+    type_resolver.detect_type_from_source_set(&hlfiles)?;
 
     println!("===== preload decls =====");
     // preload decls
@@ -146,9 +144,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         type_resolver.preload_source_set(hlir.clone())?;
     }
 
-    for hlir in hlfiles.iter() {
-        type_resolver.preload_file(hlir.clone())?;
-    }
+    type_resolver.preload_source_set(hlfiles.clone())?;
 
     println!("===== resolve types =====");
     // resolve types
@@ -158,10 +154,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         .map(|s| type_resolver.source_set(s))
         .collect::<Result<Vec<_>>>()?;
 
-    let hlfiles = hlfiles
-        .into_iter()
-        .map(|f| type_resolver.file(f))
-        .collect::<Result<Vec<TypedFile>>>()?;
+    let hlfiles = type_resolver.source_set(hlfiles)?;
 
     println!("===== convert to mlir =====");
 
@@ -178,7 +171,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         println!("{}", m.to_string());
     }
 
-    let mlfiles: Vec<MLFile> = hlfiles.into_iter().map(|f| hlir2mlir.file(f)).collect();
+    let mlfiles = hlir2mlir.source_set(hlfiles);
 
     for m in mlfiles.iter() {
         println!("==== {} ====", m.name);
@@ -205,12 +198,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         codegen.file(mlfile.clone());
 
         let output = if let Some(output) = output {
-            if inputs.len() == 1 {
-                String::from(output)
-            } else {
-                eprintln!("multiple file detected, can not use -o option");
-                exit(-1)
-            }
+            String::from(output)
         } else {
             let mut output_path = Path::new(&mlfile.name).to_path_buf();
             output_path.set_extension("ll");
