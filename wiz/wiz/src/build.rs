@@ -25,13 +25,12 @@ pub(crate) fn build_command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn
         current_dir.push("target");
         current_dir
     };
-    let name = options.value_of("name");
 
-    let mut args = vec![];
+    let mut args = vec![ws.cws.to_str().unwrap()];
     args.extend(["--out-dir", &target_dir.to_str().unwrap()]);
-    if let Some(name) = name {
-        args.extend(["--name", name])
-    };
+
+    args.extend(["--name", ws.cws.file_name().unwrap().to_str().unwrap()]);
+    args.extend(["--type", "bin"]);
     create_dir_all(&target_dir)?;
     super::subcommand::execute("wizc", &args)
 }

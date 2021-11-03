@@ -49,7 +49,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
             Arg::with_name("type")
                 .long("type")
                 .takes_value(true)
-                .value_names(&["bin", "test", "lib"]),
+                .possible_values(&["bin", "test", "lib"]),
         )
         .arg(Arg::with_name("output").short("o").takes_value(true))
         .arg(Arg::with_name("out-dir").long("out-dir").takes_value(true))
@@ -124,6 +124,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
 
     let mut type_resolver = TypeResolver::new();
     type_resolver.global_use(vec!["core", "builtin", "*"]);
+    type_resolver.global_use(vec!["std", "builtin", "*"]);
 
     println!("===== detect types =====");
     // detect types

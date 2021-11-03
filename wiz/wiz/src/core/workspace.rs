@@ -3,8 +3,8 @@ use std::convert::TryFrom;
 use std::path::{Path, PathBuf};
 
 pub(crate) struct Workspace {
-    cws: PathBuf,
-    manifest: PathBuf,
+    pub(crate) cws: PathBuf,
+    pub(crate) manifest: PathBuf,
 }
 
 pub(crate) fn construct_workspace_from(cws: PathBuf) -> Result<Workspace, CliError> {
