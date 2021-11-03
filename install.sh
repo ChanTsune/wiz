@@ -10,6 +10,8 @@ echo "LIB_DIR=$LIB_DIR"
 
 main() {
     need_cmd mkdir
+    need_cmd touch
+    need_cmd cat
     need_cmd cp
     need_cmd echo
     need_cmd cargo
@@ -24,6 +26,7 @@ main() {
 
     echo "Installation completed at $BIN_DIR"
     ENV_SCRIPT=". \"\$HOME/.wiz/env\""
+    touch ~/.zshrc
     case "$(cat ~/.zshrc)" in
         *"$ENV_SCRIPT"*)
         ;;
