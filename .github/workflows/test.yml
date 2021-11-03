@@ -4,7 +4,7 @@ on:
   push:
 
 jobs:
-  build:
+  rust_doc_test:
     strategy:
       matrix:
         os:
@@ -18,7 +18,6 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            ./wiz/target          
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: Cache LLVM and Clang
         id: cache-llvm
@@ -39,7 +38,40 @@ jobs:
         run: cd wiz/wiz_syntax && cargo test --release
       - name: run test wizc
         run: cd wiz/wizc && cargo test --release
-      - name: run wizc compile
-        run: cd wiz/wizc && cargo run --release -- ../../helloworld.wiz -o ../../out.ll -p ../../
-      - name: run llvm-ir compile
-        run: clang out.ll
+  run_wiz_test:
+    strategy:
+      matrix:
+        os:
+        - ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2.3.5
+      - name: Cache cargo
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Cache LLVM and Clang
+        id: cache-llvm
+        uses: actions/cache@v2
+        with:
+          path: |
+            C:/Program Files/LLVM
+            ./llvm
+          key: llvm-11
+      - name: Install LLVM and Clang
+        uses: KyleMayes/install-llvm-action@v1
+        with:
+          version: "11.0"
+          cached: ${{ steps.cache-llvm.outputs.cache-hit }}
+      - name: install wiz
+        run: sh install.sh
+      - name: create wiz project
+        run: |
+          . ~/.wiz/env
+          wiz new test_project
+          cd test_project
+          wiz build
+          clang target/main.ll
