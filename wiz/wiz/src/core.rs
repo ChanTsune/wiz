@@ -4,8 +4,8 @@ use std::fs::{create_dir_all, File};
 use std::io::{BufWriter, Write};
 use std::path::Path;
 
-pub mod workspace;
 pub mod error;
+pub mod workspace;
 
 pub(crate) fn create_project(path: &Path, project_name: &str) -> Result<(), Box<dyn Error>> {
     if path.read_dir()?.next().is_some() {
