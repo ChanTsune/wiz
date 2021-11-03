@@ -522,7 +522,7 @@ impl TypeResolver {
                 Some(body) => Some(self.typed_fun_body(body)?),
             },
             return_type: match mf.return_type {
-                Some(b) => Some(self.context.full_type_name(b.clone())?),
+                Some(b) => Some(self.context.full_type_name(b)?),
                 None => {
                     todo!()
                 }
