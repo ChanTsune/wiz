@@ -1,6 +1,5 @@
 mod build;
 mod core;
-mod error;
 mod external_subcommand;
 mod init;
 mod new;

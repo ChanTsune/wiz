@@ -1,9 +1,7 @@
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::type_resolver::TypeResolver;
-use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::Ast2HLIR;
 use crate::llvm_ir::codegen::{CodeGen, MLContext};
-use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::HLIR2MLIR;
 use clap::{App, Arg};
 use inkwell::context::Context;
@@ -12,13 +10,10 @@ use inkwell::OptimizationLevel;
 use std::error::Error;
 use std::option::Option::Some;
 use std::path::{Path, PathBuf};
-use std::process::exit;
-use std::result;
+use std::{env, result};
 use wiz_syntax::parser;
-use wiz_syntax::parser::wiz::{
-    parse_from_file_path, parse_from_file_path_str, read_package_from_path,
-};
-use wiz_syntax::syntax::file::WizFile;
+use wiz_syntax::parser::wiz::{parse_from_file_path, read_package_from_path};
+use wiz_syntax::syntax::file::SourceSet;
 
 mod constants;
 mod ext;
@@ -46,9 +41,18 @@ fn get_builtin_lib() -> Vec<&'static str> {
 }
 
 fn main() -> result::Result<(), Box<dyn Error>> {
+    println!("Args {:?}", env::args());
     let app = App::new("wizc")
-        .arg(Arg::with_name("input").required(true).multiple(true))
+        .arg(Arg::with_name("input").required(true))
+        .arg(Arg::with_name("name").long("name").takes_value(true))
+        .arg(
+            Arg::with_name("type")
+                .long("type")
+                .takes_value(true)
+                .possible_values(&["bin", "test", "lib"]),
+        )
         .arg(Arg::with_name("output").short("o").takes_value(true))
+        .arg(Arg::with_name("out-dir").long("out-dir").takes_value(true))
         .arg(Arg::with_name("execute").short("e").takes_value(true))
         .arg(
             Arg::with_name("path")
@@ -63,9 +67,19 @@ fn main() -> result::Result<(), Box<dyn Error>> {
                 .multiple(true),
         );
     let matches = app.get_matches();
-    let inputs = matches.values_of_lossy("input").unwrap();
+    let input = matches.value_of("input").unwrap();
     let output = matches.value_of("output");
+    let out_dir = matches.value_of("out-dir");
     let paths = matches.values_of_lossy("path").unwrap_or_default();
+    let input = Path::new(input);
+
+    let input_source = if input.is_dir() {
+        let type_ = matches.value_of("type").unwrap();
+        let name = matches.value_of("name").unwrap();
+        read_package_from_path(input)?
+    } else {
+        SourceSet::File(parse_from_file_path(input)?)
+    };
 
     println!("=== parse files ===");
 
@@ -104,17 +118,13 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         .map(|s| ast2hlir.source_set(s))
         .collect();
 
-    let ast_files = inputs
-        .iter()
-        .map(|s| parse_from_file_path_str(s))
-        .collect::<parser::result::Result<Vec<_>>>()?;
-
-    let hlfiles: Vec<TypedFile> = ast_files.into_iter().map(|f| ast2hlir.file(f)).collect();
+    let hlfiles = ast2hlir.source_set(input_source);
 
     println!("=== resolve type ===");
 
     let mut type_resolver = TypeResolver::new();
     type_resolver.global_use(vec!["core", "builtin", "*"]);
+    type_resolver.global_use(vec!["std", "builtin", "*"]);
 
     println!("===== detect types =====");
     // detect types
@@ -122,9 +132,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         type_resolver.detect_type_from_source_set(s)?;
     }
 
-    for hlir in hlfiles.iter() {
-        type_resolver.detect_type(hlir)?;
-    }
+    type_resolver.detect_type_from_source_set(&hlfiles)?;
 
     println!("===== preload decls =====");
     // preload decls
@@ -132,9 +140,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         type_resolver.preload_source_set(hlir.clone())?;
     }
 
-    for hlir in hlfiles.iter() {
-        type_resolver.preload_file(hlir.clone())?;
-    }
+    type_resolver.preload_source_set(hlfiles.clone())?;
 
     println!("===== resolve types =====");
     // resolve types
@@ -144,10 +150,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         .map(|s| type_resolver.source_set(s))
         .collect::<Result<Vec<_>>>()?;
 
-    let hlfiles = hlfiles
-        .into_iter()
-        .map(|f| type_resolver.file(f))
-        .collect::<Result<Vec<TypedFile>>>()?;
+    let hlfiles = type_resolver.source_set(hlfiles)?;
 
     println!("===== convert to mlir =====");
 
@@ -164,7 +167,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         println!("{}", m.to_string());
     }
 
-    let mlfiles: Vec<MLFile> = hlfiles.into_iter().map(|f| hlir2mlir.file(f)).collect();
+    let mlfiles = hlir2mlir.source_set(hlfiles);
 
     for m in mlfiles.iter() {
         println!("==== {} ====", m.name);
@@ -188,24 +191,24 @@ fn main() -> result::Result<(), Box<dyn Error>> {
             codegen.file(m.clone());
         }
 
+        codegen.file(mlfile.clone());
+
         let output = if let Some(output) = output {
-            if inputs.len() == 1 {
-                String::from(output)
-            } else {
-                eprintln!("multiple file detected, can not use -o option");
-                exit(-1)
-            }
+            String::from(output)
         } else {
             let mut output_path = Path::new(&mlfile.name).to_path_buf();
             output_path.set_extension("ll");
             String::from(output_path.to_str().unwrap())
         };
 
-        codegen.file(mlfile.clone());
+        let mut out_path = out_dir
+            .map(PathBuf::from)
+            .unwrap_or_else(|| env::current_dir().unwrap());
+        out_path.push(output);
 
-        println!("Output Path -> {:?}", output);
+        println!("Output Path -> {:?}", out_path);
 
-        codegen.print_to_file(Path::new(&output))?;
+        codegen.print_to_file(out_path)?;
 
         if let Some(fun_name) = matches.value_of("execute") {
             unsafe {
