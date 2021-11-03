@@ -1,0 +1,11 @@
+#!/bin/sh
+# wiz shell setup
+# affix colons on either side of $PATH to simplify matching
+case ":${PATH}:" in
+    *:"$HOME/.wiz/bin":*)
+        ;;
+    *)
+        # Prepending path in case a system-installed rustc needs to be overridden
+        export PATH="$HOME/.wiz/bin:$PATH"
+        ;;
+esac

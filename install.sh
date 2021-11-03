@@ -6,6 +6,7 @@ LIB_DIR="$WIZ_HOME/lib"
 
 echo "WIZ_HOME=$WIZ_HOME"
 echo "BIN_DIR=$BIN_DIR"
+echo "LIB_DIR=$LIB_DIR"
 
 main() {
     mkdir -p "$BIN_DIR"
@@ -14,10 +15,10 @@ main() {
 
     install_builtin_lib
 
+    install_shell_env
+
     echo "Installation completed at $BIN_DIR"
-    echo "Add $BIN_DIR to your PATH"
-    echo 'export WIZ_HOME=$HOME/.wiz'
-    echo 'PATH="$WIZ_HOME/bin:$PATH"'
+    echo ". \"\$HOME/.wiz/env\"" >> ~/.zshrc
 }
 
 build_install() {
@@ -32,6 +33,10 @@ install_builtin_lib() {
     mkdir -p "$LIB_DIR/src"
     copy_lib_src core
     copy_lib_src std
+}
+
+install_shell_env() {
+    cp env "$WIZ_HOME"
 }
 
 copy_lib_src() {
