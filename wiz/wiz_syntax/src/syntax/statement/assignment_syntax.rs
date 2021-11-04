@@ -1,7 +1,7 @@
 use crate::syntax::expression::Expr;
-use crate::syntax::Syntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
+use crate::syntax::Syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum AssignmentStmt {
@@ -45,7 +45,7 @@ impl Syntax for AssignmentSyntax {
         Self {
             target: self.target.with_leading_trivia(trivia),
             operator: self.operator,
-            value: self.value
+            value: self.value,
         }
     }
 
@@ -53,7 +53,7 @@ impl Syntax for AssignmentSyntax {
         Self {
             target: self.target,
             operator: self.operator,
-            value: self.value.with_trailing_trivia(trivia)
+            value: self.value.with_trailing_trivia(trivia),
         }
     }
 }
@@ -70,7 +70,7 @@ impl Syntax for AssignmentAndOperatorSyntax {
         Self {
             target: self.target.with_leading_trivia(trivia),
             operator: self.operator,
-            value: self.value
+            value: self.value,
         }
     }
 
@@ -78,7 +78,7 @@ impl Syntax for AssignmentAndOperatorSyntax {
         Self {
             target: self.target,
             operator: self.operator,
-            value: self.value.with_trailing_trivia(trivia)
+            value: self.value.with_trailing_trivia(trivia),
         }
     }
 }
