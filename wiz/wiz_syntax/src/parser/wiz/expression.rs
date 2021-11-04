@@ -1262,8 +1262,8 @@ mod tests {
         postfix_suffix, raw_string_literal, return_expr, string_literal, value_arguments,
     };
     use crate::syntax::block::BlockSyntax;
-    use crate::syntax::decl::VarSyntax;
     use crate::syntax::decl::Decl;
+    use crate::syntax::decl::VarSyntax;
     use crate::syntax::expression::{
         ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallExprSyntax, Expr,
         IfExprSyntax, MemberSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax,
