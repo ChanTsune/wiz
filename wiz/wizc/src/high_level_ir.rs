@@ -25,7 +25,7 @@ use wiz_syntax::syntax::block::BlockSyntax;
 use wiz_syntax::syntax::decl::fun_syntax::arg_def::ArgDef;
 use wiz_syntax::syntax::decl::fun_syntax::body_def::FunBody;
 use wiz_syntax::syntax::decl::fun_syntax::FunSyntax;
-use wiz_syntax::syntax::decl::var_syntax::VarSyntax;
+use wiz_syntax::syntax::decl::VarSyntax;
 use wiz_syntax::syntax::decl::{
     Decl, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax,
     StructSyntax, UseSyntax,

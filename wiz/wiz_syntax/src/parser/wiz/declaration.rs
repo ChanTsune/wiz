@@ -15,7 +15,7 @@ use crate::syntax::block::BlockSyntax;
 use crate::syntax::decl::fun_syntax::arg_def::{ArgDef, SelfArgDefSyntax, ValueArgDef};
 use crate::syntax::decl::fun_syntax::body_def::FunBody;
 use crate::syntax::decl::fun_syntax::FunSyntax;
-use crate::syntax::decl::var_syntax::VarSyntax;
+use crate::syntax::decl::VarSyntax;
 use crate::syntax::decl::{
     AliasSyntax, Decl, DeinitializerSyntax, InitializerSyntax, MethodSyntax, PackageName,
     StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax,
@@ -852,7 +852,7 @@ mod tests {
     use crate::syntax::decl::fun_syntax::arg_def::{ArgDef, ValueArgDef};
     use crate::syntax::decl::fun_syntax::body_def::FunBody;
     use crate::syntax::decl::fun_syntax::FunSyntax;
-    use crate::syntax::decl::var_syntax::VarSyntax;
+    use crate::syntax::decl::VarSyntax;
     use crate::syntax::decl::{
         AliasSyntax, Decl, MethodSyntax, PackageName, StoredPropertySyntax, StructPropertySyntax,
         StructSyntax, UseSyntax,
