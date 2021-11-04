@@ -261,9 +261,7 @@ impl TypeResolver {
 
     pub fn file(&mut self, f: TypedFile) -> Result<TypedFile> {
         let name = f.name.clone();
-        if name != String::from("builtin.ll") {
-            self.context.push_name_space(f.name.clone());
-        };
+        self.context.push_name_space(f.name.clone());
         for u in f.uses.iter() {
             self.context.use_name_space(u.package.names.clone());
         }
@@ -279,9 +277,7 @@ impl TypeResolver {
         for u in f.uses.into_iter() {
             self.context.unuse_name_space(u.package.names);
         }
-        if name != String::from("builtin.ll") {
-            self.context.pop_name_space();
-        };
+        self.context.pop_name_space();
         result
     }
 
