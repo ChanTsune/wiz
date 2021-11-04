@@ -1,6 +1,5 @@
 use crate::core::error::CliError;
-use std::convert::TryFrom;
-use std::path::{Path, PathBuf};
+use std::path::{PathBuf};
 
 pub(crate) struct Workspace {
     pub(crate) cws: PathBuf,
