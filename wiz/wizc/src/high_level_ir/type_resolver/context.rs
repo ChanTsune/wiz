@@ -387,7 +387,7 @@ impl ResolverContext {
                     .get_type(&v.name)
                     .ok_or(ResolverError::from(format!("Can not resolve type {:?}", t)))?;
                 rs.get_instance_member_type(&name)
-                    .map(|it| it.clone())
+                    .cloned()
                     .ok_or(ResolverError::from(format!("{:?} not has {:?}", t, name)))
             }
             TypedType::Type(v) => {
@@ -397,7 +397,7 @@ impl ResolverContext {
                     .ok_or(ResolverError::from(format!("Can not resolve type {:?}", t)))?;
                 rs.static_functions
                     .get(&name)
-                    .map(|it| it.clone())
+                    .cloned()
                     .ok_or(ResolverError::from(format!("{:?} not has {:?}", t, name)))
             }
             _ => todo!("dose not impl"),
