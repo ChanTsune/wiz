@@ -61,7 +61,7 @@ impl HLIR2MLIRContext {
 
     pub(crate) fn declaration_has_annotation(
         &self,
-        declaration_name: &String,
+        declaration_name: &str,
         annotation: &str,
     ) -> bool {
         let an = self.declaration_annotations.get(declaration_name);
@@ -75,7 +75,7 @@ impl HLIR2MLIRContext {
         self.structs.get(typ).unwrap()
     }
 
-    pub(crate) fn struct_has_field(&self, typ: &MLValueType, field_name: &String) -> bool {
+    pub(crate) fn struct_has_field(&self, typ: &MLValueType, field_name: &str) -> bool {
         self.get_struct(typ)
             .fields
             .iter()

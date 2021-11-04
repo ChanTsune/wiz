@@ -82,7 +82,7 @@ impl ResolverStruct {
         }
     }
 
-    pub(crate) fn get_instance_member_type(&self, name: &String) -> Option<&TypedType> {
+    pub(crate) fn get_instance_member_type(&self, name: &str) -> Option<&TypedType> {
         if let Some(t) = self.stored_properties.get(name) {
             Some(t)
         } else if let Some(t) = self.computed_properties.get(name) {
@@ -145,11 +145,11 @@ impl NameSpace {
         self.types.insert(name, s);
     }
 
-    pub(crate) fn get_type(&self, name: &String) -> Option<&ResolverStruct> {
+    pub(crate) fn get_type(&self, name: &str) -> Option<&ResolverStruct> {
         self.types.get(name)
     }
 
-    pub(crate) fn get_type_mut(&mut self, name: &String) -> Option<&mut ResolverStruct> {
+    pub(crate) fn get_type_mut(&mut self, name: &str) -> Option<&mut ResolverStruct> {
         self.types.get_mut(name)
     }
 
@@ -157,7 +157,7 @@ impl NameSpace {
         self.values.insert(name, type_);
     }
 
-    pub(crate) fn get_value(&self, name: &String) -> Option<&TypedType> {
+    pub(crate) fn get_value(&self, name: &str) -> Option<&TypedType> {
         self.values.get(name)
     }
 }
