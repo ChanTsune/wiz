@@ -16,7 +16,10 @@ use crate::syntax::decl::fun_syntax::arg_def::{ArgDef, SelfArgDefSyntax, ValueAr
 use crate::syntax::decl::fun_syntax::body_def::FunBody;
 use crate::syntax::decl::fun_syntax::FunSyntax;
 use crate::syntax::decl::var_syntax::VarSyntax;
-use crate::syntax::decl::{AliasSyntax, Decl, DeinitializerSyntax, InitializerSyntax, MethodSyntax, PackageName, StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax};
+use crate::syntax::decl::{
+    AliasSyntax, Decl, DeinitializerSyntax, InitializerSyntax, MethodSyntax, PackageName,
+    StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax,
+};
 use crate::syntax::expression::Expr;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::type_name::{
@@ -807,11 +810,9 @@ where
             annotations: None,
             use_keyword: TokenSyntax::from(u),
             package_name: pkg,
-            alias: alias.map(|(lws, a, rws, n)| {
-                AliasSyntax {
-                    as_keyword: TokenSyntax::from(a).with_leading_trivia(lws),
-                    name: TokenSyntax::from(n).with_leading_trivia(rws)
-                }
+            alias: alias.map(|(lws, a, rws, n)| AliasSyntax {
+                as_keyword: TokenSyntax::from(a).with_leading_trivia(lws),
+                name: TokenSyntax::from(n).with_leading_trivia(rws),
             }),
         },
     )(s)
@@ -852,7 +853,10 @@ mod tests {
     use crate::syntax::decl::fun_syntax::body_def::FunBody;
     use crate::syntax::decl::fun_syntax::FunSyntax;
     use crate::syntax::decl::var_syntax::VarSyntax;
-    use crate::syntax::decl::{AliasSyntax, Decl, MethodSyntax, PackageName, StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax};
+    use crate::syntax::decl::{
+        AliasSyntax, Decl, MethodSyntax, PackageName, StoredPropertySyntax, StructPropertySyntax,
+        StructSyntax, UseSyntax,
+    };
     use crate::syntax::expression::{BinaryOperationSyntax, Expr, NameExprSyntax};
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::statement::Stmt;

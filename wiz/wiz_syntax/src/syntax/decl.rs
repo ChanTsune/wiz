@@ -3,16 +3,16 @@ use fun_syntax::body_def::FunBody;
 
 use crate::syntax::annotation::{Annotatable, AnnotationsSyntax};
 use crate::syntax::decl::fun_syntax::FunSyntax;
+pub use crate::syntax::decl::use_syntax::{AliasSyntax, PackageName, UseSyntax};
 use crate::syntax::decl::var_syntax::VarSyntax;
-pub use crate::syntax::decl::use_syntax::{AliasSyntax, UseSyntax, PackageName};
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::type_name::{TypeConstraintsSyntax, TypeName, TypeParameterListSyntax};
 use crate::syntax::Syntax;
 
 pub mod fun_syntax;
-pub mod var_syntax;
 mod use_syntax;
+pub mod var_syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Decl {

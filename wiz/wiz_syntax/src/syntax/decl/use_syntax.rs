@@ -1,7 +1,7 @@
 use crate::syntax::annotation::{Annotatable, AnnotationsSyntax};
-use crate::syntax::Syntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
+use crate::syntax::Syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct UseSyntax {
@@ -25,14 +25,14 @@ impl Syntax for UseSyntax {
                 annotations: None,
                 use_keyword: self.use_keyword,
                 package_name: self.package_name,
-                alias: None
+                alias: None,
             }
         } else {
             Self {
                 annotations: None,
                 use_keyword: self.use_keyword.with_leading_trivia(trivia),
                 package_name: self.package_name,
-                alias: None
+                alias: None,
             }
         }
     }
@@ -42,7 +42,7 @@ impl Syntax for UseSyntax {
             annotations: self.annotations,
             use_keyword: self.use_keyword,
             package_name: self.package_name,
-            alias: self.alias
+            alias: self.alias,
         }
     }
 }
