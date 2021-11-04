@@ -21,22 +21,18 @@ impl Annotatable for UseSyntax {
 impl Syntax for UseSyntax {
     fn with_leading_trivia(self, trivia: Trivia) -> Self {
         match self.annotations {
-            None => {
-                Self {
-                    annotations: None,
-                    use_keyword: self.use_keyword.with_leading_trivia(trivia),
-                    package_name: self.package_name,
-                    alias: self.alias,
-                }
-            }
-            Some(annotations) => {
-                Self {
-                    annotations: Some(annotations.with_leading_trivia(trivia)),
-                    use_keyword: self.use_keyword,
-                    package_name: self.package_name,
-                    alias: self.alias,
-                }
-            }
+            None => Self {
+                annotations: None,
+                use_keyword: self.use_keyword.with_leading_trivia(trivia),
+                package_name: self.package_name,
+                alias: self.alias,
+            },
+            Some(annotations) => Self {
+                annotations: Some(annotations.with_leading_trivia(trivia)),
+                use_keyword: self.use_keyword,
+                package_name: self.package_name,
+                alias: self.alias,
+            },
         }
     }
 
@@ -51,14 +47,12 @@ impl Syntax for UseSyntax {
                     alias: None,
                 }
             }
-            Some(alias) => {
-                Self {
-                    annotations: self.annotations,
-                    use_keyword: self.use_keyword,
-                    package_name: self.package_name,
-                    alias: Some(alias.with_trailing_trivia(trivia)),
-                }
-            }
+            Some(alias) => Self {
+                annotations: self.annotations,
+                use_keyword: self.use_keyword,
+                package_name: self.package_name,
+                alias: Some(alias.with_trailing_trivia(trivia)),
+            },
         }
     }
 }
@@ -78,14 +72,14 @@ impl Syntax for AliasSyntax {
     fn with_leading_trivia(self, trivia: Trivia) -> Self {
         Self {
             as_keyword: self.as_keyword.with_leading_trivia(trivia),
-            name: self.name
+            name: self.name,
         }
     }
 
     fn with_trailing_trivia(self, trivia: Trivia) -> Self {
         Self {
             as_keyword: self.as_keyword,
-            name: self.name.with_trailing_trivia(trivia)
+            name: self.name.with_trailing_trivia(trivia),
         }
     }
 }

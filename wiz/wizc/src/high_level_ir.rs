@@ -456,7 +456,7 @@ impl Ast2HLIR {
             package: Package {
                 names: u.package_name.names,
             },
-            alias: u.alias.map(|a|a.name.token),
+            alias: u.alias.map(|a| a.name.token),
         }
     }
 
