@@ -4,6 +4,7 @@ use fun_syntax::body_def::FunBody;
 use crate::syntax::annotation::{Annotatable, AnnotationsSyntax};
 use crate::syntax::decl::fun_syntax::FunSyntax;
 use crate::syntax::decl::var_syntax::VarSyntax;
+pub use crate::syntax::decl::use_syntax::{AliasSyntax, UseSyntax, PackageName};
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::type_name::{TypeConstraintsSyntax, TypeName, TypeParameterListSyntax};
@@ -11,6 +12,7 @@ use crate::syntax::Syntax;
 
 pub mod fun_syntax;
 pub mod var_syntax;
+mod use_syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Decl {
@@ -159,25 +161,6 @@ pub struct MethodSyntax {
     pub return_type: Option<TypeName>,
     pub type_constraints: Option<TypeConstraintsSyntax>,
     pub body: Option<FunBody>,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct UseSyntax {
-    pub annotations: Option<AnnotationsSyntax>,
-    pub package_name: PackageName,
-    pub alias: Option<String>,
-}
-
-impl Annotatable for UseSyntax {
-    fn with_annotation(mut self, a: AnnotationsSyntax) -> Self {
-        self.annotations = Some(a);
-        self
-    }
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct PackageName {
-    pub names: Vec<String>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
