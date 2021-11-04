@@ -97,7 +97,7 @@ impl Ast2HLIR {
             Some(a) => TypedAnnotations::from(
                 a.annotations
                     .into_iter()
-                    .map(|a| a.name.token)
+                    .map(|a| a.element.token)
                     .collect::<Vec<String>>(),
             ),
         }
@@ -456,7 +456,7 @@ impl Ast2HLIR {
             package: Package {
                 names: u.package_name.names,
             },
-            alias: u.alias,
+            alias: u.alias.map(|a|a.name.token),
         }
     }
 

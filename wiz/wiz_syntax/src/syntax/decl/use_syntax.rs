@@ -20,29 +20,45 @@ impl Annotatable for UseSyntax {
 
 impl Syntax for UseSyntax {
     fn with_leading_trivia(self, trivia: Trivia) -> Self {
-        if self.annotations.is_some() {
-            Self {
-                annotations: None,
-                use_keyword: self.use_keyword,
-                package_name: self.package_name,
-                alias: None,
+        match self.annotations {
+            None => {
+                Self {
+                    annotations: None,
+                    use_keyword: self.use_keyword.with_leading_trivia(trivia),
+                    package_name: self.package_name,
+                    alias: self.alias,
+                }
             }
-        } else {
-            Self {
-                annotations: None,
-                use_keyword: self.use_keyword.with_leading_trivia(trivia),
-                package_name: self.package_name,
-                alias: None,
+            Some(annotations) => {
+                Self {
+                    annotations: Some(annotations.with_leading_trivia(trivia)),
+                    use_keyword: self.use_keyword,
+                    package_name: self.package_name,
+                    alias: self.alias,
+                }
             }
         }
     }
 
     fn with_trailing_trivia(self, trivia: Trivia) -> Self {
-        Self {
-            annotations: self.annotations,
-            use_keyword: self.use_keyword,
-            package_name: self.package_name,
-            alias: self.alias,
+        match self.alias {
+            None => {
+                todo!();
+                Self {
+                    annotations: self.annotations,
+                    use_keyword: self.use_keyword,
+                    package_name: self.package_name,
+                    alias: None,
+                }
+            }
+            Some(alias) => {
+                Self {
+                    annotations: self.annotations,
+                    use_keyword: self.use_keyword,
+                    package_name: self.package_name,
+                    alias: Some(alias.with_trailing_trivia(trivia)),
+                }
+            }
         }
     }
 }
@@ -56,4 +72,20 @@ pub struct PackageName {
 pub struct AliasSyntax {
     pub as_keyword: TokenSyntax,
     pub name: TokenSyntax,
+}
+
+impl Syntax for AliasSyntax {
+    fn with_leading_trivia(self, trivia: Trivia) -> Self {
+        Self {
+            as_keyword: self.as_keyword.with_leading_trivia(trivia),
+            name: self.name
+        }
+    }
+
+    fn with_trailing_trivia(self, trivia: Trivia) -> Self {
+        Self {
+            as_keyword: self.as_keyword,
+            name: self.name.with_trailing_trivia(trivia)
+        }
+    }
 }

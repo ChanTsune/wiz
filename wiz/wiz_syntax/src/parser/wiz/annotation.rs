@@ -37,7 +37,7 @@ where
             let mut annotations: Vec<_> = v
                 .into_iter()
                 .map(|(lws, a, rws, cma)| Annotation {
-                    name: TokenSyntax::from(a).with_leading_trivia(lws),
+                    element: TokenSyntax::from(a).with_leading_trivia(lws),
                     trailing_comma: Some(TokenSyntax::from(cma).with_leading_trivia(rws)),
                 })
                 .collect();
@@ -48,7 +48,7 @@ where
                 }
                 Some(p) => {
                     annotations.push(Annotation {
-                        name: TokenSyntax::from(p).with_leading_trivia(ws),
+                        element: TokenSyntax::from(p).with_leading_trivia(ws),
                         trailing_comma: None,
                     });
                     close = close.with_leading_trivia(tws);
@@ -79,7 +79,7 @@ mod tests {
                 AnnotationsSyntax {
                     open: TokenSyntax::from("#["),
                     annotations: vec![Annotation {
-                        name: TokenSyntax::from("no_mangle"),
+                        element: TokenSyntax::from("no_mangle"),
                         trailing_comma: None,
                     }],
                     close: TokenSyntax::from("]"),
