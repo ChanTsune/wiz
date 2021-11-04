@@ -1,9 +1,9 @@
 use crate::syntax::annotation::{Annotatable, AnnotationsSyntax};
 use crate::syntax::expression::Expr;
-use crate::syntax::Syntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::type_name::TypeName;
+use crate::syntax::Syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct VarSyntax {
@@ -24,24 +24,20 @@ impl Annotatable for VarSyntax {
 impl Syntax for VarSyntax {
     fn with_leading_trivia(self, trivia: Trivia) -> Self {
         match self.annotations {
-            None => {
-                Self {
-                    annotations: None,
-                    mutability_keyword: self.mutability_keyword.with_leading_trivia(trivia),
-                    name: self.name,
-                    type_: self.type_,
-                    value: self.value
-                }
-            }
-            Some(annotations) => {
-                Self {
-                    annotations: Some(annotations.with_leading_trivia(trivia)),
-                    mutability_keyword: self.mutability_keyword,
-                    name: self.name,
-                    type_: self.type_,
-                    value: self.value
-                }
-            }
+            None => Self {
+                annotations: None,
+                mutability_keyword: self.mutability_keyword.with_leading_trivia(trivia),
+                name: self.name,
+                type_: self.type_,
+                value: self.value,
+            },
+            Some(annotations) => Self {
+                annotations: Some(annotations.with_leading_trivia(trivia)),
+                mutability_keyword: self.mutability_keyword,
+                name: self.name,
+                type_: self.type_,
+                value: self.value,
+            },
         }
     }
 
@@ -51,7 +47,7 @@ impl Syntax for VarSyntax {
             mutability_keyword: self.mutability_keyword,
             name: self.name,
             type_: self.type_,
-            value: self.value.with_trailing_trivia(trivia)
+            value: self.value.with_trailing_trivia(trivia),
         }
     }
 }

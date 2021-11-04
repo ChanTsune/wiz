@@ -50,9 +50,7 @@ impl Annotatable for Decl {
 impl Syntax for Decl {
     fn with_leading_trivia(self, trivia: Trivia) -> Self {
         match self {
-            Decl::Var(v) => {
-                Decl::Var(v.with_leading_trivia(trivia))
-            }
+            Decl::Var(v) => Decl::Var(v.with_leading_trivia(trivia)),
             Decl::Fun(_) => {
                 todo!()
             }
@@ -77,9 +75,7 @@ impl Syntax for Decl {
 
     fn with_trailing_trivia(self, trivia: Trivia) -> Self {
         match self {
-            Decl::Var(v) => {
-                Decl::Var(v.with_trailing_trivia(trivia))
-            }
+            Decl::Var(v) => Decl::Var(v.with_trailing_trivia(trivia)),
             Decl::Fun(_) => {
                 todo!()
             }
