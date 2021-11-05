@@ -6,6 +6,7 @@ mod name_syntax;
 mod subscript_syntax;
 mod type_cast_syntax;
 mod unary_operation_syntax;
+mod return_syntax;
 
 use crate::syntax::block::BlockSyntax;
 pub use crate::syntax::expression::array_syntax::{ArrayElementSyntax, ArraySyntax};
@@ -15,6 +16,7 @@ pub use crate::syntax::expression::call_syntax::{
 };
 pub use crate::syntax::expression::member_syntax::MemberSyntax;
 pub use crate::syntax::expression::name_syntax::NameExprSyntax;
+pub use crate::syntax::expression::return_syntax::ReturnSyntax;
 pub use crate::syntax::expression::subscript_syntax::{
     SubscriptIndexElementSyntax, SubscriptIndexListSyntax, SubscriptSyntax,
 };
@@ -85,8 +87,8 @@ impl Syntax for Expr {
             Expr::Lambda(_) => {
                 todo!()
             }
-            Expr::Return(_) => {
-                todo!()
+            Expr::Return(r) => {
+                Expr::Return(r.with_leading_trivia(trivia))
             }
             Expr::TypeCast(t) => Expr::TypeCast(t.with_leading_trivia(trivia)),
         }
@@ -120,8 +122,8 @@ impl Syntax for Expr {
             Expr::Lambda(_) => {
                 todo!()
             }
-            Expr::Return(_) => {
-                todo!()
+            Expr::Return(r) => {
+                Expr::Return(r.with_trailing_trivia(trivia))
             }
             Expr::TypeCast(t) => Expr::TypeCast(t.with_trailing_trivia(trivia)),
         }
@@ -148,10 +150,4 @@ pub struct IfExprSyntax {
     pub condition: Box<Expr>,
     pub body: BlockSyntax,
     pub else_body: Option<BlockSyntax>,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct ReturnSyntax {
-    pub return_keyword: TokenSyntax,
-    pub value: Option<Box<Expr>>,
 }
