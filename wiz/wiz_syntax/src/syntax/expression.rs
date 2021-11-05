@@ -2,15 +2,15 @@ mod array_syntax;
 mod binary_operation_syntax;
 mod name_syntax;
 mod type_cast_syntax;
+mod call_syntax;
 
-pub use self::array_syntax::{ArrayElementSyntax, ArraySyntax};
-pub use self::binary_operation_syntax::BinaryOperationSyntax;
-pub use self::name_syntax::NameExprSyntax;
-pub use self::type_cast_syntax::TypeCastSyntax;
-
+pub use crate::syntax::expression::array_syntax::{ArrayElementSyntax, ArraySyntax};
+pub use crate::syntax::expression::binary_operation_syntax::BinaryOperationSyntax;
+pub use crate::syntax::expression::name_syntax::NameExprSyntax;
+pub use crate::syntax::expression::type_cast_syntax::TypeCastSyntax;
+pub use crate::syntax::expression::call_syntax::{CallExprSyntax, CallArg, CallArgListSyntax,CallArgElementSyntax, LambdaSyntax};
 use crate::syntax::block::BlockSyntax;
 use crate::syntax::literal::LiteralSyntax;
-use crate::syntax::statement::Stmt;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::type_name::TypeArgumentListSyntax;
@@ -69,8 +69,8 @@ impl Syntax for Expr {
             Expr::StringBuilder { .. } => {
                 todo!()
             }
-            Expr::Call(_) => {
-                todo!()
+            Expr::Call(c) => {
+                Expr::Call(c)
             }
             Expr::If(_) => {
                 todo!()
@@ -151,25 +151,6 @@ pub struct PostfixUnaryOperationSyntax {
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
-pub struct CallExprSyntax {
-    pub target: Box<Expr>,
-    pub args: Vec<CallArg>,
-    pub tailing_lambda: Option<LambdaSyntax>,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct CallArg {
-    pub label: Option<String>,
-    pub arg: Box<Expr>,
-    pub is_vararg: bool,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct LambdaSyntax {
-    pub stmts: Vec<Stmt>,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct SubscriptSyntax {
     pub target: Box<Expr>,
     pub idx_or_keys: Vec<Expr>,
@@ -187,7 +168,7 @@ pub enum PostfixSuffix {
     Operator(String),
     TypeArgumentSuffix(TypeArgumentListSyntax),
     CallSuffix {
-        args: Vec<CallArg>,
+        args: Option<CallArgListSyntax>,
         tailing_lambda: Option<LambdaSyntax>,
     },
     IndexingSuffix {

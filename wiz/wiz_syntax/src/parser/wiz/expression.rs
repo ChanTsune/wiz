@@ -16,12 +16,7 @@ use crate::parser::wiz::operators::{
 use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_arguments};
 use crate::syntax::block::BlockSyntax;
-use crate::syntax::expression::{
-    ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallExprSyntax, Expr,
-    IfExprSyntax, LambdaSyntax, MemberSyntax, NameExprSyntax, PostfixSuffix,
-    PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax, ReturnSyntax, SubscriptSyntax,
-    TypeCastSyntax, UnaryOperationSyntax,
-};
+use crate::syntax::expression::{ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallArgElementSyntax, CallArgListSyntax, CallExprSyntax, Expr, IfExprSyntax, LambdaSyntax, MemberSyntax, NameExprSyntax, PostfixSuffix, PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax, ReturnSyntax, SubscriptSyntax, TypeCastSyntax, UnaryOperationSyntax};
 use crate::syntax::literal::LiteralSyntax;
 use crate::syntax::statement::Stmt;
 use crate::syntax::token::TokenSyntax;
@@ -744,7 +739,7 @@ where
                 todo!("will execute line?")
             }
             None => PostfixSuffix::CallSuffix {
-                args: args.unwrap_or_default(),
+                args: args,
                 tailing_lambda: tl,
             },
         },
@@ -753,7 +748,7 @@ where
 /*
 <value_arguments> ::= "(" (<value_argument> ("," <value_argument>)* ","?)? ")"
 */
-pub fn value_arguments<I>(s: I) -> IResult<I, Vec<CallArg>>
+pub fn value_arguments<I>(s: I) -> IResult<I, CallArgListSyntax>
 where
     I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
@@ -773,23 +768,38 @@ where
     map(
         tuple((
             char('('),
-            opt(tuple((
-                value_argument,
-                many0(tuple((comma, value_argument))),
-                opt(comma),
-            ))),
+            many0(tuple((whitespace0, value_argument, whitespace0, comma))),
+            whitespace0,
+            opt(value_argument),
+            whitespace0,
             char(')'),
         )),
-        |(_, args_t, _)| {
-            let mut args = vec![];
-            if let Some((a, ags, _)) = args_t {
-                args = args
-                    .into_iter()
-                    .chain(vec![a])
-                    .chain(ags.into_iter().map(|(_, ar)| ar))
-                    .collect();
+        |(open, t, ws,typ,tws, close)| {
+            let mut close = TokenSyntax::from(close);
+            let mut elements: Vec<_> = t
+                .into_iter()
+                .map(|(lws, tp, rws, com)| CallArgElementSyntax {
+                    element: tp.with_leading_trivia(lws),
+                    trailing_comma: Some(TokenSyntax::from(com).with_leading_trivia(rws)),
+                })
+                .collect();
+            match typ {
+                None => {
+                    close = close.with_leading_trivia(ws + tws);
+                }
+                Some(p) => {
+                    elements.push(CallArgElementSyntax {
+                        element: p.with_leading_trivia(ws),
+                        trailing_comma: None,
+                    });
+                    close = close.with_leading_trivia(tws);
+                }
             };
-            args
+            CallArgListSyntax {
+                open: TokenSyntax::from(open),
+                elements,
+                close
+            }
         },
     )(s)
 }
@@ -821,9 +831,9 @@ where
             expr,
         )),
         |(_, arg_label, is_vararg, arg)| CallArg {
-            label: arg_label.map(|(label, _, _, _)| label),
+            label: arg_label.map(|(label, _, _, _)| TokenSyntax::from(label)),
+            asterisk: is_vararg.map(|a|TokenSyntax::from(a)),
             arg: Box::new(arg),
-            is_vararg: is_vararg.is_some(),
         },
     )(s)
 }
@@ -1264,10 +1274,7 @@ mod tests {
     use crate::syntax::block::BlockSyntax;
     use crate::syntax::decl::Decl;
     use crate::syntax::decl::VarSyntax;
-    use crate::syntax::expression::{
-        ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallExprSyntax, Expr,
-        IfExprSyntax, MemberSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax,
-    };
+    use crate::syntax::expression::{ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallArgElementSyntax, CallArgListSyntax, CallExprSyntax, Expr, IfExprSyntax, MemberSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax};
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::name_space::NameSpaceSyntax;
     use crate::syntax::statement::Stmt;
@@ -1555,7 +1562,7 @@ mod tests {
 
     #[test]
     fn test_value_arguments_no_args() {
-        assert_eq!(value_arguments("()"), Ok(("", vec![])))
+        assert_eq!(value_arguments("()"), Ok(("", CallArgListSyntax::new())))
     }
 
     #[test]
@@ -1564,15 +1571,22 @@ mod tests {
             value_arguments("(\"Hello, World\")"),
             Ok((
                 "",
-                vec![CallArg {
-                    label: None,
-                    arg: Box::from(Expr::Literal(LiteralSyntax::String {
-                        open_quote: TokenSyntax::from('"'),
-                        value: "Hello, World".to_string(),
-                        close_quote: TokenSyntax::from('"'),
-                    })),
-                    is_vararg: false
-                }]
+                CallArgListSyntax {
+                    open: TokenSyntax::from("("),
+                    elements: vec![CallArgElementSyntax {
+                        element: CallArg {
+                            label: None,
+                            arg: Box::from(Expr::Literal(LiteralSyntax::String {
+                                open_quote: TokenSyntax::from('"'),
+                                value: "Hello, World".to_string(),
+                                close_quote: TokenSyntax::from('"'),
+                            })),
+                            asterisk: None
+                        },
+                        trailing_comma: None
+                    }],
+                    close: TokenSyntax::from(")")
+                }
             ))
         )
     }
@@ -1584,7 +1598,7 @@ mod tests {
             Ok((
                 "",
                 PostfixSuffix::CallSuffix {
-                    args: vec![],
+                    args: Some(CallArgListSyntax::new()),
                     tailing_lambda: None
                 }
             ))
@@ -1602,7 +1616,7 @@ mod tests {
                         name_space: Default::default(),
                         name: TokenSyntax::from("puts")
                     })),
-                    args: vec![],
+                    args: Some(CallArgListSyntax::new()),
                     tailing_lambda: None,
                 })
             ))
@@ -1620,15 +1634,24 @@ mod tests {
                         name_space: Default::default(),
                         name: TokenSyntax::from("puts")
                     })),
-                    args: vec![CallArg {
-                        label: None,
-                        arg: Box::from(Expr::Literal(LiteralSyntax::String {
-                            open_quote: TokenSyntax::from('"'),
-                            value: "Hello, World".to_string(),
-                            close_quote: TokenSyntax::from('"'),
-                        })),
-                        is_vararg: false
-                    }],
+                    args: Some(CallArgListSyntax {
+                        open: TokenSyntax::from("("),
+                        elements: vec![
+                            CallArgElementSyntax {
+                                element: CallArg {
+                                    label: None,
+                                    arg: Box::from(Expr::Literal(LiteralSyntax::String {
+                                        open_quote: TokenSyntax::from('"'),
+                                        value: "Hello, World".to_string(),
+                                        close_quote: TokenSyntax::from('"'),
+                                    })),
+                                    asterisk: None
+                                },
+                                trailing_comma: None
+                            }
+                        ],
+                        close: TokenSyntax::from(")")
+                    }),
                     tailing_lambda: None,
                 })
             ))
@@ -1646,15 +1669,24 @@ mod tests {
                         name_space: Default::default(),
                         name: TokenSyntax::from("puts")
                     })),
-                    args: vec![CallArg {
-                        label: Some(String::from("string")),
-                        arg: Box::from(Expr::Literal(LiteralSyntax::String {
-                            open_quote: TokenSyntax::from('"'),
-                            value: "Hello, World".to_string(),
-                            close_quote: TokenSyntax::from('"')
-                        })),
-                        is_vararg: false
-                    }],
+                    args: Some(CallArgListSyntax {
+                        open: TokenSyntax::from("("),
+                        elements: vec![
+                            CallArgElementSyntax {
+                                element: CallArg {
+                                    label: Some(TokenSyntax::from("string")),
+                                    arg: Box::from(Expr::Literal(LiteralSyntax::String {
+                                        open_quote: TokenSyntax::from('"'),
+                                        value: "Hello, World".to_string(),
+                                        close_quote: TokenSyntax::from('"')
+                                    })),
+                                    asterisk: None
+                                },
+                                trailing_comma: None
+                            }
+                        ],
+                        close: TokenSyntax::from(")")
+                    }),
                     tailing_lambda: None,
                 })
             ))
