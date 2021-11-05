@@ -3,8 +3,8 @@ mod binary_operation_syntax;
 mod call_syntax;
 mod member_syntax;
 mod name_syntax;
-mod type_cast_syntax;
 mod subscript_syntax;
+mod type_cast_syntax;
 
 use crate::syntax::block::BlockSyntax;
 pub use crate::syntax::expression::array_syntax::{ArrayElementSyntax, ArraySyntax};
@@ -14,7 +14,9 @@ pub use crate::syntax::expression::call_syntax::{
 };
 pub use crate::syntax::expression::member_syntax::MemberSyntax;
 pub use crate::syntax::expression::name_syntax::NameExprSyntax;
-pub use crate::syntax::expression::subscript_syntax::{SubscriptSyntax, SubscriptIndexListSyntax, SubscriptIndexElementSyntax};
+pub use crate::syntax::expression::subscript_syntax::{
+    SubscriptIndexElementSyntax, SubscriptIndexListSyntax, SubscriptSyntax,
+};
 pub use crate::syntax::expression::type_cast_syntax::TypeCastSyntax;
 use crate::syntax::literal::LiteralSyntax;
 use crate::syntax::token::TokenSyntax;
@@ -59,9 +61,7 @@ impl Syntax for Expr {
             Expr::UnaryOp(_) => {
                 todo!()
             }
-            Expr::Subscript(s) => {
-                Expr::Subscript(s.with_leading_trivia(trivia))
-            }
+            Expr::Subscript(s) => Expr::Subscript(s.with_leading_trivia(trivia)),
             Expr::Member(m) => Expr::Member(m.with_leading_trivia(trivia)),
             Expr::Array(a) => Expr::Array(a.with_leading_trivia(trivia)),
             Expr::Tuple { .. } => {
@@ -98,9 +98,7 @@ impl Syntax for Expr {
             Expr::UnaryOp(_) => {
                 todo!()
             }
-            Expr::Subscript(s) => {
-                Expr::Subscript(s.with_trailing_trivia(trivia))
-            }
+            Expr::Subscript(s) => Expr::Subscript(s.with_trailing_trivia(trivia)),
             Expr::Member(m) => Expr::Member(m.with_trailing_trivia(trivia)),
             Expr::Array(a) => Expr::Array(a.with_trailing_trivia(trivia)),
             Expr::Tuple { .. } => {

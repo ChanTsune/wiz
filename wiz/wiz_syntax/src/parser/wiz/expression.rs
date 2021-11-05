@@ -16,7 +16,13 @@ use crate::parser::wiz::operators::{
 use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_arguments};
 use crate::syntax::block::BlockSyntax;
-use crate::syntax::expression::{ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallArgElementSyntax, CallArgListSyntax, CallExprSyntax, Expr, IfExprSyntax, LambdaSyntax, MemberSyntax, NameExprSyntax, PostfixSuffix, PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax, ReturnSyntax, SubscriptIndexElementSyntax, SubscriptIndexListSyntax, SubscriptSyntax, TypeCastSyntax, UnaryOperationSyntax};
+use crate::syntax::expression::{
+    ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallArgElementSyntax,
+    CallArgListSyntax, CallExprSyntax, Expr, IfExprSyntax, LambdaSyntax, MemberSyntax,
+    NameExprSyntax, PostfixSuffix, PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax,
+    ReturnSyntax, SubscriptIndexElementSyntax, SubscriptIndexListSyntax, SubscriptSyntax,
+    TypeCastSyntax, UnaryOperationSyntax,
+};
 use crate::syntax::literal::LiteralSyntax;
 use crate::syntax::statement::Stmt;
 use crate::syntax::token::TokenSyntax;
@@ -420,7 +426,7 @@ where
                     args,
                     tailing_lambda,
                 }),
-                PostfixSuffix::IndexingSuffix( indexes ) => Expr::Subscript(SubscriptSyntax {
+                PostfixSuffix::IndexingSuffix(indexes) => Expr::Subscript(SubscriptSyntax {
                     target: Box::new(e),
                     idx_or_keys: indexes,
                 }),
@@ -544,7 +550,7 @@ where
             whitespace0,
             char(']'),
         )),
-        |(open, t, ws, typ,tws, close)| {
+        |(open, t, ws, typ, tws, close)| {
             let mut close = TokenSyntax::from(close);
             let mut elements: Vec<_> = t
                 .into_iter()
@@ -568,7 +574,7 @@ where
             PostfixSuffix::IndexingSuffix(SubscriptIndexListSyntax {
                 open: TokenSyntax::from(open),
                 elements,
-                close
+                close,
             })
         },
     )(s)
@@ -1292,7 +1298,11 @@ mod tests {
     use crate::syntax::block::BlockSyntax;
     use crate::syntax::decl::Decl;
     use crate::syntax::decl::VarSyntax;
-    use crate::syntax::expression::{ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallArgElementSyntax, CallArgListSyntax, CallExprSyntax, Expr, IfExprSyntax, MemberSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax, SubscriptIndexElementSyntax, SubscriptIndexListSyntax};
+    use crate::syntax::expression::{
+        ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallArgElementSyntax,
+        CallArgListSyntax, CallExprSyntax, Expr, IfExprSyntax, MemberSyntax, NameExprSyntax,
+        PostfixSuffix, ReturnSyntax, SubscriptIndexElementSyntax, SubscriptIndexListSyntax,
+    };
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::name_space::NameSpaceSyntax;
     use crate::syntax::statement::Stmt;
@@ -1892,75 +1902,76 @@ mod tests {
             indexing_suffix("[a]"),
             Ok((
                 "",
-                PostfixSuffix::IndexingSuffix (
-                    SubscriptIndexListSyntax {
-                        open: TokenSyntax::from("["),
-                        elements: vec![SubscriptIndexElementSyntax {
-                            element: Expr::Name(NameExprSyntax {
-                                name_space: Default::default(),
-                                name: TokenSyntax::from("a")
-                            }),
-                            trailing_comma: None
-                        }],
-                        close: TokenSyntax::from("]")
-                    }
-                )
+                PostfixSuffix::IndexingSuffix(SubscriptIndexListSyntax {
+                    open: TokenSyntax::from("["),
+                    elements: vec![SubscriptIndexElementSyntax {
+                        element: Expr::Name(NameExprSyntax {
+                            name_space: Default::default(),
+                            name: TokenSyntax::from("a")
+                        }),
+                        trailing_comma: None
+                    }],
+                    close: TokenSyntax::from("]")
+                })
             ))
         );
         assert_eq!(
             indexing_suffix("[a, b]"),
             Ok((
                 "",
-                PostfixSuffix::IndexingSuffix (
-                    SubscriptIndexListSyntax {
-                        open: TokenSyntax::from("["),
-                        elements: vec![
-                            SubscriptIndexElementSyntax {
+                PostfixSuffix::IndexingSuffix(SubscriptIndexListSyntax {
+                    open: TokenSyntax::from("["),
+                    elements: vec![
+                        SubscriptIndexElementSyntax {
                             element: Expr::Name(NameExprSyntax {
                                 name_space: Default::default(),
                                 name: TokenSyntax::from("a")
                             }),
                             trailing_comma: Some(TokenSyntax::from(","))
                         },
-                            SubscriptIndexElementSyntax {
-                                element: Expr::Name(NameExprSyntax {
+                        SubscriptIndexElementSyntax {
+                            element: Expr::Name(
+                                NameExprSyntax {
                                     name_space: Default::default(),
                                     name: TokenSyntax::from("b")
-                                }.with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))),
-                                trailing_comma: None
-                            },
-                        ],
-                        close: TokenSyntax::from("]")
-                    }
-                )
+                                }
+                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                            ),
+                            trailing_comma: None
+                        },
+                    ],
+                    close: TokenSyntax::from("]")
+                })
             ))
         );
         assert_eq!(
             indexing_suffix("[a, b, ]"),
             Ok((
                 "",
-                PostfixSuffix::IndexingSuffix(
-                    SubscriptIndexListSyntax {
-                        open: TokenSyntax::from("["),
-                        elements: vec![
-                            SubscriptIndexElementSyntax {
-                                element: Expr::Name(NameExprSyntax {
-                                    name_space: Default::default(),
-                                    name: TokenSyntax::from("a")
-                                }),
-                                trailing_comma: Some(TokenSyntax::from(","))
-                            },
-                            SubscriptIndexElementSyntax {
-                                element: Expr::Name(NameExprSyntax {
+                PostfixSuffix::IndexingSuffix(SubscriptIndexListSyntax {
+                    open: TokenSyntax::from("["),
+                    elements: vec![
+                        SubscriptIndexElementSyntax {
+                            element: Expr::Name(NameExprSyntax {
+                                name_space: Default::default(),
+                                name: TokenSyntax::from("a")
+                            }),
+                            trailing_comma: Some(TokenSyntax::from(","))
+                        },
+                        SubscriptIndexElementSyntax {
+                            element: Expr::Name(
+                                NameExprSyntax {
                                     name_space: Default::default(),
                                     name: TokenSyntax::from("b")
-                                }.with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))),
-                                trailing_comma: Some(TokenSyntax::from(","))
-                            },
-                        ],
-                        close: TokenSyntax::from("]").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                    }
-                )
+                                }
+                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                            ),
+                            trailing_comma: Some(TokenSyntax::from(","))
+                        },
+                    ],
+                    close: TokenSyntax::from("]")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                })
             ))
         );
     }
