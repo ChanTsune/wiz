@@ -51,3 +51,34 @@ impl<'a> Write for Formatter<'a> {
         write(self, args)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::middle_level_ir::format::Formatter;
+    use crate::middle_level_ir::ml_decl::{MLFun, MLFunBody};
+    use crate::middle_level_ir::ml_expr::{MLExpr, MLLiteral};
+    use crate::middle_level_ir::ml_node::MLNode;
+    use crate::middle_level_ir::ml_stmt::MLStmt;
+    use crate::middle_level_ir::ml_type::{MLPrimitiveType, MLValueType};
+
+    #[test]
+    fn test_format_indent_level() {
+        let fun = MLFun {
+            modifiers: vec![],
+            name: "f".to_string(),
+            arg_defs: vec![],
+            return_type: MLValueType::Primitive(MLPrimitiveType::Noting),
+            body: Some(MLFunBody {
+                body: vec![MLStmt::Expr(MLExpr::Literal(MLLiteral::Integer {
+                    value: "0".to_string(),
+                    type_: MLValueType::Primitive(MLPrimitiveType::Int8),
+                }))],
+            }),
+        };
+        let mut buf = String::new();
+        let mut formatter = Formatter::new(&mut buf);
+        formatter.indent_size(2);
+        let _ = fun.fmt(&mut formatter);
+        assert_eq!(buf, String::from("fun f():Noting {\n  0;\n};"));
+    }
+}

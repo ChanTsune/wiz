@@ -10,7 +10,7 @@ pub(crate) fn execute(executable: &str, args: &[&str]) -> Result<(), Box<dyn Err
     current_exe_path.push(executable);
     if !current_exe_path.exists() {
         return Err(Box::new(CliError::from(format!(
-            "command `{}` can not find",
+            "command `{}` could not find",
             executable
         ))));
     }

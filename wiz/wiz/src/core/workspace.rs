@@ -1,6 +1,5 @@
 use crate::core::error::CliError;
-use std::convert::TryFrom;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 pub(crate) struct Workspace {
     pub(crate) cws: PathBuf,
@@ -18,7 +17,7 @@ pub(crate) fn construct_workspace_from(cws: PathBuf) -> Result<Workspace, CliErr
     manifest.push("Package.wiz");
     if !manifest.exists() {
         return Err(CliError::from(format!(
-            "Can not find `Package.wiz` in {}",
+            "could not find `Package.wiz` in `{}`",
             cws.display()
         )));
     }
