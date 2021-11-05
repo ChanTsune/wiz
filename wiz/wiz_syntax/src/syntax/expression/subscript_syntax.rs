@@ -38,4 +38,10 @@ impl SubscriptIndexListSyntax {
     }
 }
 
+impl Default for SubscriptIndexListSyntax {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 pub type SubscriptIndexElementSyntax = ElementSyntax<Expr>;
