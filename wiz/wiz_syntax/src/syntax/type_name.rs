@@ -118,6 +118,12 @@ impl TypeParameterListSyntax {
     }
 }
 
+impl Default for TypeParameterListSyntax {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypeParam {
     pub name: TokenSyntax,
