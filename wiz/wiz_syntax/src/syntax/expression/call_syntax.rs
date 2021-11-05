@@ -12,6 +12,46 @@ pub struct CallExprSyntax {
     pub tailing_lambda: Option<LambdaSyntax>,
 }
 
+impl Syntax for CallExprSyntax {
+    fn with_leading_trivia(self, trivia: Trivia) -> Self {
+        Self {
+            target: Box::new(self.target.with_leading_trivia(trivia)),
+            args: self.args,
+            tailing_lambda: self.tailing_lambda
+        }
+    }
+
+    fn with_trailing_trivia(self, trivia: Trivia) -> Self {
+        match self.tailing_lambda {
+            None => {
+                match self.args {
+                    None => {
+                        Self {
+                            target: Box::new(self.target.with_trailing_trivia(trivia)),
+                            args: None,
+                            tailing_lambda: None
+                        }
+                    }
+                    Some(args) => {
+                        Self {
+                            target: self.target,
+                            args: Some(args.with_trailing_trivia(trivia)),
+                            tailing_lambda: None
+                        }
+                    }
+                }
+            }
+            Some(tailing_lambda) => {
+                Self {
+                    target: self.target,
+                    args: self.args,
+                    tailing_lambda: Some(tailing_lambda.with_trailing_trivia(trivia))
+                }
+            }
+        }
+    }
+}
+
 pub type CallArgListSyntax = ListSyntax<CallArg>;
 
 impl CallArgListSyntax {
@@ -74,4 +114,14 @@ impl Syntax for CallArg {
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct LambdaSyntax {
     pub stmts: Vec<Stmt>,
+}
+
+impl Syntax for LambdaSyntax {
+    fn with_leading_trivia(self, trivia: Trivia) -> Self {
+        todo!()
+    }
+
+    fn with_trailing_trivia(self, trivia: Trivia) -> Self {
+        todo!()
+    }
 }

@@ -71,7 +71,7 @@ impl Syntax for Expr {
             Expr::StringBuilder { .. } => {
                 todo!()
             }
-            Expr::Call(c) => Expr::Call(c),
+            Expr::Call(c) => Expr::Call(c.with_leading_trivia(trivia)),
             Expr::If(_) => {
                 todo!()
             }
@@ -99,7 +99,7 @@ impl Syntax for Expr {
             Expr::Subscript(_) => {
                 todo!()
             }
-            Expr::Member(_) => {
+            Expr::Member(m) => {
                 todo!()
             }
             Expr::Array(a) => Expr::Array(a.with_trailing_trivia(trivia)),
@@ -112,8 +112,8 @@ impl Syntax for Expr {
             Expr::StringBuilder { .. } => {
                 todo!()
             }
-            Expr::Call(_) => {
-                todo!()
+            Expr::Call(c) => {
+                Expr::Call(c.with_trailing_trivia(trivia))
             }
             Expr::If(_) => {
                 todo!()
