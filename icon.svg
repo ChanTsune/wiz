@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg version="1.1" id="Contours" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="200" height="200" viewBox="0.000000 0.000000 466.675903 396.791199" xml:space="preserve" stroke="black" fill="none" stroke-linecap='round' stroke-linejoin='round'>
+<svg version="1.1" id="Contours" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="150" height="150" viewBox="0.000000 0.000000 466.675903 396.791199" xml:space="preserve" stroke="black" fill="none" stroke-linecap='round' stroke-linejoin='round'>
    <defs>
       <linearGradient id="Gradient" x1="0" x2="0" y1="0" y2="1">
          <stop offset="0%" stop-color="#39148B"/>
