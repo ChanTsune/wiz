@@ -643,10 +643,12 @@ impl Ast2HLIR {
             args,
             tailing_lambda,
         } = c;
-        let mut args: Vec<TypedCallArg> = args.unwrap_or_default().elements
+        let mut args: Vec<TypedCallArg> = args
+            .unwrap_or_default()
+            .elements
             .into_iter()
             .map(|a| TypedCallArg {
-                label: a.element.label.map(|l|l.token),
+                label: a.element.label.map(|l| l.token),
                 arg: Box::new(self.expr(*a.element.arg)),
                 is_vararg: a.element.asterisk.is_some(),
             })

@@ -1,9 +1,9 @@
 use crate::syntax::expression::Expr;
 use crate::syntax::list::{ElementSyntax, ListSyntax};
 use crate::syntax::statement::Stmt;
-use crate::syntax::Syntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
+use crate::syntax::Syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct CallExprSyntax {
@@ -19,7 +19,7 @@ impl CallArgListSyntax {
         Self {
             open: TokenSyntax::from("("),
             elements: vec![],
-            close: TokenSyntax::from(")")
+            close: TokenSyntax::from(")"),
         }
     }
 }
@@ -42,31 +42,23 @@ pub struct CallArg {
 impl Syntax for CallArg {
     fn with_leading_trivia(self, trivia: Trivia) -> Self {
         match self.label {
-            None => {
-                match self.asterisk {
-                    None => {
-                        Self {
-                            label: None,
-                            asterisk: None,
-                            arg: Box::new(self.arg.with_trailing_trivia(trivia))
-                        }
-                    }
-                    Some(asterisk) => {
-                        Self {
-                            label: None,
-                            asterisk: Some(asterisk.with_leading_trivia(trivia)),
-                            arg: Box::new(*self.arg)
-                        }
-                    }
-                }
-            }
-            Some(label) => {
-                Self {
-                    label: Some(label.with_leading_trivia(trivia)),
-                    asterisk: self.asterisk,
-                    arg: self.arg
-                }
-            }
+            None => match self.asterisk {
+                None => Self {
+                    label: None,
+                    asterisk: None,
+                    arg: Box::new(self.arg.with_trailing_trivia(trivia)),
+                },
+                Some(asterisk) => Self {
+                    label: None,
+                    asterisk: Some(asterisk.with_leading_trivia(trivia)),
+                    arg: Box::new(*self.arg),
+                },
+            },
+            Some(label) => Self {
+                label: Some(label.with_leading_trivia(trivia)),
+                asterisk: self.asterisk,
+                arg: self.arg,
+            },
         }
     }
 
@@ -74,7 +66,7 @@ impl Syntax for CallArg {
         Self {
             label: self.label,
             asterisk: self.asterisk,
-            arg: Box::new(self.arg.with_trailing_trivia(trivia))
+            arg: Box::new(self.arg.with_trailing_trivia(trivia)),
         }
     }
 }

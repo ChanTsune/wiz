@@ -16,7 +16,12 @@ use crate::parser::wiz::operators::{
 use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_arguments};
 use crate::syntax::block::BlockSyntax;
-use crate::syntax::expression::{ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallArgElementSyntax, CallArgListSyntax, CallExprSyntax, Expr, IfExprSyntax, LambdaSyntax, MemberSyntax, NameExprSyntax, PostfixSuffix, PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax, ReturnSyntax, SubscriptSyntax, TypeCastSyntax, UnaryOperationSyntax};
+use crate::syntax::expression::{
+    ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallArgElementSyntax,
+    CallArgListSyntax, CallExprSyntax, Expr, IfExprSyntax, LambdaSyntax, MemberSyntax,
+    NameExprSyntax, PostfixSuffix, PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax,
+    ReturnSyntax, SubscriptSyntax, TypeCastSyntax, UnaryOperationSyntax,
+};
 use crate::syntax::literal::LiteralSyntax;
 use crate::syntax::statement::Stmt;
 use crate::syntax::token::TokenSyntax;
@@ -774,7 +779,7 @@ where
             whitespace0,
             char(')'),
         )),
-        |(open, t, ws,typ,tws, close)| {
+        |(open, t, ws, typ, tws, close)| {
             let mut close = TokenSyntax::from(close);
             let mut elements: Vec<_> = t
                 .into_iter()
@@ -798,7 +803,7 @@ where
             CallArgListSyntax {
                 open: TokenSyntax::from(open),
                 elements,
-                close
+                close,
             }
         },
     )(s)
@@ -832,7 +837,7 @@ where
         )),
         |(_, arg_label, is_vararg, arg)| CallArg {
             label: arg_label.map(|(label, _, _, _)| TokenSyntax::from(label)),
-            asterisk: is_vararg.map(|a|TokenSyntax::from(a)),
+            asterisk: is_vararg.map(|a| TokenSyntax::from(a)),
             arg: Box::new(arg),
         },
     )(s)
@@ -1274,7 +1279,11 @@ mod tests {
     use crate::syntax::block::BlockSyntax;
     use crate::syntax::decl::Decl;
     use crate::syntax::decl::VarSyntax;
-    use crate::syntax::expression::{ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallArgElementSyntax, CallArgListSyntax, CallExprSyntax, Expr, IfExprSyntax, MemberSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax};
+    use crate::syntax::expression::{
+        ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallArgElementSyntax,
+        CallArgListSyntax, CallExprSyntax, Expr, IfExprSyntax, MemberSyntax, NameExprSyntax,
+        PostfixSuffix, ReturnSyntax,
+    };
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::name_space::NameSpaceSyntax;
     use crate::syntax::statement::Stmt;
@@ -1636,20 +1645,18 @@ mod tests {
                     })),
                     args: Some(CallArgListSyntax {
                         open: TokenSyntax::from("("),
-                        elements: vec![
-                            CallArgElementSyntax {
-                                element: CallArg {
-                                    label: None,
-                                    arg: Box::from(Expr::Literal(LiteralSyntax::String {
-                                        open_quote: TokenSyntax::from('"'),
-                                        value: "Hello, World".to_string(),
-                                        close_quote: TokenSyntax::from('"'),
-                                    })),
-                                    asterisk: None
-                                },
-                                trailing_comma: None
-                            }
-                        ],
+                        elements: vec![CallArgElementSyntax {
+                            element: CallArg {
+                                label: None,
+                                arg: Box::from(Expr::Literal(LiteralSyntax::String {
+                                    open_quote: TokenSyntax::from('"'),
+                                    value: "Hello, World".to_string(),
+                                    close_quote: TokenSyntax::from('"'),
+                                })),
+                                asterisk: None
+                            },
+                            trailing_comma: None
+                        }],
                         close: TokenSyntax::from(")")
                     }),
                     tailing_lambda: None,
@@ -1671,20 +1678,18 @@ mod tests {
                     })),
                     args: Some(CallArgListSyntax {
                         open: TokenSyntax::from("("),
-                        elements: vec![
-                            CallArgElementSyntax {
-                                element: CallArg {
-                                    label: Some(TokenSyntax::from("string")),
-                                    arg: Box::from(Expr::Literal(LiteralSyntax::String {
-                                        open_quote: TokenSyntax::from('"'),
-                                        value: "Hello, World".to_string(),
-                                        close_quote: TokenSyntax::from('"')
-                                    })),
-                                    asterisk: None
-                                },
-                                trailing_comma: None
-                            }
-                        ],
+                        elements: vec![CallArgElementSyntax {
+                            element: CallArg {
+                                label: Some(TokenSyntax::from("string")),
+                                arg: Box::from(Expr::Literal(LiteralSyntax::String {
+                                    open_quote: TokenSyntax::from('"'),
+                                    value: "Hello, World".to_string(),
+                                    close_quote: TokenSyntax::from('"')
+                                })),
+                                asterisk: None
+                            },
+                            trailing_comma: None
+                        }],
                         close: TokenSyntax::from(")")
                     }),
                     tailing_lambda: None,

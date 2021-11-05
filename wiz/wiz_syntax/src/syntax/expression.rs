@@ -1,15 +1,17 @@
 mod array_syntax;
 mod binary_operation_syntax;
+mod call_syntax;
 mod name_syntax;
 mod type_cast_syntax;
-mod call_syntax;
 
+use crate::syntax::block::BlockSyntax;
 pub use crate::syntax::expression::array_syntax::{ArrayElementSyntax, ArraySyntax};
 pub use crate::syntax::expression::binary_operation_syntax::BinaryOperationSyntax;
+pub use crate::syntax::expression::call_syntax::{
+    CallArg, CallArgElementSyntax, CallArgListSyntax, CallExprSyntax, LambdaSyntax,
+};
 pub use crate::syntax::expression::name_syntax::NameExprSyntax;
 pub use crate::syntax::expression::type_cast_syntax::TypeCastSyntax;
-pub use crate::syntax::expression::call_syntax::{CallExprSyntax, CallArg, CallArgListSyntax,CallArgElementSyntax, LambdaSyntax};
-use crate::syntax::block::BlockSyntax;
 use crate::syntax::literal::LiteralSyntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
@@ -69,9 +71,7 @@ impl Syntax for Expr {
             Expr::StringBuilder { .. } => {
                 todo!()
             }
-            Expr::Call(c) => {
-                Expr::Call(c)
-            }
+            Expr::Call(c) => Expr::Call(c),
             Expr::If(_) => {
                 todo!()
             }
