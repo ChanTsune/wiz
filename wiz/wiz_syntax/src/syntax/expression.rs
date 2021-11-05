@@ -3,10 +3,10 @@ mod binary_operation_syntax;
 mod call_syntax;
 mod member_syntax;
 mod name_syntax;
+mod return_syntax;
 mod subscript_syntax;
 mod type_cast_syntax;
 mod unary_operation_syntax;
-mod return_syntax;
 
 use crate::syntax::block::BlockSyntax;
 pub use crate::syntax::expression::array_syntax::{ArrayElementSyntax, ArraySyntax};
@@ -87,9 +87,7 @@ impl Syntax for Expr {
             Expr::Lambda(_) => {
                 todo!()
             }
-            Expr::Return(r) => {
-                Expr::Return(r.with_leading_trivia(trivia))
-            }
+            Expr::Return(r) => Expr::Return(r.with_leading_trivia(trivia)),
             Expr::TypeCast(t) => Expr::TypeCast(t.with_leading_trivia(trivia)),
         }
     }
@@ -122,9 +120,7 @@ impl Syntax for Expr {
             Expr::Lambda(_) => {
                 todo!()
             }
-            Expr::Return(r) => {
-                Expr::Return(r.with_trailing_trivia(trivia))
-            }
+            Expr::Return(r) => Expr::Return(r.with_trailing_trivia(trivia)),
             Expr::TypeCast(t) => Expr::TypeCast(t.with_trailing_trivia(trivia)),
         }
     }
