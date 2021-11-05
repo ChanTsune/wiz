@@ -1,7 +1,7 @@
 use crate::syntax::expression::Expr;
-use crate::syntax::Syntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
+use crate::syntax::Syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum UnaryOperationSyntax {
@@ -43,14 +43,14 @@ impl Syntax for PrefixUnaryOperationSyntax {
     fn with_leading_trivia(self, trivia: Trivia) -> Self {
         Self {
             operator: self.operator.with_leading_trivia(trivia),
-            target: self.target
+            target: self.target,
         }
     }
 
     fn with_trailing_trivia(self, trivia: Trivia) -> Self {
         Self {
             operator: self.operator,
-            target: Box::new(self.target.with_trailing_trivia(trivia))
+            target: Box::new(self.target.with_trailing_trivia(trivia)),
         }
     }
 }
@@ -65,15 +65,14 @@ impl Syntax for PostfixUnaryOperationSyntax {
     fn with_leading_trivia(self, trivia: Trivia) -> Self {
         Self {
             target: Box::new(self.target.with_leading_trivia(trivia)),
-            operator: self.operator
+            operator: self.operator,
         }
     }
 
     fn with_trailing_trivia(self, trivia: Trivia) -> Self {
         Self {
             target: self.target,
-            operator: self.operator.with_trailing_trivia(trivia)
+            operator: self.operator.with_trailing_trivia(trivia),
         }
     }
 }
-

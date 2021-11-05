@@ -19,7 +19,9 @@ pub use crate::syntax::expression::subscript_syntax::{
     SubscriptIndexElementSyntax, SubscriptIndexListSyntax, SubscriptSyntax,
 };
 pub use crate::syntax::expression::type_cast_syntax::TypeCastSyntax;
-pub use crate::syntax::expression::unary_operation_syntax::{UnaryOperationSyntax, PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax};
+pub use crate::syntax::expression::unary_operation_syntax::{
+    PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax, UnaryOperationSyntax,
+};
 use crate::syntax::literal::LiteralSyntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
@@ -60,9 +62,7 @@ impl Syntax for Expr {
             Expr::Name(n) => Expr::Name(n.with_leading_trivia(trivia)),
             Expr::Literal(l) => Expr::Literal(l.with_leading_trivia(trivia)),
             Expr::BinOp(b) => Expr::BinOp(b.with_leading_trivia(trivia)),
-            Expr::UnaryOp(u) => {
-                Expr::UnaryOp(u.with_leading_trivia(trivia))
-            }
+            Expr::UnaryOp(u) => Expr::UnaryOp(u.with_leading_trivia(trivia)),
             Expr::Subscript(s) => Expr::Subscript(s.with_leading_trivia(trivia)),
             Expr::Member(m) => Expr::Member(m.with_leading_trivia(trivia)),
             Expr::Array(a) => Expr::Array(a.with_leading_trivia(trivia)),
@@ -97,9 +97,7 @@ impl Syntax for Expr {
             Expr::Name(n) => Expr::Name(n.with_trailing_trivia(trivia)),
             Expr::Literal(l) => Expr::Literal(l.with_trailing_trivia(trivia)),
             Expr::BinOp(b) => Expr::BinOp(b.with_trailing_trivia(trivia)),
-            Expr::UnaryOp(u) => {
-                Expr::UnaryOp(u.with_trailing_trivia(trivia))
-            }
+            Expr::UnaryOp(u) => Expr::UnaryOp(u.with_trailing_trivia(trivia)),
             Expr::Subscript(s) => Expr::Subscript(s.with_trailing_trivia(trivia)),
             Expr::Member(m) => Expr::Member(m.with_trailing_trivia(trivia)),
             Expr::Array(a) => Expr::Array(a.with_trailing_trivia(trivia)),
@@ -129,7 +127,6 @@ impl Syntax for Expr {
         }
     }
 }
-
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum PostfixSuffix {
