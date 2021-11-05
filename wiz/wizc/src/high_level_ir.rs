@@ -677,6 +677,7 @@ impl Ast2HLIR {
 
     pub fn if_syntax(&self, i: IfExprSyntax) -> TypedIf {
         let IfExprSyntax {
+            if_keyword:_,
             condition,
             body,
             else_body,
@@ -690,7 +691,7 @@ impl Ast2HLIR {
         TypedIf {
             condition: Box::new(self.expr(*condition)),
             body: block,
-            else_body: else_body.map(|b| self.block(b)),
+            else_body: else_body.map(|b| self.block(b.body)),
             type_: Some(type_),
         }
     }
