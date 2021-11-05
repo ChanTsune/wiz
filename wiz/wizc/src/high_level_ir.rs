@@ -677,7 +677,7 @@ impl Ast2HLIR {
 
     pub fn if_syntax(&self, i: IfExprSyntax) -> TypedIf {
         let IfExprSyntax {
-            if_keyword:_,
+            if_keyword: _,
             condition,
             body,
             else_body,
