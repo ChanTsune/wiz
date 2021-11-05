@@ -1,7 +1,7 @@
 use crate::syntax::expression::Expr;
-use crate::syntax::Syntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
+use crate::syntax::Syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MemberSyntax {
@@ -15,7 +15,7 @@ impl Syntax for MemberSyntax {
         Self {
             target: Box::new(self.target.with_leading_trivia(trivia)),
             navigation_operator: self.navigation_operator,
-            name: self.name
+            name: self.name,
         }
     }
 
@@ -23,7 +23,7 @@ impl Syntax for MemberSyntax {
         Self {
             target: self.target,
             navigation_operator: self.navigation_operator,
-            name: self.name.with_trailing_trivia(trivia)
+            name: self.name.with_trailing_trivia(trivia),
         }
     }
 }

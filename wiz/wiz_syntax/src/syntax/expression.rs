@@ -1,9 +1,9 @@
 mod array_syntax;
 mod binary_operation_syntax;
 mod call_syntax;
+mod member_syntax;
 mod name_syntax;
 mod type_cast_syntax;
-mod member_syntax;
 
 use crate::syntax::block::BlockSyntax;
 pub use crate::syntax::expression::array_syntax::{ArrayElementSyntax, ArraySyntax};
@@ -60,9 +60,7 @@ impl Syntax for Expr {
             Expr::Subscript(_) => {
                 todo!()
             }
-            Expr::Member(m) => {
-                Expr::Member(m.with_leading_trivia(trivia))
-            }
+            Expr::Member(m) => Expr::Member(m.with_leading_trivia(trivia)),
             Expr::Array(a) => Expr::Array(a.with_leading_trivia(trivia)),
             Expr::Tuple { .. } => {
                 todo!()
@@ -101,9 +99,7 @@ impl Syntax for Expr {
             Expr::Subscript(_) => {
                 todo!()
             }
-            Expr::Member(m) => {
-                Expr::Member(m.with_trailing_trivia(trivia))
-            }
+            Expr::Member(m) => Expr::Member(m.with_trailing_trivia(trivia)),
             Expr::Array(a) => Expr::Array(a.with_trailing_trivia(trivia)),
             Expr::Tuple { .. } => {
                 todo!()
