@@ -7,8 +7,8 @@ mod return_syntax;
 mod subscript_syntax;
 mod type_cast_syntax;
 mod unary_operation_syntax;
+mod if_syntax;
 
-use crate::syntax::block::BlockSyntax;
 pub use crate::syntax::expression::array_syntax::{ArrayElementSyntax, ArraySyntax};
 pub use crate::syntax::expression::binary_operation_syntax::BinaryOperationSyntax;
 pub use crate::syntax::expression::call_syntax::{
@@ -24,6 +24,7 @@ pub use crate::syntax::expression::type_cast_syntax::TypeCastSyntax;
 pub use crate::syntax::expression::unary_operation_syntax::{
     PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax, UnaryOperationSyntax,
 };
+pub use crate::syntax::expression::if_syntax::{IfExprSyntax, ElseSyntax};
 use crate::syntax::literal::LiteralSyntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
@@ -139,11 +140,4 @@ pub enum PostfixSuffix {
         navigation: TokenSyntax,
         name: TokenSyntax,
     },
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct IfExprSyntax {
-    pub condition: Box<Expr>,
-    pub body: BlockSyntax,
-    pub else_body: Option<BlockSyntax>,
 }
