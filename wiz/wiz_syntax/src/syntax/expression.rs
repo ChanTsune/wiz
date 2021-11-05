@@ -5,6 +5,7 @@ mod member_syntax;
 mod name_syntax;
 mod subscript_syntax;
 mod type_cast_syntax;
+mod unary_operation_syntax;
 
 use crate::syntax::block::BlockSyntax;
 pub use crate::syntax::expression::array_syntax::{ArrayElementSyntax, ArraySyntax};
@@ -18,6 +19,7 @@ pub use crate::syntax::expression::subscript_syntax::{
     SubscriptIndexElementSyntax, SubscriptIndexListSyntax, SubscriptSyntax,
 };
 pub use crate::syntax::expression::type_cast_syntax::TypeCastSyntax;
+pub use crate::syntax::expression::unary_operation_syntax::{UnaryOperationSyntax, PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax};
 use crate::syntax::literal::LiteralSyntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
@@ -58,8 +60,8 @@ impl Syntax for Expr {
             Expr::Name(n) => Expr::Name(n.with_leading_trivia(trivia)),
             Expr::Literal(l) => Expr::Literal(l.with_leading_trivia(trivia)),
             Expr::BinOp(b) => Expr::BinOp(b.with_leading_trivia(trivia)),
-            Expr::UnaryOp(_) => {
-                todo!()
+            Expr::UnaryOp(u) => {
+                Expr::UnaryOp(u.with_leading_trivia(trivia))
             }
             Expr::Subscript(s) => Expr::Subscript(s.with_leading_trivia(trivia)),
             Expr::Member(m) => Expr::Member(m.with_leading_trivia(trivia)),
@@ -95,8 +97,8 @@ impl Syntax for Expr {
             Expr::Name(n) => Expr::Name(n.with_trailing_trivia(trivia)),
             Expr::Literal(l) => Expr::Literal(l.with_trailing_trivia(trivia)),
             Expr::BinOp(b) => Expr::BinOp(b.with_trailing_trivia(trivia)),
-            Expr::UnaryOp(_) => {
-                todo!()
+            Expr::UnaryOp(u) => {
+                Expr::UnaryOp(u.with_trailing_trivia(trivia))
             }
             Expr::Subscript(s) => Expr::Subscript(s.with_trailing_trivia(trivia)),
             Expr::Member(m) => Expr::Member(m.with_trailing_trivia(trivia)),
@@ -128,23 +130,6 @@ impl Syntax for Expr {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub enum UnaryOperationSyntax {
-    Prefix(PrefixUnaryOperationSyntax),
-    Postfix(PostfixUnaryOperationSyntax),
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct PrefixUnaryOperationSyntax {
-    pub operator: TokenSyntax,
-    pub target: Box<Expr>,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct PostfixUnaryOperationSyntax {
-    pub target: Box<Expr>,
-    pub operator: TokenSyntax,
-}
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum PostfixSuffix {
