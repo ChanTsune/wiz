@@ -9,8 +9,10 @@ Programming is modern-day magic
 
 ### Requirments
 
-- Rust 1.52 or later
-- llvm-11
+|Tool|version|
+|:-:|:-:|
+|Rust|latest|
+|llvm|11|
 
 ### Setup
 
