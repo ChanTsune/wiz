@@ -282,7 +282,7 @@ impl ResolverContext {
         let msg = format!("NameSpace {:?} not exist", ns);
         self.name_space
             .get_child_mut(ns)
-            .ok_or(ResolverError::from(msg))
+            .ok_or_else(||ResolverError::from(msg))
     }
 
     pub fn get_current_namespace(&self) -> Result<&NameSpace> {
@@ -293,7 +293,7 @@ impl ResolverContext {
         let msg = format!("NameSpace {:?} not exist", ns);
         self.name_space
             .get_child(ns)
-            .ok_or(ResolverError::from(msg))
+            .ok_or_else(||ResolverError::from(msg))
     }
 
     pub fn get_current_type(&self) -> Option<TypedType> {
@@ -385,20 +385,20 @@ impl ResolverContext {
                 let ns = self.get_namespace_mut(v.package.clone().into_resolved().names)?;
                 let rs = ns
                     .get_type(&v.name)
-                    .ok_or(ResolverError::from(format!("Can not resolve type {:?}", t)))?;
+                    .ok_or_else(||ResolverError::from(format!("Can not resolve type {:?}", t)))?;
                 rs.get_instance_member_type(&name)
                     .cloned()
-                    .ok_or(ResolverError::from(format!("{:?} not has {:?}", t, name)))
+                    .ok_or_else(||ResolverError::from(format!("{:?} not has {:?}", t, name)))
             }
             TypedType::Type(v) => {
                 let ns = self.get_namespace_mut(v.package.clone().into_resolved().names)?;
                 let rs = ns
                     .get_type(&v.name)
-                    .ok_or(ResolverError::from(format!("Can not resolve type {:?}", t)))?;
+                    .ok_or_else(||ResolverError::from(format!("Can not resolve type {:?}", t)))?;
                 rs.static_functions
                     .get(&name)
                     .cloned()
-                    .ok_or(ResolverError::from(format!("{:?} not has {:?}", t, name)))
+                    .ok_or_else(||ResolverError::from(format!("{:?} not has {:?}", t, name)))
             }
             _ => todo!("dose not impl"),
         }
@@ -424,13 +424,13 @@ impl ResolverContext {
                 let n = n.unwrap();
                 let ns = child
                     .get_child(name_space.clone())
-                    .ok_or(ResolverError::from(format!(
+                    .ok_or_else(||ResolverError::from(format!(
                         "Cannot resolve namespace {:?}",
                         name_space
                     )))?;
                 let t = ns
                     .get_value(&n)
-                    .ok_or(ResolverError::from(format!("Cannot resolve name {:?}", n)))?;
+                    .ok_or_else(||ResolverError::from(format!("Cannot resolve name {:?}", n)))?;
                 Result::Ok((
                     t.clone(),
                     if t.is_function_type() {
@@ -512,7 +512,7 @@ impl ResolverContext {
                             let ns =
                                 child
                                     .get_child(name_space.clone())
-                                    .ok_or(ResolverError::from(format!(
+                                    .ok_or_else(||ResolverError::from(format!(
                                         "Cannot resolve namespace {:?}",
                                         name_space
                                     )))?;

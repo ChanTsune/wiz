@@ -127,7 +127,7 @@ impl TypeResolver {
                 namespace.register_value(
                     v.name,
                     v.type_
-                        .ok_or(ResolverError::from("Cannot resolve variable type"))?,
+                        .ok_or_else(||ResolverError::from("Cannot resolve variable type"))?,
                 );
             }
             TypedDecl::Fun(f) => {
@@ -158,7 +158,7 @@ impl TypeResolver {
                     a.name(),
                     EnvValue::from(
                         a.type_()
-                            .ok_or(ResolverError::from("Can not resolve 'self type'"))?,
+                            .ok_or_else(||ResolverError::from("Can not resolve 'self type'"))?,
                     ),
                 );
                 Result::Ok(a)
@@ -200,7 +200,7 @@ impl TypeResolver {
         for stored_property in stored_properties.into_iter() {
             let type_ = self.context.full_type_name(stored_property.type_)?;
             let ns = self.context.get_current_namespace_mut()?;
-            let rs = ns.get_type_mut(&name).ok_or(ResolverError::from(format!(
+            let rs = ns.get_type_mut(&name).ok_or_else(||ResolverError::from(format!(
                 "Struct {:?} not exist. Maybe before preload",
                 name
             )))?;
@@ -209,7 +209,7 @@ impl TypeResolver {
         for computed_property in computed_properties.into_iter() {
             let type_ = self.context.full_type_name(computed_property.type_)?;
             let ns = self.context.get_current_namespace_mut()?;
-            let rs = ns.get_type_mut(&name).ok_or(ResolverError::from(format!(
+            let rs = ns.get_type_mut(&name).ok_or_else(||ResolverError::from(format!(
                 "Struct {:?} not exist. Maybe before preload",
                 name
             )))?;
@@ -220,7 +220,7 @@ impl TypeResolver {
                 .context
                 .full_type_name(member_function.type_().unwrap())?;
             let ns = self.context.get_current_namespace_mut()?;
-            let rs = ns.get_type_mut(&name).ok_or(ResolverError::from(format!(
+            let rs = ns.get_type_mut(&name).ok_or_else(||ResolverError::from(format!(
                 "Struct {:?} not exist. Maybe before preload",
                 name
             )))?;
@@ -234,7 +234,7 @@ impl TypeResolver {
                         return_type: this_type.clone(),
                     })))?;
             let ns = self.context.get_current_namespace_mut()?;
-            let rs = ns.get_type_mut(&name).ok_or(ResolverError::from(format!(
+            let rs = ns.get_type_mut(&name).ok_or_else(||ResolverError::from(format!(
                 "Struct {:?} not exist. Maybe before preload",
                 name
             )))?;
@@ -329,7 +329,7 @@ impl TypeResolver {
             EnvValue::from(
                 v.type_
                     .clone()
-                    .ok_or(ResolverError::from("Cannot resolve variable type"))?,
+                    .ok_or_else(||ResolverError::from("Cannot resolve variable type"))?,
             ),
         );
         Result::Ok(v)
@@ -346,7 +346,7 @@ impl TypeResolver {
                 Some(TypedFunBody::Expr(e)) => {
                     self.expr(e.clone())?
                         .type_()
-                        .ok_or(ResolverError::from(format!(
+                        .ok_or_else(||ResolverError::from(format!(
                             "Can not resolve expr type at function {:?}",
                             f.name
                         )))
@@ -386,7 +386,7 @@ impl TypeResolver {
                     a.name(),
                     EnvValue::from(
                         a.type_()
-                            .ok_or(ResolverError::from("Can not resolve 'self type'"))?,
+                            .ok_or_else(||ResolverError::from("Can not resolve 'self type'"))?,
                     ),
                 );
                 Result::Ok(a)
@@ -464,7 +464,7 @@ impl TypeResolver {
         let ns = self.context.get_current_namespace_mut()?;
         ns.register_value(
             String::from("self"),
-            self_type.ok_or(ResolverError::from("Can not resolve 'self type'"))?,
+            self_type.ok_or_else(||ResolverError::from("Can not resolve 'self type'"))?,
         );
         Result::Ok(TypedInitializer {
             args: i
@@ -476,7 +476,7 @@ impl TypeResolver {
                     ns.register_value(
                         a.name(),
                         a.type_()
-                            .ok_or(ResolverError::from("Can not resolve 'self type'"))?,
+                            .ok_or_else(||ResolverError::from("Can not resolve 'self type'"))?,
                     );
                     Result::Ok(a)
                 })
@@ -506,7 +506,7 @@ impl TypeResolver {
                         a.name(),
                         EnvValue::from(
                             a.type_()
-                                .ok_or(ResolverError::from("Can not resolve `self`"))?,
+                                .ok_or_else(||ResolverError::from("Can not resolve `self`"))?,
                         ),
                     );
                     Result::Ok(a)
