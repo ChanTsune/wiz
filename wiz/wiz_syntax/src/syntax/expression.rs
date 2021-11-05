@@ -4,6 +4,7 @@ mod call_syntax;
 mod member_syntax;
 mod name_syntax;
 mod type_cast_syntax;
+mod subscript_syntax;
 
 use crate::syntax::block::BlockSyntax;
 pub use crate::syntax::expression::array_syntax::{ArrayElementSyntax, ArraySyntax};
@@ -13,6 +14,7 @@ pub use crate::syntax::expression::call_syntax::{
 };
 pub use crate::syntax::expression::member_syntax::MemberSyntax;
 pub use crate::syntax::expression::name_syntax::NameExprSyntax;
+pub use crate::syntax::expression::subscript_syntax::{SubscriptSyntax, SubscriptIndexListSyntax, SubscriptIndexElementSyntax};
 pub use crate::syntax::expression::type_cast_syntax::TypeCastSyntax;
 use crate::syntax::literal::LiteralSyntax;
 use crate::syntax::token::TokenSyntax;
@@ -57,8 +59,8 @@ impl Syntax for Expr {
             Expr::UnaryOp(_) => {
                 todo!()
             }
-            Expr::Subscript(_) => {
-                todo!()
+            Expr::Subscript(s) => {
+                Expr::Subscript(s.with_leading_trivia(trivia))
             }
             Expr::Member(m) => Expr::Member(m.with_leading_trivia(trivia)),
             Expr::Array(a) => Expr::Array(a.with_leading_trivia(trivia)),
@@ -96,8 +98,8 @@ impl Syntax for Expr {
             Expr::UnaryOp(_) => {
                 todo!()
             }
-            Expr::Subscript(_) => {
-                todo!()
+            Expr::Subscript(s) => {
+                Expr::Subscript(s.with_trailing_trivia(trivia))
             }
             Expr::Member(m) => Expr::Member(m.with_trailing_trivia(trivia)),
             Expr::Array(a) => Expr::Array(a.with_trailing_trivia(trivia)),
@@ -147,12 +149,6 @@ pub struct PostfixUnaryOperationSyntax {
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
-pub struct SubscriptSyntax {
-    pub target: Box<Expr>,
-    pub idx_or_keys: Vec<Expr>,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum PostfixSuffix {
     Operator(String),
     TypeArgumentSuffix(TypeArgumentListSyntax),
@@ -160,9 +156,7 @@ pub enum PostfixSuffix {
         args: Option<CallArgListSyntax>,
         tailing_lambda: Option<LambdaSyntax>,
     },
-    IndexingSuffix {
-        indexes: Vec<Expr>,
-    },
+    IndexingSuffix(SubscriptIndexListSyntax),
     NavigationSuffix {
         navigation: TokenSyntax,
         name: TokenSyntax,
