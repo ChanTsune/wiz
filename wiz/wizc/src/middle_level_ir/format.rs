@@ -69,8 +69,11 @@ mod tests {
             arg_defs: vec![],
             return_type: MLValueType::Primitive(MLPrimitiveType::Noting),
             body: Some(MLFunBody {
-                body: vec![MLStmt::Expr(MLExpr::Literal(MLLiteral::Integer { value: "0".to_string(), type_: MLValueType::Primitive(MLPrimitiveType::Int8) }))]
-            })
+                body: vec![MLStmt::Expr(MLExpr::Literal(MLLiteral::Integer {
+                    value: "0".to_string(),
+                    type_: MLValueType::Primitive(MLPrimitiveType::Int8),
+                }))],
+            }),
         };
         let mut buf = String::new();
         let mut formatter = Formatter::new(&mut buf);
