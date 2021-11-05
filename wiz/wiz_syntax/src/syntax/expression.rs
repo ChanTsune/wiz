@@ -112,9 +112,7 @@ impl Syntax for Expr {
             Expr::StringBuilder { .. } => {
                 todo!()
             }
-            Expr::Call(c) => {
-                Expr::Call(c.with_trailing_trivia(trivia))
-            }
+            Expr::Call(c) => Expr::Call(c.with_trailing_trivia(trivia)),
             Expr::If(_) => {
                 todo!()
             }

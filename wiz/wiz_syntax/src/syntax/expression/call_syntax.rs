@@ -17,37 +17,29 @@ impl Syntax for CallExprSyntax {
         Self {
             target: Box::new(self.target.with_leading_trivia(trivia)),
             args: self.args,
-            tailing_lambda: self.tailing_lambda
+            tailing_lambda: self.tailing_lambda,
         }
     }
 
     fn with_trailing_trivia(self, trivia: Trivia) -> Self {
         match self.tailing_lambda {
-            None => {
-                match self.args {
-                    None => {
-                        Self {
-                            target: Box::new(self.target.with_trailing_trivia(trivia)),
-                            args: None,
-                            tailing_lambda: None
-                        }
-                    }
-                    Some(args) => {
-                        Self {
-                            target: self.target,
-                            args: Some(args.with_trailing_trivia(trivia)),
-                            tailing_lambda: None
-                        }
-                    }
-                }
-            }
-            Some(tailing_lambda) => {
-                Self {
+            None => match self.args {
+                None => Self {
+                    target: Box::new(self.target.with_trailing_trivia(trivia)),
+                    args: None,
+                    tailing_lambda: None,
+                },
+                Some(args) => Self {
                     target: self.target,
-                    args: self.args,
-                    tailing_lambda: Some(tailing_lambda.with_trailing_trivia(trivia))
-                }
-            }
+                    args: Some(args.with_trailing_trivia(trivia)),
+                    tailing_lambda: None,
+                },
+            },
+            Some(tailing_lambda) => Self {
+                target: self.target,
+                args: self.args,
+                tailing_lambda: Some(tailing_lambda.with_trailing_trivia(trivia)),
+            },
         }
     }
 }
