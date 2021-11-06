@@ -1,16 +1,31 @@
 mod array_syntax;
 mod binary_operation_syntax;
+mod call_syntax;
+mod if_syntax;
+mod member_syntax;
 mod name_syntax;
+mod return_syntax;
+mod subscript_syntax;
 mod type_cast_syntax;
+mod unary_operation_syntax;
 
-pub use self::array_syntax::{ArrayElementSyntax, ArraySyntax};
-pub use self::binary_operation_syntax::BinaryOperationSyntax;
-pub use self::name_syntax::NameExprSyntax;
-pub use self::type_cast_syntax::TypeCastSyntax;
-
-use crate::syntax::block::BlockSyntax;
+pub use crate::syntax::expression::array_syntax::{ArrayElementSyntax, ArraySyntax};
+pub use crate::syntax::expression::binary_operation_syntax::BinaryOperationSyntax;
+pub use crate::syntax::expression::call_syntax::{
+    CallArg, CallArgElementSyntax, CallArgListSyntax, CallExprSyntax, LambdaSyntax,
+};
+pub use crate::syntax::expression::if_syntax::{ElseSyntax, IfExprSyntax};
+pub use crate::syntax::expression::member_syntax::MemberSyntax;
+pub use crate::syntax::expression::name_syntax::NameExprSyntax;
+pub use crate::syntax::expression::return_syntax::ReturnSyntax;
+pub use crate::syntax::expression::subscript_syntax::{
+    SubscriptIndexElementSyntax, SubscriptIndexListSyntax, SubscriptSyntax,
+};
+pub use crate::syntax::expression::type_cast_syntax::TypeCastSyntax;
+pub use crate::syntax::expression::unary_operation_syntax::{
+    PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax, UnaryOperationSyntax,
+};
 use crate::syntax::literal::LiteralSyntax;
-use crate::syntax::statement::Stmt;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::type_name::TypeArgumentListSyntax;
@@ -50,15 +65,9 @@ impl Syntax for Expr {
             Expr::Name(n) => Expr::Name(n.with_leading_trivia(trivia)),
             Expr::Literal(l) => Expr::Literal(l.with_leading_trivia(trivia)),
             Expr::BinOp(b) => Expr::BinOp(b.with_leading_trivia(trivia)),
-            Expr::UnaryOp(_) => {
-                todo!()
-            }
-            Expr::Subscript(_) => {
-                todo!()
-            }
-            Expr::Member(_) => {
-                todo!()
-            }
+            Expr::UnaryOp(u) => Expr::UnaryOp(u.with_leading_trivia(trivia)),
+            Expr::Subscript(s) => Expr::Subscript(s.with_leading_trivia(trivia)),
+            Expr::Member(m) => Expr::Member(m.with_leading_trivia(trivia)),
             Expr::Array(a) => Expr::Array(a.with_leading_trivia(trivia)),
             Expr::Tuple { .. } => {
                 todo!()
@@ -69,21 +78,15 @@ impl Syntax for Expr {
             Expr::StringBuilder { .. } => {
                 todo!()
             }
-            Expr::Call(_) => {
-                todo!()
-            }
-            Expr::If(_) => {
-                todo!()
-            }
+            Expr::Call(c) => Expr::Call(c.with_leading_trivia(trivia)),
+            Expr::If(i) => Expr::If(i.with_leading_trivia(trivia)),
             Expr::When { .. } => {
                 todo!()
             }
             Expr::Lambda(_) => {
                 todo!()
             }
-            Expr::Return(_) => {
-                todo!()
-            }
+            Expr::Return(r) => Expr::Return(r.with_leading_trivia(trivia)),
             Expr::TypeCast(t) => Expr::TypeCast(t.with_leading_trivia(trivia)),
         }
     }
@@ -93,15 +96,9 @@ impl Syntax for Expr {
             Expr::Name(n) => Expr::Name(n.with_trailing_trivia(trivia)),
             Expr::Literal(l) => Expr::Literal(l.with_trailing_trivia(trivia)),
             Expr::BinOp(b) => Expr::BinOp(b.with_trailing_trivia(trivia)),
-            Expr::UnaryOp(_) => {
-                todo!()
-            }
-            Expr::Subscript(_) => {
-                todo!()
-            }
-            Expr::Member(_) => {
-                todo!()
-            }
+            Expr::UnaryOp(u) => Expr::UnaryOp(u.with_trailing_trivia(trivia)),
+            Expr::Subscript(s) => Expr::Subscript(s.with_trailing_trivia(trivia)),
+            Expr::Member(m) => Expr::Member(m.with_trailing_trivia(trivia)),
             Expr::Array(a) => Expr::Array(a.with_trailing_trivia(trivia)),
             Expr::Tuple { .. } => {
                 todo!()
@@ -112,74 +109,18 @@ impl Syntax for Expr {
             Expr::StringBuilder { .. } => {
                 todo!()
             }
-            Expr::Call(_) => {
-                todo!()
-            }
-            Expr::If(_) => {
-                todo!()
-            }
+            Expr::Call(c) => Expr::Call(c.with_trailing_trivia(trivia)),
+            Expr::If(i) => Expr::If(i.with_trailing_trivia(trivia)),
             Expr::When { .. } => {
                 todo!()
             }
             Expr::Lambda(_) => {
                 todo!()
             }
-            Expr::Return(_) => {
-                todo!()
-            }
+            Expr::Return(r) => Expr::Return(r.with_trailing_trivia(trivia)),
             Expr::TypeCast(t) => Expr::TypeCast(t.with_trailing_trivia(trivia)),
         }
     }
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub enum UnaryOperationSyntax {
-    Prefix(PrefixUnaryOperationSyntax),
-    Postfix(PostfixUnaryOperationSyntax),
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct PrefixUnaryOperationSyntax {
-    pub operator: TokenSyntax,
-    pub target: Box<Expr>,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct PostfixUnaryOperationSyntax {
-    pub target: Box<Expr>,
-    pub operator: TokenSyntax,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct CallExprSyntax {
-    pub target: Box<Expr>,
-    pub args: Vec<CallArg>,
-    pub tailing_lambda: Option<LambdaSyntax>,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct CallArg {
-    pub label: Option<String>,
-    pub arg: Box<Expr>,
-    pub is_vararg: bool,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct LambdaSyntax {
-    pub stmts: Vec<Stmt>,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct SubscriptSyntax {
-    pub target: Box<Expr>,
-    pub idx_or_keys: Vec<Expr>,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct MemberSyntax {
-    pub target: Box<Expr>,
-    pub name: TokenSyntax,
-    pub navigation_operator: TokenSyntax,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -187,27 +128,12 @@ pub enum PostfixSuffix {
     Operator(String),
     TypeArgumentSuffix(TypeArgumentListSyntax),
     CallSuffix {
-        args: Vec<CallArg>,
+        args: Option<CallArgListSyntax>,
         tailing_lambda: Option<LambdaSyntax>,
     },
-    IndexingSuffix {
-        indexes: Vec<Expr>,
-    },
+    IndexingSuffix(SubscriptIndexListSyntax),
     NavigationSuffix {
         navigation: TokenSyntax,
         name: TokenSyntax,
     },
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct IfExprSyntax {
-    pub condition: Box<Expr>,
-    pub body: BlockSyntax,
-    pub else_body: Option<BlockSyntax>,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct ReturnSyntax {
-    pub return_keyword: TokenSyntax,
-    pub value: Option<Box<Expr>>,
 }

@@ -417,10 +417,13 @@ where
 #[cfg(test)]
 mod tests {
     use crate::parser::wiz::statement::{
-        assignable_expr, assignment_stmt, directly_assignable_expr, file, while_stmt,
+        assignable_expr, assignment_stmt, directly_assignable_expr, file, stmt, while_stmt,
     };
     use crate::syntax::block::BlockSyntax;
-    use crate::syntax::expression::{BinaryOperationSyntax, Expr, MemberSyntax, NameExprSyntax};
+    use crate::syntax::expression::{
+        BinaryOperationSyntax, CallArgListSyntax, CallExprSyntax, Expr, MemberSyntax,
+        NameExprSyntax,
+    };
     use crate::syntax::file::FileSyntax;
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::statement::{
@@ -430,6 +433,24 @@ mod tests {
     use crate::syntax::token::TokenSyntax;
     use crate::syntax::trivia::{Trivia, TriviaPiece};
     use crate::syntax::Syntax;
+
+    #[test]
+    fn test_call_expr_stmt() {
+        assert_eq!(
+            stmt("hoge()"),
+            Ok((
+                "",
+                Stmt::Expr(Expr::Call(CallExprSyntax {
+                    target: Box::new(Expr::Name(NameExprSyntax {
+                        name_space: Default::default(),
+                        name: TokenSyntax::from("hoge")
+                    })),
+                    args: Some(CallArgListSyntax::new()),
+                    tailing_lambda: None
+                }))
+            ))
+        )
+    }
 
     #[test]
     fn test_while_stmt_with_bracket() {

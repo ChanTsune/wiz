@@ -17,9 +17,10 @@ use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_arguments};
 use crate::syntax::block::BlockSyntax;
 use crate::syntax::expression::{
-    ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallExprSyntax, Expr,
-    IfExprSyntax, LambdaSyntax, MemberSyntax, NameExprSyntax, PostfixSuffix,
-    PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax, ReturnSyntax, SubscriptSyntax,
+    ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallArgElementSyntax,
+    CallArgListSyntax, CallExprSyntax, ElseSyntax, Expr, IfExprSyntax, LambdaSyntax, MemberSyntax,
+    NameExprSyntax, PostfixSuffix, PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax,
+    ReturnSyntax, SubscriptIndexElementSyntax, SubscriptIndexListSyntax, SubscriptSyntax,
     TypeCastSyntax, UnaryOperationSyntax,
 };
 use crate::syntax::literal::LiteralSyntax;
@@ -372,13 +373,17 @@ where
                         }),
                     )),
                 )),
-                |(_, _, _, e)| e,
+                |(lws, e, rws, body)| ElseSyntax {
+                    else_keyword: TokenSyntax::from(e).with_leading_trivia(lws),
+                    body: body.with_leading_trivia(rws),
+                },
             )),
         )),
-        |(_, _, condition, _, body, else_body)| {
+        |(i, cws, condition, bws, body, else_body)| {
             Expr::If(IfExprSyntax {
-                condition: Box::new(condition),
-                body,
+                if_keyword: TokenSyntax::from(i),
+                condition: Box::new(condition.with_leading_trivia(cws)),
+                body: body.with_leading_trivia(bws),
                 else_body,
             })
         },
@@ -425,7 +430,7 @@ where
                     args,
                     tailing_lambda,
                 }),
-                PostfixSuffix::IndexingSuffix { indexes } => Expr::Subscript(SubscriptSyntax {
+                PostfixSuffix::IndexingSuffix(indexes) => Expr::Subscript(SubscriptSyntax {
                     target: Box::new(e),
                     idx_or_keys: indexes,
                 }),
@@ -543,20 +548,38 @@ where
     map(
         tuple((
             char('['),
+            many0(tuple((whitespace0, expr, whitespace0, comma))),
             whitespace0,
-            expr,
-            whitespace0,
-            many0(tuple((comma, whitespace0, expr))),
-            whitespace0,
-            opt(comma),
+            opt(expr),
             whitespace0,
             char(']'),
         )),
-        |(_, _, ex, _, exs, _, _, _, _)| PostfixSuffix::IndexingSuffix {
-            indexes: vec![ex]
+        |(open, t, ws, typ, tws, close)| {
+            let mut close = TokenSyntax::from(close);
+            let mut elements: Vec<_> = t
                 .into_iter()
-                .chain(exs.into_iter().map(|(_, _, e)| e))
-                .collect(),
+                .map(|(lws, tp, rws, com)| SubscriptIndexElementSyntax {
+                    element: tp.with_leading_trivia(lws),
+                    trailing_comma: Some(TokenSyntax::from(com).with_leading_trivia(rws)),
+                })
+                .collect();
+            match typ {
+                None => {
+                    close = close.with_leading_trivia(ws + tws);
+                }
+                Some(p) => {
+                    elements.push(SubscriptIndexElementSyntax {
+                        element: p.with_leading_trivia(ws),
+                        trailing_comma: None,
+                    });
+                    close = close.with_leading_trivia(tws);
+                }
+            };
+            PostfixSuffix::IndexingSuffix(SubscriptIndexListSyntax {
+                open: TokenSyntax::from(open),
+                elements,
+                close,
+            })
         },
     )(s)
 }
@@ -744,7 +767,7 @@ where
                 todo!("will execute line?")
             }
             None => PostfixSuffix::CallSuffix {
-                args: args.unwrap_or_default(),
+                args: args,
                 tailing_lambda: tl,
             },
         },
@@ -753,7 +776,7 @@ where
 /*
 <value_arguments> ::= "(" (<value_argument> ("," <value_argument>)* ","?)? ")"
 */
-pub fn value_arguments<I>(s: I) -> IResult<I, Vec<CallArg>>
+pub fn value_arguments<I>(s: I) -> IResult<I, CallArgListSyntax>
 where
     I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
@@ -773,23 +796,38 @@ where
     map(
         tuple((
             char('('),
-            opt(tuple((
-                value_argument,
-                many0(tuple((comma, value_argument))),
-                opt(comma),
-            ))),
+            many0(tuple((whitespace0, value_argument, whitespace0, comma))),
+            whitespace0,
+            opt(value_argument),
+            whitespace0,
             char(')'),
         )),
-        |(_, args_t, _)| {
-            let mut args = vec![];
-            if let Some((a, ags, _)) = args_t {
-                args = args
-                    .into_iter()
-                    .chain(vec![a])
-                    .chain(ags.into_iter().map(|(_, ar)| ar))
-                    .collect();
+        |(open, t, ws, typ, tws, close)| {
+            let mut close = TokenSyntax::from(close);
+            let mut elements: Vec<_> = t
+                .into_iter()
+                .map(|(lws, tp, rws, com)| CallArgElementSyntax {
+                    element: tp.with_leading_trivia(lws),
+                    trailing_comma: Some(TokenSyntax::from(com).with_leading_trivia(rws)),
+                })
+                .collect();
+            match typ {
+                None => {
+                    close = close.with_leading_trivia(ws + tws);
+                }
+                Some(p) => {
+                    elements.push(CallArgElementSyntax {
+                        element: p.with_leading_trivia(ws),
+                        trailing_comma: None,
+                    });
+                    close = close.with_leading_trivia(tws);
+                }
             };
-            args
+            CallArgListSyntax {
+                open: TokenSyntax::from(open),
+                elements,
+                close,
+            }
         },
     )(s)
 }
@@ -821,9 +859,9 @@ where
             expr,
         )),
         |(_, arg_label, is_vararg, arg)| CallArg {
-            label: arg_label.map(|(label, _, _, _)| label),
+            label: arg_label.map(|(label, _, _, _)| TokenSyntax::from(label)),
+            asterisk: is_vararg.map(|a| TokenSyntax::from(a)),
             arg: Box::new(arg),
-            is_vararg: is_vararg.is_some(),
         },
     )(s)
 }
@@ -1262,11 +1300,13 @@ mod tests {
         postfix_suffix, raw_string_literal, return_expr, string_literal, value_arguments,
     };
     use crate::syntax::block::BlockSyntax;
-    use crate::syntax::decl::var_syntax::VarSyntax;
     use crate::syntax::decl::Decl;
+    use crate::syntax::decl::VarSyntax;
     use crate::syntax::expression::{
-        ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallExprSyntax, Expr,
-        IfExprSyntax, MemberSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax,
+        ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallArgElementSyntax,
+        CallArgListSyntax, CallExprSyntax, ElseSyntax, Expr, IfExprSyntax, MemberSyntax,
+        NameExprSyntax, PostfixSuffix, ReturnSyntax, SubscriptIndexElementSyntax,
+        SubscriptIndexListSyntax,
     };
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::name_space::NameSpaceSyntax;
@@ -1555,7 +1595,7 @@ mod tests {
 
     #[test]
     fn test_value_arguments_no_args() {
-        assert_eq!(value_arguments("()"), Ok(("", vec![])))
+        assert_eq!(value_arguments("()"), Ok(("", CallArgListSyntax::new())))
     }
 
     #[test]
@@ -1564,15 +1604,22 @@ mod tests {
             value_arguments("(\"Hello, World\")"),
             Ok((
                 "",
-                vec![CallArg {
-                    label: None,
-                    arg: Box::from(Expr::Literal(LiteralSyntax::String {
-                        open_quote: TokenSyntax::from('"'),
-                        value: "Hello, World".to_string(),
-                        close_quote: TokenSyntax::from('"'),
-                    })),
-                    is_vararg: false
-                }]
+                CallArgListSyntax {
+                    open: TokenSyntax::from("("),
+                    elements: vec![CallArgElementSyntax {
+                        element: CallArg {
+                            label: None,
+                            arg: Box::from(Expr::Literal(LiteralSyntax::String {
+                                open_quote: TokenSyntax::from('"'),
+                                value: "Hello, World".to_string(),
+                                close_quote: TokenSyntax::from('"'),
+                            })),
+                            asterisk: None
+                        },
+                        trailing_comma: None
+                    }],
+                    close: TokenSyntax::from(")")
+                }
             ))
         )
     }
@@ -1584,7 +1631,7 @@ mod tests {
             Ok((
                 "",
                 PostfixSuffix::CallSuffix {
-                    args: vec![],
+                    args: Some(CallArgListSyntax::new()),
                     tailing_lambda: None
                 }
             ))
@@ -1602,7 +1649,7 @@ mod tests {
                         name_space: Default::default(),
                         name: TokenSyntax::from("puts")
                     })),
-                    args: vec![],
+                    args: Some(CallArgListSyntax::new()),
                     tailing_lambda: None,
                 })
             ))
@@ -1620,15 +1667,22 @@ mod tests {
                         name_space: Default::default(),
                         name: TokenSyntax::from("puts")
                     })),
-                    args: vec![CallArg {
-                        label: None,
-                        arg: Box::from(Expr::Literal(LiteralSyntax::String {
-                            open_quote: TokenSyntax::from('"'),
-                            value: "Hello, World".to_string(),
-                            close_quote: TokenSyntax::from('"'),
-                        })),
-                        is_vararg: false
-                    }],
+                    args: Some(CallArgListSyntax {
+                        open: TokenSyntax::from("("),
+                        elements: vec![CallArgElementSyntax {
+                            element: CallArg {
+                                label: None,
+                                arg: Box::from(Expr::Literal(LiteralSyntax::String {
+                                    open_quote: TokenSyntax::from('"'),
+                                    value: "Hello, World".to_string(),
+                                    close_quote: TokenSyntax::from('"'),
+                                })),
+                                asterisk: None
+                            },
+                            trailing_comma: None
+                        }],
+                        close: TokenSyntax::from(")")
+                    }),
                     tailing_lambda: None,
                 })
             ))
@@ -1646,15 +1700,22 @@ mod tests {
                         name_space: Default::default(),
                         name: TokenSyntax::from("puts")
                     })),
-                    args: vec![CallArg {
-                        label: Some(String::from("string")),
-                        arg: Box::from(Expr::Literal(LiteralSyntax::String {
-                            open_quote: TokenSyntax::from('"'),
-                            value: "Hello, World".to_string(),
-                            close_quote: TokenSyntax::from('"')
-                        })),
-                        is_vararg: false
-                    }],
+                    args: Some(CallArgListSyntax {
+                        open: TokenSyntax::from("("),
+                        elements: vec![CallArgElementSyntax {
+                            element: CallArg {
+                                label: Some(TokenSyntax::from("string")),
+                                arg: Box::from(Expr::Literal(LiteralSyntax::String {
+                                    open_quote: TokenSyntax::from('"'),
+                                    value: "Hello, World".to_string(),
+                                    close_quote: TokenSyntax::from('"')
+                                })),
+                                asterisk: None
+                            },
+                            trailing_comma: None
+                        }],
+                        close: TokenSyntax::from(")")
+                    }),
                     tailing_lambda: None,
                 })
             ))
@@ -1668,16 +1729,21 @@ mod tests {
             Ok((
                 "",
                 Expr::If(IfExprSyntax {
-                    condition: Box::new(Expr::Name(NameExprSyntax {
-                        name_space: Default::default(),
-                        name: TokenSyntax::from("a")
-                    })),
+                    if_keyword: TokenSyntax::from("if"),
+                    condition: Box::new(Expr::Name(
+                        NameExprSyntax {
+                            name_space: Default::default(),
+                            name: TokenSyntax::from("a")
+                        }
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                    )),
                     body: BlockSyntax {
                         open: TokenSyntax::from("{")
                             .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                         body: vec![],
                         close: TokenSyntax::from("}")
-                    },
+                    }
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     else_body: None
                 })
             ))
@@ -1695,19 +1761,23 @@ mod tests {
             Ok((
                 "",
                 Expr::If(IfExprSyntax {
-                    condition: Box::new(Expr::BinOp(BinaryOperationSyntax {
-                        left: Box::new(Expr::Name(NameExprSyntax {
-                            name_space: Default::default(),
-                            name: TokenSyntax::from("capacity")
-                        })),
-                        operator: TokenSyntax::from("<=")
-                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                            .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                        right: Box::new(Expr::Name(NameExprSyntax {
-                            name_space: Default::default(),
-                            name: TokenSyntax::from("length")
-                        }))
-                    })),
+                    if_keyword: TokenSyntax::from("if"),
+                    condition: Box::new(
+                        Expr::BinOp(BinaryOperationSyntax {
+                            left: Box::new(Expr::Name(NameExprSyntax {
+                                name_space: Default::default(),
+                                name: TokenSyntax::from("capacity")
+                            })),
+                            operator: TokenSyntax::from("<=")
+                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                                .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                            right: Box::new(Expr::Name(NameExprSyntax {
+                                name_space: Default::default(),
+                                name: TokenSyntax::from("length")
+                            }))
+                        })
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                    ),
                     body: BlockSyntax {
                         open: TokenSyntax::from("{").with_trailing_trivia(Trivia::from(vec![
                             TriviaPiece::Newlines(1),
@@ -1720,18 +1790,26 @@ mod tests {
                             name: TokenSyntax::from("newCapacity"),
                             type_: None,
                             value: Expr::If(IfExprSyntax {
-                                condition: Box::new(Expr::BinOp(BinaryOperationSyntax {
-                                    left: Box::new(Expr::Name(NameExprSyntax {
-                                        name_space: Default::default(),
-                                        name: TokenSyntax::from("capacity")
-                                    })),
-                                    operator: TokenSyntax::from("==")
-                                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                                    right: Box::new(Expr::Literal(LiteralSyntax::Integer(
-                                        TokenSyntax::from("0")
-                                    )))
-                                })),
+                                if_keyword: TokenSyntax::from("if"),
+                                condition: Box::new(
+                                    Expr::BinOp(BinaryOperationSyntax {
+                                        left: Box::new(Expr::Name(NameExprSyntax {
+                                            name_space: Default::default(),
+                                            name: TokenSyntax::from("capacity")
+                                        })),
+                                        operator: TokenSyntax::from("==")
+                                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(
+                                                1
+                                            )))
+                                            .with_trailing_trivia(Trivia::from(
+                                                TriviaPiece::Spaces(1)
+                                            )),
+                                        right: Box::new(Expr::Literal(LiteralSyntax::Integer(
+                                            TokenSyntax::from("0")
+                                        )))
+                                    })
+                                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                                ),
                                 body: BlockSyntax {
                                     open: TokenSyntax::from("{")
                                         .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
@@ -1740,28 +1818,38 @@ mod tests {
                                     )))],
                                     close: TokenSyntax::from("}")
                                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                                },
-                                else_body: Some(BlockSyntax {
-                                    open: TokenSyntax::from("{")
-                                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                                    body: vec![Stmt::Expr(Expr::BinOp(BinaryOperationSyntax {
-                                        left: Box::new(Expr::Name(NameExprSyntax {
-                                            name_space: Default::default(),
-                                            name: TokenSyntax::from("capacity")
-                                        })),
-                                        operator: TokenSyntax::from("*")
-                                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(
-                                                1
-                                            )))
-                                            .with_trailing_trivia(Trivia::from(
-                                                TriviaPiece::Spaces(1)
-                                            )),
-                                        right: Box::new(Expr::Literal(LiteralSyntax::Integer(
-                                            TokenSyntax::from("2")
-                                        )))
-                                    }))],
-                                    close: TokenSyntax::from("}")
-                                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                                }
+                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                                else_body: Some(ElseSyntax {
+                                    else_keyword: TokenSyntax::from("else")
+                                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                                    body: BlockSyntax {
+                                        open: TokenSyntax::from("{").with_trailing_trivia(
+                                            Trivia::from(TriviaPiece::Spaces(1))
+                                        ),
+                                        body: vec![Stmt::Expr(Expr::BinOp(
+                                            BinaryOperationSyntax {
+                                                left: Box::new(Expr::Name(NameExprSyntax {
+                                                    name_space: Default::default(),
+                                                    name: TokenSyntax::from("capacity")
+                                                })),
+                                                operator: TokenSyntax::from("*")
+                                                    .with_leading_trivia(Trivia::from(
+                                                        TriviaPiece::Spaces(1)
+                                                    ))
+                                                    .with_trailing_trivia(Trivia::from(
+                                                        TriviaPiece::Spaces(1)
+                                                    )),
+                                                right: Box::new(Expr::Literal(
+                                                    LiteralSyntax::Integer(TokenSyntax::from("2"))
+                                                ))
+                                            }
+                                        ))],
+                                        close: TokenSyntax::from("}").with_leading_trivia(
+                                            Trivia::from(TriviaPiece::Spaces(1))
+                                        )
+                                    }
+                                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
                                 })
                             })
                         }))],
@@ -1769,7 +1857,8 @@ mod tests {
                             TriviaPiece::Newlines(1),
                             TriviaPiece::Spaces(8)
                         ]))
-                    },
+                    }
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     else_body: None
                 })
             ))
@@ -1783,21 +1872,31 @@ mod tests {
             Ok((
                 "",
                 Expr::If(IfExprSyntax {
-                    condition: Box::new(Expr::Name(NameExprSyntax {
-                        name_space: Default::default(),
-                        name: TokenSyntax::from("a")
-                    })),
+                    if_keyword: TokenSyntax::from("if"),
+                    condition: Box::new(
+                        Expr::Name(NameExprSyntax {
+                            name_space: Default::default(),
+                            name: TokenSyntax::from("a")
+                        })
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                    ),
                     body: BlockSyntax {
                         open: TokenSyntax::from("{")
                             .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                         body: vec![],
                         close: TokenSyntax::from("}")
-                    },
-                    else_body: Some(BlockSyntax {
-                        open: TokenSyntax::from("{")
-                            .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                        body: vec![],
-                        close: TokenSyntax::from("}")
+                    }
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    else_body: Some(ElseSyntax {
+                        else_keyword: TokenSyntax::from("else")
+                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        body: BlockSyntax {
+                            open: TokenSyntax::from("{")
+                                .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                            body: vec![],
+                            close: TokenSyntax::from("}")
+                        }
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
                     })
                 })
             ))
@@ -1846,48 +1945,76 @@ mod tests {
             indexing_suffix("[a]"),
             Ok((
                 "",
-                PostfixSuffix::IndexingSuffix {
-                    indexes: vec![Expr::Name(NameExprSyntax {
-                        name_space: Default::default(),
-                        name: TokenSyntax::from("a")
-                    }),]
-                }
+                PostfixSuffix::IndexingSuffix(SubscriptIndexListSyntax {
+                    open: TokenSyntax::from("["),
+                    elements: vec![SubscriptIndexElementSyntax {
+                        element: Expr::Name(NameExprSyntax {
+                            name_space: Default::default(),
+                            name: TokenSyntax::from("a")
+                        }),
+                        trailing_comma: None
+                    }],
+                    close: TokenSyntax::from("]")
+                })
             ))
         );
         assert_eq!(
             indexing_suffix("[a, b]"),
             Ok((
                 "",
-                PostfixSuffix::IndexingSuffix {
-                    indexes: vec![
-                        Expr::Name(NameExprSyntax {
-                            name_space: Default::default(),
-                            name: TokenSyntax::from("a")
-                        }),
-                        Expr::Name(NameExprSyntax {
-                            name_space: Default::default(),
-                            name: TokenSyntax::from("b")
-                        }),
-                    ]
-                }
+                PostfixSuffix::IndexingSuffix(SubscriptIndexListSyntax {
+                    open: TokenSyntax::from("["),
+                    elements: vec![
+                        SubscriptIndexElementSyntax {
+                            element: Expr::Name(NameExprSyntax {
+                                name_space: Default::default(),
+                                name: TokenSyntax::from("a")
+                            }),
+                            trailing_comma: Some(TokenSyntax::from(","))
+                        },
+                        SubscriptIndexElementSyntax {
+                            element: Expr::Name(
+                                NameExprSyntax {
+                                    name_space: Default::default(),
+                                    name: TokenSyntax::from("b")
+                                }
+                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                            ),
+                            trailing_comma: None
+                        },
+                    ],
+                    close: TokenSyntax::from("]")
+                })
             ))
         );
         assert_eq!(
             indexing_suffix("[a, b, ]"),
             Ok((
                 "",
-                PostfixSuffix::IndexingSuffix {
-                    indexes: vec![
-                        Expr::Name(NameExprSyntax {
-                            name_space: Default::default(),
-                            name: TokenSyntax::from("a")
-                        }),
-                        Expr::Name(NameExprSyntax {
-                            name_space: Default::default(),
-                            name: TokenSyntax::from("b")
-                        }),
-                    ]
-                }
+                PostfixSuffix::IndexingSuffix(SubscriptIndexListSyntax {
+                    open: TokenSyntax::from("["),
+                    elements: vec![
+                        SubscriptIndexElementSyntax {
+                            element: Expr::Name(NameExprSyntax {
+                                name_space: Default::default(),
+                                name: TokenSyntax::from("a")
+                            }),
+                            trailing_comma: Some(TokenSyntax::from(","))
+                        },
+                        SubscriptIndexElementSyntax {
+                            element: Expr::Name(
+                                NameExprSyntax {
+                                    name_space: Default::default(),
+                                    name: TokenSyntax::from("b")
+                                }
+                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                            ),
+                            trailing_comma: Some(TokenSyntax::from(","))
+                        },
+                    ],
+                    close: TokenSyntax::from("]")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                })
             ))
         );
     }

@@ -3,14 +3,16 @@ use fun_syntax::body_def::FunBody;
 
 use crate::syntax::annotation::{Annotatable, AnnotationsSyntax};
 use crate::syntax::decl::fun_syntax::FunSyntax;
-use crate::syntax::decl::var_syntax::VarSyntax;
+pub use crate::syntax::decl::use_syntax::{AliasSyntax, PackageName, UseSyntax};
+pub use crate::syntax::decl::var_syntax::VarSyntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::type_name::{TypeConstraintsSyntax, TypeName, TypeParameterListSyntax};
 use crate::syntax::Syntax;
 
 pub mod fun_syntax;
-pub mod var_syntax;
+mod use_syntax;
+mod var_syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Decl {
@@ -48,9 +50,7 @@ impl Annotatable for Decl {
 impl Syntax for Decl {
     fn with_leading_trivia(self, trivia: Trivia) -> Self {
         match self {
-            Decl::Var(_) => {
-                todo!()
-            }
+            Decl::Var(v) => Decl::Var(v.with_leading_trivia(trivia)),
             Decl::Fun(_) => {
                 todo!()
             }
@@ -69,17 +69,13 @@ impl Syntax for Decl {
             Decl::Extension { .. } => {
                 todo!()
             }
-            Decl::Use(_) => {
-                todo!()
-            }
+            Decl::Use(u) => Decl::Use(u.with_leading_trivia(trivia)),
         }
     }
 
     fn with_trailing_trivia(self, trivia: Trivia) -> Self {
         match self {
-            Decl::Var(_) => {
-                todo!()
-            }
+            Decl::Var(v) => Decl::Var(v.with_trailing_trivia(trivia)),
             Decl::Fun(_) => {
                 todo!()
             }
@@ -98,9 +94,7 @@ impl Syntax for Decl {
             Decl::Extension { .. } => {
                 todo!()
             }
-            Decl::Use(_) => {
-                todo!()
-            }
+            Decl::Use(u) => Decl::Use(u.with_trailing_trivia(trivia)),
         }
     }
 }
@@ -159,25 +153,6 @@ pub struct MethodSyntax {
     pub return_type: Option<TypeName>,
     pub type_constraints: Option<TypeConstraintsSyntax>,
     pub body: Option<FunBody>,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct UseSyntax {
-    pub annotations: Option<AnnotationsSyntax>,
-    pub package_name: PackageName,
-    pub alias: Option<String>,
-}
-
-impl Annotatable for UseSyntax {
-    fn with_annotation(mut self, a: AnnotationsSyntax) -> Self {
-        self.annotations = Some(a);
-        self
-    }
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct PackageName {
-    pub names: Vec<String>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]

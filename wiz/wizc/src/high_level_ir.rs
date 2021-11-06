@@ -25,7 +25,7 @@ use wiz_syntax::syntax::block::BlockSyntax;
 use wiz_syntax::syntax::decl::fun_syntax::arg_def::ArgDef;
 use wiz_syntax::syntax::decl::fun_syntax::body_def::FunBody;
 use wiz_syntax::syntax::decl::fun_syntax::FunSyntax;
-use wiz_syntax::syntax::decl::var_syntax::VarSyntax;
+use wiz_syntax::syntax::decl::VarSyntax;
 use wiz_syntax::syntax::decl::{
     Decl, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax,
     StructSyntax, UseSyntax,
@@ -97,7 +97,7 @@ impl Ast2HLIR {
             Some(a) => TypedAnnotations::from(
                 a.annotations
                     .into_iter()
-                    .map(|a| a.name.token)
+                    .map(|a| a.element.token)
                     .collect::<Vec<String>>(),
             ),
         }
@@ -456,7 +456,7 @@ impl Ast2HLIR {
             package: Package {
                 names: u.package_name.names,
             },
-            alias: u.alias,
+            alias: u.alias.map(|a| a.name.token),
         }
     }
 
@@ -614,7 +614,12 @@ impl Ast2HLIR {
 
     pub fn subscript_syntax(&self, s: SubscriptSyntax) -> TypedSubscript {
         let target = Box::new(self.expr(*s.target));
-        let indexes: Vec<TypedExpr> = s.idx_or_keys.into_iter().map(|i| self.expr(i)).collect();
+        let indexes: Vec<TypedExpr> = s
+            .idx_or_keys
+            .elements
+            .into_iter()
+            .map(|i| self.expr(i.element))
+            .collect();
         TypedSubscript {
             target,
             indexes,
@@ -644,11 +649,13 @@ impl Ast2HLIR {
             tailing_lambda,
         } = c;
         let mut args: Vec<TypedCallArg> = args
+            .unwrap_or_default()
+            .elements
             .into_iter()
             .map(|a| TypedCallArg {
-                label: a.label,
-                arg: Box::new(self.expr(*a.arg)),
-                is_vararg: a.is_vararg,
+                label: a.element.label.map(|l| l.token),
+                arg: Box::new(self.expr(*a.element.arg)),
+                is_vararg: a.element.asterisk.is_some(),
             })
             .collect();
         if let Some(lambda) = tailing_lambda {
@@ -663,13 +670,14 @@ impl Ast2HLIR {
         }
         TypedCall {
             target: Box::new(self.expr(*target)),
-            args: args,
+            args,
             type_: None,
         }
     }
 
     pub fn if_syntax(&self, i: IfExprSyntax) -> TypedIf {
         let IfExprSyntax {
+            if_keyword: _,
             condition,
             body,
             else_body,
@@ -683,7 +691,7 @@ impl Ast2HLIR {
         TypedIf {
             condition: Box::new(self.expr(*condition)),
             body: block,
-            else_body: else_body.map(|b| self.block(b)),
+            else_body: else_body.map(|b| self.block(b.body)),
             type_: Some(type_),
         }
     }

@@ -15,10 +15,10 @@ use crate::syntax::block::BlockSyntax;
 use crate::syntax::decl::fun_syntax::arg_def::{ArgDef, SelfArgDefSyntax, ValueArgDef};
 use crate::syntax::decl::fun_syntax::body_def::FunBody;
 use crate::syntax::decl::fun_syntax::FunSyntax;
-use crate::syntax::decl::var_syntax::VarSyntax;
+use crate::syntax::decl::VarSyntax;
 use crate::syntax::decl::{
-    Decl, DeinitializerSyntax, InitializerSyntax, MethodSyntax, PackageName, StoredPropertySyntax,
-    StructPropertySyntax, StructSyntax, UseSyntax,
+    AliasSyntax, Decl, DeinitializerSyntax, InitializerSyntax, MethodSyntax, PackageName,
+    StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax,
 };
 use crate::syntax::expression::Expr;
 use crate::syntax::token::TokenSyntax;
@@ -806,10 +806,14 @@ where
             package_name,
             opt(tuple((whitespace1, as_keyword, whitespace1, identifier))),
         )),
-        |(_, _, pkg, alias)| UseSyntax {
+        |(u, _, pkg, alias)| UseSyntax {
             annotations: None,
+            use_keyword: TokenSyntax::from(u),
             package_name: pkg,
-            alias: alias.map(|(_, _, _, a)| a),
+            alias: alias.map(|(lws, a, rws, n)| AliasSyntax {
+                as_keyword: TokenSyntax::from(a).with_leading_trivia(lws),
+                name: TokenSyntax::from(n).with_leading_trivia(rws),
+            }),
         },
     )(s)
 }
@@ -848,10 +852,10 @@ mod tests {
     use crate::syntax::decl::fun_syntax::arg_def::{ArgDef, ValueArgDef};
     use crate::syntax::decl::fun_syntax::body_def::FunBody;
     use crate::syntax::decl::fun_syntax::FunSyntax;
-    use crate::syntax::decl::var_syntax::VarSyntax;
+    use crate::syntax::decl::VarSyntax;
     use crate::syntax::decl::{
-        Decl, MethodSyntax, PackageName, StoredPropertySyntax, StructPropertySyntax, StructSyntax,
-        UseSyntax,
+        AliasSyntax, Decl, MethodSyntax, PackageName, StoredPropertySyntax, StructPropertySyntax,
+        StructSyntax, UseSyntax,
     };
     use crate::syntax::expression::{BinaryOperationSyntax, Expr, NameExprSyntax};
     use crate::syntax::literal::LiteralSyntax;
@@ -1392,6 +1396,7 @@ mod tests {
                 "",
                 UseSyntax {
                     annotations: None,
+                    use_keyword: TokenSyntax::from("use"),
                     package_name: PackageName {
                         names: vec![String::from("abc")]
                     },
@@ -1405,10 +1410,16 @@ mod tests {
                 "",
                 UseSyntax {
                     annotations: None,
+                    use_keyword: TokenSyntax::from("use"),
                     package_name: PackageName {
                         names: vec![String::from("abc")]
                     },
-                    alias: Some(String::from("def"))
+                    alias: Some(AliasSyntax {
+                        as_keyword: TokenSyntax::from("as")
+                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        name: TokenSyntax::from("def")
+                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    })
                 }
             ))
         );

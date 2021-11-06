@@ -1,11 +1,13 @@
+mod assignment_syntax;
 mod for_loop_syntax;
-
-pub use self::for_loop_syntax::ForLoopSyntax;
 
 use crate::syntax::block::BlockSyntax;
 use crate::syntax::decl::Decl;
 use crate::syntax::expression::Expr;
-use crate::syntax::token::TokenSyntax;
+pub use crate::syntax::statement::assignment_syntax::{
+    AssignmentAndOperatorSyntax, AssignmentStmt, AssignmentSyntax,
+};
+pub use crate::syntax::statement::for_loop_syntax::ForLoopSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::Syntax;
 
@@ -22,9 +24,7 @@ impl Syntax for Stmt {
         match self {
             Stmt::Decl(d) => Stmt::Decl(d.with_leading_trivia(trivia)),
             Stmt::Expr(e) => Stmt::Expr(e.with_leading_trivia(trivia)),
-            Stmt::Assignment(_) => {
-                todo!()
-            }
+            Stmt::Assignment(a) => Stmt::Assignment(a),
             Stmt::Loop(_) => {
                 todo!()
             }
@@ -35,34 +35,12 @@ impl Syntax for Stmt {
         match self {
             Stmt::Decl(d) => Stmt::Decl(d.with_trailing_trivia(trivia)),
             Stmt::Expr(e) => Stmt::Expr(e.with_trailing_trivia(trivia)),
-            Stmt::Assignment(_) => {
-                todo!()
-            }
+            Stmt::Assignment(a) => Stmt::Assignment(a),
             Stmt::Loop(_) => {
                 todo!()
             }
         }
     }
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub enum AssignmentStmt {
-    Assignment(AssignmentSyntax),
-    AssignmentAndOperator(AssignmentAndOperatorSyntax),
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct AssignmentSyntax {
-    pub target: Expr,
-    pub operator: TokenSyntax,
-    pub value: Expr,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct AssignmentAndOperatorSyntax {
-    pub target: Expr,
-    pub operator: TokenSyntax,
-    pub value: Expr,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
