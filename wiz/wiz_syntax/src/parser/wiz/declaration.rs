@@ -15,7 +15,7 @@ use crate::syntax::block::BlockSyntax;
 use crate::syntax::declaration::fun_syntax::arg_def::{ArgDef, SelfArgDefSyntax, ValueArgDef};
 use crate::syntax::declaration::fun_syntax::body_def::FunBody;
 use crate::syntax::declaration::fun_syntax::FunSyntax;
-use crate::syntax::declaration::VarSyntax;
+use crate::syntax::declaration::{PackageNameElement, VarSyntax};
 use crate::syntax::declaration::{
     AliasSyntax, Decl, DeinitializerSyntax, InitializerSyntax, MethodSyntax, PackageName,
     StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax,
@@ -804,12 +804,14 @@ where
             use_keyword,
             whitespace1,
             package_name,
+            alt((identifier, map(tag("*"), |i:I|i.to_string()))),
             opt(tuple((whitespace1, as_keyword, whitespace1, identifier))),
         )),
-        |(u, _, pkg, alias)| UseSyntax {
+        |(u, _, pkg, n, alias)| UseSyntax {
             annotations: None,
             use_keyword: TokenSyntax::from(u),
             package_name: pkg,
+            used_name: TokenSyntax::from(n),
             alias: alias.map(|(lws, a, rws, n)| AliasSyntax {
                 as_keyword: TokenSyntax::from(a).with_leading_trivia(lws),
                 name: TokenSyntax::from(n).with_leading_trivia(rws),
@@ -818,7 +820,7 @@ where
     )(s)
 }
 
-// <package_name> ::= <identifier> ("::" <identifier>)*
+// <package_name> ::= (<identifier> "::")*
 pub fn package_name<I>(s: I) -> IResult<I, PackageName>
 where
     I: Slice<RangeFrom<usize>>
@@ -826,15 +828,18 @@ where
         + InputTake
         + InputLength
         + Clone
+        + ToString
         + Compare<&'static str>,
     <I as InputIter>::Item: AsChar,
 {
     map(
-        tuple((identifier, many0(tuple((tag("::"), identifier))))),
-        |(i, is): (String, Vec<(I, String)>)| PackageName {
-            names: vec![i]
+        many0(tuple(( identifier, tag("::")))),
+        |i:  Vec<( String,I)>| PackageName {
+            names: i
                 .into_iter()
-                .chain(is.into_iter().map(|(_, i)| i))
+                .map(|(name, sep)| PackageNameElement {
+                    name: TokenSyntax::from(name), sep: TokenSyntax::from(sep)
+                })
                 .collect(),
         },
     )(s)
@@ -852,7 +857,7 @@ mod tests {
     use crate::syntax::declaration::fun_syntax::arg_def::{ArgDef, ValueArgDef};
     use crate::syntax::declaration::fun_syntax::body_def::FunBody;
     use crate::syntax::declaration::fun_syntax::FunSyntax;
-    use crate::syntax::declaration::VarSyntax;
+    use crate::syntax::declaration::{PackageNameElement, VarSyntax};
     use crate::syntax::declaration::{
         AliasSyntax, Decl, MethodSyntax, PackageName, StoredPropertySyntax, StructPropertySyntax,
         StructSyntax, UseSyntax,
@@ -1369,20 +1374,34 @@ mod tests {
     #[test]
     fn test_package_name() {
         assert_eq!(
-            package_name("abc"),
+            package_name("abc::"),
             Ok((
                 "",
                 PackageName {
-                    names: vec![String::from("abc")]
+                    names: vec![
+                        PackageNameElement {
+                            name: TokenSyntax::from("abc"),
+                            sep: TokenSyntax::from("::")
+                        }
+                    ]
                 }
             ))
         );
         assert_eq!(
-            package_name("abc::def"),
+            package_name("abc::def::"),
             Ok((
                 "",
                 PackageName {
-                    names: vec![String::from("abc"), String::from("def")]
+                    names: vec![
+                        PackageNameElement {
+                            name: TokenSyntax::from("abc"),
+                            sep: TokenSyntax::from("::")
+                        },
+                        PackageNameElement {
+                            name: TokenSyntax::from("def"),
+                            sep: TokenSyntax::from("::")
+                        }
+                    ]
                 }
             ))
         );
@@ -1398,8 +1417,9 @@ mod tests {
                     annotations: None,
                     use_keyword: TokenSyntax::from("use"),
                     package_name: PackageName {
-                        names: vec![String::from("abc")]
+                        names: vec![]
                     },
+                    used_name: TokenSyntax::from("abc"),
                     alias: None
                 }
             ))
@@ -1412,8 +1432,9 @@ mod tests {
                     annotations: None,
                     use_keyword: TokenSyntax::from("use"),
                     package_name: PackageName {
-                        names: vec![String::from("abc")]
+                        names: vec![]
                     },
+                    used_name: TokenSyntax::from("abc"),
                     alias: Some(AliasSyntax {
                         as_keyword: TokenSyntax::from("as")
                             .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),

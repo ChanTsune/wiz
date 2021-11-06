@@ -3,7 +3,7 @@ use fun_syntax::body_def::FunBody;
 
 use crate::syntax::annotation::{Annotatable, AnnotationsSyntax};
 use crate::syntax::declaration::fun_syntax::FunSyntax;
-pub use crate::syntax::declaration::use_syntax::{AliasSyntax, PackageName, UseSyntax};
+pub use crate::syntax::declaration::use_syntax::{AliasSyntax, PackageName, PackageNameElement, UseSyntax};
 pub use crate::syntax::declaration::var_syntax::VarSyntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
