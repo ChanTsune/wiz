@@ -3,7 +3,7 @@ use std::fmt::Debug;
 
 pub mod annotation;
 pub mod block;
-pub mod decl;
+pub mod declaration;
 pub mod expression;
 pub mod file;
 mod list;

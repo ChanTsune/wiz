@@ -1,4 +1,4 @@
-use super::decl::Decl;
+use super::declaration::Decl;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::Syntax;
 

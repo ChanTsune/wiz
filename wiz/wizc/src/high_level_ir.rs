@@ -22,11 +22,11 @@ use crate::utils::path_string_to_page_name;
 use std::option::Option::Some;
 use wiz_syntax::syntax::annotation::AnnotationsSyntax;
 use wiz_syntax::syntax::block::BlockSyntax;
-use wiz_syntax::syntax::decl::fun_syntax::arg_def::ArgDef;
-use wiz_syntax::syntax::decl::fun_syntax::body_def::FunBody;
-use wiz_syntax::syntax::decl::fun_syntax::FunSyntax;
-use wiz_syntax::syntax::decl::VarSyntax;
-use wiz_syntax::syntax::decl::{
+use wiz_syntax::syntax::declaration::fun_syntax::arg_def::ArgDef;
+use wiz_syntax::syntax::declaration::fun_syntax::body_def::FunBody;
+use wiz_syntax::syntax::declaration::fun_syntax::FunSyntax;
+use wiz_syntax::syntax::declaration::VarSyntax;
+use wiz_syntax::syntax::declaration::{
     Decl, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax,
     StructSyntax, UseSyntax,
 };
