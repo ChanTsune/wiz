@@ -79,8 +79,8 @@ impl Syntax for Expr {
                 todo!()
             }
             Expr::Call(c) => Expr::Call(c.with_leading_trivia(trivia)),
-            Expr::If(_) => {
-                todo!()
+            Expr::If(i) => {
+                Expr::If(i.with_leading_trivia(trivia))
             }
             Expr::When { .. } => {
                 todo!()
@@ -112,8 +112,8 @@ impl Syntax for Expr {
                 todo!()
             }
             Expr::Call(c) => Expr::Call(c.with_trailing_trivia(trivia)),
-            Expr::If(_) => {
-                todo!()
+            Expr::If(i) => {
+                Expr::If(i.with_trailing_trivia(trivia))
             }
             Expr::When { .. } => {
                 todo!()
