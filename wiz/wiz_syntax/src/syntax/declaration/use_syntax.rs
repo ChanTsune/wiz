@@ -41,15 +41,13 @@ impl Syntax for UseSyntax {
 
     fn with_trailing_trivia(self, trivia: Trivia) -> Self {
         match self.alias {
-            None => {
-                Self {
-                    annotations: self.annotations,
-                    use_keyword: self.use_keyword,
-                    package_name: self.package_name,
-                    used_name: self.used_name.with_trailing_trivia(trivia),
-                    alias: None,
-                }
-            }
+            None => Self {
+                annotations: self.annotations,
+                use_keyword: self.use_keyword,
+                package_name: self.package_name,
+                used_name: self.used_name.with_trailing_trivia(trivia),
+                alias: None,
+            },
             Some(alias) => Self {
                 annotations: self.annotations,
                 use_keyword: self.use_keyword,
@@ -71,16 +69,14 @@ impl Syntax for PackageName {
         let mut names = self.names;
         let name = names.remove(0);
         names.insert(0, name);
-        Self {
-            names
-        }
+        Self { names }
     }
 
     fn with_trailing_trivia(self, trivia: Trivia) -> Self {
         let mut names = self.names;
         let name = names.pop().unwrap().with_trailing_trivia(trivia);
         names.push(name);
-        Self {names}
+        Self { names }
     }
 }
 
@@ -94,14 +90,14 @@ impl Syntax for PackageNameElement {
     fn with_leading_trivia(self, trivia: Trivia) -> Self {
         Self {
             name: self.name.with_leading_trivia(trivia),
-            sep: self.sep
+            sep: self.sep,
         }
     }
 
     fn with_trailing_trivia(self, trivia: Trivia) -> Self {
         Self {
             name: self.name,
-            sep: self.sep.with_trailing_trivia(trivia)
+            sep: self.sep.with_trailing_trivia(trivia),
         }
     }
 }

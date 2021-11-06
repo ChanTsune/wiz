@@ -15,11 +15,11 @@ use crate::syntax::block::BlockSyntax;
 use crate::syntax::declaration::fun_syntax::arg_def::{ArgDef, SelfArgDefSyntax, ValueArgDef};
 use crate::syntax::declaration::fun_syntax::body_def::FunBody;
 use crate::syntax::declaration::fun_syntax::FunSyntax;
-use crate::syntax::declaration::{PackageNameElement, VarSyntax};
 use crate::syntax::declaration::{
     AliasSyntax, Decl, DeinitializerSyntax, InitializerSyntax, MethodSyntax, PackageName,
     StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax,
 };
+use crate::syntax::declaration::{PackageNameElement, VarSyntax};
 use crate::syntax::expression::Expr;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::type_name::{
@@ -804,7 +804,7 @@ where
             use_keyword,
             whitespace1,
             package_name,
-            alt((identifier, map(tag("*"), |i:I|i.to_string()))),
+            alt((identifier, map(tag("*"), |i: I| i.to_string()))),
             opt(tuple((whitespace1, as_keyword, whitespace1, identifier))),
         )),
         |(u, _, pkg, n, alias)| UseSyntax {
@@ -833,12 +833,13 @@ where
     <I as InputIter>::Item: AsChar,
 {
     map(
-        many0(tuple(( identifier, tag("::")))),
-        |i:  Vec<( String,I)>| PackageName {
+        many0(tuple((identifier, tag("::")))),
+        |i: Vec<(String, I)>| PackageName {
             names: i
                 .into_iter()
                 .map(|(name, sep)| PackageNameElement {
-                    name: TokenSyntax::from(name), sep: TokenSyntax::from(sep)
+                    name: TokenSyntax::from(name),
+                    sep: TokenSyntax::from(sep),
                 })
                 .collect(),
         },
@@ -857,11 +858,11 @@ mod tests {
     use crate::syntax::declaration::fun_syntax::arg_def::{ArgDef, ValueArgDef};
     use crate::syntax::declaration::fun_syntax::body_def::FunBody;
     use crate::syntax::declaration::fun_syntax::FunSyntax;
-    use crate::syntax::declaration::{PackageNameElement, VarSyntax};
     use crate::syntax::declaration::{
         AliasSyntax, Decl, MethodSyntax, PackageName, StoredPropertySyntax, StructPropertySyntax,
         StructSyntax, UseSyntax,
     };
+    use crate::syntax::declaration::{PackageNameElement, VarSyntax};
     use crate::syntax::expression::{BinaryOperationSyntax, Expr, NameExprSyntax};
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::statement::Stmt;
@@ -1378,12 +1379,10 @@ mod tests {
             Ok((
                 "",
                 PackageName {
-                    names: vec![
-                        PackageNameElement {
-                            name: TokenSyntax::from("abc"),
-                            sep: TokenSyntax::from("::")
-                        }
-                    ]
+                    names: vec![PackageNameElement {
+                        name: TokenSyntax::from("abc"),
+                        sep: TokenSyntax::from("::")
+                    }]
                 }
             ))
         );
@@ -1416,9 +1415,7 @@ mod tests {
                 UseSyntax {
                     annotations: None,
                     use_keyword: TokenSyntax::from("use"),
-                    package_name: PackageName {
-                        names: vec![]
-                    },
+                    package_name: PackageName { names: vec![] },
                     used_name: TokenSyntax::from("abc"),
                     alias: None
                 }
@@ -1431,9 +1428,7 @@ mod tests {
                 UseSyntax {
                     annotations: None,
                     use_keyword: TokenSyntax::from("use"),
-                    package_name: PackageName {
-                        names: vec![]
-                    },
+                    package_name: PackageName { names: vec![] },
                     used_name: TokenSyntax::from("abc"),
                     alias: Some(AliasSyntax {
                         as_keyword: TokenSyntax::from("as")
