@@ -1,6 +1,9 @@
 use crate::syntax::annotation::{Annotatable, AnnotationsSyntax};
-use crate::syntax::declaration::fun_syntax::{FunSyntax};
-pub use crate::syntax::declaration::struct_syntax::{StructSyntax, StructPropertySyntax, StoredPropertySyntax, InitializerSyntax, DeinitializerSyntax};
+use crate::syntax::declaration::fun_syntax::FunSyntax;
+pub use crate::syntax::declaration::struct_syntax::{
+    DeinitializerSyntax, InitializerSyntax, StoredPropertySyntax, StructPropertySyntax,
+    StructSyntax,
+};
 pub use crate::syntax::declaration::use_syntax::{
     AliasSyntax, PackageName, PackageNameElement, UseSyntax,
 };
@@ -10,9 +13,9 @@ use crate::syntax::trivia::Trivia;
 use crate::syntax::Syntax;
 
 pub mod fun_syntax;
+mod struct_syntax;
 mod use_syntax;
 mod var_syntax;
-mod struct_syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Decl {
@@ -52,9 +55,7 @@ impl Syntax for Decl {
         match self {
             Decl::Var(v) => Decl::Var(v.with_leading_trivia(trivia)),
             Decl::Fun(f) => Decl::Fun(f.with_leading_trivia(trivia)),
-            Decl::Struct(s) => {
-                Decl::Struct(s.with_leading_trivia(trivia))
-            }
+            Decl::Struct(s) => Decl::Struct(s.with_leading_trivia(trivia)),
             Decl::ExternC(_) => {
                 todo!()
             }
@@ -75,9 +76,7 @@ impl Syntax for Decl {
         match self {
             Decl::Var(v) => Decl::Var(v.with_trailing_trivia(trivia)),
             Decl::Fun(f) => Decl::Fun(f.with_trailing_trivia(trivia)),
-            Decl::Struct(s) => {
-                Decl::Struct(s.with_trailing_trivia(trivia))
-            }
+            Decl::Struct(s) => Decl::Struct(s.with_trailing_trivia(trivia)),
             Decl::ExternC(_) => {
                 todo!()
             }

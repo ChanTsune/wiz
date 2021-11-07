@@ -132,7 +132,7 @@ where
                 type_params: params,
                 open: TokenSyntax::from(open),
                 properties,
-                close: TokenSyntax::from(close)
+                close: TokenSyntax::from(close),
             },
             None => StructSyntax {
                 annotations: None,
@@ -141,7 +141,7 @@ where
                 type_params: params,
                 open: Default::default(),
                 properties: vec![],
-                close: Default::default()
+                close: Default::default(),
             },
         },
     )(s)
