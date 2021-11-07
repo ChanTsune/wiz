@@ -22,8 +22,7 @@ use crate::utils::path_string_to_page_name;
 use std::option::Option::Some;
 use wiz_syntax::syntax::annotation::AnnotationsSyntax;
 use wiz_syntax::syntax::block::BlockSyntax;
-use wiz_syntax::syntax::declaration::fun_syntax::arg_def::ArgDef;
-use wiz_syntax::syntax::declaration::fun_syntax::{FunBody, FunSyntax};
+use wiz_syntax::syntax::declaration::fun_syntax::{ArgDef, FunBody, FunSyntax};
 use wiz_syntax::syntax::declaration::VarSyntax;
 use wiz_syntax::syntax::declaration::{
     Decl, InitializerSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax,

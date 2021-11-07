@@ -1,3 +1,4 @@
+use crate::syntax::list::{ElementSyntax, ListSyntax};
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::type_name::TypeName;
@@ -84,3 +85,6 @@ impl Syntax for SelfArgDefSyntax {
         }
     }
 }
+
+pub type ArgDefListSyntax = ListSyntax<ArgDef>;
+pub type ArgDefElementSyntax = ElementSyntax<ArgDef>;
