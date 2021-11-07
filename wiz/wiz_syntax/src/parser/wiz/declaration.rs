@@ -642,9 +642,9 @@ where
     <I as InputTakeAtPosition>::Item: AsChar,
 {
     alt((
-        map(block, |b| FunBody::Block { block: b }),
+        map(block, FunBody::Block),
         map(tuple((char('='), whitespace0, expr)), |(_, _, ex)| {
-            FunBody::Expr { expr: ex }
+            FunBody::Expr(ex)
         }),
     ))(s)
 }
@@ -978,13 +978,13 @@ mod tests {
                     arg_defs: vec![],
                     return_type: None,
                     type_constraints: None,
-                    body: Some(FunBody::Block {
-                        block: BlockSyntax {
+                    body: Some(FunBody::Block (
+                        BlockSyntax {
                             open: TokenSyntax::from("{"),
                             body: vec![],
                             close: TokenSyntax::from("}")
                         }
-                    }),
+                    )),
                 })
             ))
         )
@@ -1076,13 +1076,12 @@ mod tests {
             function_body("{}"),
             Ok((
                 "",
-                FunBody::Block {
-                    block: BlockSyntax {
+                FunBody::Block(BlockSyntax {
                         open: TokenSyntax::from("{"),
                         body: vec![],
                         close: TokenSyntax::from("}")
                     }
-                }
+                )
             ))
         )
     }
@@ -1093,12 +1092,11 @@ mod tests {
             function_body("= name"),
             Ok((
                 "",
-                FunBody::Expr {
-                    expr: Expr::Name(NameExprSyntax {
+                FunBody::Expr(Expr::Name(NameExprSyntax {
                         name_space: Default::default(),
                         name: TokenSyntax::from("name")
                     })
-                }
+                )
             ))
         )
     }
@@ -1119,13 +1117,12 @@ mod tests {
                     arg_defs: vec![],
                     return_type: None,
                     type_constraints: None,
-                    body: Some(FunBody::Block {
-                        block: BlockSyntax {
+                    body: Some(FunBody::Block(BlockSyntax {
                             open: TokenSyntax::from("{"),
                             body: vec![],
                             close: TokenSyntax::from("}")
                         }
-                    }),
+                    )),
                 })
             ))
         )
