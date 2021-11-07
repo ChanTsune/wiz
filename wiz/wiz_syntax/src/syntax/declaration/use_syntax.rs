@@ -67,7 +67,7 @@ pub struct PackageName {
 impl Syntax for PackageName {
     fn with_leading_trivia(self, trivia: Trivia) -> Self {
         let mut names = self.names;
-        let name = names.remove(0);
+        let name = names.remove(0).with_leading_trivia(trivia);
         names.insert(0, name);
         Self { names }
     }
