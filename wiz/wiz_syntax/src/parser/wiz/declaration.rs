@@ -125,19 +125,23 @@ where
             ))),
         )),
         |(struct_keyword, nws, name, _, params, body)| match body {
-            Some((_, _, _, properties, _, _)) => StructSyntax {
+            Some((_, open, _, properties, _, close)) => StructSyntax {
                 annotations: None,
                 struct_keyword: TokenSyntax::from(struct_keyword),
                 name: TokenSyntax::from(name).with_leading_trivia(nws),
                 type_params: params,
+                open: TokenSyntax::from(open),
                 properties,
+                close: TokenSyntax::from(close)
             },
             None => StructSyntax {
                 annotations: None,
                 struct_keyword: TokenSyntax::from(struct_keyword),
                 name: TokenSyntax::from(name).with_leading_trivia(nws),
                 type_params: params,
+                open: Default::default(),
                 properties: vec![],
+                close: Default::default()
             },
         },
     )(s)
@@ -978,6 +982,7 @@ mod tests {
                     name: TokenSyntax::from("A")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     type_params: None,
+                    open: TokenSyntax::from("{"),
                     properties: vec![StructPropertySyntax::StoredProperty(StoredPropertySyntax {
                         mutability_keyword: TokenSyntax::from("var"),
                         name: TokenSyntax::from("a"),
@@ -985,7 +990,8 @@ mod tests {
                             name: TokenSyntax::from("String"),
                             type_args: None
                         })
-                    })]
+                    })],
+                    close: TokenSyntax::from("}")
                 }
             ))
         )
