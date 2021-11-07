@@ -978,13 +978,11 @@ mod tests {
                     arg_defs: vec![],
                     return_type: None,
                     type_constraints: None,
-                    body: Some(FunBody::Block (
-                        BlockSyntax {
-                            open: TokenSyntax::from("{"),
-                            body: vec![],
-                            close: TokenSyntax::from("}")
-                        }
-                    )),
+                    body: Some(FunBody::Block(BlockSyntax {
+                        open: TokenSyntax::from("{"),
+                        body: vec![],
+                        close: TokenSyntax::from("}")
+                    })),
                 })
             ))
         )
@@ -1077,11 +1075,10 @@ mod tests {
             Ok((
                 "",
                 FunBody::Block(BlockSyntax {
-                        open: TokenSyntax::from("{"),
-                        body: vec![],
-                        close: TokenSyntax::from("}")
-                    }
-                )
+                    open: TokenSyntax::from("{"),
+                    body: vec![],
+                    close: TokenSyntax::from("}")
+                })
             ))
         )
     }
@@ -1093,10 +1090,9 @@ mod tests {
             Ok((
                 "",
                 FunBody::Expr(Expr::Name(NameExprSyntax {
-                        name_space: Default::default(),
-                        name: TokenSyntax::from("name")
-                    })
-                )
+                    name_space: Default::default(),
+                    name: TokenSyntax::from("name")
+                }))
             ))
         )
     }
@@ -1118,11 +1114,10 @@ mod tests {
                     return_type: None,
                     type_constraints: None,
                     body: Some(FunBody::Block(BlockSyntax {
-                            open: TokenSyntax::from("{"),
-                            body: vec![],
-                            close: TokenSyntax::from("}")
-                        }
-                    )),
+                        open: TokenSyntax::from("{"),
+                        body: vec![],
+                        close: TokenSyntax::from("}")
+                    })),
                 })
             ))
         )
