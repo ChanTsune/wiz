@@ -4,10 +4,10 @@ pub use crate::syntax::declaration::fun_syntax::arg_def::{
 };
 pub use crate::syntax::declaration::fun_syntax::body_def::FunBody;
 use crate::syntax::modifier::ModifiersSyntax;
-use crate::syntax::Syntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::type_name::{TypeConstraintsSyntax, TypeName, TypeParameterListSyntax};
+use crate::syntax::Syntax;
 
 mod arg_def;
 mod body_def;
@@ -44,7 +44,7 @@ impl Syntax for FunSyntax {
                 arg_defs: self.arg_defs,
                 return_type: self.return_type,
                 type_constraints: self.type_constraints,
-                body: self.body
+                body: self.body,
             },
             Some(annotations) => Self {
                 annotations: Some(annotations.with_leading_trivia(trivia)),
@@ -55,8 +55,8 @@ impl Syntax for FunSyntax {
                 arg_defs: self.arg_defs,
                 return_type: self.return_type,
                 type_constraints: self.type_constraints,
-                body: self.body
-            }
+                body: self.body,
+            },
         }
     }
 
@@ -73,7 +73,7 @@ impl Syntax for FunSyntax {
                         arg_defs: self.arg_defs.with_trailing_trivia(trivia),
                         return_type: self.return_type,
                         type_constraints: self.type_constraints,
-                        body: self.body
+                        body: self.body,
                     },
                     Some(return_type) => Self {
                         annotations: self.annotations,
@@ -84,9 +84,9 @@ impl Syntax for FunSyntax {
                         arg_defs: self.arg_defs,
                         return_type: Some(return_type.with_trailing_trivia(trivia)),
                         type_constraints: self.type_constraints,
-                        body: self.body
-                    }
-                }
+                        body: self.body,
+                    },
+                },
                 Some(type_constraints) => Self {
                     annotations: self.annotations,
                     modifiers: self.modifiers,
@@ -96,8 +96,8 @@ impl Syntax for FunSyntax {
                     arg_defs: self.arg_defs,
                     return_type: self.return_type,
                     type_constraints: Some(type_constraints.with_trailing_trivia(trivia)),
-                    body: self.body
-                }
+                    body: self.body,
+                },
             },
             Some(body) => Self {
                 annotations: self.annotations,
@@ -108,8 +108,8 @@ impl Syntax for FunSyntax {
                 arg_defs: self.arg_defs,
                 return_type: self.return_type,
                 type_constraints: self.type_constraints,
-                body: Some(body.with_trailing_trivia(trivia))
-            }
+                body: Some(body.with_trailing_trivia(trivia)),
+            },
         }
     }
 }
