@@ -16,8 +16,8 @@ use crate::syntax::declaration::fun_syntax::arg_def::{ArgDef, SelfArgDefSyntax, 
 use crate::syntax::declaration::fun_syntax::body_def::FunBody;
 use crate::syntax::declaration::fun_syntax::FunSyntax;
 use crate::syntax::declaration::{
-    AliasSyntax, Decl, DeinitializerSyntax, InitializerSyntax, PackageName,
-    StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax,
+    AliasSyntax, Decl, DeinitializerSyntax, InitializerSyntax, PackageName, StoredPropertySyntax,
+    StructPropertySyntax, StructSyntax, UseSyntax,
 };
 use crate::syntax::declaration::{PackageNameElement, VarSyntax};
 use crate::syntax::expression::Expr;
@@ -384,9 +384,7 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(function_syntax,
-            StructPropertySyntax::Method,
-    )(s)
+    map(function_syntax, StructPropertySyntax::Method)(s)
 }
 
 //endregion
@@ -410,12 +408,12 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(function_syntax,Decl::Fun)(s)
+    map(function_syntax, Decl::Fun)(s)
 }
 
-pub fn function_syntax<I>(s:I) -> IResult<I, FunSyntax>
-    where
-        I: Slice<RangeFrom<usize>>
+pub fn function_syntax<I>(s: I) -> IResult<I, FunSyntax>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + Clone
@@ -427,8 +425,8 @@ pub fn function_syntax<I>(s:I) -> IResult<I, FunSyntax>
         + ExtendInto<Item = char, Extender = String>
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
-        <I as InputTakeAtPosition>::Item: AsChar,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
         tuple((
@@ -855,8 +853,8 @@ mod tests {
     use crate::syntax::declaration::fun_syntax::body_def::FunBody;
     use crate::syntax::declaration::fun_syntax::FunSyntax;
     use crate::syntax::declaration::{
-        AliasSyntax, Decl, PackageName, StoredPropertySyntax, StructPropertySyntax,
-        StructSyntax, UseSyntax,
+        AliasSyntax, Decl, PackageName, StoredPropertySyntax, StructPropertySyntax, StructSyntax,
+        UseSyntax,
     };
     use crate::syntax::declaration::{PackageNameElement, VarSyntax};
     use crate::syntax::expression::{BinaryOperationSyntax, Expr, NameExprSyntax};

@@ -27,8 +27,7 @@ use wiz_syntax::syntax::declaration::fun_syntax::body_def::FunBody;
 use wiz_syntax::syntax::declaration::fun_syntax::FunSyntax;
 use wiz_syntax::syntax::declaration::VarSyntax;
 use wiz_syntax::syntax::declaration::{
-    Decl, InitializerSyntax, StoredPropertySyntax, StructPropertySyntax,
-    StructSyntax, UseSyntax,
+    Decl, InitializerSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax,
 };
 use wiz_syntax::syntax::expression::{
     ArraySyntax, BinaryOperationSyntax, CallExprSyntax, Expr, IfExprSyntax, LambdaSyntax,
@@ -425,8 +424,8 @@ impl Ast2HLIR {
 
     pub fn member_function(&self, member_function: FunSyntax) -> TypedMemberFunction {
         let FunSyntax {
-            annotations:_,
-            modifiers:_,
+            annotations: _,
+            modifiers: _,
             fun_keyword: _,
             name,
             type_params,
