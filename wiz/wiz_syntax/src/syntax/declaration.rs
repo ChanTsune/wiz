@@ -1,5 +1,5 @@
 use crate::syntax::annotation::{Annotatable, AnnotationsSyntax};
-use crate::syntax::declaration::fun_syntax::{ArgDef, FunBody, FunSyntax};
+use crate::syntax::declaration::fun_syntax::{ArgDefListSyntax, FunBody, FunSyntax};
 pub use crate::syntax::declaration::use_syntax::{
     AliasSyntax, PackageName, PackageNameElement, UseSyntax,
 };
@@ -133,7 +133,7 @@ pub struct StoredPropertySyntax {
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct InitializerSyntax {
     pub init_keyword: TokenSyntax,
-    pub args: Vec<ArgDef>,
+    pub args: ArgDefListSyntax,
     pub body: FunBody,
 }
 

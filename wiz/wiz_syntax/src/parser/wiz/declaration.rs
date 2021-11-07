@@ -12,9 +12,7 @@ use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_parameters};
 use crate::syntax::annotation::Annotatable;
 use crate::syntax::block::BlockSyntax;
-use crate::syntax::declaration::fun_syntax::{
-    ArgDef, FunBody, FunSyntax, SelfArgDefSyntax, ValueArgDef,
-};
+use crate::syntax::declaration::fun_syntax::{ArgDef, ArgDefElementSyntax, ArgDefListSyntax, FunBody, FunSyntax, SelfArgDefSyntax, ValueArgDef};
 use crate::syntax::declaration::{
     AliasSyntax, Decl, DeinitializerSyntax, InitializerSyntax, PackageName, StoredPropertySyntax,
     StructPropertySyntax, StructSyntax, UseSyntax,
@@ -458,7 +456,7 @@ where
     )(s)
 }
 
-pub fn function_value_parameters<I>(s: I) -> IResult<I, Vec<ArgDef>>
+pub fn function_value_parameters<I>(s: I) -> IResult<I, ArgDefListSyntax>
 where
     I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
@@ -474,16 +472,39 @@ where
     map(
         tuple((
             char('('),
-            opt(tuple((
-                function_value_parameter,
-                many0(map(tuple((comma, function_value_parameter)), |(_, a)| a)),
-                opt(comma),
-            ))),
+            many0(tuple((whitespace0,function_value_parameter, whitespace0, comma))),
+            whitespace0,
+            opt(function_value_parameter),
+            whitespace0,
             char(')'),
         )),
-        |(_, args, _)| match args {
-            Some((a, ar, _)) => vec![a].into_iter().chain(ar).collect(),
-            None => Vec::new(),
+        |(open, elements, ws, element, tws, close)| {
+            let mut close = TokenSyntax::from(close);
+            let mut elements: Vec<_> = elements
+                .into_iter()
+                .map(|(lws, e, rws, c)| ArgDefElementSyntax {
+                    element: e.with_leading_trivia(lws),
+                    trailing_comma: Some(TokenSyntax::from(c).with_leading_trivia(rws)),
+                })
+                .collect();
+            match element {
+                None => {
+                    close = close.with_leading_trivia(ws + tws);
+                }
+                Some(e) => {
+                    elements.push(ArgDefElementSyntax {
+                        element: e.with_leading_trivia(ws),
+                        trailing_comma: None,
+                    });
+                    close = close.with_leading_trivia(tws);
+                }
+            };
+
+            ArgDefListSyntax {
+                open: TokenSyntax::from(open),
+                elements,
+                close,
+            }
         },
     )(s)
 }
@@ -849,7 +870,7 @@ mod tests {
         struct_properties, struct_syntax, type_constraint, type_constraints, use_syntax, var_decl,
     };
     use crate::syntax::block::BlockSyntax;
-    use crate::syntax::declaration::fun_syntax::{ArgDef, FunBody, FunSyntax, ValueArgDef};
+    use crate::syntax::declaration::fun_syntax::{ArgDef, ArgDefElementSyntax, ArgDefListSyntax, FunBody, FunSyntax, ValueArgDef};
     use crate::syntax::declaration::{
         AliasSyntax, Decl, PackageName, StoredPropertySyntax, StructPropertySyntax, StructSyntax,
         UseSyntax,
@@ -973,7 +994,7 @@ mod tests {
                     name: TokenSyntax::from("function")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     type_params: None,
-                    arg_defs: vec![],
+                    arg_defs: ArgDefListSyntax::default(),
                     return_type: None,
                     type_constraints: None,
                     body: Some(FunBody::Block(BlockSyntax {
@@ -1108,7 +1129,7 @@ mod tests {
                     name: TokenSyntax::from("function")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     type_params: None,
-                    arg_defs: vec![],
+                    arg_defs: ArgDefListSyntax::default(),
                     return_type: None,
                     type_constraints: None,
                     body: Some(FunBody::Block(BlockSyntax {
@@ -1134,17 +1155,24 @@ mod tests {
                     name: TokenSyntax::from("puts")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     type_params: None,
-                    arg_defs: vec![ArgDef::Value(ValueArgDef {
-                        label: Some(
-                            TokenSyntax::from("_")
-                                .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                        ),
-                        name: TokenSyntax::from("item"),
-                        type_name: TypeName::Simple(SimpleTypeName {
-                            name: TokenSyntax::from("String"),
-                            type_args: None
-                        })
-                    })],
+                    arg_defs: ArgDefListSyntax {
+                        open: TokenSyntax::from("("),
+                        elements: vec![ArgDefElementSyntax {
+                            element: ArgDef::Value(ValueArgDef {
+                                label: Some(
+                                    TokenSyntax::from("_")
+                                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                                ),
+                                name: TokenSyntax::from("item"),
+                                type_name: TypeName::Simple(SimpleTypeName {
+                                    name: TokenSyntax::from("String"),
+                                    type_args: None
+                                })
+                            }),
+                            trailing_comma: None
+                        }],
+                        close: TokenSyntax::from(")")
+                    },
                     return_type: Some(TypeName::Simple(SimpleTypeName {
                         name: TokenSyntax::from("Unit"),
                         type_args: None
@@ -1169,14 +1197,21 @@ mod tests {
                     name: TokenSyntax::from("puts")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     type_params: None,
-                    arg_defs: vec![ArgDef::Value(ValueArgDef {
-                        label: None,
-                        name: TokenSyntax::from("item"),
-                        type_name: TypeName::Simple(SimpleTypeName {
-                            name: TokenSyntax::from("String"),
-                            type_args: None
-                        })
-                    })],
+                    arg_defs: ArgDefListSyntax {
+                        open: TokenSyntax::from("("),
+                        elements: vec![ArgDefElementSyntax {
+                            element: ArgDef::Value(ValueArgDef {
+                                label: None,
+                                name: TokenSyntax::from("item"),
+                                type_name: TypeName::Simple(SimpleTypeName {
+                                    name: TokenSyntax::from("String"),
+                                    type_args: None
+                                })
+                            }),
+                            trailing_comma: None
+                        }],
+                        close: TokenSyntax::from(")")
+                    },
                     return_type: Some(TypeName::Simple(SimpleTypeName {
                         name: TokenSyntax::from("Unit"),
                         type_args: None

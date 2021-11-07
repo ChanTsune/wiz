@@ -17,7 +17,7 @@ pub struct FunSyntax {
     pub fun_keyword: TokenSyntax,
     pub name: TokenSyntax,
     pub type_params: Option<TypeParameterListSyntax>,
-    pub arg_defs: Vec<ArgDef>,
+    pub arg_defs: ArgDefListSyntax,
     pub return_type: Option<TypeName>,
     pub type_constraints: Option<TypeConstraintsSyntax>,
     pub body: Option<FunBody>,
