@@ -1,7 +1,7 @@
 use fun_syntax::arg_def::ArgDef;
 
 use crate::syntax::annotation::{Annotatable, AnnotationsSyntax};
-use crate::syntax::declaration::fun_syntax::{FunSyntax, FunBody};
+use crate::syntax::declaration::fun_syntax::{FunBody, FunSyntax};
 pub use crate::syntax::declaration::use_syntax::{
     AliasSyntax, PackageName, PackageNameElement, UseSyntax,
 };

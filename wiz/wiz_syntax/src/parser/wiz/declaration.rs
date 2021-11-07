@@ -13,7 +13,7 @@ use crate::parser::wiz::type_::{type_, type_parameters};
 use crate::syntax::annotation::Annotatable;
 use crate::syntax::block::BlockSyntax;
 use crate::syntax::declaration::fun_syntax::arg_def::{ArgDef, SelfArgDefSyntax, ValueArgDef};
-use crate::syntax::declaration::fun_syntax::{FunSyntax, FunBody};
+use crate::syntax::declaration::fun_syntax::{FunBody, FunSyntax};
 use crate::syntax::declaration::{
     AliasSyntax, Decl, DeinitializerSyntax, InitializerSyntax, PackageName, StoredPropertySyntax,
     StructPropertySyntax, StructSyntax, UseSyntax,
@@ -849,7 +849,7 @@ mod tests {
     };
     use crate::syntax::block::BlockSyntax;
     use crate::syntax::declaration::fun_syntax::arg_def::{ArgDef, ValueArgDef};
-    use crate::syntax::declaration::fun_syntax::{FunSyntax, FunBody};
+    use crate::syntax::declaration::fun_syntax::{FunBody, FunSyntax};
     use crate::syntax::declaration::{
         AliasSyntax, Decl, PackageName, StoredPropertySyntax, StructPropertySyntax, StructSyntax,
         UseSyntax,

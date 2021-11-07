@@ -23,7 +23,7 @@ use std::option::Option::Some;
 use wiz_syntax::syntax::annotation::AnnotationsSyntax;
 use wiz_syntax::syntax::block::BlockSyntax;
 use wiz_syntax::syntax::declaration::fun_syntax::arg_def::ArgDef;
-use wiz_syntax::syntax::declaration::fun_syntax::{FunSyntax, FunBody};
+use wiz_syntax::syntax::declaration::fun_syntax::{FunBody, FunSyntax};
 use wiz_syntax::syntax::declaration::VarSyntax;
 use wiz_syntax::syntax::declaration::{
     Decl, InitializerSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax,
