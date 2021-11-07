@@ -32,7 +32,7 @@ cargo install llvmenv
 ```bash
 llvmenv init
 llvmenv build-entry 11.0
-llvmenv global 11.0
+llvmenv global 11.0.0
 ```
 
 **Use Homebrew for Mac**
