@@ -27,7 +27,7 @@ use wiz_syntax::syntax::declaration::fun_syntax::body_def::FunBody;
 use wiz_syntax::syntax::declaration::fun_syntax::FunSyntax;
 use wiz_syntax::syntax::declaration::VarSyntax;
 use wiz_syntax::syntax::declaration::{
-    Decl, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax,
+    Decl, InitializerSyntax, StoredPropertySyntax, StructPropertySyntax,
     StructSyntax, UseSyntax,
 };
 use wiz_syntax::syntax::expression::{
@@ -423,12 +423,14 @@ impl Ast2HLIR {
         }
     }
 
-    pub fn member_function(&self, member_function: MethodSyntax) -> TypedMemberFunction {
-        let MethodSyntax {
+    pub fn member_function(&self, member_function: FunSyntax) -> TypedMemberFunction {
+        let FunSyntax {
+            annotations:_,
+            modifiers:_,
             fun_keyword: _,
             name,
             type_params,
-            args,
+            arg_defs,
             return_type,
             type_constraints,
             body,
@@ -438,7 +440,7 @@ impl Ast2HLIR {
         let fb = body.map(|b| self.fun_body(b));
         TypedMemberFunction {
             name: name.token,
-            arg_defs: args.into_iter().map(|a| self.arg_def(a)).collect(),
+            arg_defs: arg_defs.into_iter().map(|a| self.arg_def(a)).collect(),
             type_params: type_params.map(|tps| {
                 tps.elements
                     .into_iter()

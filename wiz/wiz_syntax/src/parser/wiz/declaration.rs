@@ -16,7 +16,7 @@ use crate::syntax::declaration::fun_syntax::arg_def::{ArgDef, SelfArgDefSyntax, 
 use crate::syntax::declaration::fun_syntax::body_def::FunBody;
 use crate::syntax::declaration::fun_syntax::FunSyntax;
 use crate::syntax::declaration::{
-    AliasSyntax, Decl, DeinitializerSyntax, InitializerSyntax, MethodSyntax, PackageName,
+    AliasSyntax, Decl, DeinitializerSyntax, InitializerSyntax, PackageName,
     StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax,
 };
 use crate::syntax::declaration::{PackageNameElement, VarSyntax};
@@ -384,32 +384,8 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(
-        tuple((
-            fun_keyword,
-            whitespace1,
-            identifier,
-            opt(type_parameters),
-            function_value_parameters,
-            whitespace0,
-            opt(tuple((char(':'), whitespace0, type_))),
-            whitespace0,
-            opt(type_constraints),
-            whitespace0,
-            opt(function_body),
-        )),
-        |(f, nws, name, type_params, args, _, return_type, _, type_constraints, _, body)| {
-            StructPropertySyntax::Method(MethodSyntax {
-                // modifiers: vec![],
-                fun_keyword: TokenSyntax::from(f),
-                name: TokenSyntax::from(name).with_leading_trivia(nws),
-                args,
-                type_params,
-                return_type: return_type.map(|(_, _, t)| t),
-                type_constraints,
-                body,
-            })
-        },
+    map(function_syntax,
+            StructPropertySyntax::Method,
     )(s)
 }
 
@@ -434,6 +410,26 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
+    map(function_syntax,Decl::Fun)(s)
+}
+
+pub fn function_syntax<I>(s:I) -> IResult<I, FunSyntax>
+    where
+        I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+        <I as InputIter>::Item: AsChar + Copy,
+        <I as InputTakeAtPosition>::Item: AsChar,
+{
     map(
         tuple((
             fun_keyword,
@@ -449,17 +445,17 @@ where
             opt(function_body),
         )),
         |(f, ws, name, type_params, args, _, return_type, _, type_constraints, _, body)| {
-            Decl::Fun(FunSyntax {
+            FunSyntax {
                 annotations: None,
                 modifiers: Default::default(),
-                fun_keyword: TokenSyntax::from(f).with_trailing_trivia(ws),
-                name: TokenSyntax::from(name),
+                fun_keyword: TokenSyntax::from(f),
+                name: TokenSyntax::from(name).with_leading_trivia(ws),
                 type_params,
                 arg_defs: args,
                 return_type: return_type.map(|(_, _, t)| t),
                 type_constraints,
                 body,
-            })
+            }
         },
     )(s)
 }
@@ -859,12 +855,13 @@ mod tests {
     use crate::syntax::declaration::fun_syntax::body_def::FunBody;
     use crate::syntax::declaration::fun_syntax::FunSyntax;
     use crate::syntax::declaration::{
-        AliasSyntax, Decl, MethodSyntax, PackageName, StoredPropertySyntax, StructPropertySyntax,
+        AliasSyntax, Decl, PackageName, StoredPropertySyntax, StructPropertySyntax,
         StructSyntax, UseSyntax,
     };
     use crate::syntax::declaration::{PackageNameElement, VarSyntax};
     use crate::syntax::expression::{BinaryOperationSyntax, Expr, NameExprSyntax};
     use crate::syntax::literal::LiteralSyntax;
+    use crate::syntax::modifier::ModifiersSyntax;
     use crate::syntax::statement::Stmt;
     use crate::syntax::token::TokenSyntax;
     use crate::syntax::trivia::{Trivia, TriviaPiece};
@@ -973,13 +970,14 @@ mod tests {
             member_function("fun function() {}"),
             Ok((
                 "",
-                StructPropertySyntax::Method(MethodSyntax {
-                    // modifiers: vec![],
+                StructPropertySyntax::Method(FunSyntax {
+                    annotations: None,
+                    modifiers: ModifiersSyntax::new(),
                     fun_keyword: TokenSyntax::from("fun"),
                     name: TokenSyntax::from("function")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     type_params: None,
-                    args: vec![],
+                    arg_defs: vec![],
                     return_type: None,
                     type_constraints: None,
                     body: Some(FunBody::Block {
@@ -1116,9 +1114,9 @@ mod tests {
                 Decl::Fun(FunSyntax {
                     annotations: None,
                     modifiers: Default::default(),
-                    fun_keyword: TokenSyntax::from("fun")
-                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    name: TokenSyntax::from("function"),
+                    fun_keyword: TokenSyntax::from("fun"),
+                    name: TokenSyntax::from("function")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     type_params: None,
                     arg_defs: vec![],
                     return_type: None,
@@ -1144,9 +1142,9 @@ mod tests {
                 Decl::Fun(FunSyntax {
                     annotations: None,
                     modifiers: Default::default(),
-                    fun_keyword: TokenSyntax::from("fun")
-                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    name: TokenSyntax::from("puts"),
+                    fun_keyword: TokenSyntax::from("fun"),
+                    name: TokenSyntax::from("puts")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     type_params: None,
                     arg_defs: vec![ArgDef::Value(ValueArgDef {
                         label: Some(
@@ -1179,9 +1177,9 @@ mod tests {
                 Decl::Fun(FunSyntax {
                     annotations: None,
                     modifiers: Default::default(),
-                    fun_keyword: TokenSyntax::from("fun")
-                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    name: TokenSyntax::from("puts"),
+                    fun_keyword: TokenSyntax::from("fun"),
+                    name: TokenSyntax::from("puts")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     type_params: None,
                     arg_defs: vec![ArgDef::Value(ValueArgDef {
                         label: None,

@@ -9,7 +9,7 @@ pub use crate::syntax::declaration::use_syntax::{
 pub use crate::syntax::declaration::var_syntax::VarSyntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
-use crate::syntax::type_name::{TypeConstraintsSyntax, TypeName, TypeParameterListSyntax};
+use crate::syntax::type_name::{TypeName, TypeParameterListSyntax};
 use crate::syntax::Syntax;
 
 pub mod fun_syntax;
@@ -123,7 +123,7 @@ pub enum StructPropertySyntax {
     ComputedProperty,
     Init(InitializerSyntax),
     Deinit(DeinitializerSyntax),
-    Method(MethodSyntax),
+    Method(FunSyntax),
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -144,17 +144,6 @@ pub struct InitializerSyntax {
 pub struct DeinitializerSyntax {
     pub deinit_keyword: TokenSyntax,
     pub body: FunBody,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct MethodSyntax {
-    pub fun_keyword: TokenSyntax,
-    pub name: TokenSyntax,
-    pub type_params: Option<TypeParameterListSyntax>,
-    pub args: Vec<ArgDef>,
-    pub return_type: Option<TypeName>,
-    pub type_constraints: Option<TypeConstraintsSyntax>,
-    pub body: Option<FunBody>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
