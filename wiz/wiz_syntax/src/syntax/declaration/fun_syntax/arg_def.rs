@@ -93,7 +93,7 @@ impl ArgDefListSyntax {
         Self {
             open: TokenSyntax::from("("),
             elements: vec![],
-            close: TokenSyntax::from(")")
+            close: TokenSyntax::from(")"),
         }
     }
 }

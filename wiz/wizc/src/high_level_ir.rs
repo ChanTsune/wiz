@@ -210,7 +210,12 @@ impl Ast2HLIR {
     }
 
     pub fn fun_syntax(&self, f: FunSyntax) -> TypedFun {
-        let args: Vec<TypedArgDef> = f.arg_defs.elements.into_iter().map(|a| self.arg_def(a.element)).collect();
+        let args: Vec<TypedArgDef> = f
+            .arg_defs
+            .elements
+            .into_iter()
+            .map(|a| self.arg_def(a.element))
+            .collect();
         let body = match f.body {
             None => None,
             Some(b) => Some(self.fun_body(b)),
@@ -415,7 +420,12 @@ impl Ast2HLIR {
 
     pub fn initializer_syntax(&self, init: InitializerSyntax) -> TypedInitializer {
         TypedInitializer {
-            args: init.args.elements.into_iter().map(|a| self.arg_def(a.element)).collect(),
+            args: init
+                .args
+                .elements
+                .into_iter()
+                .map(|a| self.arg_def(a.element))
+                .collect(),
             body: self.fun_body(init.body),
         }
     }
@@ -437,7 +447,11 @@ impl Ast2HLIR {
         let fb = body.map(|b| self.fun_body(b));
         TypedMemberFunction {
             name: name.token,
-            arg_defs: arg_defs.elements.into_iter().map(|a| self.arg_def(a.element)).collect(),
+            arg_defs: arg_defs
+                .elements
+                .into_iter()
+                .map(|a| self.arg_def(a.element))
+                .collect(),
             type_params: type_params.map(|tps| {
                 tps.elements
                     .into_iter()

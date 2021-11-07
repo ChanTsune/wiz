@@ -12,7 +12,10 @@ use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_parameters};
 use crate::syntax::annotation::Annotatable;
 use crate::syntax::block::BlockSyntax;
-use crate::syntax::declaration::fun_syntax::{ArgDef, ArgDefElementSyntax, ArgDefListSyntax, FunBody, FunSyntax, SelfArgDefSyntax, ValueArgDef};
+use crate::syntax::declaration::fun_syntax::{
+    ArgDef, ArgDefElementSyntax, ArgDefListSyntax, FunBody, FunSyntax, SelfArgDefSyntax,
+    ValueArgDef,
+};
 use crate::syntax::declaration::{
     AliasSyntax, Decl, DeinitializerSyntax, InitializerSyntax, PackageName, StoredPropertySyntax,
     StructPropertySyntax, StructSyntax, UseSyntax,
@@ -472,7 +475,12 @@ where
     map(
         tuple((
             char('('),
-            many0(tuple((whitespace0,function_value_parameter, whitespace0, comma))),
+            many0(tuple((
+                whitespace0,
+                function_value_parameter,
+                whitespace0,
+                comma,
+            ))),
             whitespace0,
             opt(function_value_parameter),
             whitespace0,
@@ -870,7 +878,9 @@ mod tests {
         struct_properties, struct_syntax, type_constraint, type_constraints, use_syntax, var_decl,
     };
     use crate::syntax::block::BlockSyntax;
-    use crate::syntax::declaration::fun_syntax::{ArgDef, ArgDefElementSyntax, ArgDefListSyntax, FunBody, FunSyntax, ValueArgDef};
+    use crate::syntax::declaration::fun_syntax::{
+        ArgDef, ArgDefElementSyntax, ArgDefListSyntax, FunBody, FunSyntax, ValueArgDef,
+    };
     use crate::syntax::declaration::{
         AliasSyntax, Decl, PackageName, StoredPropertySyntax, StructPropertySyntax, StructSyntax,
         UseSyntax,
