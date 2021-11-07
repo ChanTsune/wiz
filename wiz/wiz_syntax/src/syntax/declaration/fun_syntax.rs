@@ -1,5 +1,7 @@
 use crate::syntax::annotation::{Annotatable, AnnotationsSyntax};
-pub use crate::syntax::declaration::fun_syntax::arg_def::{ArgDef, ArgDefListSyntax, ArgDefElementSyntax, SelfArgDefSyntax, ValueArgDef};
+pub use crate::syntax::declaration::fun_syntax::arg_def::{
+    ArgDef, ArgDefElementSyntax, ArgDefListSyntax, SelfArgDefSyntax, ValueArgDef,
+};
 pub use crate::syntax::declaration::fun_syntax::body_def::FunBody;
 use crate::syntax::modifier::ModifiersSyntax;
 use crate::syntax::token::TokenSyntax;
