@@ -1,12 +1,12 @@
 use crate::syntax::annotation::{Annotatable, AnnotationsSyntax};
 use crate::syntax::declaration::fun_syntax::arg_def::ArgDef;
-use crate::syntax::declaration::fun_syntax::body_def::FunBody;
+pub use crate::syntax::declaration::fun_syntax::body_def::FunBody;
 use crate::syntax::modifier::ModifiersSyntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::type_name::{TypeConstraintsSyntax, TypeName, TypeParameterListSyntax};
 
 pub mod arg_def;
-pub mod body_def;
+mod body_def;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct FunSyntax {
