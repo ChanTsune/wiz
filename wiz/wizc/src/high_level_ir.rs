@@ -22,13 +22,10 @@ use crate::utils::path_string_to_page_name;
 use std::option::Option::Some;
 use wiz_syntax::syntax::annotation::AnnotationsSyntax;
 use wiz_syntax::syntax::block::BlockSyntax;
-use wiz_syntax::syntax::decl::fun_syntax::arg_def::ArgDef;
-use wiz_syntax::syntax::decl::fun_syntax::body_def::FunBody;
-use wiz_syntax::syntax::decl::fun_syntax::FunSyntax;
-use wiz_syntax::syntax::decl::VarSyntax;
-use wiz_syntax::syntax::decl::{
-    Decl, InitializerSyntax, MethodSyntax, StoredPropertySyntax, StructPropertySyntax,
-    StructSyntax, UseSyntax,
+use wiz_syntax::syntax::declaration::fun_syntax::{ArgDef, FunBody, FunSyntax};
+use wiz_syntax::syntax::declaration::VarSyntax;
+use wiz_syntax::syntax::declaration::{
+    Decl, InitializerSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax,
 };
 use wiz_syntax::syntax::expression::{
     ArraySyntax, BinaryOperationSyntax, CallExprSyntax, Expr, IfExprSyntax, LambdaSyntax,
@@ -207,13 +204,18 @@ impl Ast2HLIR {
 
     pub fn fun_body(&self, body: FunBody) -> TypedFunBody {
         match body {
-            FunBody::Block { block } => TypedFunBody::Block(self.block(block)),
-            FunBody::Expr { expr } => TypedFunBody::Expr(self.expr(expr)),
+            FunBody::Block(block) => TypedFunBody::Block(self.block(block)),
+            FunBody::Expr(expr) => TypedFunBody::Expr(self.expr(expr)),
         }
     }
 
     pub fn fun_syntax(&self, f: FunSyntax) -> TypedFun {
-        let args: Vec<TypedArgDef> = f.arg_defs.into_iter().map(|a| self.arg_def(a)).collect();
+        let args: Vec<TypedArgDef> = f
+            .arg_defs
+            .elements
+            .into_iter()
+            .map(|a| self.arg_def(a.element))
+            .collect();
         let body = match f.body {
             None => None,
             Some(b) => Some(self.fun_body(b)),
@@ -418,17 +420,24 @@ impl Ast2HLIR {
 
     pub fn initializer_syntax(&self, init: InitializerSyntax) -> TypedInitializer {
         TypedInitializer {
-            args: init.args.into_iter().map(|a| self.arg_def(a)).collect(),
+            args: init
+                .args
+                .elements
+                .into_iter()
+                .map(|a| self.arg_def(a.element))
+                .collect(),
             body: self.fun_body(init.body),
         }
     }
 
-    pub fn member_function(&self, member_function: MethodSyntax) -> TypedMemberFunction {
-        let MethodSyntax {
+    pub fn member_function(&self, member_function: FunSyntax) -> TypedMemberFunction {
+        let FunSyntax {
+            annotations: _,
+            modifiers: _,
             fun_keyword: _,
             name,
             type_params,
-            args,
+            arg_defs,
             return_type,
             type_constraints,
             body,
@@ -438,7 +447,11 @@ impl Ast2HLIR {
         let fb = body.map(|b| self.fun_body(b));
         TypedMemberFunction {
             name: name.token,
-            arg_defs: args.into_iter().map(|a| self.arg_def(a)).collect(),
+            arg_defs: arg_defs
+                .elements
+                .into_iter()
+                .map(|a| self.arg_def(a.element))
+                .collect(),
             type_params: type_params.map(|tps| {
                 tps.elements
                     .into_iter()
@@ -451,11 +464,16 @@ impl Ast2HLIR {
     }
 
     pub fn use_syntax(&self, u: UseSyntax) -> TypedUse {
+        let mut names: Vec<_> = u
+            .package_name
+            .names
+            .into_iter()
+            .map(|i| i.name.token)
+            .collect();
+        names.push(u.used_name.token);
         TypedUse {
             annotations: self.annotations(u.annotations),
-            package: Package {
-                names: u.package_name.names,
-            },
+            package: Package { names },
             alias: u.alias.map(|a| a.name.token),
         }
     }

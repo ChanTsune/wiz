@@ -1,3 +1,4 @@
+use crate::syntax::list::{ElementSyntax, ListSyntax};
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::type_name::TypeName;
@@ -84,3 +85,23 @@ impl Syntax for SelfArgDefSyntax {
         }
     }
 }
+
+pub type ArgDefListSyntax = ListSyntax<ArgDef>;
+
+impl ArgDefListSyntax {
+    fn new() -> Self {
+        Self {
+            open: TokenSyntax::from("("),
+            elements: vec![],
+            close: TokenSyntax::from(")"),
+        }
+    }
+}
+
+impl Default for ArgDefListSyntax {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+pub type ArgDefElementSyntax = ElementSyntax<ArgDef>;

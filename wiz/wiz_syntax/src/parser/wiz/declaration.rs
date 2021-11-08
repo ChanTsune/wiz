@@ -12,14 +12,15 @@ use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_parameters};
 use crate::syntax::annotation::Annotatable;
 use crate::syntax::block::BlockSyntax;
-use crate::syntax::decl::fun_syntax::arg_def::{ArgDef, SelfArgDefSyntax, ValueArgDef};
-use crate::syntax::decl::fun_syntax::body_def::FunBody;
-use crate::syntax::decl::fun_syntax::FunSyntax;
-use crate::syntax::decl::VarSyntax;
-use crate::syntax::decl::{
-    AliasSyntax, Decl, DeinitializerSyntax, InitializerSyntax, MethodSyntax, PackageName,
-    StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax,
+use crate::syntax::declaration::fun_syntax::{
+    ArgDef, ArgDefElementSyntax, ArgDefListSyntax, FunBody, FunSyntax, SelfArgDefSyntax,
+    ValueArgDef,
 };
+use crate::syntax::declaration::{
+    AliasSyntax, Decl, DeinitializerSyntax, InitializerSyntax, PackageName, StoredPropertySyntax,
+    StructPropertySyntax, StructSyntax, UseSyntax,
+};
+use crate::syntax::declaration::{PackageNameElement, VarSyntax};
 use crate::syntax::expression::Expr;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::type_name::{
@@ -124,19 +125,23 @@ where
             ))),
         )),
         |(struct_keyword, nws, name, _, params, body)| match body {
-            Some((_, _, _, properties, _, _)) => StructSyntax {
+            Some((_, open, _, properties, _, close)) => StructSyntax {
                 annotations: None,
                 struct_keyword: TokenSyntax::from(struct_keyword),
                 name: TokenSyntax::from(name).with_leading_trivia(nws),
                 type_params: params,
+                open: TokenSyntax::from(open),
                 properties,
+                close: TokenSyntax::from(close),
             },
             None => StructSyntax {
                 annotations: None,
                 struct_keyword: TokenSyntax::from(struct_keyword),
                 name: TokenSyntax::from(name).with_leading_trivia(nws),
                 type_params: params,
+                open: Default::default(),
                 properties: vec![],
+                close: Default::default(),
             },
         },
     )(s)
@@ -384,33 +389,7 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(
-        tuple((
-            fun_keyword,
-            whitespace1,
-            identifier,
-            opt(type_parameters),
-            function_value_parameters,
-            whitespace0,
-            opt(tuple((char(':'), whitespace0, type_))),
-            whitespace0,
-            opt(type_constraints),
-            whitespace0,
-            opt(function_body),
-        )),
-        |(f, nws, name, type_params, args, _, return_type, _, type_constraints, _, body)| {
-            StructPropertySyntax::Method(MethodSyntax {
-                // modifiers: vec![],
-                fun_keyword: TokenSyntax::from(f),
-                name: TokenSyntax::from(name).with_leading_trivia(nws),
-                args,
-                type_params,
-                return_type: return_type.map(|(_, _, t)| t),
-                type_constraints,
-                body,
-            })
-        },
-    )(s)
+    map(function_syntax, StructPropertySyntax::Method)(s)
 }
 
 //endregion
@@ -418,6 +397,26 @@ where
 //region func
 
 pub fn function_decl<I>(s: I) -> IResult<I, Decl>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
+    map(function_syntax, Decl::Fun)(s)
+}
+
+pub fn function_syntax<I>(s: I) -> IResult<I, FunSyntax>
 where
     I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
@@ -449,22 +448,22 @@ where
             opt(function_body),
         )),
         |(f, ws, name, type_params, args, _, return_type, _, type_constraints, _, body)| {
-            Decl::Fun(FunSyntax {
+            FunSyntax {
                 annotations: None,
                 modifiers: Default::default(),
-                fun_keyword: TokenSyntax::from(f).with_trailing_trivia(ws),
-                name: TokenSyntax::from(name),
+                fun_keyword: TokenSyntax::from(f),
+                name: TokenSyntax::from(name).with_leading_trivia(ws),
                 type_params,
                 arg_defs: args,
                 return_type: return_type.map(|(_, _, t)| t),
                 type_constraints,
                 body,
-            })
+            }
         },
     )(s)
 }
 
-pub fn function_value_parameters<I>(s: I) -> IResult<I, Vec<ArgDef>>
+pub fn function_value_parameters<I>(s: I) -> IResult<I, ArgDefListSyntax>
 where
     I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
@@ -480,16 +479,44 @@ where
     map(
         tuple((
             char('('),
-            opt(tuple((
+            many0(tuple((
+                whitespace0,
                 function_value_parameter,
-                many0(map(tuple((comma, function_value_parameter)), |(_, a)| a)),
-                opt(comma),
+                whitespace0,
+                comma,
             ))),
+            whitespace0,
+            opt(function_value_parameter),
+            whitespace0,
             char(')'),
         )),
-        |(_, args, _)| match args {
-            Some((a, ar, _)) => vec![a].into_iter().chain(ar).collect(),
-            None => Vec::new(),
+        |(open, elements, ws, element, tws, close)| {
+            let mut close = TokenSyntax::from(close);
+            let mut elements: Vec<_> = elements
+                .into_iter()
+                .map(|(lws, e, rws, c)| ArgDefElementSyntax {
+                    element: e.with_leading_trivia(lws),
+                    trailing_comma: Some(TokenSyntax::from(c).with_leading_trivia(rws)),
+                })
+                .collect();
+            match element {
+                None => {
+                    close = close.with_leading_trivia(ws + tws);
+                }
+                Some(e) => {
+                    elements.push(ArgDefElementSyntax {
+                        element: e.with_leading_trivia(ws),
+                        trailing_comma: None,
+                    });
+                    close = close.with_leading_trivia(tws);
+                }
+            };
+
+            ArgDefListSyntax {
+                open: TokenSyntax::from(open),
+                elements,
+                close,
+            }
         },
     )(s)
 }
@@ -648,9 +675,9 @@ where
     <I as InputTakeAtPosition>::Item: AsChar,
 {
     alt((
-        map(block, |b| FunBody::Block { block: b }),
+        map(block, FunBody::Block),
         map(tuple((char('='), whitespace0, expr)), |(_, _, ex)| {
-            FunBody::Expr { expr: ex }
+            FunBody::Expr(ex)
         }),
     ))(s)
 }
@@ -804,12 +831,14 @@ where
             use_keyword,
             whitespace1,
             package_name,
+            alt((identifier, map(tag("*"), |i: I| i.to_string()))),
             opt(tuple((whitespace1, as_keyword, whitespace1, identifier))),
         )),
-        |(u, _, pkg, alias)| UseSyntax {
+        |(u, _, pkg, n, alias)| UseSyntax {
             annotations: None,
             use_keyword: TokenSyntax::from(u),
             package_name: pkg,
+            used_name: TokenSyntax::from(n),
             alias: alias.map(|(lws, a, rws, n)| AliasSyntax {
                 as_keyword: TokenSyntax::from(a).with_leading_trivia(lws),
                 name: TokenSyntax::from(n).with_leading_trivia(rws),
@@ -818,7 +847,7 @@ where
     )(s)
 }
 
-// <package_name> ::= <identifier> ("::" <identifier>)*
+// <package_name> ::= (<identifier> "::")*
 pub fn package_name<I>(s: I) -> IResult<I, PackageName>
 where
     I: Slice<RangeFrom<usize>>
@@ -826,15 +855,19 @@ where
         + InputTake
         + InputLength
         + Clone
+        + ToString
         + Compare<&'static str>,
     <I as InputIter>::Item: AsChar,
 {
     map(
-        tuple((identifier, many0(tuple((tag("::"), identifier))))),
-        |(i, is): (String, Vec<(I, String)>)| PackageName {
-            names: vec![i]
+        many0(tuple((identifier, tag("::")))),
+        |i: Vec<(String, I)>| PackageName {
+            names: i
                 .into_iter()
-                .chain(is.into_iter().map(|(_, i)| i))
+                .map(|(name, sep)| PackageNameElement {
+                    name: TokenSyntax::from(name),
+                    sep: TokenSyntax::from(sep),
+                })
                 .collect(),
         },
     )(s)
@@ -849,16 +882,17 @@ mod tests {
         struct_properties, struct_syntax, type_constraint, type_constraints, use_syntax, var_decl,
     };
     use crate::syntax::block::BlockSyntax;
-    use crate::syntax::decl::fun_syntax::arg_def::{ArgDef, ValueArgDef};
-    use crate::syntax::decl::fun_syntax::body_def::FunBody;
-    use crate::syntax::decl::fun_syntax::FunSyntax;
-    use crate::syntax::decl::VarSyntax;
-    use crate::syntax::decl::{
-        AliasSyntax, Decl, MethodSyntax, PackageName, StoredPropertySyntax, StructPropertySyntax,
-        StructSyntax, UseSyntax,
+    use crate::syntax::declaration::fun_syntax::{
+        ArgDef, ArgDefElementSyntax, ArgDefListSyntax, FunBody, FunSyntax, ValueArgDef,
     };
+    use crate::syntax::declaration::{
+        AliasSyntax, Decl, PackageName, StoredPropertySyntax, StructPropertySyntax, StructSyntax,
+        UseSyntax,
+    };
+    use crate::syntax::declaration::{PackageNameElement, VarSyntax};
     use crate::syntax::expression::{BinaryOperationSyntax, Expr, NameExprSyntax};
     use crate::syntax::literal::LiteralSyntax;
+    use crate::syntax::modifier::ModifiersSyntax;
     use crate::syntax::statement::Stmt;
     use crate::syntax::token::TokenSyntax;
     use crate::syntax::trivia::{Trivia, TriviaPiece};
@@ -948,6 +982,7 @@ mod tests {
                     name: TokenSyntax::from("A")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     type_params: None,
+                    open: TokenSyntax::from("{"),
                     properties: vec![StructPropertySyntax::StoredProperty(StoredPropertySyntax {
                         mutability_keyword: TokenSyntax::from("var"),
                         name: TokenSyntax::from("a"),
@@ -955,7 +990,8 @@ mod tests {
                             name: TokenSyntax::from("String"),
                             type_args: None
                         })
-                    })]
+                    })],
+                    close: TokenSyntax::from("}")
                 }
             ))
         )
@@ -967,22 +1003,21 @@ mod tests {
             member_function("fun function() {}"),
             Ok((
                 "",
-                StructPropertySyntax::Method(MethodSyntax {
-                    // modifiers: vec![],
+                StructPropertySyntax::Method(FunSyntax {
+                    annotations: None,
+                    modifiers: ModifiersSyntax::new(),
                     fun_keyword: TokenSyntax::from("fun"),
                     name: TokenSyntax::from("function")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     type_params: None,
-                    args: vec![],
+                    arg_defs: ArgDefListSyntax::default(),
                     return_type: None,
                     type_constraints: None,
-                    body: Some(FunBody::Block {
-                        block: BlockSyntax {
-                            open: TokenSyntax::from("{"),
-                            body: vec![],
-                            close: TokenSyntax::from("}")
-                        }
-                    }),
+                    body: Some(FunBody::Block(BlockSyntax {
+                        open: TokenSyntax::from("{"),
+                        body: vec![],
+                        close: TokenSyntax::from("}")
+                    })),
                 })
             ))
         )
@@ -1074,13 +1109,11 @@ mod tests {
             function_body("{}"),
             Ok((
                 "",
-                FunBody::Block {
-                    block: BlockSyntax {
-                        open: TokenSyntax::from("{"),
-                        body: vec![],
-                        close: TokenSyntax::from("}")
-                    }
-                }
+                FunBody::Block(BlockSyntax {
+                    open: TokenSyntax::from("{"),
+                    body: vec![],
+                    close: TokenSyntax::from("}")
+                })
             ))
         )
     }
@@ -1091,12 +1124,10 @@ mod tests {
             function_body("= name"),
             Ok((
                 "",
-                FunBody::Expr {
-                    expr: Expr::Name(NameExprSyntax {
-                        name_space: Default::default(),
-                        name: TokenSyntax::from("name")
-                    })
-                }
+                FunBody::Expr(Expr::Name(NameExprSyntax {
+                    name_space: Default::default(),
+                    name: TokenSyntax::from("name")
+                }))
             ))
         )
     }
@@ -1110,20 +1141,18 @@ mod tests {
                 Decl::Fun(FunSyntax {
                     annotations: None,
                     modifiers: Default::default(),
-                    fun_keyword: TokenSyntax::from("fun")
-                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    name: TokenSyntax::from("function"),
+                    fun_keyword: TokenSyntax::from("fun"),
+                    name: TokenSyntax::from("function")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     type_params: None,
-                    arg_defs: vec![],
+                    arg_defs: ArgDefListSyntax::default(),
                     return_type: None,
                     type_constraints: None,
-                    body: Some(FunBody::Block {
-                        block: BlockSyntax {
-                            open: TokenSyntax::from("{"),
-                            body: vec![],
-                            close: TokenSyntax::from("}")
-                        }
-                    }),
+                    body: Some(FunBody::Block(BlockSyntax {
+                        open: TokenSyntax::from("{"),
+                        body: vec![],
+                        close: TokenSyntax::from("}")
+                    })),
                 })
             ))
         )
@@ -1138,21 +1167,28 @@ mod tests {
                 Decl::Fun(FunSyntax {
                     annotations: None,
                     modifiers: Default::default(),
-                    fun_keyword: TokenSyntax::from("fun")
-                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    name: TokenSyntax::from("puts"),
+                    fun_keyword: TokenSyntax::from("fun"),
+                    name: TokenSyntax::from("puts")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     type_params: None,
-                    arg_defs: vec![ArgDef::Value(ValueArgDef {
-                        label: Some(
-                            TokenSyntax::from("_")
-                                .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                        ),
-                        name: TokenSyntax::from("item"),
-                        type_name: TypeName::Simple(SimpleTypeName {
-                            name: TokenSyntax::from("String"),
-                            type_args: None
-                        })
-                    })],
+                    arg_defs: ArgDefListSyntax {
+                        open: TokenSyntax::from("("),
+                        elements: vec![ArgDefElementSyntax {
+                            element: ArgDef::Value(ValueArgDef {
+                                label: Some(
+                                    TokenSyntax::from("_")
+                                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                                ),
+                                name: TokenSyntax::from("item"),
+                                type_name: TypeName::Simple(SimpleTypeName {
+                                    name: TokenSyntax::from("String"),
+                                    type_args: None
+                                })
+                            }),
+                            trailing_comma: None
+                        }],
+                        close: TokenSyntax::from(")")
+                    },
                     return_type: Some(TypeName::Simple(SimpleTypeName {
                         name: TokenSyntax::from("Unit"),
                         type_args: None
@@ -1173,18 +1209,25 @@ mod tests {
                 Decl::Fun(FunSyntax {
                     annotations: None,
                     modifiers: Default::default(),
-                    fun_keyword: TokenSyntax::from("fun")
-                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    name: TokenSyntax::from("puts"),
+                    fun_keyword: TokenSyntax::from("fun"),
+                    name: TokenSyntax::from("puts")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     type_params: None,
-                    arg_defs: vec![ArgDef::Value(ValueArgDef {
-                        label: None,
-                        name: TokenSyntax::from("item"),
-                        type_name: TypeName::Simple(SimpleTypeName {
-                            name: TokenSyntax::from("String"),
-                            type_args: None
-                        })
-                    })],
+                    arg_defs: ArgDefListSyntax {
+                        open: TokenSyntax::from("("),
+                        elements: vec![ArgDefElementSyntax {
+                            element: ArgDef::Value(ValueArgDef {
+                                label: None,
+                                name: TokenSyntax::from("item"),
+                                type_name: TypeName::Simple(SimpleTypeName {
+                                    name: TokenSyntax::from("String"),
+                                    type_args: None
+                                })
+                            }),
+                            trailing_comma: None
+                        }],
+                        close: TokenSyntax::from(")")
+                    },
                     return_type: Some(TypeName::Simple(SimpleTypeName {
                         name: TokenSyntax::from("Unit"),
                         type_args: None
@@ -1369,20 +1412,32 @@ mod tests {
     #[test]
     fn test_package_name() {
         assert_eq!(
-            package_name("abc"),
+            package_name("abc::"),
             Ok((
                 "",
                 PackageName {
-                    names: vec![String::from("abc")]
+                    names: vec![PackageNameElement {
+                        name: TokenSyntax::from("abc"),
+                        sep: TokenSyntax::from("::")
+                    }]
                 }
             ))
         );
         assert_eq!(
-            package_name("abc::def"),
+            package_name("abc::def::"),
             Ok((
                 "",
                 PackageName {
-                    names: vec![String::from("abc"), String::from("def")]
+                    names: vec![
+                        PackageNameElement {
+                            name: TokenSyntax::from("abc"),
+                            sep: TokenSyntax::from("::")
+                        },
+                        PackageNameElement {
+                            name: TokenSyntax::from("def"),
+                            sep: TokenSyntax::from("::")
+                        }
+                    ]
                 }
             ))
         );
@@ -1397,9 +1452,8 @@ mod tests {
                 UseSyntax {
                     annotations: None,
                     use_keyword: TokenSyntax::from("use"),
-                    package_name: PackageName {
-                        names: vec![String::from("abc")]
-                    },
+                    package_name: PackageName { names: vec![] },
+                    used_name: TokenSyntax::from("abc"),
                     alias: None
                 }
             ))
@@ -1411,9 +1465,8 @@ mod tests {
                 UseSyntax {
                     annotations: None,
                     use_keyword: TokenSyntax::from("use"),
-                    package_name: PackageName {
-                        names: vec![String::from("abc")]
-                    },
+                    package_name: PackageName { names: vec![] },
+                    used_name: TokenSyntax::from("abc"),
                     alias: Some(AliasSyntax {
                         as_keyword: TokenSyntax::from("as")
                             .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
