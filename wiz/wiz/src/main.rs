@@ -27,7 +27,8 @@ fn _main() -> Result<(), Box<dyn Error>> {
                 .arg(Arg::with_name("path").required(true)),
         )
         .subcommand(
-            SubCommand::with_name("init").about("Create a new wiz package in an current directory"),
+            SubCommand::with_name("init").about("Create a new wiz package in an current directory")
+                .arg(Arg::with_name("overwrite").long("overwrite").help("Overwrite files for target Directory")),
         )
         .subcommand(
             SubCommand::with_name("build")

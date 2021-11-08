@@ -8,12 +8,6 @@ pub mod error;
 pub mod workspace;
 
 pub(crate) fn create_project(path: &Path, project_name: &str) -> Result<(), Box<dyn Error>> {
-    if path.read_dir()?.next().is_some() {
-        return Err(Box::new(CliError::from(format!(
-            "`{}` is not empty",
-            path.display()
-        ))));
-    };
     let mut path = path.to_path_buf();
     path.push("Package.wiz");
     let mut package_wiz = BufWriter::new(File::create(&path)?);
