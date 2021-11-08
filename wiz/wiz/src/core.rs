@@ -1,4 +1,3 @@
-use error::CliError;
 use std::error::Error;
 use std::fs::{create_dir_all, File};
 use std::io::{BufWriter, Write};

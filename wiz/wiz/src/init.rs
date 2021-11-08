@@ -1,3 +1,4 @@
+use crate::core::error::CliError;
 use crate::core::create_project;
 use ansi_term::Color;
 use clap::ArgMatches;
