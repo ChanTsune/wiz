@@ -365,7 +365,7 @@ where
             whitespace0,
             alt((decl_stmt, assignment_stmt, loop_stmt, expr_stmt)),
         )),
-        |(ws, stm)| stm,
+        |(ws, stm)| stm.with_leading_trivia(ws),
     )(s)
 }
 
