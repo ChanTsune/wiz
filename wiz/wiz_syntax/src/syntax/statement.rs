@@ -1,5 +1,6 @@
 mod assignment_syntax;
 mod for_loop_syntax;
+mod while_loop_syntax;
 
 use crate::syntax::block::BlockSyntax;
 use crate::syntax::declaration::Decl;
@@ -8,6 +9,7 @@ pub use crate::syntax::statement::assignment_syntax::{
     AssignmentAndOperatorSyntax, AssignmentStmt, AssignmentSyntax,
 };
 pub use crate::syntax::statement::for_loop_syntax::ForLoopSyntax;
+pub use crate::syntax::statement::while_loop_syntax::WhileLoopSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::Syntax;
 
@@ -47,10 +49,4 @@ impl Syntax for Stmt {
 pub enum LoopStmt {
     While(WhileLoopSyntax),
     For(ForLoopSyntax),
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct WhileLoopSyntax {
-    pub condition: Expr,
-    pub block: BlockSyntax,
 }
