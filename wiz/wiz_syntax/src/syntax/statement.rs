@@ -26,9 +26,7 @@ impl Syntax for Stmt {
             Stmt::Decl(d) => Stmt::Decl(d.with_leading_trivia(trivia)),
             Stmt::Expr(e) => Stmt::Expr(e.with_leading_trivia(trivia)),
             Stmt::Assignment(a) => Stmt::Assignment(a.with_leading_trivia(trivia)),
-            Stmt::Loop(l) => {
-                Stmt::Loop(l.with_leading_trivia(trivia))
-            }
+            Stmt::Loop(l) => Stmt::Loop(l.with_leading_trivia(trivia)),
         }
     }
 
@@ -37,9 +35,7 @@ impl Syntax for Stmt {
             Stmt::Decl(d) => Stmt::Decl(d.with_trailing_trivia(trivia)),
             Stmt::Expr(e) => Stmt::Expr(e.with_trailing_trivia(trivia)),
             Stmt::Assignment(a) => Stmt::Assignment(a.with_trailing_trivia(trivia)),
-            Stmt::Loop(l) => {
-                Stmt::Loop(l.with_trailing_trivia(trivia))
-            }
+            Stmt::Loop(l) => Stmt::Loop(l.with_trailing_trivia(trivia)),
         }
     }
 }
@@ -50,7 +46,7 @@ pub enum LoopStmt {
     For(ForLoopSyntax),
 }
 
-impl Syntax for LoopStmt{
+impl Syntax for LoopStmt {
     fn with_leading_trivia(self, trivia: Trivia) -> Self {
         match self {
             LoopStmt::While(w) => LoopStmt::While(w.with_leading_trivia(trivia)),
