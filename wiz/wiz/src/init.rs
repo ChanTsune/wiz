@@ -1,5 +1,5 @@
-use crate::core::error::CliError;
 use crate::core::create_project;
+use crate::core::error::CliError;
 use ansi_term::Color;
 use clap::ArgMatches;
 use std::env::current_dir;
