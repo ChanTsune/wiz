@@ -13,6 +13,8 @@ jobs:
         run: cd wiz/wizc && cargo fmt
       - name: run format wiz_syntax
         run: cd wiz/wiz_syntax && cargo fmt
+      - name: run format wiz_mir
+        run: cd wiz/wiz_mir && cargo fmt
       - name: Commit changes
         uses: EndBug/add-and-commit@v7.4.0
         with:

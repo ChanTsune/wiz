@@ -36,6 +36,8 @@ jobs:
         run: cd wiz/wiz && cargo test --release
       - name: run test wiz_syntax
         run: cd wiz/wiz_syntax && cargo test --release
+      - name: run test wiz_mir
+        run: cd wiz/wiz_mir && cargo test --release
       - name: run test wizc
         run: cd wiz/wizc && cargo test --release
   run_wiz_test:
