@@ -27,7 +27,13 @@ fn _main() -> Result<(), Box<dyn Error>> {
                 .arg(Arg::with_name("path").required(true)),
         )
         .subcommand(
-            SubCommand::with_name("init").about("Create a new wiz package in an current directory"),
+            SubCommand::with_name("init")
+                .about("Create a new wiz package in an current directory")
+                .arg(
+                    Arg::with_name("overwrite")
+                        .long("overwrite")
+                        .help("Overwrite files for target Directory"),
+                ),
         )
         .subcommand(
             SubCommand::with_name("build")
@@ -43,14 +49,14 @@ fn _main() -> Result<(), Box<dyn Error>> {
         );
     let matches = app.get_matches();
     match matches.subcommand() {
-        ("new", Some(option)) => {
-            new_command("new", option)?;
+        (cmd, Some(option)) if cmd == "new" => {
+            new_command(cmd, option)?;
         }
-        ("init", Some(option)) => {
-            init_command("init", option)?;
+        (cmd, Some(option)) if cmd == "init" => {
+            init_command(cmd, option)?;
         }
-        ("build", Some(option)) => {
-            build_command("build", option)?;
+        (cmd, Some(option)) if cmd == "build" => {
+            build_command(cmd, option)?;
         }
         (cmd, Some(option)) => {
             external_subcommand::try_execute(cmd, option)?;
