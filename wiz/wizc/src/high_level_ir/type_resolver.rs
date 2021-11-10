@@ -695,6 +695,16 @@ impl TypeResolver {
                         });
                     }
                 }
+            } else if v.is_string() {
+                return Result::Ok(TypedSubscript {
+                    target: Box::new(target),
+                    indexes: s
+                        .indexes
+                        .into_iter()
+                        .map(|i| self.expr(i))
+                        .collect::<Result<Vec<TypedExpr>>>()?,
+                    type_: Some(TypedType::uint8()),
+                });
             }
         }
         Result::Ok(TypedSubscript {
