@@ -648,10 +648,10 @@ impl<'ctx> CodeGen<'ctx> {
         match may_be_pointer {
             AnyTypeEnum::PointerType(p) => match request_type {
                 MLValueType::Primitive(pv) => match pv {
-                    MLPrimitiveType::String |
-                    MLPrimitiveType::Noting |
-                    MLPrimitiveType::Unit => false,
-                    _ => true
+                    MLPrimitiveType::String | MLPrimitiveType::Noting | MLPrimitiveType::Unit => {
+                        false
+                    }
+                    _ => true,
                 },
                 MLValueType::Struct(_) => true,
                 MLValueType::Pointer(r) | MLValueType::Reference(r) => {
