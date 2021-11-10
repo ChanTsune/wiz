@@ -894,9 +894,7 @@ impl<'ctx> CodeGen<'ctx> {
         }
     }
 
-    /**
-     * Write the LLVM IR to a file in the path.
-     */
+    /// Write LLVM IR to file to the given path.
     pub fn print_to_file<P: AsRef<Path>>(&self, path: P) -> Result<(), LLVMString> {
         self.module.print_to_file(path)
     }
