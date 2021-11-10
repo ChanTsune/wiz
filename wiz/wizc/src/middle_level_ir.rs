@@ -554,15 +554,13 @@ impl HLIR2MLIR {
                     exit(-1)
                 }
             }
-        }
-        else if t.is_string() {
+        } else if t.is_string() {
             MLExpr::PrimitiveSubscript(MLSubscript {
                 target: Box::new(self.expr(*s.target)),
                 index: Box::new(self.expr(s.indexes[0].clone())),
                 type_: MLValueType::Primitive(MLPrimitiveType::UInt8),
             })
-        }
-        else {
+        } else {
             self.subscript_for_user_defined(s)
         }
     }
