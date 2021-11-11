@@ -56,7 +56,7 @@ impl<'a> Write for Formatter<'a> {
 mod tests {
     use crate::middle_level_ir::format::Formatter;
     use crate::middle_level_ir::ml_decl::{MLFun, MLFunBody};
-    use crate::middle_level_ir::ml_expr::{MLExpr, MLLiteral};
+    use crate::middle_level_ir::expr::{MLExpr, MLLiteral};
     use crate::middle_level_ir::ml_node::MLNode;
     use crate::middle_level_ir::ml_stmt::MLStmt;
     use crate::middle_level_ir::ml_type::{MLPrimitiveType, MLValueType};

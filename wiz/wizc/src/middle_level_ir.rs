@@ -18,7 +18,7 @@ use crate::high_level_ir::typed_type::{
 use crate::middle_level_ir::ml_decl::{
     MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar,
 };
-use crate::middle_level_ir::ml_expr::{
+use crate::middle_level_ir::expr::{
     MLBinOp, MLBinOpKind, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLMember, MLName, MLReturn,
     MLSubscript, MLTypeCast, MLUnaryOp, MLUnaryOpKind,
 };
@@ -32,7 +32,7 @@ use std::process::exit;
 pub mod builder;
 pub mod format;
 pub mod ml_decl;
-pub mod ml_expr;
+pub mod expr;
 pub mod ml_file;
 pub mod ml_node;
 pub mod ml_stmt;
