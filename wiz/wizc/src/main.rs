@@ -1,12 +1,11 @@
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::Ast2HLIR;
-use crate::llvm_ir::codegen::{CodeGen, MLContext};
+use crate::llvm_ir::codegen::CodeGen;
 use crate::middle_level_ir::HLIR2MLIR;
 use clap::{App, Arg};
 use inkwell::context::Context;
 use inkwell::execution_engine::JitFunction;
-use inkwell::OptimizationLevel;
 use std::error::Error;
 use std::option::Option::Some;
 use std::path::{Path, PathBuf};
@@ -177,15 +176,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
     for mlfile in mlfiles {
         let module_name = &mlfile.name;
         let context = Context::create();
-        let module = context.create_module(module_name);
-        let execution_engine = module.create_jit_execution_engine(OptimizationLevel::None)?;
-        let mut codegen = CodeGen {
-            context: &context,
-            module,
-            builder: context.create_builder(),
-            execution_engine,
-            ml_context: MLContext::new(),
-        };
+        let mut codegen = CodeGen::new(&context, module_name);
 
         for m in std_mlir.iter() {
             codegen.file(m.clone());

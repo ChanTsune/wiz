@@ -172,6 +172,10 @@ impl TypedValueType {
                 false
             }
     }
+
+    pub(crate) fn is_string(&self) -> bool {
+        Self::string().eq(self)
+    }
 }
 
 impl ToString for TypedValueType {
