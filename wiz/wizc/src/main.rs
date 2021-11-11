@@ -1,7 +1,7 @@
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::Ast2HLIR;
-use crate::llvm_ir::codegen::{CodeGen};
+use crate::llvm_ir::codegen::CodeGen;
 use crate::middle_level_ir::HLIR2MLIR;
 use clap::{App, Arg};
 use inkwell::context::Context;
