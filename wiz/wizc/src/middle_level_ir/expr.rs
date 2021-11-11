@@ -1,7 +1,9 @@
+mod block;
+
 use crate::middle_level_ir::format::Formatter;
 use crate::middle_level_ir::ml_node::MLNode;
-use crate::middle_level_ir::ml_stmt::MLBlock;
 use crate::middle_level_ir::ml_type::{MLPrimitiveType, MLType, MLValueType};
+pub use self::block::MLBlock;
 use std::fmt;
 use std::fmt::Write;
 
@@ -18,6 +20,7 @@ pub enum MLExpr {
     When,
     Return(MLReturn),
     PrimitiveTypeCast(MLTypeCast),
+    Block(MLBlock),
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -134,6 +137,7 @@ impl MLExpr {
             MLExpr::When => todo!(),
             MLExpr::Return(r) => MLType::Value(r.type_()),
             MLExpr::PrimitiveTypeCast(t) => MLType::Value(t.type_.clone()),
+            MLExpr::Block(b) => b.r#type()
         }
     }
 }
@@ -182,6 +186,7 @@ impl MLNode for MLExpr {
             MLExpr::When => fmt::Result::Err(Default::default()),
             MLExpr::Return(r) => r.fmt(f),
             MLExpr::PrimitiveTypeCast(t) => t.fmt(f),
+            MLExpr::Block(b) => b.fmt(f),
         }
     }
 }
