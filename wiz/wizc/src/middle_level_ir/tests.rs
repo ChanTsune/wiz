@@ -12,10 +12,7 @@ use crate::middle_level_ir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, M
 use crate::middle_level_ir::HLIR2MLIR;
 use wiz_syntax::parser::wiz::parse_from_string;
 
-#[test]
-fn test_empty() {
-    let source = "";
-
+fn check(source: &str, except: MLFile) {
     let ast = parse_from_string(source).unwrap();
 
     let mut ast2hlir = Ast2HLIR::new();
@@ -32,8 +29,14 @@ fn test_empty() {
 
     let f = hlir2mlir.file(hl_file);
 
-    assert_eq!(
-        f,
+    assert_eq!(f, except);
+}
+
+#[test]
+fn test_empty() {
+    let source = "";
+    check(
+        source,
         MLFile {
             name: "test".to_string(),
             body: vec![]
@@ -49,24 +52,8 @@ fn test_struct() {
     }
     ";
 
-    let ast = parse_from_string(source).unwrap();
-
-    let mut ast2hlir = Ast2HLIR::new();
-
-    let mut file = ast2hlir.file(ast);
-    file.name = String::from("test");
-
-    let mut resolver = TypeResolver::new();
-    let _ = resolver.detect_type(&file).unwrap();
-    let _ = resolver.preload_file(file.clone()).unwrap();
-    let hl_file = resolver.file(file).unwrap();
-
-    let mut hlir2mlir = HLIR2MLIR::new();
-
-    let f = hlir2mlir.file(hl_file);
-
-    assert_eq!(
-        f,
+    check(
+        source,
         MLFile {
             name: "test".to_string(),
             body: vec![
@@ -142,24 +129,8 @@ fn test_struct_init() {
     }
     ";
 
-    let ast = parse_from_string(source).unwrap();
-
-    let mut ast2hlir = Ast2HLIR::new();
-
-    let mut file = ast2hlir.file(ast);
-    file.name = String::from("test");
-
-    let mut resolver = TypeResolver::new();
-    let _ = resolver.detect_type(&file).unwrap();
-    let _ = resolver.preload_file(file.clone()).unwrap();
-    let hl_file = resolver.file(file).unwrap();
-
-    let mut hlir2mlir = HLIR2MLIR::new();
-
-    let f = hlir2mlir.file(hl_file);
-
-    assert_eq!(
-        f,
+    check(
+        source,
         MLFile {
             name: "test".to_string(),
             body: vec![
@@ -260,24 +231,8 @@ fn test_return_integer_literal() {
     }
     ";
 
-    let ast = parse_from_string(source).unwrap();
-
-    let mut ast2hlir = Ast2HLIR::new();
-
-    let mut file = ast2hlir.file(ast);
-    file.name = String::from("test");
-
-    let mut resolver = TypeResolver::new();
-    let _ = resolver.detect_type(&file).unwrap();
-    let _ = resolver.preload_file(file.clone()).unwrap();
-    let hl_file = resolver.file(file).unwrap();
-
-    let mut hlir2mlir = HLIR2MLIR::new();
-
-    let f = hlir2mlir.file(hl_file);
-
-    assert_eq!(
-        f,
+    check(
+        source,
         MLFile {
             name: "test".to_string(),
             body: vec![MLDecl::Fun(MLFun {
