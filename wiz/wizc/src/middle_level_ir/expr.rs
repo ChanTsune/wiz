@@ -1,9 +1,9 @@
 mod block;
 
+pub use self::block::MLBlock;
 use crate::middle_level_ir::format::Formatter;
 use crate::middle_level_ir::ml_node::MLNode;
 use crate::middle_level_ir::ml_type::{MLPrimitiveType, MLType, MLValueType};
-pub use self::block::MLBlock;
 use std::fmt;
 use std::fmt::Write;
 
@@ -137,7 +137,7 @@ impl MLExpr {
             MLExpr::When => todo!(),
             MLExpr::Return(r) => MLType::Value(r.type_()),
             MLExpr::PrimitiveTypeCast(t) => MLType::Value(t.type_.clone()),
-            MLExpr::Block(b) => b.r#type()
+            MLExpr::Block(b) => b.r#type(),
         }
     }
 }

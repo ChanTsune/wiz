@@ -1,8 +1,8 @@
-use std::fmt::{Result, Write};
+use crate::middle_level_ir::format::Formatter;
 use crate::middle_level_ir::ml_node::MLNode;
 use crate::middle_level_ir::ml_stmt::MLStmt;
-use crate::middle_level_ir::format::Formatter;
 use crate::middle_level_ir::ml_type::{MLPrimitiveType, MLType, MLValueType};
+use std::fmt::{Result, Write};
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLBlock {
@@ -12,7 +12,7 @@ pub struct MLBlock {
 impl MLBlock {
     pub(crate) fn r#type(&self) -> MLType {
         if let Some(stmt) = self.body.last() {
-            if let MLStmt::Expr(expr) = stmt{
+            if let MLStmt::Expr(expr) = stmt {
                 expr.type_()
             } else {
                 MLType::Value(MLValueType::Primitive(MLPrimitiveType::Unit))
@@ -22,7 +22,6 @@ impl MLBlock {
         }
     }
 }
-
 
 impl MLNode for MLBlock {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
