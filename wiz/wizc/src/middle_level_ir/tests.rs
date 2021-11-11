@@ -39,8 +39,8 @@ fn test_empty() {
         source,
         MLFile {
             name: "test".to_string(),
-            body: vec![]
-        }
+            body: vec![],
+        },
     );
 }
 
@@ -61,15 +61,15 @@ fn test_struct() {
                     name: "test::A".to_string(),
                     fields: vec![MLField {
                         name: "a".to_string(),
-                        type_: MLValueType::Primitive(MLPrimitiveType::Int64)
-                    }]
+                        type_: MLValueType::Primitive(MLPrimitiveType::Int64),
+                    }],
                 }),
                 MLDecl::Fun(MLFun {
                     modifiers: vec![],
                     name: "test::A::init##a#Int64".to_string(),
                     arg_defs: vec![MLArgDef {
                         name: "a".to_string(),
-                        type_: MLValueType::Primitive(MLPrimitiveType::Int64)
+                        type_: MLValueType::Primitive(MLPrimitiveType::Int64),
                     }],
                     return_type: MLValueType::Struct(String::from("test::A")),
                     body: Some(MLFunBody {
@@ -79,42 +79,42 @@ fn test_struct() {
                                 name: "self".to_string(),
                                 type_: MLType::Value(MLValueType::Struct(String::from("test::A"))),
                                 value: MLExpr::Literal(MLLiteral::Struct {
-                                    type_: MLValueType::Struct(String::from("test::A"))
-                                })
+                                    type_: MLValueType::Struct(String::from("test::A")),
+                                }),
                             }),
                             MLStmt::Assignment(MLAssignmentStmt {
                                 target: MLExpr::Member(MLMember {
                                     target: Box::new(MLExpr::Name(MLName {
                                         name: "self".to_string(),
                                         type_: MLType::Value(MLValueType::Struct(String::from(
-                                            "test::A"
-                                        )))
+                                            "test::A",
+                                        ))),
                                     })),
                                     name: "a".to_string(),
                                     type_: MLType::Value(MLValueType::Primitive(
-                                        MLPrimitiveType::Int64
-                                    ))
+                                        MLPrimitiveType::Int64,
+                                    )),
                                 }),
                                 value: MLExpr::Name(MLName {
                                     name: "a".to_string(),
                                     type_: MLType::Value(MLValueType::Primitive(
-                                        MLPrimitiveType::Int64
-                                    ))
-                                })
+                                        MLPrimitiveType::Int64,
+                                    )),
+                                }),
                             }),
                             MLStmt::Expr(MLExpr::Return(MLReturn {
                                 value: Some(Box::new(MLExpr::Name(MLName {
                                     name: String::from("self"),
                                     type_: MLType::Value(MLValueType::Struct(String::from(
-                                        "test::A"
-                                    )))
+                                        "test::A",
+                                    ))),
                                 }))),
-                            }))
-                        ]
-                    })
-                })
-            ]
-        }
+                            })),
+                        ],
+                    }),
+                }),
+            ],
+        },
     );
 }
 
@@ -138,15 +138,15 @@ fn test_struct_init() {
                     name: "test::A".to_string(),
                     fields: vec![MLField {
                         name: "a".to_string(),
-                        type_: MLValueType::Primitive(MLPrimitiveType::Int64)
-                    }]
+                        type_: MLValueType::Primitive(MLPrimitiveType::Int64),
+                    }],
                 }),
                 MLDecl::Fun(MLFun {
                     modifiers: vec![],
                     name: "test::A::init##a#Int64".to_string(),
                     arg_defs: vec![MLArgDef {
                         name: "a".to_string(),
-                        type_: MLValueType::Primitive(MLPrimitiveType::Int64)
+                        type_: MLValueType::Primitive(MLPrimitiveType::Int64),
                     }],
                     return_type: MLValueType::Struct(String::from("test::A")),
                     body: Some(MLFunBody {
@@ -156,39 +156,39 @@ fn test_struct_init() {
                                 name: "self".to_string(),
                                 type_: MLType::Value(MLValueType::Struct(String::from("test::A"))),
                                 value: MLExpr::Literal(MLLiteral::Struct {
-                                    type_: MLValueType::Struct(String::from("test::A"))
-                                })
+                                    type_: MLValueType::Struct(String::from("test::A")),
+                                }),
                             }),
                             MLStmt::Assignment(MLAssignmentStmt {
                                 target: MLExpr::Member(MLMember {
                                     target: Box::new(MLExpr::Name(MLName {
                                         name: "self".to_string(),
                                         type_: MLType::Value(MLValueType::Struct(String::from(
-                                            "test::A"
-                                        )))
+                                            "test::A",
+                                        ))),
                                     })),
                                     name: "a".to_string(),
                                     type_: MLType::Value(MLValueType::Primitive(
-                                        MLPrimitiveType::Int64
-                                    ))
+                                        MLPrimitiveType::Int64,
+                                    )),
                                 }),
                                 value: MLExpr::Name(MLName {
                                     name: "a".to_string(),
                                     type_: MLType::Value(MLValueType::Primitive(
-                                        MLPrimitiveType::Int64
-                                    ))
-                                })
+                                        MLPrimitiveType::Int64,
+                                    )),
+                                }),
                             }),
                             MLStmt::Expr(MLExpr::Return(MLReturn {
                                 value: Some(Box::new(MLExpr::Name(MLName {
                                     name: String::from("self"),
                                     type_: MLType::Value(MLValueType::Struct(String::from(
-                                        "test::A"
-                                    )))
+                                        "test::A",
+                                    ))),
                                 }))),
-                            }))
-                        ]
-                    })
+                            })),
+                        ],
+                    }),
                 }),
                 MLDecl::Fun(MLFun {
                     modifiers: vec![],
@@ -202,24 +202,24 @@ fn test_struct_init() {
                                     name: "test::A::init##a#Int64".to_string(),
                                     type_: MLType::Function(MLFunctionType {
                                         arguments: vec![MLValueType::Primitive(
-                                            MLPrimitiveType::Int64
+                                            MLPrimitiveType::Int64,
                                         )],
-                                        return_type: MLValueType::Struct(String::from("test::A"))
-                                    })
+                                        return_type: MLValueType::Struct(String::from("test::A")),
+                                    }),
                                 })),
                                 args: vec![MLCallArg {
                                     arg: MLExpr::Literal(MLLiteral::Integer {
                                         value: "1".to_string(),
-                                        type_: MLValueType::Primitive(MLPrimitiveType::Int64)
-                                    })
+                                        type_: MLValueType::Primitive(MLPrimitiveType::Int64),
+                                    }),
                                 }],
-                                type_: MLType::Value(MLValueType::Struct(String::from("test::A")))
+                                type_: MLType::Value(MLValueType::Struct(String::from("test::A"))),
                             }))),
-                        }))]
-                    })
-                })
-            ]
-        }
+                        }))],
+                    }),
+                }),
+            ],
+        },
     );
 }
 
@@ -244,11 +244,11 @@ fn test_return_integer_literal() {
                     body: vec![MLStmt::Expr(MLExpr::Return(MLReturn {
                         value: Some(Box::new(MLExpr::Literal(MLLiteral::Integer {
                             value: "1".to_string(),
-                            type_: MLValueType::Primitive(MLPrimitiveType::Int64)
+                            type_: MLValueType::Primitive(MLPrimitiveType::Int64),
                         }))),
-                    }))]
-                })
-            })]
-        }
+                    }))],
+                }),
+            })],
+        },
     );
 }
