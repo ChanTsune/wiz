@@ -79,6 +79,6 @@ mod tests {
         let mut formatter = Formatter::new(&mut buf);
         formatter.indent_size(2);
         let _ = fun.fmt(&mut formatter);
-        assert_eq!(buf, String::from("fun f():Noting {\n  0;\n};"));
+        assert_eq!(buf, String::from("fun f():noting {\n  0;\n};"));
     }
 }

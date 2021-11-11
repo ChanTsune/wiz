@@ -72,7 +72,7 @@ mod tests {
         };
         assert_eq!(
             ml_file.to_string(),
-            String::from("struct T {\n    i:Int64,\n};\n")
+            String::from("struct T {\n    i:i64,\n};\n")
         );
     }
 
@@ -91,7 +91,7 @@ mod tests {
                 body: None,
             })],
         };
-        assert_eq!(ml_file.to_string(), String::from("fun a(b:Int64):Unit;\n"))
+        assert_eq!(ml_file.to_string(), String::from("fun a(b:i64):unit;\n"))
     }
 
     #[test]
@@ -117,7 +117,7 @@ mod tests {
         };
         assert_eq!(
             ml_file.to_string(),
-            String::from("fun a(b:Int64, c:Int64):Unit {\n};\n")
+            String::from("fun a(b:i64, c:i64):unit {\n};\n")
         )
     }
 
@@ -145,7 +145,7 @@ mod tests {
         };
         assert_eq!(
             ml_file.to_string(),
-            String::from("fun a(b:Int64):Int64 {\n    return b;\n};\n")
+            String::from("fun a(b:i64):i64 {\n    return b;\n};\n")
         )
     }
 }
