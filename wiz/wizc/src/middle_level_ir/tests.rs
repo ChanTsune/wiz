@@ -1,10 +1,10 @@
 use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::Ast2HLIR;
-use crate::middle_level_ir::ml_decl::{
-    MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar,
-};
 use crate::middle_level_ir::expr::{
     MLCall, MLCallArg, MLExpr, MLLiteral, MLMember, MLName, MLReturn,
+};
+use crate::middle_level_ir::ml_decl::{
+    MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar,
 };
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLStmt};
