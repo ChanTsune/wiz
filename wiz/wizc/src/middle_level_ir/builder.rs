@@ -101,9 +101,8 @@ impl MLIRModule {
             .current_function
             .clone()
             .ok_or_else(|| BuilderError::from(format!("Build target not set")))?;
-        self
-            .get_function(&fun_name)
-            .ok_or_else(||BuilderError::from(format!("{} is not exist", fun_name)))
+        self.get_function(&fun_name)
+            .ok_or_else(|| BuilderError::from(format!("{} is not exist", fun_name)))
     }
 
     pub fn add_function(&mut self, name: String, args: Vec<MLArgDef>, rtype: MLValueType) {
