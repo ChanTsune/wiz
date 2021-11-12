@@ -1,3 +1,6 @@
+mod error;
+
+pub use self::error::BuilderError;
 use crate::middle_level_ir::expr::MLExpr;
 use crate::middle_level_ir::ml_decl::{MLArgDef, MLDecl, MLField, MLFun, MLStruct, MLVar};
 use crate::middle_level_ir::ml_file::MLFile;
@@ -92,11 +95,30 @@ impl MLIRModule {
     }
 
     pub fn create_builder(&mut self) -> MLIRBuilder {
-        MLIRBuilder { module: self }
+        MLIRBuilder { module: self, current_function: None }
     }
 }
 
 #[derive(Debug)]
 pub struct MLIRBuilder<'ctx> {
     module: &'ctx mut MLIRModule,
+    current_function: Option<String>,
+}
+
+impl<'ctx> MLIRBuilder<'ctx> {
+
+    fn current_function(&mut self) -> Result<&mut MLFun, BuilderError> {
+        let fun_name = self.current_function.as_ref().ok_or_else(|| BuilderError::from(format!("Build target not set")))?;
+        self.module.get_function(fun_name).ok_or_else(||BuilderError::from(format!("{} is not exist", fun_name)))
+    }
+
+    pub fn add_function(&mut self, name: String, args: Vec<MLArgDef>, rtype: MLValueType) {
+        self.current_function = Some(name.clone());
+        self.module.create_function(name, args, rtype);
+    }
+
+    pub fn build_return(&mut self, value: Option<MLExpr>) -> Result<(), BuilderError>{
+        let f = self.current_function()?;
+        Ok(())
+    }
 }
