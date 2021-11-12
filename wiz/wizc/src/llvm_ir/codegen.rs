@@ -622,7 +622,7 @@ impl<'ctx> CodeGen<'ctx> {
     }
 
     pub fn block(&mut self, b: MLBlock) -> AnyValueEnum<'ctx> {
-        let i64_type = self.context.i64_type(); // Void
+        let i8_type = self.context.i8_type(); // Void
         let len = b.body.len();
         for (i, stmt) in b.body.into_iter().enumerate() {
             let last_index = len - 1;
@@ -632,7 +632,7 @@ impl<'ctx> CodeGen<'ctx> {
                 self.stmt(stmt)
             };
         }
-        AnyValueEnum::from(i64_type.const_int(0, false))
+        AnyValueEnum::from(i8_type.const_int(0, false))
     }
 
     fn load_if_pointer_value(
