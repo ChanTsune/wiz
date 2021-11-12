@@ -1,6 +1,8 @@
 mod block;
+mod if_expr;
 
 pub use self::block::MLBlock;
+pub use self::if_expr::MLIf;
 use crate::middle_level_ir::format::Formatter;
 use crate::middle_level_ir::ml_node::MLNode;
 use crate::middle_level_ir::ml_type::{MLPrimitiveType, MLType, MLValueType};
@@ -49,14 +51,6 @@ pub struct MLCall {
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLCallArg {
     pub(crate) arg: MLExpr,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct MLIf {
-    pub(crate) condition: Box<MLExpr>,
-    pub(crate) body: MLBlock,
-    pub(crate) else_body: Option<MLBlock>,
-    pub(crate) type_: MLValueType,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -287,23 +281,6 @@ impl MLNode for MLMember {
         self.target.fmt(f)?;
         f.write_char('.')?;
         f.write_str(&*self.name)
-    }
-}
-
-impl MLNode for MLIf {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        f.write_str("if (")?;
-        self.condition.fmt(f)?;
-        f.write_str(") ")?;
-        self.body.fmt(f)?;
-        match &self.else_body {
-            Some(b) => {
-                f.write_str(" else ")?;
-                b.fmt(f)?;
-            }
-            None => {}
-        };
-        fmt::Result::Ok(())
     }
 }
 
