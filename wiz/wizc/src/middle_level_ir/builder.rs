@@ -91,7 +91,10 @@ impl MLIRModule {
     }
 
     pub fn create_builder(&mut self) -> MLIRBuilder {
-        MLIRBuilder { module: self, current_function: None }
+        MLIRBuilder {
+            module: self,
+            current_function: None,
+        }
     }
 }
 
@@ -102,10 +105,14 @@ pub struct MLIRBuilder<'ctx> {
 }
 
 impl<'ctx> MLIRBuilder<'ctx> {
-
     fn current_function(&mut self) -> Result<&mut FunBuilder, BuilderError> {
-        let fun_name = self.current_function.as_ref().ok_or_else(|| BuilderError::from(format!("Build target not set")))?;
-        self.module.get_function(fun_name).ok_or_else(||BuilderError::from(format!("{} is not exist", fun_name)))
+        let fun_name = self
+            .current_function
+            .as_ref()
+            .ok_or_else(|| BuilderError::from(format!("Build target not set")))?;
+        self.module
+            .get_function(fun_name)
+            .ok_or_else(|| BuilderError::from(format!("{} is not exist", fun_name)))
     }
 
     pub fn add_function(&mut self, name: String, args: Vec<MLArgDef>, rtype: MLValueType) {
@@ -113,7 +120,7 @@ impl<'ctx> MLIRBuilder<'ctx> {
         self.module.create_function(name, args, rtype);
     }
 
-    pub fn build_return(&mut self, value: Option<MLExpr>) -> Result<(), BuilderError>{
+    pub fn build_return(&mut self, value: Option<MLExpr>) -> Result<(), BuilderError> {
         let f = self.current_function()?;
         Ok(())
     }

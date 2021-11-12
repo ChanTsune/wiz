@@ -16,4 +16,4 @@ impl Display for BuilderError {
     }
 }
 
-impl Error for BuilderError { }
+impl Error for BuilderError {}
