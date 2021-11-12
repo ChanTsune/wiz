@@ -83,10 +83,16 @@ impl MLIRModule {
         MLFile {
             name,
             body: self
-                .structs.clone()
+                .structs
+                .clone()
                 .into_iter()
                 .map(|(_, v)| MLDecl::Struct(v))
-                .chain(self.variables.clone().into_iter().map(|(_, v)| MLDecl::Var(v)))
+                .chain(
+                    self.variables
+                        .clone()
+                        .into_iter()
+                        .map(|(_, v)| MLDecl::Var(v)),
+                )
                 .chain(
                     self.functions
                         .clone()
