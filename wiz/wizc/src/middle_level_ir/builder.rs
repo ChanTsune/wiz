@@ -5,13 +5,13 @@ use crate::middle_level_ir::ml_type::MLValueType;
 use std::collections::HashMap;
 
 #[derive(Clone, Debug)]
-pub struct MLIRModuleBuilder {
+pub struct MLIRModule {
     functions: HashMap<String, MLFun>,
     variables: HashMap<String, MLVar>,
     structs: HashMap<String, MLStruct>,
 }
 
-impl MLIRModuleBuilder {
+impl MLIRModule {
     pub fn new() -> Self {
         Self {
             functions: Default::default(),
