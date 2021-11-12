@@ -59,8 +59,8 @@ impl MLIRModule {
         self.structs.get_mut(name)
     }
 
-    pub fn create_var(&mut self, name: String, value: MLExpr) -> Option<&mut MLVar> {
-        self.add_var(MLVar {
+    pub fn create_global_var(&mut self, name: String, value: MLExpr) -> Option<&mut MLVar> {
+        self.add_global_var(MLVar {
             is_mute: false,
             name,
             type_: value.type_(),
@@ -68,13 +68,13 @@ impl MLIRModule {
         })
     }
 
-    pub fn add_var(&mut self, var: MLVar) -> Option<&mut MLVar> {
+    pub fn add_global_var(&mut self, var: MLVar) -> Option<&mut MLVar> {
         let name = var.name.clone();
         self.variables.insert(name.clone(), var)?;
-        self.get_var(&name)
+        self.get_global_var(&name)
     }
 
-    pub fn get_var(&mut self, name: &String) -> Option<&mut MLVar> {
+    pub fn get_global_var(&mut self, name: &String) -> Option<&mut MLVar> {
         self.variables.get_mut(name)
     }
 
@@ -90,4 +90,16 @@ impl MLIRModule {
                 .collect(),
         }
     }
+
+    pub fn create_builder(&mut self) -> MLIRBuilder {
+        MLIRBuilder {
+            module: self
+        }
+    }
+}
+
+
+#[derive(Debug)]
+pub struct MLIRBuilder<'ctx> {
+    module: &'ctx mut MLIRModule
 }
