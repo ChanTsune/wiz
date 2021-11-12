@@ -85,7 +85,11 @@ impl MLIRModule {
                 .into_iter()
                 .map(|(_, v)| MLDecl::Struct(v))
                 .chain(self.variables.into_iter().map(|(_, v)| MLDecl::Var(v)))
-                .chain(self.functions.into_iter().map(|(_, v)| MLDecl::Fun(v.build())))
+                .chain(
+                    self.functions
+                        .into_iter()
+                        .map(|(_, v)| MLDecl::Fun(v.build())),
+                )
                 .collect(),
         }
     }

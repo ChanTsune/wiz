@@ -9,7 +9,7 @@ pub struct FunBuilder {
     arg_defs: Vec<MLArgDef>,
     return_type: MLValueType,
     stmts: Vec<MLStmt>,
-    declare: bool
+    declare: bool,
 }
 
 impl FunBuilder {
@@ -20,7 +20,7 @@ impl FunBuilder {
             arg_defs,
             return_type,
             stmts: vec![],
-            declare: true
+            declare: true,
         }
     }
 
@@ -34,7 +34,11 @@ impl FunBuilder {
             name: self.name,
             arg_defs: self.arg_defs,
             return_type: self.return_type,
-            body: if self.declare { None } else { Some(MLFunBody{ body: self.stmts }) }
+            body: if self.declare {
+                None
+            } else {
+                Some(MLFunBody { body: self.stmts })
+            },
         }
     }
 }
