@@ -1,6 +1,8 @@
 mod error;
+mod fun_builder;
 
 pub use self::error::BuilderError;
+pub use self::fun_builder::FunBuilder;
 use crate::middle_level_ir::expr::MLExpr;
 use crate::middle_level_ir::ml_decl::{MLArgDef, MLDecl, MLField, MLFun, MLStruct, MLVar};
 use crate::middle_level_ir::ml_file::MLFile;
@@ -9,7 +11,7 @@ use std::collections::HashMap;
 
 #[derive(Clone, Debug)]
 pub struct MLIRModule {
-    functions: HashMap<String, MLFun>,
+    functions: HashMap<String, FunBuilder>,
     variables: HashMap<String, MLVar>,
     structs: HashMap<String, MLStruct>,
 }
@@ -28,23 +30,17 @@ impl MLIRModule {
         name: String,
         args: Vec<MLArgDef>,
         return_type: MLValueType,
-    ) -> Option<&mut MLFun> {
-        self.add_function(MLFun {
-            modifiers: vec![],
-            name,
-            arg_defs: args,
-            return_type,
-            body: None,
-        })
+    ) -> Option<&mut FunBuilder> {
+        self.add_function(FunBuilder::new(name, args, return_type))
     }
 
-    pub fn add_function(&mut self, fun: MLFun) -> Option<&mut MLFun> {
-        let name = fun.name.clone();
+    pub fn add_function(&mut self, fun: FunBuilder) -> Option<&mut FunBuilder> {
+        let name = fun.name().clone();
         self.functions.insert(name.clone(), fun)?;
         self.get_function(&name)
     }
 
-    pub fn get_function(&mut self, name: &String) -> Option<&mut MLFun> {
+    pub fn get_function(&mut self, name: &String) -> Option<&mut FunBuilder> {
         self.functions.get_mut(name)
     }
 
@@ -89,7 +85,7 @@ impl MLIRModule {
                 .into_iter()
                 .map(|(_, v)| MLDecl::Struct(v))
                 .chain(self.variables.into_iter().map(|(_, v)| MLDecl::Var(v)))
-                .chain(self.functions.into_iter().map(|(_, v)| MLDecl::Fun(v)))
+                .chain(self.functions.into_iter().map(|(_, v)| MLDecl::Fun(v.build())))
                 .collect(),
         }
     }
@@ -107,7 +103,7 @@ pub struct MLIRBuilder<'ctx> {
 
 impl<'ctx> MLIRBuilder<'ctx> {
 
-    fn current_function(&mut self) -> Result<&mut MLFun, BuilderError> {
+    fn current_function(&mut self) -> Result<&mut FunBuilder, BuilderError> {
         let fun_name = self.current_function.as_ref().ok_or_else(|| BuilderError::from(format!("Build target not set")))?;
         self.module.get_function(fun_name).ok_or_else(||BuilderError::from(format!("{} is not exist", fun_name)))
     }
