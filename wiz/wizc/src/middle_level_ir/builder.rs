@@ -79,16 +79,17 @@ impl MLIRModule {
         self.variables.get_mut(name)
     }
 
-    pub fn to_mlir_file(self, name: String) -> MLFile {
+    pub fn to_mlir_file(&self, name: String) -> MLFile {
         MLFile {
             name,
             body: self
-                .structs
+                .structs.clone()
                 .into_iter()
                 .map(|(_, v)| MLDecl::Struct(v))
-                .chain(self.variables.into_iter().map(|(_, v)| MLDecl::Var(v)))
+                .chain(self.variables.clone().into_iter().map(|(_, v)| MLDecl::Var(v)))
                 .chain(
                     self.functions
+                        .clone()
                         .into_iter()
                         .map(|(_, v)| MLDecl::Fun(v.build())),
                 )
