@@ -1,8 +1,8 @@
-use std::fmt::{Write, Result};
 use crate::middle_level_ir::expr::{MLBlock, MLExpr};
+use crate::middle_level_ir::format::Formatter;
 use crate::middle_level_ir::ml_node::MLNode;
 use crate::middle_level_ir::ml_type::MLValueType;
-use crate::middle_level_ir::format::Formatter;
+use std::fmt::{Result, Write};
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLIf {
@@ -28,4 +28,3 @@ impl MLNode for MLIf {
         Ok(())
     }
 }
-
