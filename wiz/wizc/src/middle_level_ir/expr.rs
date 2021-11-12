@@ -56,7 +56,7 @@ pub struct MLIf {
     pub(crate) condition: Box<MLExpr>,
     pub(crate) body: MLBlock,
     pub(crate) else_body: Option<MLBlock>,
-    pub(crate) type_: MLType,
+    pub(crate) type_: MLValueType,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -133,7 +133,7 @@ impl MLExpr {
             MLExpr::PrimitiveUnaryOp(b) => MLType::Value(b.type_.clone()),
             MLExpr::PrimitiveSubscript(p) => MLType::Value(p.type_.clone()),
             MLExpr::Member(f) => f.type_.clone(),
-            MLExpr::If(i) => i.type_.clone(),
+            MLExpr::If(i) => MLType::Value(i.type_.clone()),
             MLExpr::When => todo!(),
             MLExpr::Return(r) => MLType::Value(r.type_()),
             MLExpr::PrimitiveTypeCast(t) => MLType::Value(t.type_.clone()),

@@ -696,7 +696,7 @@ impl HLIR2MLIR {
             condition: Box::new(self.expr(*i.condition)),
             body: self.block(i.body),
             else_body: i.else_body.map(|b| self.block(b)),
-            type_: self.type_(i.type_.unwrap()),
+            type_: self.type_(i.type_.unwrap()).into_value_type(),
         }
     }
 
