@@ -135,7 +135,9 @@ impl<'ctx> CodeGen<'ctx> {
                         MLPrimitiveType::Int16 | MLPrimitiveType::UInt16 => self.context.i16_type(),
                         MLPrimitiveType::Int32 | MLPrimitiveType::UInt32 => self.context.i32_type(),
                         MLPrimitiveType::Int64 | MLPrimitiveType::UInt64 => self.context.i64_type(),
-                        MLPrimitiveType::Int128| MLPrimitiveType::UInt128 => self.context.i128_type(),
+                        MLPrimitiveType::Int128 | MLPrimitiveType::UInt128 => {
+                            self.context.i128_type()
+                        }
                         MLPrimitiveType::Size | MLPrimitiveType::USize => {
                             todo!()
                         }
