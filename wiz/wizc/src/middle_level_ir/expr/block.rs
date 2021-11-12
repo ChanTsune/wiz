@@ -1,6 +1,6 @@
 use crate::middle_level_ir::format::Formatter;
 use crate::middle_level_ir::ml_node::MLNode;
-use crate::middle_level_ir::ml_stmt::MLStmt;
+use crate::middle_level_ir::statement::MLStmt;
 use crate::middle_level_ir::ml_type::{MLPrimitiveType, MLType, MLValueType};
 use std::fmt::{Result, Write};
 

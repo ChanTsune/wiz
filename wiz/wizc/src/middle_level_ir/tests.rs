@@ -7,7 +7,7 @@ use crate::middle_level_ir::ml_decl::{
     MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar,
 };
 use crate::middle_level_ir::ml_file::MLFile;
-use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLStmt};
+use crate::middle_level_ir::statement::{MLAssignmentStmt, MLStmt};
 use crate::middle_level_ir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
 use crate::middle_level_ir::HLIR2MLIR;
 use wiz_syntax::parser::wiz::parse_from_string;

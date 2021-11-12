@@ -23,7 +23,7 @@ use crate::middle_level_ir::ml_decl::{
     MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar,
 };
 use crate::middle_level_ir::ml_file::MLFile;
-use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLLoopStmt, MLStmt};
+use crate::middle_level_ir::statement::{MLAssignmentStmt, MLLoopStmt, MLStmt};
 use crate::middle_level_ir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
 use std::collections::HashMap;
 use std::option::Option::Some;
@@ -35,7 +35,7 @@ pub mod format;
 pub mod ml_decl;
 pub mod ml_file;
 pub mod ml_node;
-pub mod ml_stmt;
+pub mod statement;
 pub mod ml_type;
 #[cfg(test)]
 mod tests;
