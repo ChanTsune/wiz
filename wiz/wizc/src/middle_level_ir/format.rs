@@ -58,8 +58,8 @@ mod tests {
     use crate::middle_level_ir::format::Formatter;
     use crate::middle_level_ir::ml_decl::{MLFun, MLFunBody};
     use crate::middle_level_ir::ml_node::MLNode;
-    use crate::middle_level_ir::statement::MLStmt;
     use crate::middle_level_ir::ml_type::{MLPrimitiveType, MLValueType};
+    use crate::middle_level_ir::statement::MLStmt;
 
     #[test]
     fn test_format_indent_level() {

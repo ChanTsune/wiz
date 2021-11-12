@@ -1,8 +1,8 @@
 use crate::middle_level_ir::expr::MLExpr;
 use crate::middle_level_ir::format::Formatter;
 use crate::middle_level_ir::ml_node::MLNode;
-use crate::middle_level_ir::statement::MLStmt;
 use crate::middle_level_ir::ml_type::{MLType, MLValueType};
+use crate::middle_level_ir::statement::MLStmt;
 use std::fmt;
 use std::fmt::Write;
 
