@@ -92,14 +92,11 @@ impl MLIRModule {
     }
 
     pub fn create_builder(&mut self) -> MLIRBuilder {
-        MLIRBuilder {
-            module: self
-        }
+        MLIRBuilder { module: self }
     }
 }
 
-
 #[derive(Debug)]
 pub struct MLIRBuilder<'ctx> {
-    module: &'ctx mut MLIRModule
+    module: &'ctx mut MLIRModule,
 }
