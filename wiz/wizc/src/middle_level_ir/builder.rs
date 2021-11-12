@@ -14,6 +14,7 @@ pub struct MLIRModule {
     functions: HashMap<String, FunBuilder>,
     variables: HashMap<String, MLVar>,
     structs: HashMap<String, MLStruct>,
+    current_function: Option<String>,
 }
 
 impl MLIRModule {
@@ -22,6 +23,7 @@ impl MLIRModule {
             functions: Default::default(),
             variables: Default::default(),
             structs: Default::default(),
+            current_function: None,
         }
     }
 
@@ -31,10 +33,10 @@ impl MLIRModule {
         args: Vec<MLArgDef>,
         return_type: MLValueType,
     ) -> Option<&mut FunBuilder> {
-        self.add_function(FunBuilder::new(name, args, return_type))
+        self._add_function(FunBuilder::new(name, args, return_type))
     }
 
-    pub fn add_function(&mut self, fun: FunBuilder) -> Option<&mut FunBuilder> {
+    fn _add_function(&mut self, fun: FunBuilder) -> Option<&mut FunBuilder> {
         let name = fun.name().clone();
         self.functions.insert(name.clone(), fun)?;
         self.get_function(&name)
@@ -48,7 +50,7 @@ impl MLIRModule {
         self.add_struct(MLStruct { name, fields })
     }
 
-    pub fn add_struct(&mut self, s: MLStruct) -> Option<&mut MLStruct> {
+    fn add_struct(&mut self, s: MLStruct) -> Option<&mut MLStruct> {
         let name = s.name.clone();
         self.structs.insert(name.clone(), s)?;
         self.get_struct(&name)
@@ -94,34 +96,19 @@ impl MLIRModule {
         }
     }
 
-    pub fn create_builder(&mut self) -> MLIRBuilder {
-        MLIRBuilder {
-            module: self,
-            current_function: None,
-        }
-    }
-}
-
-#[derive(Debug)]
-pub struct MLIRBuilder<'ctx> {
-    module: &'ctx mut MLIRModule,
-    current_function: Option<String>,
-}
-
-impl<'ctx> MLIRBuilder<'ctx> {
     fn current_function(&mut self) -> Result<&mut FunBuilder, BuilderError> {
         let fun_name = self
             .current_function
-            .as_ref()
+            .clone()
             .ok_or_else(|| BuilderError::from(format!("Build target not set")))?;
-        self.module
-            .get_function(fun_name)
-            .ok_or_else(|| BuilderError::from(format!("{} is not exist", fun_name)))
+        self
+            .get_function(&fun_name)
+            .ok_or_else(||BuilderError::from(format!("{} is not exist", fun_name)))
     }
 
     pub fn add_function(&mut self, name: String, args: Vec<MLArgDef>, rtype: MLValueType) {
         self.current_function = Some(name.clone());
-        self.module.create_function(name, args, rtype);
+        self.create_function(name, args, rtype);
     }
 
     pub fn build_return(&mut self, value: Option<MLExpr>) -> Result<(), BuilderError> {
