@@ -47,7 +47,7 @@ impl From<MLFun> for FunBuilder {
     fn from(f: MLFun) -> Self {
         let (stmts, declare) = match f.body {
             None => (vec![], true),
-            Some(b) => (b.body, false)
+            Some(b) => (b.body, false),
         };
         Self {
             modifiers: f.modifiers,
