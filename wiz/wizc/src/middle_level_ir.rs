@@ -177,21 +177,16 @@ impl HLIR2MLIR {
 
     pub fn source_set(&mut self, s: TypedSourceSet) -> MLFile {
         match s {
-            TypedSourceSet::File(f) => {
-                self.file(f)
-            }
+            TypedSourceSet::File(f) => self.file(f),
             TypedSourceSet::Dir { name, items } => {
                 self.context.push_name_space(name.clone());
                 let i = items
                     .into_iter()
                     .map(|i| self.source_set(i))
-                    .map(|i|i.body)
+                    .map(|i| i.body)
                     .flatten()
                     .collect();
-                let i = MLFile {
-                    name,
-                    body: i
-                };
+                let i = MLFile { name, body: i };
                 self.context.pop_name_space();
                 i
             }

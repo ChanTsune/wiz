@@ -171,48 +171,47 @@ fn main() -> result::Result<(), Box<dyn Error>> {
     println!("==== {} ====", mlfile.name);
     println!("{}", mlfile.to_string());
 
-        let module_name = &mlfile.name;
-        let context = Context::create();
-        let module = context.create_module(module_name);
-        let execution_engine = module.create_jit_execution_engine(OptimizationLevel::None)?;
-        let mut codegen = CodeGen {
-            context: &context,
-            module,
-            builder: context.create_builder(),
-            execution_engine,
-            ml_context: MLContext::new(),
-        };
+    let module_name = &mlfile.name;
+    let context = Context::create();
+    let module = context.create_module(module_name);
+    let execution_engine = module.create_jit_execution_engine(OptimizationLevel::None)?;
+    let mut codegen = CodeGen {
+        context: &context,
+        module,
+        builder: context.create_builder(),
+        execution_engine,
+        ml_context: MLContext::new(),
+    };
 
-        for m in std_mlir.iter() {
-            codegen.file(m.clone());
+    for m in std_mlir.iter() {
+        codegen.file(m.clone());
+    }
+
+    codegen.file(mlfile.clone());
+
+    let output = if let Some(output) = output {
+        String::from(output)
+    } else {
+        let mut output_path = Path::new(&mlfile.name).to_path_buf();
+        output_path.set_extension("ll");
+        String::from(output_path.to_str().unwrap())
+    };
+
+    let mut out_path = out_dir
+        .map(PathBuf::from)
+        .unwrap_or_else(|| env::current_dir().unwrap());
+    out_path.push(output);
+
+    println!("Output Path -> {:?}", out_path);
+
+    codegen.print_to_file(out_path)?;
+
+    if let Some(fun_name) = matches.value_of("execute") {
+        unsafe {
+            let main: JitFunction<MainFunc> = codegen.execution_engine.get_function(fun_name)?;
+            let _ = main.call();
         }
-
-        codegen.file(mlfile.clone());
-
-        let output = if let Some(output) = output {
-            String::from(output)
-        } else {
-            let mut output_path = Path::new(&mlfile.name).to_path_buf();
-            output_path.set_extension("ll");
-            String::from(output_path.to_str().unwrap())
-        };
-
-        let mut out_path = out_dir
-            .map(PathBuf::from)
-            .unwrap_or_else(|| env::current_dir().unwrap());
-        out_path.push(output);
-
-        println!("Output Path -> {:?}", out_path);
-
-        codegen.print_to_file(out_path)?;
-
-        if let Some(fun_name) = matches.value_of("execute") {
-            unsafe {
-                let main: JitFunction<MainFunc> =
-                    codegen.execution_engine.get_function(fun_name)?;
-                let _ = main.call();
-            }
-        }
+    }
 
     Ok(())
 }
