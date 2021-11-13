@@ -36,7 +36,7 @@ impl MLIRModule {
         self._add_function(FunBuilder::new(name, args, return_type))
     }
 
-    fn _add_function(&mut self, fun: FunBuilder) -> Option<&mut FunBuilder> {
+    pub fn _add_function(&mut self, fun: FunBuilder) -> Option<&mut FunBuilder> {
         let name = fun.name().clone();
         self.functions.insert(name.clone(), fun)?;
         self.get_function(&name)
@@ -50,7 +50,7 @@ impl MLIRModule {
         self.add_struct(MLStruct { name, fields })
     }
 
-    fn add_struct(&mut self, s: MLStruct) -> Option<&mut MLStruct> {
+    pub fn add_struct(&mut self, s: MLStruct) -> Option<&mut MLStruct> {
         let name = s.name.clone();
         self.structs.insert(name.clone(), s)?;
         self.get_struct(&name)

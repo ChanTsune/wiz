@@ -42,3 +42,20 @@ impl FunBuilder {
         }
     }
 }
+
+impl From<MLFun> for FunBuilder {
+    fn from(f: MLFun) -> Self {
+        let (stmts, declare) = match f.body {
+            None => (vec![], true),
+            Some(b) => (b.body, false)
+        };
+        Self {
+            modifiers: f.modifiers,
+            name: f.name,
+            arg_defs: f.arg_defs,
+            return_type: f.return_type,
+            stmts,
+            declare,
+        }
+    }
+}
