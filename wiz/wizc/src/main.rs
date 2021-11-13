@@ -159,7 +159,6 @@ fn main() -> result::Result<(), Box<dyn Error>> {
     let std_mlir = std_hlir
         .into_iter()
         .map(|w| hlir2mlir.source_set(w))
-        .flatten()
         .collect::<Vec<_>>();
 
     for m in std_mlir.iter() {
@@ -167,14 +166,11 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         println!("{}", m.to_string());
     }
 
-    let mlfiles = hlir2mlir.source_set(hlfiles);
+    let mlfile = hlir2mlir.source_set(hlfiles);
 
-    for m in mlfiles.iter() {
-        println!("==== {} ====", m.name);
-        println!("{}", m.to_string());
-    }
+    println!("==== {} ====", mlfile.name);
+    println!("{}", mlfile.to_string());
 
-    for mlfile in mlfiles {
         let module_name = &mlfile.name;
         let context = Context::create();
         let module = context.create_module(module_name);
@@ -217,7 +213,6 @@ fn main() -> result::Result<(), Box<dyn Error>> {
                 let _ = main.call();
             }
         }
-    }
 
     Ok(())
 }
