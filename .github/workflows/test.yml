@@ -76,4 +76,4 @@ jobs:
           wiz new test_project
           cd test_project
           wiz build
-          clang target/main.ll
+          clang target/test_project.ll
