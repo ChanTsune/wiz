@@ -137,6 +137,8 @@ impl HLIR2MLIR {
                     "UInt32" => MLValueType::Primitive(MLPrimitiveType::UInt32),
                     "Int64" => MLValueType::Primitive(MLPrimitiveType::Int64),
                     "UInt64" => MLValueType::Primitive(MLPrimitiveType::UInt64),
+                    "Int128" => MLValueType::Primitive(MLPrimitiveType::Int128),
+                    "UInt128" => MLValueType::Primitive(MLPrimitiveType::UInt128),
                     "Size" => MLValueType::Primitive(MLPrimitiveType::Size),
                     "USize" => MLValueType::Primitive(MLPrimitiveType::USize),
                     "Bool" => MLValueType::Primitive(MLPrimitiveType::Bool),
