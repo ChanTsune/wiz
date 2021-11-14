@@ -80,13 +80,15 @@ impl MLIRModule {
     }
 
     pub fn to_mlir_file(&self, name: String) -> MLFile {
-        let (forward_declarations, declarations):(Vec<_>, Vec<_>) = self.functions
+        let (forward_declarations, declarations): (Vec<_>, Vec<_>) = self
+            .functions
             .clone()
             .into_iter()
             .map(|(_, v)| {
                 let (declare, define) = v.build();
                 (MLDecl::Fun(declare), define.map(MLDecl::Fun))
-            }).unzip();
+            })
+            .unzip();
         MLFile {
             name,
             body: self
@@ -100,9 +102,7 @@ impl MLIRModule {
                         .into_iter()
                         .map(|(_, v)| MLDecl::Var(v)),
                 )
-                .chain(
-                    forward_declarations
-                )
+                .chain(forward_declarations)
                 .chain(declarations.into_iter().flatten())
                 .collect(),
         }

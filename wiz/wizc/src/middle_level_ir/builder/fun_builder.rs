@@ -43,13 +43,16 @@ impl FunBuilder {
         if self.declare {
             (f, None)
         } else {
-            (MLFun {
-                modifiers: f.modifiers.clone(),
-                name: f.name.clone(),
-                arg_defs: f.arg_defs.clone(),
-                return_type: f.return_type.clone(),
-                body: None
-            }, Some(f))
+            (
+                MLFun {
+                    modifiers: f.modifiers.clone(),
+                    name: f.name.clone(),
+                    arg_defs: f.arg_defs.clone(),
+                    return_type: f.return_type.clone(),
+                    body: None,
+                },
+                Some(f),
+            )
         }
     }
 }
