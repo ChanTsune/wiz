@@ -28,8 +28,8 @@ impl FunBuilder {
         &self.name
     }
 
-    pub fn build(self) -> MLFun {
-        MLFun {
+    pub fn build(self) -> (MLFun, Option<MLFun>) {
+        let f = MLFun {
             modifiers: self.modifiers,
             name: self.name,
             arg_defs: self.arg_defs,
@@ -39,6 +39,17 @@ impl FunBuilder {
             } else {
                 Some(MLFunBody { body: self.stmts })
             },
+        };
+        if self.declare {
+            (f, None)
+        } else {
+            (MLFun {
+                modifiers: f.modifiers.clone(),
+                name: f.name.clone(),
+                arg_defs: f.arg_defs.clone(),
+                return_type: f.return_type.clone(),
+                body: None
+            }, Some(f))
         }
     }
 }
