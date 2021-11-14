@@ -1,5 +1,5 @@
-use std::path::{Path, PathBuf};
 use clap::ArgMatches;
+use std::path::{Path, PathBuf};
 
 pub struct Config<'ctx> {
     input: &'ctx str,
@@ -29,7 +29,7 @@ impl<'ctx> Config<'ctx> {
     }
 }
 
-impl<'ctx> From<&'ctx ArgMatches<'ctx>> for Config<'ctx>{
+impl<'ctx> From<&'ctx ArgMatches<'ctx>> for Config<'ctx> {
     fn from(matches: &'ctx ArgMatches<'ctx>) -> Self {
         Self {
             input: matches.value_of("input").unwrap(),
@@ -38,7 +38,7 @@ impl<'ctx> From<&'ctx ArgMatches<'ctx>> for Config<'ctx>{
             output: matches.value_of("output"),
             out_dir: matches.value_of("out-dir"),
             paths: matches.values_of_lossy("path").unwrap_or_default(),
-            l: None
+            l: None,
         }
     }
 }

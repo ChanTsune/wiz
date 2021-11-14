@@ -1,3 +1,4 @@
+use crate::config::Config;
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::Ast2HLIR;
@@ -14,15 +15,14 @@ use std::{env, result};
 use wiz_syntax::parser;
 use wiz_syntax::parser::wiz::{parse_from_file_path, read_package_from_path};
 use wiz_syntax::syntax::file::SourceSet;
-use crate::config::Config;
 
+mod config;
 mod constants;
 mod ext;
 mod high_level_ir;
 mod llvm_ir;
 mod middle_level_ir;
 mod utils;
-mod config;
 
 type MainFunc = unsafe extern "C" fn() -> u8;
 
