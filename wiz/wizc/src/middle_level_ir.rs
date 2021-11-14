@@ -410,10 +410,7 @@ impl HLIR2MLIR {
                         },
                     arg_defs: args,
                     return_type: self.type_(return_type.unwrap()).into_value_type(),
-                    body: match body {
-                        None => None,
-                        Some(body) => Some(self.fun_body(body)),
-                    },
+                    body: body.map(|body| self.fun_body(body)),
                 }
             })
             .collect();
