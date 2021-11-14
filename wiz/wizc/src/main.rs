@@ -52,7 +52,11 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         )
         .arg(Arg::with_name("output").short("o").takes_value(true))
         .arg(Arg::with_name("out-dir").long("out-dir").takes_value(true))
-        .arg(Arg::with_name("target-triple").long("target-triple").takes_value(true))
+        .arg(
+            Arg::with_name("target-triple")
+                .long("target-triple")
+                .takes_value(true),
+        )
         .arg(
             Arg::with_name("path")
                 .short("p")

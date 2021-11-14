@@ -13,6 +13,7 @@ use inkwell::context::Context;
 use inkwell::execution_engine::ExecutionEngine;
 use inkwell::module::Module;
 use inkwell::support::LLVMString;
+use inkwell::targets::TargetTriple;
 use inkwell::types::{AnyType, AnyTypeEnum, BasicType, BasicTypeEnum};
 use inkwell::values::{AnyValue, AnyValueEnum, BasicValueEnum, FunctionValue};
 use inkwell::{AddressSpace, FloatPredicate, IntPredicate, OptimizationLevel};
@@ -20,7 +21,6 @@ use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::path::Path;
 use std::process::exit;
-use inkwell::targets::TargetTriple;
 
 pub(crate) struct MLContext<'ctx> {
     pub(crate) struct_environment: StackedHashMap<String, MLStruct>,
