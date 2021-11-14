@@ -750,7 +750,14 @@ impl<'ctx> CodeGen<'ctx> {
                     exit(-1)
                 }
             };
-            let function = self.module.add_function(&*name, fn_type, None);
+            let function = if let Some(function) = self.module.get_function(&*name) {
+                if !function.get_basic_blocks().is_empty() {
+                    panic!("function `{}` is already defined", name);
+                };
+                function
+            } else {
+                self.module.add_function(&*name, fn_type, None)
+            };
             for (v, a) in function.get_params().iter().zip(arg_defs) {
                 self.set_to_environment(a.name, v.as_any_value_enum());
             }
