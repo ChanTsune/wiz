@@ -20,6 +20,7 @@ use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::path::Path;
 use std::process::exit;
+use inkwell::targets::TargetTriple;
 
 pub(crate) struct MLContext<'ctx> {
     pub(crate) struct_environment: StackedHashMap<String, MLStruct>,
@@ -906,6 +907,12 @@ impl<'ctx> CodeGen<'ctx> {
         for d in f.body {
             self.decl(d);
         }
+    }
+
+    /// Set Target Triple
+    pub fn set_target_triple(&mut self, triple: &str) {
+        let target_triple = TargetTriple::create(triple);
+        self.module.set_triple(&target_triple)
     }
 
     /// Write LLVM IR to file to the given path.

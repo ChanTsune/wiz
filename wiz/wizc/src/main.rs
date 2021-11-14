@@ -52,7 +52,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         )
         .arg(Arg::with_name("output").short("o").takes_value(true))
         .arg(Arg::with_name("out-dir").long("out-dir").takes_value(true))
-        .arg(Arg::with_name("execute").short("e").takes_value(true))
+        .arg(Arg::with_name("target-triple").long("target-triple").takes_value(true))
         .arg(
             Arg::with_name("path")
                 .short("p")
@@ -199,15 +199,10 @@ fn main() -> result::Result<(), Box<dyn Error>> {
 
         println!("Output Path -> {:?}", out_path);
 
-        codegen.print_to_file(out_path)?;
-
-        if let Some(fun_name) = matches.value_of("execute") {
-            unsafe {
-                let main: JitFunction<MainFunc> =
-                    codegen.execution_engine.get_function(fun_name)?;
-                let _ = main.call();
-            }
+        if let Some(target_triple) = matches.value_of("target-triple") {
+            codegen.set_target_triple(target_triple);
         }
+        codegen.print_to_file(out_path)?;
     }
 
     Ok(())
