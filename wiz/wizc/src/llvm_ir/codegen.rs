@@ -787,7 +787,11 @@ impl<'ctx> CodeGen<'ctx> {
                     exit(-1)
                 }
             };
-            let f = self.module.add_function(&*name, fn_type, None);
+            let f = if let Some(f) = self.module.get_function(&*name) {
+                f
+            } else {
+                self.module.add_function(&*name, fn_type, None)
+            };
             self.ml_context.current_function = Some(f);
             AnyValueEnum::from(f)
         };
