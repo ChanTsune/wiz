@@ -14,6 +14,7 @@ use std::{env, result};
 use wiz_syntax::parser;
 use wiz_syntax::parser::wiz::{parse_from_file_path, read_package_from_path};
 use wiz_syntax::syntax::file::SourceSet;
+use crate::config::Config;
 
 mod constants;
 mod ext;
@@ -21,6 +22,7 @@ mod high_level_ir;
 mod llvm_ir;
 mod middle_level_ir;
 mod utils;
+mod config;
 
 type MainFunc = unsafe extern "C" fn() -> u8;
 
@@ -67,15 +69,13 @@ fn main() -> result::Result<(), Box<dyn Error>> {
                 .multiple(true),
         );
     let matches = app.get_matches();
-    let input = matches.value_of("input").unwrap();
-    let output = matches.value_of("output");
-    let out_dir = matches.value_of("out-dir");
-    let paths = matches.values_of_lossy("path").unwrap_or_default();
-    let input = Path::new(input);
+    let config = Config::from(&matches);
+    let output = config.output();
+    let out_dir = config.out_dir();
+    let paths = config.paths();
+    let input = config.input();
 
     let input_source = if input.is_dir() {
-        let type_ = matches.value_of("type").unwrap();
-        let name = matches.value_of("name").unwrap();
         read_package_from_path(input)?
     } else {
         SourceSet::File(parse_from_file_path(input)?)
