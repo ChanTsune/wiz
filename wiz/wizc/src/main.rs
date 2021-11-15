@@ -8,10 +8,11 @@ use clap::{App, Arg};
 use inkwell::context::Context;
 use inkwell::execution_engine::JitFunction;
 use inkwell::OptimizationLevel;
+use std::io::Write;
 use std::error::Error;
 use std::option::Option::Some;
 use std::path::{Path, PathBuf};
-use std::{env, result};
+use std::{env, fs, result};
 use wiz_syntax::parser;
 use wiz_syntax::parser::wiz::{parse_from_file_path, read_package_from_path};
 use wiz_syntax::syntax::file::SourceSet;
@@ -78,7 +79,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         .map(PathBuf::from)
         .unwrap_or_else(|| env::current_dir().unwrap());
 
-    let mlir_out_dir = {
+    let mut mlir_out_dir = {
         let mut t = out_dir.clone();
         t.push("mlir");
         t
@@ -170,15 +171,22 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         .map(|w| hlir2mlir.source_set(w))
         .collect::<Vec<_>>();
 
+    fs::create_dir_all(&mlir_out_dir)?;
     for m in std_mlir.iter() {
         println!("==== {} ====", m.name);
-        println!("{}", m.to_string());
+        mlir_out_dir.push(m.name.clone());
+        let mut f = fs::File::create(&mlir_out_dir)?;
+        write!(f, "{}", m.to_string())?;
+        mlir_out_dir.pop();
     }
 
     let mlfile = hlir2mlir.source_set(hlfiles);
 
     println!("==== {} ====", mlfile.name);
-    println!("{}", mlfile.to_string());
+    mlir_out_dir.push(&mlfile.name);
+    let mut f = fs::File::create(&mlir_out_dir)?;
+    write!(f, "{}", mlfile.to_string())?;
+    mlir_out_dir.pop();
 
     let module_name = &mlfile.name;
     let context = Context::create();
