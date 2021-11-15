@@ -100,8 +100,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
             .into_iter()
             .chain(paths.iter().map(PathBuf::from))
         {
-            p.push(l);
-            p.push("Package.wiz");
+            p.extend([l, "Package.wiz"]);
             if p.exists() {
                 p.pop();
                 println!("`{}` found at {}", l, p.display());
