@@ -29,6 +29,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::option::Option::Some;
 use std::process::exit;
+use crate::middle_level_ir::builder::{BuilderError, FunBuilder, MLIRModule};
 
 pub mod builder;
 pub mod expr;
@@ -104,12 +105,14 @@ impl HLIR2MLIRContext {
 
 pub struct HLIR2MLIR {
     context: HLIR2MLIRContext,
+    module: MLIRModule,
 }
 
 impl HLIR2MLIR {
     pub fn new() -> Self {
         HLIR2MLIR {
             context: HLIR2MLIRContext::new(),
+            module: MLIRModule::new(),
         }
     }
 
@@ -130,8 +133,8 @@ impl HLIR2MLIR {
 
     fn load_dependencies_decl(&mut self, d: &MLDecl) -> Result<(), Box<dyn Error>> {
         match d {
-            MLDecl::Var(_) => {
-                todo!()
+            MLDecl::Var(v) => {
+                self.load_dependencies_var(v)
             }
             MLDecl::Fun(f) => self.load_dependencies_function(f),
             MLDecl::Struct(s) => self.load_dependencies_struct(s),
@@ -139,14 +142,20 @@ impl HLIR2MLIR {
     }
 
     fn load_dependencies_var(&mut self, v: &MLVar) -> Result<(), Box<dyn Error>> {
+        self.module.add_global_var(v.clone());
         Ok(())
     }
 
     fn load_dependencies_struct(&mut self, s: &MLStruct) -> Result<(), Box<dyn Error>> {
+        self.module.add_struct(s.clone());
+        self.context.add_struct(MLValueType::Struct(s.name.clone()), s.clone());
         Ok(())
     }
 
     fn load_dependencies_function(&mut self, f: &MLFun) -> Result<(), Box<dyn Error>> {
+        if f.body.is_some() {
+            self.module._add_function(FunBuilder::from(f.clone()));
+        };
         Ok(())
     }
 
