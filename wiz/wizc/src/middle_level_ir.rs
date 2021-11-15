@@ -112,7 +112,10 @@ impl HLIR2MLIR {
     }
 
     fn load_dependencies_file(&mut self, f: &MLFile) -> Result<(), Box<dyn Error>> {
-        f.body.iter().map(|d|self.load_dependencies_decl(d)).collect::<Result<Vec<_>, Box<dyn Error>>>()?;
+        f.body
+            .iter()
+            .map(|d| self.load_dependencies_decl(d))
+            .collect::<Result<Vec<_>, Box<dyn Error>>>()?;
         Ok(())
     }
 
@@ -121,8 +124,8 @@ impl HLIR2MLIR {
             MLDecl::Var(_) => {
                 todo!()
             }
-            MLDecl::Fun(f) => {self.load_dependencies_function(f)}
-            MLDecl::Struct(s) => {self.load_dependencies_struct(s)}
+            MLDecl::Fun(f) => self.load_dependencies_function(f),
+            MLDecl::Struct(s) => self.load_dependencies_struct(s),
         }
     }
 
