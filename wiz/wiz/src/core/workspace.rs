@@ -1,6 +1,6 @@
+use crate::constant::MANIFEST_FILE_NAME;
 use crate::core::error::CliError;
 use std::path::PathBuf;
-use crate::constant::MANIFEST_FILE_NAME;
 
 pub(crate) struct Workspace {
     pub(crate) cws: PathBuf,
