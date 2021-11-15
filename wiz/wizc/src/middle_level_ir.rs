@@ -26,6 +26,7 @@ use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
 use crate::middle_level_ir::statement::{MLAssignmentStmt, MLLoopStmt, MLStmt};
 use std::collections::HashMap;
+use std::error::Error;
 use std::option::Option::Some;
 use std::process::exit;
 
@@ -104,6 +105,37 @@ impl HLIR2MLIR {
         HLIR2MLIR {
             context: HLIR2MLIRContext::new(),
         }
+    }
+
+    pub fn load_dependencies(&mut self, s: &MLFile) -> Result<(), Box<dyn Error>> {
+        self.load_dependencies_file(s)
+    }
+
+    fn load_dependencies_file(&mut self, f: &MLFile) -> Result<(), Box<dyn Error>> {
+        f.body.iter().map(|d|self.load_dependencies_decl(d)).collect::<Result<Vec<_>, Box<dyn Error>>>()?;
+        Ok(())
+    }
+
+    fn load_dependencies_decl(&mut self, d: &MLDecl) -> Result<(), Box<dyn Error>> {
+        match d {
+            MLDecl::Var(_) => {
+                todo!()
+            }
+            MLDecl::Fun(f) => {self.load_dependencies_function(f)}
+            MLDecl::Struct(s) => {self.load_dependencies_struct(s)}
+        }
+    }
+
+    fn load_dependencies_var(&mut self, v: &MLVar) -> Result<(), Box<dyn Error>> {
+        Ok(())
+    }
+
+    fn load_dependencies_struct(&mut self, s: &MLStruct) -> Result<(), Box<dyn Error>> {
+        Ok(())
+    }
+
+    fn load_dependencies_function(&mut self, f: &MLFun) -> Result<(), Box<dyn Error>> {
+        Ok(())
     }
 
     pub fn convert_from_source_set(&mut self, s: TypedSourceSet) -> MLFile {
