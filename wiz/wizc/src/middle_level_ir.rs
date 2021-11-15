@@ -42,7 +42,10 @@ pub mod statement;
 #[cfg(test)]
 mod tests;
 
-pub fn hlir2mlir(target: TypedSourceSet, dependencies: &[MLFile]) -> Result<MLFile, Box<dyn Error>> {
+pub fn hlir2mlir(
+    target: TypedSourceSet,
+    dependencies: &[MLFile],
+) -> Result<MLFile, Box<dyn Error>> {
     let mut converter = HLIR2MLIR::new();
     converter.load_dependencies(dependencies)?;
     Ok(converter.convert_from_source_set(target))
