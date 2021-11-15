@@ -107,8 +107,11 @@ impl HLIR2MLIR {
         }
     }
 
-    pub fn load_dependencies(&mut self, s: &MLFile) -> Result<(), Box<dyn Error>> {
-        self.load_dependencies_file(s)
+    pub fn load_dependencies(&mut self, dependencies: &[MLFile]) -> Result<(), Box<dyn Error>> {
+        for dependency in dependencies {
+            self.load_dependencies_file(dependency)?;
+        };
+        Ok(())
     }
 
     fn load_dependencies_file(&mut self, f: &MLFile) -> Result<(), Box<dyn Error>> {
