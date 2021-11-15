@@ -74,6 +74,15 @@ fn main() -> result::Result<(), Box<dyn Error>> {
     let out_dir = config.out_dir();
     let paths = config.paths();
     let input = config.input();
+    let out_dir = out_dir
+        .map(PathBuf::from)
+        .unwrap_or_else(|| env::current_dir().unwrap());
+
+    let mlir_out_dir = {
+        let mut t = out_dir.clone();
+        t.push("mlir");
+        t
+    };
 
     let input_source = if input.is_dir() {
         read_package_from_path(input)?
@@ -197,9 +206,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         String::from(output_path.to_str().unwrap())
     };
 
-    let mut out_path = out_dir
-        .map(PathBuf::from)
-        .unwrap_or_else(|| env::current_dir().unwrap());
+    let mut out_path = out_dir;
     out_path.push(output);
 
     println!("Output Path -> {:?}", out_path);
