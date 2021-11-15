@@ -4,6 +4,7 @@ mod external_subcommand;
 mod init;
 mod new;
 mod subcommand;
+mod constant;
 
 use crate::build::build_command;
 use crate::init::init_command;

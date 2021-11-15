@@ -2,13 +2,14 @@ use std::error::Error;
 use std::fs::{create_dir_all, File};
 use std::io::{BufWriter, Write};
 use std::path::Path;
+use crate::constant::MANIFEST_FILE_NAME;
 
 pub mod error;
 pub mod workspace;
 
 pub(crate) fn create_project(path: &Path, project_name: &str) -> Result<(), Box<dyn Error>> {
     let mut path = path.to_path_buf();
-    path.push("Package.wiz");
+    path.push(MANIFEST_FILE_NAME);
     let mut package_wiz = BufWriter::new(File::create(&path)?);
     writeln!(
         package_wiz,
