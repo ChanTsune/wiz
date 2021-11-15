@@ -1,4 +1,5 @@
 use crate::high_level_ir::type_resolver::TypeResolver;
+use crate::high_level_ir::typed_file::TypedSourceSet;
 use crate::high_level_ir::Ast2HLIR;
 use crate::middle_level_ir::expr::{
     MLCall, MLCallArg, MLExpr, MLLiteral, MLMember, MLName, MLReturn,
@@ -11,7 +12,6 @@ use crate::middle_level_ir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, M
 use crate::middle_level_ir::statement::{MLAssignmentStmt, MLStmt};
 use crate::middle_level_ir::HLIR2MLIR;
 use wiz_syntax::parser::wiz::parse_from_string;
-use crate::high_level_ir::typed_file::TypedSourceSet;
 
 fn check(source: &str, except: MLFile) {
     let ast = parse_from_string(source).unwrap();
