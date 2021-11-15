@@ -15,6 +15,7 @@ use crate::high_level_ir::typed_stmt::{
 use crate::high_level_ir::typed_type::{
     TypedFunctionType, TypedPackage, TypedType, TypedValueType,
 };
+use crate::middle_level_ir::builder::{BuilderError, FunBuilder, MLIRModule};
 use crate::middle_level_ir::expr::{
     MLBinOp, MLBinOpKind, MLBlock, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLMember, MLName,
     MLReturn, MLSubscript, MLTypeCast, MLUnaryOp, MLUnaryOpKind,
@@ -29,7 +30,6 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::option::Option::Some;
 use std::process::exit;
-use crate::middle_level_ir::builder::{BuilderError, FunBuilder, MLIRModule};
 
 pub mod builder;
 pub mod expr;
@@ -136,9 +136,7 @@ impl HLIR2MLIR {
 
     fn load_dependencies_decl(&mut self, d: &MLDecl) -> Result<(), Box<dyn Error>> {
         match d {
-            MLDecl::Var(v) => {
-                self.load_dependencies_var(v)
-            }
+            MLDecl::Var(v) => self.load_dependencies_var(v),
             MLDecl::Fun(f) => self.load_dependencies_function(f),
             MLDecl::Struct(s) => self.load_dependencies_struct(s),
         }
@@ -151,7 +149,8 @@ impl HLIR2MLIR {
 
     fn load_dependencies_struct(&mut self, s: &MLStruct) -> Result<(), Box<dyn Error>> {
         self.module.add_struct(s.clone());
-        self.context.add_struct(MLValueType::Struct(s.name.clone()), s.clone());
+        self.context
+            .add_struct(MLValueType::Struct(s.name.clone()), s.clone());
         Ok(())
     }
 
