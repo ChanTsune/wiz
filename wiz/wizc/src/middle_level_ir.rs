@@ -241,7 +241,7 @@ impl HLIR2MLIR {
             TypedSourceSet::File(f) => self.file(f),
             TypedSourceSet::Dir { name, items } => {
                 self.context.push_name_space(name.clone());
-                let i:Vec<_> = items
+                let i: Vec<_> = items
                     .into_iter()
                     .map(|i| self.source_set(i))
                     .map(|i| i.body)
@@ -252,12 +252,15 @@ impl HLIR2MLIR {
                 let mut s = vec![];
                 for d in i {
                     match d {
-                        MLDecl::Var(_v) => {v.push(MLDecl::Var(_v))}
-                        MLDecl::Fun(_f) => {f.push(MLDecl::Fun(_f))}
-                        MLDecl::Struct(_s) => {s.push(MLDecl::Struct(_s))}
+                        MLDecl::Var(_v) => v.push(MLDecl::Var(_v)),
+                        MLDecl::Fun(_f) => f.push(MLDecl::Fun(_f)),
+                        MLDecl::Struct(_s) => s.push(MLDecl::Struct(_s)),
                     };
+                }
+                let i = MLFile {
+                    name,
+                    body: s.into_iter().chain(v).chain(f).collect(),
                 };
-                let i = MLFile { name, body: s.into_iter().chain(v).chain(f).collect() };
                 self.context.pop_name_space();
                 i
             }
