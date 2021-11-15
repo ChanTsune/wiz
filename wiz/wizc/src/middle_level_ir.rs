@@ -106,6 +106,10 @@ impl HLIR2MLIR {
         }
     }
 
+    pub fn convert_from_source_set(&mut self, s: TypedSourceSet) -> MLFile {
+        self.source_set(s)
+    }
+
     pub fn type_(&self, t: TypedType) -> MLType {
         match t {
             TypedType::Value(t) => MLType::Value(self.value_type(t)),

@@ -11,6 +11,7 @@ use crate::middle_level_ir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, M
 use crate::middle_level_ir::statement::{MLAssignmentStmt, MLStmt};
 use crate::middle_level_ir::HLIR2MLIR;
 use wiz_syntax::parser::wiz::parse_from_string;
+use crate::high_level_ir::typed_file::TypedSourceSet;
 
 fn check(source: &str, except: MLFile) {
     let ast = parse_from_string(source).unwrap();
@@ -27,7 +28,7 @@ fn check(source: &str, except: MLFile) {
 
     let mut hlir2mlir = HLIR2MLIR::new();
 
-    let f = hlir2mlir.file(hl_file);
+    let f = hlir2mlir.convert_from_source_set(TypedSourceSet::File(hl_file));
 
     assert_eq!(f, except);
 }

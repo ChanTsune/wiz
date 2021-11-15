@@ -167,7 +167,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
 
     let std_mlir = std_hlir
         .into_iter()
-        .map(|w| hlir2mlir.source_set(w))
+        .map(|w| hlir2mlir.convert_from_source_set(w))
         .collect::<Vec<_>>();
 
     fs::create_dir_all(&mlir_out_dir)?;
@@ -179,7 +179,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         mlir_out_dir.pop();
     }
 
-    let mlfile = hlir2mlir.source_set(hlfiles);
+    let mlfile = hlir2mlir.convert_from_source_set(hlfiles);
 
     println!("==== {} ====", mlfile.name);
     mlir_out_dir.push(&mlfile.name);
