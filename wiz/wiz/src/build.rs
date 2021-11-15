@@ -31,6 +31,11 @@ pub(crate) fn build_command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn
 
     args.extend(["--name", ws.cws.file_name().unwrap().to_str().unwrap()]);
     args.extend(["--type", "bin"]);
+
+    if let Some(target_triple) = options.value_of("target-triple") {
+        args.extend(["--target-triple", target_triple]);
+    };
+
     create_dir_all(&target_dir)?;
     super::subcommand::execute("wizc", &args)
 }

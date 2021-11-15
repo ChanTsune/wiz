@@ -39,7 +39,13 @@ fn _main() -> Result<(), Box<dyn Error>> {
         .subcommand(
             SubCommand::with_name("build")
                 .about("Compile the current package")
-                .arg(Arg::with_name("target-dir").help("Directory for all generated artifacts")),
+                .arg(Arg::with_name("target-dir").help("Directory for all generated artifacts"))
+                .arg(
+                    Arg::with_name("target-triple")
+                        .long("target-triple")
+                        .takes_value(true)
+                        .help("Build target platform"),
+                ),
         )
         .arg(
             Arg::with_name("quite")
