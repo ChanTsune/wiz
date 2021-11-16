@@ -13,9 +13,10 @@ use inkwell::context::Context;
 use inkwell::execution_engine::ExecutionEngine;
 use inkwell::module::Module;
 use inkwell::support::LLVMString;
+use inkwell::targets::TargetTriple;
 use inkwell::types::{AnyType, AnyTypeEnum, BasicType, BasicTypeEnum};
 use inkwell::values::{AnyValue, AnyValueEnum, BasicValueEnum, FunctionValue};
-use inkwell::{AddressSpace, FloatPredicate, IntPredicate};
+use inkwell::{AddressSpace, FloatPredicate, IntPredicate, OptimizationLevel};
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::path::Path;
@@ -66,6 +67,20 @@ pub struct CodeGen<'ctx> {
 }
 
 impl<'ctx> CodeGen<'ctx> {
+    pub(crate) fn new(context: &'ctx Context, name: &str) -> Self {
+        let module: Module<'ctx> = context.create_module(name);
+        let execution_engine: ExecutionEngine<'ctx> = module
+            .create_jit_execution_engine(OptimizationLevel::None)
+            .unwrap();
+        Self {
+            context,
+            module,
+            builder: context.create_builder(),
+            execution_engine,
+            ml_context: MLContext::new(),
+        }
+    }
+
     fn get_from_environment(&self, name: String) -> Option<AnyValueEnum<'ctx>> {
         match self.ml_context.local_environments.get(&name) {
             Some(v) => Some(*v),
@@ -651,7 +666,13 @@ impl<'ctx> CodeGen<'ctx> {
     fn need_load(may_be_pointer: AnyTypeEnum<'ctx>, request_type: &MLValueType) -> bool {
         match may_be_pointer {
             AnyTypeEnum::PointerType(p) => match request_type {
-                MLValueType::Primitive(_) | MLValueType::Struct(_) => true,
+                MLValueType::Primitive(pv) => match pv {
+                    MLPrimitiveType::String | MLPrimitiveType::Noting | MLPrimitiveType::Unit => {
+                        false
+                    }
+                    _ => true,
+                },
+                MLValueType::Struct(_) => true,
                 MLValueType::Pointer(r) | MLValueType::Reference(r) => {
                     Self::need_load(p.get_element_type(), r)
                 }
@@ -903,9 +924,13 @@ impl<'ctx> CodeGen<'ctx> {
         }
     }
 
-    /**
-     * Write the LLVM IR to a file in the path.
-     */
+    /// Set Target Triple
+    pub fn set_target_triple(&mut self, triple: &str) {
+        let target_triple = TargetTriple::create(triple);
+        self.module.set_triple(&target_triple)
+    }
+
+    /// Write LLVM IR to file to the given path.
     pub fn print_to_file<P: AsRef<Path>>(&self, path: P) -> Result<(), LLVMString> {
         self.module.print_to_file(path)
     }

@@ -1,4 +1,4 @@
-use error::CliError;
+use crate::constant::MANIFEST_FILE_NAME;
 use std::error::Error;
 use std::fs::{create_dir_all, File};
 use std::io::{BufWriter, Write};
@@ -8,14 +8,8 @@ pub mod error;
 pub mod workspace;
 
 pub(crate) fn create_project(path: &Path, project_name: &str) -> Result<(), Box<dyn Error>> {
-    if path.read_dir()?.next().is_some() {
-        return Err(Box::new(CliError::from(format!(
-            "`{}` is not empty",
-            path.display()
-        ))));
-    };
     let mut path = path.to_path_buf();
-    path.push("Package.wiz");
+    path.push(MANIFEST_FILE_NAME);
     let mut package_wiz = BufWriter::new(File::create(&path)?);
     writeln!(
         package_wiz,
