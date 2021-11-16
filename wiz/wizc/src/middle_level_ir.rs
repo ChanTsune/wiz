@@ -45,10 +45,12 @@ mod tests;
 pub fn hlir2mlir(
     target: TypedSourceSet,
     dependencies: &[MLFile],
-) -> Result<MLFile, Box<dyn Error>> {
+    annotations: HashMap<String, TypedAnnotations>,
+) -> Result<(MLFile, HashMap<String, TypedAnnotations>), Box<dyn Error>> {
     let mut converter = HLIR2MLIR::new();
     converter.load_dependencies(dependencies)?;
-    Ok(converter.convert_from_source_set(target))
+    converter.context.declaration_annotations.extend(annotations);
+    Ok((converter.convert_from_source_set(target), converter.context.declaration_annotations))
 }
 
 struct HLIR2MLIRContext {
@@ -117,6 +119,10 @@ impl HLIR2MLIR {
             context: HLIR2MLIRContext::new(),
             module: MLIRModule::new(),
         }
+    }
+
+    pub(crate) fn annotations(self) -> HashMap<String, TypedAnnotations> {
+        self.context.declaration_annotations
     }
 
     pub fn load_dependencies(&mut self, dependencies: &[MLFile]) -> Result<(), Box<dyn Error>> {

@@ -179,7 +179,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         mlir_out_dir.pop();
     }
 
-    let mlfile = hlir2mlir(hlfiles, &std_mlir)?;
+    let (mlfile,_) = hlir2mlir(hlfiles, &std_mlir, h2m.annotations())?;
 
     println!("==== {} ====", mlfile.name);
     mlir_out_dir.push(&mlfile.name);
