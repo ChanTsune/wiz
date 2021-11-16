@@ -13,6 +13,7 @@ use inkwell::context::Context;
 use inkwell::execution_engine::ExecutionEngine;
 use inkwell::module::Module;
 use inkwell::support::LLVMString;
+use inkwell::targets::TargetTriple;
 use inkwell::types::{AnyType, AnyTypeEnum, BasicType, BasicTypeEnum};
 use inkwell::values::{AnyValue, AnyValueEnum, BasicValueEnum, FunctionValue};
 use inkwell::{AddressSpace, FloatPredicate, IntPredicate, OptimizationLevel};
@@ -906,6 +907,12 @@ impl<'ctx> CodeGen<'ctx> {
         for d in f.body {
             self.decl(d);
         }
+    }
+
+    /// Set Target Triple
+    pub fn set_target_triple(&mut self, triple: &str) {
+        let target_triple = TargetTriple::create(triple);
+        self.module.set_triple(&target_triple)
     }
 
     /// Write LLVM IR to file to the given path.

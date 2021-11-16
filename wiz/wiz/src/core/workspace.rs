@@ -1,3 +1,4 @@
+use crate::constant::MANIFEST_FILE_NAME;
 use crate::core::error::CliError;
 use std::path::PathBuf;
 
@@ -14,7 +15,7 @@ pub(crate) fn construct_workspace_from(cws: PathBuf) -> Result<Workspace, CliErr
         )));
     }
     let mut manifest = cws.clone();
-    manifest.push("Package.wiz");
+    manifest.push(MANIFEST_FILE_NAME);
     if !manifest.exists() {
         return Err(CliError::from(format!(
             "could not find `Package.wiz` in `{}`",
