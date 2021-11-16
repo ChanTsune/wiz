@@ -272,19 +272,19 @@ fn test_return_integer_literal() {
                     body: None,
                 }),
                 MLDecl::Fun(MLFun {
-                modifiers: vec![],
-                name: "test::integer".to_string(),
-                arg_defs: vec![],
-                return_type: MLValueType::Primitive(MLPrimitiveType::Int64),
-                body: Some(MLFunBody {
-                    body: vec![MLStmt::Expr(MLExpr::Return(MLReturn {
-                        value: Some(Box::new(MLExpr::Literal(MLLiteral::Integer {
-                            value: "1".to_string(),
-                            type_: MLValueType::Primitive(MLPrimitiveType::Int64),
-                        }))),
-                    }))],
+                    modifiers: vec![],
+                    name: "test::integer".to_string(),
+                    arg_defs: vec![],
+                    return_type: MLValueType::Primitive(MLPrimitiveType::Int64),
+                    body: Some(MLFunBody {
+                        body: vec![MLStmt::Expr(MLExpr::Return(MLReturn {
+                            value: Some(Box::new(MLExpr::Literal(MLLiteral::Integer {
+                                value: "1".to_string(),
+                                type_: MLValueType::Primitive(MLPrimitiveType::Int64),
+                            }))),
+                        }))],
+                    }),
                 }),
-            }),
             ],
         },
     );

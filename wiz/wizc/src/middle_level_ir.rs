@@ -254,7 +254,7 @@ impl HLIR2MLIR {
                 let name = f.name.clone();
                 self.file(f);
                 name
-            },
+            }
             TypedSourceSet::Dir { name, items } => {
                 self.context.push_name_space(name.clone());
                 let _: Vec<_> = items
@@ -280,16 +280,29 @@ impl HLIR2MLIR {
     fn stmt(&mut self, s: TypedStmt) -> Vec<MLStmt> {
         match s {
             TypedStmt::Expr(e) => vec![MLStmt::Expr(self.expr(e))],
-            TypedStmt::Decl(d) =>
-            match d {
-                TypedDecl::Var(v) => {vec![MLStmt::Var(self.var(v))]}
-                TypedDecl::Fun(_) => { todo!("local function") }
-                TypedDecl::Struct(_) => { todo!("local struct") }
-                TypedDecl::Class => { todo!() }
-                TypedDecl::Enum => { todo!() }
-                TypedDecl::Protocol => { todo!() }
-                TypedDecl::Extension => { todo!() }
-            }
+            TypedStmt::Decl(d) => match d {
+                TypedDecl::Var(v) => {
+                    vec![MLStmt::Var(self.var(v))]
+                }
+                TypedDecl::Fun(_) => {
+                    todo!("local function")
+                }
+                TypedDecl::Struct(_) => {
+                    todo!("local struct")
+                }
+                TypedDecl::Class => {
+                    todo!()
+                }
+                TypedDecl::Enum => {
+                    todo!()
+                }
+                TypedDecl::Protocol => {
+                    todo!()
+                }
+                TypedDecl::Extension => {
+                    todo!()
+                }
+            },
             TypedStmt::Assignment(a) => vec![MLStmt::Assignment(self.assignment(a))],
             TypedStmt::Loop(l) => vec![MLStmt::Loop(self.loop_stmt(l))],
         }
@@ -338,17 +351,17 @@ impl HLIR2MLIR {
             TypedDecl::Var(v) => {
                 let v = self.var(v);
                 self.module.add_global_var(v);
-            },
+            }
             TypedDecl::Fun(f) => {
                 let f = FunBuilder::from(self.fun(f));
                 self.module._add_function(f);
-            },
+            }
             TypedDecl::Struct(s) => {
                 let (st, fns) = self.struct_(s);
                 self.module.add_struct(st);
                 for f in fns {
                     self.module._add_function(FunBuilder::from(f));
-                };
+                }
             }
             TypedDecl::Class => exit(-1),
             TypedDecl::Enum => exit(-1),
