@@ -3,7 +3,7 @@ use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::Ast2HLIR;
 use crate::llvm_ir::codegen::{CodeGen, MLContext};
-use crate::middle_level_ir::HLIR2MLIR;
+use crate::middle_level_ir::{HLIR2MLIR, hlir2mlir};
 use clap::{App, Arg};
 use inkwell::context::Context;
 use inkwell::execution_engine::JitFunction;
@@ -163,11 +163,11 @@ fn main() -> result::Result<(), Box<dyn Error>> {
 
     println!("===== convert to mlir =====");
 
-    let mut hlir2mlir = HLIR2MLIR::new();
+    let mut h2m = HLIR2MLIR::new();
 
     let std_mlir = std_hlir
         .into_iter()
-        .map(|w| hlir2mlir.convert_from_source_set(w))
+        .map(|w| h2m.convert_from_source_set(w))
         .collect::<Vec<_>>();
 
     fs::create_dir_all(&mlir_out_dir)?;
@@ -179,7 +179,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         mlir_out_dir.pop();
     }
 
-    let mlfile = hlir2mlir.convert_from_source_set(hlfiles);
+    let mlfile = hlir2mlir(hlfiles, &std_mlir)?;
 
     println!("==== {} ====", mlfile.name);
     mlir_out_dir.push(&mlfile.name);
