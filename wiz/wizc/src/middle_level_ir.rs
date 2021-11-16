@@ -49,8 +49,14 @@ pub fn hlir2mlir(
 ) -> Result<(MLFile, HashMap<String, TypedAnnotations>), Box<dyn Error>> {
     let mut converter = HLIR2MLIR::new();
     converter.load_dependencies(dependencies)?;
-    converter.context.declaration_annotations.extend(annotations);
-    Ok((converter.convert_from_source_set(target), converter.context.declaration_annotations))
+    converter
+        .context
+        .declaration_annotations
+        .extend(annotations);
+    Ok((
+        converter.convert_from_source_set(target),
+        converter.context.declaration_annotations,
+    ))
 }
 
 struct HLIR2MLIRContext {
