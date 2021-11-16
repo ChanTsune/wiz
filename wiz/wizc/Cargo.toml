@@ -8,6 +8,7 @@ edition = "2018"
 
 [dependencies]
 inkwell = { git = "https://github.com/TheDan64/inkwell", rev = "2d715ed", features = ["llvm11-0"] }
-either ="1.6.1"
+either = "1.6.1"
+linked-hash-map = "0.5.4"
 clap = "2.33.3"
 wiz_syntax = { path = "../wiz_syntax" }

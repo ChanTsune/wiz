@@ -8,12 +8,13 @@ use crate::middle_level_ir::ml_decl::{MLArgDef, MLDecl, MLField, MLFun, MLStruct
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_type::MLValueType;
 use std::collections::HashMap;
+use linked_hash_map::LinkedHashMap;
 
 #[derive(Clone, Debug)]
 pub struct MLIRModule {
-    functions: HashMap<String, FunBuilder>,
-    variables: HashMap<String, MLVar>,
-    structs: HashMap<String, MLStruct>,
+    functions: LinkedHashMap<String, FunBuilder>,
+    variables: LinkedHashMap<String, MLVar>,
+    structs: LinkedHashMap<String, MLStruct>,
     current_function: Option<String>,
 }
 
