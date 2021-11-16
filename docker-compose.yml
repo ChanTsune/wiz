@@ -8,4 +8,4 @@ services:
     volumes:
         - ./:/wiz
     working_dir: /wiz/wiz/wizc
-    command: /root/.cargo/bin/cargo run /wiz/helloworld.wiz
+    command: /root/.cargo/bin/cargo run /wiz/helloworld.wiz -p /wiz
