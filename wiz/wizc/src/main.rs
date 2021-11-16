@@ -191,6 +191,10 @@ fn main() -> result::Result<(), Box<dyn Error>> {
     let context = Context::create();
     let mut codegen = CodeGen::new(&context, module_name);
 
+    for m in std_mlir.iter() {
+        codegen.file(m.clone());
+    }
+
     codegen.file(mlfile.clone());
 
     let output = if let Some(output) = output {
