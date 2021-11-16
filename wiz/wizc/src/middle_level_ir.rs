@@ -177,7 +177,7 @@ impl HLIR2MLIR {
         self.source_set(s)
     }
 
-    pub fn type_(&self, t: TypedType) -> MLType {
+    fn type_(&self, t: TypedType) -> MLType {
         match t {
             TypedType::Value(t) => MLType::Value(self.value_type(t)),
             TypedType::Function(f) => MLType::Function(self.function_type(*f)),
@@ -185,7 +185,7 @@ impl HLIR2MLIR {
         }
     }
 
-    pub fn value_type(&self, t: TypedValueType) -> MLValueType {
+    fn value_type(&self, t: TypedValueType) -> MLValueType {
         if t.is_unsafe_pointer() {
             match self.type_(t.type_args.unwrap()[0].clone()) {
                 MLType::Value(v) => MLValueType::Pointer(Box::new(v)),
@@ -228,7 +228,7 @@ impl HLIR2MLIR {
         }
     }
 
-    pub fn function_type(&self, t: TypedFunctionType) -> MLFunctionType {
+    fn function_type(&self, t: TypedFunctionType) -> MLFunctionType {
         MLFunctionType {
             arguments: t
                 .arguments
@@ -289,7 +289,7 @@ impl HLIR2MLIR {
         f
     }
 
-    pub fn stmt(&mut self, s: TypedStmt) -> Vec<MLStmt> {
+    fn stmt(&mut self, s: TypedStmt) -> Vec<MLStmt> {
         match s {
             TypedStmt::Expr(e) => vec![MLStmt::Expr(self.expr(e))],
             TypedStmt::Decl(d) => self
@@ -310,7 +310,7 @@ impl HLIR2MLIR {
         }
     }
 
-    pub fn assignment(&mut self, a: TypedAssignmentStmt) -> MLAssignmentStmt {
+    fn assignment(&mut self, a: TypedAssignmentStmt) -> MLAssignmentStmt {
         match a {
             TypedAssignmentStmt::Assignment(a) => MLAssignmentStmt {
                 target: self.expr(a.target),
@@ -338,7 +338,7 @@ impl HLIR2MLIR {
         }
     }
 
-    pub fn loop_stmt(&mut self, l: TypedLoopStmt) -> MLLoopStmt {
+    fn loop_stmt(&mut self, l: TypedLoopStmt) -> MLLoopStmt {
         match l {
             TypedLoopStmt::While(w) => MLLoopStmt {
                 condition: self.expr(w.condition),
@@ -366,7 +366,7 @@ impl HLIR2MLIR {
         }
     }
 
-    pub fn var(&mut self, v: TypedVar) -> MLVar {
+    fn var(&mut self, v: TypedVar) -> MLVar {
         let expr = self.expr(v.value);
         MLVar {
             is_mute: v.is_mut,
@@ -376,7 +376,7 @@ impl HLIR2MLIR {
         }
     }
 
-    pub fn fun(&mut self, f: TypedFun) -> MLFun {
+    fn fun(&mut self, f: TypedFun) -> MLFun {
         let TypedFun {
             annotations,
             package,
@@ -411,7 +411,7 @@ impl HLIR2MLIR {
         }
     }
 
-    pub fn struct_(&mut self, s: TypedStruct) -> (MLStruct, Vec<MLFun>) {
+    fn struct_(&mut self, s: TypedStruct) -> (MLStruct, Vec<MLFun>) {
         let TypedStruct {
             annotations,
             package,
@@ -503,7 +503,7 @@ impl HLIR2MLIR {
         (struct_, init.into_iter().chain(members).collect())
     }
 
-    pub fn expr(&mut self, e: TypedExpr) -> MLExpr {
+    fn expr(&mut self, e: TypedExpr) -> MLExpr {
         match e {
             TypedExpr::Name(name) => MLExpr::Name(self.name(name)),
             TypedExpr::Literal(l) => MLExpr::Literal(self.literal(l)),
@@ -524,7 +524,7 @@ impl HLIR2MLIR {
         }
     }
 
-    pub fn name(&self, n: TypedName) -> MLName {
+    fn name(&self, n: TypedName) -> MLName {
         let mangled_name = if self
             .context
             .declaration_has_annotation(&n.name, "no_mangle")
@@ -539,7 +539,7 @@ impl HLIR2MLIR {
         }
     }
 
-    pub fn literal(&self, l: TypedLiteral) -> MLLiteral {
+    fn literal(&self, l: TypedLiteral) -> MLLiteral {
         match l {
             TypedLiteral::Integer { value, type_ } => MLLiteral::Integer {
                 value,
@@ -563,7 +563,7 @@ impl HLIR2MLIR {
         }
     }
 
-    pub fn binop(&mut self, b: TypedBinOp) -> MLBinOp {
+    fn binop(&mut self, b: TypedBinOp) -> MLBinOp {
         let TypedBinOp {
             left,
             operator: kind,
@@ -593,7 +593,7 @@ impl HLIR2MLIR {
         }
     }
 
-    pub fn unary_op(&mut self, u: TypedUnaryOp) -> MLUnaryOp {
+    fn unary_op(&mut self, u: TypedUnaryOp) -> MLUnaryOp {
         match u {
             TypedUnaryOp::Prefix(p) => {
                 let target = self.expr(*p.target);
@@ -615,7 +615,7 @@ impl HLIR2MLIR {
         }
     }
 
-    pub fn subscript(&mut self, s: TypedSubscript) -> MLExpr {
+    fn subscript(&mut self, s: TypedSubscript) -> MLExpr {
         let t = s.target.type_().unwrap();
         if t.is_pointer_type() && s.indexes.len() == 1 {
             match t {
@@ -654,7 +654,7 @@ impl HLIR2MLIR {
         })
     }
 
-    pub fn member(&mut self, m: TypedInstanceMember) -> MLExpr {
+    fn member(&mut self, m: TypedInstanceMember) -> MLExpr {
         let TypedInstanceMember {
             target,
             name,
@@ -670,7 +670,7 @@ impl HLIR2MLIR {
         })
     }
 
-    pub fn call(&mut self, c: TypedCall) -> MLCall {
+    fn call(&mut self, c: TypedCall) -> MLCall {
         let TypedCall {
             target,
             mut args,
@@ -774,7 +774,7 @@ impl HLIR2MLIR {
         }
     }
 
-    pub fn if_expr(&mut self, i: TypedIf) -> MLIf {
+    fn if_expr(&mut self, i: TypedIf) -> MLIf {
         MLIf {
             condition: Box::new(self.expr(*i.condition)),
             body: self.block(i.body),
@@ -783,27 +783,27 @@ impl HLIR2MLIR {
         }
     }
 
-    pub fn return_expr(&mut self, r: TypedReturn) -> MLReturn {
+    fn return_expr(&mut self, r: TypedReturn) -> MLReturn {
         MLReturn {
             value: r.value.map(|v| Box::new(self.expr(*v))),
         }
     }
 
-    pub fn type_cast(&mut self, t: TypedTypeCast) -> MLTypeCast {
+    fn type_cast(&mut self, t: TypedTypeCast) -> MLTypeCast {
         MLTypeCast {
             target: Box::new(self.expr(*t.target)),
             type_: self.type_(t.type_.unwrap()).into_value_type(),
         }
     }
 
-    pub fn arg_def(&self, e: TypedArgDef) -> MLArgDef {
+    fn arg_def(&self, e: TypedArgDef) -> MLArgDef {
         MLArgDef {
             name: e.name(),
             type_: self.type_(e.type_().unwrap()).into_value_type(),
         }
     }
 
-    pub fn fun_body(&mut self, b: TypedFunBody) -> MLFunBody {
+    fn fun_body(&mut self, b: TypedFunBody) -> MLFunBody {
         match b {
             TypedFunBody::Expr(e) => MLFunBody {
                 body: vec![MLStmt::Expr(MLExpr::Return(MLReturn::new(self.expr(e))))],
@@ -814,7 +814,7 @@ impl HLIR2MLIR {
         }
     }
 
-    pub fn block(&mut self, b: TypedBlock) -> MLBlock {
+    fn block(&mut self, b: TypedBlock) -> MLBlock {
         MLBlock {
             body: b.body.into_iter().map(|s| self.stmt(s)).flatten().collect(),
         }
