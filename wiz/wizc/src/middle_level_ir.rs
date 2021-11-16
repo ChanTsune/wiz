@@ -155,7 +155,7 @@ impl HLIR2MLIR {
     }
 
     fn load_dependencies_function(&mut self, f: &MLFun) -> Result<(), Box<dyn Error>> {
-        if f.body.is_some() {
+        if f.body.is_none() {
             self.module._add_function(FunBuilder::from(f.clone()));
         };
         Ok(())
