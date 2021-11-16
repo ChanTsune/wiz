@@ -73,6 +73,16 @@ fn test_struct() {
                         type_: MLValueType::Primitive(MLPrimitiveType::Int64),
                     }],
                     return_type: MLValueType::Struct(String::from("test::A")),
+                    body: None,
+                }),
+                MLDecl::Fun(MLFun {
+                    modifiers: vec![],
+                    name: "test::A::init##a#Int64".to_string(),
+                    arg_defs: vec![MLArgDef {
+                        name: "a".to_string(),
+                        type_: MLValueType::Primitive(MLPrimitiveType::Int64),
+                    }],
+                    return_type: MLValueType::Struct(String::from("test::A")),
                     body: Some(MLFunBody {
                         body: vec![
                             MLStmt::Var(MLVar {
@@ -141,6 +151,23 @@ fn test_struct_init() {
                         name: "a".to_string(),
                         type_: MLValueType::Primitive(MLPrimitiveType::Int64),
                     }],
+                }),
+                MLDecl::Fun(MLFun {
+                    modifiers: vec![],
+                    name: "test::A::init##a#Int64".to_string(),
+                    arg_defs: vec![MLArgDef {
+                        name: "a".to_string(),
+                        type_: MLValueType::Primitive(MLPrimitiveType::Int64),
+                    }],
+                    return_type: MLValueType::Struct(String::from("test::A")),
+                    body: None,
+                }),
+                MLDecl::Fun(MLFun {
+                    modifiers: vec![],
+                    name: "test::initA".to_string(),
+                    arg_defs: vec![],
+                    return_type: MLValueType::Struct(String::from("test::A")),
+                    body: None,
                 }),
                 MLDecl::Fun(MLFun {
                     modifiers: vec![],
@@ -236,7 +263,15 @@ fn test_return_integer_literal() {
         source,
         MLFile {
             name: "test".to_string(),
-            body: vec![MLDecl::Fun(MLFun {
+            body: vec![
+                MLDecl::Fun(MLFun {
+                    modifiers: vec![],
+                    name: "test::integer".to_string(),
+                    arg_defs: vec![],
+                    return_type: MLValueType::Primitive(MLPrimitiveType::Int64),
+                    body: None,
+                }),
+                MLDecl::Fun(MLFun {
                 modifiers: vec![],
                 name: "test::integer".to_string(),
                 arg_defs: vec![],
@@ -249,7 +284,8 @@ fn test_return_integer_literal() {
                         }))),
                     }))],
                 }),
-            })],
+            }),
+            ],
         },
     );
 }

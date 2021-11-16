@@ -248,63 +248,48 @@ impl HLIR2MLIR {
         }
     }
 
-    pub fn source_set(&mut self, s: TypedSourceSet) -> MLFile {
-        match s {
-            TypedSourceSet::File(f) => self.file(f),
+    fn source_set(&mut self, s: TypedSourceSet) -> MLFile {
+        let name = match s {
+            TypedSourceSet::File(f) => {
+                let name = f.name.clone();
+                self.file(f);
+                name
+            },
             TypedSourceSet::Dir { name, items } => {
                 self.context.push_name_space(name.clone());
-                let i: Vec<_> = items
+                let _: Vec<_> = items
                     .into_iter()
                     .map(|i| self.source_set(i))
                     .map(|i| i.body)
                     .flatten()
                     .collect();
-                let mut v = vec![];
-                let mut f = vec![];
-                let mut s = vec![];
-                for d in i {
-                    match d {
-                        MLDecl::Var(_v) => v.push(MLDecl::Var(_v)),
-                        MLDecl::Fun(_f) => f.push(MLDecl::Fun(_f)),
-                        MLDecl::Struct(_s) => s.push(MLDecl::Struct(_s)),
-                    };
-                }
-                let i = MLFile {
-                    name,
-                    body: s.into_iter().chain(v).chain(f).collect(),
-                };
                 self.context.pop_name_space();
-                i
+                name
             }
-        }
+        };
+        self.module.to_mlir_file(name)
     }
 
-    pub fn file(&mut self, f: TypedFile) -> MLFile {
+    fn file(&mut self, f: TypedFile) -> Result<(), Box<dyn Error>> {
         self.context.push_name_space(f.name.clone());
-        let f = MLFile {
-            name: f.name,
-            body: f.body.into_iter().map(|d| self.decl(d)).flatten().collect(),
-        };
+        f.body.into_iter().map(|d| self.decl(d)).collect::<Vec<_>>();
         self.context.pop_name_space();
-        f
+        Ok(())
     }
 
     fn stmt(&mut self, s: TypedStmt) -> Vec<MLStmt> {
         match s {
             TypedStmt::Expr(e) => vec![MLStmt::Expr(self.expr(e))],
-            TypedStmt::Decl(d) => self
-                .decl(d)
-                .into_iter()
-                .map(|dc| match dc {
-                    MLDecl::Var(v) => MLStmt::Var(v),
-                    MLDecl::Fun(_) => {
-                        todo!("local function")
-                    }
-                    MLDecl::Struct(_) => {
-                        todo!("local struct")
-                    }
-                })
-                .collect(),
+            TypedStmt::Decl(d) =>
+            match d {
+                TypedDecl::Var(v) => {vec![MLStmt::Var(self.var(v))]}
+                TypedDecl::Fun(_) => { todo!("local function") }
+                TypedDecl::Struct(_) => { todo!("local struct") }
+                TypedDecl::Class => { todo!() }
+                TypedDecl::Enum => { todo!() }
+                TypedDecl::Protocol => { todo!() }
+                TypedDecl::Extension => { todo!() }
+            }
             TypedStmt::Assignment(a) => vec![MLStmt::Assignment(self.assignment(a))],
             TypedStmt::Loop(l) => vec![MLStmt::Loop(self.loop_stmt(l))],
         }
@@ -348,22 +333,29 @@ impl HLIR2MLIR {
         }
     }
 
-    pub fn decl(&mut self, d: TypedDecl) -> Vec<MLDecl> {
+    fn decl(&mut self, d: TypedDecl) -> Result<(), BuilderError> {
         match d {
-            TypedDecl::Var(v) => vec![MLDecl::Var(self.var(v))],
-            TypedDecl::Fun(f) => vec![MLDecl::Fun(self.fun(f))],
+            TypedDecl::Var(v) => {
+                let v = self.var(v);
+                self.module.add_global_var(v);
+            },
+            TypedDecl::Fun(f) => {
+                let f = FunBuilder::from(self.fun(f));
+                self.module._add_function(f);
+            },
             TypedDecl::Struct(s) => {
                 let (st, fns) = self.struct_(s);
-                vec![MLDecl::Struct(st)]
-                    .into_iter()
-                    .chain(fns.into_iter().map(|f| MLDecl::Fun(f)))
-                    .collect()
+                self.module.add_struct(st);
+                for f in fns {
+                    self.module._add_function(FunBuilder::from(f));
+                };
             }
             TypedDecl::Class => exit(-1),
             TypedDecl::Enum => exit(-1),
             TypedDecl::Protocol => exit(-1),
             TypedDecl::Extension => exit(-1),
-        }
+        };
+        Ok(())
     }
 
     fn var(&mut self, v: TypedVar) -> MLVar {
