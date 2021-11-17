@@ -84,7 +84,8 @@ impl HLIR2MLIRContext {
         annotation: &str,
     ) -> bool {
         let an = self.declaration_annotations.get(declaration_name);
-        an.map(|a|a.has_annotate(annotation)).unwrap_or_else(||false)
+        an.map(|a| a.has_annotate(annotation))
+            .unwrap_or_else(|| false)
     }
 
     pub(crate) fn get_struct(&self, typ: &MLValueType) -> &MLStruct {
