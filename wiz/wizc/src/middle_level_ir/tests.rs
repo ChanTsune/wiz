@@ -1,9 +1,7 @@
 use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::typed_file::TypedSourceSet;
 use crate::high_level_ir::Ast2HLIR;
-use crate::middle_level_ir::expr::{
-    MLCall, MLCallArg, MLExpr, MLLiteral, MLMember, MLName,
-};
+use crate::middle_level_ir::expr::{MLCall, MLCallArg, MLExpr, MLLiteral, MLMember, MLName};
 use crate::middle_level_ir::ml_decl::{
     MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar,
 };
