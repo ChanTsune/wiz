@@ -31,11 +31,11 @@ impl MLNode for MLFile {
 
 #[cfg(test)]
 mod tests {
-    use crate::middle_level_ir::expr::{MLExpr, MLName, MLReturn};
+    use crate::middle_level_ir::expr::{MLExpr, MLName};
     use crate::middle_level_ir::ml_decl::{MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct};
     use crate::middle_level_ir::ml_file::MLFile;
     use crate::middle_level_ir::ml_type::{MLPrimitiveType, MLType, MLValueType};
-    use crate::middle_level_ir::statement::MLStmt;
+    use crate::middle_level_ir::statement::{MLReturn, MLStmt};
 
     #[test]
     fn test_ml_file_to_string_empty() {
