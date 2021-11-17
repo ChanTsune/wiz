@@ -6,9 +6,9 @@ pub use self::if_expr::MLIf;
 use crate::middle_level_ir::format::Formatter;
 use crate::middle_level_ir::ml_node::MLNode;
 use crate::middle_level_ir::ml_type::{MLPrimitiveType, MLType, MLValueType};
+use crate::middle_level_ir::statement::MLReturn;
 use std::fmt;
 use std::fmt::Write;
-use crate::middle_level_ir::statement::MLReturn;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum MLExpr {
