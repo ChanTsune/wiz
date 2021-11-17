@@ -9,6 +9,7 @@ pub struct Config<'ctx> {
     out_dir: Option<&'ctx str>,
     paths: Vec<String>,
     l: Option<&'ctx str>,
+    target_triple: Option<&'ctx str>,
 }
 
 impl<'ctx> Config<'ctx> {
@@ -27,6 +28,10 @@ impl<'ctx> Config<'ctx> {
     pub(crate) fn paths(&self) -> Vec<PathBuf> {
         self.paths.iter().map(PathBuf::from).collect()
     }
+
+    pub(crate) fn target_triple(&self) -> Option<&'ctx str> {
+        self.target_triple
+    }
 }
 
 impl<'ctx> From<&'ctx ArgMatches<'ctx>> for Config<'ctx> {
@@ -39,6 +44,7 @@ impl<'ctx> From<&'ctx ArgMatches<'ctx>> for Config<'ctx> {
             out_dir: matches.value_of("out-dir"),
             paths: matches.values_of_lossy("path").unwrap_or_default(),
             l: None,
+            target_triple: matches.value_of("target-triple"),
         }
     }
 }
