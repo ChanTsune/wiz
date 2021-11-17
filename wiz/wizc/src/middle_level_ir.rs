@@ -329,7 +329,7 @@ impl HLIR2MLIR {
                     type_: a.target.type_(),
                 });
                 MLAssignmentStmt {
-                    target: target,
+                    target,
                     value: self.expr(value),
                 }
             }
