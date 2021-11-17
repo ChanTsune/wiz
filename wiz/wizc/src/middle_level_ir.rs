@@ -18,14 +18,14 @@ use crate::high_level_ir::typed_type::{
 use crate::middle_level_ir::builder::{BuilderError, FunBuilder, MLIRModule};
 use crate::middle_level_ir::expr::{
     MLBinOp, MLBinOpKind, MLBlock, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLMember, MLName,
-    MLReturn, MLSubscript, MLTypeCast, MLUnaryOp, MLUnaryOpKind,
+    MLSubscript, MLTypeCast, MLUnaryOp, MLUnaryOpKind,
 };
 use crate::middle_level_ir::ml_decl::{
     MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar,
 };
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
-use crate::middle_level_ir::statement::{MLAssignmentStmt, MLLoopStmt, MLStmt};
+use crate::middle_level_ir::statement::{MLAssignmentStmt, MLLoopStmt, MLReturn, MLStmt};
 use std::collections::HashMap;
 use std::error::Error;
 use std::option::Option::Some;

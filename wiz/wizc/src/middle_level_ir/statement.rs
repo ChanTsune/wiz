@@ -1,5 +1,6 @@
 mod return_statement;
 
+pub use self::return_statement::MLReturn;
 use crate::middle_level_ir::expr::{MLBlock, MLExpr};
 use crate::middle_level_ir::format::Formatter;
 use crate::middle_level_ir::ml_decl::MLVar;

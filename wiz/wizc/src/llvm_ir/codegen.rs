@@ -1,11 +1,11 @@
 use crate::middle_level_ir::expr::{
-    MLBinOp, MLBinOpKind, MLBlock, MLCall, MLExpr, MLIf, MLLiteral, MLMember, MLReturn,
+    MLBinOp, MLBinOpKind, MLBlock, MLCall, MLExpr, MLIf, MLLiteral, MLMember,
     MLSubscript, MLTypeCast, MLUnaryOp, MLUnaryOpKind,
 };
 use crate::middle_level_ir::ml_decl::{MLDecl, MLFun, MLStruct, MLVar};
 use crate::middle_level_ir::ml_file::MLFile;
 use crate::middle_level_ir::ml_type::{MLPrimitiveType, MLType, MLValueType};
-use crate::middle_level_ir::statement::{MLAssignmentStmt, MLLoopStmt, MLStmt};
+use crate::middle_level_ir::statement::{MLAssignmentStmt, MLLoopStmt, MLReturn, MLStmt};
 use crate::utils::stacked_hash_map::StackedHashMap;
 use either::Either;
 use inkwell::builder::Builder;

@@ -8,6 +8,7 @@ use crate::middle_level_ir::ml_node::MLNode;
 use crate::middle_level_ir::ml_type::{MLPrimitiveType, MLType, MLValueType};
 use std::fmt;
 use std::fmt::Write;
+use crate::middle_level_ir::statement::MLReturn;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum MLExpr {
@@ -107,11 +108,6 @@ pub struct MLMember {
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
-pub struct MLReturn {
-    pub(crate) value: Option<Box<MLExpr>>,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLTypeCast {
     pub(crate) target: Box<MLExpr>,
     pub(crate) type_: MLValueType,
@@ -152,17 +148,6 @@ impl MLLiteral {
 impl MLCallArg {
     pub fn type_(&self) -> MLType {
         self.arg.type_()
-    }
-}
-
-impl MLReturn {
-    pub fn new(expr: MLExpr) -> Self {
-        MLReturn {
-            value: Some(Box::new(expr)),
-        }
-    }
-    pub(crate) fn type_(&self) -> MLValueType {
-        MLValueType::Primitive(MLPrimitiveType::Noting)
     }
 }
 
@@ -281,16 +266,6 @@ impl MLNode for MLMember {
         self.target.fmt(f)?;
         f.write_char('.')?;
         f.write_str(&*self.name)
-    }
-}
-
-impl MLNode for MLReturn {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        f.write_str("return ")?;
-        match &self.value {
-            Some(v) => v.fmt(f),
-            None => fmt::Result::Ok(()),
-        }
     }
 }
 
