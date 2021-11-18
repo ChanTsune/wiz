@@ -14,6 +14,7 @@ pub enum MLStmt {
     Var(MLVar),
     Assignment(MLAssignmentStmt),
     Loop(MLLoopStmt),
+    Return(MLReturn),
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -35,6 +36,7 @@ impl MLNode for MLStmt {
             MLStmt::Var(d) => d.fmt(f),
             MLStmt::Assignment(a) => a.fmt(f),
             MLStmt::Loop(l) => l.fmt(f),
+            MLStmt::Return(r) => r.fmt(f),
         }
     }
 }

@@ -840,6 +840,7 @@ impl<'ctx> CodeGen<'ctx> {
             MLStmt::Var(decl) => self.var(decl),
             MLStmt::Assignment(a) => self.assignment_stmt(a),
             MLStmt::Loop(l) => self.loop_stmt(l),
+            MLStmt::Return(r) => self.return_expr(r),
         }
     }
 
