@@ -1,16 +1,16 @@
-use crate::middle_level_ir::format::Formatter;
-use crate::middle_level_ir::ml_node::MLNode;
-use crate::middle_level_ir::ml_type::{MLPrimitiveType, MLType, MLValueType};
-use crate::middle_level_ir::statement::MLStmt;
+use crate::format::Formatter;
+use crate::ml_node::MLNode;
+use crate::ml_type::{MLPrimitiveType, MLType, MLValueType};
+use crate::statement::MLStmt;
 use std::fmt::{Result, Write};
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLBlock {
-    pub(crate) body: Vec<MLStmt>,
+    pub body: Vec<MLStmt>,
 }
 
 impl MLBlock {
-    pub(crate) fn r#type(&self) -> MLType {
+    pub fn r#type(&self) -> MLType {
         if let Some(stmt) = self.body.last() {
             if let MLStmt::Expr(expr) = stmt {
                 expr.type_()

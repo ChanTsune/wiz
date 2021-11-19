@@ -1,13 +1,13 @@
-use crate::middle_level_ir::expr::MLExpr;
-use crate::middle_level_ir::format::Formatter;
-use crate::middle_level_ir::ml_node::MLNode;
-use crate::middle_level_ir::ml_type::{MLPrimitiveType, MLValueType};
+use crate::expr::MLExpr;
+use crate::format::Formatter;
+use crate::ml_node::MLNode;
+use crate::ml_type::{MLPrimitiveType, MLValueType};
 use std::fmt;
 use std::fmt::Write;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLReturn {
-    pub(crate) value: Option<Box<MLExpr>>,
+    pub value: Option<Box<MLExpr>>,
 }
 
 impl MLReturn {
@@ -16,7 +16,7 @@ impl MLReturn {
             value: Some(Box::new(expr)),
         }
     }
-    pub(crate) fn type_(&self) -> MLValueType {
+    pub fn type_(&self) -> MLValueType {
         MLValueType::Primitive(MLPrimitiveType::Noting)
     }
 }

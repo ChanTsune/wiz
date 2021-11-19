@@ -1,5 +1,5 @@
-use crate::middle_level_ir::format::Formatter;
-use crate::middle_level_ir::ml_node::MLNode;
+use crate::format::Formatter;
+use crate::ml_node::MLNode;
 use std::fmt;
 use std::fmt::Write;
 
@@ -18,7 +18,7 @@ pub enum MLValueType {
 }
 
 impl MLValueType {
-    pub(crate) fn name(&self) -> String {
+    pub fn name(&self) -> String {
         match self {
             MLValueType::Primitive(primitive) => primitive.to_string(),
             MLValueType::Struct(name) => name.clone(),
@@ -27,15 +27,15 @@ impl MLValueType {
         }
     }
 
-    pub(crate) fn is_struct(&self) -> bool {
+    pub fn is_struct(&self) -> bool {
         matches!(self, MLValueType::Struct(_))
     }
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub struct MLFunctionType {
-    pub(crate) arguments: Vec<MLValueType>,
-    pub(crate) return_type: MLValueType,
+    pub arguments: Vec<MLValueType>,
+    pub return_type: MLValueType,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]

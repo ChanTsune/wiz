@@ -1,13 +1,13 @@
-use crate::middle_level_ir::format::Formatter;
-use crate::middle_level_ir::ml_decl::MLDecl;
-use crate::middle_level_ir::ml_node::MLNode;
+use crate::format::Formatter;
+use crate::ml_decl::MLDecl;
+use crate::ml_node::MLNode;
 use std::fmt;
 use std::fmt::Write;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLFile {
-    pub(crate) name: String,
-    pub(crate) body: Vec<MLDecl>,
+    pub name: String,
+    pub body: Vec<MLDecl>,
 }
 
 impl ToString for MLFile {
@@ -31,11 +31,11 @@ impl MLNode for MLFile {
 
 #[cfg(test)]
 mod tests {
-    use crate::middle_level_ir::expr::{MLExpr, MLName};
-    use crate::middle_level_ir::ml_decl::{MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct};
-    use crate::middle_level_ir::ml_file::MLFile;
-    use crate::middle_level_ir::ml_type::{MLPrimitiveType, MLType, MLValueType};
-    use crate::middle_level_ir::statement::{MLReturn, MLStmt};
+    use crate::expr::{MLExpr, MLName};
+    use crate::ml_decl::{MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct};
+    use crate::ml_file::MLFile;
+    use crate::ml_type::{MLPrimitiveType, MLType, MLValueType};
+    use crate::statement::{MLReturn, MLStmt};
 
     #[test]
     fn test_ml_file_to_string_empty() {

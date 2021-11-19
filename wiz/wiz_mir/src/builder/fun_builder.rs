@@ -1,6 +1,6 @@
-use crate::middle_level_ir::ml_decl::{MLArgDef, MLFun, MLFunBody};
-use crate::middle_level_ir::ml_type::MLValueType;
-use crate::middle_level_ir::statement::MLStmt;
+use crate::ml_decl::{MLArgDef, MLFun, MLFunBody};
+use crate::ml_type::MLValueType;
+use crate::statement::MLStmt;
 
 #[derive(Debug, Clone)]
 pub struct FunBuilder {

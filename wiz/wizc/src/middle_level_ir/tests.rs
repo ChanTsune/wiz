@@ -1,13 +1,13 @@
 use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::typed_file::TypedSourceSet;
 use crate::high_level_ir::Ast2HLIR;
-use crate::middle_level_ir::expr::{MLCall, MLCallArg, MLExpr, MLLiteral, MLMember, MLName};
-use crate::middle_level_ir::ml_decl::{
+use wiz_mir::expr::{MLCall, MLCallArg, MLExpr, MLLiteral, MLMember, MLName};
+use wiz_mir::ml_decl::{
     MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar,
 };
-use crate::middle_level_ir::ml_file::MLFile;
-use crate::middle_level_ir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
-use crate::middle_level_ir::statement::{MLAssignmentStmt, MLReturn, MLStmt};
+use wiz_mir::ml_file::MLFile;
+use wiz_mir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
+use wiz_mir::statement::{MLAssignmentStmt, MLReturn, MLStmt};
 use crate::middle_level_ir::HLIR2MLIR;
 use wiz_syntax::parser::wiz::parse_from_string;
 

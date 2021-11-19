@@ -1,15 +1,15 @@
-use crate::middle_level_ir::expr::{MLBlock, MLExpr};
-use crate::middle_level_ir::format::Formatter;
-use crate::middle_level_ir::ml_node::MLNode;
-use crate::middle_level_ir::ml_type::MLValueType;
+use crate::expr::{MLBlock, MLExpr};
+use crate::format::Formatter;
+use crate::ml_node::MLNode;
+use crate::ml_type::MLValueType;
 use std::fmt::{Result, Write};
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLIf {
-    pub(crate) condition: Box<MLExpr>,
-    pub(crate) body: MLBlock,
-    pub(crate) else_body: Option<MLBlock>,
-    pub(crate) type_: MLValueType,
+    pub condition: Box<MLExpr>,
+    pub body: MLBlock,
+    pub else_body: Option<MLBlock>,
+    pub type_: MLValueType,
 }
 
 impl MLNode for MLIf {

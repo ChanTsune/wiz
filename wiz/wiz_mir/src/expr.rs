@@ -3,10 +3,10 @@ mod if_expr;
 
 pub use self::block::MLBlock;
 pub use self::if_expr::MLIf;
-use crate::middle_level_ir::format::Formatter;
-use crate::middle_level_ir::ml_node::MLNode;
-use crate::middle_level_ir::ml_type::{MLPrimitiveType, MLType, MLValueType};
-use crate::middle_level_ir::statement::MLReturn;
+use crate::format::Formatter;
+use crate::ml_node::MLNode;
+use crate::ml_type::{MLType, MLValueType};
+use crate::statement::MLReturn;
 use std::fmt;
 use std::fmt::Write;
 
@@ -28,8 +28,8 @@ pub enum MLExpr {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLName {
-    pub(crate) name: String,
-    pub(crate) type_: MLType,
+    pub name: String,
+    pub type_: MLType,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -44,22 +44,22 @@ pub enum MLLiteral {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLCall {
-    pub(crate) target: Box<MLExpr>,
-    pub(crate) args: Vec<MLCallArg>,
-    pub(crate) type_: MLType,
+    pub target: Box<MLExpr>,
+    pub args: Vec<MLCallArg>,
+    pub type_: MLType,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLCallArg {
-    pub(crate) arg: MLExpr,
+    pub arg: MLExpr,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLBinOp {
-    pub(crate) left: Box<MLExpr>,
-    pub(crate) kind: MLBinOpKind,
-    pub(crate) right: Box<MLExpr>,
-    pub(crate) type_: MLValueType,
+    pub left: Box<MLExpr>,
+    pub kind: MLBinOpKind,
+    pub right: Box<MLExpr>,
+    pub type_: MLValueType,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -79,9 +79,9 @@ pub enum MLBinOpKind {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLUnaryOp {
-    pub(crate) target: Box<MLExpr>,
-    pub(crate) kind: MLUnaryOpKind,
-    pub(crate) type_: MLValueType,
+    pub target: Box<MLExpr>,
+    pub kind: MLUnaryOpKind,
+    pub type_: MLValueType,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -95,22 +95,22 @@ pub enum MLUnaryOpKind {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLSubscript {
-    pub(crate) target: Box<MLExpr>,
-    pub(crate) index: Box<MLExpr>,
-    pub(crate) type_: MLValueType,
+    pub target: Box<MLExpr>,
+    pub index: Box<MLExpr>,
+    pub type_: MLValueType,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLMember {
-    pub(crate) target: Box<MLExpr>,
-    pub(crate) name: String,
-    pub(crate) type_: MLType,
+    pub target: Box<MLExpr>,
+    pub name: String,
+    pub type_: MLType,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLTypeCast {
-    pub(crate) target: Box<MLExpr>,
-    pub(crate) type_: MLValueType,
+    pub target: Box<MLExpr>,
+    pub type_: MLValueType,
 }
 
 impl MLExpr {

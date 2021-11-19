@@ -1,8 +1,8 @@
-use crate::middle_level_ir::expr::MLExpr;
-use crate::middle_level_ir::format::Formatter;
-use crate::middle_level_ir::ml_node::MLNode;
-use crate::middle_level_ir::ml_type::{MLType, MLValueType};
-use crate::middle_level_ir::statement::MLStmt;
+use crate::expr::MLExpr;
+use crate::format::Formatter;
+use crate::ml_node::MLNode;
+use crate::ml_type::{MLType, MLValueType};
+use crate::statement::MLStmt;
 use std::fmt;
 use std::fmt::Write;
 
@@ -15,42 +15,42 @@ pub enum MLDecl {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLVar {
-    pub(crate) is_mute: bool,
-    pub(crate) name: String,
-    pub(crate) type_: MLType,
-    pub(crate) value: MLExpr,
+    pub is_mute: bool,
+    pub name: String,
+    pub type_: MLType,
+    pub value: MLExpr,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLFun {
-    pub(crate) modifiers: Vec<String>,
-    pub(crate) name: String,
-    pub(crate) arg_defs: Vec<MLArgDef>,
-    pub(crate) return_type: MLValueType,
-    pub(crate) body: Option<MLFunBody>,
+    pub modifiers: Vec<String>,
+    pub name: String,
+    pub arg_defs: Vec<MLArgDef>,
+    pub return_type: MLValueType,
+    pub body: Option<MLFunBody>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLArgDef {
-    pub(crate) name: String,
-    pub(crate) type_: MLValueType,
+    pub name: String,
+    pub type_: MLValueType,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLFunBody {
-    pub(crate) body: Vec<MLStmt>,
+    pub body: Vec<MLStmt>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLStruct {
-    pub(crate) name: String,
-    pub(crate) fields: Vec<MLField>,
+    pub name: String,
+    pub fields: Vec<MLField>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLField {
-    pub(crate) name: String,
-    pub(crate) type_: MLValueType,
+    pub name: String,
+    pub type_: MLValueType,
 }
 
 impl MLNode for MLDecl {

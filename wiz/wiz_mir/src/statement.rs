@@ -1,10 +1,10 @@
 mod return_statement;
 
 pub use self::return_statement::MLReturn;
-use crate::middle_level_ir::expr::{MLBlock, MLExpr};
-use crate::middle_level_ir::format::Formatter;
-use crate::middle_level_ir::ml_decl::MLVar;
-use crate::middle_level_ir::ml_node::MLNode;
+use crate::expr::{MLBlock, MLExpr};
+use crate::format::Formatter;
+use crate::ml_decl::MLVar;
+use crate::ml_node::MLNode;
 use std::fmt;
 use std::fmt::Write;
 
@@ -19,14 +19,14 @@ pub enum MLStmt {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLAssignmentStmt {
-    pub(crate) target: MLExpr,
-    pub(crate) value: MLExpr,
+    pub target: MLExpr,
+    pub value: MLExpr,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLLoopStmt {
-    pub(crate) condition: MLExpr,
-    pub(crate) block: MLBlock,
+    pub condition: MLExpr,
+    pub block: MLBlock,
 }
 
 impl MLNode for MLStmt {

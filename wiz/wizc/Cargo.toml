@@ -12,3 +12,4 @@ either = "1.6.1"
 linked-hash-map = "0.5.4"
 clap = "2.33.3"
 wiz_syntax = { path = "../wiz_syntax" }
+wiz_mir = { path = "../wiz_mir" }

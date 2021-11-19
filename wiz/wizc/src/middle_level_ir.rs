@@ -15,30 +15,22 @@ use crate::high_level_ir::typed_stmt::{
 use crate::high_level_ir::typed_type::{
     TypedFunctionType, TypedPackage, TypedType, TypedValueType,
 };
-use crate::middle_level_ir::builder::{BuilderError, FunBuilder, MLIRModule};
-use crate::middle_level_ir::expr::{
+use wiz_mir::builder::{BuilderError, FunBuilder, MLIRModule};
+use wiz_mir::expr::{
     MLBinOp, MLBinOpKind, MLBlock, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLMember, MLName,
     MLSubscript, MLTypeCast, MLUnaryOp, MLUnaryOpKind,
 };
-use crate::middle_level_ir::ml_decl::{
+use wiz_mir::ml_decl::{
     MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar,
 };
-use crate::middle_level_ir::ml_file::MLFile;
-use crate::middle_level_ir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
-use crate::middle_level_ir::statement::{MLAssignmentStmt, MLLoopStmt, MLReturn, MLStmt};
+use wiz_mir::ml_file::MLFile;
+use wiz_mir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
+use wiz_mir::statement::{MLAssignmentStmt, MLLoopStmt, MLReturn, MLStmt};
 use std::collections::HashMap;
 use std::error::Error;
 use std::option::Option::Some;
 use std::process::exit;
 
-pub mod builder;
-pub mod expr;
-pub mod format;
-pub mod ml_decl;
-pub mod ml_file;
-pub mod ml_node;
-pub mod ml_type;
-pub mod statement;
 #[cfg(test)]
 mod tests;
 
