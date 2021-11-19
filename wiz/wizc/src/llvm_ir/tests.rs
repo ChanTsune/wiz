@@ -1,12 +1,12 @@
 use crate::llvm_ir::codegen::{CodeGen, MLContext};
-use crate::middle_level_ir::ml_decl::{MLDecl, MLFun, MLFunBody, MLVar};
-use crate::middle_level_ir::ml_expr::{MLExpr, MLLiteral, MLName, MLReturn};
-use crate::middle_level_ir::ml_file::MLFile;
-use crate::middle_level_ir::ml_stmt::MLStmt;
-use crate::middle_level_ir::ml_type::{MLPrimitiveType, MLType, MLValueType};
 use inkwell::context::Context;
 use inkwell::execution_engine::JitFunction;
 use inkwell::OptimizationLevel;
+use wiz_mir::expr::{MLExpr, MLLiteral, MLName};
+use wiz_mir::ml_decl::{MLDecl, MLFun, MLFunBody, MLVar};
+use wiz_mir::ml_file::MLFile;
+use wiz_mir::ml_type::{MLPrimitiveType, MLType, MLValueType};
+use wiz_mir::statement::{MLReturn, MLStmt};
 
 #[test]
 fn test_return_integer() {

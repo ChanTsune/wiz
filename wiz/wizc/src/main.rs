@@ -1,27 +1,27 @@
+use crate::config::Config;
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::Ast2HLIR;
 use crate::llvm_ir::codegen::CodeGen;
-use crate::middle_level_ir::HLIR2MLIR;
+use crate::middle_level_ir::{hlir2mlir, HLIR2MLIR};
 use clap::{App, Arg};
 use inkwell::context::Context;
-use inkwell::execution_engine::JitFunction;
 use std::error::Error;
+use std::io::Write;
 use std::option::Option::Some;
 use std::path::{Path, PathBuf};
-use std::{env, result};
+use std::{env, fs, result};
 use wiz_syntax::parser;
 use wiz_syntax::parser::wiz::{parse_from_file_path, read_package_from_path};
 use wiz_syntax::syntax::file::SourceSet;
 
+mod config;
 mod constants;
 mod ext;
 mod high_level_ir;
 mod llvm_ir;
 mod middle_level_ir;
 mod utils;
-
-type MainFunc = unsafe extern "C" fn() -> u8;
 
 fn get_builtin_find_path() -> PathBuf {
     let mut std_path = PathBuf::from(env!("HOME"));
@@ -70,15 +70,22 @@ fn main() -> result::Result<(), Box<dyn Error>> {
                 .multiple(true),
         );
     let matches = app.get_matches();
-    let input = matches.value_of("input").unwrap();
-    let output = matches.value_of("output");
-    let out_dir = matches.value_of("out-dir");
-    let paths = matches.values_of_lossy("path").unwrap_or_default();
-    let input = Path::new(input);
+    let config = Config::from(&matches);
+    let output = config.output();
+    let out_dir = config.out_dir();
+    let paths = config.paths();
+    let input = config.input();
+    let out_dir = out_dir
+        .map(PathBuf::from)
+        .unwrap_or_else(|| env::current_dir().unwrap());
+
+    let mut mlir_out_dir = {
+        let mut t = out_dir.clone();
+        t.push("mlir");
+        t
+    };
 
     let input_source = if input.is_dir() {
-        let type_ = matches.value_of("type").unwrap();
-        let name = matches.value_of("name").unwrap();
         read_package_from_path(input)?
     } else {
         SourceSet::File(parse_from_file_path(input)?)
@@ -93,8 +100,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
             .into_iter()
             .chain(paths.iter().map(PathBuf::from))
         {
-            p.push(l);
-            p.push("Package.wiz");
+            p.extend([l, "Package.wiz"]);
             if p.exists() {
                 p.pop();
                 println!("`{}` found at {}", l, p.display());
@@ -157,56 +163,57 @@ fn main() -> result::Result<(), Box<dyn Error>> {
 
     println!("===== convert to mlir =====");
 
-    let mut hlir2mlir = HLIR2MLIR::new();
+    let mut h2m = HLIR2MLIR::new();
 
     let std_mlir = std_hlir
         .into_iter()
-        .map(|w| hlir2mlir.source_set(w))
-        .flatten()
+        .map(|w| h2m.convert_from_source_set(w))
         .collect::<Vec<_>>();
 
+    fs::create_dir_all(&mlir_out_dir)?;
     for m in std_mlir.iter() {
         println!("==== {} ====", m.name);
-        println!("{}", m.to_string());
+        mlir_out_dir.push(m.name.clone());
+        let mut f = fs::File::create(&mlir_out_dir)?;
+        write!(f, "{}", m.to_string())?;
+        mlir_out_dir.pop();
     }
 
-    let mlfiles = hlir2mlir.source_set(hlfiles);
+    let (mlfile, _) = hlir2mlir(hlfiles, &std_mlir, h2m.annotations())?;
 
-    for m in mlfiles.iter() {
-        println!("==== {} ====", m.name);
-        println!("{}", m.to_string());
+    println!("==== {} ====", mlfile.name);
+    mlir_out_dir.push(&mlfile.name);
+    let mut f = fs::File::create(&mlir_out_dir)?;
+    write!(f, "{}", mlfile.to_string())?;
+    mlir_out_dir.pop();
+
+    let module_name = &mlfile.name;
+    let context = Context::create();
+    let mut codegen = CodeGen::new(&context, module_name);
+
+    for m in std_mlir.iter() {
+        codegen.file(m.clone());
     }
 
-    for mlfile in mlfiles {
-        let module_name = &mlfile.name;
-        let context = Context::create();
-        let mut codegen = CodeGen::new(&context, module_name);
+    codegen.file(mlfile.clone());
 
-        for m in std_mlir.iter() {
-            codegen.file(m.clone());
-        }
+    let output = if let Some(output) = output {
+        String::from(output)
+    } else {
+        let mut output_path = Path::new(&mlfile.name).to_path_buf();
+        output_path.set_extension("ll");
+        String::from(output_path.to_str().unwrap())
+    };
 
-        codegen.file(mlfile.clone());
+    let mut out_path = out_dir;
+    out_path.push(output);
 
-        let output = if let Some(output) = output {
-            String::from(output)
-        } else {
-            let mut output_path = Path::new(&mlfile.name).to_path_buf();
-            output_path.set_extension("ll");
-            String::from(output_path.to_str().unwrap())
-        };
+    println!("Output Path -> {:?}", out_path);
 
-        let mut out_path = out_dir
-            .map(PathBuf::from)
-            .unwrap_or_else(|| env::current_dir().unwrap());
-        out_path.push(output);
+    codegen.print_to_file(out_path)?;
 
-        println!("Output Path -> {:?}", out_path);
-
-        if let Some(target_triple) = matches.value_of("target-triple") {
-            codegen.set_target_triple(target_triple);
-        }
-        codegen.print_to_file(out_path)?;
+    if let Some(target_triple) = config.target_triple() {
+        codegen.set_target_triple(target_triple);
     }
 
     Ok(())

@@ -1,5 +1,5 @@
-use crate::middle_level_ir::format::Formatter;
-use crate::middle_level_ir::ml_node::MLNode;
+use crate::format::Formatter;
+use crate::ml_node::MLNode;
 use std::fmt;
 use std::fmt::Write;
 
@@ -18,7 +18,7 @@ pub enum MLValueType {
 }
 
 impl MLValueType {
-    pub(crate) fn name(&self) -> String {
+    pub fn name(&self) -> String {
         match self {
             MLValueType::Primitive(primitive) => primitive.to_string(),
             MLValueType::Struct(name) => name.clone(),
@@ -27,15 +27,15 @@ impl MLValueType {
         }
     }
 
-    pub(crate) fn is_struct(&self) -> bool {
+    pub fn is_struct(&self) -> bool {
         matches!(self, MLValueType::Struct(_))
     }
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub struct MLFunctionType {
-    pub(crate) arguments: Vec<MLValueType>,
-    pub(crate) return_type: MLValueType,
+    pub arguments: Vec<MLValueType>,
+    pub return_type: MLValueType,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
@@ -46,11 +46,13 @@ pub enum MLPrimitiveType {
     Int16,
     Int32,
     Int64,
+    Int128,
     Size,
     UInt8,
     UInt16,
     UInt32,
     UInt64,
+    UInt128,
     USize,
     Float,
     Double,
@@ -61,22 +63,24 @@ pub enum MLPrimitiveType {
 impl ToString for MLPrimitiveType {
     fn to_string(&self) -> String {
         String::from(match self {
-            MLPrimitiveType::Int8 => "Int8",
-            MLPrimitiveType::Int16 => "Int16",
-            MLPrimitiveType::Int32 => "Int32",
-            MLPrimitiveType::Int64 => "Int64",
-            MLPrimitiveType::Size => "Size",
-            MLPrimitiveType::UInt8 => "UInt8",
-            MLPrimitiveType::UInt16 => "UInt16",
-            MLPrimitiveType::UInt32 => "UInt32",
-            MLPrimitiveType::UInt64 => "UInt64",
-            MLPrimitiveType::USize => "USize",
-            MLPrimitiveType::Float => "Float",
-            MLPrimitiveType::Double => "Double",
-            MLPrimitiveType::Bool => "Bool",
-            MLPrimitiveType::String => "String",
-            MLPrimitiveType::Unit => "Unit",
-            MLPrimitiveType::Noting => "Noting",
+            MLPrimitiveType::Int8 => "i8",
+            MLPrimitiveType::Int16 => "i16",
+            MLPrimitiveType::Int32 => "i32",
+            MLPrimitiveType::Int64 => "i64",
+            MLPrimitiveType::Int128 => "i128",
+            MLPrimitiveType::Size => "size",
+            MLPrimitiveType::UInt8 => "u8",
+            MLPrimitiveType::UInt16 => "u16",
+            MLPrimitiveType::UInt32 => "u32",
+            MLPrimitiveType::UInt64 => "u64",
+            MLPrimitiveType::UInt128 => "u128",
+            MLPrimitiveType::USize => "usize",
+            MLPrimitiveType::Float => "f32",
+            MLPrimitiveType::Double => "f64",
+            MLPrimitiveType::Bool => "bool",
+            MLPrimitiveType::String => "str",
+            MLPrimitiveType::Unit => "unit",
+            MLPrimitiveType::Noting => "noting",
         })
     }
 }

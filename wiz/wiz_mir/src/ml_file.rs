@@ -1,13 +1,13 @@
-use crate::middle_level_ir::format::Formatter;
-use crate::middle_level_ir::ml_decl::MLDecl;
-use crate::middle_level_ir::ml_node::MLNode;
+use crate::format::Formatter;
+use crate::ml_decl::MLDecl;
+use crate::ml_node::MLNode;
 use std::fmt;
 use std::fmt::Write;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLFile {
-    pub(crate) name: String,
-    pub(crate) body: Vec<MLDecl>,
+    pub name: String,
+    pub body: Vec<MLDecl>,
 }
 
 impl ToString for MLFile {
@@ -31,11 +31,11 @@ impl MLNode for MLFile {
 
 #[cfg(test)]
 mod tests {
-    use crate::middle_level_ir::ml_decl::{MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct};
-    use crate::middle_level_ir::ml_expr::{MLExpr, MLName, MLReturn};
-    use crate::middle_level_ir::ml_file::MLFile;
-    use crate::middle_level_ir::ml_stmt::MLStmt;
-    use crate::middle_level_ir::ml_type::{MLPrimitiveType, MLType, MLValueType};
+    use crate::expr::{MLExpr, MLName};
+    use crate::ml_decl::{MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct};
+    use crate::ml_file::MLFile;
+    use crate::ml_type::{MLPrimitiveType, MLType, MLValueType};
+    use crate::statement::{MLReturn, MLStmt};
 
     #[test]
     fn test_ml_file_to_string_empty() {
@@ -72,7 +72,7 @@ mod tests {
         };
         assert_eq!(
             ml_file.to_string(),
-            String::from("struct T {\n    i:Int64,\n};\n")
+            String::from("struct T {\n    i:i64,\n};\n")
         );
     }
 
@@ -91,7 +91,7 @@ mod tests {
                 body: None,
             })],
         };
-        assert_eq!(ml_file.to_string(), String::from("fun a(b:Int64):Unit;\n"))
+        assert_eq!(ml_file.to_string(), String::from("fun a(b:i64):unit;\n"))
     }
 
     #[test]
@@ -117,7 +117,7 @@ mod tests {
         };
         assert_eq!(
             ml_file.to_string(),
-            String::from("fun a(b:Int64, c:Int64):Unit {\n};\n")
+            String::from("fun a(b:i64, c:i64):unit {\n};\n")
         )
     }
 
@@ -145,7 +145,7 @@ mod tests {
         };
         assert_eq!(
             ml_file.to_string(),
-            String::from("fun a(b:Int64):Int64 {\n    return b;\n};\n")
+            String::from("fun a(b:i64):i64 {\n    return b;\n};\n")
         )
     }
 }

@@ -1,7 +1,12 @@
-use crate::middle_level_ir::format::Formatter;
-use crate::middle_level_ir::ml_node::MLNode;
-use crate::middle_level_ir::ml_stmt::MLBlock;
-use crate::middle_level_ir::ml_type::{MLPrimitiveType, MLType, MLValueType};
+mod block;
+mod if_expr;
+
+pub use self::block::MLBlock;
+pub use self::if_expr::MLIf;
+use crate::format::Formatter;
+use crate::ml_node::MLNode;
+use crate::ml_type::{MLType, MLValueType};
+use crate::statement::MLReturn;
 use std::fmt;
 use std::fmt::Write;
 
@@ -18,12 +23,13 @@ pub enum MLExpr {
     When,
     Return(MLReturn),
     PrimitiveTypeCast(MLTypeCast),
+    Block(MLBlock),
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLName {
-    pub(crate) name: String,
-    pub(crate) type_: MLType,
+    pub name: String,
+    pub type_: MLType,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -38,30 +44,22 @@ pub enum MLLiteral {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLCall {
-    pub(crate) target: Box<MLExpr>,
-    pub(crate) args: Vec<MLCallArg>,
-    pub(crate) type_: MLType,
+    pub target: Box<MLExpr>,
+    pub args: Vec<MLCallArg>,
+    pub type_: MLType,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLCallArg {
-    pub(crate) arg: MLExpr,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct MLIf {
-    pub(crate) condition: Box<MLExpr>,
-    pub(crate) body: MLBlock,
-    pub(crate) else_body: Option<MLBlock>,
-    pub(crate) type_: MLType,
+    pub arg: MLExpr,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLBinOp {
-    pub(crate) left: Box<MLExpr>,
-    pub(crate) kind: MLBinOpKind,
-    pub(crate) right: Box<MLExpr>,
-    pub(crate) type_: MLValueType,
+    pub left: Box<MLExpr>,
+    pub kind: MLBinOpKind,
+    pub right: Box<MLExpr>,
+    pub type_: MLValueType,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -81,9 +79,9 @@ pub enum MLBinOpKind {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLUnaryOp {
-    pub(crate) target: Box<MLExpr>,
-    pub(crate) kind: MLUnaryOpKind,
-    pub(crate) type_: MLValueType,
+    pub target: Box<MLExpr>,
+    pub kind: MLUnaryOpKind,
+    pub type_: MLValueType,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -97,27 +95,22 @@ pub enum MLUnaryOpKind {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLSubscript {
-    pub(crate) target: Box<MLExpr>,
-    pub(crate) index: Box<MLExpr>,
-    pub(crate) type_: MLValueType,
+    pub target: Box<MLExpr>,
+    pub index: Box<MLExpr>,
+    pub type_: MLValueType,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLMember {
-    pub(crate) target: Box<MLExpr>,
-    pub(crate) name: String,
-    pub(crate) type_: MLType,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct MLReturn {
-    pub(crate) value: Option<Box<MLExpr>>,
+    pub target: Box<MLExpr>,
+    pub name: String,
+    pub type_: MLType,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLTypeCast {
-    pub(crate) target: Box<MLExpr>,
-    pub(crate) type_: MLValueType,
+    pub target: Box<MLExpr>,
+    pub type_: MLValueType,
 }
 
 impl MLExpr {
@@ -130,10 +123,11 @@ impl MLExpr {
             MLExpr::PrimitiveUnaryOp(b) => MLType::Value(b.type_.clone()),
             MLExpr::PrimitiveSubscript(p) => MLType::Value(p.type_.clone()),
             MLExpr::Member(f) => f.type_.clone(),
-            MLExpr::If(i) => i.type_.clone(),
+            MLExpr::If(i) => MLType::Value(i.type_.clone()),
             MLExpr::When => todo!(),
             MLExpr::Return(r) => MLType::Value(r.type_()),
             MLExpr::PrimitiveTypeCast(t) => MLType::Value(t.type_.clone()),
+            MLExpr::Block(b) => b.r#type(),
         }
     }
 }
@@ -157,17 +151,6 @@ impl MLCallArg {
     }
 }
 
-impl MLReturn {
-    pub fn new(expr: MLExpr) -> Self {
-        MLReturn {
-            value: Some(Box::new(expr)),
-        }
-    }
-    pub(crate) fn type_(&self) -> MLValueType {
-        MLValueType::Primitive(MLPrimitiveType::Noting)
-    }
-}
-
 impl MLNode for MLExpr {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
@@ -182,6 +165,7 @@ impl MLNode for MLExpr {
             MLExpr::When => fmt::Result::Err(Default::default()),
             MLExpr::Return(r) => r.fmt(f),
             MLExpr::PrimitiveTypeCast(t) => t.fmt(f),
+            MLExpr::Block(b) => b.fmt(f),
         }
     }
 }
@@ -282,33 +266,6 @@ impl MLNode for MLMember {
         self.target.fmt(f)?;
         f.write_char('.')?;
         f.write_str(&*self.name)
-    }
-}
-
-impl MLNode for MLIf {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        f.write_str("if (")?;
-        self.condition.fmt(f)?;
-        f.write_str(") ")?;
-        self.body.fmt(f)?;
-        match &self.else_body {
-            Some(b) => {
-                f.write_str(" else ")?;
-                b.fmt(f)?;
-            }
-            None => {}
-        };
-        fmt::Result::Ok(())
-    }
-}
-
-impl MLNode for MLReturn {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        f.write_str("return ")?;
-        match &self.value {
-            Some(v) => v.fmt(f),
-            None => fmt::Result::Ok(()),
-        }
     }
 }
 

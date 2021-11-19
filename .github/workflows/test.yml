@@ -38,6 +38,8 @@ jobs:
         run: cd wiz/wiz_lexar && cargo test --release
       - name: run test wiz_syntax
         run: cd wiz/wiz_syntax && cargo test --release
+      - name: run test wiz_mir
+        run: cd wiz/wiz_mir && cargo test --release
       - name: run test wizc
         run: cd wiz/wizc && cargo test --release
   run_wiz_test:
@@ -76,4 +78,4 @@ jobs:
           wiz new test_project
           cd test_project
           wiz build
-          clang target/main.ll
+          clang target/test_project.ll

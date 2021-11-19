@@ -1,4 +1,4 @@
-use crate::middle_level_ir::format::Formatter;
+use crate::format::Formatter;
 use std::fmt;
 
 pub trait MLNode {

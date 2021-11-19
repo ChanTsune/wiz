@@ -1,7 +1,10 @@
-use crate::middle_level_ir::format::Formatter;
-use crate::middle_level_ir::ml_decl::MLVar;
-use crate::middle_level_ir::ml_expr::MLExpr;
-use crate::middle_level_ir::ml_node::MLNode;
+mod return_statement;
+
+pub use self::return_statement::MLReturn;
+use crate::expr::{MLBlock, MLExpr};
+use crate::format::Formatter;
+use crate::ml_decl::MLVar;
+use crate::ml_node::MLNode;
 use std::fmt;
 use std::fmt::Write;
 
@@ -11,23 +14,19 @@ pub enum MLStmt {
     Var(MLVar),
     Assignment(MLAssignmentStmt),
     Loop(MLLoopStmt),
+    Return(MLReturn),
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLAssignmentStmt {
-    pub(crate) target: MLExpr,
-    pub(crate) value: MLExpr,
+    pub target: MLExpr,
+    pub value: MLExpr,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLLoopStmt {
-    pub(crate) condition: MLExpr,
-    pub(crate) block: MLBlock,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct MLBlock {
-    pub(crate) body: Vec<MLStmt>,
+    pub condition: MLExpr,
+    pub block: MLBlock,
 }
 
 impl MLNode for MLStmt {
@@ -37,6 +36,7 @@ impl MLNode for MLStmt {
             MLStmt::Var(d) => d.fmt(f),
             MLStmt::Assignment(a) => a.fmt(f),
             MLStmt::Loop(l) => l.fmt(f),
+            MLStmt::Return(r) => r.fmt(f),
         }
     }
 }
@@ -55,18 +55,5 @@ impl MLNode for MLLoopStmt {
         self.condition.fmt(f)?;
         f.write_str(") ")?;
         self.block.fmt(f)
-    }
-}
-
-impl MLNode for MLBlock {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        f.write_str("{\n")?;
-        f.indent_level_up();
-        for stmt in self.body.iter() {
-            stmt.fmt(f)?;
-            f.write_str(";\n")?;
-        }
-        f.indent_level_down();
-        f.write_char('}')
     }
 }

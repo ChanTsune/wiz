@@ -1,11 +1,3 @@
-use crate::middle_level_ir::ml_decl::{MLDecl, MLFun, MLStruct, MLVar};
-use crate::middle_level_ir::ml_expr::{
-    MLBinOp, MLBinOpKind, MLCall, MLExpr, MLIf, MLLiteral, MLMember, MLReturn, MLSubscript,
-    MLTypeCast, MLUnaryOp, MLUnaryOpKind,
-};
-use crate::middle_level_ir::ml_file::MLFile;
-use crate::middle_level_ir::ml_stmt::{MLAssignmentStmt, MLBlock, MLLoopStmt, MLStmt};
-use crate::middle_level_ir::ml_type::{MLPrimitiveType, MLType, MLValueType};
 use crate::utils::stacked_hash_map::StackedHashMap;
 use either::Either;
 use inkwell::builder::Builder;
@@ -21,6 +13,14 @@ use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::path::Path;
 use std::process::exit;
+use wiz_mir::expr::{
+    MLBinOp, MLBinOpKind, MLBlock, MLCall, MLExpr, MLIf, MLLiteral, MLMember, MLSubscript,
+    MLTypeCast, MLUnaryOp, MLUnaryOpKind,
+};
+use wiz_mir::ml_decl::{MLDecl, MLFun, MLStruct, MLVar};
+use wiz_mir::ml_file::MLFile;
+use wiz_mir::ml_type::{MLPrimitiveType, MLType, MLValueType};
+use wiz_mir::statement::{MLAssignmentStmt, MLLoopStmt, MLReturn, MLStmt};
 
 pub(crate) struct MLContext<'ctx> {
     pub(crate) struct_environment: StackedHashMap<String, MLStruct>,
@@ -136,6 +136,7 @@ impl<'ctx> CodeGen<'ctx> {
             MLExpr::When => exit(-1),
             MLExpr::Return(r) => self.return_expr(r),
             MLExpr::PrimitiveTypeCast(t) => self.type_cast(t),
+            MLExpr::Block(b) => self.block(b),
         }
     }
 
@@ -149,6 +150,9 @@ impl<'ctx> CodeGen<'ctx> {
                         MLPrimitiveType::Int16 | MLPrimitiveType::UInt16 => self.context.i16_type(),
                         MLPrimitiveType::Int32 | MLPrimitiveType::UInt32 => self.context.i32_type(),
                         MLPrimitiveType::Int64 | MLPrimitiveType::UInt64 => self.context.i64_type(),
+                        MLPrimitiveType::Int128 | MLPrimitiveType::UInt128 => {
+                            self.context.i128_type()
+                        }
                         MLPrimitiveType::Size | MLPrimitiveType::USize => {
                             todo!()
                         }
@@ -633,7 +637,7 @@ impl<'ctx> CodeGen<'ctx> {
     }
 
     pub fn block(&mut self, b: MLBlock) -> AnyValueEnum<'ctx> {
-        let i64_type = self.context.i64_type(); // Void
+        let i8_type = self.context.i8_type(); // Void
         let len = b.body.len();
         for (i, stmt) in b.body.into_iter().enumerate() {
             let last_index = len - 1;
@@ -643,7 +647,7 @@ impl<'ctx> CodeGen<'ctx> {
                 self.stmt(stmt)
             };
         }
-        AnyValueEnum::from(i64_type.const_int(0, false))
+        AnyValueEnum::from(i8_type.const_int(0, false))
     }
 
     fn load_if_pointer_value(
@@ -767,7 +771,14 @@ impl<'ctx> CodeGen<'ctx> {
                     exit(-1)
                 }
             };
-            let function = self.module.add_function(&*name, fn_type, None);
+            let function = if let Some(function) = self.module.get_function(&*name) {
+                if !function.get_basic_blocks().is_empty() {
+                    panic!("function `{}` is already defined", name);
+                };
+                function
+            } else {
+                self.module.add_function(&*name, fn_type, None)
+            };
             for (v, a) in function.get_params().iter().zip(arg_defs) {
                 self.set_to_environment(a.name, v.as_any_value_enum());
             }
@@ -797,7 +808,11 @@ impl<'ctx> CodeGen<'ctx> {
                     exit(-1)
                 }
             };
-            let f = self.module.add_function(&*name, fn_type, None);
+            let f = if let Some(f) = self.module.get_function(&*name) {
+                f
+            } else {
+                self.module.add_function(&*name, fn_type, None)
+            };
             self.ml_context.current_function = Some(f);
             AnyValueEnum::from(f)
         };
@@ -825,6 +840,7 @@ impl<'ctx> CodeGen<'ctx> {
             MLStmt::Var(decl) => self.var(decl),
             MLStmt::Assignment(a) => self.assignment_stmt(a),
             MLStmt::Loop(l) => self.loop_stmt(l),
+            MLStmt::Return(r) => self.return_expr(r),
         }
     }
 
