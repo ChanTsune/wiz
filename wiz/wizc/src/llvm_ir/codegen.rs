@@ -1,11 +1,3 @@
-use wiz_mir::expr::{
-    MLBinOp, MLBinOpKind, MLBlock, MLCall, MLExpr, MLIf, MLLiteral, MLMember, MLSubscript,
-    MLTypeCast, MLUnaryOp, MLUnaryOpKind,
-};
-use wiz_mir::ml_decl::{MLDecl, MLFun, MLStruct, MLVar};
-use wiz_mir::ml_file::MLFile;
-use wiz_mir::ml_type::{MLPrimitiveType, MLType, MLValueType};
-use wiz_mir::statement::{MLAssignmentStmt, MLLoopStmt, MLReturn, MLStmt};
 use crate::utils::stacked_hash_map::StackedHashMap;
 use either::Either;
 use inkwell::builder::Builder;
@@ -21,6 +13,14 @@ use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::path::Path;
 use std::process::exit;
+use wiz_mir::expr::{
+    MLBinOp, MLBinOpKind, MLBlock, MLCall, MLExpr, MLIf, MLLiteral, MLMember, MLSubscript,
+    MLTypeCast, MLUnaryOp, MLUnaryOpKind,
+};
+use wiz_mir::ml_decl::{MLDecl, MLFun, MLStruct, MLVar};
+use wiz_mir::ml_file::MLFile;
+use wiz_mir::ml_type::{MLPrimitiveType, MLType, MLValueType};
+use wiz_mir::statement::{MLAssignmentStmt, MLLoopStmt, MLReturn, MLStmt};
 
 pub(crate) struct MLContext<'ctx> {
     pub(crate) struct_environment: StackedHashMap<String, MLStruct>,
