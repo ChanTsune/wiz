@@ -804,7 +804,9 @@ impl HLIR2MLIR {
     fn fun_body(&mut self, b: TypedFunBody) -> MLFunBody {
         match b {
             TypedFunBody::Expr(e) => MLFunBody {
-                body: vec![MLStmt::Expr(MLExpr::Return(MLReturn::new(Some(self.expr(e)))))],
+                body: vec![MLStmt::Expr(MLExpr::Return(MLReturn::new(Some(
+                    self.expr(e),
+                ))))],
             },
             TypedFunBody::Block(b) => MLFunBody {
                 body: self.block(b).body,
