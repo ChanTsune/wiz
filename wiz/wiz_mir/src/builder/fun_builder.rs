@@ -1,3 +1,4 @@
+use crate::builder::error::BResult;
 use crate::ml_decl::{MLArgDef, MLFun, MLFunBody};
 use crate::ml_type::MLValueType;
 use crate::statement::MLStmt;
@@ -26,6 +27,11 @@ impl FunBuilder {
 
     pub fn name(&self) -> &String {
         &self.name
+    }
+
+    pub fn build_stmt(&mut self, statement: MLStmt) -> BResult<()> {
+        self.declare = false;
+        Ok(self.stmts.push(statement))
     }
 
     pub fn build(self) -> (MLFun, Option<MLFun>) {

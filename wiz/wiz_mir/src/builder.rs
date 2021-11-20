@@ -8,6 +8,8 @@ use crate::ml_decl::{MLArgDef, MLDecl, MLField, MLStruct, MLVar};
 use crate::ml_file::MLFile;
 use crate::ml_type::MLValueType;
 use linked_hash_map::LinkedHashMap;
+use crate::builder::error::BResult;
+use crate::statement::{MLReturn, MLStmt};
 
 #[derive(Clone, Debug)]
 pub struct MLIRModule {
@@ -108,7 +110,7 @@ impl MLIRModule {
         }
     }
 
-    fn current_function(&mut self) -> Result<&mut FunBuilder, BuilderError> {
+    fn current_function(&mut self) -> BResult<&mut FunBuilder> {
         let fun_name = self
             .current_function
             .clone()
@@ -122,8 +124,9 @@ impl MLIRModule {
         self.create_function(name, args, rtype);
     }
 
-    pub fn build_return(&mut self, value: Option<MLExpr>) -> Result<(), BuilderError> {
+    pub fn build_return(&mut self, value: Option<MLExpr>) -> BResult<()> {
         let f = self.current_function()?;
+        f.build_stmt(MLStmt::Return(MLReturn::new(value)))?;
         Ok(())
     }
 }

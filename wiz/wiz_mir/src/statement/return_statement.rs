@@ -11,9 +11,9 @@ pub struct MLReturn {
 }
 
 impl MLReturn {
-    pub fn new(expr: MLExpr) -> Self {
+    pub fn new(value: Option<MLExpr>) -> Self {
         MLReturn {
-            value: Some(Box::new(expr)),
+            value: value.map(Box::new),
         }
     }
     pub fn type_(&self) -> MLValueType {
