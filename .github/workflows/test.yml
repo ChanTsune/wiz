@@ -32,16 +32,9 @@ jobs:
         with:
           version: "11.0"
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
-      - name: run test wiz
-        run: cd wiz/wiz && cargo test --release
-      - name: run test wiz_lexar
-        run: cd wiz/wiz_lexar && cargo test --release
-      - name: run test wiz_syntax
-        run: cd wiz/wiz_syntax && cargo test --release
-      - name: run test wiz_mir
-        run: cd wiz/wiz_mir && cargo test --release
-      - name: run test wizc
-        run: cd wiz/wizc && cargo test --release
+      - name: run test
+        run: find wiz -type f -name '*.toml' -exec cargo test --manifest-path {} --release ";"
+
   run_wiz_test:
     strategy:
       matrix:
