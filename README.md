@@ -1,8 +1,17 @@
-# Wiz programming language
+<!-- PROJECT SHIELDS -->
+[![Contributors][contributors-shield]][contributors-url]
+[![Forks][forks-shield]][forks-url]
+[![Stargazers][stars-shield]][stars-url]
+[![Issues][issues-shield]][issues-url]
+[![MIT License][license-shield]][license-url]
 
-![wiz](./icon.svg)
-
-Programming is modern-day magic
+<!-- PROJECT LOGO -->
+<div align="center">
+    <p><a href="https://github.com/ChanTsune/wiz"><img src="./icon.svg" width="100" hight="100"/></a></p>
+    <p><h3>Wiz programming language</h3></p>
+    <p>Programming is modern-day magic
+</p>
+</div>
 
 
 ## Getting start
@@ -62,3 +71,15 @@ sh install.sh
 ```bash
 source "$HOME/.wiz/env"
 ```
+
+<!-- MARKDOWN LINKS & IMAGES -->
+[contributors-shield]: https://img.shields.io/github/contributors/ChanTsune/wiz.svg
+[contributors-url]: https://github.com/ChanTsune/wiz/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/ChanTsune/wiz.svg
+[forks-url]: https://github.com/ChanTsune/wiz/network/members
+[stars-shield]: https://img.shields.io/github/stars/ChanTsune/wiz.svg
+[stars-url]: https://github.com/ChanTsune/wiz/stargazers
+[issues-shield]: https://img.shields.io/github/issues/ChanTsune/wiz.svg
+[issues-url]: https://github.com/ChanTsune/wiz/issues
+[license-shield]: https://img.shields.io/github/license/ChanTsune/wiz.svg
+[license-url]: https://github.com/ChanTsune/wiz/blob/main/LICENSE
