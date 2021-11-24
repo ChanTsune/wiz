@@ -1,4 +1,5 @@
 <!-- PROJECT SHIELDS -->
+[![CI][ci-status-shield]][ci-status-url]
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
@@ -7,7 +8,7 @@
 
 <!-- PROJECT LOGO -->
 <div align="center">
-    <p><a href="https://github.com/ChanTsune/wiz"><img src="./icon.svg" width="100" hight="100"/></a></p>
+    <p><a href="https://github.com/ChanTsune/wiz"><img src="./icon.svg" width="120" hight="120"/></a></p>
     <p><h3>Wiz programming language</h3></p>
     <p>Programming is modern-day magic
 </p>
@@ -73,6 +74,8 @@ source "$HOME/.wiz/env"
 ```
 
 <!-- MARKDOWN LINKS & IMAGES -->
+[ci-status-shield]: https://github.com/ChanTsune/wiz/actions/workflows/test.yml/badge.svg
+[ci-status-url]: https://github.com/ChanTsune/wiz/actions/workflows/test.yml
 [contributors-shield]: https://img.shields.io/github/contributors/ChanTsune/wiz.svg
 [contributors-url]: https://github.com/ChanTsune/wiz/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/ChanTsune/wiz.svg
