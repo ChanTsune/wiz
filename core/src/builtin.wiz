@@ -34,3 +34,6 @@ fun strlen(_ item: String): UInt64
 
 #[no_mangle]
 fun atoi(_ item: String): Int64
+
+#[no_mangle]
+fun memmove(_ dist: UnsafePointer<UInt8>, _ src: UnsafePointer<UInt8>, _ size: UInt64): UnsafePointer<UInt8>
