@@ -1,5 +1,15 @@
 use std::collection::vector::UInt8Vector
 
-struct String {
+struct Text {
     val buffer: UInt8Vector
+
+    init(_ literal: String) {
+        val literalLength = strlen(literal)
+        var i = 0
+        while literalLength > i {
+            val t = literal[i]
+            self.buffer.push(element:t)
+            i += 1
+        }
+    }
 }
