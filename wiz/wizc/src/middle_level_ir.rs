@@ -17,7 +17,6 @@ use crate::high_level_ir::typed_type::{
 };
 use std::collections::HashMap;
 use std::error::Error;
-use std::option::Option::Some;
 use std::process::exit;
 use wiz_mir::builder::{BuilderError, FunBuilder, MLIRModule};
 use wiz_mir::expr::{
@@ -805,7 +804,9 @@ impl HLIR2MLIR {
     fn fun_body(&mut self, b: TypedFunBody) -> MLFunBody {
         match b {
             TypedFunBody::Expr(e) => MLFunBody {
-                body: vec![MLStmt::Expr(MLExpr::Return(MLReturn::new(self.expr(e))))],
+                body: vec![MLStmt::Expr(MLExpr::Return(MLReturn::new(Some(
+                    self.expr(e),
+                ))))],
             },
             TypedFunBody::Block(b) => MLFunBody {
                 body: self.block(b).body,

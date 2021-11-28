@@ -3,10 +3,12 @@ mod fun_builder;
 
 pub use self::error::BuilderError;
 pub use self::fun_builder::FunBuilder;
-use crate::expr::MLExpr;
+use crate::builder::error::BResult;
+use crate::expr::{MLBlock, MLExpr};
 use crate::ml_decl::{MLArgDef, MLDecl, MLField, MLStruct, MLVar};
 use crate::ml_file::MLFile;
 use crate::ml_type::MLValueType;
+use crate::statement::{MLAssignmentStmt, MLLoopStmt, MLReturn, MLStmt};
 use linked_hash_map::LinkedHashMap;
 
 #[derive(Clone, Debug)]
@@ -108,7 +110,7 @@ impl MLIRModule {
         }
     }
 
-    fn current_function(&mut self) -> Result<&mut FunBuilder, BuilderError> {
+    fn current_function(&mut self) -> BResult<&mut FunBuilder> {
         let fun_name = self
             .current_function
             .clone()
@@ -122,8 +124,34 @@ impl MLIRModule {
         self.create_function(name, args, rtype);
     }
 
-    pub fn build_return(&mut self, value: Option<MLExpr>) -> Result<(), BuilderError> {
+    fn build_statement(&mut self, statement: MLStmt) -> BResult<()> {
         let f = self.current_function()?;
+        f.build_stmt(statement)?;
         Ok(())
+    }
+
+    pub fn build_return(&mut self, value: Option<MLExpr>) -> BResult<()> {
+        self.build_statement(MLStmt::Return(MLReturn::new(value)))
+    }
+
+    pub fn build_assignment(&mut self, target: MLExpr, value: MLExpr) -> BResult<()> {
+        self.build_statement(MLStmt::Assignment(MLAssignmentStmt { target, value }))
+    }
+
+    pub fn build_variable(&mut self, is_mute: bool, name: String, value: MLExpr) -> BResult<()> {
+        self.build_statement(MLStmt::Var(MLVar {
+            is_mute,
+            name,
+            type_: value.type_(),
+            value,
+        }))
+    }
+
+    pub fn build_loop(&mut self, condition: MLExpr, block: MLBlock) -> BResult<()> {
+        self.build_statement(MLStmt::Loop(MLLoopStmt { condition, block }))
+    }
+
+    pub fn build_expr(&mut self, expr: MLExpr) -> BResult<()> {
+        self.build_statement(MLStmt::Expr(expr))
     }
 }
