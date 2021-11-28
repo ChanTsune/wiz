@@ -17,6 +17,7 @@ struct UInt8Vector {
         if self.capacity <= self.length {
             val newCapacity = if self.capacity == 0 { 4 } else { self.capacity * 2 }
             self.ptr = realloc(self.ptr, newCapacity)
+            self.capacity = newCapacity
         }
         self.ptr[self.length] = element
         self.length += 1
