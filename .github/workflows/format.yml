@@ -8,7 +8,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2.4.0
       - name: run format
-        run: find wiz -type f -name '*.toml' -exec cargo fmt --manifest-path {} ";"
+        run: find wiz -type f -name '*.toml' | xargs -I {} cargo fmt --manifest-path {}
       - name: Commit changes
         uses: EndBug/add-and-commit@v7.4.0
         with:

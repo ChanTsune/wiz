@@ -33,7 +33,7 @@ jobs:
           version: "11.0"
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
       - name: run test
-        run: find wiz -type f -name '*.toml' -exec cargo test --manifest-path {} --release ";"
+        run: find wiz -type f -name '*.toml' | xargs -I {} cargo test --manifest-path {} --release
 
   run_wiz_test:
     strategy:
