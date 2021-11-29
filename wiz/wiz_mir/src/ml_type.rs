@@ -15,6 +15,7 @@ pub enum MLValueType {
     Struct(String),
     Pointer(Box<MLValueType>),
     Reference(Box<MLValueType>),
+    Array(Box<MLValueType>, usize),
 }
 
 impl MLValueType {
@@ -22,8 +23,9 @@ impl MLValueType {
         match self {
             MLValueType::Primitive(primitive) => primitive.to_string(),
             MLValueType::Struct(name) => name.clone(),
-            MLValueType::Pointer(p) => String::from("*") + &*p.name(),
-            MLValueType::Reference(r) => String::from("&") + &*r.name(),
+            MLValueType::Pointer(p) => format!("*{}", p.name()),
+            MLValueType::Reference(r) => format!("&{}", r.name()),
+            MLValueType::Array(a, size) => format!("[{};{}]", a.name(), size),
         }
     }
 

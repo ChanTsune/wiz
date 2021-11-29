@@ -600,6 +600,9 @@ impl<'ctx> CodeGen<'ctx> {
                     MLValueType::Reference(_) => {
                         todo!()
                     }
+                    MLValueType::Array(_, _) => {
+                        todo!()
+                    }
                 };
                 let t = self.builder.build_int_cast(i, ty, "int_cast");
                 t.as_any_value_enum()
@@ -618,6 +621,9 @@ impl<'ctx> CodeGen<'ctx> {
                         todo!()
                     }
                     MLValueType::Reference(_) => {
+                        todo!()
+                    }
+                    MLValueType::Array(_, _) => {
                         todo!()
                     }
                 };
@@ -675,6 +681,9 @@ impl<'ctx> CodeGen<'ctx> {
                 MLValueType::Struct(_) => true,
                 MLValueType::Pointer(r) | MLValueType::Reference(r) => {
                     Self::need_load(p.get_element_type(), r)
+                }
+                MLValueType::Array(_, _) => {
+                    todo!()
                 }
             },
             _ => false,
@@ -969,6 +978,19 @@ impl<'ctx> CodeGen<'ctx> {
                     .unwrap()
                     .ptr_type(AddressSpace::Generic)
                     .as_any_type_enum()
+            }
+            MLValueType::Array(a,size) => {
+                let size = size as u32;
+                match self.ml_type_to_type(*a) {
+                    AnyTypeEnum::ArrayType(a) => a.array_type(size),
+                    AnyTypeEnum::FloatType(a) => a.array_type(size),
+                    AnyTypeEnum::FunctionType(_) => { panic!("never execution branch executed!!") },
+                    AnyTypeEnum::IntType(a) => a.array_type(size),
+                    AnyTypeEnum::PointerType(a) => a.array_type(size),
+                    AnyTypeEnum::StructType(a) => a.array_type(size),
+                    AnyTypeEnum::VectorType(a) => a.array_type(size),
+                    AnyTypeEnum::VoidType(_) => { panic!("never execution branch executed!!") },
+                }.as_any_type_enum()
             }
         }
     }
