@@ -1,10 +1,10 @@
 mod block;
+mod call;
 mod if_expr;
 mod literal;
-mod call;
 
 pub use self::block::MLBlock;
-pub  use self::call::{MLCall, MLCallArg};
+pub use self::call::{MLCall, MLCallArg};
 pub use self::if_expr::MLIf;
 pub use self::literal::MLLiteral;
 use crate::format::Formatter;

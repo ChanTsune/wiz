@@ -1,9 +1,9 @@
-use std::fmt;
-use std::fmt::Write;
 use crate::expr::MLExpr;
 use crate::format::Formatter;
 use crate::ml_node::MLNode;
 use crate::ml_type::{MLType, MLValueType};
+use std::fmt;
+use std::fmt::Write;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLCall {
