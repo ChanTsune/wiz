@@ -1,8 +1,10 @@
 mod block;
 mod if_expr;
 mod literal;
+mod call;
 
 pub use self::block::MLBlock;
+pub  use self::call::{MLCall, MLCallArg};
 pub use self::if_expr::MLIf;
 pub use self::literal::MLLiteral;
 use crate::format::Formatter;
@@ -32,18 +34,6 @@ pub enum MLExpr {
 pub struct MLName {
     pub name: String,
     pub type_: MLType,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct MLCall {
-    pub target: Box<MLExpr>,
-    pub args: Vec<MLCallArg>,
-    pub type_: MLType,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct MLCallArg {
-    pub arg: MLExpr,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -110,7 +100,7 @@ impl MLExpr {
         match self {
             MLExpr::Name(n) => n.type_.clone(),
             MLExpr::Literal(l) => MLType::Value(l.type_()),
-            MLExpr::Call(c) => c.type_.clone(),
+            MLExpr::Call(c) => MLType::Value(c.type_.clone()),
             MLExpr::PrimitiveBinOp(b) => MLType::Value(b.type_.clone()),
             MLExpr::PrimitiveUnaryOp(b) => MLType::Value(b.type_.clone()),
             MLExpr::PrimitiveSubscript(p) => MLType::Value(p.type_.clone()),
@@ -137,12 +127,6 @@ impl MLLiteral {
     }
 }
 
-impl MLCallArg {
-    pub fn type_(&self) -> MLType {
-        self.arg.type_()
-    }
-}
-
 impl MLNode for MLExpr {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
@@ -165,27 +149,6 @@ impl MLNode for MLExpr {
 impl MLNode for MLName {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.write_str(&*self.name)
-    }
-}
-
-impl MLNode for MLCall {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        self.target.fmt(f)?;
-        f.write_char('(')?;
-        for (c, arg) in self.args.iter().enumerate() {
-            arg.fmt(f)?;
-            let s = self.args.len() - 1;
-            if s != c {
-                f.write_str(", ")?;
-            }
-        }
-        f.write_str(")")
-    }
-}
-
-impl MLNode for MLCallArg {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        self.arg.fmt(f)
     }
 }
 

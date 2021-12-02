@@ -648,7 +648,7 @@ impl HLIR2MLIR {
                 .into_iter()
                 .map(|i| MLCallArg { arg: self.expr(i) })
                 .collect(),
-            type_: self.type_(s.type_.unwrap()),
+            type_: self.type_(s.type_.unwrap()).into_value_type(),
         })
     }
 
@@ -768,7 +768,7 @@ impl HLIR2MLIR {
                     arg: self.expr(*a.arg),
                 })
                 .collect(),
-            type_: self.type_(type_.unwrap()),
+            type_: self.type_(type_.unwrap()).into_value_type(),
         }
     }
 
