@@ -168,7 +168,6 @@ impl MLNode for MLName {
     }
 }
 
-
 impl MLNode for MLCall {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         self.target.fmt(f)?;

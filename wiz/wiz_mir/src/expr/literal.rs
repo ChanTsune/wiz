@@ -1,8 +1,8 @@
-use std::fmt;
-use std::fmt::Write;
 use crate::format::Formatter;
 use crate::ml_node::MLNode;
 use crate::ml_type::MLValueType;
+use std::fmt;
+use std::fmt::Write;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum MLLiteral {
