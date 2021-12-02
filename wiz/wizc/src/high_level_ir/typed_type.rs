@@ -22,6 +22,34 @@ pub enum TypedType {
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
+pub enum _TypedType {
+    Value(_TypedValueType),
+    Function(Box<_TypedFunctionType>),
+    Type(Box<_TypedType>),
+}
+
+#[derive(Debug, Eq, PartialEq, Clone, Hash)]
+pub enum _TypedValueType {
+    Value, // Primitive | Struct | Union | Enum
+    Array(Box<_TypedType>),
+    Tuple(Vec<_TypedType>),
+    Pointer(Box<_TypedType>),
+    Reference(Box<_TypedType>),
+}
+
+#[derive(Debug, Eq, PartialEq, Clone, Hash)]
+pub struct _TypedFunctionType {
+    pub args_type: Vec<_TypedArgType>,
+    pub return_type: _TypedType,
+}
+
+#[derive(Debug, Eq, PartialEq, Clone, Hash)]
+pub struct _TypedArgType {
+    pub label: String,
+    pub typ: TypedType,
+}
+
+#[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub struct TypedValueType {
     pub(crate) package: TypedPackage,
     pub(crate) name: String,
