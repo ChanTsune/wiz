@@ -35,7 +35,7 @@ jobs:
       - name: run test
         run: find wiz -type f -name '*.toml' | xargs -I {} cargo test --manifest-path {} --release
         env:
-          - RUST_BACKTRACE: 1
+          RUST_BACKTRACE: 1
 
   run_wiz_test:
     strategy:
@@ -75,4 +75,4 @@ jobs:
           wiz build
           clang target/test_project.ll
         env:
-          - RUST_BACKTRACE: 1
+          RUST_BACKTRACE: 1
