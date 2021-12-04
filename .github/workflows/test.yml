@@ -74,3 +74,5 @@ jobs:
           cd test_project
           wiz build
           clang target/test_project.ll
+        env:
+          - RUST_BACKTRACE: 1
