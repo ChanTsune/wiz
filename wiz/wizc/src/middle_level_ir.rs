@@ -685,7 +685,6 @@ impl HLIR2MLIR {
                 match target.type_().unwrap() {
                     TypedType::Value(v) => {
                         let target_type = self.value_type(v);
-                        println!("Call => {:?}", target);
                         let is_stored = self.context.struct_has_field(&target_type, &name);
                         if is_stored {
                             let target = self.expr(*target);
