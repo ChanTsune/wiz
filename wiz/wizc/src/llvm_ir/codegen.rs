@@ -821,7 +821,7 @@ impl<'ctx> CodeGen<'ctx> {
 
     pub fn struct_(&mut self, s: MLStruct) -> AnyValueEnum<'ctx> {
         self.ml_context.put_struct(s.clone());
-        let struct_ = self.context.opaque_struct_type(&*s.name);
+        let struct_ = self.module.get_struct_type(&*s.name).unwrap();
         let struct_fields: Vec<BasicTypeEnum<'ctx>> = s
             .fields
             .into_iter()
@@ -920,6 +920,15 @@ impl<'ctx> CodeGen<'ctx> {
     }
 
     pub fn file(&mut self, f: MLFile) {
+        // detect type
+        for d in f.body.iter() {
+            match d {
+                MLDecl::Struct(s) => {
+                    self.context.opaque_struct_type(&*s.name);
+                }
+                _ => { /* do noting */ }
+            }
+        }
         for d in f.body {
             self.decl(d);
         }
