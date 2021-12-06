@@ -10,7 +10,7 @@ jobs:
       - name: run format
         run: find wiz -type f -name '*.toml' | xargs -I {} cargo fmt --manifest-path {}
       - name: Commit changes
-        uses: EndBug/add-and-commit@v7.4.0
+        uses: EndBug/add-and-commit@v7.5.0
         with:
           author_name: GitHub Actions
           author_email: 41658782+ChanTsune@users.noreply.github.com
