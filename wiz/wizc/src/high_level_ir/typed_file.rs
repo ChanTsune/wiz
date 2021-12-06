@@ -1,6 +1,6 @@
-use std::cmp::Ordering;
 use crate::high_level_ir::typed_decl::TypedDecl;
 use crate::high_level_ir::typed_use::TypedUse;
+use std::cmp::Ordering;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum TypedSourceSet {
@@ -14,12 +14,8 @@ pub enum TypedSourceSet {
 impl TypedSourceSet {
     fn name(&self) -> &str {
         match self {
-            TypedSourceSet::File(f) => {
-                &f.name
-            }
-            TypedSourceSet::Dir { name, items:_ } => {
-                name
-            }
+            TypedSourceSet::File(f) => &f.name,
+            TypedSourceSet::Dir { name, items: _ } => name,
         }
     }
 }
@@ -43,7 +39,7 @@ pub struct TypedFile {
     pub(crate) body: Vec<TypedDecl>,
 }
 
-impl Ord for TypedFile{
+impl Ord for TypedFile {
     fn cmp(&self, other: &Self) -> Ordering {
         self.name.cmp(&other.name)
     }
