@@ -1,8 +1,12 @@
 mod block;
+mod call;
 mod if_expr;
+mod literal;
 
 pub use self::block::MLBlock;
+pub use self::call::{MLCall, MLCallArg};
 pub use self::if_expr::MLIf;
+pub use self::literal::MLLiteral;
 use crate::format::Formatter;
 use crate::ml_node::MLNode;
 use crate::ml_type::{MLType, MLValueType};
@@ -30,28 +34,6 @@ pub enum MLExpr {
 pub struct MLName {
     pub name: String,
     pub type_: MLType,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub enum MLLiteral {
-    Integer { value: String, type_: MLValueType },
-    FloatingPoint { value: String, type_: MLValueType },
-    String { value: String, type_: MLValueType },
-    Boolean { value: String, type_: MLValueType },
-    Null { type_: MLValueType },
-    Struct { type_: MLValueType },
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct MLCall {
-    pub target: Box<MLExpr>,
-    pub args: Vec<MLCallArg>,
-    pub type_: MLType,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct MLCallArg {
-    pub arg: MLExpr,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -118,7 +100,7 @@ impl MLExpr {
         match self {
             MLExpr::Name(n) => n.type_.clone(),
             MLExpr::Literal(l) => MLType::Value(l.type_()),
-            MLExpr::Call(c) => c.type_.clone(),
+            MLExpr::Call(c) => MLType::Value(c.type_.clone()),
             MLExpr::PrimitiveBinOp(b) => MLType::Value(b.type_.clone()),
             MLExpr::PrimitiveUnaryOp(b) => MLType::Value(b.type_.clone()),
             MLExpr::PrimitiveSubscript(p) => MLType::Value(p.type_.clone()),
@@ -145,12 +127,6 @@ impl MLLiteral {
     }
 }
 
-impl MLCallArg {
-    pub fn type_(&self) -> MLType {
-        self.arg.type_()
-    }
-}
-
 impl MLNode for MLExpr {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
@@ -173,47 +149,6 @@ impl MLNode for MLExpr {
 impl MLNode for MLName {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.write_str(&*self.name)
-    }
-}
-
-impl MLNode for MLLiteral {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        match self {
-            MLLiteral::Integer { value, type_: _ } => f.write_str(value),
-            MLLiteral::FloatingPoint { value, type_: _ } => f.write_str(value),
-            MLLiteral::String { value, type_: _ } => {
-                f.write_char('"')?;
-                f.write_str(value)?;
-                f.write_char('"')
-            }
-            MLLiteral::Boolean { value, type_: _ } => f.write_str(value),
-            MLLiteral::Null { type_: _ } => fmt::Result::Err(Default::default()),
-            MLLiteral::Struct { type_ } => {
-                type_.fmt(f)?;
-                f.write_str(" { }")
-            }
-        }
-    }
-}
-
-impl MLNode for MLCall {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        self.target.fmt(f)?;
-        f.write_char('(')?;
-        for (c, arg) in self.args.iter().enumerate() {
-            arg.fmt(f)?;
-            let s = self.args.len() - 1;
-            if s != c {
-                f.write_str(", ")?;
-            }
-        }
-        f.write_str(")")
-    }
-}
-
-impl MLNode for MLCallArg {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        self.arg.fmt(f)
     }
 }
 
