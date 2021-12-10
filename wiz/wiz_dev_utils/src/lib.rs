@@ -1,4 +1,7 @@
-trait StringExt where Self: ToString {
+trait StringExt
+where
+    Self: ToString,
+{
     fn trim_indent(&self) -> String;
     fn trim_margin<T: ToString>(&self, margin_prefix: T) -> String;
     fn indent_count<T: ToString>(&self, indent_prefix: T) -> usize;
