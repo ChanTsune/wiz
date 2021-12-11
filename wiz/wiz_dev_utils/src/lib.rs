@@ -1,4 +1,6 @@
-trait StringExt
+use std::cmp::min;
+
+pub trait StringExt
 where
     Self: ToString,
 {
@@ -12,12 +14,19 @@ impl StringExt for &str {
         let i = self.split_terminator('\n').filter(|i| !i.is_empty());
         let indent_width = i
             .clone()
-            .map(|i| i.indent_count(" "))
+            .filter_map(|i| match i.indent_count(' ') {
+                a if a == i.len() => None,
+                a => Some(a),
+            })
             .min()
             .unwrap_or_default();
         i.map(|i| {
-            let (_, r) = i.split_at(indent_width);
-            format!("{}\n", r)
+            let (_, r) = i.split_at(min(indent_width, i.len()));
+            if r.is_empty() {
+                String::new()
+            } else {
+                format!("{}\n", r)
+            }
         })
         .collect()
     }
@@ -59,6 +68,9 @@ mod tests {
             .trim_indent(),
             "fun add(x: i32, y: y: i32): i32 {\n  return x + y\n}\n"
         );
+        assert_eq!(r"
+        Token { kind: Whitespace, len: 1 }
+        Token { kind: Literal { kind: Char { terminated: true }, suffix_start: 3 }, len: 3 }".trim_indent(), "Token { kind: Whitespace, len: 1 }\nToken { kind: Literal { kind: Char { terminated: true }, suffix_start: 3 }, len: 3 }\n")
     }
 
     #[test]

@@ -1,18 +1,5 @@
 use super::*;
-
-trait StrExt {
-    fn trim_line_head_whitespaces(&self) -> String;
-}
-
-impl StrExt for &str {
-    fn trim_line_head_whitespaces(&self) -> String {
-        self.split_terminator('\n')
-            .map(|i| i.trim_start_matches(' '))
-            .filter(|i| !i.is_empty())
-            .map(|i| format!("{}\n", i))
-            .collect()
-    }
-}
+use wiz_dev_utils::StringExt;
 
 fn check_raw_str(s: &str, expected_hashes: u16, expected_err: Option<RawStrError>) {
     let s = &format!("r{}", s);
@@ -180,7 +167,7 @@ fn smoke_test() {
             Token { kind: CloseBrace, len: 1 }
             Token { kind: Whitespace, len: 1 }
         "#
-        .trim_line_head_whitespaces(),
+        .trim_indent(),
     )
 }
 
@@ -219,7 +206,7 @@ fn comment_flavors() {
             Token { kind: BlockComment { doc_style: Some(Inner), terminated: true }, len: 22 }
             Token { kind: Whitespace, len: 1 }
         "#
-        .trim_line_head_whitespaces(),
+        .trim_indent(),
     )
 }
 
@@ -231,7 +218,7 @@ fn nested_block_comments() {
             Token { kind: BlockComment { doc_style: None, terminated: true }, len: 11 }
             Token { kind: Literal { kind: Char { terminated: true }, suffix_start: 3 }, len: 3 }
         "#
-        .trim_line_head_whitespaces(),
+        .trim_indent(),
     )
 }
 
@@ -246,7 +233,7 @@ fn characters() {
             Token { kind: Whitespace, len: 1 }
             Token { kind: Literal { kind: Char { terminated: true }, suffix_start: 4 }, len: 4 }
         "#
-        .trim_line_head_whitespaces(),
+        .trim_indent(),
     );
 }
 
@@ -257,7 +244,7 @@ fn lifetime() {
         r#"
             Token { kind: Lifetime { starts_with_number: false }, len: 4 }
         "#
-        .trim_line_head_whitespaces(),
+        .trim_indent(),
     );
 }
 
@@ -267,7 +254,7 @@ fn raw_string() {
         "r###\"\"#a\\b\x00c\"\"###",
         r#"
             Token { kind: Literal { kind: RawStr { n_hashes: 3, err: None }, suffix_start: 17 }, len: 17 }
-        "#.trim_line_head_whitespaces(),
+        "#.trim_indent(),
     )
 }
 
@@ -278,7 +265,7 @@ fn raw_identifier() {
         r#"
             Token { kind: RawIdentifier { err: None }, len: 5 }
         "#
-        .trim_line_head_whitespaces(),
+        .trim_indent(),
     )
 }
 
@@ -325,6 +312,6 @@ br###"raw"###suffix
             Token { kind: Whitespace, len: 1 }
             Token { kind: Literal { kind: RawByteStr { n_hashes: 3, err: None }, suffix_start: 13 }, len: 19 }
             Token { kind: Whitespace, len: 1 }
-        "#.trim_line_head_whitespaces(),
+        "#.trim_indent(),
     )
 }
