@@ -9,13 +9,17 @@ where
 
 impl StringExt for &str {
     fn trim_indent(&self) -> String {
-        let i = self.split_terminator('\n')
-            .filter(|i| !i.is_empty());
-        let indent_width = i.clone().map(|i|i.indent_count(" ")).min().unwrap_or_default();
+        let i = self.split_terminator('\n').filter(|i| !i.is_empty());
+        let indent_width = i
+            .clone()
+            .map(|i| i.indent_count(" "))
+            .min()
+            .unwrap_or_default();
         i.map(|i| {
             let (_, r) = i.split_at(indent_width);
             format!("{}\n", r)
-        }).collect()
+        })
+        .collect()
     }
 
     fn trim_margin<T: ToString>(&self, margin_prefix: T) -> String {
@@ -51,7 +55,8 @@ mod tests {
             r"
         fun add(x: i32, y: y: i32): i32 {
           return x + y
-        }".trim_indent(),
+        }"
+            .trim_indent(),
             "fun add(x: i32, y: y: i32): i32 {\n  return x + y\n}\n"
         );
     }
