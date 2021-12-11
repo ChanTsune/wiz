@@ -14,11 +14,9 @@ impl StringExt for &str {
         let i = self.split_terminator('\n').filter(|i| !i.is_empty());
         let indent_width = i
             .clone()
-            .filter_map(|i| {
-                match i.indent_count(' ') {
-                    a if a == i.len() => None,
-                    a => Some(a),
-                }
+            .filter_map(|i| match i.indent_count(' ') {
+                a if a == i.len() => None,
+                a => Some(a),
             })
             .min()
             .unwrap_or_default();
