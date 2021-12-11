@@ -1,5 +1,5 @@
-use wiz_dev_utils::StringExt;
 use super::*;
+use wiz_dev_utils::StringExt;
 
 fn check_raw_str(s: &str, expected_hashes: u16, expected_err: Option<RawStrError>) {
     let s = &format!("r{}", s);
@@ -167,7 +167,7 @@ fn smoke_test() {
             Token { kind: CloseBrace, len: 1 }
             Token { kind: Whitespace, len: 1 }
         "#
-            .trim_indent(),
+        .trim_indent(),
     )
 }
 
