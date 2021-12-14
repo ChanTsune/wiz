@@ -23,13 +23,13 @@ pub enum TypedType {
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub enum _TypedType {
-    Value(_TypedValueType),
+    Value(TypedValueType),
     Function(Box<_TypedFunctionType>),
     Type(Box<_TypedType>),
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
-pub enum _TypedValueType {
+pub enum TypedValueType {
     Value(TypedNamedValueType), // Primitive | Struct | Union | Enum
     Array(Box<_TypedType>),
     Tuple(Vec<_TypedType>),
