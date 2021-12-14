@@ -4,7 +4,7 @@ use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_decl::{TypedArgDef, TypedValueArgDef};
 use crate::high_level_ir::typed_expr::TypedBinaryOperator;
 use crate::high_level_ir::typed_type::{
-    Package, TypedFunctionType, TypedPackage, TypedType, TypedNamedValueType,
+    Package, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType,
 };
 use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::{HashMap, HashSet};
@@ -571,7 +571,7 @@ impl ResolverContext {
 #[cfg(test)]
 mod tests {
     use crate::high_level_ir::type_resolver::context::{EnvValue, NameSpace, ResolverContext};
-    use crate::high_level_ir::typed_type::{Package, TypedPackage, TypedType, TypedNamedValueType};
+    use crate::high_level_ir::typed_type::{Package, TypedNamedValueType, TypedPackage, TypedType};
 
     #[test]
     fn test_name_space() {

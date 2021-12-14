@@ -13,7 +13,7 @@ use crate::high_level_ir::typed_stmt::{
     TypedAssignmentAndOperator, TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt,
 };
 use crate::high_level_ir::typed_type::{
-    TypedFunctionType, TypedPackage, TypedType, TypedNamedValueType,
+    TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType,
 };
 use std::collections::HashMap;
 use std::error::Error;
