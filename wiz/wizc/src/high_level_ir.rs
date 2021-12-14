@@ -15,7 +15,7 @@ use crate::high_level_ir::typed_stmt::{
     TypedBlock, TypedForStmt, TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
 };
 use crate::high_level_ir::typed_type::{
-    Package, TypedPackage, TypedType, TypedTypeParam, TypedNamedValueType,
+    Package, TypedNamedValueType, TypedPackage, TypedType, TypedTypeParam,
 };
 use crate::high_level_ir::typed_use::TypedUse;
 use crate::utils::path_string_to_page_name;

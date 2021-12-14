@@ -22,7 +22,7 @@ use crate::high_level_ir::typed_stmt::{
     TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
 };
 use crate::high_level_ir::typed_type::{
-    Package, TypedFunctionType, TypedPackage, TypedType, TypedNamedValueType,
+    Package, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType,
 };
 
 #[derive(Debug, Clone)]
