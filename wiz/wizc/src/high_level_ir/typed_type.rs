@@ -30,7 +30,7 @@ pub enum _TypedType {
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub enum _TypedValueType {
-    Value, // Primitive | Struct | Union | Enum
+    Value(TypedNamedValueType), // Primitive | Struct | Union | Enum
     Array(Box<_TypedType>),
     Tuple(Vec<_TypedType>),
     Pointer(Box<_TypedType>),
