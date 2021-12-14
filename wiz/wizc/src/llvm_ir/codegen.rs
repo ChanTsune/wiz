@@ -84,10 +84,7 @@ impl<'ctx> CodeGen<'ctx> {
     fn get_from_environment(&self, name: String) -> Option<AnyValueEnum<'ctx>> {
         match self.ml_context.local_environments.get(&name) {
             Some(v) => Some(*v),
-            None => match self.module.get_function(&*name) {
-                Some(f) => Some(AnyValueEnum::FunctionValue(f)),
-                None => None,
-            },
+            None => self.module.get_function(&*name).map(|f|f.as_any_value_enum()),
         }
     }
 
