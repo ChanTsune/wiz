@@ -13,7 +13,7 @@ use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentStmt, TypedBlock, TypedStmt,
 };
 use crate::high_level_ir::typed_type::{
-    Package, TypedFunctionType, TypedPackage, TypedType, TypedValueType,
+    Package, TypedFunctionType, TypedPackage, TypedType, TypedNamedValueType,
 };
 use crate::high_level_ir::Ast2HLIR;
 use wiz_syntax::parser::wiz::parse_from_string;
@@ -91,7 +91,7 @@ fn test_unsafe_pointer() {
                                         target: Box::new(TypedExpr::Name(TypedName {
                                             package: TypedPackage::Resolved(Package::global()),
                                             name: "self".to_string(),
-                                            type_: Some(TypedType::Value(TypedValueType {
+                                            type_: Some(TypedType::Value(TypedNamedValueType {
                                                 package: TypedPackage::Resolved(Package::from(
                                                     vec!["test"]
                                                 )),
@@ -128,7 +128,7 @@ fn test_unsafe_pointer() {
                     arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
                         label: "_".to_string(),
                         name: "a".to_string(),
-                        type_: TypedType::Value(TypedValueType {
+                        type_: TypedType::Value(TypedNamedValueType {
                             package: TypedPackage::Resolved(Package::from(vec!["test"])),
                             name: "A".to_string(),
                             type_args: None
@@ -145,7 +145,7 @@ fn test_unsafe_pointer() {
                                 target: Box::new(TypedExpr::Name(TypedName {
                                     package: TypedPackage::Resolved(Package::new()),
                                     name: "a".to_string(),
-                                    type_: Some(TypedType::Value(TypedValueType {
+                                    type_: Some(TypedType::Value(TypedNamedValueType {
                                         package: TypedPackage::Resolved(Package::from(vec![
                                             "test"
                                         ])),
@@ -212,7 +212,7 @@ fn test_struct_stored_property() {
                                         target: Box::new(TypedExpr::Name(TypedName {
                                             package: TypedPackage::Resolved(Package::new()),
                                             name: "self".to_string(),
-                                            type_: Some(TypedType::Value(TypedValueType {
+                                            type_: Some(TypedType::Value(TypedNamedValueType {
                                                 package: TypedPackage::Resolved(Package::from(
                                                     vec!["test"]
                                                 )),
@@ -249,7 +249,7 @@ fn test_struct_stored_property() {
                     arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
                         label: "_".to_string(),
                         name: "a".to_string(),
-                        type_: TypedType::Value(TypedValueType {
+                        type_: TypedType::Value(TypedNamedValueType {
                             package: TypedPackage::Resolved(Package::from(vec!["test"])),
                             name: "A".to_string(),
                             type_args: None
@@ -266,7 +266,7 @@ fn test_struct_stored_property() {
                                 target: Box::new(TypedExpr::Name(TypedName {
                                     package: TypedPackage::Resolved(Package::new()),
                                     name: "a".to_string(),
-                                    type_: Some(TypedType::Value(TypedValueType {
+                                    type_: Some(TypedType::Value(TypedNamedValueType {
                                         package: TypedPackage::Resolved(Package::from(vec![
                                             "test"
                                         ])),
@@ -333,7 +333,7 @@ fn test_struct_init() {
                                         target: Box::new(TypedExpr::Name(TypedName {
                                             package: TypedPackage::Resolved(Package::new()),
                                             name: "self".to_string(),
-                                            type_: Some(TypedType::Value(TypedValueType {
+                                            type_: Some(TypedType::Value(TypedNamedValueType {
                                                 package: TypedPackage::Resolved(Package::from(
                                                     vec!["test"]
                                                 )),
@@ -370,7 +370,7 @@ fn test_struct_init() {
                     arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
                         label: "_".to_string(),
                         name: "a".to_string(),
-                        type_: TypedType::Value(TypedValueType {
+                        type_: TypedType::Value(TypedNamedValueType {
                             package: TypedPackage::Resolved(Package::from(vec!["test"],)),
                             name: "A".to_string(),
                             type_args: None,
@@ -382,7 +382,7 @@ fn test_struct_init() {
                             package: TypedPackage::Resolved(Package::new()),
                             is_mut: false,
                             name: "a".to_string(),
-                            type_: Some(TypedType::Value(TypedValueType {
+                            type_: Some(TypedType::Value(TypedNamedValueType {
                                 package: TypedPackage::Resolved(Package::from(vec!["test"])),
                                 name: "A".to_string(),
                                 type_args: None
@@ -392,7 +392,7 @@ fn test_struct_init() {
                                     target: Box::new(TypedExpr::Name(TypedName {
                                         package: TypedPackage::Resolved(Package::new()),
                                         name: "A".to_string(),
-                                        type_: Some(TypedType::Type(TypedValueType {
+                                        type_: Some(TypedType::Type(TypedNamedValueType {
                                             package: TypedPackage::Resolved(Package::from(vec![
                                                 "test"
                                             ])),
@@ -408,7 +408,7 @@ fn test_struct_init() {
                                             name: "a".to_string(),
                                             type_: TypedType::int64()
                                         })],
-                                        return_type: TypedType::Value(TypedValueType {
+                                        return_type: TypedType::Value(TypedNamedValueType {
                                             package: TypedPackage::Resolved(Package::from(vec![
                                                 "test"
                                             ])),
@@ -425,7 +425,7 @@ fn test_struct_init() {
                                     })),
                                     is_vararg: false
                                 }],
-                                type_: Some(TypedType::Value(TypedValueType {
+                                type_: Some(TypedType::Value(TypedNamedValueType {
                                     package: TypedPackage::Resolved(Package::from(vec!["test"])),
                                     name: "A".to_string(),
                                     type_args: None
@@ -486,7 +486,7 @@ fn test_struct_member_function() {
                                     target: Box::new(TypedExpr::Name(TypedName {
                                         package: TypedPackage::Resolved(Package::new()),
                                         name: "self".to_string(),
-                                        type_: Some(TypedType::Value(TypedValueType {
+                                        type_: Some(TypedType::Value(TypedNamedValueType {
                                             package: TypedPackage::Resolved(Package::from(vec![
                                                 "test"
                                             ])),
@@ -515,7 +515,7 @@ fn test_struct_member_function() {
                 member_functions: vec![TypedMemberFunction {
                     name: "getA".to_string(),
                     arg_defs: vec![TypedArgDef::RefSelf(Some(TypedType::Value(
-                        TypedValueType {
+                        TypedNamedValueType {
                             package: TypedPackage::Resolved(Package::from(vec!["test"])),
                             name: "A".to_string(),
                             type_args: None
@@ -528,7 +528,7 @@ fn test_struct_member_function() {
                                 target: Box::new(TypedExpr::Name(TypedName {
                                     package: TypedPackage::Resolved(Package::new()),
                                     name: "self".to_string(),
-                                    type_: Some(TypedType::Value(TypedValueType {
+                                    type_: Some(TypedType::Value(TypedNamedValueType {
                                         package: TypedPackage::Resolved(Package::from(vec![
                                             "test"
                                         ])),
@@ -600,7 +600,7 @@ fn test_struct_member_function_call() {
                                         target: Box::new(TypedExpr::Name(TypedName {
                                             package: TypedPackage::Resolved(Package::new()),
                                             name: "self".to_string(),
-                                            type_: Some(TypedType::Value(TypedValueType {
+                                            type_: Some(TypedType::Value(TypedNamedValueType {
                                                 package: TypedPackage::Resolved(Package::from(
                                                     vec!["test"]
                                                 )),
@@ -629,7 +629,7 @@ fn test_struct_member_function_call() {
                     member_functions: vec![TypedMemberFunction {
                         name: "getA".to_string(),
                         arg_defs: vec![TypedArgDef::RefSelf(Some(TypedType::Value(
-                            TypedValueType {
+                            TypedNamedValueType {
                                 package: TypedPackage::Resolved(Package::from(vec!["test"])),
                                 name: "A".to_string(),
                                 type_args: None
@@ -642,7 +642,7 @@ fn test_struct_member_function_call() {
                                     target: Box::new(TypedExpr::Name(TypedName {
                                         package: TypedPackage::Resolved(Package::new()),
                                         name: "self".to_string(),
-                                        type_: Some(TypedType::Value(TypedValueType {
+                                        type_: Some(TypedType::Value(TypedNamedValueType {
                                             package: TypedPackage::Resolved(Package::from(vec![
                                                 "test"
                                             ])),
@@ -668,7 +668,7 @@ fn test_struct_member_function_call() {
                     arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
                         label: "_".to_string(),
                         name: "a".to_string(),
-                        type_: TypedType::Value(TypedValueType {
+                        type_: TypedType::Value(TypedNamedValueType {
                             package: TypedPackage::Resolved(Package::from(vec!["test"])),
                             name: "A".to_string(),
                             type_args: None
@@ -680,7 +680,7 @@ fn test_struct_member_function_call() {
                                 target: Box::new(TypedExpr::Name(TypedName {
                                     package: TypedPackage::Resolved(Package::new()),
                                     name: "a".to_string(),
-                                    type_: Some(TypedType::Value(TypedValueType {
+                                    type_: Some(TypedType::Value(TypedNamedValueType {
                                         package: TypedPackage::Resolved(Package::from(vec![
                                             "test"
                                         ])),
@@ -692,7 +692,7 @@ fn test_struct_member_function_call() {
                                 is_safe: false,
                                 type_: Some(TypedType::Function(Box::new(TypedFunctionType {
                                     arguments: vec![TypedArgDef::RefSelf(Some(TypedType::Value(
-                                        TypedValueType {
+                                        TypedNamedValueType {
                                             package: TypedPackage::Resolved(Package::from(vec![
                                                 "test"
                                             ])),

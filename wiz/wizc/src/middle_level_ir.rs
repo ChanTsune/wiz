@@ -13,7 +13,7 @@ use crate::high_level_ir::typed_stmt::{
     TypedAssignmentAndOperator, TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt,
 };
 use crate::high_level_ir::typed_type::{
-    TypedFunctionType, TypedPackage, TypedType, TypedValueType,
+    TypedFunctionType, TypedPackage, TypedType, TypedNamedValueType,
 };
 use std::collections::HashMap;
 use std::error::Error;
@@ -172,7 +172,7 @@ impl HLIR2MLIR {
         }
     }
 
-    fn value_type(&self, t: TypedValueType) -> MLValueType {
+    fn value_type(&self, t: TypedNamedValueType) -> MLValueType {
         if t.is_unsafe_pointer() {
             match self.type_(t.type_args.unwrap()[0].clone()) {
                 MLType::Value(v) => MLValueType::Pointer(Box::new(v)),

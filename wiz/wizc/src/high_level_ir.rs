@@ -15,7 +15,7 @@ use crate::high_level_ir::typed_stmt::{
     TypedBlock, TypedForStmt, TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
 };
 use crate::high_level_ir::typed_type::{
-    Package, TypedPackage, TypedType, TypedTypeParam, TypedValueType,
+    Package, TypedPackage, TypedType, TypedTypeParam, TypedNamedValueType,
 };
 use crate::high_level_ir::typed_use::TypedUse;
 use crate::utils::path_string_to_page_name;
@@ -253,7 +253,7 @@ impl Ast2HLIR {
 
     pub fn type_(&self, tn: TypeName) -> TypedType {
         match tn {
-            TypeName::Simple(stn) => TypedType::Value(TypedValueType {
+            TypeName::Simple(stn) => TypedType::Value(TypedNamedValueType {
                 package: TypedPackage::Raw(Package::new()),
                 name: stn.name.token,
                 type_args: stn.type_args.map(|v| {
@@ -291,7 +291,7 @@ impl Ast2HLIR {
                     TypeName::Simple(s) => s,
                     _ => panic!(),
                 };
-                TypedType::Value(TypedValueType {
+                TypedType::Value(TypedNamedValueType {
                     package: TypedPackage::Raw(Package::from(
                         name_space
                             .elements
@@ -372,7 +372,7 @@ impl Ast2HLIR {
             })
             .collect();
         if s.initializers.is_empty() {
-            let struct_type = TypedValueType {
+            let struct_type = TypedNamedValueType {
                 package: TypedPackage::Raw(Package::new()),
                 name: s.name.clone(),
                 type_args: None,

@@ -22,7 +22,7 @@ use crate::high_level_ir::typed_stmt::{
     TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
 };
 use crate::high_level_ir::typed_type::{
-    Package, TypedFunctionType, TypedPackage, TypedType, TypedValueType,
+    Package, TypedFunctionType, TypedPackage, TypedType, TypedNamedValueType,
 };
 
 #[derive(Debug, Clone)]
@@ -70,7 +70,7 @@ impl TypeResolver {
                     ns.register_type(s.name.clone(), ResolverStruct::new());
                     ns.register_value(
                         s.name.clone(),
-                        TypedType::Type(TypedValueType {
+                        TypedType::Type(TypedNamedValueType {
                             package: TypedPackage::Resolved(Package::from(
                                 current_namespace.clone(),
                             )),
@@ -191,7 +191,7 @@ impl TypeResolver {
             member_functions,
         } = s;
         let current_namespace = self.context.current_namespace.clone();
-        let this_type = TypedType::Value(TypedValueType {
+        let this_type = TypedType::Value(TypedNamedValueType {
             package: TypedPackage::Resolved(Package::from(current_namespace)),
             name: name.clone(),
             type_args: None,
@@ -421,7 +421,7 @@ impl TypeResolver {
             member_functions,
         } = s;
         let current_namespace = self.context.current_namespace.clone();
-        let this_type = TypedType::Value(TypedValueType {
+        let this_type = TypedType::Value(TypedNamedValueType {
             package: TypedPackage::Resolved(Package::from(current_namespace)),
             name: name.clone(),
             type_args: None,

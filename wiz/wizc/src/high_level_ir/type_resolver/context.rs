@@ -4,7 +4,7 @@ use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_decl::{TypedArgDef, TypedValueArgDef};
 use crate::high_level_ir::typed_expr::TypedBinaryOperator;
 use crate::high_level_ir::typed_type::{
-    Package, TypedFunctionType, TypedPackage, TypedType, TypedValueType,
+    Package, TypedFunctionType, TypedPackage, TypedType, TypedNamedValueType,
 };
 use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::{HashMap, HashSet};
@@ -474,7 +474,7 @@ impl ResolverContext {
         }
     }
 
-    fn full_value_type_name(&self, type_: TypedValueType) -> Result<TypedValueType> {
+    fn full_value_type_name(&self, type_: TypedNamedValueType) -> Result<TypedNamedValueType> {
         let env = self.get_current_name_environment();
         Result::Ok(match type_.package {
             TypedPackage::Raw(p) => {
@@ -486,7 +486,7 @@ impl ResolverContext {
                                 "Can not resolve name {:?}",
                                 &type_.name
                             )))?;
-                    TypedValueType {
+                    TypedNamedValueType {
                         package: TypedPackage::Resolved(Package::from(ns.clone())),
                         name: type_.name.clone(),
                         type_args: match type_.type_args.clone() {
@@ -515,7 +515,7 @@ impl ResolverContext {
                             let _ = ns.get_type(&type_.name).ok_or(ResolverError::from(
                                 format!("Cannot resolve name {:?}", &type_.name),
                             ))?;
-                            TypedValueType {
+                            TypedNamedValueType {
                                 package: TypedPackage::Resolved(Package::from(
                                     ns.name_space.clone(),
                                 )),
@@ -571,7 +571,7 @@ impl ResolverContext {
 #[cfg(test)]
 mod tests {
     use crate::high_level_ir::type_resolver::context::{EnvValue, NameSpace, ResolverContext};
-    use crate::high_level_ir::typed_type::{Package, TypedPackage, TypedType, TypedValueType};
+    use crate::high_level_ir::typed_type::{Package, TypedPackage, TypedType, TypedNamedValueType};
 
     #[test]
     fn test_name_space() {
@@ -644,7 +644,7 @@ mod tests {
             env.names.get("Int32"),
             Some(&(
                 vec![],
-                EnvValue::Value(TypedType::Type(TypedValueType {
+                EnvValue::Value(TypedType::Type(TypedNamedValueType {
                     package: TypedPackage::Resolved(Package::global()),
                     name: "Int32".to_string(),
                     type_args: None
