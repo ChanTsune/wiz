@@ -1,10 +1,8 @@
 [package]
-name = "wiz_lexar"
+name = "wiz_dev_utils"
 version = "0.0.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-[dev-dependencies]
-wiz_dev_utils = { path = "../wiz_dev_utils" }

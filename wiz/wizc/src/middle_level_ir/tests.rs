@@ -237,7 +237,7 @@ fn test_struct_init() {
                                         type_: MLValueType::Primitive(MLPrimitiveType::Int64),
                                     }),
                                 }],
-                                type_: MLType::Value(MLValueType::Struct(String::from("test::A"))),
+                                type_: MLValueType::Struct(String::from("test::A")),
                             }))),
                         }))],
                     }),

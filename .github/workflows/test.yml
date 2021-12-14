@@ -32,8 +32,12 @@ jobs:
         with:
           version: "11.0"
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
+      - name: echo rust version
+        run: rustc --version
       - name: run test
         run: find wiz -type f -name '*.toml' | xargs -I {} cargo test --manifest-path {} --release
+        env:
+          RUST_BACKTRACE: 1
 
   run_wiz_test:
     strategy:
@@ -63,6 +67,8 @@ jobs:
         with:
           version: "11.0"
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
+      - name: echo rust version
+        run: rustc --version
       - name: install wiz
         run: sh install.sh
       - name: create wiz project
@@ -72,3 +78,5 @@ jobs:
           cd test_project
           wiz build
           clang target/test_project.ll
+        env:
+          RUST_BACKTRACE: 1
