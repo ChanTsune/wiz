@@ -87,7 +87,7 @@ impl<'ctx> CodeGen<'ctx> {
             None => self
                 .module
                 .get_function(&*name)
-                .map(|f| f.as_any_value_enum()),
+                .map(|f| AnyValueEnum::FunctionValue(f)),
         }
     }
 
