@@ -1,4 +1,4 @@
-use crate::constants::UNSAFE_POINTER;
+use crate::constants::{self, UNSAFE_POINTER};
 use crate::high_level_ir::typed_decl::TypedArgDef;
 use std::option::Option::Some;
 
@@ -137,59 +137,59 @@ impl TypedNamedValueType {
     }
 
     pub(crate) fn noting() -> Self {
-        Self::builtin("Noting")
+        Self::builtin(constants::NOTING)
     }
 
     pub(crate) fn unit() -> Self {
-        Self::builtin("Unit")
+        Self::builtin(constants::UNIT)
     }
 
     pub(crate) fn int8() -> Self {
-        Self::builtin("Int8")
+        Self::builtin(constants::INT8)
     }
 
     pub(crate) fn int16() -> Self {
-        Self::builtin("Int16")
+        Self::builtin(constants::INT16)
     }
 
     pub(crate) fn int32() -> Self {
-        Self::builtin("Int32")
+        Self::builtin(constants::INT32)
     }
 
     pub(crate) fn int64() -> Self {
-        Self::builtin("Int64")
+        Self::builtin(constants::INT64)
     }
 
     pub(crate) fn uint8() -> Self {
-        Self::builtin("UInt8")
+        Self::builtin(constants::UINT8)
     }
 
     pub(crate) fn uint16() -> Self {
-        Self::builtin("UInt16")
+        Self::builtin(constants::UINT16)
     }
 
     pub(crate) fn uint32() -> Self {
-        Self::builtin("UInt32")
+        Self::builtin(constants::UINT32)
     }
 
     pub(crate) fn uint64() -> Self {
-        Self::builtin("UInt64")
+        Self::builtin(constants::UINT64)
     }
 
     pub(crate) fn float() -> Self {
-        Self::builtin("Float")
+        Self::builtin(constants::F32)
     }
 
     pub(crate) fn double() -> Self {
-        Self::builtin("Double")
+        Self::builtin(constants::F64)
     }
 
     pub(crate) fn bool() -> Self {
-        Self::builtin("Bool")
+        Self::builtin(constants::BOOL)
     }
 
     pub(crate) fn string() -> Self {
-        Self::builtin("String")
+        Self::builtin(constants::STRING)
     }
 
     pub(crate) fn is_unsafe_pointer(&self) -> bool {

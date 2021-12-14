@@ -1,3 +1,4 @@
+use crate::constants;
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct,
@@ -185,24 +186,24 @@ impl HLIR2MLIR {
             let mut pkg = t.package.clone().into_resolved().names;
             if pkg.is_empty() {
                 match &*t.name {
-                    "Noting" => MLValueType::Primitive(MLPrimitiveType::Noting),
-                    "Unit" => MLValueType::Primitive(MLPrimitiveType::Unit),
-                    "Int8" => MLValueType::Primitive(MLPrimitiveType::Int8),
-                    "UInt8" => MLValueType::Primitive(MLPrimitiveType::UInt8),
-                    "Int16" => MLValueType::Primitive(MLPrimitiveType::Int16),
-                    "UInt16" => MLValueType::Primitive(MLPrimitiveType::UInt16),
-                    "Int32" => MLValueType::Primitive(MLPrimitiveType::Int32),
-                    "UInt32" => MLValueType::Primitive(MLPrimitiveType::UInt32),
-                    "Int64" => MLValueType::Primitive(MLPrimitiveType::Int64),
-                    "UInt64" => MLValueType::Primitive(MLPrimitiveType::UInt64),
-                    "Int128" => MLValueType::Primitive(MLPrimitiveType::Int128),
-                    "UInt128" => MLValueType::Primitive(MLPrimitiveType::UInt128),
-                    "Size" => MLValueType::Primitive(MLPrimitiveType::Size),
-                    "USize" => MLValueType::Primitive(MLPrimitiveType::USize),
-                    "Bool" => MLValueType::Primitive(MLPrimitiveType::Bool),
-                    "Float" => MLValueType::Primitive(MLPrimitiveType::Float),
-                    "Double" => MLValueType::Primitive(MLPrimitiveType::Double),
-                    "String" => MLValueType::Primitive(MLPrimitiveType::String),
+                    constants::NOTING => MLValueType::Primitive(MLPrimitiveType::Noting),
+                    constants::UNIT => MLValueType::Primitive(MLPrimitiveType::Unit),
+                    constants::INT8 => MLValueType::Primitive(MLPrimitiveType::Int8),
+                    constants::UINT8 => MLValueType::Primitive(MLPrimitiveType::UInt8),
+                    constants::INT16 => MLValueType::Primitive(MLPrimitiveType::Int16),
+                    constants::UINT16 => MLValueType::Primitive(MLPrimitiveType::UInt16),
+                    constants::INT32 => MLValueType::Primitive(MLPrimitiveType::Int32),
+                    constants::UINT32 => MLValueType::Primitive(MLPrimitiveType::UInt32),
+                    constants::INT64 => MLValueType::Primitive(MLPrimitiveType::Int64),
+                    constants::UINT64 => MLValueType::Primitive(MLPrimitiveType::UInt64),
+                    constants::INT128 => MLValueType::Primitive(MLPrimitiveType::Int128),
+                    constants::UINT128 => MLValueType::Primitive(MLPrimitiveType::UInt128),
+                    constants::SIZE => MLValueType::Primitive(MLPrimitiveType::Size),
+                    constants::USIZE => MLValueType::Primitive(MLPrimitiveType::USize),
+                    constants::BOOL => MLValueType::Primitive(MLPrimitiveType::Bool),
+                    constants::F32 => MLValueType::Primitive(MLPrimitiveType::Float),
+                    constants::F64 => MLValueType::Primitive(MLPrimitiveType::Double),
+                    constants::STRING => MLValueType::Primitive(MLPrimitiveType::String),
                     other => {
                         pkg.push(String::from(other));
                         MLValueType::Struct(pkg.join("::"))
