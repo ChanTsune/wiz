@@ -383,7 +383,7 @@ impl ToString for TypedType {
             TypedType::Type(t) => {
                 format!("Type<{}>", t.to_string())
             }
-            TypedType::Reference(t) => String::from("&") + &*t.to_string(),
+            TypedType::Reference(t) => format!("&{}", t.to_string()),
         }
     }
 }
