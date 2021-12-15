@@ -53,7 +53,13 @@ pub struct _TypedFunctionType {
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub struct _TypedArgType {
     pub label: String,
-    pub typ: TypedType,
+    pub typ: _TypedType,
+}
+
+impl _TypedArgType {
+    pub(crate) fn is_self(&self) -> bool {
+        self.typ.is_self()
+    }
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
