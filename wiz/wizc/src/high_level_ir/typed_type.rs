@@ -23,9 +23,16 @@ pub enum TypedType {
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub enum _TypedType {
+    Self_,
     Value(TypedValueType),
     Function(Box<_TypedFunctionType>),
     Type(Box<_TypedType>),
+}
+
+impl _TypedType {
+    pub(crate) fn is_self(&self) -> bool {
+        matches!(self, Self::Self_)
+    }
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
