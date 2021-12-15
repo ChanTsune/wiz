@@ -100,6 +100,10 @@ impl TypedValueType {
     pub fn string() -> Self {
         Self::Value(TypedNamedValueType::string())
     }
+
+    pub fn is_unsafe_pointer(&self) -> bool {
+        matches!(self, Self::Pointer(_))
+    }
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
