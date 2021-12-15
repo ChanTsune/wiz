@@ -44,6 +44,64 @@ pub enum TypedValueType {
     Reference(Box<_TypedType>),
 }
 
+impl TypedValueType {
+    pub fn noting() -> Self {
+        Self::Value(TypedNamedValueType::noting())
+    }
+
+    pub fn unit() -> Self {
+        Self::Value(TypedNamedValueType::unit())
+    }
+
+    pub fn int8() -> Self {
+        Self::Value(TypedNamedValueType::int8())
+    }
+
+    pub fn int16() -> Self {
+        Self::Value(TypedNamedValueType::int16())
+    }
+
+    pub fn int32() -> Self {
+        Self::Value(TypedNamedValueType::int32())
+    }
+
+    pub fn int64() -> Self {
+        Self::Value(TypedNamedValueType::int64())
+    }
+
+    pub fn uint8() -> Self {
+        Self::Value(TypedNamedValueType::uint8())
+    }
+
+    pub fn uint16() -> Self {
+        Self::Value(TypedNamedValueType::uint16())
+    }
+
+    pub fn uint32() -> Self {
+        Self::Value(TypedNamedValueType::uint32())
+    }
+
+    pub fn uint64() -> Self {
+        Self::Value(TypedNamedValueType::uint64())
+    }
+
+    pub fn float() -> Self {
+        Self::Value(TypedNamedValueType::float())
+    }
+
+    pub fn double() -> Self {
+        Self::Value(TypedNamedValueType::double())
+    }
+
+    pub fn bool() -> Self {
+        Self::Value(TypedNamedValueType::bool())
+    }
+
+    pub fn string() -> Self {
+        Self::Value(TypedNamedValueType::string())
+    }
+}
+
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub struct _TypedFunctionType {
     pub args_type: Vec<TypedArgType>,
