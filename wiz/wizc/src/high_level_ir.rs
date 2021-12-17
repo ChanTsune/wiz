@@ -196,7 +196,15 @@ impl Ast2HLIR {
                 type_: self.type_(a.type_name),
             }),
             ArgDef::Self_(s) => match s.reference {
-                None => TypedArgDef::Self_(None),
+                None => TypedArgDef::Value(TypedValueArgDef {
+                    label: "_".to_string(),
+                    name: "self".to_string(),
+                    type_: TypedType::Value(TypedNamedValueType {
+                        package: TypedPackage::Raw(Package::global()),
+                        name: "Self".to_string(),
+                        type_args: None
+                    })
+                }),
                 Some(_) => TypedArgDef::RefSelf(None),
             },
         }
