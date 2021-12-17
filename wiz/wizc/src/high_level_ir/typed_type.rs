@@ -106,6 +106,12 @@ impl TypedValueType {
     }
 }
 
+impl ToString for TypedValueType {
+    fn to_string(&self) -> String {
+        todo!()
+    }
+}
+
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub struct _TypedFunctionType {
     pub args_type: Vec<TypedArgType>,
