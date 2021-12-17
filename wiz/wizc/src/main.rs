@@ -205,16 +205,16 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         String::from(output_path.to_str().unwrap())
     };
 
+    if let Some(target_triple) = config.target_triple() {
+        codegen.set_target_triple(target_triple);
+    }
+
     let mut out_path = out_dir;
     out_path.push(output);
 
     println!("Output Path -> {:?}", out_path);
 
     codegen.print_to_file(out_path)?;
-
-    if let Some(target_triple) = config.target_triple() {
-        codegen.set_target_triple(target_triple);
-    }
 
     Ok(())
 }
