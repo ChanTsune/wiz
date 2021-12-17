@@ -539,6 +539,9 @@ impl ResolverContext {
     }
 
     pub fn full_type_name(&self, typ: TypedType) -> Result<TypedType> {
+        if typ.is_self() {
+            self.current_type.clone().ok_or_else(||ResolverError::from(format!("can not resolve Self")))
+        } else {
         Result::Ok(match typ {
             TypedType::Value(v) => TypedType::Value(self.full_value_type_name(v)?),
             TypedType::Type(v) => TypedType::Type(self.full_value_type_name(v)?),
@@ -565,6 +568,7 @@ impl ResolverContext {
                 return_type: self.full_type_name(f.return_type.clone())?,
             })),
         })
+        }
     }
 }
 
