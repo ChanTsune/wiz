@@ -561,7 +561,7 @@ impl ResolverContext {
                             }
                         })
                     })
-                    .collect::<Result<Vec<TypedArgDef>>>()?,
+                    .collect::<Result<Vec<_>>>()?,
                 return_type: self.full_type_name(f.return_type.clone())?,
             })),
         })
