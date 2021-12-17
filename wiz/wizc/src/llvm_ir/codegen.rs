@@ -81,12 +81,12 @@ impl<'ctx> CodeGen<'ctx> {
         }
     }
 
-    fn get_from_environment(&self, name: String) -> Option<AnyValueEnum<'ctx>> {
-        match self.ml_context.local_environments.get(&name) {
+    fn get_from_environment(&self, name: &String) -> Option<AnyValueEnum<'ctx>> {
+        match self.ml_context.local_environments.get(name) {
             Some(v) => Some(*v),
             None => self
                 .module
-                .get_function(&*name)
+                .get_function(name)
                 .map(|f| AnyValueEnum::FunctionValue(f)),
         }
     }
@@ -125,7 +125,10 @@ impl<'ctx> CodeGen<'ctx> {
 
     pub fn expr(&mut self, e: MLExpr) -> AnyValueEnum<'ctx> {
         match e {
-            MLExpr::Name(n) => self.get_from_environment(n.name).unwrap(),
+            MLExpr::Name(n) => match self.get_from_environment(&n.name) {
+                None => {panic!("Can not resolve name {}", n.name)}
+                Some(n) => {n}
+            },
             MLExpr::Literal(literal) => self.literal(literal),
             MLExpr::PrimitiveBinOp(b) => self.binop(b),
             MLExpr::PrimitiveUnaryOp(u) => self.unary_op(u),
