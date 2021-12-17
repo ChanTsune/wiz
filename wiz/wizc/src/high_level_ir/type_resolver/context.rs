@@ -540,34 +540,38 @@ impl ResolverContext {
 
     pub fn full_type_name(&self, typ: TypedType) -> Result<TypedType> {
         if typ.is_self() {
-            self.current_type.clone().ok_or_else(||ResolverError::from(format!("can not resolve Self")))
+            self.current_type
+                .clone()
+                .ok_or_else(|| ResolverError::from(format!("can not resolve Self")))
         } else {
-        Result::Ok(match typ {
-            TypedType::Value(v) => TypedType::Value(self.full_value_type_name(v)?),
-            TypedType::Type(v) => TypedType::Type(self.full_value_type_name(v)?),
-            TypedType::Reference(v) => TypedType::Reference(self.full_value_type_name(v)?),
-            TypedType::Function(f) => TypedType::Function(Box::new(TypedFunctionType {
-                arguments: f
-                    .arguments
-                    .clone()
-                    .into_iter()
-                    .map(|a| {
-                        Result::Ok(match a {
-                            TypedArgDef::Value(v) => TypedArgDef::Value(TypedValueArgDef {
-                                label: v.label,
-                                name: v.name,
-                                type_: self.full_type_name(v.type_)?,
-                            }),
-                            TypedArgDef::Self_(_) => TypedArgDef::Self_(self.current_type.clone()),
-                            TypedArgDef::RefSelf(_) => {
-                                TypedArgDef::RefSelf(self.current_type.clone())
-                            }
+            Result::Ok(match typ {
+                TypedType::Value(v) => TypedType::Value(self.full_value_type_name(v)?),
+                TypedType::Type(v) => TypedType::Type(self.full_value_type_name(v)?),
+                TypedType::Reference(v) => TypedType::Reference(self.full_value_type_name(v)?),
+                TypedType::Function(f) => TypedType::Function(Box::new(TypedFunctionType {
+                    arguments: f
+                        .arguments
+                        .clone()
+                        .into_iter()
+                        .map(|a| {
+                            Result::Ok(match a {
+                                TypedArgDef::Value(v) => TypedArgDef::Value(TypedValueArgDef {
+                                    label: v.label,
+                                    name: v.name,
+                                    type_: self.full_type_name(v.type_)?,
+                                }),
+                                TypedArgDef::Self_(_) => {
+                                    TypedArgDef::Self_(self.current_type.clone())
+                                }
+                                TypedArgDef::RefSelf(_) => {
+                                    TypedArgDef::RefSelf(self.current_type.clone())
+                                }
+                            })
                         })
-                    })
-                    .collect::<Result<Vec<_>>>()?,
-                return_type: self.full_type_name(f.return_type.clone())?,
-            })),
-        })
+                        .collect::<Result<Vec<_>>>()?,
+                    return_type: self.full_type_name(f.return_type.clone())?,
+                })),
+            })
         }
     }
 }
