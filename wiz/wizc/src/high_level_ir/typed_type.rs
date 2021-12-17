@@ -455,10 +455,10 @@ impl TypedType {
 
     pub fn is_self(&self) -> bool {
         match self {
-            TypedType::Value(v) => {v.name == "Self"}
-            TypedType::Function(_) => {false}
-            TypedType::Type(t) => {t.name == "Self"}
-            TypedType::Reference(r) => {r.name == "Self"}
+            TypedType::Value(v) => v.name == "Self",
+            TypedType::Function(_) => false,
+            TypedType::Type(t) => t.name == "Self",
+            TypedType::Reference(r) => r.name == "Self",
         }
     }
 }
