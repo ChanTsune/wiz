@@ -202,8 +202,8 @@ impl Ast2HLIR {
                     type_: TypedType::Value(TypedNamedValueType {
                         package: TypedPackage::Raw(Package::global()),
                         name: "Self".to_string(),
-                        type_args: None
-                    })
+                        type_args: None,
+                    }),
                 }),
                 Some(_) => TypedArgDef::RefSelf(None),
             },
