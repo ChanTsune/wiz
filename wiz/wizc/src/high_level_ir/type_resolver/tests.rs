@@ -514,13 +514,17 @@ fn test_struct_member_function() {
                 computed_properties: vec![],
                 member_functions: vec![TypedMemberFunction {
                     name: "getA".to_string(),
-                    arg_defs: vec![TypedArgDef::RefSelf(Some(TypedType::Value(
-                        TypedNamedValueType {
-                            package: TypedPackage::Resolved(Package::from(vec!["test"])),
-                            name: "A".to_string(),
-                            type_args: None
-                        }
-                    )))],
+                    arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
+                        label: "_".to_string(),
+                        name: "self".to_string(),
+                        type_: TypedType::Value( // TODO: TypedType::Reference
+                            TypedNamedValueType {
+                                package: TypedPackage::Resolved(Package::from(vec!["test"])),
+                                name: "A".to_string(),
+                                type_args: None
+                            }
+                        )
+                    })],
                     type_params: None,
                     body: Some(TypedFunBody::Block(TypedBlock {
                         body: vec![TypedStmt::Expr(TypedExpr::Return(TypedReturn {
@@ -628,13 +632,17 @@ fn test_struct_member_function_call() {
                     computed_properties: vec![],
                     member_functions: vec![TypedMemberFunction {
                         name: "getA".to_string(),
-                        arg_defs: vec![TypedArgDef::RefSelf(Some(TypedType::Value(
-                            TypedNamedValueType {
-                                package: TypedPackage::Resolved(Package::from(vec!["test"])),
-                                name: "A".to_string(),
-                                type_args: None
-                            }
-                        )))],
+                        arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
+                            label: "_".to_string(),
+                            name: "self".to_string(),
+                            type_: TypedType::Value( // TypedType::Reference
+                                TypedNamedValueType {
+                                    package: TypedPackage::Resolved(Package::from(vec!["test"])),
+                                    name: "A".to_string(),
+                                    type_args: None
+                                }
+                            )
+                        })],
                         type_params: None,
                         body: Some(TypedFunBody::Block(TypedBlock {
                             body: vec![TypedStmt::Expr(TypedExpr::Return(TypedReturn {
@@ -691,15 +699,19 @@ fn test_struct_member_function_call() {
                                 name: "getA".to_string(),
                                 is_safe: false,
                                 type_: Some(TypedType::Function(Box::new(TypedFunctionType {
-                                    arguments: vec![TypedArgDef::RefSelf(Some(TypedType::Value(
-                                        TypedNamedValueType {
-                                            package: TypedPackage::Resolved(Package::from(vec![
-                                                "test"
-                                            ])),
-                                            name: "A".to_string(),
-                                            type_args: None
-                                        }
-                                    )))],
+                                    arguments: vec![TypedArgDef::Value(TypedValueArgDef {
+                                        label: "_".to_string(),
+                                        name: "self".to_string(),
+                                        type_: TypedType::Value(
+                                            TypedNamedValueType {
+                                                package: TypedPackage::Resolved(Package::from(vec![
+                                                    "test"
+                                                ])),
+                                                name: "A".to_string(),
+                                                type_args: None
+                                            }
+                                        )
+                                    })],
                                     return_type: TypedType::int64()
                                 })))
                             })),

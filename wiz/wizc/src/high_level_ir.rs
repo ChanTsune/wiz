@@ -205,7 +205,15 @@ impl Ast2HLIR {
                         type_args: None,
                     }),
                 }),
-                Some(_) => TypedArgDef::RefSelf(None),
+                Some(_) => TypedArgDef::Value(TypedValueArgDef {
+                    label: "_".to_string(),
+                    name: "self".to_string(),
+                    type_: TypedType::Value(TypedNamedValueType { // TODO: TypedType::Reference
+                        package: TypedPackage::Raw(Package::global()),
+                        name: "Self".to_string(),
+                        type_args: None,
+                    }),
+                }),
             },
         }
     }
