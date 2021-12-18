@@ -37,7 +37,7 @@ use wiz_syntax::syntax::literal::LiteralSyntax;
 use wiz_syntax::syntax::statement::{
     AssignmentStmt, ForLoopSyntax, LoopStmt, Stmt, WhileLoopSyntax,
 };
-use wiz_syntax::syntax::type_name::{NameSpacedTypeName, TypeName, TypeParam};
+use wiz_syntax::syntax::type_name::{TypeName, TypeParam, UserTypeName};
 
 pub mod type_resolver;
 pub mod typed_annotation;
@@ -283,20 +283,15 @@ impl Ast2HLIR {
                 }
             }
             TypeName::NameSpaced(n) => {
-                let NameSpacedTypeName {
+                let UserTypeName {
                     name_space,
                     type_name,
                 } = *n;
-                let type_name = match type_name {
-                    TypeName::Simple(s) => s,
-                    _ => panic!(),
-                };
                 TypedType::Value(TypedValueType {
                     package: TypedPackage::Raw(Package::from(
                         name_space
-                            .elements
                             .into_iter()
-                            .map(|i| i.name.token)
+                            .map(|i| i.simple_type.name.token)
                             .collect::<Vec<String>>(),
                     )),
                     name: type_name.name.token,
