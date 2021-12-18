@@ -114,7 +114,7 @@ impl ToString for TypedValueType {
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub struct _TypedFunctionType {
-    pub args_type: Vec<_TypedArgType>,
+    pub arguments: Vec<_TypedArgType>,
     pub return_type: _TypedType,
 }
 
