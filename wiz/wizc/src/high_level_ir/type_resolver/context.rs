@@ -560,12 +560,6 @@ impl ResolverContext {
                                     name: v.name,
                                     type_: self.full_type_name(v.type_)?,
                                 }),
-                                TypedArgDef::Self_(_) => {
-                                    TypedArgDef::Self_(self.current_type.clone())
-                                }
-                                TypedArgDef::RefSelf(_) => {
-                                    TypedArgDef::RefSelf(self.current_type.clone())
-                                }
                             })
                         })
                         .collect::<Result<Vec<_>>>()?,
