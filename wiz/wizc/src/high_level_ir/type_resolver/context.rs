@@ -1,10 +1,10 @@
 use crate::constants::UNSAFE_POINTER;
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
-use crate::high_level_ir::typed_decl::{TypedArgDef, TypedValueArgDef};
+use crate::high_level_ir::typed_decl::TypedArgDef;
 use crate::high_level_ir::typed_expr::TypedBinaryOperator;
 use crate::high_level_ir::typed_type::{
-    Package, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType,
+    Package, TypedArgType, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType,
 };
 use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::{HashMap, HashSet};
@@ -554,18 +554,9 @@ impl ResolverContext {
                         .clone()
                         .into_iter()
                         .map(|a| {
-                            Result::Ok(match a {
-                                TypedArgDef::Value(v) => TypedArgDef::Value(TypedValueArgDef {
-                                    label: v.label,
-                                    name: v.name,
-                                    type_: self.full_type_name(v.type_)?,
-                                }),
-                                TypedArgDef::Self_(_) => {
-                                    TypedArgDef::Self_(self.current_type.clone())
-                                }
-                                TypedArgDef::RefSelf(_) => {
-                                    TypedArgDef::RefSelf(self.current_type.clone())
-                                }
+                            Result::Ok(TypedArgType {
+                                label: a.label,
+                                typ: self.full_type_name(a.typ)?,
                             })
                         })
                         .collect::<Result<Vec<_>>>()?,

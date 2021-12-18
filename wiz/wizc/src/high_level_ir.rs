@@ -1,7 +1,7 @@
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedFun, TypedFunBody, TypedInitializer,
-    TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedValueArgDef, TypedVar,
+    TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedVar,
 };
 use crate::high_level_ir::typed_expr::{
     TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
@@ -187,16 +187,16 @@ impl Ast2HLIR {
 
     pub fn arg_def(&self, a: ArgDef) -> TypedArgDef {
         match a {
-            ArgDef::Value(a) => TypedArgDef::Value(TypedValueArgDef {
+            ArgDef::Value(a) => TypedArgDef {
                 label: match a.label {
                     None => a.name.token.clone(),
                     Some(label) => label.token,
                 },
                 name: a.name.token,
                 type_: self.type_(a.type_name),
-            }),
+            },
             ArgDef::Self_(s) => match s.reference {
-                None => TypedArgDef::Value(TypedValueArgDef {
+                None => TypedArgDef {
                     label: "_".to_string(),
                     name: "self".to_string(),
                     type_: TypedType::Value(TypedNamedValueType {
@@ -204,8 +204,8 @@ impl Ast2HLIR {
                         name: "Self".to_string(),
                         type_args: None,
                     }),
-                }),
-                Some(_) => TypedArgDef::Value(TypedValueArgDef {
+                },
+                Some(_) => TypedArgDef {
                     label: "_".to_string(),
                     name: "self".to_string(),
                     type_: TypedType::Value(TypedNamedValueType {
@@ -214,7 +214,7 @@ impl Ast2HLIR {
                         name: "Self".to_string(),
                         type_args: None,
                     }),
-                }),
+                },
             },
         }
     }
@@ -375,12 +375,10 @@ impl Ast2HLIR {
         let args: Vec<TypedArgDef> = s
             .stored_properties
             .iter()
-            .map(|p| {
-                TypedArgDef::Value(TypedValueArgDef {
-                    label: p.name.clone(),
-                    name: p.name.clone(),
-                    type_: p.type_.clone(),
-                })
+            .map(|p| TypedArgDef {
+                label: p.name.clone(),
+                name: p.name.clone(),
+                type_: p.type_.clone(),
             })
             .collect();
         if s.initializers.is_empty() {

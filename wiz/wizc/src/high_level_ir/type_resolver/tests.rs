@@ -2,7 +2,7 @@ use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedMemberFunction,
-    TypedStoredProperty, TypedStruct, TypedValueArgDef, TypedVar,
+    TypedStoredProperty, TypedStruct, TypedVar,
 };
 use crate::high_level_ir::typed_expr::{
     TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
@@ -13,7 +13,7 @@ use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentStmt, TypedBlock, TypedStmt,
 };
 use crate::high_level_ir::typed_type::{
-    Package, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType,
+    Package, TypedArgType, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType,
 };
 use crate::high_level_ir::Ast2HLIR;
 use wiz_syntax::parser::wiz::parse_from_string;
@@ -79,11 +79,11 @@ fn test_unsafe_pointer() {
                     name: "A".to_string(),
                     type_params: None,
                     initializers: vec![TypedInitializer {
-                        args: vec![TypedArgDef::Value(TypedValueArgDef {
+                        args: vec![TypedArgDef {
                             label: "a".to_string(),
                             name: "a".to_string(),
                             type_: TypedType::unsafe_pointer(TypedType::uint8())
-                        })],
+                        }],
                         body: TypedFunBody::Block(TypedBlock {
                             body: vec![TypedStmt::Assignment(TypedAssignmentStmt::Assignment(
                                 TypedAssignment {
@@ -125,7 +125,7 @@ fn test_unsafe_pointer() {
                     modifiers: vec![],
                     name: "function".to_string(),
                     type_params: None,
-                    arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
+                    arg_defs: vec![TypedArgDef {
                         label: "_".to_string(),
                         name: "a".to_string(),
                         type_: TypedType::Value(TypedNamedValueType {
@@ -133,7 +133,7 @@ fn test_unsafe_pointer() {
                             name: "A".to_string(),
                             type_args: None
                         })
-                    })],
+                    }],
                     body: Option::Some(TypedFunBody::Block(TypedBlock {
                         body: vec![TypedStmt::Decl(TypedDecl::Var(TypedVar {
                             annotations: TypedAnnotations::new(),
@@ -200,11 +200,11 @@ fn test_struct_stored_property() {
                     name: "A".to_string(),
                     type_params: None,
                     initializers: vec![TypedInitializer {
-                        args: vec![TypedArgDef::Value(TypedValueArgDef {
+                        args: vec![TypedArgDef {
                             label: "a".to_string(),
                             name: "a".to_string(),
                             type_: TypedType::int64()
-                        })],
+                        }],
                         body: TypedFunBody::Block(TypedBlock {
                             body: vec![TypedStmt::Assignment(TypedAssignmentStmt::Assignment(
                                 TypedAssignment {
@@ -246,7 +246,7 @@ fn test_struct_stored_property() {
                     modifiers: vec![],
                     name: "function".to_string(),
                     type_params: None,
-                    arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
+                    arg_defs: vec![TypedArgDef {
                         label: "_".to_string(),
                         name: "a".to_string(),
                         type_: TypedType::Value(TypedNamedValueType {
@@ -254,7 +254,7 @@ fn test_struct_stored_property() {
                             name: "A".to_string(),
                             type_args: None
                         })
-                    })],
+                    }],
                     body: Option::Some(TypedFunBody::Block(TypedBlock {
                         body: vec![TypedStmt::Decl(TypedDecl::Var(TypedVar {
                             annotations: TypedAnnotations::new(),
@@ -321,11 +321,11 @@ fn test_struct_init() {
                     name: "A".to_string(),
                     type_params: None,
                     initializers: vec![TypedInitializer {
-                        args: vec![TypedArgDef::Value(TypedValueArgDef {
+                        args: vec![TypedArgDef {
                             label: "a".to_string(),
                             name: "a".to_string(),
                             type_: TypedType::int64()
-                        })],
+                        }],
                         body: TypedFunBody::Block(TypedBlock {
                             body: vec![TypedStmt::Assignment(TypedAssignmentStmt::Assignment(
                                 TypedAssignment {
@@ -367,7 +367,7 @@ fn test_struct_init() {
                     modifiers: vec![],
                     name: "function".to_string(),
                     type_params: None,
-                    arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
+                    arg_defs: vec![TypedArgDef {
                         label: "_".to_string(),
                         name: "a".to_string(),
                         type_: TypedType::Value(TypedNamedValueType {
@@ -375,7 +375,7 @@ fn test_struct_init() {
                             name: "A".to_string(),
                             type_args: None,
                         }),
-                    })],
+                    }],
                     body: Option::Some(TypedFunBody::Block(TypedBlock {
                         body: vec![TypedStmt::Decl(TypedDecl::Var(TypedVar {
                             annotations: TypedAnnotations::new(),
@@ -403,11 +403,10 @@ fn test_struct_init() {
                                     name: "init".to_string(),
                                     is_safe: false,
                                     type_: Some(TypedType::Function(Box::new(TypedFunctionType {
-                                        arguments: vec![TypedArgDef::Value(TypedValueArgDef {
+                                        arguments: vec![TypedArgType {
                                             label: "a".to_string(),
-                                            name: "a".to_string(),
-                                            type_: TypedType::int64()
-                                        })],
+                                            typ: TypedType::int64()
+                                        }],
                                         return_type: TypedType::Value(TypedNamedValueType {
                                             package: TypedPackage::Resolved(Package::from(vec![
                                                 "test"
@@ -474,11 +473,11 @@ fn test_struct_member_function() {
                 name: "A".to_string(),
                 type_params: None,
                 initializers: vec![TypedInitializer {
-                    args: vec![TypedArgDef::Value(TypedValueArgDef {
+                    args: vec![TypedArgDef {
                         label: "a".to_string(),
                         name: "a".to_string(),
                         type_: TypedType::int64()
-                    })],
+                    }],
                     body: TypedFunBody::Block(TypedBlock {
                         body: vec![TypedStmt::Assignment(TypedAssignmentStmt::Assignment(
                             TypedAssignment {
@@ -514,7 +513,7 @@ fn test_struct_member_function() {
                 computed_properties: vec![],
                 member_functions: vec![TypedMemberFunction {
                     name: "getA".to_string(),
-                    arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
+                    arg_defs: vec![TypedArgDef {
                         label: "_".to_string(),
                         name: "self".to_string(),
                         type_: TypedType::Value(
@@ -525,7 +524,7 @@ fn test_struct_member_function() {
                                 type_args: None
                             }
                         )
-                    })],
+                    }],
                     type_params: None,
                     body: Some(TypedFunBody::Block(TypedBlock {
                         body: vec![TypedStmt::Expr(TypedExpr::Return(TypedReturn {
@@ -593,11 +592,11 @@ fn test_struct_member_function_call() {
                     name: "A".to_string(),
                     type_params: None,
                     initializers: vec![TypedInitializer {
-                        args: vec![TypedArgDef::Value(TypedValueArgDef {
+                        args: vec![TypedArgDef {
                             label: "a".to_string(),
                             name: "a".to_string(),
                             type_: TypedType::int64()
-                        })],
+                        }],
                         body: TypedFunBody::Block(TypedBlock {
                             body: vec![TypedStmt::Assignment(TypedAssignmentStmt::Assignment(
                                 TypedAssignment {
@@ -633,7 +632,7 @@ fn test_struct_member_function_call() {
                     computed_properties: vec![],
                     member_functions: vec![TypedMemberFunction {
                         name: "getA".to_string(),
-                        arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
+                        arg_defs: vec![TypedArgDef {
                             label: "_".to_string(),
                             name: "self".to_string(),
                             type_: TypedType::Value(
@@ -644,7 +643,7 @@ fn test_struct_member_function_call() {
                                     type_args: None
                                 }
                             )
-                        })],
+                        }],
                         type_params: None,
                         body: Some(TypedFunBody::Block(TypedBlock {
                             body: vec![TypedStmt::Expr(TypedExpr::Return(TypedReturn {
@@ -675,7 +674,7 @@ fn test_struct_member_function_call() {
                     modifiers: vec![],
                     name: "function".to_string(),
                     type_params: None,
-                    arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
+                    arg_defs: vec![TypedArgDef {
                         label: "_".to_string(),
                         name: "a".to_string(),
                         type_: TypedType::Value(TypedNamedValueType {
@@ -683,7 +682,7 @@ fn test_struct_member_function_call() {
                             name: "A".to_string(),
                             type_args: None
                         })
-                    })],
+                    }],
                     body: Some(TypedFunBody::Block(TypedBlock {
                         body: vec![TypedStmt::Expr(TypedExpr::Call(TypedCall {
                             target: Box::new(TypedExpr::Member(TypedInstanceMember {
@@ -701,17 +700,16 @@ fn test_struct_member_function_call() {
                                 name: "getA".to_string(),
                                 is_safe: false,
                                 type_: Some(TypedType::Function(Box::new(TypedFunctionType {
-                                    arguments: vec![TypedArgDef::Value(TypedValueArgDef {
+                                    arguments: vec![TypedArgType {
                                         label: "_".to_string(),
-                                        name: "self".to_string(),
-                                        type_: TypedType::Value(TypedNamedValueType {
+                                        typ: TypedType::Value(TypedNamedValueType {
                                             package: TypedPackage::Resolved(Package::from(vec![
                                                 "test"
                                             ])),
                                             name: "A".to_string(),
                                             type_args: None
                                         })
-                                    })],
+                                    }],
                                     return_type: TypedType::int64()
                                 })))
                             })),
@@ -795,11 +793,11 @@ fn test_expr_function_with_arg() {
                 modifiers: vec![],
                 name: "function".to_string(),
                 type_params: None,
-                arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
+                arg_defs: vec![TypedArgDef {
                     label: "_".to_string(),
                     name: "i".to_string(),
                     type_: TypedType::int32()
-                })],
+                }],
                 body: Some(TypedFunBody::Expr(TypedExpr::Name(TypedName {
                     package: TypedPackage::Resolved(Package::new()),
                     name: "i".to_string(),
@@ -1051,11 +1049,11 @@ fn test_subscript() {
                 modifiers: vec![],
                 name: "get_first".to_string(),
                 type_params: None,
-                arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
+                arg_defs: vec![TypedArgDef {
                     label: "_".to_string(),
                     name: "p".to_string(),
                     type_: TypedType::unsafe_pointer(TypedType::uint8())
-                })],
+                }],
                 body: Option::from(TypedFunBody::Expr(TypedExpr::Subscript(TypedSubscript {
                     target: Box::new(TypedExpr::Name(TypedName {
                         package: TypedPackage::Resolved(Package::new()),
@@ -1104,11 +1102,11 @@ fn test_if_else() {
                 modifiers: vec![],
                 name: "test_if".to_string(),
                 type_params: None,
-                arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
+                arg_defs: vec![TypedArgDef {
                     label: "i".to_string(),
                     name: "i".to_string(),
                     type_: TypedType::int64()
-                })],
+                }],
                 body: Option::from(TypedFunBody::Block(TypedBlock {
                     body: vec![TypedStmt::Expr(TypedExpr::Return(TypedReturn {
                         value: Some(Box::new(TypedExpr::If(TypedIf {
@@ -1182,11 +1180,11 @@ fn test_if() {
                 modifiers: vec![],
                 name: "test_if".to_string(),
                 type_params: None,
-                arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
+                arg_defs: vec![TypedArgDef {
                     label: "i".to_string(),
                     name: "i".to_string(),
                     type_: TypedType::int64()
-                })],
+                }],
                 body: Option::from(TypedFunBody::Block(TypedBlock {
                     body: vec![TypedStmt::Expr(TypedExpr::If(TypedIf {
                         condition: Box::new(TypedExpr::BinOp(TypedBinOp {

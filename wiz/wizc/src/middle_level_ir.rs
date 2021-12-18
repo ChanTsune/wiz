@@ -1,8 +1,7 @@
 use crate::constants;
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_decl::{
-    TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct,
-    TypedValueArgDef, TypedVar,
+    TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct, TypedVar,
 };
 use crate::high_level_ir::typed_expr::{
     TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
@@ -221,7 +220,7 @@ impl HLIR2MLIR {
             arguments: t
                 .arguments
                 .into_iter()
-                .map(|a| match self.type_(a.type_().unwrap()) {
+                .map(|a| match self.type_(a.typ) {
                     MLType::Value(v) => v,
                     MLType::Function(_) => exit(-9),
                 })
@@ -743,15 +742,13 @@ impl HLIR2MLIR {
                                 + &*self.fun_arg_label_type_name_mangling(
                                     &args
                                         .iter()
-                                        .map(|a| {
-                                            TypedArgDef::Value(TypedValueArgDef {
-                                                label: match &a.label {
-                                                    None => "_".to_string(),
-                                                    Some(l) => l.to_string(),
-                                                },
-                                                name: "".to_string(),
-                                                type_: a.arg.type_().unwrap(),
-                                            })
+                                        .map(|a| TypedArgDef {
+                                            label: match &a.label {
+                                                None => "_".to_string(),
+                                                Some(l) => l.to_string(),
+                                            },
+                                            name: "".to_string(),
+                                            type_: a.arg.type_().unwrap(),
                                         })
                                         .collect(),
                                 )
@@ -800,8 +797,8 @@ impl HLIR2MLIR {
 
     fn arg_def(&self, e: TypedArgDef) -> MLArgDef {
         MLArgDef {
-            name: e.name(),
-            type_: self.type_(e.type_().unwrap()).into_value_type(),
+            name: e.name,
+            type_: self.type_(e.type_).into_value_type(),
         }
     }
 
@@ -838,7 +835,7 @@ impl HLIR2MLIR {
 
     fn fun_arg_label_type_name_mangling(&self, args: &Vec<TypedArgDef>) -> String {
         args.iter()
-            .map(|arg| arg.label() + "#" + &*arg.type_().unwrap().to_string())
+            .map(|arg| format!("{}#{}", arg.label, arg.type_.to_string()))
             .collect::<Vec<String>>()
             .join("##")
     }
