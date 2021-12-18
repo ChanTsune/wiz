@@ -154,12 +154,8 @@ impl TypeResolver {
             .iter()
             .map(|a| {
                 let a = self.typed_arg_def(a.clone())?;
-                self.context.register_to_env(
-                    a.name.clone(),
-                    EnvValue::from(
-                        a.type_.clone(),
-                    ),
-                );
+                self.context
+                    .register_to_env(a.name.clone(), EnvValue::from(a.type_.clone()));
                 Result::Ok(a)
             })
             .collect::<Result<Vec<TypedArgDef>>>()?;
@@ -364,12 +360,8 @@ impl TypeResolver {
             .iter()
             .map(|a| {
                 let a = self.typed_arg_def(a.clone())?;
-                self.context.register_to_env(
-                    a.name.clone(),
-                    EnvValue::from(
-                        a.type_.clone()
-                    ),
-                );
+                self.context
+                    .register_to_env(a.name.clone(), EnvValue::from(a.type_.clone()));
                 Result::Ok(a)
             })
             .collect::<Result<Vec<TypedArgDef>>>()?;
@@ -454,10 +446,7 @@ impl TypeResolver {
                 .map(|a| {
                     let a = self.typed_arg_def(a)?;
                     let ns = self.context.get_current_namespace_mut()?;
-                    ns.register_value(
-                        a.name.clone(),
-                        a.type_.clone()
-                    );
+                    ns.register_value(a.name.clone(), a.type_.clone());
                     Result::Ok(a)
                 })
                 .collect::<Result<Vec<TypedArgDef>>>()?,
@@ -482,12 +471,8 @@ impl TypeResolver {
                 .into_iter()
                 .map(|a| {
                     let a = self.typed_arg_def(a)?;
-                    self.context.register_to_env(
-                        a.name.clone(),
-                        EnvValue::from(
-                            a.type_.clone()
-                        ),
-                    );
+                    self.context
+                        .register_to_env(a.name.clone(), EnvValue::from(a.type_.clone()));
                     Result::Ok(a)
                 })
                 .collect::<Result<Vec<TypedArgDef>>>()?,

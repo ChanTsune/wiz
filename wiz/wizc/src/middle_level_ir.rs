@@ -1,8 +1,7 @@
 use crate::constants;
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_decl::{
-    TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct,
-    TypedVar,
+    TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct, TypedVar,
 };
 use crate::high_level_ir::typed_expr::{
     TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
@@ -743,15 +742,13 @@ impl HLIR2MLIR {
                                 + &*self.fun_arg_label_type_name_mangling(
                                     &args
                                         .iter()
-                                        .map(|a| {
-                                            TypedArgDef {
-                                                label: match &a.label {
-                                                    None => "_".to_string(),
-                                                    Some(l) => l.to_string(),
-                                                },
-                                                name: "".to_string(),
-                                                type_: a.arg.type_().unwrap(),
-                                            }
+                                        .map(|a| TypedArgDef {
+                                            label: match &a.label {
+                                                None => "_".to_string(),
+                                                Some(l) => l.to_string(),
+                                            },
+                                            name: "".to_string(),
+                                            type_: a.arg.type_().unwrap(),
                                         })
                                         .collect(),
                                 )

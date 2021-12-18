@@ -375,12 +375,10 @@ impl Ast2HLIR {
         let args: Vec<TypedArgDef> = s
             .stored_properties
             .iter()
-            .map(|p| {
-                TypedArgDef {
-                    label: p.name.clone(),
-                    name: p.name.clone(),
-                    type_: p.type_.clone(),
-                }
+            .map(|p| TypedArgDef {
+                label: p.name.clone(),
+                name: p.name.clone(),
+                type_: p.type_.clone(),
             })
             .collect();
         if s.initializers.is_empty() {
