@@ -3,9 +3,9 @@ use crate::parser::wiz::lexical_structure::{identifier, whitespace0};
 use crate::parser::wiz::name_space::name_space;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::type_name::{
-    DecoratedTypeName, UserTypeName, SimpleTypeName, TypeArgumentElementSyntax,
-    TypeArgumentListSyntax, TypeConstraintSyntax, TypeName, TypeParam, TypeParameterElementSyntax,
-    TypeParameterListSyntax,
+    DecoratedTypeName, SimpleTypeName, TypeArgumentElementSyntax, TypeArgumentListSyntax,
+    TypeConstraintSyntax, TypeName, TypeParam, TypeParameterElementSyntax, TypeParameterListSyntax,
+    UserTypeName,
 };
 use crate::syntax::Syntax;
 use nom::branch::alt;
@@ -290,8 +290,8 @@ mod tests {
     use crate::syntax::token::TokenSyntax;
     use crate::syntax::trivia::{Trivia, TriviaPiece};
     use crate::syntax::type_name::{
-        DecoratedTypeName, UserTypeName, SimpleTypeName, TypeConstraintSyntax, TypeName,
-        TypeParam, TypeParameterElementSyntax, TypeParameterListSyntax,
+        DecoratedTypeName, SimpleTypeName, TypeConstraintSyntax, TypeName, TypeParam,
+        TypeParameterElementSyntax, TypeParameterListSyntax, UserTypeName,
     };
     use crate::syntax::Syntax;
 
