@@ -1,12 +1,11 @@
 use crate::syntax::list::{ElementSyntax, ListSyntax};
-use crate::syntax::name_space::NameSpaceSyntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::Syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum TypeName {
-    NameSpaced(Box<NameSpacedTypeName>),
+    NameSpaced(Box<UserTypeName>),
     Simple(SimpleTypeName),
     Decorated(Box<DecoratedTypeName>),
 }
@@ -34,16 +33,60 @@ impl Syntax for TypeName {
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
-pub struct NameSpacedTypeName {
-    pub name_space: NameSpaceSyntax,
-    pub type_name: TypeName,
+pub struct TypeNameSpaceElementSyntax {
+    pub simple_type: SimpleTypeName,
+    pub sep: TokenSyntax,
 }
 
-impl Syntax for NameSpacedTypeName {
+impl Syntax for TypeNameSpaceElementSyntax {
     fn with_leading_trivia(self, trivia: Trivia) -> Self {
         Self {
-            name_space: self.name_space.with_leading_trivia(trivia),
-            type_name: self.type_name,
+            simple_type: self.simple_type.with_leading_trivia(trivia),
+            sep: self.sep,
+        }
+    }
+
+    fn with_trailing_trivia(self, trivia: Trivia) -> Self {
+        Self {
+            simple_type: self.simple_type,
+            sep: self.sep.with_trailing_trivia(trivia),
+        }
+    }
+}
+
+impl<T> From<T> for TypeNameSpaceElementSyntax
+where
+    T: ToString,
+{
+    fn from(name: T) -> Self {
+        Self {
+            simple_type: SimpleTypeName::from(name),
+            sep: TokenSyntax::from("::"),
+        }
+    }
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct UserTypeName {
+    pub name_space: Vec<TypeNameSpaceElementSyntax>,
+    pub type_name: SimpleTypeName,
+}
+
+impl Syntax for UserTypeName {
+    fn with_leading_trivia(self, trivia: Trivia) -> Self {
+        if self.name_space.is_empty() {
+            Self {
+                name_space: self.name_space,
+                type_name: self.type_name.with_trailing_trivia(trivia),
+            }
+        } else {
+            let mut ns = self.name_space.clone();
+            let f = ns.remove(0).with_leading_trivia(trivia);
+            ns.insert(0, f);
+            Self {
+                name_space: ns,
+                type_name: self.type_name,
+            }
         }
     }
 
@@ -79,6 +122,18 @@ impl Syntax for SimpleTypeName {
                 name: self.name,
                 type_args: Some(type_args.with_trailing_trivia(trivia)),
             },
+        }
+    }
+}
+
+impl<T> From<T> for SimpleTypeName
+where
+    T: ToString,
+{
+    fn from(name: T) -> Self {
+        Self {
+            name: TokenSyntax::from(name),
+            type_args: None,
         }
     }
 }

@@ -256,7 +256,6 @@ impl TypeResolver {
     }
 
     pub fn file(&mut self, f: TypedFile) -> Result<TypedFile> {
-        let name = f.name.clone();
         self.context.push_name_space(f.name.clone());
         for u in f.uses.iter() {
             self.context.use_name_space(u.package.names.clone());

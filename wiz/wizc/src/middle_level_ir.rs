@@ -261,7 +261,9 @@ impl HLIR2MLIR {
 
     fn file(&mut self, f: TypedFile) -> Result<(), Box<dyn Error>> {
         self.context.push_name_space(f.name.clone());
-        f.body.into_iter().map(|d| self.decl(d)).collect::<Vec<_>>();
+        for d in f.body.into_iter() {
+            self.decl(d)?;
+        }
         self.context.pop_name_space();
         Ok(())
     }

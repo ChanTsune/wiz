@@ -409,7 +409,10 @@ where
     map(
         tuple((whitespace0, many0(tuple((whitespace0, decl))), whitespace0)),
         |(_, decls, _)| FileSyntax {
-            body: decls.into_iter().map(|(_, f)| f).collect(),
+            body: decls
+                .into_iter()
+                .map(|(t, f)| f.with_leading_trivia(t))
+                .collect(),
         },
     )(s)
 }
