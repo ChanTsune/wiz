@@ -6,7 +6,7 @@ use crate::syntax::Syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum TypeName {
-    NameSpaced(Box<NameSpacedTypeName>),
+    NameSpaced(Box<UserTypeName>),
     Simple(SimpleTypeName),
     Decorated(Box<DecoratedTypeName>),
 }
@@ -34,12 +34,12 @@ impl Syntax for TypeName {
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
-pub struct NameSpacedTypeName {
+pub struct UserTypeName {
     pub name_space: NameSpaceSyntax,
     pub type_name: TypeName,
 }
 
-impl Syntax for NameSpacedTypeName {
+impl Syntax for UserTypeName {
     fn with_leading_trivia(self, trivia: Trivia) -> Self {
         Self {
             name_space: self.name_space.with_leading_trivia(trivia),

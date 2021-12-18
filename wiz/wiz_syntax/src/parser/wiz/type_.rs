@@ -3,7 +3,7 @@ use crate::parser::wiz::lexical_structure::{identifier, whitespace0};
 use crate::parser::wiz::name_space::name_space;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::type_name::{
-    DecoratedTypeName, NameSpacedTypeName, SimpleTypeName, TypeArgumentElementSyntax,
+    DecoratedTypeName, UserTypeName, SimpleTypeName, TypeArgumentElementSyntax,
     TypeArgumentListSyntax, TypeConstraintSyntax, TypeName, TypeParam, TypeParameterElementSyntax,
     TypeParameterListSyntax,
 };
@@ -113,7 +113,7 @@ where
             if name_space.is_empty() {
                 type_name
             } else {
-                TypeName::NameSpaced(Box::new(NameSpacedTypeName {
+                TypeName::NameSpaced(Box::new(UserTypeName {
                     name_space,
                     type_name,
                 }))
@@ -290,7 +290,7 @@ mod tests {
     use crate::syntax::token::TokenSyntax;
     use crate::syntax::trivia::{Trivia, TriviaPiece};
     use crate::syntax::type_name::{
-        DecoratedTypeName, NameSpacedTypeName, SimpleTypeName, TypeConstraintSyntax, TypeName,
+        DecoratedTypeName, UserTypeName, SimpleTypeName, TypeConstraintSyntax, TypeName,
         TypeParam, TypeParameterElementSyntax, TypeParameterListSyntax,
     };
     use crate::syntax::Syntax;
@@ -301,7 +301,7 @@ mod tests {
             user_type("std::builtin::String"),
             Ok((
                 "",
-                TypeName::NameSpaced(Box::new(NameSpacedTypeName {
+                TypeName::NameSpaced(Box::new(UserTypeName {
                     name_space: NameSpaceSyntax::from(vec!["std", "builtin"]),
                     type_name: TypeName::Simple(SimpleTypeName {
                         name: TokenSyntax::from("String"),
