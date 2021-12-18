@@ -1,12 +1,7 @@
 use crate::parser::wiz::character::{ampersand, comma};
 use crate::parser::wiz::lexical_structure::{identifier, whitespace0};
-use crate::parser::wiz::name_space::name_space;
 use crate::syntax::token::TokenSyntax;
-use crate::syntax::type_name::{
-    DecoratedTypeName, SimpleTypeName, TypeArgumentElementSyntax, TypeArgumentListSyntax,
-    TypeConstraintSyntax, TypeName, TypeParam, TypeParameterElementSyntax, TypeParameterListSyntax,
-    UserTypeName,
-};
+use crate::syntax::type_name::{DecoratedTypeName, SimpleTypeName, TypeArgumentElementSyntax, TypeArgumentListSyntax, TypeConstraintSyntax, TypeName, TypeNameSpaceElementSyntax, TypeParam, TypeParameterElementSyntax, TypeParameterListSyntax, UserTypeName};
 use crate::syntax::Syntax;
 use nom::branch::alt;
 use nom::character::complete::char;
@@ -15,6 +10,7 @@ use nom::multi::many0;
 use nom::sequence::tuple;
 use nom::{AsChar, Compare, FindSubstring, IResult, InputIter, InputLength, InputTake, Slice};
 use std::ops::{Range, RangeFrom};
+use nom::bytes::complete::tag;
 
 pub fn type_<I>(s: I) -> IResult<I, TypeName>
 where
@@ -108,13 +104,16 @@ where
     <I as InputIter>::Item: AsChar + Copy,
 {
     map(
-        tuple((name_space, simple_user_type)),
+        tuple((many0(tuple((simple_user_type, tag("::")))), simple_user_type)),
         |(name_space, type_name)| {
             if name_space.is_empty() {
-                type_name
+                TypeName::Simple(type_name)
             } else {
                 TypeName::NameSpaced(Box::new(UserTypeName {
-                    name_space,
+                    name_space: name_space.into_iter().map(|(simple_type, sep)| TypeNameSpaceElementSyntax {
+                        simple_type,
+                        sep: TokenSyntax::from(sep)
+                    }).collect(),
                     type_name,
                 }))
             }
@@ -122,7 +121,7 @@ where
     )(s)
 }
 
-pub fn simple_user_type<I>(s: I) -> IResult<I, TypeName>
+pub fn simple_user_type<I>(s: I) -> IResult<I, SimpleTypeName>
 where
     I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
@@ -136,10 +135,10 @@ where
     <I as InputIter>::Item: AsChar + Copy,
 {
     map(tuple((identifier, opt(type_arguments))), |(name, args)| {
-        TypeName::Simple(SimpleTypeName {
+        SimpleTypeName {
             name: TokenSyntax::from(name),
             type_args: args,
-        })
+        }
     })(s)
 }
 
@@ -286,13 +285,9 @@ where
 #[cfg(test)]
 mod tests {
     use crate::parser::wiz::type_::{decorated_type, type_parameter, type_parameters, user_type};
-    use crate::syntax::name_space::NameSpaceSyntax;
     use crate::syntax::token::TokenSyntax;
     use crate::syntax::trivia::{Trivia, TriviaPiece};
-    use crate::syntax::type_name::{
-        DecoratedTypeName, SimpleTypeName, TypeConstraintSyntax, TypeName, TypeParam,
-        TypeParameterElementSyntax, TypeParameterListSyntax, UserTypeName,
-    };
+    use crate::syntax::type_name::{DecoratedTypeName, SimpleTypeName, TypeConstraintSyntax, TypeName, TypeNameSpaceElementSyntax, TypeParam, TypeParameterElementSyntax, TypeParameterListSyntax, UserTypeName};
     use crate::syntax::Syntax;
 
     #[test]
@@ -302,11 +297,11 @@ mod tests {
             Ok((
                 "",
                 TypeName::NameSpaced(Box::new(UserTypeName {
-                    name_space: NameSpaceSyntax::from(vec!["std", "builtin"]),
-                    type_name: TypeName::Simple(SimpleTypeName {
+                    name_space: vec![TypeNameSpaceElementSyntax::from("std"), TypeNameSpaceElementSyntax::from("builtin")],
+                    type_name: SimpleTypeName {
                         name: TokenSyntax::from("String"),
                         type_args: None
-                    })
+                    }
                 }))
             ))
         );
