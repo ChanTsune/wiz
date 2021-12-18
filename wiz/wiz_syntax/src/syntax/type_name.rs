@@ -42,23 +42,26 @@ impl Syntax for TypeNameSpaceElementSyntax {
     fn with_leading_trivia(self, trivia: Trivia) -> Self {
         Self {
             simple_type: self.simple_type.with_leading_trivia(trivia),
-            sep: self.sep
+            sep: self.sep,
         }
     }
 
     fn with_trailing_trivia(self, trivia: Trivia) -> Self {
         Self {
             simple_type: self.simple_type,
-            sep: self.sep.with_trailing_trivia(trivia)
+            sep: self.sep.with_trailing_trivia(trivia),
         }
     }
 }
 
-impl<T> From<T> for TypeNameSpaceElementSyntax where T: ToString {
+impl<T> From<T> for TypeNameSpaceElementSyntax
+where
+    T: ToString,
+{
     fn from(name: T) -> Self {
         Self {
             simple_type: SimpleTypeName::from(name),
-            sep: TokenSyntax::from("::")
+            sep: TokenSyntax::from("::"),
         }
     }
 }
@@ -124,12 +127,13 @@ impl Syntax for SimpleTypeName {
 }
 
 impl<T> From<T> for SimpleTypeName
-where T: ToString
+where
+    T: ToString,
 {
     fn from(name: T) -> Self {
         Self {
             name: TokenSyntax::from(name),
-            type_args: None
+            type_args: None,
         }
     }
 }

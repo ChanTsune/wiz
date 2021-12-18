@@ -1,16 +1,20 @@
 use crate::parser::wiz::character::{ampersand, comma};
 use crate::parser::wiz::lexical_structure::{identifier, whitespace0};
 use crate::syntax::token::TokenSyntax;
-use crate::syntax::type_name::{DecoratedTypeName, SimpleTypeName, TypeArgumentElementSyntax, TypeArgumentListSyntax, TypeConstraintSyntax, TypeName, TypeNameSpaceElementSyntax, TypeParam, TypeParameterElementSyntax, TypeParameterListSyntax, UserTypeName};
+use crate::syntax::type_name::{
+    DecoratedTypeName, SimpleTypeName, TypeArgumentElementSyntax, TypeArgumentListSyntax,
+    TypeConstraintSyntax, TypeName, TypeNameSpaceElementSyntax, TypeParam,
+    TypeParameterElementSyntax, TypeParameterListSyntax, UserTypeName,
+};
 use crate::syntax::Syntax;
 use nom::branch::alt;
+use nom::bytes::complete::tag;
 use nom::character::complete::char;
 use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
 use nom::{AsChar, Compare, FindSubstring, IResult, InputIter, InputLength, InputTake, Slice};
 use std::ops::{Range, RangeFrom};
-use nom::bytes::complete::tag;
 
 pub fn type_<I>(s: I) -> IResult<I, TypeName>
 where
@@ -104,16 +108,22 @@ where
     <I as InputIter>::Item: AsChar + Copy,
 {
     map(
-        tuple((many0(tuple((simple_user_type, tag("::")))), simple_user_type)),
+        tuple((
+            many0(tuple((simple_user_type, tag("::")))),
+            simple_user_type,
+        )),
         |(name_space, type_name)| {
             if name_space.is_empty() {
                 TypeName::Simple(type_name)
             } else {
                 TypeName::NameSpaced(Box::new(UserTypeName {
-                    name_space: name_space.into_iter().map(|(simple_type, sep)| TypeNameSpaceElementSyntax {
-                        simple_type,
-                        sep: TokenSyntax::from(sep)
-                    }).collect(),
+                    name_space: name_space
+                        .into_iter()
+                        .map(|(simple_type, sep)| TypeNameSpaceElementSyntax {
+                            simple_type,
+                            sep: TokenSyntax::from(sep),
+                        })
+                        .collect(),
                     type_name,
                 }))
             }
@@ -287,7 +297,11 @@ mod tests {
     use crate::parser::wiz::type_::{decorated_type, type_parameter, type_parameters, user_type};
     use crate::syntax::token::TokenSyntax;
     use crate::syntax::trivia::{Trivia, TriviaPiece};
-    use crate::syntax::type_name::{DecoratedTypeName, SimpleTypeName, TypeConstraintSyntax, TypeName, TypeNameSpaceElementSyntax, TypeParam, TypeParameterElementSyntax, TypeParameterListSyntax, UserTypeName};
+    use crate::syntax::type_name::{
+        DecoratedTypeName, SimpleTypeName, TypeConstraintSyntax, TypeName,
+        TypeNameSpaceElementSyntax, TypeParam, TypeParameterElementSyntax, TypeParameterListSyntax,
+        UserTypeName,
+    };
     use crate::syntax::Syntax;
 
     #[test]
@@ -297,7 +311,10 @@ mod tests {
             Ok((
                 "",
                 TypeName::NameSpaced(Box::new(UserTypeName {
-                    name_space: vec![TypeNameSpaceElementSyntax::from("std"), TypeNameSpaceElementSyntax::from("builtin")],
+                    name_space: vec![
+                        TypeNameSpaceElementSyntax::from("std"),
+                        TypeNameSpaceElementSyntax::from("builtin")
+                    ],
                     type_name: SimpleTypeName {
                         name: TokenSyntax::from("String"),
                         type_args: None
