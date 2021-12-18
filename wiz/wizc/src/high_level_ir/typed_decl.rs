@@ -1,7 +1,9 @@
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_expr::TypedExpr;
 use crate::high_level_ir::typed_stmt::TypedBlock;
-use crate::high_level_ir::typed_type::{TypedArgType, TypedFunctionType, TypedPackage, TypedType, TypedTypeParam};
+use crate::high_level_ir::typed_type::{
+    TypedArgType, TypedFunctionType, TypedPackage, TypedType, TypedTypeParam,
+};
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum TypedDecl {
@@ -47,7 +49,7 @@ impl TypedArgDef {
     pub(crate) fn to_arg_type(self) -> TypedArgType {
         TypedArgType {
             label: self.label,
-            typ: self.type_
+            typ: self.type_,
         }
     }
 }
