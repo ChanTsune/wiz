@@ -9,7 +9,7 @@ use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedMemberFunction,
-    TypedStoredProperty, TypedStruct, TypedValueArgDef, TypedVar,
+    TypedStoredProperty, TypedStruct, TypedVar,
 };
 use crate::high_level_ir::typed_expr::{
     TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember,
@@ -155,10 +155,9 @@ impl TypeResolver {
             .map(|a| {
                 let a = self.typed_arg_def(a.clone())?;
                 self.context.register_to_env(
-                    a.name(),
+                    a.name.clone(),
                     EnvValue::from(
-                        a.type_()
-                            .ok_or_else(|| ResolverError::from("Can not resolve 'self type'"))?,
+                        a.type_.clone(),
                     ),
                 );
                 Result::Ok(a)
@@ -350,12 +349,10 @@ impl TypeResolver {
     }
 
     fn typed_arg_def(&mut self, a: TypedArgDef) -> Result<TypedArgDef> {
-        Result::Ok(match a {
-            TypedArgDef::Value(a) => TypedArgDef::Value(TypedValueArgDef {
-                label: a.label,
-                name: a.name,
-                type_: self.context.full_type_name(a.type_)?,
-            }),
+        Result::Ok(TypedArgDef {
+            label: a.label,
+            name: a.name,
+            type_: self.context.full_type_name(a.type_)?,
         })
     }
 
@@ -368,10 +365,9 @@ impl TypeResolver {
             .map(|a| {
                 let a = self.typed_arg_def(a.clone())?;
                 self.context.register_to_env(
-                    a.name(),
+                    a.name.clone(),
                     EnvValue::from(
-                        a.type_()
-                            .ok_or_else(|| ResolverError::from("Can not resolve 'self type'"))?,
+                        a.type_.clone()
                     ),
                 );
                 Result::Ok(a)
@@ -459,9 +455,8 @@ impl TypeResolver {
                     let a = self.typed_arg_def(a)?;
                     let ns = self.context.get_current_namespace_mut()?;
                     ns.register_value(
-                        a.name(),
-                        a.type_()
-                            .ok_or_else(|| ResolverError::from("Can not resolve 'self type'"))?,
+                        a.name.clone(),
+                        a.type_.clone()
                     );
                     Result::Ok(a)
                 })
@@ -488,10 +483,9 @@ impl TypeResolver {
                 .map(|a| {
                     let a = self.typed_arg_def(a)?;
                     self.context.register_to_env(
-                        a.name(),
+                        a.name.clone(),
                         EnvValue::from(
-                            a.type_()
-                                .ok_or_else(|| ResolverError::from("Can not resolve `self`"))?,
+                            a.type_.clone()
                         ),
                     );
                     Result::Ok(a)

@@ -1,7 +1,7 @@
 use crate::constants::UNSAFE_POINTER;
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
-use crate::high_level_ir::typed_decl::{TypedArgDef, TypedValueArgDef};
+use crate::high_level_ir::typed_decl::{TypedArgDef};
 use crate::high_level_ir::typed_expr::TypedBinaryOperator;
 use crate::high_level_ir::typed_type::{
     Package, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType,
@@ -554,12 +554,10 @@ impl ResolverContext {
                         .clone()
                         .into_iter()
                         .map(|a| {
-                            Result::Ok(match a {
-                                TypedArgDef::Value(v) => TypedArgDef::Value(TypedValueArgDef {
-                                    label: v.label,
-                                    name: v.name,
-                                    type_: self.full_type_name(v.type_)?,
-                                }),
+                            Result::Ok(TypedArgDef {
+                                label: a.label,
+                                name: a.name,
+                                type_: self.full_type_name(a.type_)?,
                             })
                         })
                         .collect::<Result<Vec<_>>>()?,
