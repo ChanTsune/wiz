@@ -517,7 +517,8 @@ fn test_struct_member_function() {
                     arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
                         label: "_".to_string(),
                         name: "self".to_string(),
-                        type_: TypedType::Value( // TODO: TypedType::Reference
+                        type_: TypedType::Value(
+                            // TODO: TypedType::Reference
                             TypedNamedValueType {
                                 package: TypedPackage::Resolved(Package::from(vec!["test"])),
                                 name: "A".to_string(),
@@ -635,7 +636,8 @@ fn test_struct_member_function_call() {
                         arg_defs: vec![TypedArgDef::Value(TypedValueArgDef {
                             label: "_".to_string(),
                             name: "self".to_string(),
-                            type_: TypedType::Value( // TypedType::Reference
+                            type_: TypedType::Value(
+                                // TypedType::Reference
                                 TypedNamedValueType {
                                     package: TypedPackage::Resolved(Package::from(vec!["test"])),
                                     name: "A".to_string(),
@@ -702,15 +704,13 @@ fn test_struct_member_function_call() {
                                     arguments: vec![TypedArgDef::Value(TypedValueArgDef {
                                         label: "_".to_string(),
                                         name: "self".to_string(),
-                                        type_: TypedType::Value(
-                                            TypedNamedValueType {
-                                                package: TypedPackage::Resolved(Package::from(vec![
-                                                    "test"
-                                                ])),
-                                                name: "A".to_string(),
-                                                type_args: None
-                                            }
-                                        )
+                                        type_: TypedType::Value(TypedNamedValueType {
+                                            package: TypedPackage::Resolved(Package::from(vec![
+                                                "test"
+                                            ])),
+                                            name: "A".to_string(),
+                                            type_args: None
+                                        })
                                     })],
                                     return_type: TypedType::int64()
                                 })))
