@@ -287,16 +287,11 @@ impl Ast2HLIR {
                     name_space,
                     type_name,
                 } = *n;
-                let type_name = match type_name {
-                    TypeName::Simple(s) => s,
-                    _ => panic!(),
-                };
                 TypedType::Value(TypedValueType {
                     package: TypedPackage::Raw(Package::from(
                         name_space
-                            .elements
                             .into_iter()
-                            .map(|i| i.name.token)
+                            .map(|i| i.simple_type.name.token)
                             .collect::<Vec<String>>(),
                     )),
                     name: type_name.name.token,
