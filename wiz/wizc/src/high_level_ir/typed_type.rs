@@ -131,6 +131,18 @@ impl _TypedArgType {
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
+pub struct TypedArgType {
+    pub label: String,
+    pub typ: TypedType,
+}
+
+impl TypedArgType {
+    pub(crate) fn is_self(&self) -> bool {
+        self.typ.is_self()
+    }
+}
+
+#[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub struct TypedNamedValueType {
     pub(crate) package: TypedPackage,
     pub(crate) name: String,
