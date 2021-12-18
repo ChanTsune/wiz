@@ -12,9 +12,7 @@ use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentStmt, TypedBlock, TypedStmt,
 };
-use crate::high_level_ir::typed_type::{
-    Package, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType,
-};
+use crate::high_level_ir::typed_type::{Package, TypedArgType, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType};
 use crate::high_level_ir::Ast2HLIR;
 use wiz_syntax::parser::wiz::parse_from_string;
 
@@ -403,10 +401,9 @@ fn test_struct_init() {
                                     name: "init".to_string(),
                                     is_safe: false,
                                     type_: Some(TypedType::Function(Box::new(TypedFunctionType {
-                                        arguments: vec![TypedArgDef {
+                                        arguments: vec![TypedArgType {
                                             label: "a".to_string(),
-                                            name: "a".to_string(),
-                                            type_: TypedType::int64()
+                                            typ: TypedType::int64()
                                         }],
                                         return_type: TypedType::Value(TypedNamedValueType {
                                             package: TypedPackage::Resolved(Package::from(vec![
@@ -701,10 +698,9 @@ fn test_struct_member_function_call() {
                                 name: "getA".to_string(),
                                 is_safe: false,
                                 type_: Some(TypedType::Function(Box::new(TypedFunctionType {
-                                    arguments: vec![TypedArgDef {
+                                    arguments: vec![TypedArgType {
                                         label: "_".to_string(),
-                                        name: "self".to_string(),
-                                        type_: TypedType::Value(TypedNamedValueType {
+                                        typ: TypedType::Value(TypedNamedValueType {
                                             package: TypedPackage::Resolved(Package::from(vec![
                                                 "test"
                                             ])),

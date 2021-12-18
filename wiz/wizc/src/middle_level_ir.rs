@@ -220,7 +220,7 @@ impl HLIR2MLIR {
             arguments: t
                 .arguments
                 .into_iter()
-                .map(|a| match self.type_(a.type_) {
+                .map(|a| match self.type_(a.typ) {
                     MLType::Value(v) => v,
                     MLType::Function(_) => exit(-9),
                 })

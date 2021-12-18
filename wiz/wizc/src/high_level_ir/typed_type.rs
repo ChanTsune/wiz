@@ -151,7 +151,7 @@ pub struct TypedNamedValueType {
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub struct TypedFunctionType {
-    pub(crate) arguments: Vec<TypedArgDef>,
+    pub(crate) arguments: Vec<TypedArgType>,
     pub(crate) return_type: TypedType,
 }
 

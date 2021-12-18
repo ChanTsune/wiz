@@ -3,9 +3,7 @@ use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_decl::TypedArgDef;
 use crate::high_level_ir::typed_expr::TypedBinaryOperator;
-use crate::high_level_ir::typed_type::{
-    Package, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType,
-};
+use crate::high_level_ir::typed_type::{Package, TypedArgType, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType};
 use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::{HashMap, HashSet};
 use std::option::Option::Some;
@@ -554,10 +552,9 @@ impl ResolverContext {
                         .clone()
                         .into_iter()
                         .map(|a| {
-                            Result::Ok(TypedArgDef {
+                            Result::Ok(TypedArgType {
                                 label: a.label,
-                                name: a.name,
-                                type_: self.full_type_name(a.type_)?,
+                                typ: self.full_type_name(a.typ)?,
                             })
                         })
                         .collect::<Result<Vec<_>>>()?,
