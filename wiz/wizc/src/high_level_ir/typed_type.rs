@@ -473,10 +473,6 @@ impl TypedType {
             TypedType::Reference(r) => r.name == "Self",
         }
     }
-
-    pub fn is_reference(&self) -> bool {
-        matches!(self, Self::Reference(_))
-    }
 }
 
 impl ToString for TypedType {
