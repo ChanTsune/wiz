@@ -114,17 +114,17 @@ impl ToString for TypedValueType {
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub struct _TypedFunctionType {
-    pub args_type: Vec<TypedArgType>,
+    pub args_type: Vec<_TypedArgType>,
     pub return_type: _TypedType,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
-pub struct TypedArgType {
+pub struct _TypedArgType {
     pub label: String,
     pub typ: _TypedType,
 }
 
-impl TypedArgType {
+impl _TypedArgType {
     pub(crate) fn is_self(&self) -> bool {
         self.typ.is_self()
     }
