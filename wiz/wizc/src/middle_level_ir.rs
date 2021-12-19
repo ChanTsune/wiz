@@ -27,15 +27,18 @@ use wiz_mir::ml_decl::{MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, ML
 use wiz_mir::ml_file::MLFile;
 use wiz_mir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
 use wiz_mir::statement::{MLAssignmentStmt, MLLoopStmt, MLReturn, MLStmt};
+use core::result;
 
 #[cfg(test)]
 mod tests;
+
+pub type Result<T> = result::Result<T, Box<dyn Error>>;
 
 pub fn hlir2mlir(
     target: TypedSourceSet,
     dependencies: &[MLFile],
     annotations: HashMap<String, TypedAnnotations>,
-) -> Result<(MLFile, HashMap<String, TypedAnnotations>), Box<dyn Error>> {
+) -> Result<(MLFile, HashMap<String, TypedAnnotations>)> {
     let mut converter = HLIR2MLIR::new();
     converter.load_dependencies(dependencies)?;
     converter
@@ -118,22 +121,22 @@ impl HLIR2MLIR {
         self.context.declaration_annotations
     }
 
-    pub fn load_dependencies(&mut self, dependencies: &[MLFile]) -> Result<(), Box<dyn Error>> {
+    pub fn load_dependencies(&mut self, dependencies: &[MLFile]) -> Result<()> {
         for dependency in dependencies {
             self.load_dependencies_file(dependency)?;
         }
         Ok(())
     }
 
-    fn load_dependencies_file(&mut self, f: &MLFile) -> Result<(), Box<dyn Error>> {
+    fn load_dependencies_file(&mut self, f: &MLFile) -> Result<()> {
         f.body
             .iter()
             .map(|d| self.load_dependencies_decl(d))
-            .collect::<Result<Vec<_>, Box<dyn Error>>>()?;
+            .collect::<Result<Vec<_>>>()?;
         Ok(())
     }
 
-    fn load_dependencies_decl(&mut self, d: &MLDecl) -> Result<(), Box<dyn Error>> {
+    fn load_dependencies_decl(&mut self, d: &MLDecl) -> Result<()> {
         match d {
             MLDecl::Var(v) => self.load_dependencies_var(v),
             MLDecl::Fun(f) => self.load_dependencies_function(f),
@@ -141,19 +144,19 @@ impl HLIR2MLIR {
         }
     }
 
-    fn load_dependencies_var(&mut self, v: &MLVar) -> Result<(), Box<dyn Error>> {
+    fn load_dependencies_var(&mut self, v: &MLVar) -> Result<()> {
         self.module.add_global_var(v.clone());
         Ok(())
     }
 
-    fn load_dependencies_struct(&mut self, s: &MLStruct) -> Result<(), Box<dyn Error>> {
+    fn load_dependencies_struct(&mut self, s: &MLStruct) -> Result<()> {
         self.module.add_struct(s.clone());
         self.context
             .add_struct(MLValueType::Struct(s.name.clone()), s.clone());
         Ok(())
     }
 
-    fn load_dependencies_function(&mut self, f: &MLFun) -> Result<(), Box<dyn Error>> {
+    fn load_dependencies_function(&mut self, f: &MLFun) -> Result<()> {
         if f.body.is_none() {
             self.module._add_function(FunBuilder::from(f.clone()));
         };
@@ -161,7 +164,7 @@ impl HLIR2MLIR {
     }
 
     pub fn convert_from_source_set(&mut self, s: TypedSourceSet) -> MLFile {
-        self.source_set(s)
+        self.source_set(s).unwrap()
     }
 
     fn type_(&self, t: TypedType) -> MLType {
@@ -253,11 +256,11 @@ impl HLIR2MLIR {
         }
     }
 
-    fn source_set(&mut self, s: TypedSourceSet) -> MLFile {
+    fn source_set(&mut self, s: TypedSourceSet) -> Result<MLFile> {
         let name = match s {
             TypedSourceSet::File(f) => {
                 let name = f.name.clone();
-                self.file(f);
+                self.file(f)?;
                 name
             }
             TypedSourceSet::Dir { name, mut items } => {
@@ -266,6 +269,7 @@ impl HLIR2MLIR {
                 let _: Vec<_> = items
                     .into_iter()
                     .map(|i| self.source_set(i))
+                    .collect::<Result<Vec<_>>>()?.into_iter()
                     .map(|i| i.body)
                     .flatten()
                     .collect();
@@ -273,10 +277,10 @@ impl HLIR2MLIR {
                 name
             }
         };
-        self.module.to_mlir_file(name)
+        Ok(self.module.to_mlir_file(name))
     }
 
-    fn file(&mut self, f: TypedFile) -> Result<(), Box<dyn Error>> {
+    fn file(&mut self, f: TypedFile) -> Result<()> {
         self.context.push_name_space(f.name.clone());
         for d in f.body.into_iter() {
             self.decl(d)?;
@@ -354,7 +358,7 @@ impl HLIR2MLIR {
         }
     }
 
-    fn decl(&mut self, d: TypedDecl) -> Result<(), BuilderError> {
+    fn decl(&mut self, d: TypedDecl) -> result::Result<(), BuilderError> {
         match d {
             TypedDecl::Var(v) => {
                 let v = self.var(v);

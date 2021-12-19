@@ -1,6 +1,4 @@
 use crate::constants::{self, UNSAFE_POINTER};
-use crate::high_level_ir::typed_decl::TypedArgDef;
-use std::option::Option::Some;
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub enum TypedPackage {
