@@ -117,8 +117,8 @@ impl ToString for TypedValueType {
             TypedValueType::Tuple(_) => {
                 todo!()
             }
-            TypedValueType::Pointer(_) => {
-                todo!()
+            TypedValueType::Pointer(v) => {
+                format!("*{:?}", v)
             }
             TypedValueType::Reference(_) => {
                 todo!()

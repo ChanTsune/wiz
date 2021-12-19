@@ -177,11 +177,7 @@ impl HLIR2MLIR {
             TypedValueType::Value(t) => {
                 if t.is_unsafe_pointer() {
                     match self.type_(t.type_args.unwrap()[0].clone()) {
-                        MLType::Value(v) => MLValueType::Pointer(Box::new(v)),
-                        MLType::Function(f) => {
-                            eprintln!("Function Pointer is unsupported {:?}", f);
-                            exit(-1)
-                        }
+                        v => MLValueType::Pointer(Box::new(v)),
                     }
                 } else {
                     let mut pkg = t.package.clone().into_resolved().names;
@@ -222,8 +218,14 @@ impl HLIR2MLIR {
             TypedValueType::Tuple(_) => {
                 todo!()
             }
-            TypedValueType::Pointer(_) => {
-                todo!()
+            TypedValueType::Pointer(t) => {
+                match *t {
+                    TypedType::Self_ => {}
+                    TypedType::Value(_) => {}
+                    TypedType::Function(_) => {}
+                    TypedType::Type(_) => {}
+                }
+                MLValueType::Pointer(Box::new(self.type_(*t)))
             }
             TypedValueType::Reference(_) => {
                 todo!()
