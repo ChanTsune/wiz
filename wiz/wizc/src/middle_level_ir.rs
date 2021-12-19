@@ -644,15 +644,19 @@ impl HLIR2MLIR {
     }
 
     fn subscript_for_user_defined(&mut self, s: TypedSubscript) -> MLExpr {
-        MLExpr::Call(MLCall {
-            target: Box::new(self.expr(*s.target)),
-            args: s
-                .indexes
-                .into_iter()
-                .map(|i| MLCallArg { arg: self.expr(i) })
-                .collect(),
-            type_: self.type_(s.type_.unwrap()).into_value_type(),
-        })
+        let target = self.expr(*s.target);
+        match target {
+            MLExpr::Name(target) => MLExpr::Call(MLCall {
+                target,
+                args: s
+                    .indexes
+                    .into_iter()
+                    .map(|i| MLCallArg { arg: self.expr(i) })
+                    .collect(),
+                type_: self.type_(s.type_.unwrap()).into_value_type(),
+            }),
+            a => panic!("{:?}", a),
+        }
     }
 
     fn member(&mut self, m: TypedInstanceMember) -> MLExpr {
@@ -754,15 +758,15 @@ impl HLIR2MLIR {
                                 )
                         }
                     };
-                MLExpr::Name(MLName {
+                MLName {
                     name: fun_arg_label_type_mangled_name,
                     type_,
-                })
+                }
             }
-            a => a,
+            a => panic!("{:?}", a),
         };
         MLCall {
-            target: Box::new(target),
+            target,
             args: args
                 .into_iter()
                 .map(|a| MLCallArg {
