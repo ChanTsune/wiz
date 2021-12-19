@@ -688,14 +688,12 @@ impl<'ctx> CodeGen<'ctx> {
                     _ => true,
                 },
                 MLValueType::Struct(_) => true,
-                MLValueType::Pointer(r) | MLValueType::Reference(r) => {
-                    match &**r {
-                        MLType::Value(r) => {
-                            Self::need_load(p.get_element_type(), r)
-                        }
-                        MLType::Function(_) => {todo!()}
+                MLValueType::Pointer(r) | MLValueType::Reference(r) => match &**r {
+                    MLType::Value(r) => Self::need_load(p.get_element_type(), r),
+                    MLType::Function(_) => {
+                        todo!()
                     }
-                }
+                },
                 MLValueType::Array(_, _) => {
                     todo!()
                 }
@@ -996,17 +994,15 @@ impl<'ctx> CodeGen<'ctx> {
                 }
             },
             MLValueType::Struct(t) => AnyTypeEnum::from(self.module.get_struct_type(&*t).unwrap()),
-            MLValueType::Pointer(p) | MLValueType::Reference(p) => {
-                match *p {
-                    MLType::Value(p) => {
-                        BasicTypeEnum::try_from(self.ml_type_to_type(p))
-                            .unwrap()
-                            .ptr_type(AddressSpace::Generic)
-                            .as_any_type_enum()
-                    }
-                    MLType::Function(_) => {todo!()}
+            MLValueType::Pointer(p) | MLValueType::Reference(p) => match *p {
+                MLType::Value(p) => BasicTypeEnum::try_from(self.ml_type_to_type(p))
+                    .unwrap()
+                    .ptr_type(AddressSpace::Generic)
+                    .as_any_type_enum(),
+                MLType::Function(_) => {
+                    todo!()
                 }
-            }
+            },
             MLValueType::Array(a, size) => {
                 let size = size as u32;
                 match self.ml_type_to_type(*a) {
