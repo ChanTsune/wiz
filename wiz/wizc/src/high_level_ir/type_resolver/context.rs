@@ -542,7 +542,10 @@ impl ResolverContext {
         })
     }
 
-    fn full_named_value_type_name(&self, type_: TypedNamedValueType) -> Result<TypedNamedValueType> {
+    fn full_named_value_type_name(
+        &self,
+        type_: TypedNamedValueType,
+    ) -> Result<TypedNamedValueType> {
         let env = self.get_current_name_environment();
         Result::Ok(match type_.package {
             TypedPackage::Raw(p) => {

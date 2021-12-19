@@ -276,7 +276,7 @@ impl Ast2HLIR {
                 match &*d.decoration.token {
                     "&" => TypedType::Value(TypedValueType::Reference(Box::new(t))),
                     "*" => TypedType::Value(TypedValueType::Pointer(Box::new(t))),
-                    a => panic!("Unexpected token {}", a)
+                    a => panic!("Unexpected token {}", a),
                 }
             }
             TypeName::NameSpaced(n) => {
