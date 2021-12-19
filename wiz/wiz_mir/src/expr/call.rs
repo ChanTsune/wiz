@@ -1,4 +1,4 @@
-use crate::expr::MLExpr;
+use crate::expr::{MLExpr, MLName};
 use crate::format::Formatter;
 use crate::ml_node::MLNode;
 use crate::ml_type::{MLType, MLValueType};
@@ -7,7 +7,7 @@ use std::fmt::Write;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLCall {
-    pub target: Box<MLExpr>,
+    pub target: MLName,
     pub args: Vec<MLCallArg>,
     pub type_: MLValueType,
 }

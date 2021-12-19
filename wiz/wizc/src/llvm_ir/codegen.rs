@@ -13,10 +13,7 @@ use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::path::Path;
 use std::process::exit;
-use wiz_mir::expr::{
-    MLBinOp, MLBinOpKind, MLBlock, MLCall, MLExpr, MLIf, MLLiteral, MLMember, MLSubscript,
-    MLTypeCast, MLUnaryOp, MLUnaryOpKind,
-};
+use wiz_mir::expr::{MLBinOp, MLBinOpKind, MLBlock, MLCall, MLExpr, MLIf, MLLiteral, MLMember, MLName, MLSubscript, MLTypeCast, MLUnaryOp, MLUnaryOpKind};
 use wiz_mir::ml_decl::{MLDecl, MLFun, MLStruct, MLVar};
 use wiz_mir::ml_file::MLFile;
 use wiz_mir::ml_type::{MLPrimitiveType, MLType, MLValueType};
@@ -125,12 +122,7 @@ impl<'ctx> CodeGen<'ctx> {
 
     pub fn expr(&mut self, e: MLExpr) -> AnyValueEnum<'ctx> {
         match e {
-            MLExpr::Name(n) => match self.get_from_environment(&n.name) {
-                None => {
-                    panic!("Can not resolve name {}", n.name)
-                }
-                Some(n) => n,
-            },
+            MLExpr::Name(n) => self.name_expr(n),
             MLExpr::Literal(literal) => self.literal(literal),
             MLExpr::PrimitiveBinOp(b) => self.binop(b),
             MLExpr::PrimitiveUnaryOp(u) => self.unary_op(u),
@@ -142,6 +134,15 @@ impl<'ctx> CodeGen<'ctx> {
             MLExpr::Return(r) => self.return_expr(r),
             MLExpr::PrimitiveTypeCast(t) => self.type_cast(t),
             MLExpr::Block(b) => self.block(b),
+        }
+    }
+
+    pub fn name_expr(&self, n: MLName) -> AnyValueEnum<'ctx> {
+        match self.get_from_environment(&n.name) {
+            None => {
+                panic!("Can not resolve name {}", n.name)
+            }
+            Some(n) => n,
         }
     }
 
@@ -227,7 +228,7 @@ impl<'ctx> CodeGen<'ctx> {
     }
 
     pub fn call(&mut self, c: MLCall) -> AnyValueEnum<'ctx> {
-        let target = self.expr(*c.target);
+        let target = self.name_expr(c.target);
         let args = c.args.into_iter().map(|arg| {
             if let MLValueType::Primitive(name) = arg.arg.type_().into_value_type() {
                 if name != MLPrimitiveType::String {
