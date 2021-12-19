@@ -11,11 +11,7 @@ use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedMemberFunction,
     TypedStoredProperty, TypedStruct, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{
-    TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember,
-    TypedLiteral, TypedName, TypedPostfixUnaryOp, TypedPrefixUnaryOp, TypedReturn, TypedSubscript,
-    TypedTypeCast, TypedUnaryOp,
-};
+use crate::high_level_ir::typed_expr::{TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName, TypedPostfixUnaryOp, TypedPrefixUnaryOp, TypedPrefixUnaryOperator, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp};
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedForStmt,
@@ -563,10 +559,32 @@ impl TypeResolver {
 
     pub fn typed_prefix_unary_op(&mut self, u: TypedPrefixUnaryOp) -> Result<TypedPrefixUnaryOp> {
         let target = Box::new(self.expr(*u.target)?);
-        Result::Ok(TypedPrefixUnaryOp {
-            operator: u.operator,
-            type_: target.type_(),
-            target,
+        Result::Ok(match &u.operator {
+            TypedPrefixUnaryOperator::Negative |
+                TypedPrefixUnaryOperator::Positive |
+            TypedPrefixUnaryOperator::Not => { TypedPrefixUnaryOp {
+                operator: u.operator,
+                type_: target.type_(),
+                target,
+            } }
+            TypedPrefixUnaryOperator::Reference => { TypedPrefixUnaryOp {
+                operator: u.operator,
+                type_: target.type_().map(|t|{
+                    TypedType::Value(TypedValueType::Reference(Box::new(t)))
+                }),
+                target,
+            } }
+            TypedPrefixUnaryOperator::Dereference => {
+                TypedPrefixUnaryOp {
+                    operator: u.operator,
+                    type_: match target.type_() {
+                        None => None,
+                        Some(TypedType::Value(TypedValueType::Reference(t))) => {Some(*t)}
+                        Some(_) => {None}
+                    },
+                    target,
+                }
+            }
         })
     }
 
