@@ -19,30 +19,35 @@ use crate::high_level_ir::typed_type::{
 use crate::high_level_ir::Ast2HLIR;
 use wiz_syntax::parser::wiz::parse_from_string;
 
-#[test]
-fn test_empty() {
-    let source = "";
 
+fn check(source: &str, typed_file: TypedFile) {
     let ast = parse_from_string(source).unwrap();
 
     let mut ast2hlir = Ast2HLIR::new();
 
     let mut file = ast2hlir.file(ast);
-    file.name = String::from("test");
+    file.name = typed_file.name.clone();
 
     let mut resolver = TypeResolver::new();
     let _ = resolver.detect_type(&file).unwrap();
     let _ = resolver.preload_file(file.clone()).unwrap();
     let f = resolver.file(file);
 
-    assert_eq!(
-        f,
-        Result::Ok(TypedFile {
-            name: "test".to_string(),
-            uses: vec![],
-            body: vec![]
-        })
-    );
+    assert_eq!(f, Result::Ok(typed_file));
+
+}
+
+#[test]
+fn test_empty() {
+    let source = "";
+
+    check(
+        source,
+        TypedFile {
+        name: "test".to_string(),
+        uses: vec![],
+        body: vec![]
+    });
 }
 
 #[test]
@@ -55,22 +60,9 @@ fn test_unsafe_pointer() {
             val a = a.a
         }
         ";
-
-    let ast = parse_from_string(source).unwrap();
-
-    let mut ast2hlir = Ast2HLIR::new();
-
-    let mut file = ast2hlir.file(ast);
-    file.name = String::from("test");
-
-    let mut resolver = TypeResolver::new();
-    let _ = resolver.detect_type(&file).unwrap();
-    let _ = resolver.preload_file(file.clone()).unwrap();
-    let f = resolver.file(file);
-
-    assert_eq!(
-        f,
-        Result::Ok(TypedFile {
+    check(
+        source,
+        TypedFile {
             name: "test".to_string(),
             uses: vec![],
             body: vec![
@@ -179,7 +171,7 @@ fn test_unsafe_pointer() {
                     return_type: Some(TypedType::unit())
                 })
             ],
-        })
+        }
     );
 }
 
@@ -193,21 +185,10 @@ fn test_struct_stored_property() {
             val a = a.a
         }
         ";
-    let ast = parse_from_string(source).unwrap();
 
-    let mut ast2hlir = Ast2HLIR::new();
-
-    let mut file = ast2hlir.file(ast);
-    file.name = String::from("test");
-
-    let mut resolver = TypeResolver::new();
-    let _ = resolver.detect_type(&file).unwrap();
-    let _ = resolver.preload_file(file.clone()).unwrap();
-    let f = resolver.file(file);
-
-    assert_eq!(
-        f,
-        Result::Ok(TypedFile {
+    check(
+        source,
+        TypedFile {
             name: "test".to_string(),
             uses: vec![],
             body: vec![
@@ -304,7 +285,7 @@ fn test_struct_stored_property() {
                     return_type: Some(TypedType::unit())
                 })
             ],
-        })
+        }
     );
 }
 
@@ -318,21 +299,10 @@ fn test_struct_init() {
             val a = A.init(a:1)
         }
         ";
-    let ast = parse_from_string(source).unwrap();
 
-    let mut ast2hlir = Ast2HLIR::new();
-
-    let mut file = ast2hlir.file(ast);
-    file.name = String::from("test");
-
-    let mut resolver = TypeResolver::new();
-    let _ = resolver.detect_type(&file).unwrap();
-    let _ = resolver.preload_file(file.clone()).unwrap();
-    let f = resolver.file(file);
-
-    assert_eq!(
-        f,
-        Result::Ok(TypedFile {
+    check(
+        source,
+        TypedFile {
             name: "test".to_string(),
             uses: vec![],
             body: vec![
@@ -468,7 +438,7 @@ fn test_struct_init() {
                     return_type: Some(TypedType::unit()),
                 }),
             ],
-        })
+        }
     );
 }
 
@@ -483,21 +453,10 @@ fn test_struct_member_function() {
             }
         }
         ";
-    let ast = parse_from_string(source).unwrap();
 
-    let mut ast2hlir = Ast2HLIR::new();
-
-    let mut file = ast2hlir.file(ast);
-    file.name = String::from("test");
-
-    let mut resolver = TypeResolver::new();
-    let _ = resolver.detect_type(&file).unwrap();
-    let _ = resolver.preload_file(file.clone()).unwrap();
-    let f = resolver.file(file);
-
-    assert_eq!(
-        f,
-        Result::Ok(TypedFile {
+    check(
+        source,
+        TypedFile {
             name: "test".to_string(),
             uses: vec![],
             body: vec![TypedDecl::Struct(TypedStruct {
@@ -586,7 +545,7 @@ fn test_struct_member_function() {
                     return_type: Some(TypedType::int64())
                 }],
             }),],
-        })
+        }
     );
 }
 
@@ -605,21 +564,10 @@ fn test_struct_member_function_call() {
             a.getA()
         }
         ";
-    let ast = parse_from_string(source).unwrap();
 
-    let mut ast2hlir = Ast2HLIR::new();
-
-    let mut file = ast2hlir.file(ast);
-    file.name = String::from("test");
-
-    let mut resolver = TypeResolver::new();
-    let _ = resolver.detect_type(&file).unwrap();
-    let _ = resolver.preload_file(file.clone()).unwrap();
-    let f = resolver.file(file);
-
-    assert_eq!(
-        f,
-        Result::Ok(TypedFile {
+    check(
+        source,
+        TypedFile {
             name: "test".to_string(),
             uses: vec![],
             body: vec![
@@ -765,7 +713,7 @@ fn test_struct_member_function_call() {
                     return_type: Some(TypedType::unit())
                 })
             ],
-        })
+        }
     );
 }
 
@@ -774,21 +722,10 @@ fn test_expr_function_with_no_arg() {
     let source = r"
         fun function() = 1
         ";
-    let ast = parse_from_string(source).unwrap();
 
-    let mut ast2hlir = Ast2HLIR::new();
-
-    let mut file = ast2hlir.file(ast);
-    file.name = String::from("test");
-
-    let mut resolver = TypeResolver::new();
-    let _ = resolver.detect_type(&file).unwrap();
-    let _ = resolver.preload_file(file.clone()).unwrap();
-    let f = resolver.file(file);
-
-    assert_eq!(
-        f,
-        Result::Ok(TypedFile {
+    check(
+        source,
+        TypedFile {
             name: "test".to_string(),
             uses: vec![],
             body: vec![TypedDecl::Fun(TypedFun {
@@ -806,7 +743,7 @@ fn test_expr_function_with_no_arg() {
                 ))),
                 return_type: Some(TypedType::int64())
             })],
-        })
+        }
     );
 }
 
@@ -815,21 +752,10 @@ fn test_expr_function_with_arg() {
     let source = r"
         fun function(_ i:Int32) = i
         ";
-    let ast = parse_from_string(source).unwrap();
 
-    let mut ast2hlir = Ast2HLIR::new();
-
-    let mut file = ast2hlir.file(ast);
-    file.name = String::from("test");
-
-    let mut resolver = TypeResolver::new();
-    let _ = resolver.detect_type(&file).unwrap();
-    let _ = resolver.preload_file(file.clone()).unwrap();
-    let f = resolver.file(file);
-
-    assert_eq!(
-        f,
-        Result::Ok(TypedFile {
+    check(
+        source,
+        TypedFile {
             name: "test".to_string(),
             uses: vec![],
             body: vec![TypedDecl::Fun(TypedFun {
@@ -850,7 +776,7 @@ fn test_expr_function_with_arg() {
                 }))),
                 return_type: Some(TypedType::int32())
             })],
-        })
+        }
     );
 }
 
@@ -862,21 +788,10 @@ fn test_function_call() {
             target_function()
         }
         ";
-    let ast = parse_from_string(source).unwrap();
 
-    let mut ast2hlir = Ast2HLIR::new();
-
-    let mut file = ast2hlir.file(ast);
-    file.name = String::from("test");
-
-    let mut resolver = TypeResolver::new();
-    let _ = resolver.detect_type(&file).unwrap();
-    let _ = resolver.preload_file(file.clone()).unwrap();
-    let f = resolver.file(file);
-
-    assert_eq!(
-        f,
-        Result::Ok(TypedFile {
+    check(
+        source,
+        TypedFile {
             name: "test".to_string(),
             uses: vec![],
             body: vec![
@@ -919,7 +834,7 @@ fn test_function_call() {
                     return_type: Some(TypedType::unit())
                 })
             ],
-        })
+        }
     );
 }
 
@@ -930,21 +845,10 @@ fn test_return_integer_literal() {
             return 1
         }
         ";
-    let ast = parse_from_string(source).unwrap();
 
-    let mut ast2hlir = Ast2HLIR::new();
-
-    let mut file = ast2hlir.file(ast);
-    file.name = String::from("test");
-
-    let mut resolver = TypeResolver::new();
-    let _ = resolver.detect_type(&file).unwrap();
-    let _ = resolver.preload_file(file.clone()).unwrap();
-    let f = resolver.file(file);
-
-    assert_eq!(
-        f,
-        Result::Ok(TypedFile {
+    check(
+        source,
+        TypedFile {
             name: "test".to_string(),
             uses: vec![],
             body: vec![TypedDecl::Fun(TypedFun {
@@ -964,7 +868,7 @@ fn test_return_integer_literal() {
                 })),
                 return_type: Some(TypedType::int64())
             })]
-        })
+        }
     );
 }
 
@@ -975,21 +879,10 @@ fn test_return_floating_point_literal() {
             return 0.5
         }
         ";
-    let ast = parse_from_string(source).unwrap();
 
-    let mut ast2hlir = Ast2HLIR::new();
-
-    let mut file = ast2hlir.file(ast);
-    file.name = String::from("test");
-
-    let mut resolver = TypeResolver::new();
-    let _ = resolver.detect_type(&file).unwrap();
-    let _ = resolver.preload_file(file.clone()).unwrap();
-    let f = resolver.file(file);
-
-    assert_eq!(
-        f,
-        Result::Ok(TypedFile {
+    check(
+        source,
+        TypedFile {
             name: "test".to_string(),
             uses: vec![],
             body: vec![TypedDecl::Fun(TypedFun {
@@ -1011,7 +904,7 @@ fn test_return_floating_point_literal() {
                 })),
                 return_type: Some(TypedType::double())
             })]
-        })
+        }
     );
 }
 
@@ -1022,21 +915,10 @@ fn test_binop() {
             1 + 2
         }
         ";
-    let ast = parse_from_string(source).unwrap();
 
-    let mut ast2hlir = Ast2HLIR::new();
-
-    let mut file = ast2hlir.file(ast);
-    file.name = String::from("test");
-
-    let mut resolver = TypeResolver::new();
-    let _ = resolver.detect_type(&file).unwrap();
-    let _ = resolver.preload_file(file.clone()).unwrap();
-    let f = resolver.file(file);
-
-    assert_eq!(
-        f,
-        Result::Ok(TypedFile {
+    check(
+        source,
+        TypedFile {
             name: "test".to_string(),
             uses: vec![],
             body: vec![TypedDecl::Fun(TypedFun {
@@ -1062,7 +944,7 @@ fn test_binop() {
                 })),
                 return_type: Some(TypedType::unit())
             })]
-        })
+        }
     );
 }
 
@@ -1071,21 +953,10 @@ fn test_subscript() {
     let source = r"
         fun get_first(_ p:UnsafePointer<UInt8>) = p[0]
         ";
-    let ast = parse_from_string(source).unwrap();
 
-    let mut ast2hlir = Ast2HLIR::new();
-
-    let mut file = ast2hlir.file(ast);
-    file.name = String::from("test");
-
-    let mut resolver = TypeResolver::new();
-    let _ = resolver.detect_type(&file).unwrap();
-    let _ = resolver.preload_file(file.clone()).unwrap();
-    let f = resolver.file(file);
-
-    assert_eq!(
-        f,
-        Result::Ok(TypedFile {
+    check(
+        source,
+        TypedFile {
             name: "test".to_string(),
             uses: vec![],
             body: vec![TypedDecl::Fun(TypedFun {
@@ -1113,7 +984,7 @@ fn test_subscript() {
                 }))),
                 return_type: Some(TypedType::uint8())
             })]
-        })
+        }
     );
 }
 
@@ -1124,21 +995,10 @@ fn test_if_else() {
             return if i <= 0 { 0 } else { i }
         }
         ";
-    let ast = parse_from_string(source).unwrap();
 
-    let mut ast2hlir = Ast2HLIR::new();
-
-    let mut file = ast2hlir.file(ast);
-    file.name = String::from("test");
-
-    let mut resolver = TypeResolver::new();
-    let _ = resolver.detect_type(&file).unwrap();
-    let _ = resolver.preload_file(file.clone()).unwrap();
-    let f = resolver.file(file);
-
-    assert_eq!(
-        f,
-        Result::Ok(TypedFile {
+    check(
+        source,
+        TypedFile {
             name: "test".to_string(),
             uses: vec![],
             body: vec![TypedDecl::Fun(TypedFun {
@@ -1189,7 +1049,7 @@ fn test_if_else() {
                 })),
                 return_type: Some(TypedType::int64())
             })]
-        })
+        }
     );
 }
 
@@ -1202,21 +1062,10 @@ fn test_if() {
             }
         }
         ";
-    let ast = parse_from_string(source).unwrap();
 
-    let mut ast2hlir = Ast2HLIR::new();
-
-    let mut file = ast2hlir.file(ast);
-    file.name = String::from("test");
-
-    let mut resolver = TypeResolver::new();
-    let _ = resolver.detect_type(&file).unwrap();
-    let _ = resolver.preload_file(file.clone()).unwrap();
-    let f = resolver.file(file);
-
-    assert_eq!(
-        f,
-        Result::Ok(TypedFile {
+    check(
+        source,
+        TypedFile {
             name: "test".to_string(),
             uses: vec![],
             body: vec![TypedDecl::Fun(TypedFun {
@@ -1264,6 +1113,6 @@ fn test_if() {
                 })),
                 return_type: Some(TypedType::unit())
             })]
-        })
+        }
     );
 }
