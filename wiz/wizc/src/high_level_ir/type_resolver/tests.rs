@@ -83,7 +83,9 @@ fn test_unsafe_pointer() {
                         args: vec![TypedArgDef {
                             label: "a".to_string(),
                             name: "a".to_string(),
-                            type_: TypedType::Value(TypedValueType::Pointer(Box::new(TypedType::uint8())))
+                            type_: TypedType::Value(TypedValueType::Pointer(Box::new(
+                                TypedType::uint8()
+                            )))
                         }],
                         body: TypedFunBody::Block(TypedBlock {
                             body: vec![TypedStmt::Assignment(TypedAssignmentStmt::Assignment(
@@ -104,12 +106,16 @@ fn test_unsafe_pointer() {
                                         })),
                                         name: "a".to_string(),
                                         is_safe: false,
-                                        type_: Some(TypedType::Value(TypedValueType::Pointer(Box::new(TypedType::uint8()))))
+                                        type_: Some(TypedType::Value(TypedValueType::Pointer(
+                                            Box::new(TypedType::uint8())
+                                        )))
                                     }),
                                     value: TypedExpr::Name(TypedName {
                                         package: TypedPackage::Resolved(Package::new()),
                                         name: "a".to_string(),
-                                        type_: Some(TypedType::Value(TypedValueType::Pointer(Box::new(TypedType::uint8()))))
+                                        type_: Some(TypedType::Value(TypedValueType::Pointer(
+                                            Box::new(TypedType::uint8())
+                                        )))
                                     })
                                 }
                             ))]
@@ -117,7 +123,9 @@ fn test_unsafe_pointer() {
                     }],
                     stored_properties: vec![TypedStoredProperty {
                         name: "a".to_string(),
-                        type_: TypedType::Value(TypedValueType::Pointer(Box::new(TypedType::uint8())))
+                        type_: TypedType::Value(TypedValueType::Pointer(Box::new(
+                            TypedType::uint8()
+                        )))
                     }],
                     computed_properties: vec![],
                     member_functions: vec![],
@@ -143,7 +151,9 @@ fn test_unsafe_pointer() {
                             package: TypedPackage::Resolved(Package::new()),
                             is_mut: false,
                             name: "a".to_string(),
-                            type_: Some(TypedType::Value(TypedValueType::Pointer(Box::new(TypedType::uint8())))),
+                            type_: Some(TypedType::Value(TypedValueType::Pointer(Box::new(
+                                TypedType::uint8()
+                            )))),
                             value: TypedExpr::Member(TypedInstanceMember {
                                 target: Box::new(TypedExpr::Name(TypedName {
                                     package: TypedPackage::Resolved(Package::new()),
@@ -160,7 +170,9 @@ fn test_unsafe_pointer() {
                                 })),
                                 name: "a".to_string(),
                                 is_safe: false,
-                                type_: Some(TypedType::Value(TypedValueType::Pointer(Box::new(TypedType::uint8()))))
+                                type_: Some(TypedType::Value(TypedValueType::Pointer(Box::new(
+                                    TypedType::uint8()
+                                ))))
                             })
                         }))]
                     })),
