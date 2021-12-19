@@ -15,6 +15,7 @@ use crate::high_level_ir::typed_stmt::{
 use crate::high_level_ir::typed_type::{
     TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType, TypedValueType,
 };
+use core::result;
 use std::collections::HashMap;
 use std::error::Error;
 use std::process::exit;
@@ -27,7 +28,6 @@ use wiz_mir::ml_decl::{MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, ML
 use wiz_mir::ml_file::MLFile;
 use wiz_mir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
 use wiz_mir::statement::{MLAssignmentStmt, MLLoopStmt, MLReturn, MLStmt};
-use core::result;
 
 #[cfg(test)]
 mod tests;
@@ -269,7 +269,8 @@ impl HLIR2MLIR {
                 let _: Vec<_> = items
                     .into_iter()
                     .map(|i| self.source_set(i))
-                    .collect::<Result<Vec<_>>>()?.into_iter()
+                    .collect::<Result<Vec<_>>>()?
+                    .into_iter()
                     .map(|i| i.body)
                     .flatten()
                     .collect();
