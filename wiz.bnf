@@ -138,7 +138,7 @@
 
 <infix_operation_expr> ::= <elvis_expr> ((<in_operator> <elvis_expr>) | (<is_operator> <type>))*
 
-<elvis_expr> ::= <infix_function_call> (":?" <infix_function_call_expr>)*
+<elvis_expr> ::= <infix_function_call_expr> (":?" <infix_function_call_expr>)*
 
 <infix_function_call_expr> ::=  <range_expr> (<identifier> <range_expr>)*
 

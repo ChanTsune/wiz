@@ -1,7 +1,7 @@
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedFun, TypedFunBody, TypedInitializer,
-    TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedValueArgDef, TypedVar,
+    TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedVar,
 };
 use crate::high_level_ir::typed_expr::{
     TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
@@ -15,7 +15,7 @@ use crate::high_level_ir::typed_stmt::{
     TypedBlock, TypedForStmt, TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
 };
 use crate::high_level_ir::typed_type::{
-    Package, TypedPackage, TypedType, TypedTypeParam, TypedValueType,
+    Package, TypedNamedValueType, TypedPackage, TypedType, TypedTypeParam, TypedValueType,
 };
 use crate::high_level_ir::typed_use::TypedUse;
 use crate::utils::path_string_to_page_name;
@@ -187,17 +187,25 @@ impl Ast2HLIR {
 
     pub fn arg_def(&self, a: ArgDef) -> TypedArgDef {
         match a {
-            ArgDef::Value(a) => TypedArgDef::Value(TypedValueArgDef {
+            ArgDef::Value(a) => TypedArgDef {
                 label: match a.label {
                     None => a.name.token.clone(),
                     Some(label) => label.token,
                 },
                 name: a.name.token,
                 type_: self.type_(a.type_name),
-            }),
+            },
             ArgDef::Self_(s) => match s.reference {
-                None => TypedArgDef::Self_(None),
-                Some(_) => TypedArgDef::RefSelf(None),
+                None => TypedArgDef {
+                    label: "_".to_string(),
+                    name: "self".to_string(),
+                    type_: TypedType::Self_,
+                },
+                Some(_) => TypedArgDef {
+                    label: "_".to_string(),
+                    name: "self".to_string(),
+                    type_: TypedType::Self_, // TODO: Reference
+                },
             },
         }
     }
@@ -253,7 +261,7 @@ impl Ast2HLIR {
 
     pub fn type_(&self, tn: TypeName) -> TypedType {
         match tn {
-            TypeName::Simple(stn) => TypedType::Value(TypedValueType {
+            TypeName::Simple(stn) => TypedType::Value(TypedValueType::Value(TypedNamedValueType {
                 package: TypedPackage::Raw(Package::new()),
                 name: stn.name.token,
                 type_args: stn.type_args.map(|v| {
@@ -262,24 +270,13 @@ impl Ast2HLIR {
                         .map(|t| self.type_(t.element))
                         .collect()
                 }),
-            }),
+            })),
             TypeName::Decorated(d) => {
-                if d.decoration.token == "&" {
-                    let t = self.type_(d.type_);
-                    match t {
-                        TypedType::Value(v) => TypedType::Reference(v),
-                        TypedType::Function(_) => {
-                            todo!()
-                        }
-                        TypedType::Type(_) => {
-                            todo!()
-                        }
-                        TypedType::Reference(_) => {
-                            panic!("Reference can not reference.")
-                        }
-                    }
-                } else {
-                    todo!()
+                let t = self.type_(d.type_);
+                match &*d.decoration.token {
+                    "&" => TypedType::Value(TypedValueType::Reference(Box::new(t))),
+                    "*" => TypedType::Value(TypedValueType::Pointer(Box::new(t))),
+                    a => panic!("Unexpected token {}", a),
                 }
             }
             TypeName::NameSpaced(n) => {
@@ -287,7 +284,7 @@ impl Ast2HLIR {
                     name_space,
                     type_name,
                 } = *n;
-                TypedType::Value(TypedValueType {
+                TypedType::Value(TypedValueType::Value(TypedNamedValueType {
                     package: TypedPackage::Raw(Package::from(
                         name_space
                             .into_iter()
@@ -301,7 +298,7 @@ impl Ast2HLIR {
                             .map(|t| self.type_(t.element))
                             .collect()
                     }),
-                })
+                }))
             }
         }
     }
@@ -358,16 +355,14 @@ impl Ast2HLIR {
         let args: Vec<TypedArgDef> = s
             .stored_properties
             .iter()
-            .map(|p| {
-                TypedArgDef::Value(TypedValueArgDef {
-                    label: p.name.clone(),
-                    name: p.name.clone(),
-                    type_: p.type_.clone(),
-                })
+            .map(|p| TypedArgDef {
+                label: p.name.clone(),
+                name: p.name.clone(),
+                type_: p.type_.clone(),
             })
             .collect();
         if s.initializers.is_empty() {
-            let struct_type = TypedValueType {
+            let struct_type = TypedNamedValueType {
                 package: TypedPackage::Raw(Package::new()),
                 name: s.name.clone(),
                 type_args: None,
@@ -385,7 +380,9 @@ impl Ast2HLIR {
                                         target: Box::new(TypedExpr::Name(TypedName {
                                             package: TypedPackage::Raw(Package::new()),
                                             name: "self".to_string(),
-                                            type_: Some(TypedType::Value(struct_type.clone())),
+                                            type_: Some(TypedType::Value(TypedValueType::Value(
+                                                struct_type.clone(),
+                                            ))),
                                         })),
                                         name: p.name.clone(),
                                         is_safe: false,

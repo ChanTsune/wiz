@@ -249,7 +249,7 @@ impl<'ctx> CodeGen<'ctx> {
                 self.expr(arg.arg)
             }
         });
-        let args: Vec<BasicValueEnum> = args
+        let args: Vec<_> = args
             .filter_map(|arg| BasicValueEnum::try_from(arg).ok())
             .collect();
         let function = target.into_function_value();
@@ -688,9 +688,12 @@ impl<'ctx> CodeGen<'ctx> {
                     _ => true,
                 },
                 MLValueType::Struct(_) => true,
-                MLValueType::Pointer(r) | MLValueType::Reference(r) => {
-                    Self::need_load(p.get_element_type(), r)
-                }
+                MLValueType::Pointer(r) | MLValueType::Reference(r) => match &**r {
+                    MLType::Value(r) => Self::need_load(p.get_element_type(), r),
+                    MLType::Function(_) => {
+                        todo!()
+                    }
+                },
                 MLValueType::Array(_, _) => {
                     todo!()
                 }
@@ -991,12 +994,15 @@ impl<'ctx> CodeGen<'ctx> {
                 }
             },
             MLValueType::Struct(t) => AnyTypeEnum::from(self.module.get_struct_type(&*t).unwrap()),
-            MLValueType::Pointer(p) | MLValueType::Reference(p) => {
-                BasicTypeEnum::try_from(self.ml_type_to_type(*p))
+            MLValueType::Pointer(p) | MLValueType::Reference(p) => match *p {
+                MLType::Value(p) => BasicTypeEnum::try_from(self.ml_type_to_type(p))
                     .unwrap()
                     .ptr_type(AddressSpace::Generic)
-                    .as_any_type_enum()
-            }
+                    .as_any_type_enum(),
+                MLType::Function(_) => {
+                    todo!()
+                }
+            },
             MLValueType::Array(a, size) => {
                 let size = size as u32;
                 match self.ml_type_to_type(*a) {

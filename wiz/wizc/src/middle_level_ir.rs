@@ -1,7 +1,7 @@
+use crate::constants;
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_decl::{
-    TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct,
-    TypedValueArgDef, TypedVar,
+    TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct, TypedVar,
 };
 use crate::high_level_ir::typed_expr::{
     TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
@@ -13,7 +13,7 @@ use crate::high_level_ir::typed_stmt::{
     TypedAssignmentAndOperator, TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt,
 };
 use crate::high_level_ir::typed_type::{
-    TypedFunctionType, TypedPackage, TypedType, TypedValueType,
+    TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType, TypedValueType,
 };
 use std::collections::HashMap;
 use std::error::Error;
@@ -173,44 +173,62 @@ impl HLIR2MLIR {
     }
 
     fn value_type(&self, t: TypedValueType) -> MLValueType {
-        if t.is_unsafe_pointer() {
-            match self.type_(t.type_args.unwrap()[0].clone()) {
-                MLType::Value(v) => MLValueType::Pointer(Box::new(v)),
-                MLType::Function(f) => {
-                    eprintln!("Function Pointer is unsupported {:?}", f);
-                    exit(-1)
-                }
-            }
-        } else {
-            let mut pkg = t.package.clone().into_resolved().names;
-            if pkg.is_empty() {
-                match &*t.name {
-                    "Noting" => MLValueType::Primitive(MLPrimitiveType::Noting),
-                    "Unit" => MLValueType::Primitive(MLPrimitiveType::Unit),
-                    "Int8" => MLValueType::Primitive(MLPrimitiveType::Int8),
-                    "UInt8" => MLValueType::Primitive(MLPrimitiveType::UInt8),
-                    "Int16" => MLValueType::Primitive(MLPrimitiveType::Int16),
-                    "UInt16" => MLValueType::Primitive(MLPrimitiveType::UInt16),
-                    "Int32" => MLValueType::Primitive(MLPrimitiveType::Int32),
-                    "UInt32" => MLValueType::Primitive(MLPrimitiveType::UInt32),
-                    "Int64" => MLValueType::Primitive(MLPrimitiveType::Int64),
-                    "UInt64" => MLValueType::Primitive(MLPrimitiveType::UInt64),
-                    "Int128" => MLValueType::Primitive(MLPrimitiveType::Int128),
-                    "UInt128" => MLValueType::Primitive(MLPrimitiveType::UInt128),
-                    "Size" => MLValueType::Primitive(MLPrimitiveType::Size),
-                    "USize" => MLValueType::Primitive(MLPrimitiveType::USize),
-                    "Bool" => MLValueType::Primitive(MLPrimitiveType::Bool),
-                    "Float" => MLValueType::Primitive(MLPrimitiveType::Float),
-                    "Double" => MLValueType::Primitive(MLPrimitiveType::Double),
-                    "String" => MLValueType::Primitive(MLPrimitiveType::String),
-                    other => {
-                        pkg.push(String::from(other));
+        match t {
+            TypedValueType::Value(t) => {
+                if t.is_unsafe_pointer() {
+                    match self.type_(t.type_args.unwrap()[0].clone()) {
+                        v => MLValueType::Pointer(Box::new(v)),
+                    }
+                } else {
+                    let mut pkg = t.package.clone().into_resolved().names;
+                    if pkg.is_empty() {
+                        match &*t.name {
+                            constants::NOTING => MLValueType::Primitive(MLPrimitiveType::Noting),
+                            constants::UNIT => MLValueType::Primitive(MLPrimitiveType::Unit),
+                            constants::INT8 => MLValueType::Primitive(MLPrimitiveType::Int8),
+                            constants::UINT8 => MLValueType::Primitive(MLPrimitiveType::UInt8),
+                            constants::INT16 => MLValueType::Primitive(MLPrimitiveType::Int16),
+                            constants::UINT16 => MLValueType::Primitive(MLPrimitiveType::UInt16),
+                            constants::INT32 => MLValueType::Primitive(MLPrimitiveType::Int32),
+                            constants::UINT32 => MLValueType::Primitive(MLPrimitiveType::UInt32),
+                            constants::INT64 => MLValueType::Primitive(MLPrimitiveType::Int64),
+                            constants::UINT64 => MLValueType::Primitive(MLPrimitiveType::UInt64),
+                            constants::INT128 => MLValueType::Primitive(MLPrimitiveType::Int128),
+                            constants::UINT128 => MLValueType::Primitive(MLPrimitiveType::UInt128),
+                            constants::SIZE => MLValueType::Primitive(MLPrimitiveType::Size),
+                            constants::USIZE => MLValueType::Primitive(MLPrimitiveType::USize),
+                            constants::BOOL => MLValueType::Primitive(MLPrimitiveType::Bool),
+                            constants::F32 => MLValueType::Primitive(MLPrimitiveType::Float),
+                            constants::F64 => MLValueType::Primitive(MLPrimitiveType::Double),
+                            constants::STRING => MLValueType::Primitive(MLPrimitiveType::String),
+                            other => {
+                                pkg.push(String::from(other));
+                                MLValueType::Struct(pkg.join("::"))
+                            }
+                        }
+                    } else {
+                        pkg.push(t.name);
                         MLValueType::Struct(pkg.join("::"))
                     }
                 }
-            } else {
-                pkg.push(t.name);
-                MLValueType::Struct(pkg.join("::"))
+            }
+            TypedValueType::Array(_) => {
+                todo!()
+            }
+            TypedValueType::Tuple(_) => {
+                todo!()
+            }
+            TypedValueType::Pointer(t) => {
+                match *t {
+                    TypedType::Self_ => {}
+                    TypedType::Value(_) => {}
+                    TypedType::Function(_) => {}
+                    TypedType::Type(_) => {}
+                }
+                MLValueType::Pointer(Box::new(self.type_(*t)))
+            }
+            TypedValueType::Reference(_) => {
+                todo!()
             }
         }
     }
@@ -220,7 +238,7 @@ impl HLIR2MLIR {
             arguments: t
                 .arguments
                 .into_iter()
-                .map(|a| match self.type_(a.type_().unwrap()) {
+                .map(|a| match self.type_(a.typ) {
                     MLType::Value(v) => v,
                     MLType::Function(_) => exit(-9),
                 })
@@ -614,19 +632,33 @@ impl HLIR2MLIR {
         let t = s.target.type_().unwrap();
         if t.is_pointer_type() && s.indexes.len() == 1 {
             match t {
-                TypedType::Value(v) => {
-                    if v.type_args.as_ref().unwrap()[0].is_primitive() {
-                        MLExpr::PrimitiveSubscript(MLSubscript {
-                            target: Box::new(self.expr(*s.target)),
-                            index: Box::new(self.expr(s.indexes[0].clone())),
-                            type_: self
-                                .type_(v.type_args.unwrap()[0].clone())
-                                .into_value_type(),
-                        })
-                    } else {
-                        self.subscript_for_user_defined(s)
+                TypedType::Value(v) => match v {
+                    TypedValueType::Value(v) => {
+                        if v.type_args.as_ref().unwrap()[0].is_primitive() {
+                            MLExpr::PrimitiveSubscript(MLSubscript {
+                                target: Box::new(self.expr(*s.target)),
+                                index: Box::new(self.expr(s.indexes[0].clone())),
+                                type_: self
+                                    .type_(v.type_args.unwrap()[0].clone())
+                                    .into_value_type(),
+                            })
+                        } else {
+                            self.subscript_for_user_defined(s)
+                        }
                     }
-                }
+                    TypedValueType::Array(_) => {
+                        todo!()
+                    }
+                    TypedValueType::Tuple(_) => {
+                        todo!()
+                    }
+                    TypedValueType::Pointer(_) => {
+                        todo!()
+                    }
+                    TypedValueType::Reference(_) => {
+                        todo!()
+                    }
+                },
                 _ => {
                     eprintln!("function pointer detected");
                     exit(-1)
@@ -690,6 +722,9 @@ impl HLIR2MLIR {
                     type_,
                 } = m;
                 match target.type_().unwrap() {
+                    TypedType::Self_ => {
+                        todo!()
+                    }
                     TypedType::Value(v) => {
                         let target_type = self.value_type(v);
                         let is_stored = self.context.struct_has_field(&target_type, &name);
@@ -719,16 +754,40 @@ impl HLIR2MLIR {
                     TypedType::Function(_) => {
                         todo!()
                     }
-                    TypedType::Type(t) => {
-                        let type_ = self.type_(type_.unwrap());
-                        MLExpr::Name(MLName {
-                            name: self.package_name_mangling(&t.package, &*t.name) + "::" + &*name,
-                            type_,
-                        })
-                    }
-                    TypedType::Reference(v) => {
-                        todo!()
-                    }
+                    TypedType::Type(t) => match *t {
+                        TypedType::Self_ => {
+                            todo!()
+                        }
+                        TypedType::Value(t) => match t {
+                            TypedValueType::Value(t) => {
+                                let type_ = self.type_(type_.unwrap());
+                                MLExpr::Name(MLName {
+                                    name: self.package_name_mangling(&t.package, &*t.name)
+                                        + "::"
+                                        + &*name,
+                                    type_,
+                                })
+                            }
+                            TypedValueType::Array(_) => {
+                                todo!()
+                            }
+                            TypedValueType::Tuple(_) => {
+                                todo!()
+                            }
+                            TypedValueType::Pointer(_) => {
+                                todo!()
+                            }
+                            TypedValueType::Reference(_) => {
+                                todo!()
+                            }
+                        },
+                        TypedType::Function(_) => {
+                            todo!()
+                        }
+                        TypedType::Type(_) => {
+                            todo!()
+                        }
+                    },
                 }
             }
             t => self.expr(t),
@@ -746,15 +805,13 @@ impl HLIR2MLIR {
                                 + &*self.fun_arg_label_type_name_mangling(
                                     &args
                                         .iter()
-                                        .map(|a| {
-                                            TypedArgDef::Value(TypedValueArgDef {
-                                                label: match &a.label {
-                                                    None => "_".to_string(),
-                                                    Some(l) => l.to_string(),
-                                                },
-                                                name: "".to_string(),
-                                                type_: a.arg.type_().unwrap(),
-                                            })
+                                        .map(|a| TypedArgDef {
+                                            label: match &a.label {
+                                                None => "_".to_string(),
+                                                Some(l) => l.to_string(),
+                                            },
+                                            name: "".to_string(),
+                                            type_: a.arg.type_().unwrap(),
                                         })
                                         .collect(),
                                 )
@@ -803,8 +860,8 @@ impl HLIR2MLIR {
 
     fn arg_def(&self, e: TypedArgDef) -> MLArgDef {
         MLArgDef {
-            name: e.name(),
-            type_: self.type_(e.type_().unwrap()).into_value_type(),
+            name: e.name,
+            type_: self.type_(e.type_).into_value_type(),
         }
     }
 
@@ -841,7 +898,7 @@ impl HLIR2MLIR {
 
     fn fun_arg_label_type_name_mangling(&self, args: &Vec<TypedArgDef>) -> String {
         args.iter()
-            .map(|arg| arg.label() + "#" + &*arg.type_().unwrap().to_string())
+            .map(|arg| format!("{}#{}", arg.label, arg.type_.to_string()))
             .collect::<Vec<String>>()
             .join("##")
     }

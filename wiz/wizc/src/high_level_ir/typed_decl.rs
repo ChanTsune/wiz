@@ -2,7 +2,7 @@ use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_expr::TypedExpr;
 use crate::high_level_ir::typed_stmt::TypedBlock;
 use crate::high_level_ir::typed_type::{
-    TypedFunctionType, TypedPackage, TypedType, TypedTypeParam,
+    TypedArgType, TypedFunctionType, TypedPackage, TypedType, TypedTypeParam,
 };
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -39,38 +39,19 @@ pub struct TypedFun {
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
-pub enum TypedArgDef {
-    Value(TypedValueArgDef),
-    Self_(Option<TypedType>),
-    RefSelf(Option<TypedType>),
-}
-
-impl TypedArgDef {
-    pub(crate) fn label(&self) -> String {
-        match self {
-            TypedArgDef::Value(v) => v.label.clone(),
-            TypedArgDef::Self_(_) | TypedArgDef::RefSelf(_) => String::from("_"),
-        }
-    }
-    pub(crate) fn name(&self) -> String {
-        match self {
-            TypedArgDef::Value(v) => v.name.clone(),
-            TypedArgDef::Self_(_) | TypedArgDef::RefSelf(_) => String::from("self"),
-        }
-    }
-    pub(crate) fn type_(&self) -> Option<TypedType> {
-        match self {
-            TypedArgDef::Value(v) => Some(v.type_.clone()),
-            TypedArgDef::Self_(s) | TypedArgDef::RefSelf(s) => s.clone(),
-        }
-    }
-}
-
-#[derive(Debug, Eq, PartialEq, Clone, Hash)]
-pub struct TypedValueArgDef {
+pub struct TypedArgDef {
     pub(crate) label: String,
     pub(crate) name: String,
     pub(crate) type_: TypedType,
+}
+
+impl TypedArgDef {
+    pub(crate) fn to_arg_type(self) -> TypedArgType {
+        TypedArgType {
+            label: self.label,
+            typ: self.type_,
+        }
+    }
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -122,7 +103,12 @@ impl TypedFun {
     pub fn type_(&self) -> Option<TypedType> {
         self.return_type.clone().map(|return_type| {
             TypedType::Function(Box::new(TypedFunctionType {
-                arguments: self.arg_defs.clone(),
+                arguments: self
+                    .arg_defs
+                    .clone()
+                    .into_iter()
+                    .map(|a| a.to_arg_type())
+                    .collect(),
                 return_type,
             }))
         })
@@ -133,7 +119,12 @@ impl TypedMemberFunction {
     pub(crate) fn type_(&self) -> Option<TypedType> {
         match &self.return_type {
             Some(return_type) => Some(TypedType::Function(Box::new(TypedFunctionType {
-                arguments: self.arg_defs.clone(),
+                arguments: self
+                    .arg_defs
+                    .clone()
+                    .into_iter()
+                    .map(|a| a.to_arg_type())
+                    .collect(),
                 return_type: return_type.clone(),
             }))),
             None => None,

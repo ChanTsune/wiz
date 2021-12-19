@@ -1,4 +1,4 @@
-use crate::constants::UNSAFE_POINTER;
+use crate::constants::{self, UNSAFE_POINTER};
 use crate::high_level_ir::typed_decl::TypedArgDef;
 use std::option::Option::Some;
 
@@ -15,23 +15,141 @@ pub struct Package {
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub enum TypedType {
+    Self_,
     Value(TypedValueType),
     Function(Box<TypedFunctionType>),
-    Type(TypedValueType),
-    Reference(TypedValueType),
+    Type(Box<TypedType>),
+}
+
+impl TypedType {
+    pub(crate) fn is_self(&self) -> bool {
+        matches!(self, Self::Self_)
+    }
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
-pub struct TypedValueType {
-    pub(crate) package: TypedPackage,
-    pub(crate) name: String,
-    pub(crate) type_args: Option<Vec<TypedType>>,
+pub enum TypedValueType {
+    Value(TypedNamedValueType), // Primitive | Struct | Union | Enum
+    Array(Box<TypedType>),
+    Tuple(Vec<TypedType>),
+    Pointer(Box<TypedType>),
+    Reference(Box<TypedType>),
+}
+
+impl TypedValueType {
+    pub fn noting() -> Self {
+        Self::Value(TypedNamedValueType::noting())
+    }
+
+    pub fn unit() -> Self {
+        Self::Value(TypedNamedValueType::unit())
+    }
+
+    pub fn int8() -> Self {
+        Self::Value(TypedNamedValueType::int8())
+    }
+
+    pub fn int16() -> Self {
+        Self::Value(TypedNamedValueType::int16())
+    }
+
+    pub fn int32() -> Self {
+        Self::Value(TypedNamedValueType::int32())
+    }
+
+    pub fn int64() -> Self {
+        Self::Value(TypedNamedValueType::int64())
+    }
+
+    pub fn uint8() -> Self {
+        Self::Value(TypedNamedValueType::uint8())
+    }
+
+    pub fn uint16() -> Self {
+        Self::Value(TypedNamedValueType::uint16())
+    }
+
+    pub fn uint32() -> Self {
+        Self::Value(TypedNamedValueType::uint32())
+    }
+
+    pub fn uint64() -> Self {
+        Self::Value(TypedNamedValueType::uint64())
+    }
+
+    pub fn float() -> Self {
+        Self::Value(TypedNamedValueType::float())
+    }
+
+    pub fn double() -> Self {
+        Self::Value(TypedNamedValueType::double())
+    }
+
+    pub fn bool() -> Self {
+        Self::Value(TypedNamedValueType::bool())
+    }
+
+    pub fn string() -> Self {
+        Self::Value(TypedNamedValueType::string())
+    }
+
+    pub fn is_unsafe_pointer(&self) -> bool {
+        matches!(self, Self::Pointer(_))
+            || match self {
+                TypedValueType::Value(v) => v.is_unsafe_pointer(),
+                TypedValueType::Array(_) => false,
+                TypedValueType::Tuple(_) => false,
+                TypedValueType::Pointer(_) => true,
+                TypedValueType::Reference(_) => false,
+            }
+    }
+}
+
+impl ToString for TypedValueType {
+    fn to_string(&self) -> String {
+        match self {
+            TypedValueType::Value(v) => {
+                format!("{}", v.name)
+            }
+            TypedValueType::Array(_) => {
+                todo!()
+            }
+            TypedValueType::Tuple(_) => {
+                todo!()
+            }
+            TypedValueType::Pointer(v) => {
+                format!("*{:?}", v)
+            }
+            TypedValueType::Reference(_) => {
+                todo!()
+            }
+        }
+    }
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub struct TypedFunctionType {
-    pub(crate) arguments: Vec<TypedArgDef>,
-    pub(crate) return_type: TypedType,
+    pub arguments: Vec<TypedArgType>,
+    pub return_type: TypedType,
+}
+
+#[derive(Debug, Eq, PartialEq, Clone, Hash)]
+pub struct TypedArgType {
+    pub label: String,
+    pub typ: TypedType,
+}
+
+impl TypedArgType {
+    pub(crate) fn is_self(&self) -> bool {
+        self.typ.is_self()
+    }
+}
+
+#[derive(Debug, Eq, PartialEq, Clone, Hash)]
+pub struct TypedNamedValueType {
+    pub(crate) package: TypedPackage,
+    pub(crate) name: String,
+    pub(crate) type_args: Option<Vec<TypedType>>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
@@ -99,7 +217,7 @@ impl ToString for Package {
     }
 }
 
-impl TypedValueType {
+impl TypedNamedValueType {
     fn builtin(name: &str) -> Self {
         Self {
             package: TypedPackage::Resolved(Package::global()),
@@ -109,59 +227,59 @@ impl TypedValueType {
     }
 
     pub(crate) fn noting() -> Self {
-        Self::builtin("Noting")
+        Self::builtin(constants::NOTING)
     }
 
     pub(crate) fn unit() -> Self {
-        Self::builtin("Unit")
+        Self::builtin(constants::UNIT)
     }
 
     pub(crate) fn int8() -> Self {
-        Self::builtin("Int8")
+        Self::builtin(constants::INT8)
     }
 
     pub(crate) fn int16() -> Self {
-        Self::builtin("Int16")
+        Self::builtin(constants::INT16)
     }
 
     pub(crate) fn int32() -> Self {
-        Self::builtin("Int32")
+        Self::builtin(constants::INT32)
     }
 
     pub(crate) fn int64() -> Self {
-        Self::builtin("Int64")
+        Self::builtin(constants::INT64)
     }
 
     pub(crate) fn uint8() -> Self {
-        Self::builtin("UInt8")
+        Self::builtin(constants::UINT8)
     }
 
     pub(crate) fn uint16() -> Self {
-        Self::builtin("UInt16")
+        Self::builtin(constants::UINT16)
     }
 
     pub(crate) fn uint32() -> Self {
-        Self::builtin("UInt32")
+        Self::builtin(constants::UINT32)
     }
 
     pub(crate) fn uint64() -> Self {
-        Self::builtin("UInt64")
+        Self::builtin(constants::UINT64)
     }
 
     pub(crate) fn float() -> Self {
-        Self::builtin("Float")
+        Self::builtin(constants::F32)
     }
 
     pub(crate) fn double() -> Self {
-        Self::builtin("Double")
+        Self::builtin(constants::F64)
     }
 
     pub(crate) fn bool() -> Self {
-        Self::builtin("Bool")
+        Self::builtin(constants::BOOL)
     }
 
     pub(crate) fn string() -> Self {
-        Self::builtin("String")
+        Self::builtin(constants::STRING)
     }
 
     pub(crate) fn is_unsafe_pointer(&self) -> bool {
@@ -178,7 +296,7 @@ impl TypedValueType {
     }
 }
 
-impl ToString for TypedValueType {
+impl ToString for TypedNamedValueType {
     fn to_string(&self) -> String {
         let fqn = match &self.package {
             TypedPackage::Raw(pkg) | TypedPackage::Resolved(pkg) => {
@@ -261,11 +379,11 @@ impl TypedType {
     }
 
     pub fn unsafe_pointer(typ: TypedType) -> Self {
-        Self::Value(TypedValueType {
+        Self::Value(TypedValueType::Value(TypedNamedValueType {
             package: TypedPackage::Resolved(Package::global()),
             name: UNSAFE_POINTER.to_string(),
             type_args: Some(vec![typ]),
-        })
+        }))
     }
 
     pub fn signed_integer_types() -> Vec<TypedType> {
@@ -349,13 +467,12 @@ impl ToString for TypedType {
     fn to_string(&self) -> String {
         match self {
             TypedType::Value(t) => t.to_string(),
-            TypedType::Function(t) => {
+            TypedType::Function(_) | TypedType::Self_ => {
                 todo!()
             }
             TypedType::Type(t) => {
                 format!("Type<{}>", t.to_string())
             }
-            TypedType::Reference(t) => String::from("&") + &*t.to_string(),
         }
     }
 }

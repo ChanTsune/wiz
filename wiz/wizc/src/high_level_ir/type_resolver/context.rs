@@ -1,10 +1,11 @@
 use crate::constants::UNSAFE_POINTER;
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
-use crate::high_level_ir::typed_decl::{TypedArgDef, TypedValueArgDef};
+use crate::high_level_ir::typed_decl::TypedArgDef;
 use crate::high_level_ir::typed_expr::TypedBinaryOperator;
 use crate::high_level_ir::typed_type::{
-    Package, TypedFunctionType, TypedPackage, TypedType, TypedValueType,
+    Package, TypedArgType, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType,
+    TypedValueType,
 };
 use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::{HashMap, HashSet};
@@ -232,10 +233,21 @@ impl ResolverContext {
 
         for t in TypedType::builtin_types() {
             match &t {
-                TypedType::Value(v) => {
-                    ns.register_type(v.name.clone(), ResolverStruct::new());
-                    ns.register_value(v.name.clone(), TypedType::Type(v.clone()));
-                }
+                TypedType::Value(v) => match v {
+                    TypedValueType::Value(v) => {
+                        ns.register_type(v.name.clone(), ResolverStruct::new());
+                        ns.register_value(
+                            v.name.clone(),
+                            TypedType::Type(Box::new(TypedType::Value(TypedValueType::Value(
+                                v.clone(),
+                            )))),
+                        );
+                    }
+                    TypedValueType::Array(_) => {}
+                    TypedValueType::Tuple(_) => {}
+                    TypedValueType::Pointer(_) => {}
+                    TypedValueType::Reference(_) => {}
+                },
                 _ => {}
             };
         }
@@ -381,25 +393,63 @@ impl ResolverContext {
 
     pub fn resolve_member_type(&mut self, t: TypedType, name: String) -> Result<TypedType> {
         match &t {
-            TypedType::Value(v) => {
-                let ns = self.get_namespace_mut(v.package.clone().into_resolved().names)?;
-                let rs = ns
-                    .get_type(&v.name)
-                    .ok_or_else(|| ResolverError::from(format!("Can not resolve type {:?}", t)))?;
-                rs.get_instance_member_type(&name)
-                    .cloned()
-                    .ok_or_else(|| ResolverError::from(format!("{:?} not has {:?}", t, name)))
-            }
-            TypedType::Type(v) => {
-                let ns = self.get_namespace_mut(v.package.clone().into_resolved().names)?;
-                let rs = ns
-                    .get_type(&v.name)
-                    .ok_or_else(|| ResolverError::from(format!("Can not resolve type {:?}", t)))?;
-                rs.static_functions
-                    .get(&name)
-                    .cloned()
-                    .ok_or_else(|| ResolverError::from(format!("{:?} not has {:?}", t, name)))
-            }
+            TypedType::Value(v) => match v {
+                TypedValueType::Value(v) => {
+                    let ns = self.get_namespace_mut(v.package.clone().into_resolved().names)?;
+                    let rs = ns.get_type(&v.name).ok_or_else(|| {
+                        ResolverError::from(format!("Can not resolve type {:?}", t))
+                    })?;
+                    rs.get_instance_member_type(&name)
+                        .cloned()
+                        .ok_or_else(|| ResolverError::from(format!("{:?} not has {:?}", t, name)))
+                }
+                TypedValueType::Array(_) => {
+                    todo!()
+                }
+                TypedValueType::Tuple(_) => {
+                    todo!()
+                }
+                TypedValueType::Pointer(_) => {
+                    todo!()
+                }
+                TypedValueType::Reference(_) => {
+                    todo!()
+                }
+            },
+            TypedType::Type(v) => match (**v).clone() {
+                TypedType::Self_ => {
+                    todo!()
+                }
+                TypedType::Value(v) => match v {
+                    TypedValueType::Value(v) => {
+                        let ns = self.get_namespace_mut(v.package.clone().into_resolved().names)?;
+                        let rs = ns.get_type(&v.name).ok_or_else(|| {
+                            ResolverError::from(format!("Can not resolve type {:?}", t))
+                        })?;
+                        rs.static_functions.get(&name).cloned().ok_or_else(|| {
+                            ResolverError::from(format!("{:?} not has {:?}", t, name))
+                        })
+                    }
+                    TypedValueType::Array(_) => {
+                        todo!()
+                    }
+                    TypedValueType::Tuple(_) => {
+                        todo!()
+                    }
+                    TypedValueType::Pointer(_) => {
+                        todo!()
+                    }
+                    TypedValueType::Reference(_) => {
+                        todo!()
+                    }
+                },
+                TypedType::Function(_) => {
+                    todo!()
+                }
+                TypedType::Type(_) => {
+                    todo!()
+                }
+            },
             _ => todo!("dose not impl"),
         }
     }
@@ -475,6 +525,27 @@ impl ResolverContext {
     }
 
     fn full_value_type_name(&self, type_: TypedValueType) -> Result<TypedValueType> {
+        Result::Ok(match type_ {
+            TypedValueType::Value(t) => TypedValueType::Value(self.full_named_value_type_name(t)?),
+            TypedValueType::Array(_) => {
+                todo!()
+            }
+            TypedValueType::Tuple(_) => {
+                todo!()
+            }
+            TypedValueType::Pointer(t) => {
+                TypedValueType::Pointer(Box::new(self.full_type_name(*t)?))
+            }
+            TypedValueType::Reference(t) => {
+                TypedValueType::Reference(Box::new(self.full_type_name(*t)?))
+            }
+        })
+    }
+
+    fn full_named_value_type_name(
+        &self,
+        type_: TypedNamedValueType,
+    ) -> Result<TypedNamedValueType> {
         let env = self.get_current_name_environment();
         Result::Ok(match type_.package {
             TypedPackage::Raw(p) => {
@@ -486,7 +557,7 @@ impl ResolverContext {
                                 "Can not resolve name {:?}",
                                 &type_.name
                             )))?;
-                    TypedValueType {
+                    TypedNamedValueType {
                         package: TypedPackage::Resolved(Package::from(ns.clone())),
                         name: type_.name.clone(),
                         type_args: match type_.type_args.clone() {
@@ -515,7 +586,7 @@ impl ResolverContext {
                             let _ = ns.get_type(&type_.name).ok_or(ResolverError::from(
                                 format!("Cannot resolve name {:?}", &type_.name),
                             ))?;
-                            TypedValueType {
+                            TypedNamedValueType {
                                 package: TypedPackage::Resolved(Package::from(
                                     ns.name_space.clone(),
                                 )),
@@ -539,39 +610,43 @@ impl ResolverContext {
     }
 
     pub fn full_type_name(&self, typ: TypedType) -> Result<TypedType> {
-        Result::Ok(match typ {
-            TypedType::Value(v) => TypedType::Value(self.full_value_type_name(v)?),
-            TypedType::Type(v) => TypedType::Type(self.full_value_type_name(v)?),
-            TypedType::Reference(v) => TypedType::Reference(self.full_value_type_name(v)?),
-            TypedType::Function(f) => TypedType::Function(Box::new(TypedFunctionType {
-                arguments: f
-                    .arguments
+        if typ.is_self() {
+            self.current_type
+                .clone()
+                .ok_or_else(|| ResolverError::from(format!("can not resolve Self")))
+        } else {
+            Result::Ok(match typ {
+                TypedType::Value(v) => TypedType::Value(self.full_value_type_name(v)?),
+                TypedType::Type(v) => TypedType::Type(Box::new(self.full_type_name(*v)?)),
+                TypedType::Self_ => self
+                    .current_type
                     .clone()
-                    .into_iter()
-                    .map(|a| {
-                        Result::Ok(match a {
-                            TypedArgDef::Value(v) => TypedArgDef::Value(TypedValueArgDef {
-                                label: v.label,
-                                name: v.name,
-                                type_: self.full_type_name(v.type_)?,
-                            }),
-                            TypedArgDef::Self_(_) => TypedArgDef::Self_(self.current_type.clone()),
-                            TypedArgDef::RefSelf(_) => {
-                                TypedArgDef::RefSelf(self.current_type.clone())
-                            }
+                    .ok_or_else(|| ResolverError::from(format!("can not resolve Self")))?,
+                TypedType::Function(f) => TypedType::Function(Box::new(TypedFunctionType {
+                    arguments: f
+                        .arguments
+                        .clone()
+                        .into_iter()
+                        .map(|a| {
+                            Result::Ok(TypedArgType {
+                                label: a.label,
+                                typ: self.full_type_name(a.typ)?,
+                            })
                         })
-                    })
-                    .collect::<Result<Vec<TypedArgDef>>>()?,
-                return_type: self.full_type_name(f.return_type.clone())?,
-            })),
-        })
+                        .collect::<Result<Vec<_>>>()?,
+                    return_type: self.full_type_name(f.return_type.clone())?,
+                })),
+            })
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use crate::high_level_ir::type_resolver::context::{EnvValue, NameSpace, ResolverContext};
-    use crate::high_level_ir::typed_type::{Package, TypedPackage, TypedType, TypedValueType};
+    use crate::high_level_ir::typed_type::{
+        Package, TypedNamedValueType, TypedPackage, TypedType, TypedValueType,
+    };
 
     #[test]
     fn test_name_space() {
@@ -644,11 +719,13 @@ mod tests {
             env.names.get("Int32"),
             Some(&(
                 vec![],
-                EnvValue::Value(TypedType::Type(TypedValueType {
-                    package: TypedPackage::Resolved(Package::global()),
-                    name: "Int32".to_string(),
-                    type_args: None
-                }))
+                EnvValue::Value(TypedType::Type(Box::new(TypedType::Value(
+                    TypedValueType::Value(TypedNamedValueType {
+                        package: TypedPackage::Resolved(Package::global()),
+                        name: "Int32".to_string(),
+                        type_args: None
+                    })
+                ))))
             ))
         );
     }

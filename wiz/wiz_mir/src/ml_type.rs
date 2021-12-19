@@ -9,12 +9,21 @@ pub enum MLType {
     Function(MLFunctionType),
 }
 
+impl MLType {
+    fn name(&self) -> String {
+        match self {
+            Self::Value(v) => v.name(),
+            Self::Function(f) => f.name(),
+        }
+    }
+}
+
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub enum MLValueType {
     Primitive(MLPrimitiveType),
     Struct(String),
-    Pointer(Box<MLValueType>),
-    Reference(Box<MLValueType>),
+    Pointer(Box<MLType>),
+    Reference(Box<MLType>),
     Array(Box<MLValueType>, usize),
 }
 
@@ -38,6 +47,12 @@ impl MLValueType {
 pub struct MLFunctionType {
     pub arguments: Vec<MLValueType>,
     pub return_type: MLValueType,
+}
+
+impl MLFunctionType {
+    fn name(&self) -> String {
+        todo!()
+    }
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]

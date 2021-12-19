@@ -9,7 +9,7 @@ use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedMemberFunction,
-    TypedStoredProperty, TypedStruct, TypedValueArgDef, TypedVar,
+    TypedStoredProperty, TypedStruct, TypedVar,
 };
 use crate::high_level_ir::typed_expr::{
     TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember,
@@ -22,7 +22,7 @@ use crate::high_level_ir::typed_stmt::{
     TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
 };
 use crate::high_level_ir::typed_type::{
-    Package, TypedFunctionType, TypedPackage, TypedType, TypedValueType,
+    Package, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType, TypedValueType,
 };
 
 #[derive(Debug, Clone)]
@@ -70,13 +70,15 @@ impl TypeResolver {
                     ns.register_type(s.name.clone(), ResolverStruct::new());
                     ns.register_value(
                         s.name.clone(),
-                        TypedType::Type(TypedValueType {
-                            package: TypedPackage::Resolved(Package::from(
-                                current_namespace.clone(),
-                            )),
-                            name: s.name.clone(),
-                            type_args: None,
-                        }),
+                        TypedType::Type(Box::new(TypedType::Value(TypedValueType::Value(
+                            TypedNamedValueType {
+                                package: TypedPackage::Resolved(Package::from(
+                                    current_namespace.clone(),
+                                )),
+                                name: s.name.clone(),
+                                type_args: None,
+                            },
+                        )))),
                     );
                 }
                 TypedDecl::Class => {}
@@ -154,13 +156,8 @@ impl TypeResolver {
             .iter()
             .map(|a| {
                 let a = self.typed_arg_def(a.clone())?;
-                self.context.register_to_env(
-                    a.name(),
-                    EnvValue::from(
-                        a.type_()
-                            .ok_or_else(|| ResolverError::from("Can not resolve 'self type'"))?,
-                    ),
-                );
+                self.context
+                    .register_to_env(a.name.clone(), EnvValue::from(a.type_.clone()));
                 Result::Ok(a)
             })
             .collect::<Result<Vec<TypedArgDef>>>()?;
@@ -191,11 +188,11 @@ impl TypeResolver {
             member_functions,
         } = s;
         let current_namespace = self.context.current_namespace.clone();
-        let this_type = TypedType::Value(TypedValueType {
+        let this_type = TypedType::Value(TypedValueType::Value(TypedNamedValueType {
             package: TypedPackage::Resolved(Package::from(current_namespace)),
             name: name.clone(),
             type_args: None,
-        });
+        }));
         self.context.set_current_type(this_type.clone());
         for stored_property in stored_properties.into_iter() {
             let type_ = self.context.full_type_name(stored_property.type_)?;
@@ -227,7 +224,12 @@ impl TypeResolver {
             let type_ =
                 self.context
                     .full_type_name(TypedType::Function(Box::new(TypedFunctionType {
-                        arguments: ini.args.clone(),
+                        arguments: ini
+                            .args
+                            .clone()
+                            .into_iter()
+                            .map(|a| a.to_arg_type())
+                            .collect(),
                         return_type: this_type.clone(),
                     })))?;
             let ns = self.context.get_current_namespace_mut()?;
@@ -350,20 +352,10 @@ impl TypeResolver {
     }
 
     fn typed_arg_def(&mut self, a: TypedArgDef) -> Result<TypedArgDef> {
-        Result::Ok(match a {
-            TypedArgDef::Value(a) => TypedArgDef::Value(TypedValueArgDef {
-                label: a.label,
-                name: a.name,
-                type_: self.context.full_type_name(a.type_)?,
-            }),
-            TypedArgDef::Self_(_) => {
-                let self_type = self.context.get_current_type();
-                TypedArgDef::Self_(self_type)
-            }
-            TypedArgDef::RefSelf(_) => {
-                let self_type = self.context.get_current_type();
-                TypedArgDef::RefSelf(self_type)
-            }
+        Result::Ok(TypedArgDef {
+            label: a.label,
+            name: a.name,
+            type_: self.context.full_type_name(a.type_)?,
         })
     }
 
@@ -375,13 +367,8 @@ impl TypeResolver {
             .iter()
             .map(|a| {
                 let a = self.typed_arg_def(a.clone())?;
-                self.context.register_to_env(
-                    a.name(),
-                    EnvValue::from(
-                        a.type_()
-                            .ok_or_else(|| ResolverError::from("Can not resolve 'self type'"))?,
-                    ),
-                );
+                self.context
+                    .register_to_env(a.name.clone(), EnvValue::from(a.type_.clone()));
                 Result::Ok(a)
             })
             .collect::<Result<Vec<TypedArgDef>>>()?;
@@ -420,11 +407,11 @@ impl TypeResolver {
             member_functions,
         } = s;
         let current_namespace = self.context.current_namespace.clone();
-        let this_type = TypedType::Value(TypedValueType {
+        let this_type = TypedType::Value(TypedValueType::Value(TypedNamedValueType {
             package: TypedPackage::Resolved(Package::from(current_namespace)),
             name: name.clone(),
             type_args: None,
-        });
+        }));
         self.context.set_current_type(this_type);
         let initializers = initializers
             .into_iter()
@@ -466,11 +453,7 @@ impl TypeResolver {
                 .map(|a| {
                     let a = self.typed_arg_def(a)?;
                     let ns = self.context.get_current_namespace_mut()?;
-                    ns.register_value(
-                        a.name(),
-                        a.type_()
-                            .ok_or_else(|| ResolverError::from("Can not resolve 'self type'"))?,
-                    );
+                    ns.register_value(a.name.clone(), a.type_.clone());
                     Result::Ok(a)
                 })
                 .collect::<Result<Vec<TypedArgDef>>>()?,
@@ -495,13 +478,8 @@ impl TypeResolver {
                 .into_iter()
                 .map(|a| {
                     let a = self.typed_arg_def(a)?;
-                    self.context.register_to_env(
-                        a.name(),
-                        EnvValue::from(
-                            a.type_()
-                                .ok_or_else(|| ResolverError::from("Can not resolve `self`"))?,
-                        ),
-                    );
+                    self.context
+                        .register_to_env(a.name.clone(), EnvValue::from(a.type_.clone()));
                     Result::Ok(a)
                 })
                 .collect::<Result<Vec<TypedArgDef>>>()?,
@@ -680,9 +658,23 @@ impl TypeResolver {
         let target = self.expr(*s.target)?;
         let target_type = target.type_().unwrap();
         if let TypedType::Value(v) = target_type {
-            if v.is_unsafe_pointer() {
-                if let Some(mut ags) = v.type_args {
-                    if ags.len() == 1 {
+            match v {
+                TypedValueType::Value(v) => {
+                    if v.is_unsafe_pointer() {
+                        if let Some(mut ags) = v.type_args {
+                            if ags.len() == 1 {
+                                return Result::Ok(TypedSubscript {
+                                    target: Box::new(target),
+                                    indexes: s
+                                        .indexes
+                                        .into_iter()
+                                        .map(|i| self.expr(i))
+                                        .collect::<Result<Vec<TypedExpr>>>()?,
+                                    type_: Some(ags.remove(0)),
+                                });
+                            }
+                        }
+                    } else if v.is_string() {
                         return Result::Ok(TypedSubscript {
                             target: Box::new(target),
                             indexes: s
@@ -690,20 +682,22 @@ impl TypeResolver {
                                 .into_iter()
                                 .map(|i| self.expr(i))
                                 .collect::<Result<Vec<TypedExpr>>>()?,
-                            type_: Some(ags.remove(0)),
+                            type_: Some(TypedType::uint8()),
                         });
                     }
                 }
-            } else if v.is_string() {
-                return Result::Ok(TypedSubscript {
-                    target: Box::new(target),
-                    indexes: s
-                        .indexes
-                        .into_iter()
-                        .map(|i| self.expr(i))
-                        .collect::<Result<Vec<TypedExpr>>>()?,
-                    type_: Some(TypedType::uint8()),
-                });
+                TypedValueType::Array(_) => {
+                    todo!()
+                }
+                TypedValueType::Tuple(_) => {
+                    todo!()
+                }
+                TypedValueType::Pointer(_) => {
+                    todo!()
+                }
+                TypedValueType::Reference(_) => {
+                    todo!()
+                }
             }
         }
         Result::Ok(TypedSubscript {
@@ -745,8 +739,11 @@ impl TypeResolver {
     pub fn typed_call(&mut self, c: TypedCall) -> Result<TypedCall> {
         let target = Box::new(self.expr(*c.target)?);
         let c_type = match target.type_().unwrap() {
-            TypedType::Value(v) | TypedType::Type(v) | TypedType::Reference(v) => {
+            TypedType::Value(v) => {
                 Result::Err(ResolverError::from(format!("{:?} is not callable.", v)))
+            }
+            TypedType::Type(_) | TypedType::Self_ => {
+                Result::Err(ResolverError::from(format!(" not callable.")))
             }
             TypedType::Function(f) => Result::Ok(f.return_type),
         }?;
