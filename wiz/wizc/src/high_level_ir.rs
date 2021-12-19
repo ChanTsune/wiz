@@ -14,9 +14,7 @@ use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentAndOperator, TypedAssignmentStmt,
     TypedBlock, TypedForStmt, TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
 };
-use crate::high_level_ir::typed_type::{
-    Package, TypedNamedValueType, TypedPackage, TypedType, TypedTypeParam,
-};
+use crate::high_level_ir::typed_type::{Package, TypedNamedValueType, TypedPackage, TypedType, TypedTypeParam, TypedValueType};
 use crate::high_level_ir::typed_use::TypedUse;
 use crate::utils::path_string_to_page_name;
 use std::option::Option::Some;
@@ -199,21 +197,12 @@ impl Ast2HLIR {
                 None => TypedArgDef {
                     label: "_".to_string(),
                     name: "self".to_string(),
-                    type_: TypedType::Value(TypedNamedValueType {
-                        package: TypedPackage::Raw(Package::global()),
-                        name: "Self".to_string(),
-                        type_args: None,
-                    }),
+                    type_: TypedType::Self_,
                 },
                 Some(_) => TypedArgDef {
                     label: "_".to_string(),
                     name: "self".to_string(),
-                    type_: TypedType::Value(TypedNamedValueType {
-                        // TODO: TypedType::Reference
-                        package: TypedPackage::Raw(Package::global()),
-                        name: "Self".to_string(),
-                        type_args: None,
-                    }),
+                    type_: TypedType::Self_, // TODO: Reference
                 },
             },
         }
@@ -270,7 +259,7 @@ impl Ast2HLIR {
 
     pub fn type_(&self, tn: TypeName) -> TypedType {
         match tn {
-            TypeName::Simple(stn) => TypedType::Value(TypedNamedValueType {
+            TypeName::Simple(stn) => TypedType::Value(TypedValueType::Value(TypedNamedValueType {
                 package: TypedPackage::Raw(Package::new()),
                 name: stn.name.token,
                 type_args: stn.type_args.map(|v| {
@@ -279,22 +268,11 @@ impl Ast2HLIR {
                         .map(|t| self.type_(t.element))
                         .collect()
                 }),
-            }),
+            })),
             TypeName::Decorated(d) => {
                 if d.decoration.token == "&" {
                     let t = self.type_(d.type_);
-                    match t {
-                        TypedType::Value(v) => TypedType::Reference(v),
-                        TypedType::Function(_) => {
-                            todo!()
-                        }
-                        TypedType::Type(_) => {
-                            todo!()
-                        }
-                        TypedType::Reference(_) => {
-                            panic!("Reference can not reference.")
-                        }
-                    }
+                    TypedType::Value(TypedValueType::Reference(Box::new(t)))
                 } else {
                     todo!()
                 }
@@ -304,7 +282,7 @@ impl Ast2HLIR {
                     name_space,
                     type_name,
                 } = *n;
-                TypedType::Value(TypedNamedValueType {
+                TypedType::Value(TypedValueType::Value(TypedNamedValueType {
                     package: TypedPackage::Raw(Package::from(
                         name_space
                             .into_iter()
@@ -318,7 +296,7 @@ impl Ast2HLIR {
                             .map(|t| self.type_(t.element))
                             .collect()
                     }),
-                })
+                }))
             }
         }
     }
@@ -400,7 +378,7 @@ impl Ast2HLIR {
                                         target: Box::new(TypedExpr::Name(TypedName {
                                             package: TypedPackage::Raw(Package::new()),
                                             name: "self".to_string(),
-                                            type_: Some(TypedType::Value(struct_type.clone())),
+                                            type_: Some(TypedType::Value(TypedValueType::Value(struct_type.clone()))),
                                         })),
                                         name: p.name.clone(),
                                         is_safe: false,

@@ -15,21 +15,13 @@ pub struct Package {
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub enum TypedType {
-    Value(TypedNamedValueType),
-    Function(Box<TypedFunctionType>),
-    Type(TypedNamedValueType),
-    Reference(TypedNamedValueType),
-}
-
-#[derive(Debug, Eq, PartialEq, Clone, Hash)]
-pub enum _TypedType {
     Self_,
     Value(TypedValueType),
-    Function(Box<_TypedFunctionType>),
-    Type(Box<_TypedType>),
+    Function(Box<TypedFunctionType>),
+    Type(Box<TypedType>),
 }
 
-impl _TypedType {
+impl TypedType {
     pub(crate) fn is_self(&self) -> bool {
         matches!(self, Self::Self_)
     }
@@ -38,10 +30,10 @@ impl _TypedType {
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub enum TypedValueType {
     Value(TypedNamedValueType), // Primitive | Struct | Union | Enum
-    Array(Box<_TypedType>),
-    Tuple(Vec<_TypedType>),
-    Pointer(Box<_TypedType>),
-    Reference(Box<_TypedType>),
+    Array(Box<TypedType>),
+    Tuple(Vec<TypedType>),
+    Pointer(Box<TypedType>),
+    Reference(Box<TypedType>),
 }
 
 impl TypedValueType {
@@ -102,32 +94,32 @@ impl TypedValueType {
     }
 
     pub fn is_unsafe_pointer(&self) -> bool {
-        matches!(self, Self::Pointer(_))
+        matches!(self, Self::Pointer(_)) || match self {
+            TypedValueType::Value(v) => {v.is_unsafe_pointer()}
+            TypedValueType::Array(_) => {false}
+            TypedValueType::Tuple(_) => {false}
+            TypedValueType::Pointer(_) => {true}
+            TypedValueType::Reference(_) => {false}
+        }
     }
 }
 
 impl ToString for TypedValueType {
     fn to_string(&self) -> String {
-        todo!()
+        match self {
+            TypedValueType::Value(v) => {format!("{}", v.name)}
+            TypedValueType::Array(_) => {todo!()}
+            TypedValueType::Tuple(_) => {todo!()}
+            TypedValueType::Pointer(_) => {todo!()}
+            TypedValueType::Reference(_) => {todo!()}
+        }
     }
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
-pub struct _TypedFunctionType {
-    pub arguments: Vec<_TypedArgType>,
-    pub return_type: _TypedType,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone, Hash)]
-pub struct _TypedArgType {
-    pub label: String,
-    pub typ: _TypedType,
-}
-
-impl _TypedArgType {
-    pub(crate) fn is_self(&self) -> bool {
-        self.typ.is_self()
-    }
+pub struct TypedFunctionType {
+    pub arguments: Vec<TypedArgType>,
+    pub return_type: TypedType,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
@@ -147,12 +139,6 @@ pub struct TypedNamedValueType {
     pub(crate) package: TypedPackage,
     pub(crate) name: String,
     pub(crate) type_args: Option<Vec<TypedType>>,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone, Hash)]
-pub struct TypedFunctionType {
-    pub(crate) arguments: Vec<TypedArgType>,
-    pub(crate) return_type: TypedType,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
@@ -326,67 +312,67 @@ impl ToString for TypedNamedValueType {
 
 impl TypedType {
     pub fn noting() -> Self {
-        Self::Value(TypedNamedValueType::noting())
+        Self::Value(TypedValueType::noting())
     }
 
     pub fn unit() -> Self {
-        Self::Value(TypedNamedValueType::unit())
+        Self::Value(TypedValueType::unit())
     }
 
     pub fn int8() -> Self {
-        Self::Value(TypedNamedValueType::int8())
+        Self::Value(TypedValueType::int8())
     }
 
     pub fn int16() -> Self {
-        Self::Value(TypedNamedValueType::int16())
+        Self::Value(TypedValueType::int16())
     }
 
     pub fn int32() -> Self {
-        Self::Value(TypedNamedValueType::int32())
+        Self::Value(TypedValueType::int32())
     }
 
     pub fn int64() -> Self {
-        Self::Value(TypedNamedValueType::int64())
+        Self::Value(TypedValueType::int64())
     }
 
     pub fn uint8() -> Self {
-        Self::Value(TypedNamedValueType::uint8())
+        Self::Value(TypedValueType::uint8())
     }
 
     pub fn uint16() -> Self {
-        Self::Value(TypedNamedValueType::uint16())
+        Self::Value(TypedValueType::uint16())
     }
 
     pub fn uint32() -> Self {
-        Self::Value(TypedNamedValueType::uint32())
+        Self::Value(TypedValueType::uint32())
     }
 
     pub fn uint64() -> Self {
-        Self::Value(TypedNamedValueType::uint64())
+        Self::Value(TypedValueType::uint64())
     }
 
     pub fn float() -> Self {
-        Self::Value(TypedNamedValueType::float())
+        Self::Value(TypedValueType::float())
     }
 
     pub fn double() -> Self {
-        Self::Value(TypedNamedValueType::double())
+        Self::Value(TypedValueType::double())
     }
 
     pub fn bool() -> Self {
-        Self::Value(TypedNamedValueType::bool())
+        Self::Value(TypedValueType::bool())
     }
 
     pub fn string() -> Self {
-        Self::Value(TypedNamedValueType::string())
+        Self::Value(TypedValueType::string())
     }
 
     pub fn unsafe_pointer(typ: TypedType) -> Self {
-        Self::Value(TypedNamedValueType {
+        Self::Value(TypedValueType::Value(TypedNamedValueType {
             package: TypedPackage::Resolved(Package::global()),
             name: UNSAFE_POINTER.to_string(),
             type_args: Some(vec![typ]),
-        })
+        }))
     }
 
     pub fn signed_integer_types() -> Vec<TypedType> {
@@ -464,28 +450,18 @@ impl TypedType {
     pub fn is_string(&self) -> bool {
         Self::string().eq(self)
     }
-
-    pub fn is_self(&self) -> bool {
-        match self {
-            TypedType::Value(v) => v.name == "Self",
-            TypedType::Function(_) => false,
-            TypedType::Type(t) => t.name == "Self",
-            TypedType::Reference(r) => r.name == "Self",
-        }
-    }
 }
 
 impl ToString for TypedType {
     fn to_string(&self) -> String {
         match self {
             TypedType::Value(t) => t.to_string(),
-            TypedType::Function(t) => {
+            TypedType::Function(_) | TypedType::Self_ => {
                 todo!()
             }
             TypedType::Type(t) => {
                 format!("Type<{}>", t.to_string())
             }
-            TypedType::Reference(t) => format!("&{}", t.to_string()),
         }
     }
 }
