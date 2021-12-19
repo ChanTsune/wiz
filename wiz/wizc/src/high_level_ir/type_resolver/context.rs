@@ -524,25 +524,25 @@ impl ResolverContext {
         }
     }
 
-    fn full_value_type_name_(&self, type_: TypedValueType) -> Result<TypedValueType> {
+    fn full_value_type_name(&self, type_: TypedValueType) -> Result<TypedValueType> {
         Result::Ok(match type_ {
-            TypedValueType::Value(t) => TypedValueType::Value(self.full_value_type_name(t)?),
+            TypedValueType::Value(t) => TypedValueType::Value(self.full_named_value_type_name(t)?),
             TypedValueType::Array(_) => {
                 todo!()
             }
             TypedValueType::Tuple(_) => {
                 todo!()
             }
-            TypedValueType::Pointer(_) => {
-                todo!()
+            TypedValueType::Pointer(t) => {
+                TypedValueType::Pointer(Box::new(self.full_type_name(*t)?))
             }
-            TypedValueType::Reference(_) => {
-                todo!()
+            TypedValueType::Reference(t) => {
+                TypedValueType::Reference(Box::new(self.full_type_name(*t)?))
             }
         })
     }
 
-    fn full_value_type_name(&self, type_: TypedNamedValueType) -> Result<TypedNamedValueType> {
+    fn full_named_value_type_name(&self, type_: TypedNamedValueType) -> Result<TypedNamedValueType> {
         let env = self.get_current_name_environment();
         Result::Ok(match type_.package {
             TypedPackage::Raw(p) => {
@@ -613,7 +613,7 @@ impl ResolverContext {
                 .ok_or_else(|| ResolverError::from(format!("can not resolve Self")))
         } else {
             Result::Ok(match typ {
-                TypedType::Value(v) => TypedType::Value(self.full_value_type_name_(v)?),
+                TypedType::Value(v) => TypedType::Value(self.full_value_type_name(v)?),
                 TypedType::Type(v) => TypedType::Type(Box::new(self.full_type_name(*v)?)),
                 TypedType::Self_ => self
                     .current_type

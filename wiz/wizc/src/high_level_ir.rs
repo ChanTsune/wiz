@@ -272,11 +272,11 @@ impl Ast2HLIR {
                 }),
             })),
             TypeName::Decorated(d) => {
-                if d.decoration.token == "&" {
-                    let t = self.type_(d.type_);
-                    TypedType::Value(TypedValueType::Reference(Box::new(t)))
-                } else {
-                    todo!()
+                let t = self.type_(d.type_);
+                match &*d.decoration.token {
+                    "&" => TypedType::Value(TypedValueType::Reference(Box::new(t))),
+                    "*" => TypedType::Value(TypedValueType::Pointer(Box::new(t))),
+                    a => panic!("Unexpected token {}", a)
                 }
             }
             TypeName::NameSpaced(n) => {
