@@ -646,17 +646,15 @@ impl HLIR2MLIR {
     fn subscript_for_user_defined(&mut self, s: TypedSubscript) -> MLExpr {
         let target = self.expr(*s.target);
         match target {
-            MLExpr::Name(target) => {
-                MLExpr::Call(MLCall {
-                    target,
-                    args: s
-                        .indexes
-                        .into_iter()
-                        .map(|i| MLCallArg { arg: self.expr(i) })
-                        .collect(),
-                    type_: self.type_(s.type_.unwrap()).into_value_type(),
-                })
-            }
+            MLExpr::Name(target) => MLExpr::Call(MLCall {
+                target,
+                args: s
+                    .indexes
+                    .into_iter()
+                    .map(|i| MLCallArg { arg: self.expr(i) })
+                    .collect(),
+                type_: self.type_(s.type_.unwrap()).into_value_type(),
+            }),
             a => panic!("{:?}", a),
         }
     }

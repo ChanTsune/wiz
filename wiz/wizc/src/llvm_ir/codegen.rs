@@ -13,7 +13,10 @@ use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::path::Path;
 use std::process::exit;
-use wiz_mir::expr::{MLBinOp, MLBinOpKind, MLBlock, MLCall, MLExpr, MLIf, MLLiteral, MLMember, MLName, MLSubscript, MLTypeCast, MLUnaryOp, MLUnaryOpKind};
+use wiz_mir::expr::{
+    MLBinOp, MLBinOpKind, MLBlock, MLCall, MLExpr, MLIf, MLLiteral, MLMember, MLName, MLSubscript,
+    MLTypeCast, MLUnaryOp, MLUnaryOpKind,
+};
 use wiz_mir::ml_decl::{MLDecl, MLFun, MLStruct, MLVar};
 use wiz_mir::ml_file::MLFile;
 use wiz_mir::ml_type::{MLPrimitiveType, MLType, MLValueType};
