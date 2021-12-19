@@ -245,7 +245,7 @@ impl<'ctx> CodeGen<'ctx> {
                 self.expr(arg.arg)
             }
         });
-        let args: Vec<BasicValueEnum> = args
+        let args: Vec<_> = args
             .filter_map(|arg| BasicValueEnum::try_from(arg).ok())
             .collect();
         let function = target.into_function_value();
