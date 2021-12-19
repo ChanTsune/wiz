@@ -222,7 +222,7 @@ fn test_struct_init() {
                     body: Some(MLFunBody {
                         body: vec![MLStmt::Expr(MLExpr::Return(MLReturn {
                             value: Some(Box::from(MLExpr::Call(MLCall {
-                                target: Box::new(MLExpr::Name(MLName {
+                                target: MLName {
                                     name: "test::A::init##a#Int64".to_string(),
                                     type_: MLType::Function(MLFunctionType {
                                         arguments: vec![MLValueType::Primitive(
@@ -230,7 +230,7 @@ fn test_struct_init() {
                                         )],
                                         return_type: MLValueType::Struct(String::from("test::A")),
                                     }),
-                                })),
+                                },
                                 args: vec![MLCallArg {
                                     arg: MLExpr::Literal(MLLiteral::Integer {
                                         value: "1".to_string(),
