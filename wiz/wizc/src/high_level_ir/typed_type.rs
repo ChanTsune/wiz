@@ -94,24 +94,35 @@ impl TypedValueType {
     }
 
     pub fn is_unsafe_pointer(&self) -> bool {
-        matches!(self, Self::Pointer(_)) || match self {
-            TypedValueType::Value(v) => {v.is_unsafe_pointer()}
-            TypedValueType::Array(_) => {false}
-            TypedValueType::Tuple(_) => {false}
-            TypedValueType::Pointer(_) => {true}
-            TypedValueType::Reference(_) => {false}
-        }
+        matches!(self, Self::Pointer(_))
+            || match self {
+                TypedValueType::Value(v) => v.is_unsafe_pointer(),
+                TypedValueType::Array(_) => false,
+                TypedValueType::Tuple(_) => false,
+                TypedValueType::Pointer(_) => true,
+                TypedValueType::Reference(_) => false,
+            }
     }
 }
 
 impl ToString for TypedValueType {
     fn to_string(&self) -> String {
         match self {
-            TypedValueType::Value(v) => {format!("{}", v.name)}
-            TypedValueType::Array(_) => {todo!()}
-            TypedValueType::Tuple(_) => {todo!()}
-            TypedValueType::Pointer(_) => {todo!()}
-            TypedValueType::Reference(_) => {todo!()}
+            TypedValueType::Value(v) => {
+                format!("{}", v.name)
+            }
+            TypedValueType::Array(_) => {
+                todo!()
+            }
+            TypedValueType::Tuple(_) => {
+                todo!()
+            }
+            TypedValueType::Pointer(_) => {
+                todo!()
+            }
+            TypedValueType::Reference(_) => {
+                todo!()
+            }
         }
     }
 }

@@ -21,7 +21,9 @@ use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedForStmt,
     TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
 };
-use crate::high_level_ir::typed_type::{Package, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType, TypedValueType};
+use crate::high_level_ir::typed_type::{
+    Package, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType, TypedValueType,
+};
 
 #[derive(Debug, Clone)]
 pub(crate) struct TypeResolver {
@@ -68,13 +70,15 @@ impl TypeResolver {
                     ns.register_type(s.name.clone(), ResolverStruct::new());
                     ns.register_value(
                         s.name.clone(),
-                        TypedType::Type(Box::new(TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-                            package: TypedPackage::Resolved(Package::from(
-                                current_namespace.clone(),
-                            )),
-                            name: s.name.clone(),
-                            type_args: None,
-                        })))),
+                        TypedType::Type(Box::new(TypedType::Value(TypedValueType::Value(
+                            TypedNamedValueType {
+                                package: TypedPackage::Resolved(Package::from(
+                                    current_namespace.clone(),
+                                )),
+                                name: s.name.clone(),
+                                type_args: None,
+                            },
+                        )))),
                     );
                 }
                 TypedDecl::Class => {}
@@ -682,10 +686,18 @@ impl TypeResolver {
                         });
                     }
                 }
-                TypedValueType::Array(_) => {todo!()}
-                TypedValueType::Tuple(_) => {todo!()}
-                TypedValueType::Pointer(_) => {todo!()}
-                TypedValueType::Reference(_) => {todo!()}
+                TypedValueType::Array(_) => {
+                    todo!()
+                }
+                TypedValueType::Tuple(_) => {
+                    todo!()
+                }
+                TypedValueType::Pointer(_) => {
+                    todo!()
+                }
+                TypedValueType::Reference(_) => {
+                    todo!()
+                }
             }
         }
         Result::Ok(TypedSubscript {
@@ -730,7 +742,9 @@ impl TypeResolver {
             TypedType::Value(v) => {
                 Result::Err(ResolverError::from(format!("{:?} is not callable.", v)))
             }
-            TypedType::Type(_)| TypedType::Self_ => Result::Err(ResolverError::from(format!(" not callable."))),
+            TypedType::Type(_) | TypedType::Self_ => {
+                Result::Err(ResolverError::from(format!(" not callable.")))
+            }
             TypedType::Function(f) => Result::Ok(f.return_type),
         }?;
         Result::Ok(TypedCall {

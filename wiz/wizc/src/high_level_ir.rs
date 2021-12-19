@@ -14,7 +14,9 @@ use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentAndOperator, TypedAssignmentStmt,
     TypedBlock, TypedForStmt, TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
 };
-use crate::high_level_ir::typed_type::{Package, TypedNamedValueType, TypedPackage, TypedType, TypedTypeParam, TypedValueType};
+use crate::high_level_ir::typed_type::{
+    Package, TypedNamedValueType, TypedPackage, TypedType, TypedTypeParam, TypedValueType,
+};
 use crate::high_level_ir::typed_use::TypedUse;
 use crate::utils::path_string_to_page_name;
 use std::option::Option::Some;
@@ -378,7 +380,9 @@ impl Ast2HLIR {
                                         target: Box::new(TypedExpr::Name(TypedName {
                                             package: TypedPackage::Raw(Package::new()),
                                             name: "self".to_string(),
-                                            type_: Some(TypedType::Value(TypedValueType::Value(struct_type.clone()))),
+                                            type_: Some(TypedType::Value(TypedValueType::Value(
+                                                struct_type.clone(),
+                                            ))),
                                         })),
                                         name: p.name.clone(),
                                         is_safe: false,
