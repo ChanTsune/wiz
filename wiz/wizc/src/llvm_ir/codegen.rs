@@ -424,17 +424,22 @@ impl<'ctx> CodeGen<'ctx> {
             AnyValueEnum::FunctionValue(_) => {
                 todo!()
             }
-            AnyValueEnum::PointerValue(target) => {
-                match u.kind {
-                    MLUnaryOpKind::Negative => {todo!()}
-                    MLUnaryOpKind::Positive => {todo!()}
-                    MLUnaryOpKind::Not => {todo!()}
-                    MLUnaryOpKind::Ref => { todo!() }
-                    MLUnaryOpKind::DeRef => {
-                        self.builder.build_load(target, "p_deref")
-                    }
-                }.as_any_value_enum()
+            AnyValueEnum::PointerValue(target) => match u.kind {
+                MLUnaryOpKind::Negative => {
+                    todo!()
+                }
+                MLUnaryOpKind::Positive => {
+                    todo!()
+                }
+                MLUnaryOpKind::Not => {
+                    todo!()
+                }
+                MLUnaryOpKind::Ref => {
+                    todo!()
+                }
+                MLUnaryOpKind::DeRef => self.builder.build_load(target, "p_deref"),
             }
+            .as_any_value_enum(),
             AnyValueEnum::StructValue(_) => {
                 todo!()
             }
