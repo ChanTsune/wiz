@@ -16,6 +16,10 @@ fun modBy2(_ n: Int64): Int64 {
 
 fun modBy2Expr(_ n: Int64) = n % 2
 
+fun dereference(_ p: *Int32): Int32 {
+    return *p
+}
+
 fun main() {
     val vector = UInt8Vector.init()
     var s = A.init(a: 1, b: 0)
