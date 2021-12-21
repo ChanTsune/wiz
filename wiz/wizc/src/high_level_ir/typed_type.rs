@@ -118,8 +118,8 @@ impl ToString for TypedValueType {
             TypedValueType::Pointer(v) => {
                 format!("*{:?}", v)
             }
-            TypedValueType::Reference(_) => {
-                todo!()
+            TypedValueType::Reference(v) => {
+                format!("&{:?}", v)
             }
         }
     }

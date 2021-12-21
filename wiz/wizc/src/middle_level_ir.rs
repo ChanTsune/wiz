@@ -222,16 +222,10 @@ impl HLIR2MLIR {
                 todo!()
             }
             TypedValueType::Pointer(t) => {
-                match *t {
-                    TypedType::Self_ => {}
-                    TypedType::Value(_) => {}
-                    TypedType::Function(_) => {}
-                    TypedType::Type(_) => {}
-                }
                 MLValueType::Pointer(Box::new(self.type_(*t)))
             }
-            TypedValueType::Reference(_) => {
-                todo!()
+            TypedValueType::Reference(t) => {
+                MLValueType::Pointer(Box::new(self.type_(*t)))
             }
         }
     }
