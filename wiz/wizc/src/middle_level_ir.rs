@@ -222,7 +222,7 @@ impl HLIR2MLIR {
                 todo!()
             }
             TypedValueType::Pointer(t) => MLValueType::Pointer(Box::new(self.type_(*t))),
-            TypedValueType::Reference(t) => MLValueType::Pointer(Box::new(self.type_(*t))),
+            TypedValueType::Reference(t) => MLValueType::Reference(Box::new(self.type_(*t))),
         }
     }
 
