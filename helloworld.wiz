@@ -16,7 +16,11 @@ fun modBy2(_ n: Int64): Int64 {
 
 fun modBy2Expr(_ n: Int64) = n % 2
 
-fun dereference(_ p: *Int32): Int32 {
+fun reference_dereference(_ p: &Int32): Int32 {
+    return *p
+}
+
+fun pointer_dereference(_ p: *Int32): Int32 {
     return *p
 }
 
