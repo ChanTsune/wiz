@@ -221,12 +221,8 @@ impl HLIR2MLIR {
             TypedValueType::Tuple(_) => {
                 todo!()
             }
-            TypedValueType::Pointer(t) => {
-                MLValueType::Pointer(Box::new(self.type_(*t)))
-            }
-            TypedValueType::Reference(t) => {
-                MLValueType::Pointer(Box::new(self.type_(*t)))
-            }
+            TypedValueType::Pointer(t) => MLValueType::Pointer(Box::new(self.type_(*t))),
+            TypedValueType::Reference(t) => MLValueType::Pointer(Box::new(self.type_(*t))),
         }
     }
 
