@@ -434,9 +434,7 @@ impl<'ctx> CodeGen<'ctx> {
                 MLUnaryOpKind::Not => {
                     todo!()
                 }
-                MLUnaryOpKind::Ref => {
-                    BasicValueEnum::PointerValue(target)
-                }
+                MLUnaryOpKind::Ref => BasicValueEnum::PointerValue(target),
                 MLUnaryOpKind::DeRef => self.builder.build_load(target, "p_deref"),
             }
             .as_any_value_enum(),
