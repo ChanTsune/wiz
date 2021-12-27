@@ -35,6 +35,9 @@ fun main() {
         } else {
             println("Welcome to Wiz!!")
         }
+        val p = 1
+        p = reference_dereference(&p)
+        println(p)
         s.a += if modBy2Expr(s.a) == 0 { 1 } else { 3 }
     }
     val c = s.a + b
