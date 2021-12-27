@@ -613,7 +613,7 @@ impl HLIR2MLIR {
                         TypedPrefixUnaryOperator::Reference => MLUnaryOpKind::Ref,
                         TypedPrefixUnaryOperator::Not => MLUnaryOpKind::Not,
                     },
-                    type_: target.type_().into_value_type(),
+                    type_: self.type_(p.type_.unwrap()).into_value_type(),
                     target: Box::new(target),
                 }
             }
