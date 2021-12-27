@@ -389,7 +389,7 @@ impl<'ctx> CodeGen<'ctx> {
                 }
             },
             (r, l) => {
-                println!("{:?},{:?},{:?}", r,b.kind, l);
+                println!("{:?},{:?},{:?}", r, b.kind, l);
                 panic!("Unsupported binary operation")
             }
         }
