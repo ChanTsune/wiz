@@ -583,6 +583,7 @@ impl TypeResolver {
                 type_: match target.type_() {
                     None => None,
                     Some(TypedType::Value(TypedValueType::Reference(t))) => Some(*t),
+                    Some(TypedType::Value(TypedValueType::Pointer(t))) => Some(*t),
                     Some(_) => None,
                 },
                 target,
