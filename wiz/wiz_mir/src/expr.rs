@@ -2,6 +2,7 @@ mod block;
 mod call;
 mod if_expr;
 mod literal;
+mod array;
 
 pub use self::block::MLBlock;
 pub use self::call::{MLCall, MLCallArg};
@@ -13,6 +14,7 @@ use crate::ml_type::{MLType, MLValueType};
 use crate::statement::MLReturn;
 use std::fmt;
 use std::fmt::Write;
+pub use crate::expr::array::MLArray;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum MLExpr {
@@ -23,6 +25,7 @@ pub enum MLExpr {
     PrimitiveUnaryOp(MLUnaryOp),
     PrimitiveSubscript(MLSubscript),
     Member(MLMember),
+    Array(MLArray),
     If(MLIf),
     When,
     Return(MLReturn),
@@ -105,6 +108,7 @@ impl MLExpr {
             MLExpr::PrimitiveUnaryOp(b) => MLType::Value(b.type_.clone()),
             MLExpr::PrimitiveSubscript(p) => MLType::Value(p.type_.clone()),
             MLExpr::Member(f) => f.type_.clone(),
+            MLExpr::Array(a) => MLType::Value(a.type_.clone()),
             MLExpr::If(i) => MLType::Value(i.type_.clone()),
             MLExpr::When => todo!(),
             MLExpr::Return(r) => MLType::Value(r.type_()),
@@ -137,6 +141,7 @@ impl MLNode for MLExpr {
             MLExpr::PrimitiveUnaryOp(u) => u.fmt(f),
             MLExpr::PrimitiveSubscript(p) => p.fmt(f),
             MLExpr::Member(m) => m.fmt(f),
+            MLExpr::Array(a) => a.fmt(f),
             MLExpr::If(i) => i.fmt(f),
             MLExpr::When => fmt::Result::Err(Default::default()),
             MLExpr::Return(r) => r.fmt(f),

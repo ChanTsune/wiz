@@ -13,10 +13,7 @@ use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::path::Path;
 use std::process::exit;
-use wiz_mir::expr::{
-    MLBinOp, MLBinOpKind, MLBlock, MLCall, MLExpr, MLIf, MLLiteral, MLMember, MLName, MLSubscript,
-    MLTypeCast, MLUnaryOp, MLUnaryOpKind,
-};
+use wiz_mir::expr::{MLArray, MLBinOp, MLBinOpKind, MLBlock, MLCall, MLExpr, MLIf, MLLiteral, MLMember, MLName, MLSubscript, MLTypeCast, MLUnaryOp, MLUnaryOpKind};
 use wiz_mir::ml_decl::{MLDecl, MLFun, MLStruct, MLVar};
 use wiz_mir::ml_file::MLFile;
 use wiz_mir::ml_type::{MLPrimitiveType, MLType, MLValueType};
@@ -132,6 +129,7 @@ impl<'ctx> CodeGen<'ctx> {
             MLExpr::PrimitiveSubscript(s) => self.subscript(s),
             MLExpr::Call(c) => self.call(c),
             MLExpr::Member(m) => self.member(m),
+            MLExpr::Array(a) => self.array(a),
             MLExpr::If(i) => self.if_expr(i),
             MLExpr::When => exit(-1),
             MLExpr::Return(r) => self.return_expr(r),
@@ -501,6 +499,10 @@ impl<'ctx> CodeGen<'ctx> {
             .build_struct_gep(target, field_index, "struct_gep")
             .unwrap();
         ep.as_any_value_enum()
+    }
+
+    fn array(&mut self, a: MLArray) -> AnyValueEnum<'ctx> {
+        todo!()
     }
 
     pub fn if_expr(&mut self, i: MLIf) -> AnyValueEnum<'ctx> {

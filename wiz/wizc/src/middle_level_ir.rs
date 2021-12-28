@@ -3,11 +3,7 @@ use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{
-    TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
-    TypedInstanceMember, TypedLiteral, TypedName, TypedPrefixUnaryOperator, TypedReturn,
-    TypedSubscript, TypedTypeCast, TypedUnaryOp,
-};
+use crate::high_level_ir::typed_expr::{TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName, TypedPrefixUnaryOperator, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp, TypedArray};
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{
     TypedAssignmentAndOperator, TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt,
@@ -20,10 +16,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::process::exit;
 use wiz_mir::builder::{BuilderError, FunBuilder, MLIRModule};
-use wiz_mir::expr::{
-    MLBinOp, MLBinOpKind, MLBlock, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLMember, MLName,
-    MLSubscript, MLTypeCast, MLUnaryOp, MLUnaryOpKind,
-};
+use wiz_mir::expr::{MLArray, MLBinOp, MLBinOpKind, MLBlock, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLMember, MLName, MLSubscript, MLTypeCast, MLUnaryOp, MLUnaryOpKind};
 use wiz_mir::ml_decl::{MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar};
 use wiz_mir::ml_file::MLFile;
 use wiz_mir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
@@ -519,7 +512,7 @@ impl HLIR2MLIR {
             TypedExpr::UnaryOp(u) => MLExpr::PrimitiveUnaryOp(self.unary_op(u)),
             TypedExpr::Subscript(s) => self.subscript(s),
             TypedExpr::Member(m) => self.member(m),
-            TypedExpr::Array(a) => todo!(),
+            TypedExpr::Array(a) => MLExpr::Array(self.array(a)),
             TypedExpr::Tuple => todo!(),
             TypedExpr::Dict => todo!(),
             TypedExpr::StringBuilder => todo!(),
@@ -700,6 +693,13 @@ impl HLIR2MLIR {
             name,
             type_,
         })
+    }
+
+    fn array(&mut self, a: TypedArray) -> MLArray {
+        MLArray {
+            elements: a.elements.into_iter().map(|e|self.expr(e)).collect(),
+            type_: self.type_(a.type_.unwrap()).into_value_type()
+        }
     }
 
     fn call(&mut self, c: TypedCall) -> MLCall {
