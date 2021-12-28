@@ -707,7 +707,7 @@ impl TypeResolver {
                         });
                     }
                 }
-                TypedValueType::Array(_) => {
+                TypedValueType::Array(_, _) => {
                     todo!()
                 }
                 TypedValueType::Tuple(_) => {
@@ -738,12 +738,13 @@ impl TypeResolver {
             .into_iter()
             .map(|e| self.expr(e))
             .collect::<Result<Vec<TypedExpr>>>()?;
+        let len = elements.len();
         Result::Ok(if let Some(e) = elements.get(0) {
             let e_type = e.type_();
             if elements.iter().all(|e| e.type_() == e_type) {
                 TypedArray {
                     elements,
-                    type_: e_type.map(|e| TypedType::Value(TypedValueType::Array(Box::new(e)))),
+                    type_: e_type.map(|e| TypedType::Value(TypedValueType::Array(Box::new(e), len))),
                 }
             } else {
                 return Result::Err(ResolverError::from("Array elements must be same type."));

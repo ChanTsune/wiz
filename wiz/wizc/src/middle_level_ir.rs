@@ -215,8 +215,8 @@ impl HLIR2MLIR {
                     }
                 }
             }
-            TypedValueType::Array(_) => {
-                todo!()
+            TypedValueType::Array(t, len) => {
+                MLValueType::Array(Box::new(self.type_(*t).into_value_type()), len)
             }
             TypedValueType::Tuple(_) => {
                 todo!()
@@ -641,7 +641,7 @@ impl HLIR2MLIR {
                             self.subscript_for_user_defined(s)
                         }
                     }
-                    TypedValueType::Array(_) => {
+                    TypedValueType::Array(_, _) => {
                         todo!()
                     }
                     TypedValueType::Tuple(_) => {
@@ -770,7 +770,7 @@ impl HLIR2MLIR {
                                     type_,
                                 })
                             }
-                            TypedValueType::Array(_) => {
+                            TypedValueType::Array(_, _) => {
                                 todo!()
                             }
                             TypedValueType::Tuple(_) => {

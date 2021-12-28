@@ -28,7 +28,7 @@ impl TypedType {
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub enum TypedValueType {
     Value(TypedNamedValueType), // Primitive | Struct | Union | Enum
-    Array(Box<TypedType>),
+    Array(Box<TypedType>, usize),
     Tuple(Vec<TypedType>),
     Pointer(Box<TypedType>),
     Reference(Box<TypedType>),
@@ -95,7 +95,7 @@ impl TypedValueType {
         matches!(self, Self::Pointer(_))
             || match self {
                 TypedValueType::Value(v) => v.is_unsafe_pointer(),
-                TypedValueType::Array(_) => false,
+                TypedValueType::Array(_, _) => false,
                 TypedValueType::Tuple(_) => false,
                 TypedValueType::Pointer(_) => true,
                 TypedValueType::Reference(_) => false,
@@ -109,8 +109,8 @@ impl ToString for TypedValueType {
             TypedValueType::Value(v) => {
                 format!("{}", v.name)
             }
-            TypedValueType::Array(_) => {
-                todo!()
+            TypedValueType::Array(t, len) => {
+                format!("[{};{}]", t.to_string(), len)
             }
             TypedValueType::Tuple(_) => {
                 todo!()
