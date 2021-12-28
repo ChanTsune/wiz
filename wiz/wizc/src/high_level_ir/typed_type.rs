@@ -1,6 +1,4 @@
 use crate::constants::{self, UNSAFE_POINTER};
-use crate::high_level_ir::typed_decl::TypedArgDef;
-use std::option::Option::Some;
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub enum TypedPackage {
@@ -118,10 +116,10 @@ impl ToString for TypedValueType {
                 todo!()
             }
             TypedValueType::Pointer(v) => {
-                format!("*{:?}", v)
+                format!("*{}", v.to_string())
             }
-            TypedValueType::Reference(_) => {
-                todo!()
+            TypedValueType::Reference(v) => {
+                format!("&{}", v.to_string())
             }
         }
     }

@@ -16,6 +16,14 @@ fun modBy2(_ n: Int64): Int64 {
 
 fun modBy2Expr(_ n: Int64) = n % 2
 
+fun reference_dereference(_ p: &Int64): Int64 {
+    return *p
+}
+
+fun pointer_dereference(_ p: *Int64): Int64 {
+    return *p
+}
+
 fun main() {
     val vector = UInt8Vector.init()
     var s = A.init(a: 1, b: 0)
@@ -27,6 +35,9 @@ fun main() {
         } else {
             println("Welcome to Wiz!!")
         }
+        val p = 1
+        p = reference_dereference(&p)
+        println(p)
         s.a += if modBy2Expr(s.a) == 0 { 1 } else { 3 }
     }
     val c = s.a + b

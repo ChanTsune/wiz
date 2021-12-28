@@ -6,7 +6,8 @@ use crate::high_level_ir::typed_decl::{
 };
 use crate::high_level_ir::typed_expr::{
     TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
-    TypedInstanceMember, TypedLiteral, TypedName, TypedReturn, TypedSubscript,
+    TypedInstanceMember, TypedLiteral, TypedName, TypedPrefixUnaryOp, TypedPrefixUnaryOperator,
+    TypedReturn, TypedSubscript, TypedUnaryOp,
 };
 use crate::high_level_ir::typed_file::TypedFile;
 use crate::high_level_ir::typed_stmt::{
@@ -1114,4 +1115,84 @@ fn test_if() {
             })],
         },
     );
+}
+
+#[test]
+fn test_reference_dereference() {
+    let source = r"
+    fun test_reference_dereference() {
+        val a = 1
+        val b = &a
+        val c = *b
+    }
+    ";
+    check(
+        source,
+        TypedFile {
+            name: "test".to_string(),
+            uses: vec![],
+            body: vec![TypedDecl::Fun(TypedFun {
+                annotations: Default::default(),
+                package: TypedPackage::Resolved(Package::from(vec!["test"])),
+                modifiers: vec![],
+                name: "test_reference_dereference".to_string(),
+                type_params: None,
+                arg_defs: vec![],
+                body: Some(TypedFunBody::Block(TypedBlock {
+                    body: vec![
+                        TypedStmt::Decl(TypedDecl::Var(TypedVar {
+                            annotations: Default::default(),
+                            package: TypedPackage::Resolved(Package::new()),
+                            is_mut: false,
+                            name: "a".to_string(),
+                            type_: Some(TypedType::int64()),
+                            value: TypedExpr::Literal(TypedLiteral::Integer {
+                                value: "1".to_string(),
+                                type_: Some(TypedType::int64()),
+                            }),
+                        })),
+                        TypedStmt::Decl(TypedDecl::Var(TypedVar {
+                            annotations: Default::default(),
+                            package: TypedPackage::Resolved(Package::new()),
+                            is_mut: false,
+                            name: "b".to_string(),
+                            type_: Some(TypedType::Value(TypedValueType::Reference(Box::new(
+                                TypedType::int64(),
+                            )))),
+                            value: TypedExpr::UnaryOp(TypedUnaryOp::Prefix(TypedPrefixUnaryOp {
+                                target: Box::new(TypedExpr::Name(TypedName {
+                                    package: TypedPackage::Resolved(Package::new()),
+                                    name: "a".to_string(),
+                                    type_: Some(TypedType::int64()),
+                                })),
+                                operator: TypedPrefixUnaryOperator::Reference,
+                                type_: Some(TypedType::Value(TypedValueType::Reference(Box::new(
+                                    TypedType::int64(),
+                                )))),
+                            })),
+                        })),
+                        TypedStmt::Decl(TypedDecl::Var(TypedVar {
+                            annotations: Default::default(),
+                            package: TypedPackage::Resolved(Package::new()),
+                            is_mut: false,
+                            name: "c".to_string(),
+                            type_: Some(TypedType::int64()),
+                            value: TypedExpr::UnaryOp(TypedUnaryOp::Prefix(TypedPrefixUnaryOp {
+                                target: Box::new(TypedExpr::Name(TypedName {
+                                    package: TypedPackage::Resolved(Package::new()),
+                                    name: "b".to_string(),
+                                    type_: Some(TypedType::Value(TypedValueType::Reference(
+                                        Box::new(TypedType::int64()),
+                                    ))),
+                                })),
+                                operator: TypedPrefixUnaryOperator::Dereference,
+                                type_: Some(TypedType::int64()),
+                            })),
+                        })),
+                    ],
+                })),
+                return_type: Some(TypedType::unit()),
+            })],
+        },
+    )
 }
