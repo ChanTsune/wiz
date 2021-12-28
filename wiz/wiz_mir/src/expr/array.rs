@@ -1,14 +1,13 @@
-use std::fmt::Write;
 use crate::expr::MLExpr;
 use crate::format::Formatter;
 use crate::ml_node::MLNode;
 use crate::ml_type::MLValueType;
-
+use std::fmt::Write;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLArray {
     pub elements: Vec<MLExpr>,
-    pub type_: MLValueType
+    pub type_: MLValueType,
 }
 
 impl MLNode for MLArray {

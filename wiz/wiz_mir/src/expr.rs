@@ -1,20 +1,20 @@
+mod array;
 mod block;
 mod call;
 mod if_expr;
 mod literal;
-mod array;
 
 pub use self::block::MLBlock;
 pub use self::call::{MLCall, MLCallArg};
 pub use self::if_expr::MLIf;
 pub use self::literal::MLLiteral;
+pub use crate::expr::array::MLArray;
 use crate::format::Formatter;
 use crate::ml_node::MLNode;
 use crate::ml_type::{MLType, MLValueType};
 use crate::statement::MLReturn;
 use std::fmt;
 use std::fmt::Write;
-pub use crate::expr::array::MLArray;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum MLExpr {

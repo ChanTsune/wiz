@@ -3,7 +3,11 @@ use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember, TypedLiteral, TypedName, TypedPrefixUnaryOperator, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp, TypedArray};
+use crate::high_level_ir::typed_expr::{
+    TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
+    TypedInstanceMember, TypedLiteral, TypedName, TypedPrefixUnaryOperator, TypedReturn,
+    TypedSubscript, TypedTypeCast, TypedUnaryOp,
+};
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{
     TypedAssignmentAndOperator, TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt,
@@ -16,7 +20,10 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::process::exit;
 use wiz_mir::builder::{BuilderError, FunBuilder, MLIRModule};
-use wiz_mir::expr::{MLArray, MLBinOp, MLBinOpKind, MLBlock, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLMember, MLName, MLSubscript, MLTypeCast, MLUnaryOp, MLUnaryOpKind};
+use wiz_mir::expr::{
+    MLArray, MLBinOp, MLBinOpKind, MLBlock, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLMember,
+    MLName, MLSubscript, MLTypeCast, MLUnaryOp, MLUnaryOpKind,
+};
 use wiz_mir::ml_decl::{MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar};
 use wiz_mir::ml_file::MLFile;
 use wiz_mir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
@@ -697,8 +704,8 @@ impl HLIR2MLIR {
 
     fn array(&mut self, a: TypedArray) -> MLArray {
         MLArray {
-            elements: a.elements.into_iter().map(|e|self.expr(e)).collect(),
-            type_: self.type_(a.type_.unwrap()).into_value_type()
+            elements: a.elements.into_iter().map(|e| self.expr(e)).collect(),
+            type_: self.type_(a.type_.unwrap()).into_value_type(),
         }
     }
 
