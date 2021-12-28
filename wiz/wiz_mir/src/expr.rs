@@ -4,11 +4,11 @@ mod call;
 mod if_expr;
 mod literal;
 
+pub use self::array::MLArray;
 pub use self::block::MLBlock;
 pub use self::call::{MLCall, MLCallArg};
 pub use self::if_expr::MLIf;
 pub use self::literal::MLLiteral;
-pub use self::array::MLArray;
 use crate::format::Formatter;
 use crate::ml_node::MLNode;
 use crate::ml_type::{MLType, MLValueType};
