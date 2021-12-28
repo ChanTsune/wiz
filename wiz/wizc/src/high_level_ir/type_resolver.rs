@@ -744,7 +744,8 @@ impl TypeResolver {
             if elements.iter().all(|e| e.type_() == e_type) {
                 TypedArray {
                     elements,
-                    type_: e_type.map(|e| TypedType::Value(TypedValueType::Array(Box::new(e), len))),
+                    type_: e_type
+                        .map(|e| TypedType::Value(TypedValueType::Array(Box::new(e), len))),
                 }
             } else {
                 return Result::Err(ResolverError::from("Array elements must be same type."));
