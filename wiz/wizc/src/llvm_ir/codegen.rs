@@ -710,8 +710,8 @@ impl<'ctx> CodeGen<'ctx> {
                         todo!()
                     }
                 },
-                MLValueType::Array(_, _) => {
-                    todo!()
+                MLValueType::Array(e, _) => {
+                    true
                 }
             },
             _ => false,
