@@ -665,6 +665,18 @@ impl HLIR2MLIR {
                 index: Box::new(self.expr(s.indexes[0].clone())),
                 type_: MLValueType::Primitive(MLPrimitiveType::UInt8),
             })
+        } else if t.is_array_type() {
+            MLExpr::PrimitiveSubscript(MLSubscript {
+                target: Box::new(self.expr(*s.target)),
+                index: Box::new(self.expr(s.indexes[0].clone())),
+                type_: match t {
+                    TypedType::Value(v) => match v {
+                        TypedValueType::Array(e, _) => {self.type_(*e).into_value_type()}
+                        _ => panic!("Never execution branch executed!!")
+                    }
+                    _ => panic!("Never execution branch executed!!")
+                }
+            })
         } else {
             self.subscript_for_user_defined(s)
         }
