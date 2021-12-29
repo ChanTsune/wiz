@@ -480,7 +480,9 @@ impl<'ctx> CodeGen<'ctx> {
                 let et = p.get_type().get_element_type();
                 let p = if let AnyTypeEnum::ArrayType(a) = et {
                     let a_type = a.get_element_type().ptr_type(AddressSpace::Generic);
-                    self.builder.build_bitcast(p, a_type, "aptr").into_pointer_value()
+                    self.builder
+                        .build_bitcast(p, a_type, "aptr")
+                        .into_pointer_value()
                 } else {
                     p
                 };
