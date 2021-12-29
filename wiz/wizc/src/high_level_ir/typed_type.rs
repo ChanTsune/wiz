@@ -459,7 +459,7 @@ impl TypedType {
     pub fn is_array_type(&self) -> bool {
         match self {
             TypedType::Value(v) => v.is_array(),
-            _ => false
+            _ => false,
         }
     }
 
