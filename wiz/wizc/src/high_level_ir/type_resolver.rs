@@ -702,13 +702,17 @@ impl TypeResolver {
                                 .indexes
                                 .into_iter()
                                 .map(|i| self.expr(i))
-                                .collect::<Result<Vec<TypedExpr>>>()?,
+                                .collect::<Result<Vec<_>>>()?,
                             type_: Some(TypedType::uint8()),
                         });
                     }
                 }
-                TypedValueType::Array(_, _) => {
-                    todo!()
+                TypedValueType::Array(et, _) => {
+                    return Result::Ok(TypedSubscript {
+                        target: Box::new(target),
+                        indexes: s.indexes.into_iter().map(|i| self.expr(i)).collect::<Result<Vec<_>>>()?,
+                        type_: Some(*et)
+                    })
                 }
                 TypedValueType::Tuple(_) => {
                     todo!()
@@ -727,7 +731,7 @@ impl TypeResolver {
                 .indexes
                 .into_iter()
                 .map(|i| self.expr(i))
-                .collect::<Result<Vec<TypedExpr>>>()?,
+                .collect::<Result<Vec<_>>>()?,
             type_: s.type_,
         })
     }
