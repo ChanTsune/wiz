@@ -510,11 +510,17 @@ impl<'ctx> CodeGen<'ctx> {
         for (i, element) in a.elements.into_iter().enumerate() {
             let i64_type = self.context.i64_type();
             let idx = i64_type.const_int(i as u64, false);
-            let eidx = unsafe {
-                self.builder.build_in_bounds_gep(ptr, &[idx], "")
-            };
-            let ptr_type = eidx.get_type().get_element_type().into_array_type().get_element_type().ptr_type(AddressSpace::Generic);
-            let eidx = self.builder.build_bitcast(eidx, ptr_type, "").into_pointer_value();
+            let eidx = unsafe { self.builder.build_in_bounds_gep(ptr, &[idx], "") };
+            let ptr_type = eidx
+                .get_type()
+                .get_element_type()
+                .into_array_type()
+                .get_element_type()
+                .ptr_type(AddressSpace::Generic);
+            let eidx = self
+                .builder
+                .build_bitcast(eidx, ptr_type, "")
+                .into_pointer_value();
             let v = BasicValueEnum::try_from(self.expr(element)).unwrap();
             self.builder.build_store(eidx, v);
         }
