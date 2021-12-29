@@ -710,8 +710,12 @@ impl TypeResolver {
                 TypedValueType::Array(et, _) => {
                     return Result::Ok(TypedSubscript {
                         target: Box::new(target),
-                        indexes: s.indexes.into_iter().map(|i| self.expr(i)).collect::<Result<Vec<_>>>()?,
-                        type_: Some(*et)
+                        indexes: s
+                            .indexes
+                            .into_iter()
+                            .map(|i| self.expr(i))
+                            .collect::<Result<Vec<_>>>()?,
+                        type_: Some(*et),
                     })
                 }
                 TypedValueType::Tuple(_) => {
