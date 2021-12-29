@@ -101,6 +101,10 @@ impl TypedValueType {
                 TypedValueType::Reference(_) => false,
             }
     }
+
+    pub fn is_array(&self) -> bool {
+        matches!(self, Self::Array(_, _))
+    }
 }
 
 impl ToString for TypedValueType {
@@ -449,6 +453,13 @@ impl TypedType {
         match self {
             TypedType::Value(v) => v.is_unsafe_pointer(),
             _ => false,
+        }
+    }
+
+    pub fn is_array_type(&self) -> bool {
+        match self {
+            TypedType::Value(v) => v.is_array(),
+            _ => false
         }
     }
 
