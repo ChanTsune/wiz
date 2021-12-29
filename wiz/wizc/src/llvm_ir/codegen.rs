@@ -460,11 +460,18 @@ impl<'ctx> CodeGen<'ctx> {
         let index = self.load_if_pointer_value(index, &i_type);
         match target {
             AnyValueEnum::ArrayValue(a) => unsafe {
-                let a_type = a.get_type().get_element_type().ptr_type(AddressSpace::Generic);
+                let a_type = a
+                    .get_type()
+                    .get_element_type()
+                    .ptr_type(AddressSpace::Generic);
                 let p = self.builder.build_bitcast(a, a_type, "aptr");
-                let i = self.builder.build_in_bounds_gep(p.into_pointer_value(),&[index.into_int_value()],"idx");
+                let i = self.builder.build_in_bounds_gep(
+                    p.into_pointer_value(),
+                    &[index.into_int_value()],
+                    "idx",
+                );
                 i.as_any_value_enum()
-            }
+            },
             // AnyValueEnum::IntValue(_) => {}
             // AnyValueEnum::FloatValue(_) => {}
             // AnyValueEnum::PhiValue(_) => {}
