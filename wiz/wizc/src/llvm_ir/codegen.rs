@@ -778,6 +778,12 @@ impl<'ctx> CodeGen<'ctx> {
                 self.set_to_environment(name, ptr.as_any_value_enum());
                 self.builder.build_store(ptr, p).as_any_value_enum()
             }
+            AnyValueEnum::ArrayValue(a) => {
+                let array_type = a.get_type();
+                let ptr = self.builder.build_alloca(array_type, &*name);
+                self.set_to_environment(name, ptr.as_any_value_enum());
+                self.builder.build_store(ptr, a).as_any_value_enum()
+            }
             t => {
                 eprintln!("undefined root executed {:?}", t);
                 exit(-14)
