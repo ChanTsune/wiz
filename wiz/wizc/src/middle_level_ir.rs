@@ -647,8 +647,14 @@ impl HLIR2MLIR {
                     TypedValueType::Tuple(_) => {
                         todo!()
                     }
-                    TypedValueType::Pointer(_) => {
-                        todo!()
+                    TypedValueType::Pointer(p) => {
+                        MLExpr::PrimitiveSubscript(MLSubscript {
+                            target: Box::new(self.expr(*s.target)),
+                            index: Box::new(self.expr(s.indexes[0].clone())),
+                            type_: self
+                                .type_(*p)
+                                .into_value_type(),
+                        })
                     }
                     TypedValueType::Reference(_) => {
                         todo!()
