@@ -14,8 +14,8 @@ use std::convert::TryFrom;
 use std::path::Path;
 use std::process::exit;
 use wiz_mir::expr::{
-    MLBinOp, MLBinOpKind, MLBlock, MLCall, MLExpr, MLIf, MLLiteral, MLMember, MLName, MLSubscript,
-    MLTypeCast, MLUnaryOp, MLUnaryOpKind,
+    MLArray, MLBinOp, MLBinOpKind, MLBlock, MLCall, MLExpr, MLIf, MLLiteral, MLMember, MLName,
+    MLSubscript, MLTypeCast, MLUnaryOp, MLUnaryOpKind,
 };
 use wiz_mir::ml_decl::{MLDecl, MLFun, MLStruct, MLVar};
 use wiz_mir::ml_file::MLFile;
@@ -132,6 +132,7 @@ impl<'ctx> CodeGen<'ctx> {
             MLExpr::PrimitiveSubscript(s) => self.subscript(s),
             MLExpr::Call(c) => self.call(c),
             MLExpr::Member(m) => self.member(m),
+            MLExpr::Array(a) => self.array(a),
             MLExpr::If(i) => self.if_expr(i),
             MLExpr::When => exit(-1),
             MLExpr::Return(r) => self.return_expr(r),
@@ -403,9 +404,7 @@ impl<'ctx> CodeGen<'ctx> {
             }
             AnyValueEnum::IntValue(target) => match u.kind {
                 MLUnaryOpKind::Negative => self.builder.build_int_neg(target, "negative"),
-                MLUnaryOpKind::Positive => {
-                    target // Do noting
-                }
+                MLUnaryOpKind::Positive => target,
                 MLUnaryOpKind::Not => self.builder.build_not(target, "not"),
                 MLUnaryOpKind::Ref => {
                     todo!()
@@ -415,9 +414,20 @@ impl<'ctx> CodeGen<'ctx> {
                 }
             }
             .as_any_value_enum(),
-            AnyValueEnum::FloatValue(_) => {
-                todo!()
+            AnyValueEnum::FloatValue(target) => match u.kind {
+                MLUnaryOpKind::Negative => self.builder.build_float_neg(target, "negative"),
+                MLUnaryOpKind::Positive => target,
+                MLUnaryOpKind::Not => {
+                    todo!()
+                }
+                MLUnaryOpKind::Ref => {
+                    todo!()
+                }
+                MLUnaryOpKind::DeRef => {
+                    todo!()
+                }
             }
+            .as_any_value_enum(),
             AnyValueEnum::PhiValue(_) => {
                 todo!()
             }
@@ -458,7 +468,19 @@ impl<'ctx> CodeGen<'ctx> {
         let index = self.expr(*s.index);
         let index = self.load_if_pointer_value(index, &i_type);
         match target {
-            // AnyValueEnum::ArrayValue(_) => {}
+            AnyValueEnum::ArrayValue(a) => unsafe {
+                let a_type = a
+                    .get_type()
+                    .get_element_type()
+                    .ptr_type(AddressSpace::Generic);
+                let p = self.builder.build_bitcast(a, a_type, "aptr");
+                let i = self.builder.build_in_bounds_gep(
+                    p.into_pointer_value(),
+                    &[index.into_int_value()],
+                    "idx",
+                );
+                i.as_any_value_enum()
+            },
             // AnyValueEnum::IntValue(_) => {}
             // AnyValueEnum::FloatValue(_) => {}
             // AnyValueEnum::PhiValue(_) => {}
@@ -501,6 +523,29 @@ impl<'ctx> CodeGen<'ctx> {
             .build_struct_gep(target, field_index, "struct_gep")
             .unwrap();
         ep.as_any_value_enum()
+    }
+
+    fn array(&mut self, a: MLArray) -> AnyValueEnum<'ctx> {
+        let array_type = self.ml_type_to_type(a.type_).into_array_type();
+        let ptr = self.builder.build_alloca(array_type, "");
+        for (i, element) in a.elements.into_iter().enumerate() {
+            let i64_type = self.context.i64_type();
+            let idx = i64_type.const_int(i as u64, false);
+            let eidx = unsafe { self.builder.build_in_bounds_gep(ptr, &[idx], "") };
+            let ptr_type = eidx
+                .get_type()
+                .get_element_type()
+                .into_array_type()
+                .get_element_type()
+                .ptr_type(AddressSpace::Generic);
+            let eidx = self
+                .builder
+                .build_bitcast(eidx, ptr_type, "")
+                .into_pointer_value();
+            let v = BasicValueEnum::try_from(self.expr(element)).unwrap();
+            self.builder.build_store(eidx, v);
+        }
+        self.builder.build_load(ptr, "").as_any_value_enum()
     }
 
     pub fn if_expr(&mut self, i: MLIf) -> AnyValueEnum<'ctx> {
@@ -705,9 +750,7 @@ impl<'ctx> CodeGen<'ctx> {
                         todo!()
                     }
                 },
-                MLValueType::Array(_, _) => {
-                    todo!()
-                }
+                MLValueType::Array(_, _) => false,
             },
             _ => false,
         }
@@ -755,6 +798,12 @@ impl<'ctx> CodeGen<'ctx> {
                 let ptr = self.builder.build_alloca(ptr_type, &*name);
                 self.set_to_environment(name, ptr.as_any_value_enum());
                 self.builder.build_store(ptr, p).as_any_value_enum()
+            }
+            AnyValueEnum::ArrayValue(a) => {
+                let array_type = a.get_type();
+                let ptr = self.builder.build_alloca(array_type, &*name);
+                self.set_to_environment(name, ptr.as_any_value_enum());
+                self.builder.build_store(ptr, a).as_any_value_enum()
             }
             t => {
                 eprintln!("undefined root executed {:?}", t);

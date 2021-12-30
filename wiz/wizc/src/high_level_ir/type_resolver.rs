@@ -702,13 +702,21 @@ impl TypeResolver {
                                 .indexes
                                 .into_iter()
                                 .map(|i| self.expr(i))
-                                .collect::<Result<Vec<TypedExpr>>>()?,
+                                .collect::<Result<Vec<_>>>()?,
                             type_: Some(TypedType::uint8()),
                         });
                     }
                 }
-                TypedValueType::Array(_) => {
-                    todo!()
+                TypedValueType::Array(et, _) => {
+                    return Result::Ok(TypedSubscript {
+                        target: Box::new(target),
+                        indexes: s
+                            .indexes
+                            .into_iter()
+                            .map(|i| self.expr(i))
+                            .collect::<Result<Vec<_>>>()?,
+                        type_: Some(*et),
+                    })
                 }
                 TypedValueType::Tuple(_) => {
                     todo!()
@@ -727,7 +735,7 @@ impl TypeResolver {
                 .indexes
                 .into_iter()
                 .map(|i| self.expr(i))
-                .collect::<Result<Vec<TypedExpr>>>()?,
+                .collect::<Result<Vec<_>>>()?,
             type_: s.type_,
         })
     }
@@ -738,12 +746,14 @@ impl TypeResolver {
             .into_iter()
             .map(|e| self.expr(e))
             .collect::<Result<Vec<TypedExpr>>>()?;
+        let len = elements.len();
         Result::Ok(if let Some(e) = elements.get(0) {
             let e_type = e.type_();
             if elements.iter().all(|e| e.type_() == e_type) {
                 TypedArray {
                     elements,
-                    type_: e_type.map(|e| TypedType::Value(TypedValueType::Array(Box::new(e)))),
+                    type_: e_type
+                        .map(|e| TypedType::Value(TypedValueType::Array(Box::new(e), len))),
                 }
             } else {
                 return Result::Err(ResolverError::from("Array elements must be same type."));

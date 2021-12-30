@@ -28,7 +28,7 @@ impl TypedType {
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub enum TypedValueType {
     Value(TypedNamedValueType), // Primitive | Struct | Union | Enum
-    Array(Box<TypedType>),
+    Array(Box<TypedType>, usize),
     Tuple(Vec<TypedType>),
     Pointer(Box<TypedType>),
     Reference(Box<TypedType>),
@@ -95,11 +95,15 @@ impl TypedValueType {
         matches!(self, Self::Pointer(_))
             || match self {
                 TypedValueType::Value(v) => v.is_unsafe_pointer(),
-                TypedValueType::Array(_) => false,
+                TypedValueType::Array(_, _) => false,
                 TypedValueType::Tuple(_) => false,
                 TypedValueType::Pointer(_) => true,
                 TypedValueType::Reference(_) => false,
             }
+    }
+
+    pub fn is_array(&self) -> bool {
+        matches!(self, Self::Array(_, _))
     }
 }
 
@@ -109,8 +113,8 @@ impl ToString for TypedValueType {
             TypedValueType::Value(v) => {
                 format!("{}", v.name)
             }
-            TypedValueType::Array(_) => {
-                todo!()
+            TypedValueType::Array(t, len) => {
+                format!("[{};{}]", t.to_string(), len)
             }
             TypedValueType::Tuple(_) => {
                 todo!()
@@ -448,6 +452,13 @@ impl TypedType {
     pub fn is_pointer_type(&self) -> bool {
         match self {
             TypedType::Value(v) => v.is_unsafe_pointer(),
+            _ => false,
+        }
+    }
+
+    pub fn is_array_type(&self) -> bool {
+        match self {
+            TypedType::Value(v) => v.is_array(),
             _ => false,
         }
     }

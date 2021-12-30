@@ -242,7 +242,7 @@ impl ResolverContext {
                             )))),
                         );
                     }
-                    TypedValueType::Array(_) => {}
+                    TypedValueType::Array(_, _) => {}
                     TypedValueType::Tuple(_) => {}
                     TypedValueType::Pointer(_) => {}
                     TypedValueType::Reference(_) => {}
@@ -402,7 +402,7 @@ impl ResolverContext {
                         .cloned()
                         .ok_or_else(|| ResolverError::from(format!("{:?} not has {:?}", t, name)))
                 }
-                TypedValueType::Array(_) => {
+                TypedValueType::Array(_, _) => {
                     todo!()
                 }
                 TypedValueType::Tuple(_) => {
@@ -429,7 +429,7 @@ impl ResolverContext {
                             ResolverError::from(format!("{:?} not has {:?}", t, name))
                         })
                     }
-                    TypedValueType::Array(_) => {
+                    TypedValueType::Array(_, _) => {
                         todo!()
                     }
                     TypedValueType::Tuple(_) => {
@@ -526,7 +526,7 @@ impl ResolverContext {
     fn full_value_type_name(&self, type_: TypedValueType) -> Result<TypedValueType> {
         Result::Ok(match type_ {
             TypedValueType::Value(t) => TypedValueType::Value(self.full_named_value_type_name(t)?),
-            TypedValueType::Array(_) => {
+            TypedValueType::Array(_, _) => {
                 todo!()
             }
             TypedValueType::Tuple(_) => {
