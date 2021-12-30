@@ -24,11 +24,15 @@ fun pointer_dereference(_ p: *Int64): Int64 {
     return *p
 }
 
+fun one_dimention_array() {
+    val a = [128, 256]
+    println(a[0])
+}
+
 fun main() {
     val vector = UInt8Vector.init()
 
-    val a = [128, 256]
-    println(a[0])
+    one_dimention_array()
     var s = A.init(a: 1, b: 0)
     val b = 2
     while !(s.a >= 15) {
