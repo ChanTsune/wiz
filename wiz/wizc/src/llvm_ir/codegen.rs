@@ -404,9 +404,7 @@ impl<'ctx> CodeGen<'ctx> {
             }
             AnyValueEnum::IntValue(target) => match u.kind {
                 MLUnaryOpKind::Negative => self.builder.build_int_neg(target, "negative"),
-                MLUnaryOpKind::Positive => {
-                    target
-                }
+                MLUnaryOpKind::Positive => target,
                 MLUnaryOpKind::Not => self.builder.build_not(target, "not"),
                 MLUnaryOpKind::Ref => {
                     todo!()
@@ -416,15 +414,20 @@ impl<'ctx> CodeGen<'ctx> {
                 }
             }
             .as_any_value_enum(),
-            AnyValueEnum::FloatValue(target) => {
-                match u.kind {
-                    MLUnaryOpKind::Negative => self.builder.build_float_neg(target, "negative"),
-                    MLUnaryOpKind::Positive => {target}
-                    MLUnaryOpKind::Not => {todo!()}
-                    MLUnaryOpKind::Ref => {todo!()}
-                    MLUnaryOpKind::DeRef => {todo!()}
-                }.as_any_value_enum()
+            AnyValueEnum::FloatValue(target) => match u.kind {
+                MLUnaryOpKind::Negative => self.builder.build_float_neg(target, "negative"),
+                MLUnaryOpKind::Positive => target,
+                MLUnaryOpKind::Not => {
+                    todo!()
+                }
+                MLUnaryOpKind::Ref => {
+                    todo!()
+                }
+                MLUnaryOpKind::DeRef => {
+                    todo!()
+                }
             }
+            .as_any_value_enum(),
             AnyValueEnum::PhiValue(_) => {
                 todo!()
             }
