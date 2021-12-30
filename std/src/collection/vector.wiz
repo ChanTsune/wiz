@@ -1,5 +1,5 @@
 struct UInt8Vector {
-    var ptr: UnsafePointer<UInt8>
+    var ptr: *UInt8
     var length: UInt64
     var capacity: UInt64
 
