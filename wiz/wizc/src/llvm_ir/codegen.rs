@@ -705,7 +705,25 @@ impl<'ctx> CodeGen<'ctx> {
             }
             // AnyValueEnum::PhiValue(_) => {}
             // AnyValueEnum::FunctionValue(_) => {}
-            // AnyValueEnum::PointerValue(_) => {}
+            AnyValueEnum::PointerValue(ptr) => {
+                let ty = self.ml_type_to_type(t.type_);
+                match ty {
+                    AnyTypeEnum::ArrayType(_) => {todo!()}
+                    AnyTypeEnum::FloatType(_) => {todo!()}
+                    AnyTypeEnum::FunctionType(_) => {todo!()}
+                    AnyTypeEnum::IntType(ty) => {
+                        let t = self.builder.build_ptr_to_int(ptr, ty, "ptr_to_int");
+                        t.as_any_value_enum()
+                    }
+                    AnyTypeEnum::PointerType(ty) => {
+                        let t = self.builder.build_pointer_cast(ptr, ty, "ptr_cast");
+                        t.as_any_value_enum()
+                    }
+                    AnyTypeEnum::StructType(_) => {todo!()}
+                    AnyTypeEnum::VectorType(_) => {todo!()}
+                    AnyTypeEnum::VoidType(_) => {todo!()}
+                }
+            }
             // AnyValueEnum::StructValue(_) => {}
             // AnyValueEnum::VectorValue(_) => {}
             // AnyValueEnum::InstructionValue(_) => {}
