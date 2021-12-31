@@ -110,9 +110,7 @@ impl TypedValueType {
 impl ToString for TypedValueType {
     fn to_string(&self) -> String {
         match self {
-            TypedValueType::Value(v) => {
-                v.to_string()
-            }
+            TypedValueType::Value(v) => v.to_string(),
             TypedValueType::Array(t, len) => {
                 format!("[{};{}]", t.to_string(), len)
             }
