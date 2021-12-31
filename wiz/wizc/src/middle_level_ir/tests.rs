@@ -268,153 +268,206 @@ fn test_method_call() {
       p.c()
     }
     ";
-    check(source, MLFile {
-        name: "test".to_string(),
-        body: vec![
-            MLDecl::Struct(MLStruct {
-                name: "test::A".to_string(),
-                fields: vec![
-                    MLField {
+    check(
+        source,
+        MLFile {
+            name: "test".to_string(),
+            body: vec![
+                MLDecl::Struct(MLStruct {
+                    name: "test::A".to_string(),
+                    fields: vec![MLField {
                         name: "a".to_string(),
-                        type_: MLValueType::Primitive(MLPrimitiveType::Int64)
-                    }
-                ]
-            }),
-            MLDecl::Fun(MLFun {
-                modifiers: vec![],
-                name: "test::A::init##a#Int64".to_string(),
-                arg_defs: vec![
-                    MLArgDef {
+                        type_: MLValueType::Primitive(MLPrimitiveType::Int64),
+                    }],
+                }),
+                MLDecl::Fun(MLFun {
+                    modifiers: vec![],
+                    name: "test::A::init##a#Int64".to_string(),
+                    arg_defs: vec![MLArgDef {
                         name: "a".to_string(),
-                        type_: MLValueType::Primitive(MLPrimitiveType::Int64)
-                    }
-                ],
-                return_type: MLValueType::Struct("test::A".to_string()),
-                body: None
-            }),
-            MLDecl::Fun(MLFun {
-                modifiers: vec![],
-                name: "test::A::b##_#test::A".to_string(),
-                arg_defs: vec![MLArgDef { name: "self".to_string(), type_: MLValueType::Struct("test::A".to_string()) }],
-                return_type: MLValueType::Primitive(MLPrimitiveType::Int64),
-                body: None
-            }),
-            MLDecl::Fun(MLFun {
-                modifiers: vec![],
-                name: "test::A::c##_#test::A".to_string(),
-                arg_defs: vec![MLArgDef { name: "self".to_string(), type_: MLValueType::Struct("test::A".to_string()) }],
-                return_type: MLValueType::Primitive(MLPrimitiveType::Int64),
-                body: None
-            }),
-            MLDecl::Fun(MLFun {
-                modifiers: vec![],
-                name: "test::sample".to_string(),
-                arg_defs: vec![],
-                return_type: MLValueType::Primitive(MLPrimitiveType::Unit),
-                body: None
-            }),
-            MLDecl::Fun(MLFun {
-                modifiers: vec![],
-                name: "test::A::init##a#Int64".to_string(),
-                arg_defs: vec![
-                    MLArgDef {
+                        type_: MLValueType::Primitive(MLPrimitiveType::Int64),
+                    }],
+                    return_type: MLValueType::Struct("test::A".to_string()),
+                    body: None,
+                }),
+                MLDecl::Fun(MLFun {
+                    modifiers: vec![],
+                    name: "test::A::b##_#test::A".to_string(),
+                    arg_defs: vec![MLArgDef {
+                        name: "self".to_string(),
+                        type_: MLValueType::Struct("test::A".to_string()),
+                    }],
+                    return_type: MLValueType::Primitive(MLPrimitiveType::Int64),
+                    body: None,
+                }),
+                MLDecl::Fun(MLFun {
+                    modifiers: vec![],
+                    name: "test::A::c##_#test::A".to_string(),
+                    arg_defs: vec![MLArgDef {
+                        name: "self".to_string(),
+                        type_: MLValueType::Struct("test::A".to_string()),
+                    }],
+                    return_type: MLValueType::Primitive(MLPrimitiveType::Int64),
+                    body: None,
+                }),
+                MLDecl::Fun(MLFun {
+                    modifiers: vec![],
+                    name: "test::sample".to_string(),
+                    arg_defs: vec![],
+                    return_type: MLValueType::Primitive(MLPrimitiveType::Unit),
+                    body: None,
+                }),
+                MLDecl::Fun(MLFun {
+                    modifiers: vec![],
+                    name: "test::A::init##a#Int64".to_string(),
+                    arg_defs: vec![MLArgDef {
                         name: "a".to_string(),
-                        type_: MLValueType::Primitive(MLPrimitiveType::Int64)
-                    }
-                ],
-                return_type: MLValueType::Struct("test::A".to_string()),
-                body: Some(MLFunBody {
-                    body: vec![
-                        MLStmt::Var(MLVar {
-                            is_mute: true,
-                            name: "self".to_string(),
-                            type_: MLType::Value(MLValueType::Struct("test::A".to_string())),
-                            value: MLExpr::Literal(MLLiteral::Struct { type_: MLValueType::Struct("test::A".to_string()) })
-                        }),
-                        MLStmt::Assignment(MLAssignmentStmt {
-                            target: MLExpr::Member(MLMember {
-                                target: Box::new(MLExpr::Name(MLName { name: "self".to_string(), type_: MLType::Value(MLValueType::Struct("test::A".to_string())) })),
-                                name: "a".to_string(),
-                                type_: MLType::Value(MLValueType::Primitive(MLPrimitiveType::Int64))
+                        type_: MLValueType::Primitive(MLPrimitiveType::Int64),
+                    }],
+                    return_type: MLValueType::Struct("test::A".to_string()),
+                    body: Some(MLFunBody {
+                        body: vec![
+                            MLStmt::Var(MLVar {
+                                is_mute: true,
+                                name: "self".to_string(),
+                                type_: MLType::Value(MLValueType::Struct("test::A".to_string())),
+                                value: MLExpr::Literal(MLLiteral::Struct {
+                                    type_: MLValueType::Struct("test::A".to_string()),
+                                }),
                             }),
-                            value: MLExpr::Name(MLName { name: "a".to_string(), type_: MLType::Value(MLValueType::Primitive(MLPrimitiveType::Int64)) })
-                        }),
-                        MLStmt::Expr(MLExpr::Return(MLReturn { value: Some(Box::new(MLExpr::Name(MLName { name: "self".to_string(), type_: MLType::Value(MLValueType::Struct("test::A".to_string())) }))) }))
-                    ]
-                })
-            }),
-            MLDecl::Fun(MLFun {
-                modifiers: vec![],
-                name: "test::A::b##_#test::A".to_string(),
-                arg_defs: vec![MLArgDef { name: "self".to_string(), type_: MLValueType::Struct("test::A".to_string()) }],
-                return_type: MLValueType::Primitive(MLPrimitiveType::Int64),
-                body: Some(MLFunBody {
-                    body: vec![MLStmt::Expr(MLExpr::Return(MLReturn { value: Some(Box::new(MLExpr::Literal(MLLiteral::Integer { value: "1".to_string(), type_: MLValueType::Primitive(MLPrimitiveType::Int64) }))) }))]
-                })
-            }),
-            MLDecl::Fun(MLFun {
-                modifiers: vec![],
-                name: "test::A::c##_#test::A".to_string(),
-                arg_defs: vec![MLArgDef { name: "self".to_string(), type_: MLValueType::Struct("test::A".to_string()) }],
-                return_type: MLValueType::Primitive(MLPrimitiveType::Int64),
-                body: Some(MLFunBody {
-                    body: vec![MLStmt::Expr(MLExpr::Return(MLReturn { value: Some(Box::new(MLExpr::Call(MLCall {
-                        target: MLName { name: "test::A::b##_#test::A".to_string(), type_: MLType::Function(MLFunctionType { arguments: vec![
-                            MLValueType::Struct("test::A".to_string())
-                        ], return_type: MLValueType::Primitive(MLPrimitiveType::Int64) }) },
-                        args: vec![
-                            MLCallArg {
-                                arg: MLExpr::Name(MLName { name: "self".to_string(), type_: MLType::Value(MLValueType::Struct("test::A".to_string())) })
-                            }
+                            MLStmt::Assignment(MLAssignmentStmt {
+                                target: MLExpr::Member(MLMember {
+                                    target: Box::new(MLExpr::Name(MLName {
+                                        name: "self".to_string(),
+                                        type_: MLType::Value(MLValueType::Struct(
+                                            "test::A".to_string(),
+                                        )),
+                                    })),
+                                    name: "a".to_string(),
+                                    type_: MLType::Value(MLValueType::Primitive(
+                                        MLPrimitiveType::Int64,
+                                    )),
+                                }),
+                                value: MLExpr::Name(MLName {
+                                    name: "a".to_string(),
+                                    type_: MLType::Value(MLValueType::Primitive(
+                                        MLPrimitiveType::Int64,
+                                    )),
+                                }),
+                            }),
+                            MLStmt::Expr(MLExpr::Return(MLReturn {
+                                value: Some(Box::new(MLExpr::Name(MLName {
+                                    name: "self".to_string(),
+                                    type_: MLType::Value(MLValueType::Struct(
+                                        "test::A".to_string(),
+                                    )),
+                                }))),
+                            })),
                         ],
-                        type_: MLValueType::Primitive(MLPrimitiveType::Int64)
-                    }))) }))]
-                })
-            }),
-            MLDecl::Fun(MLFun {
-                modifiers: vec![],
-                name: "test::sample".to_string(),
-                arg_defs: vec![],
-                return_type: MLValueType::Primitive(MLPrimitiveType::Unit),
-                body: Some(MLFunBody {
-                    body: vec![
-                        MLStmt::Var(MLVar {
-                            is_mute: false,
-                            name: "p".to_string(),
-                            type_: MLType::Value(MLValueType::Struct("test::A".to_string())),
-                            value: MLExpr::Call(MLCall {
-                                target: MLName { name: "test::A::init##_#Int64".to_string(), type_: MLType::Function(MLFunctionType {
-                                    arguments: vec![MLValueType::Primitive(MLPrimitiveType::Int64)],
-                                    return_type: MLValueType::Struct("test::A".to_string())
-                                }) },
-                                args: vec![
-                                    MLCallArg {
-                                        arg: MLExpr::Literal(MLLiteral::Integer { value: "1".to_string(), type_: MLValueType::Primitive(MLPrimitiveType::Int64) })
-                                    }
-                                ],
-                                type_: MLValueType::Struct("test::A".to_string())
-                            })
-                        }),
-                        MLStmt::Expr(MLExpr::Call(MLCall {
-                            target: MLName {
-                                name: "test::A::c##_#test::A".to_string(),
-                                type_: MLType::Function(MLFunctionType {
-                                    arguments: vec![MLValueType::Struct("test::A".to_string())],
-                                    return_type: MLValueType::Primitive(MLPrimitiveType::Int64)
-                                })
-                            },
-                            args: vec![
-                                MLCallArg {
-                                    arg: MLExpr::Name(MLName { name: "p".to_string(), type_: MLType::Value(MLValueType::Struct("test::A".to_string())) })
-                                }
-                            ],
-                            type_: MLValueType::Primitive(MLPrimitiveType::Int64)
-                        }))
-                    ]
-                })
-            }),
-        ]
-    })
+                    }),
+                }),
+                MLDecl::Fun(MLFun {
+                    modifiers: vec![],
+                    name: "test::A::b##_#test::A".to_string(),
+                    arg_defs: vec![MLArgDef {
+                        name: "self".to_string(),
+                        type_: MLValueType::Struct("test::A".to_string()),
+                    }],
+                    return_type: MLValueType::Primitive(MLPrimitiveType::Int64),
+                    body: Some(MLFunBody {
+                        body: vec![MLStmt::Expr(MLExpr::Return(MLReturn {
+                            value: Some(Box::new(MLExpr::Literal(MLLiteral::Integer {
+                                value: "1".to_string(),
+                                type_: MLValueType::Primitive(MLPrimitiveType::Int64),
+                            }))),
+                        }))],
+                    }),
+                }),
+                MLDecl::Fun(MLFun {
+                    modifiers: vec![],
+                    name: "test::A::c##_#test::A".to_string(),
+                    arg_defs: vec![MLArgDef {
+                        name: "self".to_string(),
+                        type_: MLValueType::Struct("test::A".to_string()),
+                    }],
+                    return_type: MLValueType::Primitive(MLPrimitiveType::Int64),
+                    body: Some(MLFunBody {
+                        body: vec![MLStmt::Expr(MLExpr::Return(MLReturn {
+                            value: Some(Box::new(MLExpr::Call(MLCall {
+                                target: MLName {
+                                    name: "test::A::b##_#test::A".to_string(),
+                                    type_: MLType::Function(MLFunctionType {
+                                        arguments: vec![MLValueType::Struct("test::A".to_string())],
+                                        return_type: MLValueType::Primitive(MLPrimitiveType::Int64),
+                                    }),
+                                },
+                                args: vec![MLCallArg {
+                                    arg: MLExpr::Name(MLName {
+                                        name: "self".to_string(),
+                                        type_: MLType::Value(MLValueType::Struct(
+                                            "test::A".to_string(),
+                                        )),
+                                    }),
+                                }],
+                                type_: MLValueType::Primitive(MLPrimitiveType::Int64),
+                            }))),
+                        }))],
+                    }),
+                }),
+                MLDecl::Fun(MLFun {
+                    modifiers: vec![],
+                    name: "test::sample".to_string(),
+                    arg_defs: vec![],
+                    return_type: MLValueType::Primitive(MLPrimitiveType::Unit),
+                    body: Some(MLFunBody {
+                        body: vec![
+                            MLStmt::Var(MLVar {
+                                is_mute: false,
+                                name: "p".to_string(),
+                                type_: MLType::Value(MLValueType::Struct("test::A".to_string())),
+                                value: MLExpr::Call(MLCall {
+                                    target: MLName {
+                                        name: "test::A::init##_#Int64".to_string(),
+                                        type_: MLType::Function(MLFunctionType {
+                                            arguments: vec![MLValueType::Primitive(
+                                                MLPrimitiveType::Int64,
+                                            )],
+                                            return_type: MLValueType::Struct("test::A".to_string()),
+                                        }),
+                                    },
+                                    args: vec![MLCallArg {
+                                        arg: MLExpr::Literal(MLLiteral::Integer {
+                                            value: "1".to_string(),
+                                            type_: MLValueType::Primitive(MLPrimitiveType::Int64),
+                                        }),
+                                    }],
+                                    type_: MLValueType::Struct("test::A".to_string()),
+                                }),
+                            }),
+                            MLStmt::Expr(MLExpr::Call(MLCall {
+                                target: MLName {
+                                    name: "test::A::c##_#test::A".to_string(),
+                                    type_: MLType::Function(MLFunctionType {
+                                        arguments: vec![MLValueType::Struct("test::A".to_string())],
+                                        return_type: MLValueType::Primitive(MLPrimitiveType::Int64),
+                                    }),
+                                },
+                                args: vec![MLCallArg {
+                                    arg: MLExpr::Name(MLName {
+                                        name: "p".to_string(),
+                                        type_: MLType::Value(MLValueType::Struct(
+                                            "test::A".to_string(),
+                                        )),
+                                    }),
+                                }],
+                                type_: MLValueType::Primitive(MLPrimitiveType::Int64),
+                            })),
+                        ],
+                    }),
+                }),
+            ],
+        },
+    )
 }
 
 #[test]
