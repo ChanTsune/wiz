@@ -446,7 +446,7 @@ impl TypedType {
     }
 
     pub fn is_integer(&self) -> bool {
-        Self::integer_types().contains(self)
+        self.is_signed_integer() || self.is_unsigned_integer()
     }
 
     pub fn is_pointer_type(&self) -> bool {

@@ -250,25 +250,10 @@ impl ResolverContext {
                 _ => {}
             };
         }
-        let mut bo = HashMap::new();
-        for op in vec![
-            TypedBinaryOperator::Add,
-            TypedBinaryOperator::Sub,
-            TypedBinaryOperator::Mul,
-            TypedBinaryOperator::Div,
-            TypedBinaryOperator::Mod,
-        ] {
-            for t in TypedType::integer_types() {
-                bo.insert((op.clone(), t.clone(), t.clone()), t);
-            }
-            for t in TypedType::floating_point_types() {
-                bo.insert((op.clone(), t.clone(), t.clone()), t);
-            }
-        }
         Self {
             used_name_space: Default::default(),
             name_space: ns,
-            binary_operators: bo,
+            binary_operators: Default::default(),
             subscripts: Default::default(),
             current_namespace: Default::default(),
             current_type: None,
@@ -513,12 +498,20 @@ impl ResolverContext {
             TypedBinaryOperator::InfixFunctionCall(_) => {
                 todo!()
             }
-            _ => {
-                let key = (kind, left, right);
-                self.binary_operators
-                    .get(&key)
-                    .cloned()
-                    .ok_or_else(|| ResolverError::from(format!("{:?} is not defined.", key)))
+            kind => {
+                if left.is_integer() && right.is_integer() && left == right {
+                    Ok(left)
+                } else if left.is_floating_point() && right.is_floating_point() && left == right {
+                    Ok(left)
+                } else if left.is_pointer_type() && right.is_integer() {
+                    Ok(left)
+                } else {
+                    let key = (kind, left, right);
+                    self.binary_operators
+                        .get(&key)
+                        .cloned()
+                        .ok_or_else(|| ResolverError::from(format!("{:?} is not defined.", key)))
+                }
             }
         }
     }
