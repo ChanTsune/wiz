@@ -1,5 +1,6 @@
 use std::builtin::println
 use std::collection::vector::UInt8Vector
+use std::test::assert
 
 struct A {
     var a: Int64
@@ -69,8 +70,16 @@ fun vector_methods() {
     println(vector.length as Int64)
 
     var poped = vector.pop()
-    println(poped as Int64)
-    println(vector.length as Int64)
+    assert(poped as Int64 == 111)
+    assert(vector.length as Int64 == 4)
+
+    val removed = vector.remove(index: 0 as UInt64)
+    assert(removed as Int64 == 72)
+    assert(vector.length as Int64 == 3)
+
+    val removed_ = vector.remove(index: 2 as UInt64)
+    assert(removed_ as Int64 == 108)
+    assert(vector.length as Int64 == 2)
 
 }
 

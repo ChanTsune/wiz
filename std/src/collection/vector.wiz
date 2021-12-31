@@ -32,4 +32,35 @@ struct UInt8Vector {
         return r
     }
 
+    fun insert(&self, into index: UInt64, element: UInt8): Unit {
+        if self.length <= index {
+            self.push(element: element)
+        } else {
+            if self.capacity <= self.length {
+                val newCapacity = if self.capacity == 0 { 4 } else { self.capacity * 2 }
+                self.ptr = realloc(self.ptr, newCapacity)
+                self.capacity = newCapacity
+            }
+            memmove(self.ptr + index, self.ptr + index - 1, self.length - index)
+            self.ptr[index] = element
+            self.length += 1
+        }
+    }
+
+    fun remove(&self, index: UInt64): UInt8 {
+        if self.length == index - 1 {
+            return self.pop()
+        }
+        val t = self.ptr[index]
+
+        println("DEBUG:")
+        println(self.ptr as *Int64)
+        println((self.ptr + index) as *Int64)
+        println("END DEBUG")
+
+        memmove(self.ptr + index, self.ptr + index + 1, self.length - index)
+        self.length -= 1
+        return t
+    }
+
 }
