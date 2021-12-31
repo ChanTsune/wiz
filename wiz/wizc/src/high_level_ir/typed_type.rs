@@ -110,9 +110,7 @@ impl TypedValueType {
 impl ToString for TypedValueType {
     fn to_string(&self) -> String {
         match self {
-            TypedValueType::Value(v) => {
-                format!("{}", v.name)
-            }
+            TypedValueType::Value(v) => v.to_string(),
             TypedValueType::Array(t, len) => {
                 format!("[{};{}]", t.to_string(), len)
             }
@@ -305,7 +303,7 @@ impl ToString for TypedNamedValueType {
                 if pkg.is_global() {
                     self.name.clone()
                 } else {
-                    pkg.to_string() + "::" + &*self.name
+                    format!("{}::{}", pkg.to_string(), self.name)
                 }
             }
         };

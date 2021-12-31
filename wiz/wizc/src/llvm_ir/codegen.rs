@@ -389,9 +389,49 @@ impl<'ctx> CodeGen<'ctx> {
                     v.as_any_value_enum()
                 }
             },
+            (AnyValueEnum::PointerValue(p), AnyValueEnum::IntValue(i)) => match b.kind {
+                MLBinOpKind::Plus => {
+                    let p = unsafe { self.builder.build_in_bounds_gep(p, &[i], "padd") };
+                    p.as_any_value_enum()
+                }
+                MLBinOpKind::Minus => {
+                    let i = self.builder.build_int_neg(i, "psub_ineg");
+                    let p = unsafe { self.builder.build_in_bounds_gep(p, &[i], "psub") };
+                    p.as_any_value_enum()
+                }
+                MLBinOpKind::Mul => {
+                    todo!()
+                }
+                MLBinOpKind::Div => {
+                    todo!()
+                }
+                MLBinOpKind::Mod => {
+                    todo!()
+                }
+                MLBinOpKind::Equal => {
+                    todo!()
+                }
+                MLBinOpKind::GrateThanEqual => {
+                    todo!()
+                }
+                MLBinOpKind::GrateThan => {
+                    todo!()
+                }
+                MLBinOpKind::LessThanEqual => {
+                    todo!()
+                }
+                MLBinOpKind::LessThan => {
+                    todo!()
+                }
+                MLBinOpKind::NotEqual => {
+                    todo!()
+                }
+            },
             (r, l) => {
-                println!("{:?},{:?},{:?}", r, b.kind, l);
-                panic!("Unsupported binary operation")
+                panic!(
+                    "Unsupported binary operation.\n{:?},{:?},{:?}",
+                    r, b.kind, l
+                )
             }
         }
     }
@@ -654,59 +694,48 @@ impl<'ctx> CodeGen<'ctx> {
         match target {
             // AnyValueEnum::ArrayValue(_) => {}
             AnyValueEnum::IntValue(i) => {
-                let ty = match t.type_ {
-                    MLValueType::Primitive(p) => match p {
-                        MLPrimitiveType::Int8 | MLPrimitiveType::UInt8 => self.context.i8_type(),
-                        MLPrimitiveType::Int16 | MLPrimitiveType::UInt16 => self.context.i16_type(),
-                        MLPrimitiveType::Int32 | MLPrimitiveType::UInt32 => self.context.i32_type(),
-                        MLPrimitiveType::Int64 | MLPrimitiveType::UInt64 => self.context.i64_type(),
-                        MLPrimitiveType::Size | MLPrimitiveType::USize => {
-                            todo!()
-                        }
-                        _ => panic!(),
-                    },
-                    MLValueType::Struct(_) => {
-                        todo!()
-                    }
-                    MLValueType::Pointer(_) => {
-                        todo!()
-                    }
-                    MLValueType::Reference(_) => {
-                        todo!()
-                    }
-                    MLValueType::Array(_, _) => {
-                        todo!()
-                    }
-                };
+                let ty = self.ml_type_to_type(t.type_).into_int_type();
                 let t = self.builder.build_int_cast(i, ty, "int_cast");
                 t.as_any_value_enum()
             }
             AnyValueEnum::FloatValue(f) => {
-                let ty = match t.type_ {
-                    MLValueType::Primitive(p) => match p {
-                        MLPrimitiveType::Float => self.context.f32_type(),
-                        MLPrimitiveType::Double => self.context.f64_type(),
-                        _ => panic!(),
-                    },
-                    MLValueType::Struct(_) => {
-                        todo!()
-                    }
-                    MLValueType::Pointer(_) => {
-                        todo!()
-                    }
-                    MLValueType::Reference(_) => {
-                        todo!()
-                    }
-                    MLValueType::Array(_, _) => {
-                        todo!()
-                    }
-                };
+                let ty = self.ml_type_to_type(t.type_).into_float_type();
                 let t = self.builder.build_float_cast(f, ty, "float_cast");
                 t.as_any_value_enum()
             }
             // AnyValueEnum::PhiValue(_) => {}
             // AnyValueEnum::FunctionValue(_) => {}
-            // AnyValueEnum::PointerValue(_) => {}
+            AnyValueEnum::PointerValue(ptr) => {
+                let ty = self.ml_type_to_type(t.type_);
+                match ty {
+                    AnyTypeEnum::ArrayType(_) => {
+                        todo!()
+                    }
+                    AnyTypeEnum::FloatType(_) => {
+                        todo!()
+                    }
+                    AnyTypeEnum::FunctionType(_) => {
+                        todo!()
+                    }
+                    AnyTypeEnum::IntType(ty) => {
+                        let t = self.builder.build_ptr_to_int(ptr, ty, "ptr_to_int");
+                        t.as_any_value_enum()
+                    }
+                    AnyTypeEnum::PointerType(ty) => {
+                        let t = self.builder.build_pointer_cast(ptr, ty, "ptr_cast");
+                        t.as_any_value_enum()
+                    }
+                    AnyTypeEnum::StructType(_) => {
+                        todo!()
+                    }
+                    AnyTypeEnum::VectorType(_) => {
+                        todo!()
+                    }
+                    AnyTypeEnum::VoidType(_) => {
+                        todo!()
+                    }
+                }
+            }
             // AnyValueEnum::StructValue(_) => {}
             // AnyValueEnum::VectorValue(_) => {}
             // AnyValueEnum::InstructionValue(_) => {}

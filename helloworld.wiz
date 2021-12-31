@@ -1,5 +1,6 @@
 use std::builtin::println
 use std::collection::vector::UInt8Vector
+use std::test::assert
 
 struct A {
     var a: Int64
@@ -29,10 +30,8 @@ fun one_dimention_array() {
     println(a[0])
 }
 
-fun main() {
-    val vector = UInt8Vector.init()
 
-    one_dimention_array()
+fun while_loop() {
     var s = A.init(a: 1, b: 0)
     val b = 2
     while !(s.a >= 15) {
@@ -48,8 +47,49 @@ fun main() {
         s.a += if modBy2Expr(s.a) == 0 { 1 } else { 3 }
     }
     val c = s.a + b
+    println(c)
+}
+
+fun vector_methods() {
+
+    val vector = UInt8Vector.init()
+
+    vector.push(element:72 as UInt8)
+    vector.push(element:101 as UInt8)
+    vector.push(element:108 as UInt8)
+    vector.push(element:108 as UInt8)
+    vector.push(element:111 as UInt8)
+    var i = 0
+    while i < vector.length {
+        val v = vector.ptr[i]
+        putchar(v as Int32)
+        i += 1
+    }
+    putchar(10 as Int32)
+
+    println(vector.length as Int64)
+
+    var poped = vector.pop()
+    assert(poped as Int64 == 111)
+    assert(vector.length as Int64 == 4)
+
+    val removed = vector.remove(index: 0 as UInt64)
+    assert(removed as Int64 == 72)
+    assert(vector.length as Int64 == 3)
+
+    val removed_ = vector.remove(index: 2 as UInt64)
+    assert(removed_ as Int64 == 108)
+    assert(vector.length as Int64 == 2)
+
+}
+
+fun file_io() {
     val file = fopen("./tmp.tmp", "wb")
     fwrite("File write from wiz\n", 1, 20, file)
     fclose(file)
     println("...bye")
+}
+
+fun main() {
+    vector_methods()
 }
