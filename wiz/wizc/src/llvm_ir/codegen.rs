@@ -694,30 +694,7 @@ impl<'ctx> CodeGen<'ctx> {
         match target {
             // AnyValueEnum::ArrayValue(_) => {}
             AnyValueEnum::IntValue(i) => {
-                let ty = match t.type_ {
-                    MLValueType::Primitive(p) => match p {
-                        MLPrimitiveType::Int8 | MLPrimitiveType::UInt8 => self.context.i8_type(),
-                        MLPrimitiveType::Int16 | MLPrimitiveType::UInt16 => self.context.i16_type(),
-                        MLPrimitiveType::Int32 | MLPrimitiveType::UInt32 => self.context.i32_type(),
-                        MLPrimitiveType::Int64 | MLPrimitiveType::UInt64 => self.context.i64_type(),
-                        MLPrimitiveType::Size | MLPrimitiveType::USize => {
-                            todo!()
-                        }
-                        _ => panic!(),
-                    },
-                    MLValueType::Struct(_) => {
-                        todo!()
-                    }
-                    MLValueType::Pointer(_) => {
-                        todo!()
-                    }
-                    MLValueType::Reference(_) => {
-                        todo!()
-                    }
-                    MLValueType::Array(_, _) => {
-                        todo!()
-                    }
-                };
+                let ty = self.ml_type_to_type(t.type_).into_int_type();
                 let t = self.builder.build_int_cast(i, ty, "int_cast");
                 t.as_any_value_enum()
             }
