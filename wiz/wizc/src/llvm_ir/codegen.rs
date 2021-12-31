@@ -699,25 +699,7 @@ impl<'ctx> CodeGen<'ctx> {
                 t.as_any_value_enum()
             }
             AnyValueEnum::FloatValue(f) => {
-                let ty = match t.type_ {
-                    MLValueType::Primitive(p) => match p {
-                        MLPrimitiveType::Float => self.context.f32_type(),
-                        MLPrimitiveType::Double => self.context.f64_type(),
-                        _ => panic!(),
-                    },
-                    MLValueType::Struct(_) => {
-                        todo!()
-                    }
-                    MLValueType::Pointer(_) => {
-                        todo!()
-                    }
-                    MLValueType::Reference(_) => {
-                        todo!()
-                    }
-                    MLValueType::Array(_, _) => {
-                        todo!()
-                    }
-                };
+                let ty = self.ml_type_to_type(t.type_).into_float_type();
                 let t = self.builder.build_float_cast(f, ty, "float_cast");
                 t.as_any_value_enum()
             }
