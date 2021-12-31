@@ -389,9 +389,30 @@ impl<'ctx> CodeGen<'ctx> {
                     v.as_any_value_enum()
                 }
             },
+            (AnyValueEnum::PointerValue(p), AnyValueEnum::IntValue(i)) => {
+                match b.kind {
+                    MLBinOpKind::Plus => {
+                        let p = unsafe { self.builder.build_in_bounds_gep(p, &[i], "padd") };
+                        p.as_any_value_enum()
+                    }
+                    MLBinOpKind::Minus => {
+                        let i = self.builder.build_int_neg(i, "psub_ineg");
+                        let p = unsafe { self.builder.build_in_bounds_gep(p, &[i], "psub") };
+                        p.as_any_value_enum()
+                    }
+                    MLBinOpKind::Mul => {todo!()}
+                    MLBinOpKind::Div => {todo!()}
+                    MLBinOpKind::Mod => {todo!()}
+                    MLBinOpKind::Equal => {todo!()}
+                    MLBinOpKind::GrateThanEqual => {todo!()}
+                    MLBinOpKind::GrateThan => {todo!()}
+                    MLBinOpKind::LessThanEqual => {todo!()}
+                    MLBinOpKind::LessThan => {todo!()}
+                    MLBinOpKind::NotEqual => {todo!()}
+                }
+            }
             (r, l) => {
-                println!("{:?},{:?},{:?}", r, b.kind, l);
-                panic!("Unsupported binary operation")
+                panic!("Unsupported binary operation.\n{:?},{:?},{:?}", r, b.kind, l)
             }
         }
     }
