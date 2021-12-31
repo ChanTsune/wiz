@@ -1,0 +1,7 @@
+fun assert(_ result: Bool): Unit {
+    if !result {
+        println("Assertion failed")
+    } else {
+        println("Assertion passed")
+    }
+}
