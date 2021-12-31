@@ -250,25 +250,26 @@ impl ResolverContext {
                 _ => {}
             };
         }
-        let mut bo = HashMap::new();
-        for op in vec![
+        let mut binary_operators = HashMap::new();
+        let operators = vec![
             TypedBinaryOperator::Add,
             TypedBinaryOperator::Sub,
             TypedBinaryOperator::Mul,
             TypedBinaryOperator::Div,
             TypedBinaryOperator::Mod,
-        ] {
+        ];
+        for op in operators {
             for t in TypedType::integer_types() {
-                bo.insert((op.clone(), t.clone(), t.clone()), t);
+                binary_operators.insert((op.clone(), t.clone(), t.clone()), t);
             }
             for t in TypedType::floating_point_types() {
-                bo.insert((op.clone(), t.clone(), t.clone()), t);
+                binary_operators.insert((op.clone(), t.clone(), t.clone()), t);
             }
         }
         Self {
             used_name_space: Default::default(),
             name_space: ns,
-            binary_operators: bo,
+            binary_operators,
             subscripts: Default::default(),
             current_namespace: Default::default(),
             current_type: None,
