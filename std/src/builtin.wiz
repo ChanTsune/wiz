@@ -8,6 +8,15 @@ fun println() {
     putchar(10 as Int32)
 }
 
+fun print(_ item: String) {
+    val len = strlen(item)
+    var i = 0
+    while len > i {
+        putchar(item[i] as Int32)
+        i += 1
+    }
+}
+
 fun println(_ item: String) {
     puts(item)
 }
@@ -27,4 +36,12 @@ fun println(_ item: Int64) {
         print(item)
     }
     println()
+}
+
+fun print(_ item: *Int64) {
+    print(item as Int64)
+}
+
+fun println(_ item: *Int64) {
+    println(item as Int64)
 }
