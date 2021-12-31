@@ -763,7 +763,7 @@ impl HLIR2MLIR {
                             );
                             MLExpr::Name(MLName {
                                 name: target_type.name() + "::" + &*name,
-                                type_: MLType::Value(target_type),
+                                type_: self.type_(type_.unwrap()),
                             })
                         }
                     }
