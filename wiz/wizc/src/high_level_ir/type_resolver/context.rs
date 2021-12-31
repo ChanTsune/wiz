@@ -495,8 +495,8 @@ impl ResolverContext {
             | TypedBinaryOperator::LessThanEqual
             | TypedBinaryOperator::LessThan
             | TypedBinaryOperator::NotEqual => Result::Ok(TypedType::bool()),
-            TypedBinaryOperator::InfixFunctionCall(_) => {
-                todo!()
+            TypedBinaryOperator::InfixFunctionCall(op) => {
+                todo!("InfixFunctionCall => {}", op)
             }
             kind => {
                 if left.is_integer() && right.is_integer() && left == right {
