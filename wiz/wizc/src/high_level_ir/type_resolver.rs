@@ -371,7 +371,7 @@ impl TypeResolver {
                     .register_to_env(a.name.clone(), EnvValue::from(a.type_.clone()));
                 Result::Ok(a)
             })
-            .collect::<Result<Vec<TypedArgDef>>>()?;
+            .collect::<Result<Vec<_>>>()?;
         let return_type = self.typed_function_return_type(&f)?;
         let fun = TypedFun {
             annotations: f.annotations,
