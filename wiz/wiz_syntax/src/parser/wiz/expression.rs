@@ -1294,7 +1294,12 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::expression::{array_expr, boolean_literal, conjunction_expr, disjunction_expr, equality_expr, expr, floating_point_literal, if_expr, indexing_suffix, integer_literal, literal_expr, name_expr, postfix_suffix, primary_expr, raw_string_literal, return_expr, string_literal, value_arguments};
+    use crate::parser::wiz::expression::{
+        array_expr, boolean_literal, conjunction_expr, disjunction_expr, equality_expr, expr,
+        floating_point_literal, if_expr, indexing_suffix, integer_literal, literal_expr, name_expr,
+        postfix_suffix, primary_expr, raw_string_literal, return_expr, string_literal,
+        value_arguments,
+    };
     use crate::syntax::block::BlockSyntax;
     use crate::syntax::declaration::Decl;
     use crate::syntax::declaration::VarSyntax;
@@ -1515,7 +1520,13 @@ mod tests {
 
     #[test]
     fn test_primary_expr() {
-        assert_eq!(primary_expr("false"), Ok(("", Expr::Literal(LiteralSyntax::Boolean(TokenSyntax::from("false"))))))
+        assert_eq!(
+            primary_expr("false"),
+            Ok((
+                "",
+                Expr::Literal(LiteralSyntax::Boolean(TokenSyntax::from("false")))
+            ))
+        )
     }
 
     #[test]
