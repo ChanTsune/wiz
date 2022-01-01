@@ -419,16 +419,16 @@ impl TypeResolver {
         let initializers = initializers
             .into_iter()
             .map(|i| self.typed_initializer(i))
-            .collect::<Result<Vec<TypedInitializer>>>()?;
+            .collect::<Result<Vec<_>>>()?;
         let stored_properties = stored_properties
             .into_iter()
             .map(|s| self.typed_stored_property(s))
-            .collect::<Result<Vec<TypedStoredProperty>>>()?;
+            .collect::<Result<Vec<_>>>()?;
         let computed_properties = computed_properties.into_iter().collect();
         let member_functions = member_functions
             .into_iter()
             .map(|m| self.typed_member_function(m))
-            .collect::<Result<Vec<TypedMemberFunction>>>()?;
+            .collect::<Result<Vec<_>>>()?;
         self.context.clear_current_type();
         Result::Ok(TypedStruct {
             annotations,
@@ -485,7 +485,7 @@ impl TypeResolver {
                         .register_to_env(a.name.clone(), EnvValue::from(a.type_.clone()));
                     Result::Ok(a)
                 })
-                .collect::<Result<Vec<TypedArgDef>>>()?,
+                .collect::<Result<Vec<_>>>()?,
             type_params: mf.type_params,
             body: match mf.body {
                 None => None,
