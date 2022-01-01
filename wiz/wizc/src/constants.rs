@@ -1,4 +1,3 @@
-pub(crate) const UNSAFE_POINTER: &str = "UnsafePointer";
 // primitive types
 pub(crate) const INT8: &str = "Int8"; // "i8";
 pub(crate) const INT16: &str = "Int16"; // "i16";

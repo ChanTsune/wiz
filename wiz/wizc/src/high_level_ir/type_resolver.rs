@@ -681,21 +681,7 @@ impl TypeResolver {
         if let TypedType::Value(v) = target_type {
             match v {
                 TypedValueType::Value(v) => {
-                    if v.is_unsafe_pointer() {
-                        if let Some(mut ags) = v.type_args {
-                            if ags.len() == 1 {
-                                return Result::Ok(TypedSubscript {
-                                    target: Box::new(target),
-                                    indexes: s
-                                        .indexes
-                                        .into_iter()
-                                        .map(|i| self.expr(i))
-                                        .collect::<Result<Vec<TypedExpr>>>()?,
-                                    type_: Some(ags.remove(0)),
-                                });
-                            }
-                        }
-                    } else if v.is_string() {
+                    if v.is_string() {
                         return Result::Ok(TypedSubscript {
                             target: Box::new(target),
                             indexes: s
