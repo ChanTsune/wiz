@@ -226,8 +226,7 @@ impl TypeResolver {
                     .full_type_name(TypedType::Function(Box::new(TypedFunctionType {
                         arguments: ini
                             .args
-                            .clone()
-                            .into_iter()
+                            .iter()
                             .map(|a| a.to_arg_type())
                             .collect(),
                         return_type: this_type.clone(),

@@ -486,11 +486,11 @@ impl ResolverContext {
                 todo!("InfixFunctionCall => {}", op)
             }
             kind => {
-                if left.is_integer() && right.is_integer() && left == right {
-                    Ok(left)
-                } else if left.is_floating_point() && right.is_floating_point() && left == right {
-                    Ok(left)
-                } else if left.is_pointer_type() && right.is_integer() {
+                let is_both_integer = left.is_integer() && right.is_integer();
+                let is_both_float = left.is_floating_point() && right.is_floating_point();
+                let is_both_same = left == right;
+                let is_pointer_op = left.is_pointer_type() && right.is_integer();
+                if (is_both_same && (is_both_integer || is_both_float)) || is_pointer_op {
                     Ok(left)
                 } else {
                     let key = (kind, left, right);

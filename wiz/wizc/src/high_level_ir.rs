@@ -224,10 +224,7 @@ impl Ast2HLIR {
             .into_iter()
             .map(|a| self.arg_def(a.element))
             .collect();
-        let body = match f.body {
-            None => None,
-            Some(b) => Some(self.fun_body(b)),
-        };
+        let body = f.body.map(|b|self.fun_body(b));
 
         TypedFun {
             annotations: self.annotations(f.annotations),
@@ -251,11 +248,8 @@ impl Ast2HLIR {
                     .collect()
             }),
             arg_defs: args,
-            body: body,
-            return_type: match f.return_type {
-                Some(type_name) => Some(self.type_(type_name)),
-                None => None,
-            },
+            body,
+            return_type: f.return_type.map(|t|self.type_(t)),
         }
     }
 

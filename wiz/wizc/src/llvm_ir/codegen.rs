@@ -87,7 +87,7 @@ impl<'ctx> CodeGen<'ctx> {
             None => self
                 .module
                 .get_function(name)
-                .map(|f| AnyValueEnum::FunctionValue(f)),
+                .map(AnyValueEnum::FunctionValue),
         }
     }
 
@@ -1099,12 +1099,10 @@ impl<'ctx> CodeGen<'ctx> {
     pub fn file(&mut self, f: MLFile) {
         // detect type
         for d in f.body.iter() {
-            match d {
-                MLDecl::Struct(s) => {
+            if let
+                MLDecl::Struct(s) = d {
                     self.context.opaque_struct_type(&*s.name);
                 }
-                _ => { /* do noting */ }
-            }
         }
         for d in f.body {
             self.decl(d);

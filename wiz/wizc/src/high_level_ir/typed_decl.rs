@@ -46,10 +46,10 @@ pub struct TypedArgDef {
 }
 
 impl TypedArgDef {
-    pub(crate) fn to_arg_type(self) -> TypedArgType {
+    pub(crate) fn to_arg_type(&self) -> TypedArgType {
         TypedArgType {
-            label: self.label,
-            typ: self.type_,
+            label: self.label.clone(),
+            typ: self.type_.clone(),
         }
     }
 }
@@ -105,8 +105,7 @@ impl TypedFun {
             TypedType::Function(Box::new(TypedFunctionType {
                 arguments: self
                     .arg_defs
-                    .clone()
-                    .into_iter()
+                    .iter()
                     .map(|a| a.to_arg_type())
                     .collect(),
                 return_type,
@@ -121,8 +120,7 @@ impl TypedMemberFunction {
             Some(return_type) => Some(TypedType::Function(Box::new(TypedFunctionType {
                 arguments: self
                     .arg_defs
-                    .clone()
-                    .into_iter()
+                    .iter()
                     .map(|a| a.to_arg_type())
                     .collect(),
                 return_type: return_type.clone(),
