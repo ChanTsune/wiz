@@ -570,13 +570,31 @@ impl TypeResolver {
         type_annotation: Option<TypedType>,
     ) -> Result<TypedLiteral> {
         Ok(match l {
-            TypedLiteral::Integer { value, type_ } => TypedLiteral::Integer { value, type_:if type_.is_some() { type_ } else if type_annotation.is_some() { type_annotation } else { Some(TypedType::int64()) } },
-            TypedLiteral::FloatingPoint { value, type_ } => {
-                TypedLiteral::FloatingPoint { value, type_: if type_.is_some() { type_ } else if type_annotation.is_some() { type_annotation } else { Some(TypedType::double()) }}
-            }
+            TypedLiteral::Integer { value, type_ } => TypedLiteral::Integer {
+                value,
+                type_: if type_.is_some() {
+                    type_
+                } else if type_annotation.is_some() {
+                    type_annotation
+                } else {
+                    Some(TypedType::int64())
+                },
+            },
+            TypedLiteral::FloatingPoint { value, type_ } => TypedLiteral::FloatingPoint {
+                value,
+                type_: if type_.is_some() {
+                    type_
+                } else if type_annotation.is_some() {
+                    type_annotation
+                } else {
+                    Some(TypedType::double())
+                },
+            },
             TypedLiteral::String { value, type_ } => TypedLiteral::String { value, type_ },
             TypedLiteral::Boolean { value, type_ } => TypedLiteral::Boolean { value, type_ },
-            TypedLiteral::NullLiteral { type_:_ } => TypedLiteral::NullLiteral { type_: type_annotation },
+            TypedLiteral::NullLiteral { type_: _ } => TypedLiteral::NullLiteral {
+                type_: type_annotation,
+            },
         })
     }
 
