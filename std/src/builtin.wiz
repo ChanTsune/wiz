@@ -45,3 +45,19 @@ fun print(_ item: *Int64) {
 fun println(_ item: *Int64) {
     println(item as Int64)
 }
+
+fun print(_ item: Bool) {
+    if item {
+        print("true")
+    } else {
+        print("false")
+    }
+}
+
+fun println(_ item: Bool) {
+    if item {
+        println("true")
+    } else {
+        println("false")
+    }
+}
