@@ -694,14 +694,50 @@ impl<'ctx> CodeGen<'ctx> {
         match target {
             // AnyValueEnum::ArrayValue(_) => {}
             AnyValueEnum::IntValue(i) => {
-                let ty = self.ml_type_to_type(t.type_).into_int_type();
-                let t = self.builder.build_int_cast(i, ty, "int_cast");
-                t.as_any_value_enum()
+                match self.ml_type_to_type(t.type_) {
+                    AnyTypeEnum::ArrayType(_) => {todo!()}
+                    AnyTypeEnum::FloatType(ty) => {
+                        if target_type.is_signed_integer() {
+                            self.builder.build_signed_int_to_float(i, ty, "sint_to_float")
+                        } else {
+                            self.builder.build_unsigned_int_to_float(i, ty, "uint_to_float")
+                        }.as_any_value_enum()
+                    }
+                    AnyTypeEnum::FunctionType(_) => {todo!()}
+                    AnyTypeEnum::IntType(ty) => {
+                        let t = self.builder.build_int_cast(i, ty, "int_cast");
+                        t.as_any_value_enum()
+                    }
+                    AnyTypeEnum::PointerType(ty) => {
+                        let t = self.builder.build_int_to_ptr(i, ty, "int_to_ptr");
+                        t.as_any_value_enum()
+                    }
+                    AnyTypeEnum::StructType(_) => {todo!()}
+                    AnyTypeEnum::VectorType(_) => {todo!()}
+                    AnyTypeEnum::VoidType(_) => {todo!()}
+                }
             }
             AnyValueEnum::FloatValue(f) => {
-                let ty = self.ml_type_to_type(t.type_).into_float_type();
-                let t = self.builder.build_float_cast(f, ty, "float_cast");
-                t.as_any_value_enum()
+                let is_signed = t.type_.is_signed_integer();
+                match self.ml_type_to_type(t.type_) {
+                    AnyTypeEnum::ArrayType(_) => {todo!()}
+                    AnyTypeEnum::FloatType(ty) => {
+                        let t = self.builder.build_float_cast(f, ty, "float_cast");
+                        t.as_any_value_enum()
+                    }
+                    AnyTypeEnum::FunctionType(_) => {todo!()}
+                    AnyTypeEnum::IntType(ty) => {
+                        if is_signed {
+                            self.builder.build_float_to_signed_int(f, ty, "float_to_int")
+                        } else {
+                            self.builder.build_float_to_unsigned_int(f, ty, "float_to_uint")
+                        }.as_any_value_enum()
+                    }
+                    AnyTypeEnum::PointerType(_) => {todo!()}
+                    AnyTypeEnum::StructType(_) => {todo!()}
+                    AnyTypeEnum::VectorType(_) => {todo!()}
+                    AnyTypeEnum::VoidType(_) => {todo!()}
+                }
             }
             // AnyValueEnum::PhiValue(_) => {}
             // AnyValueEnum::FunctionValue(_) => {}
