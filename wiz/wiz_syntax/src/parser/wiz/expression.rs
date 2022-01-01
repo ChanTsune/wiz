@@ -327,8 +327,8 @@ where
         return_expr,
         if_expr,
         array_expr,
-        name_expr,
         literal_expr,
+        name_expr,
         parenthesized_expr,
     ))(s)
 }
