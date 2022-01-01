@@ -18,7 +18,6 @@ use crate::high_level_ir::typed_type::{
 use core::result;
 use std::collections::HashMap;
 use std::error::Error;
-use std::process::exit;
 use wiz_mir::builder::{BuilderError, FunBuilder, MLIRModule};
 use wiz_mir::expr::{
     MLArray, MLBinOp, MLBinOpKind, MLBlock, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLMember,
@@ -227,15 +226,12 @@ impl HLIR2MLIR {
                 .into_iter()
                 .map(|a| match self.type_(a.typ) {
                     MLType::Value(v) => v,
-                    MLType::Function(_) => exit(-9),
+                    MLType::Function(f) => todo!("{:?}", f),
                 })
                 .collect(),
             return_type: match self.type_(t.return_type) {
                 MLType::Value(v) => v,
-                MLType::Function(f) => {
-                    println!("{:?}", f);
-                    exit(-9)
-                }
+                MLType::Function(f) => todo!("{:?}", f),
             },
         }
     }
@@ -339,7 +335,7 @@ impl HLIR2MLIR {
                 condition: self.expr(w.condition),
                 block: self.block(w.block),
             },
-            TypedLoopStmt::For(_) => exit(-1),
+            TypedLoopStmt::For(_) => todo!(),
         }
     }
 
@@ -360,10 +356,10 @@ impl HLIR2MLIR {
                     self.module._add_function(FunBuilder::from(f));
                 }
             }
-            TypedDecl::Class => exit(-1),
-            TypedDecl::Enum => exit(-1),
-            TypedDecl::Protocol => exit(-1),
-            TypedDecl::Extension => exit(-1),
+            TypedDecl::Class => todo!(),
+            TypedDecl::Enum => todo!(),
+            TypedDecl::Protocol => todo!(),
+            TypedDecl::Extension => todo!(),
         };
         Ok(())
     }
@@ -650,10 +646,7 @@ impl HLIR2MLIR {
                         todo!()
                     }
                 },
-                _ => {
-                    eprintln!("function pointer detected");
-                    exit(-1)
-                }
+                t => panic!("function pointer detected. {:?}", t),
             }
         } else if t.is_string() {
             MLExpr::PrimitiveSubscript(MLSubscript {
