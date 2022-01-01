@@ -178,41 +178,35 @@ impl HLIR2MLIR {
     fn value_type(&self, t: TypedValueType) -> MLValueType {
         match t {
             TypedValueType::Value(t) => {
-                if t.is_unsafe_pointer() {
-                    match self.type_(t.type_args.unwrap()[0].clone()) {
-                        v => MLValueType::Pointer(Box::new(v)),
+                let mut pkg = t.package.clone().into_resolved().names;
+                if pkg.is_empty() {
+                    match &*t.name {
+                        constants::NOTING => MLValueType::Primitive(MLPrimitiveType::Noting),
+                        constants::UNIT => MLValueType::Primitive(MLPrimitiveType::Unit),
+                        constants::INT8 => MLValueType::Primitive(MLPrimitiveType::Int8),
+                        constants::UINT8 => MLValueType::Primitive(MLPrimitiveType::UInt8),
+                        constants::INT16 => MLValueType::Primitive(MLPrimitiveType::Int16),
+                        constants::UINT16 => MLValueType::Primitive(MLPrimitiveType::UInt16),
+                        constants::INT32 => MLValueType::Primitive(MLPrimitiveType::Int32),
+                        constants::UINT32 => MLValueType::Primitive(MLPrimitiveType::UInt32),
+                        constants::INT64 => MLValueType::Primitive(MLPrimitiveType::Int64),
+                        constants::UINT64 => MLValueType::Primitive(MLPrimitiveType::UInt64),
+                        constants::INT128 => MLValueType::Primitive(MLPrimitiveType::Int128),
+                        constants::UINT128 => MLValueType::Primitive(MLPrimitiveType::UInt128),
+                        constants::SIZE => MLValueType::Primitive(MLPrimitiveType::Size),
+                        constants::USIZE => MLValueType::Primitive(MLPrimitiveType::USize),
+                        constants::BOOL => MLValueType::Primitive(MLPrimitiveType::Bool),
+                        constants::F32 => MLValueType::Primitive(MLPrimitiveType::Float),
+                        constants::F64 => MLValueType::Primitive(MLPrimitiveType::Double),
+                        constants::STRING => MLValueType::Primitive(MLPrimitiveType::String),
+                        other => {
+                            pkg.push(String::from(other));
+                            MLValueType::Struct(pkg.join("::"))
+                        }
                     }
                 } else {
-                    let mut pkg = t.package.clone().into_resolved().names;
-                    if pkg.is_empty() {
-                        match &*t.name {
-                            constants::NOTING => MLValueType::Primitive(MLPrimitiveType::Noting),
-                            constants::UNIT => MLValueType::Primitive(MLPrimitiveType::Unit),
-                            constants::INT8 => MLValueType::Primitive(MLPrimitiveType::Int8),
-                            constants::UINT8 => MLValueType::Primitive(MLPrimitiveType::UInt8),
-                            constants::INT16 => MLValueType::Primitive(MLPrimitiveType::Int16),
-                            constants::UINT16 => MLValueType::Primitive(MLPrimitiveType::UInt16),
-                            constants::INT32 => MLValueType::Primitive(MLPrimitiveType::Int32),
-                            constants::UINT32 => MLValueType::Primitive(MLPrimitiveType::UInt32),
-                            constants::INT64 => MLValueType::Primitive(MLPrimitiveType::Int64),
-                            constants::UINT64 => MLValueType::Primitive(MLPrimitiveType::UInt64),
-                            constants::INT128 => MLValueType::Primitive(MLPrimitiveType::Int128),
-                            constants::UINT128 => MLValueType::Primitive(MLPrimitiveType::UInt128),
-                            constants::SIZE => MLValueType::Primitive(MLPrimitiveType::Size),
-                            constants::USIZE => MLValueType::Primitive(MLPrimitiveType::USize),
-                            constants::BOOL => MLValueType::Primitive(MLPrimitiveType::Bool),
-                            constants::F32 => MLValueType::Primitive(MLPrimitiveType::Float),
-                            constants::F64 => MLValueType::Primitive(MLPrimitiveType::Double),
-                            constants::STRING => MLValueType::Primitive(MLPrimitiveType::String),
-                            other => {
-                                pkg.push(String::from(other));
-                                MLValueType::Struct(pkg.join("::"))
-                            }
-                        }
-                    } else {
-                        pkg.push(t.name);
-                        MLValueType::Struct(pkg.join("::"))
-                    }
+                    pkg.push(t.name);
+                    MLValueType::Struct(pkg.join("::"))
                 }
             }
             TypedValueType::Array(t, len) => {

@@ -1,4 +1,3 @@
-use crate::constants::UNSAFE_POINTER;
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_expr::TypedBinaryOperator;
@@ -217,18 +216,6 @@ impl From<NameSpace> for EnvValue {
 impl ResolverContext {
     pub(crate) fn new() -> Self {
         let mut ns = NameSpace::new(vec![]);
-
-        let mut rs_for_pointer = ResolverStruct::new();
-        let mut tp_map_for_pointer = HashMap::new();
-        tp_map_for_pointer.insert(
-            String::from("T"),
-            ResolverTypeParam {
-                type_constraints: vec![],
-                type_params: None,
-            },
-        );
-        rs_for_pointer.type_params = Some(tp_map_for_pointer);
-        ns.register_type(String::from(UNSAFE_POINTER), rs_for_pointer);
 
         for t in TypedType::builtin_types() {
             match &t {

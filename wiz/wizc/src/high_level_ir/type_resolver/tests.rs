@@ -951,7 +951,7 @@ fn test_binop() {
 #[test]
 fn test_subscript() {
     let source = r"
-        fun get_first(_ p:UnsafePointer<UInt8>) = p[0]
+        fun get_first(_ p: *UInt8) = p[0]
         ";
 
     check(

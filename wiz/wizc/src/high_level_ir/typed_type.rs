@@ -1,4 +1,4 @@
-use crate::constants::{self, UNSAFE_POINTER};
+use crate::constants;
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub enum TypedPackage {
@@ -93,13 +93,6 @@ impl TypedValueType {
 
     pub fn is_unsafe_pointer(&self) -> bool {
         matches!(self, Self::Pointer(_))
-            || match self {
-                TypedValueType::Value(v) => v.is_unsafe_pointer(),
-                TypedValueType::Array(_, _) => false,
-                TypedValueType::Tuple(_) => false,
-                TypedValueType::Pointer(_) => true,
-                TypedValueType::Reference(_) => false,
-            }
     }
 
     pub fn is_array(&self) -> bool {
@@ -282,15 +275,6 @@ impl TypedNamedValueType {
         Self::builtin(constants::STRING)
     }
 
-    pub(crate) fn is_unsafe_pointer(&self) -> bool {
-        self.name == UNSAFE_POINTER
-            && if let TypedPackage::Resolved(pkg) = &self.package {
-                pkg.is_global()
-            } else {
-                false
-            }
-    }
-
     pub(crate) fn is_string(&self) -> bool {
         Self::string().eq(self)
     }
@@ -379,11 +363,7 @@ impl TypedType {
     }
 
     pub fn unsafe_pointer(typ: TypedType) -> Self {
-        Self::Value(TypedValueType::Value(TypedNamedValueType {
-            package: TypedPackage::Resolved(Package::global()),
-            name: UNSAFE_POINTER.to_string(),
-            type_args: Some(vec![typ]),
-        }))
+        Self::Value(TypedValueType::Pointer(Box::new(typ)))
     }
 
     pub fn signed_integer_types() -> Vec<TypedType> {

@@ -39,7 +39,14 @@ impl MLValueType {
     }
 
     pub fn is_struct(&self) -> bool {
-        matches!(self, MLValueType::Struct(_))
+        matches!(self, Self::Struct(_))
+    }
+
+    pub fn is_signed_integer(&self) -> bool {
+        match self {
+            Self::Primitive(p) => p.is_signed_integer(),
+            _ => false,
+        }
     }
 }
 
@@ -55,7 +62,7 @@ impl MLFunctionType {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Clone, Hash)]
+#[derive(Debug, Eq, PartialEq, Clone, Copy, Hash)]
 pub enum MLPrimitiveType {
     Noting,
     Unit,
@@ -75,6 +82,15 @@ pub enum MLPrimitiveType {
     Double,
     Bool,
     String,
+}
+
+impl MLPrimitiveType {
+    pub fn is_signed_integer(&self) -> bool {
+        matches!(
+            self,
+            Self::Int8 | Self::Int16 | Self::Int32 | Self::Int64 | Self::Int128 | Self::Size
+        )
+    }
 }
 
 impl ToString for MLPrimitiveType {

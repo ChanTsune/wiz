@@ -91,5 +91,6 @@ fun file_io() {
 }
 
 fun main() {
-    vector_methods()
+    println(true)
+    println(false)
 }
