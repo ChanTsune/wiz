@@ -162,9 +162,9 @@ impl<'ctx> CodeGen<'ctx> {
                         MLPrimitiveType::Int128 | MLPrimitiveType::UInt128 => {
                             self.context.i128_type()
                         }
-                        MLPrimitiveType::Size | MLPrimitiveType::USize => {
-                            self.context.ptr_sized_int_type(self.execution_engine.get_target_data(), None)
-                        }
+                        MLPrimitiveType::Size | MLPrimitiveType::USize => self
+                            .context
+                            .ptr_sized_int_type(self.execution_engine.get_target_data(), None),
                         _ => panic!("Invalid MLIR Literal {:?}", name),
                     },
                     p => panic!("Invalid MLIR Literal {:?}", p),
@@ -209,7 +209,7 @@ impl<'ctx> CodeGen<'ctx> {
             MLLiteral::Struct { type_ } => {
                 let struct_type = self.module.get_struct_type(&*match type_ {
                     MLValueType::Struct(name) => name,
-                    p => panic!("Invalid Struct Literal {:?}", p)
+                    p => panic!("Invalid Struct Literal {:?}", p),
                 });
                 let struct_type = struct_type.unwrap();
                 struct_type.const_zero().as_any_value_enum()
@@ -529,7 +529,7 @@ impl<'ctx> CodeGen<'ctx> {
             // AnyValueEnum::StructValue(_) => {}
             // AnyValueEnum::VectorValue(_) => {}
             // AnyValueEnum::InstructionValue(_) => {}
-            t => panic!("unsupported subscript {:?}", t)
+            t => panic!("unsupported subscript {:?}", t),
         }
     }
 
@@ -543,7 +543,7 @@ impl<'ctx> CodeGen<'ctx> {
                 eprintln!("never execution branch executed.");
                 panic!("struct member can not access directly.");
             }
-            _ => panic!("never execution branch executed.")
+            _ => panic!("never execution branch executed."),
         };
 
         let ep = self
@@ -880,7 +880,7 @@ impl<'ctx> CodeGen<'ctx> {
                 self.set_to_environment(name, ptr.as_any_value_enum());
                 self.builder.build_store(ptr, a).as_any_value_enum()
             }
-            t => panic!("undefined root executed {:?}", t)
+            t => panic!("undefined root executed {:?}", t),
         }
     }
 
