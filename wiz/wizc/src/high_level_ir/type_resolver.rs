@@ -299,10 +299,13 @@ impl TypeResolver {
             type_,
             value,
         } = t;
-        let value = self.expr(value, match type_ {
-            Some(type_) => Some(self.context.full_type_name(type_)?),
-            None => None
-        })?;
+        let value = self.expr(
+            value,
+            match type_ {
+                Some(type_) => Some(self.context.full_type_name(type_)?),
+                None => None,
+            },
+        )?;
         let v = TypedVar {
             annotations,
             package: TypedPackage::Resolved(Package::new()),
