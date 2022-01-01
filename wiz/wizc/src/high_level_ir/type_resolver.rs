@@ -529,7 +529,7 @@ impl TypeResolver {
     pub fn expr(&mut self, e: TypedExpr, type_annotation: Option<TypedType>) -> Result<TypedExpr> {
         Result::Ok(match e {
             TypedExpr::Name(n) => TypedExpr::Name(self.typed_name(n)?),
-            TypedExpr::Literal(l) => TypedExpr::Literal(l),
+            TypedExpr::Literal(l) => TypedExpr::Literal(self.typed_literal(l, type_annotation)?),
             TypedExpr::BinOp(b) => TypedExpr::BinOp(self.typed_binop(b)?),
             TypedExpr::UnaryOp(u) => TypedExpr::UnaryOp(self.typed_unary_op(u)?),
             TypedExpr::Subscript(s) => TypedExpr::Subscript(self.typed_subscript(s)?),
@@ -561,6 +561,16 @@ impl TypeResolver {
             package,
             type_: Some(type_),
             name: n.name,
+        })
+    }
+
+    fn typed_literal(&mut self, l: TypedLiteral, type_annotation: Option<TypedType>) -> Result<TypedLiteral> {
+        Ok(match l {
+            TypedLiteral::Integer { value, type_ } => {TypedLiteral::Integer { value, type_ }}
+            TypedLiteral::FloatingPoint { value, type_ } => {TypedLiteral::FloatingPoint { value, type_ }}
+            TypedLiteral::String { value, type_ } => {TypedLiteral::String { value, type_ }}
+            TypedLiteral::Boolean { value, type_ } => {TypedLiteral::Boolean { value, type_ }}
+            TypedLiteral::NullLiteral { type_ } => {TypedLiteral::NullLiteral { type_ }}
         })
     }
 
