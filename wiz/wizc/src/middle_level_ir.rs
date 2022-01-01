@@ -231,7 +231,7 @@ impl HLIR2MLIR {
                 .collect(),
             return_type: match self.type_(t.return_type) {
                 MLType::Value(v) => v,
-                MLType::Function(f) => todo!("{:?}", f)
+                MLType::Function(f) => todo!("{:?}", f),
             },
         }
     }
@@ -646,7 +646,7 @@ impl HLIR2MLIR {
                         todo!()
                     }
                 },
-                t => panic!("function pointer detected. {:?}", t)
+                t => panic!("function pointer detected. {:?}", t),
             }
         } else if t.is_string() {
             MLExpr::PrimitiveSubscript(MLSubscript {
