@@ -495,11 +495,11 @@ impl Ast2HLIR {
         match literal {
             LiteralSyntax::Integer(value) => TypedLiteral::Integer {
                 value: value.token,
-                type_: Some(TypedType::int64()),
+                type_: None,
             },
             LiteralSyntax::FloatingPoint(value) => TypedLiteral::FloatingPoint {
                 value: value.token,
-                type_: Some(TypedType::double()),
+                type_: None,
             },
             LiteralSyntax::String {
                 open_quote: _,
@@ -693,16 +693,11 @@ impl Ast2HLIR {
             else_body,
         } = i;
         let block = self.block(body);
-        let type_ = if else_body == None {
-            TypedType::noting()
-        } else {
-            block.type_().unwrap_or_else(TypedType::noting)
-        };
         TypedIf {
             condition: Box::new(self.expr(*condition)),
             body: block,
             else_body: else_body.map(|b| self.block(b.body)),
-            type_: Some(type_),
+            type_: None,
         }
     }
 

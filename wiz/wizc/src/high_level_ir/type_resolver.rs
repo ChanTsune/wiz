@@ -570,13 +570,13 @@ impl TypeResolver {
         type_annotation: Option<TypedType>,
     ) -> Result<TypedLiteral> {
         Ok(match l {
-            TypedLiteral::Integer { value, type_ } => TypedLiteral::Integer { value, type_ },
+            TypedLiteral::Integer { value, type_ } => TypedLiteral::Integer { value, type_:if type_.is_some() { type_ } else if type_annotation.is_some() { type_annotation } else { Some(TypedType::int64()) } },
             TypedLiteral::FloatingPoint { value, type_ } => {
-                TypedLiteral::FloatingPoint { value, type_ }
+                TypedLiteral::FloatingPoint { value, type_: if type_.is_some() { type_ } else if type_annotation.is_some() { type_annotation } else { Some(TypedType::double()) }}
             }
             TypedLiteral::String { value, type_ } => TypedLiteral::String { value, type_ },
             TypedLiteral::Boolean { value, type_ } => TypedLiteral::Boolean { value, type_ },
-            TypedLiteral::NullLiteral { type_ } => TypedLiteral::NullLiteral { type_ },
+            TypedLiteral::NullLiteral { type_:_ } => TypedLiteral::NullLiteral { type_: type_annotation },
         })
     }
 
@@ -824,12 +824,16 @@ impl TypeResolver {
             Some(b) => Some(self.typed_block(b)?),
             None => None,
         };
-        let type_ = i.type_;
+        let type_ = if let Some(else_body) = &else_body {
+            else_body.type_().unwrap_or_else(TypedType::noting)
+        } else {
+            TypedType::noting()
+        };
         Result::Ok(TypedIf {
             condition,
             body,
             else_body,
-            type_,
+            type_: Some(type_),
         })
     }
 
