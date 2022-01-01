@@ -564,13 +564,19 @@ impl TypeResolver {
         })
     }
 
-    fn typed_literal(&mut self, l: TypedLiteral, type_annotation: Option<TypedType>) -> Result<TypedLiteral> {
+    fn typed_literal(
+        &mut self,
+        l: TypedLiteral,
+        type_annotation: Option<TypedType>,
+    ) -> Result<TypedLiteral> {
         Ok(match l {
-            TypedLiteral::Integer { value, type_ } => {TypedLiteral::Integer { value, type_ }}
-            TypedLiteral::FloatingPoint { value, type_ } => {TypedLiteral::FloatingPoint { value, type_ }}
-            TypedLiteral::String { value, type_ } => {TypedLiteral::String { value, type_ }}
-            TypedLiteral::Boolean { value, type_ } => {TypedLiteral::Boolean { value, type_ }}
-            TypedLiteral::NullLiteral { type_ } => {TypedLiteral::NullLiteral { type_ }}
+            TypedLiteral::Integer { value, type_ } => TypedLiteral::Integer { value, type_ },
+            TypedLiteral::FloatingPoint { value, type_ } => {
+                TypedLiteral::FloatingPoint { value, type_ }
+            }
+            TypedLiteral::String { value, type_ } => TypedLiteral::String { value, type_ },
+            TypedLiteral::Boolean { value, type_ } => TypedLiteral::Boolean { value, type_ },
+            TypedLiteral::NullLiteral { type_ } => TypedLiteral::NullLiteral { type_ },
         })
     }
 
