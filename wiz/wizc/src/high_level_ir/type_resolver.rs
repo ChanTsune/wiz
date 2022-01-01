@@ -292,7 +292,12 @@ impl TypeResolver {
 
     pub fn typed_var(&mut self, t: TypedVar) -> Result<TypedVar> {
         let TypedVar {
-            annotations, package, is_mut, name, type_, value
+            annotations,
+            package,
+            is_mut,
+            name,
+            type_,
+            value,
         } = t;
         let value = self.expr(value, None)?;
         let v_type = match (type_, value.type_()) {
@@ -343,12 +348,14 @@ impl TypeResolver {
                     f.name
                 ))),
                 Some(TypedFunBody::Block(_)) => Result::Ok(TypedType::unit()),
-                Some(TypedFunBody::Expr(e)) => self.expr(e.clone(), None)?.type_().ok_or_else(|| {
-                    ResolverError::from(format!(
-                        "Can not resolve expr type at function {:?}",
-                        f.name
-                    ))
-                }),
+                Some(TypedFunBody::Expr(e)) => {
+                    self.expr(e.clone(), None)?.type_().ok_or_else(|| {
+                        ResolverError::from(format!(
+                            "Can not resolve expr type at function {:?}",
+                            f.name
+                        ))
+                    })
+                }
             },
             Some(b) => self.context.full_type_name(b.clone()),
         }
