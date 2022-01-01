@@ -299,34 +299,16 @@ impl TypeResolver {
             type_,
             value,
         } = t;
-        let value = self.expr(value, None)?;
-        let v_type = match (type_, value.type_()) {
-            (Some(vt), Some(et)) => {
-                if vt != et {
-                    Result::Err(ResolverError::from(format!(
-                        "Type unmatched {:?} != {:?}",
-                        vt, et
-                    )))
-                } else {
-                    Result::Ok(et)
-                }
-            }
-            (Some(vt), None) => {
-                eprintln!("maybe invalid type ...");
-                Result::Ok(vt)
-            }
-            (None, Some(et)) => Result::Ok(et),
-            (None, None) => Result::Err(ResolverError::from(format!(
-                "Can not resolve var type {:?}",
-                value
-            ))),
-        }?;
+        let value = self.expr(value, match type_ {
+            Some(type_) => Some(self.context.full_type_name(type_)?),
+            None => None
+        })?;
         let v = TypedVar {
             annotations,
             package: TypedPackage::Resolved(Package::new()),
             is_mut,
             name,
-            type_: Some(v_type),
+            type_: value.type_(),
             value,
         };
         self.context.register_to_env(
