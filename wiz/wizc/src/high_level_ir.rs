@@ -180,7 +180,7 @@ impl Ast2HLIR {
             package: TypedPackage::Raw(Package::new()),
             is_mut: v.mutability_keyword.token == "var",
             name: v.name.token,
-            type_: None,
+            type_: v.type_.map(|t|self.type_(t)),
             value: expr,
         }
     }
