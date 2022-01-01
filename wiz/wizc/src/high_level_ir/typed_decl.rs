@@ -46,10 +46,10 @@ pub struct TypedArgDef {
 }
 
 impl TypedArgDef {
-    pub(crate) fn to_arg_type(self) -> TypedArgType {
+    pub(crate) fn to_arg_type(&self) -> TypedArgType {
         TypedArgType {
-            label: self.label,
-            typ: self.type_,
+            label: self.label.clone(),
+            typ: self.type_.clone(),
         }
     }
 }
@@ -103,12 +103,7 @@ impl TypedFun {
     pub fn type_(&self) -> Option<TypedType> {
         self.return_type.clone().map(|return_type| {
             TypedType::Function(Box::new(TypedFunctionType {
-                arguments: self
-                    .arg_defs
-                    .clone()
-                    .into_iter()
-                    .map(|a| a.to_arg_type())
-                    .collect(),
+                arguments: self.arg_defs.iter().map(|a| a.to_arg_type()).collect(),
                 return_type,
             }))
         })
@@ -119,12 +114,7 @@ impl TypedMemberFunction {
     pub(crate) fn type_(&self) -> Option<TypedType> {
         match &self.return_type {
             Some(return_type) => Some(TypedType::Function(Box::new(TypedFunctionType {
-                arguments: self
-                    .arg_defs
-                    .clone()
-                    .into_iter()
-                    .map(|a| a.to_arg_type())
-                    .collect(),
+                arguments: self.arg_defs.iter().map(|a| a.to_arg_type()).collect(),
                 return_type: return_type.clone(),
             }))),
             None => None,

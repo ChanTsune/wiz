@@ -1196,3 +1196,28 @@ fn test_reference_dereference() {
         },
     )
 }
+
+#[test]
+fn test_toplevel_var() {
+    let source = r"
+    val i: Int32 = 1
+    ";
+    check(
+        source,
+        TypedFile {
+            name: "tests".to_string(),
+            uses: vec![],
+            body: vec![TypedDecl::Var(TypedVar {
+                annotations: Default::default(),
+                package: TypedPackage::Resolved(Package::global()),
+                is_mut: false,
+                name: "i".to_string(),
+                type_: Some(TypedType::int32()),
+                value: TypedExpr::Literal(TypedLiteral::Integer {
+                    value: "1".to_string(),
+                    type_: Some(TypedType::int32()),
+                }),
+            })],
+        },
+    );
+}

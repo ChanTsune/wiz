@@ -224,12 +224,7 @@ impl TypeResolver {
             let type_ =
                 self.context
                     .full_type_name(TypedType::Function(Box::new(TypedFunctionType {
-                        arguments: ini
-                            .args
-                            .clone()
-                            .into_iter()
-                            .map(|a| a.to_arg_type())
-                            .collect(),
+                        arguments: ini.args.iter().map(|a| a.to_arg_type()).collect(),
                         return_type: this_type.clone(),
                     })))?;
             let ns = self.context.get_current_namespace_mut()?;
@@ -291,34 +286,27 @@ impl TypeResolver {
     }
 
     pub fn typed_var(&mut self, t: TypedVar) -> Result<TypedVar> {
-        let value = self.expr(t.value)?;
-        let v_type = match (t.type_, value.type_()) {
-            (Some(vt), Some(et)) => {
-                if vt != et {
-                    Result::Err(ResolverError::from(format!(
-                        "Type unmatched {:?} != {:?}",
-                        vt, et
-                    )))
-                } else {
-                    Result::Ok(et)
-                }
-            }
-            (Some(vt), None) => {
-                eprintln!("maybe invalid type ...");
-                Result::Ok(vt)
-            }
-            (None, Some(et)) => Result::Ok(et),
-            (None, None) => Result::Err(ResolverError::from(format!(
-                "Can not resolve var type {:?}",
-                value
-            ))),
-        }?;
+        let TypedVar {
+            annotations,
+            package,
+            is_mut,
+            name,
+            type_,
+            value,
+        } = t;
+        let value = self.expr(
+            value,
+            match type_ {
+                Some(type_) => Some(self.context.full_type_name(type_)?),
+                None => None,
+            },
+        )?;
         let v = TypedVar {
-            annotations: t.annotations,
+            annotations,
             package: TypedPackage::Resolved(Package::new()),
-            is_mut: t.is_mut,
-            name: t.name,
-            type_: Some(v_type),
+            is_mut,
+            name,
+            type_: value.type_(),
             value,
         };
         self.context.register_to_env(
@@ -340,12 +328,14 @@ impl TypeResolver {
                     f.name
                 ))),
                 Some(TypedFunBody::Block(_)) => Result::Ok(TypedType::unit()),
-                Some(TypedFunBody::Expr(e)) => self.expr(e.clone())?.type_().ok_or_else(|| {
-                    ResolverError::from(format!(
-                        "Can not resolve expr type at function {:?}",
-                        f.name
-                    ))
-                }),
+                Some(TypedFunBody::Expr(e)) => {
+                    self.expr(e.clone(), None)?.type_().ok_or_else(|| {
+                        ResolverError::from(format!(
+                            "Can not resolve expr type at function {:?}",
+                            f.name
+                        ))
+                    })
+                }
             },
             Some(b) => self.context.full_type_name(b.clone()),
         }
@@ -416,16 +406,16 @@ impl TypeResolver {
         let initializers = initializers
             .into_iter()
             .map(|i| self.typed_initializer(i))
-            .collect::<Result<Vec<TypedInitializer>>>()?;
+            .collect::<Result<Vec<_>>>()?;
         let stored_properties = stored_properties
             .into_iter()
             .map(|s| self.typed_stored_property(s))
-            .collect::<Result<Vec<TypedStoredProperty>>>()?;
+            .collect::<Result<Vec<_>>>()?;
         let computed_properties = computed_properties.into_iter().collect();
         let member_functions = member_functions
             .into_iter()
             .map(|m| self.typed_member_function(m))
-            .collect::<Result<Vec<TypedMemberFunction>>>()?;
+            .collect::<Result<Vec<_>>>()?;
         self.context.clear_current_type();
         Result::Ok(TypedStruct {
             annotations,
@@ -482,7 +472,7 @@ impl TypeResolver {
                         .register_to_env(a.name.clone(), EnvValue::from(a.type_.clone()));
                     Result::Ok(a)
                 })
-                .collect::<Result<Vec<TypedArgDef>>>()?,
+                .collect::<Result<Vec<_>>>()?,
             type_params: mf.type_params,
             body: match mf.body {
                 None => None,
@@ -501,7 +491,7 @@ impl TypeResolver {
 
     fn typed_fun_body(&mut self, b: TypedFunBody) -> Result<TypedFunBody> {
         Result::Ok(match b {
-            TypedFunBody::Expr(e) => TypedFunBody::Expr(self.expr(e)?),
+            TypedFunBody::Expr(e) => TypedFunBody::Expr(self.expr(e, None)?),
             TypedFunBody::Block(b) => TypedFunBody::Block(self.typed_block(b)?),
         })
     }
@@ -516,10 +506,10 @@ impl TypeResolver {
         })
     }
 
-    pub fn expr(&mut self, e: TypedExpr) -> Result<TypedExpr> {
+    pub fn expr(&mut self, e: TypedExpr, type_annotation: Option<TypedType>) -> Result<TypedExpr> {
         Result::Ok(match e {
             TypedExpr::Name(n) => TypedExpr::Name(self.typed_name(n)?),
-            TypedExpr::Literal(l) => TypedExpr::Literal(l),
+            TypedExpr::Literal(l) => TypedExpr::Literal(self.typed_literal(l, type_annotation)?),
             TypedExpr::BinOp(b) => TypedExpr::BinOp(self.typed_binop(b)?),
             TypedExpr::UnaryOp(u) => TypedExpr::UnaryOp(self.typed_unary_op(u)?),
             TypedExpr::Subscript(s) => TypedExpr::Subscript(self.typed_subscript(s)?),
@@ -554,6 +544,40 @@ impl TypeResolver {
         })
     }
 
+    fn typed_literal(
+        &mut self,
+        l: TypedLiteral,
+        type_annotation: Option<TypedType>,
+    ) -> Result<TypedLiteral> {
+        Ok(match l {
+            TypedLiteral::Integer { value, type_ } => TypedLiteral::Integer {
+                value,
+                type_: if type_.is_some() {
+                    type_
+                } else if type_annotation.is_some() {
+                    type_annotation
+                } else {
+                    Some(TypedType::int64())
+                },
+            },
+            TypedLiteral::FloatingPoint { value, type_ } => TypedLiteral::FloatingPoint {
+                value,
+                type_: if type_.is_some() {
+                    type_
+                } else if type_annotation.is_some() {
+                    type_annotation
+                } else {
+                    Some(TypedType::double())
+                },
+            },
+            TypedLiteral::String { value, type_ } => TypedLiteral::String { value, type_ },
+            TypedLiteral::Boolean { value, type_ } => TypedLiteral::Boolean { value, type_ },
+            TypedLiteral::NullLiteral { type_: _ } => TypedLiteral::NullLiteral {
+                type_: type_annotation,
+            },
+        })
+    }
+
     pub fn typed_unary_op(&mut self, u: TypedUnaryOp) -> Result<TypedUnaryOp> {
         Result::Ok(match u {
             TypedUnaryOp::Prefix(p) => TypedUnaryOp::Prefix(self.typed_prefix_unary_op(p)?),
@@ -562,7 +586,7 @@ impl TypeResolver {
     }
 
     pub fn typed_prefix_unary_op(&mut self, u: TypedPrefixUnaryOp) -> Result<TypedPrefixUnaryOp> {
-        let target = Box::new(self.expr(*u.target)?);
+        let target = Box::new(self.expr(*u.target, None)?);
         Result::Ok(match &u.operator {
             TypedPrefixUnaryOperator::Negative
             | TypedPrefixUnaryOperator::Positive
@@ -595,7 +619,7 @@ impl TypeResolver {
         &mut self,
         u: TypedPostfixUnaryOp,
     ) -> Result<TypedPostfixUnaryOp> {
-        let target = Box::new(self.expr(*u.target)?);
+        let target = Box::new(self.expr(*u.target, None)?);
         Result::Ok(TypedPostfixUnaryOp {
             operator: u.operator,
             type_: target.type_(),
@@ -604,8 +628,8 @@ impl TypeResolver {
     }
 
     pub fn typed_binop(&mut self, b: TypedBinOp) -> Result<TypedBinOp> {
-        let left = self.expr(*b.left)?;
-        let right = self.expr(*b.right)?;
+        let left = self.expr(*b.left, None)?;
+        let right = self.expr(*b.right, None)?;
         let (left, right) = match (left, right) {
             (
                 TypedExpr::Literal(TypedLiteral::Integer {
@@ -663,7 +687,7 @@ impl TypeResolver {
     }
 
     pub fn typed_instance_member(&mut self, m: TypedInstanceMember) -> Result<TypedInstanceMember> {
-        let target = self.expr(*m.target)?;
+        let target = self.expr(*m.target, None)?;
         let type_ = self
             .context
             .resolve_member_type(target.type_().unwrap(), m.name.clone())?;
@@ -676,7 +700,7 @@ impl TypeResolver {
     }
 
     pub fn typed_subscript(&mut self, s: TypedSubscript) -> Result<TypedSubscript> {
-        let target = self.expr(*s.target)?;
+        let target = self.expr(*s.target, None)?;
         let target_type = target.type_().unwrap();
         if let TypedType::Value(v) = target_type {
             match v {
@@ -687,7 +711,7 @@ impl TypeResolver {
                             indexes: s
                                 .indexes
                                 .into_iter()
-                                .map(|i| self.expr(i))
+                                .map(|i| self.expr(i, None))
                                 .collect::<Result<Vec<_>>>()?,
                             type_: Some(TypedType::uint8()),
                         });
@@ -699,7 +723,7 @@ impl TypeResolver {
                         indexes: s
                             .indexes
                             .into_iter()
-                            .map(|i| self.expr(i))
+                            .map(|i| self.expr(i, None))
                             .collect::<Result<Vec<_>>>()?,
                         type_: Some(*et),
                     })
@@ -713,7 +737,7 @@ impl TypeResolver {
                         indexes: s
                             .indexes
                             .into_iter()
-                            .map(|i| self.expr(i))
+                            .map(|i| self.expr(i, None))
                             .collect::<Result<Vec<_>>>()?,
                         type_: Some(*p),
                     })
@@ -728,7 +752,7 @@ impl TypeResolver {
             indexes: s
                 .indexes
                 .into_iter()
-                .map(|i| self.expr(i))
+                .map(|i| self.expr(i, None))
                 .collect::<Result<Vec<_>>>()?,
             type_: s.type_,
         })
@@ -738,7 +762,7 @@ impl TypeResolver {
         let elements = a
             .elements
             .into_iter()
-            .map(|e| self.expr(e))
+            .map(|e| self.expr(e, None))
             .collect::<Result<Vec<TypedExpr>>>()?;
         let len = elements.len();
         Result::Ok(if let Some(e) = elements.get(0) {
@@ -762,7 +786,7 @@ impl TypeResolver {
     }
 
     pub fn typed_call(&mut self, c: TypedCall) -> Result<TypedCall> {
-        let target = Box::new(self.expr(*c.target)?);
+        let target = Box::new(self.expr(*c.target, None)?);
         let c_type = match target.type_().unwrap() {
             TypedType::Value(v) => {
                 Result::Err(ResolverError::from(format!("{:?} is not callable.", v)))
@@ -786,30 +810,34 @@ impl TypeResolver {
     pub fn typed_call_arg(&mut self, a: TypedCallArg) -> Result<TypedCallArg> {
         Result::Ok(TypedCallArg {
             label: a.label,
-            arg: Box::new(self.expr(*a.arg)?),
+            arg: Box::new(self.expr(*a.arg, None)?),
             is_vararg: a.is_vararg,
         })
     }
 
     pub fn typed_if(&mut self, i: TypedIf) -> Result<TypedIf> {
-        let condition = Box::new(self.expr(*i.condition)?);
+        let condition = Box::new(self.expr(*i.condition, None)?);
         let body = self.typed_block(i.body)?;
         let else_body = match i.else_body {
             Some(b) => Some(self.typed_block(b)?),
             None => None,
         };
-        let type_ = i.type_;
+        let type_ = if let Some(else_body) = &else_body {
+            else_body.type_().unwrap_or_else(TypedType::noting)
+        } else {
+            TypedType::noting()
+        };
         Result::Ok(TypedIf {
             condition,
             body,
             else_body,
-            type_,
+            type_: Some(type_),
         })
     }
 
     pub fn typed_return(&mut self, r: TypedReturn) -> Result<TypedReturn> {
         let value = match r.value {
-            Some(v) => Some(Box::new(self.expr(*v)?)),
+            Some(v) => Some(Box::new(self.expr(*v, None)?)),
             None => None,
         };
         Result::Ok(TypedReturn { value })
@@ -817,7 +845,7 @@ impl TypeResolver {
 
     pub fn typed_type_cast(&mut self, t: TypedTypeCast) -> Result<TypedTypeCast> {
         Result::Ok(TypedTypeCast {
-            target: Box::new(self.expr(*t.target)?),
+            target: Box::new(self.expr(*t.target, None)?),
             is_safe: t.is_safe,
             type_: Some(self.context.full_type_name(t.type_.unwrap())?),
         })
@@ -825,7 +853,7 @@ impl TypeResolver {
 
     pub fn stmt(&mut self, s: TypedStmt) -> Result<TypedStmt> {
         Result::Ok(match s {
-            TypedStmt::Expr(e) => TypedStmt::Expr(self.expr(e)?),
+            TypedStmt::Expr(e) => TypedStmt::Expr(self.expr(e, None)?),
             TypedStmt::Decl(d) => TypedStmt::Decl(self.decl(d)?),
             TypedStmt::Assignment(a) => TypedStmt::Assignment(self.assignment_stmt(a)?),
             TypedStmt::Loop(l) => TypedStmt::Loop(self.typed_loop_stmt(l)?),
@@ -845,8 +873,8 @@ impl TypeResolver {
 
     pub fn typed_assignment(&mut self, a: TypedAssignment) -> Result<TypedAssignment> {
         Result::Ok(TypedAssignment {
-            target: self.expr(a.target)?,
-            value: self.expr(a.value)?,
+            target: self.expr(a.target, None)?,
+            value: self.expr(a.value, None)?,
         })
     }
 
@@ -855,9 +883,9 @@ impl TypeResolver {
         a: TypedAssignmentAndOperation,
     ) -> Result<TypedAssignmentAndOperation> {
         Result::Ok(TypedAssignmentAndOperation {
-            target: self.expr(a.target)?,
+            target: self.expr(a.target, None)?,
             operator: a.operator, // TODO
-            value: self.expr(a.value)?,
+            value: self.expr(a.value, None)?,
         })
     }
 
@@ -870,7 +898,7 @@ impl TypeResolver {
 
     pub fn typed_while_loop_stmt(&mut self, w: TypedWhileLoopStmt) -> Result<TypedWhileLoopStmt> {
         let TypedWhileLoopStmt { condition, block } = w;
-        let condition = self.expr(condition)?;
+        let condition = self.expr(condition, None)?;
         if !condition.type_().unwrap().is_boolean() {
             return Result::Err(ResolverError::from("while loop condition must be boolean"));
         };
@@ -888,7 +916,7 @@ impl TypeResolver {
         } = f;
         Result::Ok(TypedForStmt {
             values,
-            iterator: self.expr(iterator)?,
+            iterator: self.expr(iterator, None)?,
             block: self.typed_block(block)?,
         })
     }

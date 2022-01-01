@@ -180,7 +180,7 @@ impl Ast2HLIR {
             package: TypedPackage::Raw(Package::new()),
             is_mut: v.mutability_keyword.token == "var",
             name: v.name.token,
-            type_: None,
+            type_: v.type_.map(|t| self.type_(t)),
             value: expr,
         }
     }
@@ -224,10 +224,7 @@ impl Ast2HLIR {
             .into_iter()
             .map(|a| self.arg_def(a.element))
             .collect();
-        let body = match f.body {
-            None => None,
-            Some(b) => Some(self.fun_body(b)),
-        };
+        let body = f.body.map(|b| self.fun_body(b));
 
         TypedFun {
             annotations: self.annotations(f.annotations),
@@ -251,11 +248,8 @@ impl Ast2HLIR {
                     .collect()
             }),
             arg_defs: args,
-            body: body,
-            return_type: match f.return_type {
-                Some(type_name) => Some(self.type_(type_name)),
-                None => None,
-            },
+            body,
+            return_type: f.return_type.map(|t| self.type_(t)),
         }
     }
 
@@ -495,11 +489,11 @@ impl Ast2HLIR {
         match literal {
             LiteralSyntax::Integer(value) => TypedLiteral::Integer {
                 value: value.token,
-                type_: Some(TypedType::int64()),
+                type_: None,
             },
             LiteralSyntax::FloatingPoint(value) => TypedLiteral::FloatingPoint {
                 value: value.token,
-                type_: Some(TypedType::double()),
+                type_: None,
             },
             LiteralSyntax::String {
                 open_quote: _,
@@ -693,16 +687,11 @@ impl Ast2HLIR {
             else_body,
         } = i;
         let block = self.block(body);
-        let type_ = if else_body == None {
-            TypedType::noting()
-        } else {
-            block.type_().unwrap_or_else(TypedType::noting)
-        };
         TypedIf {
             condition: Box::new(self.expr(*condition)),
             body: block,
             else_body: else_body.map(|b| self.block(b.body)),
-            type_: Some(type_),
+            type_: None,
         }
     }
 
