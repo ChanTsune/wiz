@@ -1099,10 +1099,9 @@ impl<'ctx> CodeGen<'ctx> {
     pub fn file(&mut self, f: MLFile) {
         // detect type
         for d in f.body.iter() {
-            if let
-                MLDecl::Struct(s) = d {
-                    self.context.opaque_struct_type(&*s.name);
-                }
+            if let MLDecl::Struct(s) = d {
+                self.context.opaque_struct_type(&*s.name);
+            }
         }
         for d in f.body {
             self.decl(d);

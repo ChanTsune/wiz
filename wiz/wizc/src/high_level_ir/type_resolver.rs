@@ -224,11 +224,7 @@ impl TypeResolver {
             let type_ =
                 self.context
                     .full_type_name(TypedType::Function(Box::new(TypedFunctionType {
-                        arguments: ini
-                            .args
-                            .iter()
-                            .map(|a| a.to_arg_type())
-                            .collect(),
+                        arguments: ini.args.iter().map(|a| a.to_arg_type()).collect(),
                         return_type: this_type.clone(),
                     })))?;
             let ns = self.context.get_current_namespace_mut()?;
