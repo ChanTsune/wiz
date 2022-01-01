@@ -44,10 +44,8 @@ impl MLValueType {
 
     pub fn is_signed_integer(&self) -> bool {
         match self {
-            Self::Primitive(p) => {
-                p.is_signed_integer()
-            }
-            _ => false
+            Self::Primitive(p) => p.is_signed_integer(),
+            _ => false,
         }
     }
 }
@@ -88,7 +86,10 @@ pub enum MLPrimitiveType {
 
 impl MLPrimitiveType {
     pub fn is_signed_integer(&self) -> bool {
-        matches!(self, Self::Int8 | Self::Int16 | Self::Int32 | Self::Int64 | Self::Int128 | Self::Size)
+        matches!(
+            self,
+            Self::Int8 | Self::Int16 | Self::Int32 | Self::Int64 | Self::Int128 | Self::Size
+        )
     }
 }
 
