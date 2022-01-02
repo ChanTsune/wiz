@@ -915,7 +915,7 @@ impl<'ctx> CodeGen<'ctx> {
             body,
         } = f;
         let return_type = self.ml_type_to_type(return_type);
-        let args: Vec<BasicTypeEnum<'ctx>> = arg_defs
+        let args: Vec<_> = arg_defs
             .iter()
             .map(|a| {
                 let a = a.type_.clone();
@@ -993,7 +993,7 @@ impl<'ctx> CodeGen<'ctx> {
     pub fn struct_(&mut self, s: MLStruct) -> AnyValueEnum<'ctx> {
         self.ml_context.put_struct(s.clone());
         let struct_ = self.module.get_struct_type(&*s.name).unwrap();
-        let struct_fields: Vec<BasicTypeEnum<'ctx>> = s
+        let struct_fields: Vec<_> = s
             .fields
             .into_iter()
             .map(|f| {
