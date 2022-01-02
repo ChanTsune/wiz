@@ -124,17 +124,7 @@ fn test_return_floating_point() {
     };
     let module_name = &mlfile.name;
     let context = Context::create();
-    let module = context.create_module(module_name);
-    let execution_engine = module
-        .create_jit_execution_engine(OptimizationLevel::None)
-        .unwrap();
-    let mut codegen = CodeGen {
-        context: &context,
-        module,
-        builder: context.create_builder(),
-        execution_engine,
-        ml_context: MLContext::new(),
-    };
+    let mut codegen = CodeGen::new(&context, module_name);
 
     codegen.file(mlfile.clone());
 
@@ -170,17 +160,7 @@ fn test_return_floating_point_literal() {
     };
     let module_name = &mlfile.name;
     let context = Context::create();
-    let module = context.create_module(module_name);
-    let execution_engine = module
-        .create_jit_execution_engine(OptimizationLevel::None)
-        .unwrap();
-    let mut codegen = CodeGen {
-        context: &context,
-        module,
-        builder: context.create_builder(),
-        execution_engine,
-        ml_context: MLContext::new(),
-    };
+    let mut codegen = CodeGen::new(&context, module_name);
 
     codegen.file(mlfile.clone());
 
