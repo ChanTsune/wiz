@@ -183,24 +183,26 @@ fn test_return_global_constant() {
                 is_mute: false,
                 name: "i".to_string(),
                 type_: MLType::Value(MLValueType::Primitive(MLPrimitiveType::UInt8)),
-                value: MLExpr::Literal(MLLiteral::Integer { value: "5".to_string(), type_: MLValueType::Primitive(MLPrimitiveType::UInt8) })
+                value: MLExpr::Literal(MLLiteral::Integer {
+                    value: "5".to_string(),
+                    type_: MLValueType::Primitive(MLPrimitiveType::UInt8),
+                }),
             }),
             MLDecl::Fun(MLFun {
-            modifiers: vec![],
-            name: "test".to_string(),
-            arg_defs: vec![],
-            return_type: MLValueType::Primitive(MLPrimitiveType::UInt8),
-            body: Some(MLFunBody {
-                body: vec![
-                    MLStmt::Expr(MLExpr::Return(MLReturn {
+                modifiers: vec![],
+                name: "test".to_string(),
+                arg_defs: vec![],
+                return_type: MLValueType::Primitive(MLPrimitiveType::UInt8),
+                body: Some(MLFunBody {
+                    body: vec![MLStmt::Expr(MLExpr::Return(MLReturn {
                         value: Some(Box::new(MLExpr::Name(MLName {
                             name: "i".to_string(),
                             type_: MLType::Value(MLValueType::Primitive(MLPrimitiveType::UInt8)),
                         }))),
-                    })),
-                ],
+                    }))],
+                }),
             }),
-        })],
+        ],
     };
     let module_name = &mlfile.name;
     let context = Context::create();
