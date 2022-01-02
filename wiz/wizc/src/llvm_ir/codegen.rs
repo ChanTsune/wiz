@@ -833,13 +833,35 @@ impl<'ctx> CodeGen<'ctx> {
 
     pub fn decl(&mut self, d: MLDecl) -> AnyValueEnum<'ctx> {
         match d {
-            MLDecl::Var(v) => self.var(v),
+            MLDecl::Var(v) => self.global_var(v),
             MLDecl::Fun(f) => self.fun(f),
             MLDecl::Struct(s) => self.struct_(s),
         }
     }
 
-    pub fn var(&mut self, v: MLVar) -> AnyValueEnum<'ctx> {
+    fn global_var(&mut self, v: MLVar) -> AnyValueEnum<'ctx> {
+        let MLVar {
+            is_mute,
+            name,
+            type_,
+            value,
+        } = v;
+        let ty = self.ml_type_to_type(type_.into_value_type());
+        let ty = BasicTypeEnum::try_from(ty).unwrap();
+        let v = self.module.add_global(ty, None, &*name);
+        let value = self.expr(value);
+        let value = BasicValueEnum::try_from(value).unwrap();
+        v.set_initializer(&value);
+        if is_mute {
+            v.set_constant(false)
+        } else {
+            v.set_constant(true)
+        };
+        self.set_to_environment(name, v.as_any_value_enum());
+        v.as_any_value_enum()
+    }
+
+    pub fn local_var(&mut self, v: MLVar) -> AnyValueEnum<'ctx> {
         let MLVar {
             is_mute,
             name,
@@ -986,7 +1008,7 @@ impl<'ctx> CodeGen<'ctx> {
     pub fn stmt(&mut self, s: MLStmt) -> AnyValueEnum<'ctx> {
         match s {
             MLStmt::Expr(expr) => self.expr(expr),
-            MLStmt::Var(decl) => self.var(decl),
+            MLStmt::Var(decl) => self.local_var(decl),
             MLStmt::Assignment(a) => self.assignment_stmt(a),
             MLStmt::Loop(l) => self.loop_stmt(l),
             MLStmt::Return(r) => self.return_expr(r),
