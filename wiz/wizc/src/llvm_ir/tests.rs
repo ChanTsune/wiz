@@ -1,7 +1,6 @@
-use crate::llvm_ir::codegen::{CodeGen, MLContext};
+use crate::llvm_ir::codegen::{CodeGen};
 use inkwell::context::Context;
 use inkwell::execution_engine::JitFunction;
-use inkwell::OptimizationLevel;
 use wiz_mir::expr::{MLExpr, MLLiteral, MLName};
 use wiz_mir::ml_decl::{MLDecl, MLFun, MLFunBody, MLVar};
 use wiz_mir::ml_file::MLFile;
