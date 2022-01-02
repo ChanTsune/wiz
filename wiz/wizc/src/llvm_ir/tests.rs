@@ -1,4 +1,4 @@
-use crate::llvm_ir::codegen::{CodeGen};
+use crate::llvm_ir::codegen::CodeGen;
 use inkwell::context::Context;
 use inkwell::execution_engine::JitFunction;
 use wiz_mir::expr::{MLExpr, MLLiteral, MLName};
