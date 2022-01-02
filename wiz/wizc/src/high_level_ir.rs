@@ -697,7 +697,11 @@ impl Ast2HLIR {
 
     pub fn lambda_syntax(&self, l: LambdaSyntax) -> TypedLambda {
         todo!("{:?}", l);
-        let LambdaSyntax { open:_, stmts: _, close:_ } = l;
+        let LambdaSyntax {
+            open: _,
+            stmts: _,
+            close: _,
+        } = l;
         TypedLambda {
             args: vec![],
             body: TypedBlock { body: vec![] },
