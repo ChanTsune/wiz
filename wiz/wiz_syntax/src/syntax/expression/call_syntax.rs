@@ -105,15 +105,25 @@ impl Syntax for CallArg {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct LambdaSyntax {
+    pub open: TokenSyntax,
     pub stmts: Vec<Stmt>,
+    pub close: TokenSyntax,
 }
 
 impl Syntax for LambdaSyntax {
     fn with_leading_trivia(self, trivia: Trivia) -> Self {
-        todo!()
+        Self {
+            open: self.open.with_leading_trivia(trivia),
+            stmts: self.stmts,
+            close: self.close,
+        }
     }
 
     fn with_trailing_trivia(self, trivia: Trivia) -> Self {
-        todo!()
+        Self {
+            open: self.open,
+            stmts: self.stmts,
+            close: self.close.with_trailing_trivia(trivia),
+        }
     }
 }

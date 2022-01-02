@@ -911,8 +911,8 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(tuple((char('{'), stmts, char('}'))), |(_, stms, _)| {
-        LambdaSyntax { stmts: stms }
+    map(tuple((char('{'), stmts, char('}'))), |(open, stms, close)| {
+        LambdaSyntax { open: TokenSyntax::from(open), stmts: stms, close: TokenSyntax::from(close) }
     })(s)
 }
 
