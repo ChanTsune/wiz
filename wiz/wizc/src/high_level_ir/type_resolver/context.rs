@@ -279,8 +279,8 @@ impl ResolverContext {
             .ok_or_else(|| ResolverError::from(msg))
     }
 
-    pub fn get_current_type(&self) -> Option<TypedType> {
-        self.current_type.clone()
+    pub fn resolve_current_type(&self) -> Result<TypedType> {
+        self.current_type.clone().ok_or_else(|| ResolverError::from("can not resolve Self"))
     }
 
     pub fn set_current_type(&mut self, t: TypedType) {
@@ -590,21 +590,15 @@ impl ResolverContext {
 
     pub fn full_type_name(&self, typ: TypedType) -> Result<TypedType> {
         if typ.is_self() {
-            self.current_type
-                .clone()
-                .ok_or_else(|| ResolverError::from("can not resolve Self"))
+            self.resolve_current_type()
         } else {
             Result::Ok(match typ {
                 TypedType::Value(v) => TypedType::Value(self.full_value_type_name(v)?),
                 TypedType::Type(v) => TypedType::Type(Box::new(self.full_type_name(*v)?)),
-                TypedType::Self_ => self
-                    .current_type
-                    .clone()
-                    .ok_or_else(|| ResolverError::from("can not resolve Self"))?,
+                TypedType::Self_ => self.resolve_current_type()?,
                 TypedType::Function(f) => TypedType::Function(Box::new(TypedFunctionType {
                     arguments: f
                         .arguments
-                        .clone()
                         .into_iter()
                         .map(|a| {
                             Result::Ok(TypedArgType {
@@ -613,7 +607,7 @@ impl ResolverContext {
                             })
                         })
                         .collect::<Result<Vec<_>>>()?,
-                    return_type: self.full_type_name(f.return_type.clone())?,
+                    return_type: self.full_type_name(f.return_type)?,
                 })),
             })
         }
