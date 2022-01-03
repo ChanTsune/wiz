@@ -6,8 +6,10 @@ use inkwell::execution_engine::ExecutionEngine;
 use inkwell::module::Module;
 use inkwell::support::LLVMString;
 use inkwell::targets::TargetTriple;
-use inkwell::types::{AnyType, AnyTypeEnum, BasicType, BasicTypeEnum};
-use inkwell::values::{AnyValue, AnyValueEnum, BasicValueEnum, FunctionValue};
+use inkwell::types::{AnyType, AnyTypeEnum, BasicMetadataTypeEnum, BasicType, BasicTypeEnum};
+use inkwell::values::{
+    AnyValue, AnyValueEnum, BasicMetadataValueEnum, BasicValueEnum, FunctionValue,
+};
 use inkwell::{AddressSpace, FloatPredicate, IntPredicate, OptimizationLevel};
 use std::collections::HashMap;
 use std::convert::TryFrom;
@@ -239,6 +241,7 @@ impl<'ctx> CodeGen<'ctx> {
         let args: Vec<_> = args
             .filter_map(|arg| BasicValueEnum::try_from(arg).ok())
             .collect();
+        let args: Vec<BasicMetadataValueEnum> = args.into_iter().map(|i| i.into()).collect();
         let function = target.into_function_value();
         let bv = self
             .builder
@@ -929,6 +932,7 @@ impl<'ctx> CodeGen<'ctx> {
             })
             .map(|a| BasicTypeEnum::try_from(a).unwrap())
             .collect();
+        let args: Vec<BasicMetadataTypeEnum> = args.into_iter().map(|i| i.into()).collect();
         let result = if let Some(body) = body {
             self.ml_context.push_environment();
             let is_void_type = return_type.is_void_type();

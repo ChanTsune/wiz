@@ -26,11 +26,11 @@ jobs:
           path: |
             C:/Program Files/LLVM
             ./llvm
-          key: llvm-11
+          key: llvm-12
       - name: Install LLVM and Clang
         uses: KyleMayes/install-llvm-action@v1
         with:
-          version: "11.0"
+          version: "12.0"
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
       - name: echo rust version
         run: rustc --version
@@ -61,11 +61,11 @@ jobs:
           path: |
             C:/Program Files/LLVM
             ./llvm
-          key: llvm-11
+          key: llvm-12
       - name: Install LLVM and Clang
         uses: KyleMayes/install-llvm-action@v1
         with:
-          version: "11.0"
+          version: "12.0"
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
       - name: echo rust version
         run: rustc --version
