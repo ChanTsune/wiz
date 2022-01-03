@@ -53,7 +53,7 @@ impl TypeResolver {
                 items
                     .iter()
                     .map(|i| self.detect_type_from_source_set(i))
-                    .collect::<Result<Vec<()>>>()?;
+                    .collect::<Result<Vec<_>>>()?;
                 self.context.pop_name_space();
                 Result::Ok(())
             }
@@ -153,15 +153,15 @@ impl TypeResolver {
         self.context.push_local_stack();
         let arg_defs = f
             .arg_defs
-            .iter()
+            .into_iter()
             .map(|a| {
-                let a = self.typed_arg_def(a.clone())?;
+                let a = self.typed_arg_def(a)?;
                 self.context
                     .register_to_env(a.name.clone(), EnvValue::from(a.type_.clone()));
                 Result::Ok(a)
             })
             .collect::<Result<Vec<_>>>()?;
-        let return_type = self.typed_function_return_type(&f)?;
+        let return_type = self.typed_function_return_type(&f.name, &f.return_type, &f.body)?;
         let fun = TypedFun {
             annotations: f.annotations,
             package: TypedPackage::Resolved(Package::from(c_name_space)),
@@ -320,19 +320,24 @@ impl TypeResolver {
         Result::Ok(v)
     }
 
-    fn typed_function_return_type(&mut self, f: &TypedFun) -> Result<TypedType> {
-        match &f.return_type {
-            None => match &f.body {
+    fn typed_function_return_type(
+        &mut self,
+        name: &str,
+        return_type: &Option<TypedType>,
+        body: &Option<TypedFunBody>,
+    ) -> Result<TypedType> {
+        match return_type {
+            None => match body {
                 None => Result::Err(ResolverError::from(format!(
                     "abstract function {:?} must be define type",
-                    f.name
+                    name
                 ))),
                 Some(TypedFunBody::Block(_)) => Result::Ok(TypedType::unit()),
                 Some(TypedFunBody::Expr(e)) => {
                     self.expr(e.clone(), None)?.type_().ok_or_else(|| {
                         ResolverError::from(format!(
                             "Can not resolve expr type at function {:?}",
-                            f.name
+                            name
                         ))
                     })
                 }
@@ -354,15 +359,15 @@ impl TypeResolver {
         self.context.push_local_stack();
         let arg_defs = f
             .arg_defs
-            .iter()
+            .into_iter()
             .map(|a| {
-                let a = self.typed_arg_def(a.clone())?;
+                let a = self.typed_arg_def(a)?;
                 self.context
                     .register_to_env(a.name.clone(), EnvValue::from(a.type_.clone()));
                 Result::Ok(a)
             })
             .collect::<Result<Vec<_>>>()?;
-        let return_type = self.typed_function_return_type(&f)?;
+        let return_type = self.typed_function_return_type(&f.name, &f.return_type, &f.body)?;
         let fun = TypedFun {
             annotations: f.annotations,
             package: TypedPackage::Resolved(Package::from(c_name_space)),
@@ -461,29 +466,26 @@ impl TypeResolver {
 
     fn typed_member_function(&mut self, mf: TypedMemberFunction) -> Result<TypedMemberFunction> {
         self.context.push_local_stack();
+        let arg_defs = mf
+            .arg_defs
+            .into_iter()
+            .map(|a| {
+                let a = self.typed_arg_def(a)?;
+                self.context
+                    .register_to_env(a.name.clone(), EnvValue::from(a.type_.clone()));
+                Result::Ok(a)
+            })
+            .collect::<Result<Vec<_>>>()?;
+        let return_type = self.typed_function_return_type(&mf.name, &mf.return_type, &mf.body)?;
         let result = Result::Ok(TypedMemberFunction {
             name: mf.name,
-            arg_defs: mf
-                .arg_defs
-                .into_iter()
-                .map(|a| {
-                    let a = self.typed_arg_def(a)?;
-                    self.context
-                        .register_to_env(a.name.clone(), EnvValue::from(a.type_.clone()));
-                    Result::Ok(a)
-                })
-                .collect::<Result<Vec<_>>>()?,
+            arg_defs,
             type_params: mf.type_params,
             body: match mf.body {
                 None => None,
                 Some(body) => Some(self.typed_fun_body(body)?),
             },
-            return_type: match mf.return_type {
-                Some(b) => Some(self.context.full_type_name(b)?),
-                None => {
-                    todo!()
-                }
-            },
+            return_type: Some(return_type),
         });
         self.context.pop_local_stack();
         result
@@ -763,7 +765,7 @@ impl TypeResolver {
             .elements
             .into_iter()
             .map(|e| self.expr(e, None))
-            .collect::<Result<Vec<TypedExpr>>>()?;
+            .collect::<Result<Vec<_>>>()?;
         let len = elements.len();
         Result::Ok(if let Some(e) = elements.get(0) {
             let e_type = e.type_();
@@ -788,21 +790,18 @@ impl TypeResolver {
     pub fn typed_call(&mut self, c: TypedCall) -> Result<TypedCall> {
         let target = Box::new(self.expr(*c.target, None)?);
         let c_type = match target.type_().unwrap() {
-            TypedType::Value(v) => {
-                Result::Err(ResolverError::from(format!("{:?} is not callable.", v)))
-            }
-            TypedType::Type(_) | TypedType::Self_ => {
-                Result::Err(ResolverError::from(format!(" not callable.")))
-            }
-            TypedType::Function(f) => Result::Ok(f.return_type),
+            TypedType::Value(v) => Err(ResolverError::from(format!("{:?} is not callable.", v))),
+            TypedType::Type(t) => Err(ResolverError::from(format!("{:?} is not callable.", t))),
+            TypedType::Self_ => Err(ResolverError::from("Self is not callable.")),
+            TypedType::Function(f) => Ok(f.return_type),
         }?;
-        Result::Ok(TypedCall {
+        Ok(TypedCall {
             target,
             args: c
                 .args
                 .into_iter()
                 .map(|c| self.typed_call_arg(c))
-                .collect::<Result<Vec<TypedCallArg>>>()?,
+                .collect::<Result<Vec<_>>>()?,
             type_: Some(c_type),
         })
     }
