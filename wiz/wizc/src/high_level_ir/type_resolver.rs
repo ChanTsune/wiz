@@ -311,9 +311,9 @@ impl TypeResolver {
         };
         self.context.register_to_env(
             v.name.clone(),
-                v.type_
-                    .clone()
-                    .ok_or_else(|| ResolverError::from("Cannot resolve variable type"))?,
+            v.type_
+                .clone()
+                .ok_or_else(|| ResolverError::from("Cannot resolve variable type"))?,
         );
         Result::Ok(v)
     }
@@ -524,10 +524,14 @@ impl TypeResolver {
         })
     }
 
-    pub fn typed_name(&mut self, n: TypedName, type_annotation: Option<TypedType>) -> Result<TypedName> {
-        let (type_, package) = self
-            .context
-            .resolve_name_type(n.package.into_raw().names, n.name.clone(),
+    pub fn typed_name(
+        &mut self,
+        n: TypedName,
+        type_annotation: Option<TypedType>,
+    ) -> Result<TypedName> {
+        let (type_, package) = self.context.resolve_name_type(
+            n.package.into_raw().names,
+            n.name.clone(),
             type_annotation,
         )?;
         Result::Ok(TypedName {
