@@ -315,7 +315,7 @@ impl ResolverContext {
                 EnvValue::NameSpace(n) => {
                     todo!()
                 }
-                EnvValue::Value(v) => ns.register_values(name, v),
+                EnvValue::Value(v) => ns.register_value(name, v),
             }
         } else {
             self.local_stack.insert(name, value);

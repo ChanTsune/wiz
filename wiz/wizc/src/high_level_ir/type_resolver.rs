@@ -526,7 +526,7 @@ impl TypeResolver {
         })
     }
 
-    pub fn typed_name(&mut self, n: TypedName) -> Result<TypedName> {
+    pub fn typed_name(&mut self, n: TypedName, type_annotation: Option<TypedType>) -> Result<TypedName> {
         let (type_, package) = self
             .context
             .resolve_name_type(n.package.into_raw().names, n.name.clone(),
