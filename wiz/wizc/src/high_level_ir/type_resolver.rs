@@ -788,15 +788,9 @@ impl TypeResolver {
     pub fn typed_call(&mut self, c: TypedCall) -> Result<TypedCall> {
         let target = Box::new(self.expr(*c.target, None)?);
         let c_type = match target.type_().unwrap() {
-            TypedType::Value(v) => {
-                Err(ResolverError::from(format!("{:?} is not callable.", v)))
-            }
-            TypedType::Type(t) => {
-                Err(ResolverError::from(format!("{:?} is not callable.", t)))
-            }
-            TypedType::Self_ => {
-                Err(ResolverError::from("Self is not callable."))
-            }
+            TypedType::Value(v) => Err(ResolverError::from(format!("{:?} is not callable.", v))),
+            TypedType::Type(t) => Err(ResolverError::from(format!("{:?} is not callable.", t))),
+            TypedType::Self_ => Err(ResolverError::from("Self is not callable.")),
             TypedType::Function(f) => Ok(f.return_type),
         }?;
         Ok(TypedCall {
