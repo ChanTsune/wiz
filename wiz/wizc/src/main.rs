@@ -42,32 +42,32 @@ fn get_builtin_lib() -> Vec<&'static str> {
 fn main() -> result::Result<(), Box<dyn Error>> {
     println!("Args {:?}", env::args());
     let app = App::new("wizc")
-        .arg(Arg::with_name("input").required(true))
-        .arg(Arg::with_name("name").long("name").takes_value(true))
+        .arg(Arg::new("input").required(true))
+        .arg(Arg::new("name").long("name").takes_value(true))
         .arg(
-            Arg::with_name("type")
+            Arg::new("type")
                 .long("type")
                 .takes_value(true)
                 .possible_values(&["bin", "test", "lib"]),
         )
-        .arg(Arg::with_name("output").short("o").takes_value(true))
-        .arg(Arg::with_name("out-dir").long("out-dir").takes_value(true))
+        .arg(Arg::new("output").short('o').takes_value(true))
+        .arg(Arg::new("out-dir").long("out-dir").takes_value(true))
         .arg(
-            Arg::with_name("target-triple")
+            Arg::new("target-triple")
                 .long("target-triple")
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name("path")
-                .short("p")
+            Arg::new("path")
+                .short('p')
                 .takes_value(true)
-                .multiple(true),
+                .multiple_occurrences(true),
         )
         .arg(
-            Arg::with_name("L")
-                .short("L")
+            Arg::new("L")
+                .short('L')
                 .takes_value(true)
-                .multiple(true),
+                .multiple_occurrences(true),
         );
     let matches = app.get_matches();
     let config = Config::from(&matches);

@@ -34,8 +34,8 @@ impl<'ctx> Config<'ctx> {
     }
 }
 
-impl<'ctx> From<&'ctx ArgMatches<'ctx>> for Config<'ctx> {
-    fn from(matches: &'ctx ArgMatches<'ctx>) -> Self {
+impl<'ctx> From<&'ctx ArgMatches> for Config<'ctx> {
+    fn from(matches: &'ctx ArgMatches) -> Self {
         Self {
             input: matches.value_of("input").unwrap(),
             name: matches.value_of("name"),
