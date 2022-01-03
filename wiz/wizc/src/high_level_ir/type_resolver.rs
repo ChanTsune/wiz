@@ -437,10 +437,7 @@ impl TypeResolver {
     fn typed_initializer(&mut self, i: TypedInitializer) -> Result<TypedInitializer> {
         let self_type = self.context.resolve_current_type()?;
         let ns = self.context.get_current_namespace_mut()?;
-        ns.register_value(
-            "self".to_string(),
-            self_type,
-        );
+        ns.register_value("self".to_string(), self_type);
         Result::Ok(TypedInitializer {
             args: i
                 .args
