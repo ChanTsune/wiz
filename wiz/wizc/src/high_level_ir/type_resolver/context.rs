@@ -544,7 +544,7 @@ impl ResolverContext {
                             Some(v) => Some(
                                 v.into_iter()
                                     .map(|i| self.full_type_name(i))
-                                    .collect::<Result<Vec<TypedType>>>()?,
+                                    .collect::<Result<Vec<_>>>()?,
                             ),
                         },
                     }

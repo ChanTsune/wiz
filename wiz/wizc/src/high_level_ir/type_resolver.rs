@@ -451,7 +451,7 @@ impl TypeResolver {
                     ns.register_value(a.name.clone(), a.type_.clone());
                     Result::Ok(a)
                 })
-                .collect::<Result<Vec<TypedArgDef>>>()?,
+                .collect::<Result<Vec<_>>>()?,
             body: self.typed_fun_body(i.body)?,
         })
     }
