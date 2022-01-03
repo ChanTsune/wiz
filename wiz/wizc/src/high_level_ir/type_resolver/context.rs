@@ -1,3 +1,5 @@
+mod resolver_struct;
+
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_expr::TypedBinaryOperator;
@@ -6,24 +8,8 @@ use crate::high_level_ir::typed_type::{
     TypedValueType,
 };
 use crate::utils::stacked_hash_map::StackedHashMap;
-use std::collections::{HashMap, HashSet};
-use std::option::Option::Some;
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub(crate) struct ResolverTypeParam {
-    type_constraints: Vec<String>,
-    type_params: Option<HashMap<String, ResolverTypeParam>>,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct ResolverStruct {
-    pub(crate) stored_properties: HashMap<String, TypedType>,
-    pub(crate) computed_properties: HashMap<String, TypedType>,
-    pub(crate) member_functions: HashMap<String, TypedType>,
-    pub(crate) static_functions: HashMap<String, TypedType>,
-    pub(crate) conformed_protocols: HashSet<String>,
-    pub(crate) type_params: Option<HashMap<String, ResolverTypeParam>>,
-}
+use std::collections::{HashMap};
+pub(crate) use crate::high_level_ir::type_resolver::context::resolver_struct::ResolverStruct;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct NameSpace {
@@ -67,35 +53,6 @@ pub struct ResolverContext {
     pub(crate) current_namespace: Vec<String>,
     current_type: Option<TypedType>,
     local_stack: StackedHashMap<String, EnvValue>,
-}
-
-impl ResolverStruct {
-    pub fn new() -> Self {
-        Self {
-            stored_properties: Default::default(),
-            computed_properties: Default::default(),
-            member_functions: Default::default(),
-            static_functions: Default::default(),
-            conformed_protocols: Default::default(),
-            type_params: None,
-        }
-    }
-
-    pub(crate) fn get_instance_member_type(&self, name: &str) -> Option<&TypedType> {
-        if let Some(t) = self.stored_properties.get(name) {
-            Some(t)
-        } else if let Some(t) = self.computed_properties.get(name) {
-            Some(t)
-        } else if let Some(t) = self.member_functions.get(name) {
-            Some(t)
-        } else {
-            None
-        }
-    }
-
-    pub fn is_generic(&self) -> bool {
-        self.type_params != None
-    }
 }
 
 impl NameSpace {
