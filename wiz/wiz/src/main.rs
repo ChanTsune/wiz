@@ -10,7 +10,7 @@ use crate::build::build_command;
 use crate::init::init_command;
 use crate::new::new_command;
 use ansi_term::Color;
-use clap::{crate_version, App, AppSettings, Arg, SubCommand};
+use clap::{crate_version, App, AppSettings, Arg};
 use std::error::Error;
 use std::process::exit;
 
@@ -18,54 +18,51 @@ fn _main() -> Result<(), Box<dyn Error>> {
     let app = App::new("wiz")
         .version(crate_version!())
         .about("Wiz's package manager")
-        .settings(&[
-            AppSettings::ArgRequiredElseHelp,
-            AppSettings::AllowExternalSubcommands,
-        ])
+        .setting(AppSettings::ArgRequiredElseHelp | AppSettings::AllowExternalSubcommands)
         .subcommand(
-            SubCommand::with_name("new")
+            App::new("new")
                 .about("Create a new wiz package at <path>")
-                .arg(Arg::with_name("path").required(true)),
+                .arg(Arg::new("path").required(true)),
         )
         .subcommand(
-            SubCommand::with_name("init")
+            App::new("init")
                 .about("Create a new wiz package in an current directory")
                 .arg(
-                    Arg::with_name("overwrite")
+                    Arg::new("overwrite")
                         .long("overwrite")
                         .help("Overwrite files for target Directory"),
                 ),
         )
         .subcommand(
-            SubCommand::with_name("build")
+            App::new("build")
                 .about("Compile the current package")
-                .arg(Arg::with_name("target-dir").help("Directory for all generated artifacts"))
+                .arg(Arg::new("target-dir").help("Directory for all generated artifacts"))
                 .arg(
-                    Arg::with_name("target-triple")
+                    Arg::new("target-triple")
                         .long("target-triple")
                         .takes_value(true)
                         .help("Build target platform"),
                 ),
         )
         .arg(
-            Arg::with_name("quite")
-                .short("q")
+            Arg::new("quite")
+                .short('q')
                 .long("quite")
                 .help("No output printed to stdout")
                 .global(true),
         );
     let matches = app.get_matches();
     match matches.subcommand() {
-        (cmd, Some(option)) if cmd == "new" => {
+        Some((cmd, option)) if cmd == "new" => {
             new_command(cmd, option)?;
         }
-        (cmd, Some(option)) if cmd == "init" => {
+        Some((cmd, option)) if cmd == "init" => {
             init_command(cmd, option)?;
         }
-        (cmd, Some(option)) if cmd == "build" => {
+        Some((cmd, option)) if cmd == "build" => {
             build_command(cmd, option)?;
         }
-        (cmd, Some(option)) => {
+        Some((cmd, option)) => {
             external_subcommand::try_execute(cmd, option)?;
         }
         _ => {

@@ -8,5 +8,5 @@ edition = "2018"
 
 [dependencies]
 anyhow = "1.0.44"
-clap = "2.33.3"
+clap = { version = "3.0.0", features = ["cargo"]}
 ansi_term = "0.12"
