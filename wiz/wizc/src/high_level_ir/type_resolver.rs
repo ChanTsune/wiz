@@ -4,7 +4,7 @@ pub mod result;
 #[cfg(test)]
 mod tests;
 
-use crate::high_level_ir::type_resolver::context::{EnvValue, ResolverContext, ResolverStruct};
+use crate::high_level_ir::type_resolver::context::{ResolverContext, ResolverStruct};
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_decl::{
@@ -157,7 +157,7 @@ impl TypeResolver {
             .map(|a| {
                 let a = self.typed_arg_def(a)?;
                 self.context
-                    .register_to_env(a.name.clone(), EnvValue::from(a.type_.clone()));
+                    .register_to_env(a.name.clone(), a.type_.clone());
                 Result::Ok(a)
             })
             .collect::<Result<Vec<_>>>()?;
@@ -311,11 +311,9 @@ impl TypeResolver {
         };
         self.context.register_to_env(
             v.name.clone(),
-            EnvValue::from(
                 v.type_
                     .clone()
                     .ok_or_else(|| ResolverError::from("Cannot resolve variable type"))?,
-            ),
         );
         Result::Ok(v)
     }
@@ -363,7 +361,7 @@ impl TypeResolver {
             .map(|a| {
                 let a = self.typed_arg_def(a)?;
                 self.context
-                    .register_to_env(a.name.clone(), EnvValue::from(a.type_.clone()));
+                    .register_to_env(a.name.clone(), a.type_.clone());
                 Result::Ok(a)
             })
             .collect::<Result<Vec<_>>>()?;
@@ -469,7 +467,7 @@ impl TypeResolver {
             .map(|a| {
                 let a = self.typed_arg_def(a)?;
                 self.context
-                    .register_to_env(a.name.clone(), EnvValue::from(a.type_.clone()));
+                    .register_to_env(a.name.clone(), a.type_.clone());
                 Result::Ok(a)
             })
             .collect::<Result<Vec<_>>>()?;
