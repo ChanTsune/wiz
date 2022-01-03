@@ -153,15 +153,15 @@ impl TypeResolver {
         self.context.push_local_stack();
         let arg_defs = f
             .arg_defs
-            .iter()
+            .into_iter()
             .map(|a| {
-                let a = self.typed_arg_def(a.clone())?;
+                let a = self.typed_arg_def(a)?;
                 self.context
                     .register_to_env(a.name.clone(), EnvValue::from(a.type_.clone()));
                 Result::Ok(a)
             })
             .collect::<Result<Vec<_>>>()?;
-        let return_type = self.typed_function_return_type(&f)?;
+        let return_type = self.typed_function_return_type(&f.name, &f.return_type, &f.body)?;
         let fun = TypedFun {
             annotations: f.annotations,
             package: TypedPackage::Resolved(Package::from(c_name_space)),
@@ -320,19 +320,19 @@ impl TypeResolver {
         Result::Ok(v)
     }
 
-    fn typed_function_return_type(&mut self, f: &TypedFun) -> Result<TypedType> {
-        match &f.return_type {
-            None => match &f.body {
+    fn typed_function_return_type(&mut self, name: &str, return_type: &Option<TypedType>, body: &Option<TypedFunBody>) -> Result<TypedType> {
+        match return_type {
+            None => match body {
                 None => Result::Err(ResolverError::from(format!(
                     "abstract function {:?} must be define type",
-                    f.name
+                    name
                 ))),
                 Some(TypedFunBody::Block(_)) => Result::Ok(TypedType::unit()),
                 Some(TypedFunBody::Expr(e)) => {
                     self.expr(e.clone(), None)?.type_().ok_or_else(|| {
                         ResolverError::from(format!(
                             "Can not resolve expr type at function {:?}",
-                            f.name
+                            name
                         ))
                     })
                 }
@@ -354,15 +354,15 @@ impl TypeResolver {
         self.context.push_local_stack();
         let arg_defs = f
             .arg_defs
-            .iter()
+            .into_iter()
             .map(|a| {
-                let a = self.typed_arg_def(a.clone())?;
+                let a = self.typed_arg_def(a)?;
                 self.context
                     .register_to_env(a.name.clone(), EnvValue::from(a.type_.clone()));
                 Result::Ok(a)
             })
             .collect::<Result<Vec<_>>>()?;
-        let return_type = self.typed_function_return_type(&f)?;
+        let return_type = self.typed_function_return_type(&f.name, &f.return_type, &f.body)?;
         let fun = TypedFun {
             annotations: f.annotations,
             package: TypedPackage::Resolved(Package::from(c_name_space)),
@@ -461,29 +461,26 @@ impl TypeResolver {
 
     fn typed_member_function(&mut self, mf: TypedMemberFunction) -> Result<TypedMemberFunction> {
         self.context.push_local_stack();
+        let arg_defs = mf
+            .arg_defs
+            .into_iter()
+            .map(|a| {
+                let a = self.typed_arg_def(a)?;
+                self.context
+                    .register_to_env(a.name.clone(), EnvValue::from(a.type_.clone()));
+                Result::Ok(a)
+            })
+            .collect::<Result<Vec<_>>>()?;
+        let return_type = self.typed_function_return_type(&mf.name, &mf.return_type, &mf.body)?;
         let result = Result::Ok(TypedMemberFunction {
             name: mf.name,
-            arg_defs: mf
-                .arg_defs
-                .into_iter()
-                .map(|a| {
-                    let a = self.typed_arg_def(a)?;
-                    self.context
-                        .register_to_env(a.name.clone(), EnvValue::from(a.type_.clone()));
-                    Result::Ok(a)
-                })
-                .collect::<Result<Vec<_>>>()?,
+            arg_defs,
             type_params: mf.type_params,
             body: match mf.body {
                 None => None,
                 Some(body) => Some(self.typed_fun_body(body)?),
             },
-            return_type: match mf.return_type {
-                Some(b) => Some(self.context.full_type_name(b)?),
-                None => {
-                    todo!()
-                }
-            },
+            return_type: Some(return_type),
         });
         self.context.pop_local_stack();
         result
