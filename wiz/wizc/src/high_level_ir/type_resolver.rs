@@ -507,7 +507,7 @@ impl TypeResolver {
 
     pub fn expr(&mut self, e: TypedExpr, type_annotation: Option<TypedType>) -> Result<TypedExpr> {
         Result::Ok(match e {
-            TypedExpr::Name(n) => TypedExpr::Name(self.typed_name(n)?),
+            TypedExpr::Name(n) => TypedExpr::Name(self.typed_name(n, type_annotation)?),
             TypedExpr::Literal(l) => TypedExpr::Literal(self.typed_literal(l, type_annotation)?),
             TypedExpr::BinOp(b) => TypedExpr::BinOp(self.typed_binop(b)?),
             TypedExpr::UnaryOp(u) => TypedExpr::UnaryOp(self.typed_unary_op(u)?),
@@ -529,7 +529,9 @@ impl TypeResolver {
     pub fn typed_name(&mut self, n: TypedName) -> Result<TypedName> {
         let (type_, package) = self
             .context
-            .resolve_name_type(n.package.into_raw().names, n.name.clone())?;
+            .resolve_name_type(n.package.into_raw().names, n.name.clone(),
+            type_annotation,
+        )?;
         Result::Ok(TypedName {
             package,
             type_: Some(type_),

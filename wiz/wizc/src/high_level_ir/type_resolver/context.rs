@@ -305,14 +305,17 @@ impl ResolverContext {
         self.local_stack = StackedHashMap::new()
     }
 
-    pub(crate) fn register_to_env(&mut self, name: String, value: EnvValue) {
+    pub(crate) fn register_to_env<T>(&mut self, name: String, value: T)
+    where EnvValue: From<T>
+    {
+        let value = EnvValue::from(value);
         if self.local_stack.stack_is_empty() {
             let ns = self.get_current_namespace_mut().unwrap();
             match value {
                 EnvValue::NameSpace(n) => {
                     todo!()
                 }
-                EnvValue::Value(v) => ns.register_value(name, v),
+                EnvValue::Value(v) => ns.register_values(name, v),
             }
         } else {
             self.local_stack.insert(name, value);
@@ -431,6 +434,7 @@ impl ResolverContext {
         &mut self,
         mut name_space: Vec<String>,
         name: String,
+        type_annotation: Option<TypedType>
     ) -> Result<(TypedType, TypedPackage)> {
         let (name, name_space, n) = if name_space.is_empty() {
             (name, name_space, None)
