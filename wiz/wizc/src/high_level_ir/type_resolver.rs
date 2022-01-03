@@ -320,7 +320,12 @@ impl TypeResolver {
         Result::Ok(v)
     }
 
-    fn typed_function_return_type(&mut self, name: &str, return_type: &Option<TypedType>, body: &Option<TypedFunBody>) -> Result<TypedType> {
+    fn typed_function_return_type(
+        &mut self,
+        name: &str,
+        return_type: &Option<TypedType>,
+        body: &Option<TypedFunBody>,
+    ) -> Result<TypedType> {
         match return_type {
             None => match body {
                 None => Result::Err(ResolverError::from(format!(
