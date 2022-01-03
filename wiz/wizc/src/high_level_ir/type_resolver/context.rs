@@ -280,7 +280,9 @@ impl ResolverContext {
     }
 
     pub fn resolve_current_type(&self) -> Result<TypedType> {
-        self.current_type.clone().ok_or_else(|| ResolverError::from("can not resolve Self"))
+        self.current_type
+            .clone()
+            .ok_or_else(|| ResolverError::from("can not resolve Self"))
     }
 
     pub fn set_current_type(&mut self, t: TypedType) {
