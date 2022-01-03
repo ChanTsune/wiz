@@ -14,9 +14,8 @@ use std::collections::HashMap;
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct NameSpace {
     name_space: Vec<String>,
-    children: HashMap<String, NameSpace>,
     types: HashMap<String, ResolverStruct>,
-    values: HashMap<String, TypedType>,
+    values: HashMap<String, EnvValue>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -59,7 +58,6 @@ impl NameSpace {
     pub(crate) fn new(name: Vec<String>) -> Self {
         Self {
             name_space: name,
-            children: Default::default(),
             types: Default::default(),
             values: Default::default(),
         }
@@ -70,8 +68,11 @@ impl NameSpace {
             Some(self)
         } else {
             let n = ns.remove(0);
-            let m = self.children.get(&*n)?;
-            m.get_child(ns)
+            let m = self.values.get(&*n)?;
+            match m {
+                EnvValue::NameSpace(m) => m.get_child(ns),
+                EnvValue::Value(_) => None,
+            }
         }
     }
 
@@ -80,20 +81,26 @@ impl NameSpace {
             Some(self)
         } else {
             let n = ns.remove(0);
-            let m = self.children.get_mut(&*n)?;
-            m.get_child_mut(ns)
+            let m = self.values.get_mut(&*n)?;
+            match m {
+                EnvValue::NameSpace(m) => m.get_child_mut(ns),
+                EnvValue::Value(_) => None
+            }
         }
     }
 
     pub(crate) fn set_child(&mut self, mut ns: Vec<String>) {
         if !ns.is_empty() {
             let n = &ns.remove(0);
-            if !self.children.contains_key(n) {
+            if !self.values.contains_key(n) {
                 let mut name = self.name_space.clone();
                 name.push(n.clone());
-                self.children.insert(n.clone(), NameSpace::new(name));
+                self.values.insert(n.clone(), EnvValue::from(NameSpace::new(name)));
             };
-            self.children.get_mut(n).unwrap().set_child(ns);
+            match self.values.get_mut(n).unwrap() {
+                EnvValue::NameSpace(n) => n.set_child(ns),
+                EnvValue::Value(_) => panic!()
+            };
         }
     }
 
@@ -110,11 +117,17 @@ impl NameSpace {
     }
 
     pub(crate) fn register_value(&mut self, name: String, type_: TypedType) {
-        self.values.insert(name, type_);
+        self.values.insert(name, EnvValue::from(type_));
     }
 
     pub(crate) fn get_value(&self, name: &str) -> Option<&TypedType> {
-        self.values.get(name)
+        match self.values.get(name) {
+            None => None,
+            Some(e) => match e {
+                EnvValue::NameSpace(_) => None,
+                EnvValue::Value(v) => Some(v)
+            }
+        }
     }
 }
 
@@ -130,13 +143,7 @@ impl NameEnvironment {
         self.names.extend(name_space.values.iter().map(|(k, v)| {
             (
                 k.clone(),
-                (name_space.name_space.clone(), EnvValue::from(v.clone())),
-            )
-        }));
-        self.names.extend(name_space.children.iter().map(|(k, v)| {
-            (
-                k.clone(),
-                (name_space.name_space.clone(), EnvValue::from(v.clone())),
+                (name_space.name_space.clone(), v.clone()),
             )
         }));
         self.types.extend(
@@ -590,7 +597,7 @@ mod tests {
         let mut name_space = NameSpace::new(vec![]);
         name_space
             .values
-            .insert(String::from("Int64"), TypedType::int64());
+            .insert(String::from("Int64"), EnvValue::from(TypedType::int64()));
         name_space.set_child(vec![String::from("builtin")]);
         assert_eq!(
             name_space.get_child_mut(vec![String::from("builtin")]),
