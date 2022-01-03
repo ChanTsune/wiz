@@ -84,7 +84,7 @@ impl NameSpace {
             let m = self.values.get_mut(&*n)?;
             match m {
                 EnvValue::NameSpace(m) => m.get_child_mut(ns),
-                EnvValue::Value(_) => None
+                EnvValue::Value(_) => None,
             }
         }
     }
@@ -95,11 +95,12 @@ impl NameSpace {
             if !self.values.contains_key(n) {
                 let mut name = self.name_space.clone();
                 name.push(n.clone());
-                self.values.insert(n.clone(), EnvValue::from(NameSpace::new(name)));
+                self.values
+                    .insert(n.clone(), EnvValue::from(NameSpace::new(name)));
             };
             match self.values.get_mut(n).unwrap() {
                 EnvValue::NameSpace(n) => n.set_child(ns),
-                EnvValue::Value(_) => panic!()
+                EnvValue::Value(_) => panic!(),
             };
         }
     }
@@ -125,8 +126,8 @@ impl NameSpace {
             None => None,
             Some(e) => match e {
                 EnvValue::NameSpace(_) => None,
-                EnvValue::Value(v) => Some(v)
-            }
+                EnvValue::Value(v) => Some(v),
+            },
         }
     }
 }
@@ -140,12 +141,12 @@ impl NameEnvironment {
     }
 
     fn use_values_from(&mut self, name_space: &NameSpace) {
-        self.names.extend(name_space.values.iter().map(|(k, v)| {
-            (
-                k.clone(),
-                (name_space.name_space.clone(), v.clone()),
-            )
-        }));
+        self.names.extend(
+            name_space
+                .values
+                .iter()
+                .map(|(k, v)| (k.clone(), (name_space.name_space.clone(), v.clone()))),
+        );
         self.types.extend(
             name_space
                 .types
