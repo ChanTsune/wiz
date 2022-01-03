@@ -306,7 +306,8 @@ impl ResolverContext {
     }
 
     pub(crate) fn register_to_env<T>(&mut self, name: String, value: T)
-    where EnvValue: From<T>
+    where
+        EnvValue: From<T>,
     {
         let value = EnvValue::from(value);
         if self.local_stack.stack_is_empty() {
@@ -434,7 +435,7 @@ impl ResolverContext {
         &mut self,
         mut name_space: Vec<String>,
         name: String,
-        type_annotation: Option<TypedType>
+        type_annotation: Option<TypedType>,
     ) -> Result<(TypedType, TypedPackage)> {
         let (name, name_space, n) = if name_space.is_empty() {
             (name, name_space, None)
