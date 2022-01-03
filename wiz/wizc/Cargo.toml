@@ -7,7 +7,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-inkwell = { git = "https://github.com/TheDan64/inkwell", rev = "2d715ed", features = ["llvm11-0"] }
+inkwell = { git = "https://github.com/TheDan64/inkwell", rev = "4ddaa3b", features = ["llvm12-0"] }
 either = "1.6.1"
 linked-hash-map = "0.5.4"
 clap = "2.33.3"
