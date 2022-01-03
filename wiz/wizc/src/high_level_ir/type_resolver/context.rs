@@ -37,12 +37,6 @@ struct ResolverSubscript {
     return_type: TypedType,
 }
 
-#[derive(Debug, Eq, PartialEq, Clone)]
-struct ResolverUnary {
-    value: TypedType,
-    return_type: TypedType,
-}
-
 #[derive(Debug, Clone)]
 pub struct ResolverContext {
     used_name_space: Vec<Vec<String>>,
@@ -303,7 +297,7 @@ impl ResolverContext {
             } else {
                 if let Result::Ok(n) = self.get_namespace(u.clone()) {
                     let name = u.pop().unwrap();
-                    env.names.insert(name, (u, EnvValue::NameSpace(n.clone())));
+                    env.names.insert(name, (u, EnvValue::from(n.clone())));
                 } else {
                     let name = u.pop().unwrap();
                     let s = self.get_namespace(u.clone()).unwrap();
@@ -311,7 +305,7 @@ impl ResolverContext {
                         env.types.insert(name.clone(), (u.clone(), t.clone()));
                     };
                     if let Some(t) = s.get_value(&name) {
-                        env.names.insert(name, (u, EnvValue::Value(t.clone())));
+                        env.names.insert(name, (u, EnvValue::from(t.clone())));
                     } else {
                         panic!("Can not find name {:?}", name)
                     };
