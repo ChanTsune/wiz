@@ -763,7 +763,7 @@ impl TypeResolver {
             .elements
             .into_iter()
             .map(|e| self.expr(e, None))
-            .collect::<Result<Vec<TypedExpr>>>()?;
+            .collect::<Result<Vec<_>>>()?;
         let len = elements.len();
         Result::Ok(if let Some(e) = elements.get(0) {
             let e_type = e.type_();
@@ -789,20 +789,23 @@ impl TypeResolver {
         let target = Box::new(self.expr(*c.target, None)?);
         let c_type = match target.type_().unwrap() {
             TypedType::Value(v) => {
-                Result::Err(ResolverError::from(format!("{:?} is not callable.", v)))
+                Err(ResolverError::from(format!("{:?} is not callable.", v)))
             }
-            TypedType::Type(_) | TypedType::Self_ => {
-                Result::Err(ResolverError::from(format!(" not callable.")))
+            TypedType::Type(t) => {
+                Err(ResolverError::from(format!("{:?} is not callable.", t)))
             }
-            TypedType::Function(f) => Result::Ok(f.return_type),
+            TypedType::Self_ => {
+                Err(ResolverError::from("Self is not callable."))
+            }
+            TypedType::Function(f) => Ok(f.return_type),
         }?;
-        Result::Ok(TypedCall {
+        Ok(TypedCall {
             target,
             args: c
                 .args
                 .into_iter()
                 .map(|c| self.typed_call_arg(c))
-                .collect::<Result<Vec<TypedCallArg>>>()?,
+                .collect::<Result<Vec<_>>>()?,
             type_: Some(c_type),
         })
     }
