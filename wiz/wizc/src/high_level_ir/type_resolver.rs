@@ -53,7 +53,7 @@ impl TypeResolver {
                 items
                     .iter()
                     .map(|i| self.detect_type_from_source_set(i))
-                    .collect::<Result<Vec<()>>>()?;
+                    .collect::<Result<Vec<_>>>()?;
                 self.context.pop_name_space();
                 Result::Ok(())
             }
