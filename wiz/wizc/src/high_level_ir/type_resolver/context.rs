@@ -1,5 +1,6 @@
 mod resolver_struct;
 
+pub(crate) use crate::high_level_ir::type_resolver::context::resolver_struct::ResolverStruct;
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_expr::TypedBinaryOperator;
@@ -8,8 +9,7 @@ use crate::high_level_ir::typed_type::{
     TypedValueType,
 };
 use crate::utils::stacked_hash_map::StackedHashMap;
-use std::collections::{HashMap};
-pub(crate) use crate::high_level_ir::type_resolver::context::resolver_struct::ResolverStruct;
+use std::collections::HashMap;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct NameSpace {
