@@ -592,7 +592,7 @@ impl ResolverContext {
         if typ.is_self() {
             self.current_type
                 .clone()
-                .ok_or_else(|| ResolverError::from(format!("can not resolve Self")))
+                .ok_or_else(|| ResolverError::from("can not resolve Self"))
         } else {
             Result::Ok(match typ {
                 TypedType::Value(v) => TypedType::Value(self.full_value_type_name(v)?),
@@ -600,7 +600,7 @@ impl ResolverContext {
                 TypedType::Self_ => self
                     .current_type
                     .clone()
-                    .ok_or_else(|| ResolverError::from(format!("can not resolve Self")))?,
+                    .ok_or_else(|| ResolverError::from("can not resolve Self"))?,
                 TypedType::Function(f) => TypedType::Function(Box::new(TypedFunctionType {
                     arguments: f
                         .arguments
