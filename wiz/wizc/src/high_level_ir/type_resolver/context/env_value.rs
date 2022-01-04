@@ -1,10 +1,11 @@
+use std::collections::HashSet;
 use crate::high_level_ir::type_resolver::context::NameSpace;
 use crate::high_level_ir::typed_type::TypedType;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub(crate) enum EnvValue {
     NameSpace(NameSpace),
-    Value(TypedType),
+    Value(HashSet<TypedType>),
 }
 
 impl EnvValue {
@@ -48,7 +49,7 @@ impl EnvValue {
 
 impl From<TypedType> for EnvValue {
     fn from(typed_type: TypedType) -> Self {
-        Self::Value(typed_type)
+        Self::Value(HashSet::from([typed_type]))
     }
 }
 
@@ -57,6 +58,13 @@ impl From<NameSpace> for EnvValue {
         Self::NameSpace(ns)
     }
 }
+
+impl From<HashSet<TypedType>> for EnvValue {
+    fn from(typed_type: HashSet<TypedType>) -> Self {
+        Self::Value(typed_type)
+    }
+}
+
 
 #[cfg(test)]
 mod tests {

@@ -11,7 +11,7 @@ use crate::high_level_ir::typed_type::{
     TypedValueType,
 };
 use crate::utils::stacked_hash_map::StackedHashMap;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Default, Eq, PartialEq, Clone)]
 pub struct NameSpace {
@@ -136,10 +136,38 @@ impl NameSpace {
     }
 
     pub(crate) fn register_value(&mut self, name: String, type_: TypedType) {
-        self.values.insert(name, EnvValue::from(type_));
+        if let Some(e) = self.values.remove(&name) {
+            match e {
+                EnvValue::NameSpace(_) => {
+                    self.values.insert(name, e);
+                }
+                EnvValue::Value(mut v) => {
+                    v.insert(type_);
+                    self.values.insert(name, EnvValue::from(v));
+                }
+            };
+        } else {
+            self.values.insert(name, EnvValue::from(HashSet::from([type_])));
+        }
     }
 
-    pub(crate) fn get_value(&self, name: &str) -> Option<&TypedType> {
+    pub(crate) fn register_values(&mut self, name: String, type_: HashSet<TypedType>) {
+        if let Some(e) = self.values.remove(&name) {
+            match e {
+                EnvValue::NameSpace(_) => {
+                    self.values.insert(name, e);
+                }
+                EnvValue::Value(mut v) => {
+                    v.extend(type_);
+                    self.values.insert(name, EnvValue::from(v));
+                }
+            };
+        } else {
+            self.values.insert(name, EnvValue::from(type_));
+        }
+    }
+
+    pub(crate) fn get_value(&self, name: &str) -> Option<&HashSet<TypedType>> {
         match self.values.get(name) {
             None => None,
             Some(e) => match e {
@@ -287,7 +315,7 @@ impl ResolverContext {
                 EnvValue::NameSpace(n) => {
                     todo!()
                 }
-                EnvValue::Value(v) => ns.register_value(name, v),
+                EnvValue::Value(v) => ns.register_values(name, v),
             }
         } else {
             self.local_stack.insert(name, value);
@@ -424,27 +452,48 @@ impl ResolverContext {
                 let ns = child.get_child(name_space.clone()).ok_or_else(|| {
                     ResolverError::from(format!("Cannot resolve namespace {:?}", name_space))
                 })?;
-                let t = ns
+                let t_set = ns
                     .get_value(&n)
                     .ok_or_else(|| ResolverError::from(format!("Cannot resolve name {:?}", n)))?;
-                Result::Ok((
-                    t.clone(),
-                    if t.is_function_type() {
-                        TypedPackage::Resolved(Package::from(ns.name_space.clone()))
-                    } else {
-                        TypedPackage::Resolved(Package::global())
-                    },
-                ))
+                Self::resolve_overload(t_set, type_annotation)
+                    .map(|t|{
+                        let is_function = t.is_function_type();
+                        (t, if is_function {
+                            TypedPackage::Resolved(Package::from(ns.name_space.clone()))
+                        } else {
+                            TypedPackage::Resolved(Package::global())
+                        })
+                    })
+                    .ok_or_else(||{ResolverError::from(format!("Cannot resolve name {:?}", n))})
             }
-            (ns, EnvValue::Value(t)) => Result::Ok((
-                t.clone(),
-                if t.is_function_type() {
-                    TypedPackage::Resolved(Package::from(ns.clone()))
-                } else {
-                    TypedPackage::Resolved(Package::global())
-                },
-            )),
+            (ns, EnvValue::Value(t_set)) => {
+                Self::resolve_overload(t_set, type_annotation)
+                    .map(|t|{
+                        let is_function = t.is_function_type();
+                        (t, if is_function {
+                            TypedPackage::Resolved(Package::from(ns.clone()))
+                        } else {
+                            TypedPackage::Resolved(Package::global())
+                        })
+                    })
+                    .ok_or_else(||{ResolverError::from(format!("Cannot resolve name {:?}", n))})
+            },
         }
+    }
+
+    fn resolve_overload(type_set: &HashSet<TypedType>, type_annotation: Option<TypedType>) -> Option<TypedType> {
+        for t in type_set {
+            if type_set.len() == 1 {
+                return Some(t.clone())
+            } else if let Some(TypedType::Function(annotation)) = &type_annotation {
+                if let TypedType::Function(typ) = t {
+                    if annotation.arguments == typ.arguments {
+                        return Some(t.clone())
+                    }
+                }
+            }
+        }
+        None
     }
 
     pub fn resolve_binop_type(

@@ -21,9 +21,7 @@ use crate::high_level_ir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedForStmt,
     TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
 };
-use crate::high_level_ir::typed_type::{
-    Package, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType, TypedValueType,
-};
+use crate::high_level_ir::typed_type::{Package, TypedArgType, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType, TypedValueType};
 
 #[derive(Debug, Clone)]
 pub(crate) struct TypeResolver {
@@ -783,7 +781,21 @@ impl TypeResolver {
     }
 
     pub fn typed_call(&mut self, c: TypedCall) -> Result<TypedCall> {
-        let target = Box::new(self.expr(*c.target, None)?);
+        let args = c
+            .args
+            .into_iter()
+            .map(|c| self.typed_call_arg(c))
+            .collect::<Result<Vec<_>>>()?;
+        let arg_annotation = TypedType::Function(Box::new(TypedFunctionType {
+            arguments: args.iter().map(|a|{
+                TypedArgType {
+                    label: a.label.clone().unwrap_or("_".to_string()),
+                    typ: a.arg.type_().unwrap()
+                }
+            }).collect(),
+            return_type: TypedType::noting()
+        }));
+        let target = Box::new(self.expr(*c.target, Some(arg_annotation))?);
         let c_type = match target.type_().unwrap() {
             TypedType::Value(v) => Err(ResolverError::from(format!("{:?} is not callable.", v))),
             TypedType::Type(t) => Err(ResolverError::from(format!("{:?} is not callable.", t))),
@@ -792,11 +804,7 @@ impl TypeResolver {
         }?;
         Ok(TypedCall {
             target,
-            args: c
-                .args
-                .into_iter()
-                .map(|c| self.typed_call_arg(c))
-                .collect::<Result<Vec<_>>>()?,
+            args,
             type_: Some(c_type),
         })
     }
