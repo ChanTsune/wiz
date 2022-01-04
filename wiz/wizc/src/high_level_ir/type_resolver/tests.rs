@@ -1261,9 +1261,7 @@ fn test_function_overload_by_arguments() {
                         name: "d".to_string(),
                         type_: TypedType::double(),
                     }],
-                    body: Option::from(TypedFunBody::Block(TypedBlock {
-                        body: vec![]
-                    })),
+                    body: Option::from(TypedFunBody::Block(TypedBlock { body: vec![] })),
                     return_type: Some(TypedType::unit()),
                 }),
                 TypedDecl::Fun(TypedFun {
@@ -1277,9 +1275,7 @@ fn test_function_overload_by_arguments() {
                         name: "i".to_string(),
                         type_: TypedType::int64(),
                     }],
-                    body: Option::from(TypedFunBody::Block(TypedBlock {
-                        body: vec![]
-                    })),
+                    body: Option::from(TypedFunBody::Block(TypedBlock { body: vec![] })),
                     return_type: Some(TypedType::unit()),
                 }),
                 TypedDecl::Fun(TypedFun {
@@ -1305,7 +1301,12 @@ fn test_function_overload_by_arguments() {
                                 })),
                                 args: vec![TypedCallArg {
                                     label: None,
-                                    arg: Box::new(TypedExpr::Literal(TypedLiteral::FloatingPoint { value: "0.5".to_string(), type_: Some(TypedType::double()) })),
+                                    arg: Box::new(TypedExpr::Literal(
+                                        TypedLiteral::FloatingPoint {
+                                            value: "0.5".to_string(),
+                                            type_: Some(TypedType::double())
+                                        }
+                                    )),
                                     is_vararg: false,
                                 }],
                                 type_: Some(TypedType::unit()),
@@ -1324,7 +1325,10 @@ fn test_function_overload_by_arguments() {
                                 })),
                                 args: vec![TypedCallArg {
                                     label: None,
-                                    arg: Box::new(TypedExpr::Literal(TypedLiteral::Integer { value: "1".to_string(), type_: Some(TypedType::int64()) })),
+                                    arg: Box::new(TypedExpr::Literal(TypedLiteral::Integer {
+                                        value: "1".to_string(),
+                                        type_: Some(TypedType::int64())
+                                    })),
                                     is_vararg: false,
                                 }],
                                 type_: Some(TypedType::unit()),
@@ -1332,7 +1336,8 @@ fn test_function_overload_by_arguments() {
                         ]
                     })),
                     return_type: Some(TypedType::unit()),
-                })],
+                })
+            ],
         })
     );
 }
