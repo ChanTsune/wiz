@@ -1232,21 +1232,10 @@ fn test_function_overload_by_arguments() {
             sample(1)
         }
         ";
-    let ast = parse_from_string(source).unwrap();
 
-    let mut ast2hlir = Ast2HLIR::new();
-
-    let mut file = ast2hlir.file(ast);
-    file.name = String::from("test");
-
-    let mut resolver = TypeResolver::new();
-    let _ = resolver.detect_type(&file).unwrap();
-    let _ = resolver.preload_file(file.clone()).unwrap();
-    let f = resolver.file(file);
-
-    assert_eq!(
-        f,
-        Result::Ok(TypedFile {
+    check(
+        source,
+        TypedFile {
             name: "test".to_string(),
             uses: vec![],
             body: vec![
@@ -1338,6 +1327,6 @@ fn test_function_overload_by_arguments() {
                     return_type: Some(TypedType::unit()),
                 })
             ],
-        })
+        }
     );
 }
