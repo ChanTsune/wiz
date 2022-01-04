@@ -64,11 +64,13 @@ impl NameSpace {
         }
     }
 
-    pub(crate) fn get_child(&self, mut ns: Vec<String>) -> Option<&NameSpace> {
+    pub(crate) fn get_child<T>(&self, mut ns: Vec<T>) -> Option<&NameSpace>
+    where T: ToString
+    {
         if ns.is_empty() {
             Some(self)
         } else {
-            let n = ns.remove(0);
+            let n = ns.remove(0).to_string();
             let m = self.values.get(&*n)?;
             match m {
                 EnvValue::NameSpace(m) => m.get_child(ns),
@@ -77,11 +79,11 @@ impl NameSpace {
         }
     }
 
-    pub(crate) fn get_child_mut(&mut self, mut ns: Vec<String>) -> Option<&mut NameSpace> {
+    pub(crate) fn get_child_mut<T>(&mut self, mut ns: Vec<T>) -> Option<&mut NameSpace> where T: ToString{
         if ns.is_empty() {
             Some(self)
         } else {
-            let n = ns.remove(0);
+            let n = ns.remove(0).to_string();
             let m = self.values.get_mut(&*n)?;
             match m {
                 EnvValue::NameSpace(m) => m.get_child_mut(ns),
@@ -90,9 +92,9 @@ impl NameSpace {
         }
     }
 
-    pub(crate) fn set_child(&mut self, mut ns: Vec<String>) {
+    pub(crate) fn set_child<T>(&mut self, mut ns: Vec<T>) where T: ToString {
         if !ns.is_empty() {
-            let n = &ns.remove(0);
+            let n = &ns.remove(0).to_string();
             if !self.values.contains_key(n) {
                 let mut name = self.name_space.clone();
                 name.push(n.clone());
@@ -596,61 +598,61 @@ mod tests {
 
     #[test]
     fn test_name_space() {
-        let mut name_space = NameSpace::new(vec![]);
+        let mut name_space = NameSpace::empty();
         name_space
             .values
             .insert(String::from("Int64"), EnvValue::from(TypedType::int64()));
-        name_space.set_child(vec![String::from("builtin")]);
+        name_space.set_child(vec!["builtin"]);
         assert_eq!(
-            name_space.get_child_mut(vec![String::from("builtin")]),
-            Some(&mut NameSpace::new(vec![String::from("builtin")]))
+            name_space.get_child_mut(vec!["builtin"]),
+            Some(&mut NameSpace::new(vec!["builtin"]))
         );
     }
 
     #[test]
     fn test_name_space_child_name_space() {
-        let mut name_space = NameSpace::new(vec![]);
-        name_space.set_child(vec![String::from("child")]);
+        let mut name_space = NameSpace::empty();
+        name_space.set_child(vec!["child"]);
         let ns = name_space
-            .get_child_mut(vec![String::from("child")])
+            .get_child_mut(vec!["child"])
             .unwrap();
-        assert_eq!(ns.name_space, vec![String::from("child")]);
+        assert_eq!(ns.name_space, vec!["child"]);
     }
 
     #[test]
     fn test_name_space_grandchild_name_space() {
-        let mut name_space = NameSpace::new(vec![]);
-        name_space.set_child(vec![String::from("child"), String::from("grandchild")]);
+        let mut name_space = NameSpace::empty();
+        name_space.set_child(vec!["child", "grandchild"]);
         let ns = name_space
-            .get_child_mut(vec![String::from("child"), String::from("grandchild")])
+            .get_child_mut(vec!["child", "grandchild"])
             .unwrap();
         assert_eq!(
             ns.name_space,
-            vec![String::from("child"), String::from("grandchild")]
+            vec!["child", "grandchild"]
         );
     }
 
     #[test]
     fn test_name_space_grate_grandchild_name_space() {
-        let mut name_space = NameSpace::new(vec![]);
+        let mut name_space = NameSpace::empty();
         name_space.set_child(vec![
-            String::from("child"),
-            String::from("grandchild"),
-            String::from("grate-grandchild"),
+            "child",
+            "grandchild",
+            "grate-grandchild",
         ]);
         let ns = name_space
             .get_child_mut(vec![
-                String::from("child"),
-                String::from("grandchild"),
-                String::from("grate-grandchild"),
+                "child",
+                "grandchild",
+                "grate-grandchild",
             ])
             .unwrap();
         assert_eq!(
             ns.name_space,
             vec![
-                String::from("child"),
-                String::from("grandchild"),
-                String::from("grate-grandchild")
+                "child",
+                "grandchild",
+                "grate-grandchild"
             ]
         );
     }
