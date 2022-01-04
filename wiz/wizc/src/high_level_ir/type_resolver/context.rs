@@ -49,16 +49,16 @@ pub struct ResolverContext {
 }
 
 impl NameSpace {
-
     pub(crate) fn empty() -> Self {
         Self::default()
     }
 
     pub(crate) fn new<T>(name: Vec<T>) -> Self
-    where T: ToString
+    where
+        T: ToString,
     {
         Self {
-            name_space: name.into_iter().map(|i|i.to_string()).collect(),
+            name_space: name.into_iter().map(|i| i.to_string()).collect(),
             types: Default::default(),
             values: Default::default(),
         }
