@@ -651,11 +651,11 @@ impl ResolverContext {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashSet;
     use crate::high_level_ir::type_resolver::context::{EnvValue, NameSpace, ResolverContext};
     use crate::high_level_ir::typed_type::{
         Package, TypedNamedValueType, TypedPackage, TypedType, TypedValueType,
     };
+    use std::collections::HashSet;
 
     #[test]
     fn test_name_space() {
@@ -711,13 +711,13 @@ mod tests {
             env.names.get("Int32"),
             Some(&(
                 vec![],
-                EnvValue::Value(HashSet::from([TypedType::Type(Box::new(TypedType::Value(
-                    TypedValueType::Value(TypedNamedValueType {
+                EnvValue::Value(HashSet::from([TypedType::Type(Box::new(
+                    TypedType::Value(TypedValueType::Value(TypedNamedValueType {
                         package: TypedPackage::Resolved(Package::global()),
                         name: "Int32".to_string(),
                         type_args: None
-                    })
-                )))]))
+                    }))
+                ))]))
             ))
         );
     }
