@@ -65,7 +65,8 @@ impl NameSpace {
     }
 
     pub(crate) fn get_child<T>(&self, mut ns: Vec<T>) -> Option<&NameSpace>
-    where T: ToString
+    where
+        T: ToString,
     {
         if ns.is_empty() {
             Some(self)
@@ -79,7 +80,10 @@ impl NameSpace {
         }
     }
 
-    pub(crate) fn get_child_mut<T>(&mut self, mut ns: Vec<T>) -> Option<&mut NameSpace> where T: ToString{
+    pub(crate) fn get_child_mut<T>(&mut self, mut ns: Vec<T>) -> Option<&mut NameSpace>
+    where
+        T: ToString,
+    {
         if ns.is_empty() {
             Some(self)
         } else {
@@ -92,7 +96,10 @@ impl NameSpace {
         }
     }
 
-    pub(crate) fn set_child<T>(&mut self, mut ns: Vec<T>) where T: ToString {
+    pub(crate) fn set_child<T>(&mut self, mut ns: Vec<T>)
+    where
+        T: ToString,
+    {
         if !ns.is_empty() {
             let n = &ns.remove(0).to_string();
             if !self.values.contains_key(n) {
@@ -613,9 +620,7 @@ mod tests {
     fn test_name_space_child_name_space() {
         let mut name_space = NameSpace::empty();
         name_space.set_child(vec!["child"]);
-        let ns = name_space
-            .get_child_mut(vec!["child"])
-            .unwrap();
+        let ns = name_space.get_child_mut(vec!["child"]).unwrap();
         assert_eq!(ns.name_space, vec!["child"]);
     }
 
@@ -626,34 +631,19 @@ mod tests {
         let ns = name_space
             .get_child_mut(vec!["child", "grandchild"])
             .unwrap();
-        assert_eq!(
-            ns.name_space,
-            vec!["child", "grandchild"]
-        );
+        assert_eq!(ns.name_space, vec!["child", "grandchild"]);
     }
 
     #[test]
     fn test_name_space_grate_grandchild_name_space() {
         let mut name_space = NameSpace::empty();
-        name_space.set_child(vec![
-            "child",
-            "grandchild",
-            "grate-grandchild",
-        ]);
+        name_space.set_child(vec!["child", "grandchild", "grate-grandchild"]);
         let ns = name_space
-            .get_child_mut(vec![
-                "child",
-                "grandchild",
-                "grate-grandchild",
-            ])
+            .get_child_mut(vec!["child", "grandchild", "grate-grandchild"])
             .unwrap();
         assert_eq!(
             ns.name_space,
-            vec![
-                "child",
-                "grandchild",
-                "grate-grandchild"
-            ]
+            vec!["child", "grandchild", "grate-grandchild"]
         );
     }
 
