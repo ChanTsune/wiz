@@ -11,7 +11,7 @@ use crate::high_level_ir::typed_type::{
 use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::HashMap;
 
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Default, Eq, PartialEq, Clone)]
 pub struct NameSpace {
     name_space: Vec<String>,
     types: HashMap<String, ResolverStruct>,
@@ -49,9 +49,16 @@ pub struct ResolverContext {
 }
 
 impl NameSpace {
-    pub(crate) fn new(name: Vec<String>) -> Self {
+
+    pub(crate) fn empty() -> Self {
+        Self::default()
+    }
+
+    pub(crate) fn new<T>(name: Vec<T>) -> Self
+    where T: ToString
+    {
         Self {
-            name_space: name,
+            name_space: name.into_iter().map(|i|i.to_string()).collect(),
             types: Default::default(),
             values: Default::default(),
         }
@@ -174,7 +181,7 @@ impl From<NameSpace> for EnvValue {
 
 impl ResolverContext {
     pub(crate) fn new() -> Self {
-        let mut ns = NameSpace::new(vec![]);
+        let mut ns = NameSpace::empty();
 
         for t in TypedType::builtin_types() {
             match &t {
