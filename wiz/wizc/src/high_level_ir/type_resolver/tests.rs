@@ -1219,5 +1219,120 @@ fn test_toplevel_var() {
                 }),
             })],
         },
+    )
+}
+
+#[test]
+fn test_function_overload_by_arguments() {
+    let source = r"
+        fun sample(_ d: Double) { }
+        fun sample(_ i: Int64) { }
+        fun call() {
+            sample(0.5)
+            sample(1)
+        }
+        ";
+    let ast = parse_from_string(source).unwrap();
+
+    let mut ast2hlir = Ast2HLIR::new();
+
+    let mut file = ast2hlir.file(ast);
+    file.name = String::from("test");
+
+    let mut resolver = TypeResolver::new();
+    let _ = resolver.detect_type(&file).unwrap();
+    let _ = resolver.preload_file(file.clone()).unwrap();
+    let f = resolver.file(file);
+
+    assert_eq!(
+        f,
+        Result::Ok(TypedFile {
+            name: "test".to_string(),
+            uses: vec![],
+            body: vec![
+                TypedDecl::Fun(TypedFun {
+                    annotations: TypedAnnotations::new(),
+                    package: TypedPackage::Resolved(Package::from(vec!["test"])),
+                    modifiers: vec![],
+                    name: "sample".to_string(),
+                    type_params: None,
+                    arg_defs: vec![TypedArgDef {
+                        label: "_".to_string(),
+                        name: "d".to_string(),
+                        type_: TypedType::double(),
+                    }],
+                    body: Option::from(TypedFunBody::Block(TypedBlock {
+                        body: vec![]
+                    })),
+                    return_type: Some(TypedType::unit()),
+                }),
+                TypedDecl::Fun(TypedFun {
+                    annotations: TypedAnnotations::new(),
+                    package: TypedPackage::Resolved(Package::from(vec!["test"])),
+                    modifiers: vec![],
+                    name: "sample".to_string(),
+                    type_params: None,
+                    arg_defs: vec![TypedArgDef {
+                        label: "_".to_string(),
+                        name: "i".to_string(),
+                        type_: TypedType::int64(),
+                    }],
+                    body: Option::from(TypedFunBody::Block(TypedBlock {
+                        body: vec![]
+                    })),
+                    return_type: Some(TypedType::unit()),
+                }),
+                TypedDecl::Fun(TypedFun {
+                    annotations: TypedAnnotations::new(),
+                    package: TypedPackage::Resolved(Package::from(vec!["test"])),
+                    modifiers: vec![],
+                    name: "call".to_string(),
+                    type_params: None,
+                    arg_defs: vec![],
+                    body: Option::from(TypedFunBody::Block(TypedBlock {
+                        body: vec![
+                            TypedStmt::Expr(TypedExpr::Call(TypedCall {
+                                target: Box::new(TypedExpr::Name(TypedName {
+                                    package: TypedPackage::Resolved(Package::from(vec!["test"])),
+                                    name: "sample".to_string(),
+                                    type_: Some(TypedType::Function(Box::new(TypedFunctionType {
+                                        arguments: vec![TypedArgType {
+                                            label: "_".to_string(),
+                                            typ: TypedType::double(),
+                                        }],
+                                        return_type: TypedType::unit(),
+                                    }))),
+                                })),
+                                args: vec![TypedCallArg {
+                                    label: None,
+                                    arg: Box::new(TypedExpr::Literal(TypedLiteral::FloatingPoint { value: "0.5".to_string(), type_: Some(TypedType::double()) })),
+                                    is_vararg: false,
+                                }],
+                                type_: Some(TypedType::unit()),
+                            })),
+                            TypedStmt::Expr(TypedExpr::Call(TypedCall {
+                                target: Box::new(TypedExpr::Name(TypedName {
+                                    package: TypedPackage::Resolved(Package::from(vec!["test"])),
+                                    name: "sample".to_string(),
+                                    type_: Some(TypedType::Function(Box::new(TypedFunctionType {
+                                        arguments: vec![TypedArgType {
+                                            label: "_".to_string(),
+                                            typ: TypedType::int64(),
+                                        }],
+                                        return_type: TypedType::unit(),
+                                    }))),
+                                })),
+                                args: vec![TypedCallArg {
+                                    label: None,
+                                    arg: Box::new(TypedExpr::Literal(TypedLiteral::Integer { value: "1".to_string(), type_: Some(TypedType::int64()) })),
+                                    is_vararg: false,
+                                }],
+                                type_: Some(TypedType::unit()),
+                            })),
+                        ]
+                    })),
+                    return_type: Some(TypedType::unit()),
+                })],
+        })
     );
 }
