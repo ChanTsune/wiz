@@ -659,10 +659,9 @@ impl HLIR2MLIR {
                 target: Box::new(self.expr(*s.target)),
                 index: Box::new(self.expr(s.indexes[0].clone())),
                 type_: match t {
-                    TypedType::Value(v) => match v {
-                        TypedValueType::Array(e, _) => self.type_(*e).into_value_type(),
-                        _ => panic!("Never execution branch executed!!"),
-                    },
+                    TypedType::Value(TypedValueType::Array(e, _)) => {
+                        self.type_(*e).into_value_type()
+                    }
                     _ => panic!("Never execution branch executed!!"),
                 },
             })

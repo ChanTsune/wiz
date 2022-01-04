@@ -1,7 +1,7 @@
 use crate::expr::{MLExpr, MLName};
 use crate::format::Formatter;
 use crate::ml_node::MLNode;
-use crate::ml_type::{MLType, MLValueType};
+use crate::ml_type::MLValueType;
 use std::fmt;
 use std::fmt::Write;
 
@@ -30,12 +30,6 @@ impl MLNode for MLCall {
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLCallArg {
     pub arg: MLExpr,
-}
-
-impl MLCallArg {
-    pub fn type_(&self) -> MLType {
-        self.arg.type_()
-    }
 }
 
 impl MLNode for MLCallArg {

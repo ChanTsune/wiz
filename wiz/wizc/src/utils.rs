@@ -1,5 +1,6 @@
 use std::path::Path;
 
+pub(crate) mod get_or_default;
 pub(crate) mod stacked_hash_map;
 
 pub(crate) fn path_string_to_page_name(path: String) -> String {

@@ -4,7 +4,7 @@ pub mod result;
 #[cfg(test)]
 mod tests;
 
-use crate::high_level_ir::type_resolver::context::{EnvValue, ResolverContext, ResolverStruct};
+use crate::high_level_ir::type_resolver::context::{ResolverContext, ResolverStruct};
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_decl::{
@@ -22,7 +22,8 @@ use crate::high_level_ir::typed_stmt::{
     TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
 };
 use crate::high_level_ir::typed_type::{
-    Package, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType, TypedValueType,
+    Package, TypedArgType, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType,
+    TypedValueType,
 };
 
 #[derive(Debug, Clone)]
@@ -157,7 +158,7 @@ impl TypeResolver {
             .map(|a| {
                 let a = self.typed_arg_def(a)?;
                 self.context
-                    .register_to_env(a.name.clone(), EnvValue::from(a.type_.clone()));
+                    .register_to_env(a.name.clone(), a.type_.clone());
                 Result::Ok(a)
             })
             .collect::<Result<Vec<_>>>()?;
@@ -311,11 +312,9 @@ impl TypeResolver {
         };
         self.context.register_to_env(
             v.name.clone(),
-            EnvValue::from(
-                v.type_
-                    .clone()
-                    .ok_or_else(|| ResolverError::from("Cannot resolve variable type"))?,
-            ),
+            v.type_
+                .clone()
+                .ok_or_else(|| ResolverError::from("Cannot resolve variable type"))?,
         );
         Result::Ok(v)
     }
@@ -363,7 +362,7 @@ impl TypeResolver {
             .map(|a| {
                 let a = self.typed_arg_def(a)?;
                 self.context
-                    .register_to_env(a.name.clone(), EnvValue::from(a.type_.clone()));
+                    .register_to_env(a.name.clone(), a.type_.clone());
                 Result::Ok(a)
             })
             .collect::<Result<Vec<_>>>()?;
@@ -435,12 +434,9 @@ impl TypeResolver {
     }
 
     fn typed_initializer(&mut self, i: TypedInitializer) -> Result<TypedInitializer> {
-        let self_type = self.context.get_current_type();
+        let self_type = self.context.resolve_current_type()?;
         let ns = self.context.get_current_namespace_mut()?;
-        ns.register_value(
-            String::from("self"),
-            self_type.ok_or_else(|| ResolverError::from("Can not resolve 'self type'"))?,
-        );
+        ns.register_value("self".to_string(), self_type);
         Result::Ok(TypedInitializer {
             args: i
                 .args
@@ -451,7 +447,7 @@ impl TypeResolver {
                     ns.register_value(a.name.clone(), a.type_.clone());
                     Result::Ok(a)
                 })
-                .collect::<Result<Vec<TypedArgDef>>>()?,
+                .collect::<Result<Vec<_>>>()?,
             body: self.typed_fun_body(i.body)?,
         })
     }
@@ -472,7 +468,7 @@ impl TypeResolver {
             .map(|a| {
                 let a = self.typed_arg_def(a)?;
                 self.context
-                    .register_to_env(a.name.clone(), EnvValue::from(a.type_.clone()));
+                    .register_to_env(a.name.clone(), a.type_.clone());
                 Result::Ok(a)
             })
             .collect::<Result<Vec<_>>>()?;
@@ -510,7 +506,7 @@ impl TypeResolver {
 
     pub fn expr(&mut self, e: TypedExpr, type_annotation: Option<TypedType>) -> Result<TypedExpr> {
         Result::Ok(match e {
-            TypedExpr::Name(n) => TypedExpr::Name(self.typed_name(n)?),
+            TypedExpr::Name(n) => TypedExpr::Name(self.typed_name(n, type_annotation)?),
             TypedExpr::Literal(l) => TypedExpr::Literal(self.typed_literal(l, type_annotation)?),
             TypedExpr::BinOp(b) => TypedExpr::BinOp(self.typed_binop(b)?),
             TypedExpr::UnaryOp(u) => TypedExpr::UnaryOp(self.typed_unary_op(u)?),
@@ -529,15 +525,15 @@ impl TypeResolver {
         })
     }
 
-    pub fn typed_name(&mut self, n: TypedName) -> Result<TypedName> {
+    pub fn typed_name(
+        &mut self,
+        n: TypedName,
+        type_annotation: Option<TypedType>,
+    ) -> Result<TypedName> {
         let (type_, package) = self.context.resolve_name_type(
-            match n.package {
-                TypedPackage::Raw(p) => p.names,
-                TypedPackage::Resolved(_) => {
-                    panic!()
-                }
-            },
+            n.package.into_raw().names,
             n.name.clone(),
+            type_annotation,
         )?;
         Result::Ok(TypedName {
             package,
@@ -788,7 +784,22 @@ impl TypeResolver {
     }
 
     pub fn typed_call(&mut self, c: TypedCall) -> Result<TypedCall> {
-        let target = Box::new(self.expr(*c.target, None)?);
+        let args = c
+            .args
+            .into_iter()
+            .map(|c| self.typed_call_arg(c))
+            .collect::<Result<Vec<_>>>()?;
+        let arg_annotation = TypedType::Function(Box::new(TypedFunctionType {
+            arguments: args
+                .iter()
+                .map(|a| TypedArgType {
+                    label: a.label.clone().unwrap_or("_".to_string()),
+                    typ: a.arg.type_().unwrap(),
+                })
+                .collect(),
+            return_type: TypedType::noting(),
+        }));
+        let target = Box::new(self.expr(*c.target, Some(arg_annotation))?);
         let c_type = match target.type_().unwrap() {
             TypedType::Value(v) => Err(ResolverError::from(format!("{:?} is not callable.", v))),
             TypedType::Type(t) => Err(ResolverError::from(format!("{:?} is not callable.", t))),
@@ -797,11 +808,7 @@ impl TypeResolver {
         }?;
         Ok(TypedCall {
             target,
-            args: c
-                .args
-                .into_iter()
-                .map(|c| self.typed_call_arg(c))
-                .collect::<Result<Vec<_>>>()?,
+            args,
             type_: Some(c_type),
         })
     }
