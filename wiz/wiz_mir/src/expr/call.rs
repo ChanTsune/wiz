@@ -32,12 +32,6 @@ pub struct MLCallArg {
     pub arg: MLExpr,
 }
 
-impl MLCallArg {
-    pub fn type_(&self) -> MLType {
-        self.arg.type_()
-    }
-}
-
 impl MLNode for MLCallArg {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         self.arg.fmt(f)
