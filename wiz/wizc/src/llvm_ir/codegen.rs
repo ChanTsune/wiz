@@ -229,7 +229,7 @@ impl<'ctx> CodeGen<'ctx> {
                     self.expr(arg.arg)
                 }
             } else if let MLValueType::Pointer(p) = arg.arg.type_().into_value_type() {
-                let t = arg.type_().into_value_type();
+                let t = MLValueType::Pointer(p);
                 let e = self.expr(arg.arg);
                 self.load_if_pointer_value(e, &t)
             } else {
