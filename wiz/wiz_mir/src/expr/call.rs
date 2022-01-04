@@ -1,7 +1,7 @@
 use crate::expr::{MLExpr, MLName};
 use crate::format::Formatter;
 use crate::ml_node::MLNode;
-use crate::ml_type::{MLType, MLValueType};
+use crate::ml_type::{MLValueType};
 use std::fmt;
 use std::fmt::Write;
 
