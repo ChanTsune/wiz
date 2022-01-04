@@ -1,4 +1,5 @@
 mod resolver_struct;
+mod env_value;
 
 pub(crate) use crate::high_level_ir::type_resolver::context::resolver_struct::ResolverStruct;
 use crate::high_level_ir::type_resolver::error::ResolverError;
@@ -10,6 +11,7 @@ use crate::high_level_ir::typed_type::{
 };
 use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::HashMap;
+pub(crate) use crate::high_level_ir::type_resolver::context::env_value::EnvValue;
 
 #[derive(Debug, Default, Eq, PartialEq, Clone)]
 pub struct NameSpace {
@@ -22,12 +24,6 @@ pub struct NameSpace {
 pub struct NameEnvironment {
     names: HashMap<String, (Vec<String>, EnvValue)>,
     types: HashMap<String, (Vec<String>, ResolverStruct)>,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub(crate) enum EnvValue {
-    NameSpace(NameSpace),
-    Value(TypedType),
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -173,18 +169,6 @@ impl NameEnvironment {
                 .into_iter()
                 .map(|(k, v)| (k, (vec![], v))),
         )
-    }
-}
-
-impl From<TypedType> for EnvValue {
-    fn from(typed_type: TypedType) -> Self {
-        Self::Value(typed_type)
-    }
-}
-
-impl From<NameSpace> for EnvValue {
-    fn from(ns: NameSpace) -> Self {
-        Self::NameSpace(ns)
     }
 }
 
