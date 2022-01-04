@@ -147,7 +147,8 @@ impl NameSpace {
                 }
             };
         } else {
-            self.values.insert(name, EnvValue::from(HashSet::from([type_])));
+            self.values
+                .insert(name, EnvValue::from(HashSet::from([type_])));
         }
     }
 
@@ -456,39 +457,46 @@ impl ResolverContext {
                     .get_value(&n)
                     .ok_or_else(|| ResolverError::from(format!("Cannot resolve name {:?}", n)))?;
                 Self::resolve_overload(t_set, type_annotation)
-                    .map(|t|{
+                    .map(|t| {
                         let is_function = t.is_function_type();
-                        (t, if is_function {
-                            TypedPackage::Resolved(Package::from(ns.name_space.clone()))
-                        } else {
-                            TypedPackage::Resolved(Package::global())
-                        })
+                        (
+                            t,
+                            if is_function {
+                                TypedPackage::Resolved(Package::from(ns.name_space.clone()))
+                            } else {
+                                TypedPackage::Resolved(Package::global())
+                            },
+                        )
                     })
-                    .ok_or_else(||{ResolverError::from(format!("Cannot resolve name {:?}", n))})
+                    .ok_or_else(|| ResolverError::from(format!("Cannot resolve name {:?}", n)))
             }
-            (ns, EnvValue::Value(t_set)) => {
-                Self::resolve_overload(t_set, type_annotation)
-                    .map(|t|{
-                        let is_function = t.is_function_type();
-                        (t, if is_function {
+            (ns, EnvValue::Value(t_set)) => Self::resolve_overload(t_set, type_annotation)
+                .map(|t| {
+                    let is_function = t.is_function_type();
+                    (
+                        t,
+                        if is_function {
                             TypedPackage::Resolved(Package::from(ns.clone()))
                         } else {
                             TypedPackage::Resolved(Package::global())
-                        })
-                    })
-                    .ok_or_else(||{ResolverError::from(format!("Cannot resolve name {:?}", n))})
-            },
+                        },
+                    )
+                })
+                .ok_or_else(|| ResolverError::from(format!("Cannot resolve name {:?}", n))),
         }
     }
 
-    fn resolve_overload(type_set: &HashSet<TypedType>, type_annotation: Option<TypedType>) -> Option<TypedType> {
+    fn resolve_overload(
+        type_set: &HashSet<TypedType>,
+        type_annotation: Option<TypedType>,
+    ) -> Option<TypedType> {
         for t in type_set {
             if type_set.len() == 1 {
-                return Some(t.clone())
+                return Some(t.clone());
             } else if let Some(TypedType::Function(annotation)) = &type_annotation {
                 if let TypedType::Function(typ) = t {
                     if annotation.arguments == typ.arguments {
-                        return Some(t.clone())
+                        return Some(t.clone());
                     }
                 }
             }

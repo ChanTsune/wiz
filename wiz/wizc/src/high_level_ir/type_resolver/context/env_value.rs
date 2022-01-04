@@ -1,6 +1,6 @@
-use std::collections::HashSet;
 use crate::high_level_ir::type_resolver::context::NameSpace;
 use crate::high_level_ir::typed_type::TypedType;
+use std::collections::HashSet;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub(crate) enum EnvValue {
@@ -64,7 +64,6 @@ impl From<HashSet<TypedType>> for EnvValue {
         Self::Value(typed_type)
     }
 }
-
 
 #[cfg(test)]
 mod tests {
