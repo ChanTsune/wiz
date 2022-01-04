@@ -362,6 +362,10 @@ impl TypedType {
         Self::Value(TypedValueType::string())
     }
 
+    pub fn string_ref() -> Self {
+        Self::Value(TypedValueType::Reference(Box::new(Self::string())))
+    }
+
     pub fn unsafe_pointer(typ: TypedType) -> Self {
         Self::Value(TypedValueType::Pointer(Box::new(typ)))
     }
@@ -447,6 +451,10 @@ impl TypedType {
 
     pub fn is_string(&self) -> bool {
         Self::string().eq(self)
+    }
+
+    pub fn is_string_ref(&self) -> bool {
+        Self::string_ref().eq(self)
     }
 }
 
