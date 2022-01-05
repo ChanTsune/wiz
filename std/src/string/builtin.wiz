@@ -3,7 +3,7 @@ use std::collection::vector::UInt8Vector
 struct Text {
     val buffer: UInt8Vector
 
-    init(_ literal: &String) {
+    init(_ literal: &str) {
         val literalLength = strlen(literal)
         var i = 0
         while literalLength > i {
