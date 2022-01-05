@@ -1123,7 +1123,7 @@ impl<'ctx> CodeGen<'ctx> {
                 MLPrimitiveType::Float => AnyTypeEnum::from(self.context.f32_type()),
                 MLPrimitiveType::Double => AnyTypeEnum::from(self.context.f64_type()),
                 MLPrimitiveType::String => {
-                    AnyTypeEnum::from(self.context.i8_type().ptr_type(AddressSpace::Generic))
+                    AnyTypeEnum::from(self.context.i8_type())
                 }
                 t => panic!("Invalid Primitive Type {:?}", t),
             },
