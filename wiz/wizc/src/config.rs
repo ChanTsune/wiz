@@ -7,7 +7,7 @@ pub struct Config<'ctx> {
     type_: Option<&'ctx str>,
     output: Option<&'ctx str>,
     out_dir: Option<&'ctx str>,
-    paths: Vec<String>,
+    paths: Vec<&'ctx str>,
     l: Option<&'ctx str>,
     target_triple: Option<&'ctx str>,
 }
@@ -42,7 +42,7 @@ impl<'ctx> From<&'ctx ArgMatches> for Config<'ctx> {
             type_: matches.value_of("type"),
             output: matches.value_of("output"),
             out_dir: matches.value_of("out-dir"),
-            paths: matches.values_of_lossy("path").unwrap_or_default(),
+            paths: matches.values_of("path").unwrap_or_default().collect(),
             l: None,
             target_triple: matches.value_of("target-triple"),
         }
