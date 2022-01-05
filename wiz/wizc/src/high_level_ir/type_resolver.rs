@@ -740,8 +740,18 @@ impl TypeResolver {
                         type_: Some(*p),
                     })
                 }
-                TypedValueType::Reference(_) => {
-                    todo!()
+                TypedValueType::Reference(r) => {
+                    if r.is_string() {
+                        return Result::Ok(TypedSubscript {
+                            target: Box::new(target),
+                            indexes: s
+                                .indexes
+                                .into_iter()
+                                .map(|i| self.expr(i, None))
+                                .collect::<Result<Vec<_>>>()?,
+                            type_: Some(TypedType::uint8()),
+                        });
+                    }
                 }
             }
         }
