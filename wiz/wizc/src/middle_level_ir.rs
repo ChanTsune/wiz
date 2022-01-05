@@ -648,7 +648,7 @@ impl HLIR2MLIR {
                 },
                 t => panic!("function pointer detected. {:?}", t),
             }
-        } else if t.is_string() {
+        } else if t.is_string() || t.is_string_ref() {
             MLExpr::PrimitiveSubscript(MLSubscript {
                 target: Box::new(self.expr(*s.target)),
                 index: Box::new(self.expr(s.indexes[0].clone())),

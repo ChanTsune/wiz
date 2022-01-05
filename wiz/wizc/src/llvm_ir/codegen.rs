@@ -1122,9 +1122,7 @@ impl<'ctx> CodeGen<'ctx> {
                 MLPrimitiveType::Bool => AnyTypeEnum::from(self.context.bool_type()),
                 MLPrimitiveType::Float => AnyTypeEnum::from(self.context.f32_type()),
                 MLPrimitiveType::Double => AnyTypeEnum::from(self.context.f64_type()),
-                MLPrimitiveType::String => {
-                    AnyTypeEnum::from(self.context.i8_type().ptr_type(AddressSpace::Generic))
-                }
+                MLPrimitiveType::String => AnyTypeEnum::from(self.context.i8_type()),
                 t => panic!("Invalid Primitive Type {:?}", t),
             },
             MLValueType::Struct(t) => AnyTypeEnum::from(self.module.get_struct_type(&*t).unwrap()),

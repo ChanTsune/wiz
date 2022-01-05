@@ -501,7 +501,7 @@ impl Ast2HLIR {
                 close_quote: _,
             } => TypedLiteral::String {
                 value,
-                type_: Some(TypedType::string()),
+                type_: Some(TypedType::string_ref()),
             },
             LiteralSyntax::Boolean(syntax) => TypedLiteral::Boolean {
                 value: syntax.token,

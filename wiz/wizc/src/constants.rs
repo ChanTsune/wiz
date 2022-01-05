@@ -21,4 +21,4 @@ pub(crate) const F128: &str = "Double128"; //"f128";
 pub(crate) const UNIT: &str = "Unit"; // "unit";
 pub(crate) const NOTING: &str = "Noting"; // "noting";
 
-pub(crate) const STRING: &str = "String"; // "str";
+pub(crate) const STRING: &str = "str";

@@ -1,6 +1,6 @@
 
 #[no_mangle]
-fun puts(_ item: String): Unit
+fun puts(_ item: &str): Unit
 
 #[no_mangle]
 fun putchar(_ item: UInt32): Unit
@@ -18,7 +18,7 @@ fun realloc(_ pointer: *UInt8, _ size: UInt64): *UInt8
 fun free(_ ptr: *UInt8): Unit
 
 #[no_mangle]
-fun fopen(_ fileName:String, _ mode:String): *UInt8
+fun fopen(_ fileName: &str, _ mode: &str): *UInt8
 
 #[no_mangle]
 fun fclose(_ filePointer: *UInt8): Unit
@@ -30,10 +30,10 @@ fun fread(_ buf:*UInt8, _ size: UInt64, _ n: UInt64, _ fp: *UInt8): UInt64
 fun fwrite(_ ptr:*UInt8, _ size:Int64, _ nmemb: Int64, _ stream: *UInt8): Int64
 
 #[no_mangle]
-fun strlen(_ item: String): UInt64
+fun strlen(_ item: &str): UInt64
 
 #[no_mangle]
-fun atoi(_ item: String): Int64
+fun atoi(_ item: &str): Int64
 
 #[no_mangle]
 fun memmove(_ dist: *UInt8, _ src: *UInt8, _ size: UInt64): *UInt8
