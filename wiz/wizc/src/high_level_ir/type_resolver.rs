@@ -234,6 +234,7 @@ impl TypeResolver {
             })?;
             rs.static_functions.insert(String::from("init"), type_);
         }
+        self.context.clear_current_type();
 
         Result::Ok(())
     }
@@ -434,22 +435,26 @@ impl TypeResolver {
     }
 
     fn typed_initializer(&mut self, i: TypedInitializer) -> Result<TypedInitializer> {
+        self.context.push_local_stack();
+
         let self_type = self.context.resolve_current_type()?;
-        let ns = self.context.get_current_namespace_mut()?;
-        ns.register_value("self".to_string(), self_type);
-        Result::Ok(TypedInitializer {
+        self.context.register_to_env("self".to_string(), self_type);
+
+        let result = TypedInitializer {
             args: i
                 .args
                 .into_iter()
                 .map(|a| {
                     let a = self.typed_arg_def(a)?;
-                    let ns = self.context.get_current_namespace_mut()?;
-                    ns.register_value(a.name.clone(), a.type_.clone());
+                    self.context
+                        .register_to_env(a.name.clone(), a.type_.clone());
                     Result::Ok(a)
                 })
                 .collect::<Result<Vec<_>>>()?,
             body: self.typed_fun_body(i.body)?,
-        })
+        };
+        self.context.pop_local_stack();
+        Result::Ok(result)
     }
 
     fn typed_stored_property(&mut self, s: TypedStoredProperty) -> Result<TypedStoredProperty> {
@@ -688,7 +693,7 @@ impl TypeResolver {
         let target = self.expr(*m.target, None)?;
         let type_ = self
             .context
-            .resolve_member_type(target.type_().unwrap(), m.name.clone())?;
+            .resolve_member_type(target.type_().unwrap(), &m.name)?;
         Result::Ok(TypedInstanceMember {
             target: Box::new(target),
             name: m.name,
