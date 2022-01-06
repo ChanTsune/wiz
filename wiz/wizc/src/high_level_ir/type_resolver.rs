@@ -234,6 +234,7 @@ impl TypeResolver {
             })?;
             rs.static_functions.insert(String::from("init"), type_);
         }
+        self.context.clear_current_type();
 
         Result::Ok(())
     }
