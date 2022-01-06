@@ -446,7 +446,8 @@ impl TypeResolver {
                 .into_iter()
                 .map(|a| {
                     let a = self.typed_arg_def(a)?;
-                    self.context.register_to_env(a.name.clone(), a.type_.clone());
+                    self.context
+                        .register_to_env(a.name.clone(), a.type_.clone());
                     Result::Ok(a)
                 })
                 .collect::<Result<Vec<_>>>()?,
