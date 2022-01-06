@@ -376,9 +376,9 @@ impl ResolverContext {
                     let rs = ns.get_type(&v.name).ok_or_else(|| {
                         ResolverError::from(format!("Can not resolve type {:?}", t))
                     })?;
-                    rs.get_instance_member_type(&name)
-                        .cloned()
-                        .ok_or_else(|| ResolverError::from(format!("{:?} not has member named `{}`", t, name)))
+                    rs.get_instance_member_type(&name).cloned().ok_or_else(|| {
+                        ResolverError::from(format!("{:?} not has member named `{}`", t, name))
+                    })
                 }
                 TypedValueType::Array(_, _) => {
                     todo!()
@@ -404,7 +404,10 @@ impl ResolverContext {
                             ResolverError::from(format!("Can not resolve type {:?}", t))
                         })?;
                         rs.static_functions.get(name).cloned().ok_or_else(|| {
-                            ResolverError::from(format!("{:?} not has static member named `{}`", t, name))
+                            ResolverError::from(format!(
+                                "{:?} not has static member named `{}`",
+                                t, name
+                            ))
                         })
                     }
                     TypedValueType::Array(_, _) => {
@@ -468,7 +471,12 @@ impl ResolverContext {
                             },
                         )
                     })
-                    .ok_or_else(|| ResolverError::from(format!("Dose not match any overloaded function `{}`", n)))
+                    .ok_or_else(|| {
+                        ResolverError::from(format!(
+                            "Dose not match any overloaded function `{}`",
+                            n
+                        ))
+                    })
             }
             (ns, EnvValue::Value(t_set)) => Self::resolve_overload(t_set, type_annotation)
                 .map(|t| {
@@ -482,7 +490,12 @@ impl ResolverContext {
                         },
                     )
                 })
-                .ok_or_else(|| ResolverError::from(format!("Dose not match any overloaded function `{}`", name))),
+                .ok_or_else(|| {
+                    ResolverError::from(format!(
+                        "Dose not match any overloaded function `{}`",
+                        name
+                    ))
+                }),
         }
     }
 
