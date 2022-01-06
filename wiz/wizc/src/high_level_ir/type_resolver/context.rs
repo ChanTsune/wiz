@@ -368,7 +368,7 @@ impl ResolverContext {
         };
     }
 
-    pub fn resolve_member_type(&mut self, t: TypedType, name: String) -> Result<TypedType> {
+    pub fn resolve_member_type(&mut self, t: TypedType, name: &str) -> Result<TypedType> {
         match &t {
             TypedType::Value(v) => match v {
                 TypedValueType::Value(v) => {
@@ -378,7 +378,7 @@ impl ResolverContext {
                     })?;
                     rs.get_instance_member_type(&name)
                         .cloned()
-                        .ok_or_else(|| ResolverError::from(format!("{:?} not has {:?}", t, name)))
+                        .ok_or_else(|| ResolverError::from(format!("{:?} not has member named `{}`", t, name)))
                 }
                 TypedValueType::Array(_, _) => {
                     todo!()
@@ -393,7 +393,7 @@ impl ResolverContext {
                     todo!()
                 }
             },
-            TypedType::Type(v) => match (**v).clone() {
+            TypedType::Type(v) => match &**v {
                 TypedType::Self_ => {
                     todo!()
                 }
@@ -403,8 +403,8 @@ impl ResolverContext {
                         let rs = ns.get_type(&v.name).ok_or_else(|| {
                             ResolverError::from(format!("Can not resolve type {:?}", t))
                         })?;
-                        rs.static_functions.get(&name).cloned().ok_or_else(|| {
-                            ResolverError::from(format!("{:?} not has {:?}", t, name))
+                        rs.static_functions.get(name).cloned().ok_or_else(|| {
+                            ResolverError::from(format!("{:?} not has static member named `{}`", t, name))
                         })
                     }
                     TypedValueType::Array(_, _) => {
@@ -468,7 +468,7 @@ impl ResolverContext {
                             },
                         )
                     })
-                    .ok_or_else(|| ResolverError::from(format!("Cannot resolve name {:?}", n)))
+                    .ok_or_else(|| ResolverError::from(format!("Dose not match any overloaded function `{}`", n)))
             }
             (ns, EnvValue::Value(t_set)) => Self::resolve_overload(t_set, type_annotation)
                 .map(|t| {
@@ -482,7 +482,7 @@ impl ResolverContext {
                         },
                     )
                 })
-                .ok_or_else(|| ResolverError::from(format!("Cannot resolve name {:?}", n))),
+                .ok_or_else(|| ResolverError::from(format!("Dose not match any overloaded function `{}`", name))),
         }
     }
 

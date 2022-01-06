@@ -689,7 +689,7 @@ impl TypeResolver {
         let target = self.expr(*m.target, None)?;
         let type_ = self
             .context
-            .resolve_member_type(target.type_().unwrap(), m.name.clone())?;
+            .resolve_member_type(target.type_().unwrap(), &m.name)?;
         Result::Ok(TypedInstanceMember {
             target: Box::new(target),
             name: m.name,
