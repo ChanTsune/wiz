@@ -13,7 +13,7 @@ pub enum TypedDecl {
     Class,
     Enum,
     Protocol,
-    Extension,
+    Extension(TypedExtension),
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -97,6 +97,16 @@ pub struct TypedMemberFunction {
     pub(crate) arg_defs: Vec<TypedArgDef>,
     pub(crate) body: Option<TypedFunBody>,
     pub(crate) return_type: Option<TypedType>,
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct TypedExtension {
+    pub(crate) annotations: TypedAnnotations,
+    pub(crate) extension_type: TypedType,
+    pub(crate) type_params: Option<Vec<TypedTypeParam>>,
+    pub(crate) stored_properties: Vec<TypedStoredProperty>,
+    pub(crate) computed_properties: Vec<TypedComputedProperty>,
+    pub(crate) member_functions: Vec<TypedMemberFunction>,
 }
 
 impl TypedFun {

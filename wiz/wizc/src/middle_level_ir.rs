@@ -292,7 +292,7 @@ impl HLIR2MLIR {
                 TypedDecl::Protocol => {
                     todo!()
                 }
-                TypedDecl::Extension => {
+                TypedDecl::Extension(e) => {
                     todo!()
                 }
             },
@@ -359,7 +359,7 @@ impl HLIR2MLIR {
             TypedDecl::Class => todo!(),
             TypedDecl::Enum => todo!(),
             TypedDecl::Protocol => todo!(),
-            TypedDecl::Extension => todo!(),
+            TypedDecl::Extension(e) => todo!(),
         };
         Ok(())
     }

@@ -1,8 +1,5 @@
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
-use crate::high_level_ir::typed_decl::{
-    TypedArgDef, TypedComputedProperty, TypedDecl, TypedFun, TypedFunBody, TypedInitializer,
-    TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedVar,
-};
+use crate::high_level_ir::typed_decl::{TypedArgDef, TypedComputedProperty, TypedDecl, TypedExtension, TypedFun, TypedFunBody, TypedInitializer, TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedVar};
 use crate::high_level_ir::typed_expr::{
     TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
     TypedInstanceMember, TypedLambda, TypedLiteral, TypedName, TypedPostfixUnaryOp,
@@ -23,7 +20,7 @@ use std::option::Option::Some;
 use wiz_syntax::syntax::annotation::AnnotationsSyntax;
 use wiz_syntax::syntax::block::BlockSyntax;
 use wiz_syntax::syntax::declaration::fun_syntax::{ArgDef, FunBody, FunSyntax};
-use wiz_syntax::syntax::declaration::VarSyntax;
+use wiz_syntax::syntax::declaration::{ExtensionSyntax, VarSyntax};
 use wiz_syntax::syntax::declaration::{
     Decl, InitializerSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax,
 };
@@ -166,7 +163,7 @@ impl Ast2HLIR {
             Decl::ExternC { .. } => TypedDecl::Class,
             Decl::Enum { .. } => TypedDecl::Enum,
             Decl::Protocol { .. } => TypedDecl::Protocol,
-            Decl::Extension { .. } => TypedDecl::Extension,
+            Decl::Extension(e) => TypedDecl::Extension(self.extension_syntax(e)),
             Decl::Use(_) => {
                 panic!("Never execution branch executed!!")
             }
@@ -356,11 +353,6 @@ impl Ast2HLIR {
             })
             .collect();
         if s.initializers.is_empty() {
-            let struct_type = TypedNamedValueType {
-                package: TypedPackage::Raw(Package::new()),
-                name: s.name.clone(),
-                type_args: None,
-            };
             s.initializers.push(TypedInitializer {
                 args,
                 body: TypedFunBody::Block(TypedBlock {
@@ -374,18 +366,16 @@ impl Ast2HLIR {
                                         target: Box::new(TypedExpr::Name(TypedName {
                                             package: TypedPackage::Raw(Package::new()),
                                             name: "self".to_string(),
-                                            type_: Some(TypedType::Value(TypedValueType::Value(
-                                                struct_type.clone(),
-                                            ))),
+                                            type_: None,
                                         })),
                                         name: p.name.clone(),
                                         is_safe: false,
-                                        type_: Some(p.type_.clone()),
+                                        type_: None,
                                     }),
                                     value: TypedExpr::Name(TypedName {
                                         package: TypedPackage::Raw(Package::new()),
                                         name: p.name.clone(),
-                                        type_: Some(p.type_.clone()),
+                                        type_: None,
                                     }),
                                 },
                             ))
@@ -461,6 +451,17 @@ impl Ast2HLIR {
             annotations: self.annotations(u.annotations),
             package: Package { names },
             alias: u.alias.map(|a| a.name.token),
+        }
+    }
+
+    fn extension_syntax(&self, e: ExtensionSyntax) -> TypedExtension {
+        TypedExtension {
+            annotations: Default::default(),
+            extension_type: TypedType::Self_,
+            type_params: None,
+            stored_properties: vec![],
+            computed_properties: vec![],
+            member_functions: vec![]
         }
     }
 

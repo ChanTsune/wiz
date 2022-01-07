@@ -144,7 +144,7 @@ impl TypeResolver {
             TypedDecl::Class => {}
             TypedDecl::Enum => {}
             TypedDecl::Protocol => {}
-            TypedDecl::Extension => {}
+            TypedDecl::Extension(e) => {}
         }
         Result::Ok(())
     }
@@ -283,7 +283,7 @@ impl TypeResolver {
             TypedDecl::Class => TypedDecl::Class,
             TypedDecl::Enum => TypedDecl::Enum,
             TypedDecl::Protocol => TypedDecl::Protocol,
-            TypedDecl::Extension => TypedDecl::Extension,
+            TypedDecl::Extension(e) => TypedDecl::Extension(e),
         })
     }
 
