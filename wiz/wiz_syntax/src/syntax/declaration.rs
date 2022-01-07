@@ -1,4 +1,5 @@
 use crate::syntax::annotation::{Annotatable, AnnotationsSyntax};
+pub use crate::syntax::declaration::extension_syntax::ExtensionSyntax;
 use crate::syntax::declaration::fun_syntax::FunSyntax;
 pub use crate::syntax::declaration::struct_syntax::{
     DeinitializerSyntax, InitializerSyntax, StoredPropertySyntax, StructPropertySyntax,
@@ -16,6 +17,7 @@ pub mod fun_syntax;
 mod struct_syntax;
 mod use_syntax;
 mod var_syntax;
+mod extension_syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Decl {
@@ -29,9 +31,7 @@ pub enum Decl {
     Protocol {
         // TODO
     },
-    Extension {
-        // TODO
-    },
+    Extension(ExtensionSyntax),
     Use(UseSyntax),
 }
 
@@ -41,10 +41,10 @@ impl Annotatable for Decl {
             Decl::Var(v) => Decl::Var(v.with_annotation(a)),
             Decl::Fun(f) => Decl::Fun(f.with_annotation(a)),
             Decl::Struct(s) => Decl::Struct(s.with_annotation(a)),
-            Decl::ExternC(e) => Decl::ExternC(e).with_annotation(a),
+            Decl::ExternC(e) => Decl::ExternC(e.with_annotation(a)),
             Decl::Enum { .. } => Decl::Enum {},
             Decl::Protocol { .. } => Decl::Protocol {},
-            Decl::Extension { .. } => Decl::Extension {},
+            Decl::Extension(e) => Decl::Extension(e.with_annotation(a)),
             Decl::Use(u) => Decl::Use(u.with_annotation(a)),
         }
     }
