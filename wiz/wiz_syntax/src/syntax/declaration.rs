@@ -13,11 +13,11 @@ use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::Syntax;
 
+mod extension_syntax;
 pub mod fun_syntax;
 mod struct_syntax;
 mod use_syntax;
 mod var_syntax;
-mod extension_syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Decl {

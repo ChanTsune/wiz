@@ -1,10 +1,10 @@
 use crate::syntax::annotation::{Annotatable, AnnotationsSyntax};
 use crate::syntax::declaration::Decl;
 use crate::syntax::modifier::ModifiersSyntax;
-use crate::syntax::Syntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::type_name::{TypeConstraintsSyntax, TypeParameterListSyntax};
+use crate::syntax::Syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct ExtensionSyntax {
