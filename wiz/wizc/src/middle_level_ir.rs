@@ -1,8 +1,6 @@
 use crate::constants;
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
-use crate::high_level_ir::typed_decl::{
-    TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct, TypedVar,
-};
+use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedExtension, TypedFun, TypedFunBody, TypedMemberFunction, TypedStruct, TypedVar};
 use crate::high_level_ir::typed_expr::{
     TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
     TypedInstanceMember, TypedLiteral, TypedName, TypedPrefixUnaryOperator, TypedReturn,
@@ -359,7 +357,15 @@ impl HLIR2MLIR {
             TypedDecl::Class => todo!(),
             TypedDecl::Enum => todo!(),
             TypedDecl::Protocol => todo!(),
-            TypedDecl::Extension(e) => todo!(),
+            TypedDecl::Extension(e) => {
+                let (structs, functions) = self.extension(e);
+                for s in structs {
+                    self.module.add_struct(s);
+                }
+                for f in functions {
+                    self.module._add_function(FunBuilder::from(f));
+                }
+            },
         };
         Ok(())
     }
@@ -499,6 +505,10 @@ impl HLIR2MLIR {
             })
             .collect();
         (struct_, init.into_iter().chain(members).collect())
+    }
+
+    fn extension(&mut self, e: TypedExtension) -> (Vec<MLStruct>, Vec<MLFun>) {
+        (vec![], vec![])
     }
 
     fn expr(&mut self, e: TypedExpr) -> MLExpr {
