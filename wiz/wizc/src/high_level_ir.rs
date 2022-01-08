@@ -96,7 +96,7 @@ impl Ast2HLIR {
         match a {
             None => TypedAnnotations::new(),
             Some(a) => TypedAnnotations::from(
-                a.annotations
+                a.elements
                     .into_iter()
                     .map(|a| a.element.token)
                     .collect::<Vec<String>>(),
