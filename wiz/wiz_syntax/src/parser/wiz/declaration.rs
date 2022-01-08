@@ -1,4 +1,4 @@
-use crate::parser::wiz::annotation::annotations;
+use crate::parser::wiz::annotation::annotations_syntax;
 use crate::parser::wiz::character::{ampersand, comma};
 use crate::parser::wiz::expression::expr;
 use crate::parser::wiz::keywords::{
@@ -58,7 +58,7 @@ where
 {
     map(
         tuple((
-            opt(tuple((annotations, whitespace0))),
+            opt(tuple((annotations_syntax, whitespace0))),
             alt((use_decl, struct_decl, function_decl, var_decl)),
         )),
         |(a, d)| match a {
