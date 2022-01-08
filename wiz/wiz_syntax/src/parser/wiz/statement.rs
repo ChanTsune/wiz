@@ -3,6 +3,7 @@ use crate::parser::wiz::expression::{expr, postfix_expr, prefix_expr};
 use crate::parser::wiz::keywords::{for_keyword, in_keyword, while_keyword};
 use crate::parser::wiz::lexical_structure::{identifier, whitespace0, whitespace1};
 use crate::parser::wiz::operators::{assignment_and_operator, assignment_operator};
+use crate::parser::Span;
 use crate::syntax::expression::{Expr, NameExprSyntax};
 use crate::syntax::file::FileSyntax;
 use crate::syntax::statement::{
@@ -22,7 +23,6 @@ use nom::{
     InputTakeAtPosition, Offset, Slice,
 };
 use std::ops::{Range, RangeFrom};
-use crate::parser::Span;
 
 pub fn decl_stmt<I>(s: I) -> IResult<I, Stmt>
 where
@@ -390,8 +390,7 @@ where
     many0(stmt)(s)
 }
 
-pub fn file(s: Span) -> IResult<Span, FileSyntax>
-{
+pub fn file(s: Span) -> IResult<Span, FileSyntax> {
     map(
         tuple((whitespace0, many0(tuple((whitespace0, decl))), whitespace0)),
         |(leading_trivia, decls, trailing_trivia)| FileSyntax {
@@ -400,7 +399,7 @@ pub fn file(s: Span) -> IResult<Span, FileSyntax>
                 .into_iter()
                 .map(|(t, f)| f.with_leading_trivia(t))
                 .collect(),
-            trailing_trivia
+            trailing_trivia,
         },
     )(s)
 }
@@ -709,8 +708,32 @@ mod tests {
 
     #[test]
     fn test_file_empty() {
-        check("", file, FileSyntax { leading_trivia: Default::default(), body: vec![], trailing_trivia: Default::default() });
-        check("\n", file, FileSyntax { leading_trivia: Trivia::from(TriviaPiece::Newlines(1)), body: vec![], trailing_trivia: Default::default() });
-        check(" ", file, FileSyntax { leading_trivia: Trivia::from(TriviaPiece::Spaces(1)), body: vec![], trailing_trivia: Default::default() });
+        check(
+            "",
+            file,
+            FileSyntax {
+                leading_trivia: Default::default(),
+                body: vec![],
+                trailing_trivia: Default::default(),
+            },
+        );
+        check(
+            "\n",
+            file,
+            FileSyntax {
+                leading_trivia: Trivia::from(TriviaPiece::Newlines(1)),
+                body: vec![],
+                trailing_trivia: Default::default(),
+            },
+        );
+        check(
+            " ",
+            file,
+            FileSyntax {
+                leading_trivia: Trivia::from(TriviaPiece::Spaces(1)),
+                body: vec![],
+                trailing_trivia: Default::default(),
+            },
+        );
     }
 }
