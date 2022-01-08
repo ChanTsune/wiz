@@ -65,9 +65,7 @@ impl Syntax for Decl {
             Decl::Protocol { .. } => {
                 todo!()
             }
-            Decl::Extension { .. } => {
-                todo!()
-            }
+            Decl::Extension(e) => Decl::Extension(e.with_leading_trivia(trivia)),
             Decl::Use(u) => Decl::Use(u.with_leading_trivia(trivia)),
         }
     }
@@ -86,9 +84,7 @@ impl Syntax for Decl {
             Decl::Protocol { .. } => {
                 todo!()
             }
-            Decl::Extension { .. } => {
-                todo!()
-            }
+            Decl::Extension(e) => Decl::Extension(e.with_trailing_trivia(trivia)),
             Decl::Use(u) => Decl::Use(u.with_trailing_trivia(trivia)),
         }
     }
