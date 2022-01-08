@@ -932,14 +932,14 @@ where
             many0(tuple((decl, whitespace0))),
             char('}'),
         )),
-        |(kw, ws, n, tp, tc,ws1, _,ws2, decls, _,)| ExtensionSyntax {
+        |(kw, ws, n, tp, tc, ws1, _, ws2, decls, _)| ExtensionSyntax {
             annotations: None,
             modifiers: Default::default(),
             extension_keyword: TokenSyntax::from(kw),
             name: TokenSyntax::from(n),
             type_params: tp,
             type_constraints: tc,
-            body: decls.into_iter().map(|(d, w)|d).collect(),
+            body: decls.into_iter().map(|(d, w)| d).collect(),
         },
     )(s)
 }
