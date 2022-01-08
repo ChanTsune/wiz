@@ -926,18 +926,20 @@ where
             identifier,
             opt(type_parameters),
             opt(type_constraints),
+            whitespace0,
             char('{'),
-            many0(decl),
+            whitespace0,
+            many0(tuple((decl, whitespace0))),
             char('}'),
         )),
-        |(kw, ws, n, tp, tc, _, decls, _)| ExtensionSyntax {
+        |(kw, ws, n, tp, tc,ws1, _,ws2, decls, _,)| ExtensionSyntax {
             annotations: None,
             modifiers: Default::default(),
             extension_keyword: TokenSyntax::from(kw),
             name: TokenSyntax::from(n),
             type_params: tp,
             type_constraints: tc,
-            body: decls,
+            body: decls.into_iter().map(|(d, w)|d).collect(),
         },
     )(s)
 }
