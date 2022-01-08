@@ -36,6 +36,13 @@ where
     tag("val")(s)
 }
 
+pub fn extension_keyword<I>(s: I) -> IResult<I, I>
+where
+    I: InputTake + Compare<&'static str>,
+{
+    tag("extension")(s)
+}
+
 pub fn while_keyword<I>(s: I) -> IResult<I, I>
 where
     I: InputTake + Compare<&'static str>,
@@ -140,7 +147,7 @@ mod tests {
         as_keyword, deinit_keyword, else_keyword, extern_keyword, false_keyword, for_keyword,
         fun_keyword, if_keyword, in_keyword, init_keyword, return_keyword, self_keyword,
         struct_keyword, true_keyword, use_keyword, val_keyword, var_keyword, where_keyword,
-        while_keyword,
+        while_keyword, extension_keyword,
     };
 
     #[test]
@@ -166,6 +173,11 @@ mod tests {
     #[test]
     fn test_val_keyword() {
         assert_eq!(val_keyword("val"), Ok(("", "val")))
+    }
+
+    #[test]
+    fn test_extension_keyword() {
+        assert_eq!(extension_keyword("extension"), Ok(("", "extension")))
     }
 
     #[test]
