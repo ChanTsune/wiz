@@ -22,6 +22,7 @@ use nom::{
     InputTakeAtPosition, Offset, Slice,
 };
 use std::ops::{Range, RangeFrom};
+use crate::parser::Span;
 
 pub fn decl_stmt<I>(s: I) -> IResult<I, Stmt>
 where
@@ -389,36 +390,24 @@ where
     many0(stmt)(s)
 }
 
-pub fn file<I>(s: I) -> IResult<I, FileSyntax>
-where
-    I: Slice<RangeFrom<usize>>
-        + Slice<Range<usize>>
-        + InputIter
-        + Clone
-        + InputLength
-        + ToString
-        + InputTake
-        + Offset
-        + InputTakeAtPosition
-        + ExtendInto<Item = char, Extender = String>
-        + FindSubstring<&'static str>
-        + Compare<&'static str>,
-    <I as InputIter>::Item: AsChar + Copy,
-    <I as InputTakeAtPosition>::Item: AsChar,
+pub fn file(s: Span) -> IResult<Span, FileSyntax>
 {
     map(
         tuple((whitespace0, many0(tuple((whitespace0, decl))), whitespace0)),
-        |(_, decls, _)| FileSyntax {
+        |(leading_trivia, decls, trailing_trivia)| FileSyntax {
+            leading_trivia,
             body: decls
                 .into_iter()
                 .map(|(t, f)| f.with_leading_trivia(t))
                 .collect(),
+            trailing_trivia
         },
     )(s)
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::parser::tests::check;
     use crate::parser::wiz::statement::{
         assignable_expr, assignment_stmt, directly_assignable_expr, file, stmt, while_stmt,
     };
@@ -720,8 +709,8 @@ mod tests {
 
     #[test]
     fn test_file_empty() {
-        assert_eq!(file(""), Ok(("", FileSyntax { body: vec![] })));
-        assert_eq!(file("\n"), Ok(("", FileSyntax { body: vec![] })));
-        assert_eq!(file(" "), Ok(("", FileSyntax { body: vec![] })));
+        check("", file, FileSyntax { leading_trivia: Default::default(), body: vec![], trailing_trivia: Default::default() });
+        check("\n", file, FileSyntax { leading_trivia: Trivia::from(TriviaPiece::Newlines(1)), body: vec![], trailing_trivia: Default::default() });
+        check(" ", file, FileSyntax { leading_trivia: Trivia::from(TriviaPiece::Spaces(1)), body: vec![], trailing_trivia: Default::default() });
     }
 }

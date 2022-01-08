@@ -80,7 +80,7 @@ impl Ast2HLIR {
         TypedFile {
             name: path_string_to_page_name(name),
             uses,
-            body: self.file_syntax(FileSyntax { body: others }),
+            body: self.file_syntax(FileSyntax { leading_trivia: Default::default(), body: others, trailing_trivia: Default::default() }),
         }
     }
 

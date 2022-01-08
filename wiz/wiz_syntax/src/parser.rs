@@ -3,6 +3,8 @@ use nom_locate::LocatedSpan;
 pub mod error;
 pub mod result;
 pub mod wiz;
+#[cfg(test)]
+mod tests;
 
 pub type Span<'a> = LocatedSpan<&'a str>;
 
