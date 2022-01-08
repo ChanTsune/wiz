@@ -83,7 +83,7 @@ mod tests {
                     trailing_comma: None,
                 }],
                 close: TokenSyntax::from("]"),
-            }
+            },
         );
     }
 }
