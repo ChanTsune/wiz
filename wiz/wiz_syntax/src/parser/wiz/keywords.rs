@@ -47,7 +47,7 @@ pub fn protocol_keyword<I>(s: I) -> IResult<I, I>
 where
     I: InputTake + Compare<&'static str>,
 {
-tag("protocol")(s)
+    tag("protocol")(s)
 }
 
 pub fn while_keyword<I>(s: I) -> IResult<I, I>
@@ -150,7 +150,12 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::keywords::{as_keyword, deinit_keyword, else_keyword, extension_keyword, extern_keyword, false_keyword, for_keyword, fun_keyword, if_keyword, in_keyword, init_keyword, protocol_keyword, return_keyword, self_keyword, struct_keyword, true_keyword, use_keyword, val_keyword, var_keyword, where_keyword, while_keyword};
+    use crate::parser::wiz::keywords::{
+        as_keyword, deinit_keyword, else_keyword, extension_keyword, extern_keyword, false_keyword,
+        for_keyword, fun_keyword, if_keyword, in_keyword, init_keyword, protocol_keyword,
+        return_keyword, self_keyword, struct_keyword, true_keyword, use_keyword, val_keyword,
+        var_keyword, where_keyword, while_keyword,
+    };
 
     #[test]
     fn test_struct_keyword() {
