@@ -361,10 +361,7 @@ impl HLIR2MLIR {
             TypedDecl::Enum => todo!(),
             TypedDecl::Protocol => todo!(),
             TypedDecl::Extension(e) => {
-                let (structs, functions) = self.extension(e);
-                for s in structs {
-                    self.module.add_struct(s);
-                }
+                let functions = self.extension(e);
                 for f in functions {
                     self.module._add_function(FunBuilder::from(f));
                 }
@@ -510,8 +507,38 @@ impl HLIR2MLIR {
         (struct_, init.into_iter().chain(members).collect())
     }
 
-    fn extension(&mut self, e: TypedExtension) -> (Vec<MLStruct>, Vec<MLFun>) {
-        (vec![], vec![])
+    fn extension(&mut self, e: TypedExtension) -> Vec<MLFun> {
+        let TypedExtension {
+            annotations, package, name, type_params, computed_properties, member_functions
+        } = e;
+        member_functions
+            .into_iter()
+            .map(|mf| {
+                let TypedMemberFunction {
+                    name: fname,
+                    arg_defs: args,
+                    type_params,
+                    body,
+                    return_type,
+                } = mf;
+                let fun_arg_label_type_mangled_name = self.fun_arg_label_type_name_mangling(&args);
+                let args = args.into_iter().map(|a| self.arg_def(a)).collect();
+                MLFun {
+                    modifiers: vec![],
+                    name: self.package_name_mangling(&package, &name)
+                        + "::"
+                        + &fname
+                        + &*if fun_arg_label_type_mangled_name.is_empty() {
+                        String::new()
+                    } else {
+                        String::from("##") + &*fun_arg_label_type_mangled_name
+                    },
+                    arg_defs: args,
+                    return_type: self.type_(return_type.unwrap()).into_value_type(),
+                    body: body.map(|body| self.fun_body(body)),
+                }
+            })
+            .collect()
     }
 
     fn expr(&mut self, e: TypedExpr) -> MLExpr {

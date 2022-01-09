@@ -462,9 +462,8 @@ impl ToString for TypedType {
     fn to_string(&self) -> String {
         match self {
             TypedType::Value(t) => t.to_string(),
-            TypedType::Function(_) | TypedType::Self_ => {
-                todo!()
-            }
+            TypedType::Function(_) => todo!(),
+            TypedType::Self_ => todo!(),
             TypedType::Type(t) => {
                 format!("Type<{}>", t.to_string())
             }

@@ -477,6 +477,7 @@ impl Ast2HLIR {
         }
         TypedExtension {
             annotations: self.annotations(e.annotations),
+            package: TypedPackage::Raw(Package::new()),
             name: e.name.token,
             type_params: e.type_params.map(|tps| {
                 tps.elements

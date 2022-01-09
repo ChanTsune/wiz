@@ -244,7 +244,7 @@ impl TypeResolver {
     pub fn preload_extension(&mut self, e: TypedExtension) -> Result<()> {
         let TypedExtension {
             annotations,
-            name,
+            package, name,
             type_params,
             computed_properties,
             member_functions,
@@ -275,6 +275,7 @@ impl TypeResolver {
             })?;
             rs.member_functions.insert(member_function.name, type_);
         }
+        self.context.clear_current_type();
         Ok(())
     }
 
@@ -539,7 +540,23 @@ impl TypeResolver {
     }
 
     fn typed_extension(&mut self, e: TypedExtension) -> Result<TypedExtension> {
-        Ok(e)
+        let current_namespace = self.context.current_namespace.clone();
+        let this_type = TypedType::Value(TypedValueType::Value(TypedNamedValueType {
+            package: TypedPackage::Resolved(Package::from(current_namespace)),
+            name: e.name.clone(),
+            type_args: None,
+        }));
+        self.context.set_current_type(this_type);
+        let result = Ok(TypedExtension {
+            annotations: e.annotations,
+            package: TypedPackage::Resolved(Package::from(self.context.current_namespace.clone())),
+            name: e.name,
+            type_params: e.type_params, // TODO
+            computed_properties: e.computed_properties.into_iter().map(|i|i).collect(),
+            member_functions: e.member_functions.into_iter().map(|m|self.typed_member_function(m)).collect::<Result<Vec<_>>>()?,
+        });
+        self.context.clear_current_type();
+        result
     }
 
     fn typed_block(&mut self, b: TypedBlock) -> Result<TypedBlock> {

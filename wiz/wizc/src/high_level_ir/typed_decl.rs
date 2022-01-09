@@ -102,6 +102,7 @@ pub struct TypedMemberFunction {
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TypedExtension {
     pub(crate) annotations: TypedAnnotations,
+    pub(crate) package: TypedPackage,
     pub(crate) name: String,
     pub(crate) type_params: Option<Vec<TypedTypeParam>>,
     pub(crate) computed_properties: Vec<TypedComputedProperty>,
