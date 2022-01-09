@@ -7,10 +7,7 @@ mod tests;
 use crate::high_level_ir::type_resolver::context::{ResolverContext, ResolverStruct};
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
-use crate::high_level_ir::typed_decl::{
-    TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedMemberFunction,
-    TypedStoredProperty, TypedStruct, TypedVar,
-};
+use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedExtension, TypedFun, TypedFunBody, TypedInitializer, TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedVar};
 use crate::high_level_ir::typed_expr::{
     TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember,
     TypedLiteral, TypedName, TypedPostfixUnaryOp, TypedPrefixUnaryOp, TypedPrefixUnaryOperator,
@@ -283,7 +280,7 @@ impl TypeResolver {
             TypedDecl::Class => TypedDecl::Class,
             TypedDecl::Enum => TypedDecl::Enum,
             TypedDecl::Protocol => TypedDecl::Protocol,
-            TypedDecl::Extension(e) => TypedDecl::Extension(e),
+            TypedDecl::Extension(e) => TypedDecl::Extension(self.typed_extension(e)?),
         })
     }
 
@@ -497,6 +494,10 @@ impl TypeResolver {
             TypedFunBody::Expr(e) => TypedFunBody::Expr(self.expr(e, None)?),
             TypedFunBody::Block(b) => TypedFunBody::Block(self.typed_block(b)?),
         })
+    }
+
+    fn typed_extension(&mut self, e: TypedExtension) -> Result<TypedExtension> {
+        Ok(e)
     }
 
     fn typed_block(&mut self, b: TypedBlock) -> Result<TypedBlock> {
