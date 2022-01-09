@@ -141,10 +141,12 @@ impl TypeResolver {
             TypedDecl::Struct(s) => {
                 let _ = self.preload_struct(s)?;
             }
-            TypedDecl::Class => {}
-            TypedDecl::Enum => {}
-            TypedDecl::Protocol => {}
-            TypedDecl::Extension(e) => {}
+            TypedDecl::Class => todo!(),
+            TypedDecl::Enum => todo!(),
+            TypedDecl::Protocol => todo!(),
+            TypedDecl::Extension(e) => {
+                self.preload_extension(e);
+            }
         }
         Result::Ok(())
     }
@@ -237,6 +239,31 @@ impl TypeResolver {
         self.context.clear_current_type();
 
         Result::Ok(())
+    }
+
+    pub fn preload_extension(&mut self, e: TypedExtension) -> Result<()> {
+        let TypedExtension {
+            annotations, name, type_params, computed_properties, member_functions
+        } = e;
+        for computed_property in computed_properties {
+            let type_ = self.context.full_type_name(computed_property.type_)?;
+            let ns = self.context.get_current_namespace_mut()?;
+            let rs = ns.get_type_mut(&name).ok_or_else(|| {
+                ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
+            })?;
+            rs.computed_properties.insert(computed_property.name, type_);
+        }
+        for member_function in member_functions {
+            let type_ = self
+                .context
+                .full_type_name(member_function.type_().unwrap())?;
+            let ns = self.context.get_current_namespace_mut()?;
+            let rs = ns.get_type_mut(&name).ok_or_else(|| {
+                ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
+            })?;
+            rs.member_functions.insert(member_function.name, type_);
+        }
+        Ok(())
     }
 
     pub fn source_set(&mut self, s: TypedSourceSet) -> Result<TypedSourceSet> {

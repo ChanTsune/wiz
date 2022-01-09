@@ -463,10 +463,14 @@ impl Ast2HLIR {
 
     fn extension_syntax(&self, e: ExtensionSyntax) -> TypedExtension {
         TypedExtension {
-            annotations: Default::default(),
-            extension_type: TypedType::Self_,
-            type_params: None,
-            stored_properties: vec![],
+            annotations: self.annotations(e.annotations),
+            name: e.name.token,
+            type_params: e.type_params.map(|tps| {
+                tps.elements
+                    .into_iter()
+                    .map(|p| self.type_param(p.element))
+                    .collect()
+            }),
             computed_properties: vec![],
             member_functions: vec![],
         }
