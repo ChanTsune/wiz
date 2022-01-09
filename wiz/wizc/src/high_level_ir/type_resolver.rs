@@ -243,7 +243,11 @@ impl TypeResolver {
 
     pub fn preload_extension(&mut self, e: TypedExtension) -> Result<()> {
         let TypedExtension {
-            annotations, name, type_params, computed_properties, member_functions
+            annotations,
+            name,
+            type_params,
+            computed_properties,
+            member_functions,
         } = e;
         for computed_property in computed_properties {
             let type_ = self.context.full_type_name(computed_property.type_)?;
