@@ -244,7 +244,8 @@ impl TypeResolver {
     pub fn preload_extension(&mut self, e: TypedExtension) -> Result<()> {
         let TypedExtension {
             annotations,
-            package, name,
+            package,
+            name,
             type_params,
             computed_properties,
             member_functions,
@@ -552,8 +553,12 @@ impl TypeResolver {
             package: TypedPackage::Resolved(Package::from(self.context.current_namespace.clone())),
             name: e.name,
             type_params: e.type_params, // TODO
-            computed_properties: e.computed_properties.into_iter().map(|i|i).collect(),
-            member_functions: e.member_functions.into_iter().map(|m|self.typed_member_function(m)).collect::<Result<Vec<_>>>()?,
+            computed_properties: e.computed_properties.into_iter().map(|i| i).collect(),
+            member_functions: e
+                .member_functions
+                .into_iter()
+                .map(|m| self.typed_member_function(m))
+                .collect::<Result<Vec<_>>>()?,
         });
         self.context.clear_current_type();
         result

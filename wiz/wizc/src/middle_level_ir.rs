@@ -509,7 +509,12 @@ impl HLIR2MLIR {
 
     fn extension(&mut self, e: TypedExtension) -> Vec<MLFun> {
         let TypedExtension {
-            annotations, package, name, type_params, computed_properties, member_functions
+            annotations,
+            package,
+            name,
+            type_params,
+            computed_properties,
+            member_functions,
         } = e;
         member_functions
             .into_iter()
@@ -529,10 +534,10 @@ impl HLIR2MLIR {
                         + "::"
                         + &fname
                         + &*if fun_arg_label_type_mangled_name.is_empty() {
-                        String::new()
-                    } else {
-                        String::from("##") + &*fun_arg_label_type_mangled_name
-                    },
+                            String::new()
+                        } else {
+                            String::from("##") + &*fun_arg_label_type_mangled_name
+                        },
                     arg_defs: args,
                     return_type: self.type_(return_type.unwrap()).into_value_type(),
                     body: body.map(|body| self.fun_body(body)),
