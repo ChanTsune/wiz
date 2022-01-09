@@ -466,13 +466,13 @@ impl Ast2HLIR {
         let mut member_functions = vec![];
         for prop in e.properties {
             match prop {
-                StructPropertySyntax::StoredProperty(_) => panic!("Stored property not allowed here."),
+                StructPropertySyntax::StoredProperty(_) => {
+                    panic!("Stored property not allowed here.")
+                }
                 StructPropertySyntax::ComputedProperty => todo!(),
                 StructPropertySyntax::Init(_) => panic!("Init is not allowed here."),
                 StructPropertySyntax::Deinit(_) => panic!("Deinit is not allowed here."),
-                StructPropertySyntax::Method(m) => {
-                    member_functions.push(self.member_function(m))
-                }
+                StructPropertySyntax::Method(m) => member_functions.push(self.member_function(m)),
             }
         }
         TypedExtension {
