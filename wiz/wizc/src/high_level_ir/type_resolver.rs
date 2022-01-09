@@ -145,7 +145,7 @@ impl TypeResolver {
             TypedDecl::Enum => todo!(),
             TypedDecl::Protocol => todo!(),
             TypedDecl::Extension(e) => {
-                self.preload_extension(e);
+                let _ = self.preload_extension(e)?;
             }
         }
         Result::Ok(())
@@ -249,6 +249,14 @@ impl TypeResolver {
             computed_properties,
             member_functions,
         } = e;
+
+        let current_namespace = self.context.current_namespace.clone();
+        let this_type = TypedType::Value(TypedValueType::Value(TypedNamedValueType {
+            package: TypedPackage::Resolved(Package::from(current_namespace)),
+            name: name.clone(),
+            type_args: None,
+        }));
+        self.context.set_current_type(this_type);
         for computed_property in computed_properties {
             let type_ = self.context.full_type_name(computed_property.type_)?;
             let ns = self.context.get_current_namespace_mut()?;
