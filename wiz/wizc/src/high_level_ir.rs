@@ -462,6 +462,19 @@ impl Ast2HLIR {
     }
 
     fn extension_syntax(&self, e: ExtensionSyntax) -> TypedExtension {
+        let mut computed_properties = vec![];
+        let mut member_functions = vec![];
+        for prop in e.properties {
+            match prop {
+                StructPropertySyntax::StoredProperty(_) => panic!("Stored property not allowed here."),
+                StructPropertySyntax::ComputedProperty => todo!(),
+                StructPropertySyntax::Init(_) => panic!("Init is not allowed here."),
+                StructPropertySyntax::Deinit(_) => panic!("Deinit is not allowed here."),
+                StructPropertySyntax::Method(m) => {
+                    member_functions.push(self.member_function(m))
+                }
+            }
+        }
         TypedExtension {
             annotations: self.annotations(e.annotations),
             name: e.name.token,
@@ -471,8 +484,8 @@ impl Ast2HLIR {
                     .map(|p| self.type_param(p.element))
                     .collect()
             }),
-            computed_properties: vec![],
-            member_functions: vec![],
+            computed_properties,
+            member_functions,
         }
     }
 

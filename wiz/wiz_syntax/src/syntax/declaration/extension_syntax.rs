@@ -1,5 +1,5 @@
 use crate::syntax::annotation::{Annotatable, AnnotationsSyntax};
-use crate::syntax::declaration::Decl;
+use crate::syntax::declaration::StructPropertySyntax;
 use crate::syntax::modifier::ModifiersSyntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
@@ -14,7 +14,7 @@ pub struct ExtensionSyntax {
     pub name: TokenSyntax,
     pub type_params: Option<TypeParameterListSyntax>,
     pub type_constraints: Option<TypeConstraintsSyntax>,
-    pub body: Vec<Decl>,
+    pub properties: Vec<StructPropertySyntax>,
 }
 
 impl Annotatable for ExtensionSyntax {
@@ -34,7 +34,7 @@ impl Syntax for ExtensionSyntax {
                 name: self.name,
                 type_params: self.type_params,
                 type_constraints: self.type_constraints,
-                body: self.body,
+                properties: self.properties,
             },
             Some(annotations) => Self {
                 annotations: Some(annotations.with_leading_trivia(trivia)),
@@ -43,7 +43,7 @@ impl Syntax for ExtensionSyntax {
                 name: self.name,
                 type_params: self.type_params,
                 type_constraints: self.type_constraints,
-                body: self.body,
+                properties: self.properties,
             },
         }
     }
@@ -56,7 +56,7 @@ impl Syntax for ExtensionSyntax {
             name: self.name,
             type_params: self.type_params,
             type_constraints: self.type_constraints,
-            body: self.body, // TODO
+            properties: self.properties, // TODO
         }
     }
 }
