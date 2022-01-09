@@ -1,7 +1,7 @@
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_decl::{
-    TypedArgDef, TypedComputedProperty, TypedDecl, TypedFun, TypedFunBody, TypedInitializer,
-    TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedVar,
+    TypedArgDef, TypedComputedProperty, TypedDecl, TypedExtension, TypedFun, TypedFunBody,
+    TypedInitializer, TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedVar,
 };
 use crate::high_level_ir::typed_expr::{
     TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
@@ -23,10 +23,10 @@ use std::option::Option::Some;
 use wiz_syntax::syntax::annotation::AnnotationsSyntax;
 use wiz_syntax::syntax::block::BlockSyntax;
 use wiz_syntax::syntax::declaration::fun_syntax::{ArgDef, FunBody, FunSyntax};
-use wiz_syntax::syntax::declaration::VarSyntax;
 use wiz_syntax::syntax::declaration::{
     Decl, InitializerSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax,
 };
+use wiz_syntax::syntax::declaration::{ExtensionSyntax, VarSyntax};
 use wiz_syntax::syntax::expression::{
     ArraySyntax, BinaryOperationSyntax, CallExprSyntax, Expr, IfExprSyntax, LambdaSyntax,
     MemberSyntax, NameExprSyntax, PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax,
@@ -80,7 +80,11 @@ impl Ast2HLIR {
         TypedFile {
             name: path_string_to_page_name(name),
             uses,
-            body: self.file_syntax(FileSyntax { body: others }),
+            body: self.file_syntax(FileSyntax {
+                leading_trivia: Default::default(),
+                body: others,
+                trailing_trivia: Default::default(),
+            }),
         }
     }
 
@@ -92,7 +96,7 @@ impl Ast2HLIR {
         match a {
             None => TypedAnnotations::new(),
             Some(a) => TypedAnnotations::from(
-                a.annotations
+                a.elements
                     .into_iter()
                     .map(|a| a.element.token)
                     .collect::<Vec<String>>(),
@@ -166,7 +170,7 @@ impl Ast2HLIR {
             Decl::ExternC { .. } => TypedDecl::Class,
             Decl::Enum { .. } => TypedDecl::Enum,
             Decl::Protocol { .. } => TypedDecl::Protocol,
-            Decl::Extension { .. } => TypedDecl::Extension,
+            Decl::Extension(e) => TypedDecl::Extension(self.extension_syntax(e)),
             Decl::Use(_) => {
                 panic!("Never execution branch executed!!")
             }
@@ -356,11 +360,6 @@ impl Ast2HLIR {
             })
             .collect();
         if s.initializers.is_empty() {
-            let struct_type = TypedNamedValueType {
-                package: TypedPackage::Raw(Package::new()),
-                name: s.name.clone(),
-                type_args: None,
-            };
             s.initializers.push(TypedInitializer {
                 args,
                 body: TypedFunBody::Block(TypedBlock {
@@ -374,18 +373,16 @@ impl Ast2HLIR {
                                         target: Box::new(TypedExpr::Name(TypedName {
                                             package: TypedPackage::Raw(Package::new()),
                                             name: "self".to_string(),
-                                            type_: Some(TypedType::Value(TypedValueType::Value(
-                                                struct_type.clone(),
-                                            ))),
+                                            type_: None,
                                         })),
                                         name: p.name.clone(),
                                         is_safe: false,
-                                        type_: Some(p.type_.clone()),
+                                        type_: None,
                                     }),
                                     value: TypedExpr::Name(TypedName {
                                         package: TypedPackage::Raw(Package::new()),
                                         name: p.name.clone(),
-                                        type_: Some(p.type_.clone()),
+                                        type_: None,
                                     }),
                                 },
                             ))
@@ -461,6 +458,35 @@ impl Ast2HLIR {
             annotations: self.annotations(u.annotations),
             package: Package { names },
             alias: u.alias.map(|a| a.name.token),
+        }
+    }
+
+    fn extension_syntax(&self, e: ExtensionSyntax) -> TypedExtension {
+        let mut computed_properties = vec![];
+        let mut member_functions = vec![];
+        for prop in e.properties {
+            match prop {
+                StructPropertySyntax::StoredProperty(_) => {
+                    panic!("Stored property not allowed here.")
+                }
+                StructPropertySyntax::ComputedProperty => todo!(),
+                StructPropertySyntax::Init(_) => panic!("Init is not allowed here."),
+                StructPropertySyntax::Deinit(_) => panic!("Deinit is not allowed here."),
+                StructPropertySyntax::Method(m) => member_functions.push(self.member_function(m)),
+            }
+        }
+        TypedExtension {
+            annotations: self.annotations(e.annotations),
+            package: TypedPackage::Raw(Package::new()),
+            name: e.name.token,
+            type_params: e.type_params.map(|tps| {
+                tps.elements
+                    .into_iter()
+                    .map(|p| self.type_param(p.element))
+                    .collect()
+            }),
+            computed_properties,
+            member_functions,
         }
     }
 

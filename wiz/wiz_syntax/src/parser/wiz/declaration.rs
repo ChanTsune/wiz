@@ -1,9 +1,9 @@
-use crate::parser::wiz::annotation::annotations;
+use crate::parser::wiz::annotation::annotations_syntax;
 use crate::parser::wiz::character::{ampersand, comma};
 use crate::parser::wiz::expression::expr;
 use crate::parser::wiz::keywords::{
-    as_keyword, deinit_keyword, fun_keyword, init_keyword, self_keyword, struct_keyword,
-    use_keyword, val_keyword, var_keyword, where_keyword,
+    as_keyword, deinit_keyword, extension_keyword, fun_keyword, init_keyword, self_keyword,
+    struct_keyword, use_keyword, val_keyword, var_keyword, where_keyword,
 };
 use crate::parser::wiz::lexical_structure::{
     identifier, trivia_piece_line_ending, whitespace0, whitespace1, whitespace_without_eol0,
@@ -17,8 +17,8 @@ use crate::syntax::declaration::fun_syntax::{
     ValueArgDef,
 };
 use crate::syntax::declaration::{
-    AliasSyntax, Decl, DeinitializerSyntax, InitializerSyntax, PackageName, StoredPropertySyntax,
-    StructPropertySyntax, StructSyntax, UseSyntax,
+    AliasSyntax, Decl, DeinitializerSyntax, ExtensionSyntax, InitializerSyntax, PackageName,
+    StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax,
 };
 use crate::syntax::declaration::{PackageNameElement, VarSyntax};
 use crate::syntax::expression::Expr;
@@ -58,8 +58,14 @@ where
 {
     map(
         tuple((
-            opt(tuple((annotations, whitespace0))),
-            alt((use_decl, struct_decl, function_decl, var_decl)),
+            opt(tuple((annotations_syntax, whitespace0))),
+            alt((
+                use_decl,
+                struct_decl,
+                function_decl,
+                var_decl,
+                extension_decl,
+            )),
         )),
         |(a, d)| match a {
             Some((a, _)) => d.with_annotation(a),
@@ -875,6 +881,70 @@ where
 
 //endregion
 
+//region extension
+pub fn extension_decl<I>(s: I) -> IResult<I, Decl>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
+    map(extension_syntax, Decl::Extension)(s)
+}
+
+pub fn extension_syntax<I>(s: I) -> IResult<I, ExtensionSyntax>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
+    map(
+        tuple((
+            extension_keyword,
+            whitespace1,
+            identifier,
+            opt(type_parameters),
+            opt(type_constraints),
+            whitespace0,
+            char('{'),
+            whitespace0,
+            struct_properties,
+            whitespace0,
+            char('}'),
+        )),
+        |(kw, ws, n, tp, tc, ws1, _, ws2, properties, _, _)| ExtensionSyntax {
+            annotations: None,
+            modifiers: Default::default(),
+            extension_keyword: TokenSyntax::from(kw),
+            name: TokenSyntax::from(n),
+            type_params: tp,
+            type_constraints: tc,
+            properties,
+        },
+    )(s)
+}
+//endregion
 #[cfg(test)]
 mod tests {
     use crate::parser::wiz::declaration::{

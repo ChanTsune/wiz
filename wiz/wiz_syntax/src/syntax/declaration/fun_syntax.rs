@@ -37,7 +37,7 @@ impl Syntax for FunSyntax {
         match self.annotations {
             None => Self {
                 annotations: None,
-                modifiers: self.modifiers,
+                modifiers: self.modifiers, // TODO
                 fun_keyword: self.fun_keyword,
                 name: self.name,
                 type_params: self.type_params,

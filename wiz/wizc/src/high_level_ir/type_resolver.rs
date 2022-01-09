@@ -8,8 +8,8 @@ use crate::high_level_ir::type_resolver::context::{ResolverContext, ResolverStru
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_decl::{
-    TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedMemberFunction,
-    TypedStoredProperty, TypedStruct, TypedVar,
+    TypedArgDef, TypedDecl, TypedExtension, TypedFun, TypedFunBody, TypedInitializer,
+    TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedVar,
 };
 use crate::high_level_ir::typed_expr::{
     TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember,
@@ -141,10 +141,12 @@ impl TypeResolver {
             TypedDecl::Struct(s) => {
                 let _ = self.preload_struct(s)?;
             }
-            TypedDecl::Class => {}
-            TypedDecl::Enum => {}
-            TypedDecl::Protocol => {}
-            TypedDecl::Extension => {}
+            TypedDecl::Class => todo!(),
+            TypedDecl::Enum => todo!(),
+            TypedDecl::Protocol => todo!(),
+            TypedDecl::Extension(e) => {
+                let _ = self.preload_extension(e)?;
+            }
         }
         Result::Ok(())
     }
@@ -239,6 +241,45 @@ impl TypeResolver {
         Result::Ok(())
     }
 
+    pub fn preload_extension(&mut self, e: TypedExtension) -> Result<()> {
+        let TypedExtension {
+            annotations,
+            package,
+            name,
+            type_params,
+            computed_properties,
+            member_functions,
+        } = e;
+
+        let current_namespace = self.context.current_namespace.clone();
+        let this_type = TypedType::Value(TypedValueType::Value(TypedNamedValueType {
+            package: TypedPackage::Resolved(Package::from(current_namespace)),
+            name: name.clone(),
+            type_args: None,
+        }));
+        self.context.set_current_type(this_type);
+        for computed_property in computed_properties {
+            let type_ = self.context.full_type_name(computed_property.type_)?;
+            let ns = self.context.get_current_namespace_mut()?;
+            let rs = ns.get_type_mut(&name).ok_or_else(|| {
+                ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
+            })?;
+            rs.computed_properties.insert(computed_property.name, type_);
+        }
+        for member_function in member_functions {
+            let type_ = self
+                .context
+                .full_type_name(member_function.type_().unwrap())?;
+            let ns = self.context.get_current_namespace_mut()?;
+            let rs = ns.get_type_mut(&name).ok_or_else(|| {
+                ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
+            })?;
+            rs.member_functions.insert(member_function.name, type_);
+        }
+        self.context.clear_current_type();
+        Ok(())
+    }
+
     pub fn source_set(&mut self, s: TypedSourceSet) -> Result<TypedSourceSet> {
         Result::Ok(match s {
             TypedSourceSet::File(f) => TypedSourceSet::File(self.file(f)?),
@@ -283,7 +324,7 @@ impl TypeResolver {
             TypedDecl::Class => TypedDecl::Class,
             TypedDecl::Enum => TypedDecl::Enum,
             TypedDecl::Protocol => TypedDecl::Protocol,
-            TypedDecl::Extension => TypedDecl::Extension,
+            TypedDecl::Extension(e) => TypedDecl::Extension(self.typed_extension(e)?),
         })
     }
 
@@ -497,6 +538,30 @@ impl TypeResolver {
             TypedFunBody::Expr(e) => TypedFunBody::Expr(self.expr(e, None)?),
             TypedFunBody::Block(b) => TypedFunBody::Block(self.typed_block(b)?),
         })
+    }
+
+    fn typed_extension(&mut self, e: TypedExtension) -> Result<TypedExtension> {
+        let current_namespace = self.context.current_namespace.clone();
+        let this_type = TypedType::Value(TypedValueType::Value(TypedNamedValueType {
+            package: TypedPackage::Resolved(Package::from(current_namespace)),
+            name: e.name.clone(),
+            type_args: None,
+        }));
+        self.context.set_current_type(this_type);
+        let result = Ok(TypedExtension {
+            annotations: e.annotations,
+            package: TypedPackage::Resolved(Package::from(self.context.current_namespace.clone())),
+            name: e.name,
+            type_params: e.type_params, // TODO
+            computed_properties: e.computed_properties.into_iter().map(|i| i).collect(),
+            member_functions: e
+                .member_functions
+                .into_iter()
+                .map(|m| self.typed_member_function(m))
+                .collect::<Result<Vec<_>>>()?,
+        });
+        self.context.clear_current_type();
+        result
     }
 
     fn typed_block(&mut self, b: TypedBlock) -> Result<TypedBlock> {

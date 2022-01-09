@@ -16,15 +16,25 @@ pub struct WizFile {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct FileSyntax {
+    pub leading_trivia: Trivia,
     pub body: Vec<Decl>,
+    pub trailing_trivia: Trivia,
 }
 
 impl Syntax for FileSyntax {
     fn with_leading_trivia(self, trivia: Trivia) -> Self {
-        todo!()
+        Self {
+            leading_trivia: trivia,
+            body: self.body,
+            trailing_trivia: self.trailing_trivia,
+        }
     }
 
     fn with_trailing_trivia(self, trivia: Trivia) -> Self {
-        todo!()
+        Self {
+            leading_trivia: self.leading_trivia,
+            body: self.body,
+            trailing_trivia: trivia,
+        }
     }
 }

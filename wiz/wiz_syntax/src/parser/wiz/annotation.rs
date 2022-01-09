@@ -10,7 +10,7 @@ use nom::sequence::tuple;
 use nom::{AsChar, Compare, FindSubstring, IResult, InputIter, InputLength, InputTake, Slice};
 use std::ops::{Range, RangeFrom};
 
-pub fn annotations<I>(s: I) -> IResult<I, AnnotationsSyntax>
+pub fn annotations_syntax<I>(s: I) -> IResult<I, AnnotationsSyntax>
 where
     I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
@@ -57,7 +57,7 @@ where
 
             AnnotationsSyntax {
                 open: TokenSyntax::from(open),
-                annotations,
+                elements: annotations,
                 close,
             }
         },
@@ -66,25 +66,24 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::wiz::annotation::annotations;
+    use crate::parser::tests::check;
+    use crate::parser::wiz::annotation::annotations_syntax;
     use crate::syntax::annotation::{Annotation, AnnotationsSyntax};
     use crate::syntax::token::TokenSyntax;
 
     #[test]
     fn test_annotations() {
-        assert_eq!(
-            annotations("#[no_mangle]"),
-            Ok((
-                "",
-                AnnotationsSyntax {
-                    open: TokenSyntax::from("#["),
-                    annotations: vec![Annotation {
-                        element: TokenSyntax::from("no_mangle"),
-                        trailing_comma: None,
-                    }],
-                    close: TokenSyntax::from("]"),
-                }
-            ))
+        check(
+            "#[no_mangle]",
+            annotations_syntax,
+            AnnotationsSyntax {
+                open: TokenSyntax::from("#["),
+                elements: vec![Annotation {
+                    element: TokenSyntax::from("no_mangle"),
+                    trailing_comma: None,
+                }],
+                close: TokenSyntax::from("]"),
+            },
         );
     }
 }
