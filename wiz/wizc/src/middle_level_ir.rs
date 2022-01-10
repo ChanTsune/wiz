@@ -2,7 +2,7 @@ use crate::constants;
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedExtension, TypedFun, TypedFunBody, TypedMemberFunction,
-    TypedStruct, TypedVar,
+    TypedProtocol, TypedStruct, TypedVar,
 };
 use crate::high_level_ir::typed_expr::{
     TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
@@ -278,24 +278,16 @@ impl HLIR2MLIR {
                 TypedDecl::Var(v) => {
                     vec![MLStmt::Var(self.var(v))]
                 }
-                TypedDecl::Fun(_) => {
-                    todo!("local function")
-                }
-                TypedDecl::Struct(_) => {
-                    todo!("local struct")
-                }
+                TypedDecl::Fun(_) => todo!("local function"),
+                TypedDecl::Struct(_) => todo!("local struct"),
                 TypedDecl::Class => {
                     todo!()
                 }
                 TypedDecl::Enum => {
                     todo!()
                 }
-                TypedDecl::Protocol => {
-                    todo!()
-                }
-                TypedDecl::Extension(e) => {
-                    todo!()
-                }
+                TypedDecl::Protocol(_) => todo!("local protocol"),
+                TypedDecl::Extension(_) => todo!("local extension"),
             },
             TypedStmt::Assignment(a) => vec![MLStmt::Assignment(self.assignment(a))],
             TypedStmt::Loop(l) => vec![MLStmt::Loop(self.loop_stmt(l))],
@@ -359,7 +351,12 @@ impl HLIR2MLIR {
             }
             TypedDecl::Class => todo!(),
             TypedDecl::Enum => todo!(),
-            TypedDecl::Protocol => todo!(),
+            TypedDecl::Protocol(p) => {
+                let functions = self.protocol(p);
+                for f in functions {
+                    self.module._add_function(FunBuilder::from(f));
+                }
+            }
             TypedDecl::Extension(e) => {
                 let functions = self.extension(e);
                 for f in functions {
@@ -544,6 +541,10 @@ impl HLIR2MLIR {
                 }
             })
             .collect()
+    }
+
+    fn protocol(&mut self, p: TypedProtocol) -> Vec<MLFun> {
+        vec![]
     }
 
     fn expr(&mut self, e: TypedExpr) -> MLExpr {

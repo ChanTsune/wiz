@@ -28,9 +28,6 @@ pub enum Decl {
     Enum {
         // TODO
     },
-    Protocol {
-        // TODO
-    },
     Extension(ExtensionSyntax),
     Use(UseSyntax),
 }
@@ -43,7 +40,6 @@ impl Annotatable for Decl {
             Decl::Struct(s) => Decl::Struct(s.with_annotation(a)),
             Decl::ExternC(e) => Decl::ExternC(e.with_annotation(a)),
             Decl::Enum { .. } => Decl::Enum {},
-            Decl::Protocol { .. } => Decl::Protocol {},
             Decl::Extension(e) => Decl::Extension(e.with_annotation(a)),
             Decl::Use(u) => Decl::Use(u.with_annotation(a)),
         }
@@ -62,9 +58,6 @@ impl Syntax for Decl {
             Decl::Enum { .. } => {
                 todo!()
             }
-            Decl::Protocol { .. } => {
-                todo!()
-            }
             Decl::Extension(e) => Decl::Extension(e.with_leading_trivia(trivia)),
             Decl::Use(u) => Decl::Use(u.with_leading_trivia(trivia)),
         }
@@ -79,9 +72,6 @@ impl Syntax for Decl {
                 todo!()
             }
             Decl::Enum { .. } => {
-                todo!()
-            }
-            Decl::Protocol { .. } => {
                 todo!()
             }
             Decl::Extension(e) => Decl::Extension(e.with_trailing_trivia(trivia)),
