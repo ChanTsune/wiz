@@ -1,8 +1,5 @@
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
-use crate::high_level_ir::typed_decl::{
-    TypedArgDef, TypedComputedProperty, TypedDecl, TypedExtension, TypedFun, TypedFunBody,
-    TypedInitializer, TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedVar,
-};
+use crate::high_level_ir::typed_decl::{TypedArgDef, TypedComputedProperty, TypedDecl, TypedExtension, TypedFun, TypedFunBody, TypedInitializer, TypedMemberFunction, TypedProtocol, TypedStoredProperty, TypedStruct, TypedVar};
 use crate::high_level_ir::typed_expr::{
     TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
     TypedInstanceMember, TypedLambda, TypedLiteral, TypedName, TypedPostfixUnaryOp,
@@ -163,13 +160,21 @@ impl Ast2HLIR {
             Decl::Var(v) => TypedDecl::Var(self.var_syntax(v)),
             Decl::Fun(f) => TypedDecl::Fun(self.fun_syntax(f)),
             Decl::Struct(s) => {
-                let struct_ = self.struct_syntax(s);
-                let struct_ = self.default_init_if_needed(struct_);
-                TypedDecl::Struct(struct_)
+                match &*s.struct_keyword.token {
+                    "struct" => {
+                        let struct_ = self.struct_syntax(s);
+                        let struct_ = self.default_init_if_needed(struct_);
+                        TypedDecl::Struct(struct_)
+                    }
+                    "protocol" => {
+                        let protocol = self.protocol_syntax(s);
+                        TypedDecl::Protocol(protocol)
+                    }
+                    kw => panic!("Unknown keyword `{}`", kw)
+                }
             }
             Decl::ExternC { .. } => TypedDecl::Class,
             Decl::Enum { .. } => TypedDecl::Enum,
-            Decl::Protocol { .. } => TypedDecl::Protocol,
             Decl::Extension(e) => TypedDecl::Extension(self.extension_syntax(e)),
             Decl::Use(_) => {
                 panic!("Never execution branch executed!!")
@@ -483,6 +488,43 @@ impl Ast2HLIR {
                 tps.elements
                     .into_iter()
                     .map(|p| self.type_param(p.element))
+                    .collect()
+            }),
+            computed_properties,
+            member_functions,
+        }
+    }
+
+    fn protocol_syntax(&self, p: StructSyntax) -> TypedProtocol {
+        let mut stored_properties: Vec<TypedStoredProperty> = vec![];
+        let mut computed_properties: Vec<TypedComputedProperty> = vec![];
+        let mut initializers: Vec<TypedInitializer> = vec![];
+        let mut member_functions: Vec<TypedMemberFunction> = vec![];
+        for p in p.properties {
+            match p {
+                StructPropertySyntax::StoredProperty(v) => {
+                    panic!("protocol is not allowed stored property {:?}", v)
+                }
+                StructPropertySyntax::ComputedProperty => {}
+                StructPropertySyntax::Init(init) => {
+                    panic!("protocol is not allowed init {:?}", init)
+                }
+                StructPropertySyntax::Method(method) => {
+                    member_functions.push(self.member_function(method))
+                }
+                StructPropertySyntax::Deinit(deinit) => {
+                    panic!("protocol is not allowed deinit {:?}", deinit)
+                }
+            };
+        }
+        TypedProtocol {
+            annotations: self.annotations(p.annotations),
+            package: TypedPackage::Raw(Package::new()),
+            name: p.name.token,
+            type_params: p.type_params.map(|v| {
+                v.elements
+                    .into_iter()
+                    .map(|tp| self.type_param(tp.element))
                     .collect()
             }),
             computed_properties,

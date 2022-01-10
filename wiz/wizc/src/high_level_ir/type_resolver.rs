@@ -7,10 +7,7 @@ mod tests;
 use crate::high_level_ir::type_resolver::context::{ResolverContext, ResolverStruct};
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
-use crate::high_level_ir::typed_decl::{
-    TypedArgDef, TypedDecl, TypedExtension, TypedFun, TypedFunBody, TypedInitializer,
-    TypedMemberFunction, TypedStoredProperty, TypedStruct, TypedVar,
-};
+use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedExtension, TypedFun, TypedFunBody, TypedInitializer, TypedMemberFunction, TypedProtocol, TypedStoredProperty, TypedStruct, TypedVar};
 use crate::high_level_ir::typed_expr::{
     TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember,
     TypedLiteral, TypedName, TypedPostfixUnaryOp, TypedPrefixUnaryOp, TypedPrefixUnaryOperator,
@@ -84,7 +81,21 @@ impl TypeResolver {
                 }
                 TypedDecl::Class => {}
                 TypedDecl::Enum => {}
-                TypedDecl::Protocol => {}
+                TypedDecl::Protocol(p) => {
+                    ns.register_type(p.name.clone(), ResolverStruct::new());
+                    ns.register_value(
+                        p.name.clone(),
+                        TypedType::Type(Box::new(TypedType::Value(TypedValueType::Value(
+                            TypedNamedValueType {
+                                package: TypedPackage::Resolved(Package::from(
+                                    current_namespace.clone(),
+                                )),
+                                name: p.name.clone(),
+                                type_args: None,
+                            },
+                        )))),
+                    );
+                }
                 _ => {}
             }
         }
@@ -143,7 +154,9 @@ impl TypeResolver {
             }
             TypedDecl::Class => todo!(),
             TypedDecl::Enum => todo!(),
-            TypedDecl::Protocol => todo!(),
+            TypedDecl::Protocol(p) => {
+                let _ = self.preload_protocol(p)?;
+            },
             TypedDecl::Extension(e) => {
                 let _ = self.preload_extension(e)?;
             }
@@ -280,6 +293,10 @@ impl TypeResolver {
         Ok(())
     }
 
+    pub fn preload_protocol(&mut self, p: TypedProtocol) -> Result<()> {
+        Ok(())
+    }
+
     pub fn source_set(&mut self, s: TypedSourceSet) -> Result<TypedSourceSet> {
         Result::Ok(match s {
             TypedSourceSet::File(f) => TypedSourceSet::File(self.file(f)?),
@@ -323,7 +340,7 @@ impl TypeResolver {
             TypedDecl::Struct(s) => TypedDecl::Struct(self.typed_struct(s)?),
             TypedDecl::Class => TypedDecl::Class,
             TypedDecl::Enum => TypedDecl::Enum,
-            TypedDecl::Protocol => TypedDecl::Protocol,
+            TypedDecl::Protocol(p) => TypedDecl::Protocol(p),
             TypedDecl::Extension(e) => TypedDecl::Extension(self.typed_extension(e)?),
         })
     }
