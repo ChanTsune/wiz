@@ -498,9 +498,7 @@ impl Ast2HLIR {
     }
 
     fn protocol_syntax(&self, p: StructSyntax) -> TypedProtocol {
-        let mut stored_properties: Vec<TypedStoredProperty> = vec![];
         let mut computed_properties: Vec<TypedComputedProperty> = vec![];
-        let mut initializers: Vec<TypedInitializer> = vec![];
         let mut member_functions: Vec<TypedMemberFunction> = vec![];
         for p in p.properties {
             match p {
