@@ -1,10 +1,7 @@
 use crate::parser::wiz::annotation::annotations_syntax;
 use crate::parser::wiz::character::{ampersand, comma};
 use crate::parser::wiz::expression::expr;
-use crate::parser::wiz::keywords::{
-    as_keyword, deinit_keyword, extension_keyword, fun_keyword, init_keyword, self_keyword,
-    struct_keyword, use_keyword, val_keyword, var_keyword, where_keyword,
-};
+use crate::parser::wiz::keywords::{as_keyword, deinit_keyword, extension_keyword, fun_keyword, init_keyword, protocol_keyword, self_keyword, struct_keyword, use_keyword, val_keyword, var_keyword, where_keyword};
 use crate::parser::wiz::lexical_structure::{
     identifier, trivia_piece_line_ending, whitespace0, whitespace1, whitespace_without_eol0,
 };
@@ -116,7 +113,7 @@ where
 {
     map(
         tuple((
-            struct_keyword,
+            alt((struct_keyword, protocol_keyword)),
             whitespace1,
             identifier,
             whitespace0,
@@ -945,6 +942,7 @@ where
     )(s)
 }
 //endregion
+
 #[cfg(test)]
 mod tests {
     use crate::parser::wiz::declaration::{
