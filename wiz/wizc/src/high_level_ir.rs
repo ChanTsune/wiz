@@ -1,5 +1,9 @@
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
-use crate::high_level_ir::typed_decl::{TypedArgDef, TypedComputedProperty, TypedDecl, TypedExtension, TypedFun, TypedFunBody, TypedInitializer, TypedMemberFunction, TypedProtocol, TypedStoredProperty, TypedStruct, TypedVar};
+use crate::high_level_ir::typed_decl::{
+    TypedArgDef, TypedComputedProperty, TypedDecl, TypedExtension, TypedFun, TypedFunBody,
+    TypedInitializer, TypedMemberFunction, TypedProtocol, TypedStoredProperty, TypedStruct,
+    TypedVar,
+};
 use crate::high_level_ir::typed_expr::{
     TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
     TypedInstanceMember, TypedLambda, TypedLiteral, TypedName, TypedPostfixUnaryOp,
@@ -159,20 +163,18 @@ impl Ast2HLIR {
         match d {
             Decl::Var(v) => TypedDecl::Var(self.var_syntax(v)),
             Decl::Fun(f) => TypedDecl::Fun(self.fun_syntax(f)),
-            Decl::Struct(s) => {
-                match &*s.struct_keyword.token {
-                    "struct" => {
-                        let struct_ = self.struct_syntax(s);
-                        let struct_ = self.default_init_if_needed(struct_);
-                        TypedDecl::Struct(struct_)
-                    }
-                    "protocol" => {
-                        let protocol = self.protocol_syntax(s);
-                        TypedDecl::Protocol(protocol)
-                    }
-                    kw => panic!("Unknown keyword `{}`", kw)
+            Decl::Struct(s) => match &*s.struct_keyword.token {
+                "struct" => {
+                    let struct_ = self.struct_syntax(s);
+                    let struct_ = self.default_init_if_needed(struct_);
+                    TypedDecl::Struct(struct_)
                 }
-            }
+                "protocol" => {
+                    let protocol = self.protocol_syntax(s);
+                    TypedDecl::Protocol(protocol)
+                }
+                kw => panic!("Unknown keyword `{}`", kw),
+            },
             Decl::ExternC { .. } => TypedDecl::Class,
             Decl::Enum { .. } => TypedDecl::Enum,
             Decl::Extension(e) => TypedDecl::Extension(self.extension_syntax(e)),

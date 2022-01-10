@@ -1,6 +1,9 @@
 use crate::constants;
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
-use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedExtension, TypedFun, TypedFunBody, TypedMemberFunction, TypedProtocol, TypedStruct, TypedVar};
+use crate::high_level_ir::typed_decl::{
+    TypedArgDef, TypedDecl, TypedExtension, TypedFun, TypedFunBody, TypedMemberFunction,
+    TypedProtocol, TypedStruct, TypedVar,
+};
 use crate::high_level_ir::typed_expr::{
     TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
     TypedInstanceMember, TypedLiteral, TypedName, TypedPrefixUnaryOperator, TypedReturn,
@@ -353,7 +356,7 @@ impl HLIR2MLIR {
                 for f in functions {
                     self.module._add_function(FunBuilder::from(f));
                 }
-            },
+            }
             TypedDecl::Extension(e) => {
                 let functions = self.extension(e);
                 for f in functions {
