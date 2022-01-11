@@ -1398,8 +1398,8 @@ mod tests {
             LiteralSyntax::String {
                 open_quote: TokenSyntax::from('"'),
                 value: "s\t\ri\ng\\".to_string(),
-                close_quote: TokenSyntax::from('"')
-            }
+                close_quote: TokenSyntax::from('"'),
+            },
         );
         check(
             r#""""#,
@@ -1407,8 +1407,8 @@ mod tests {
             LiteralSyntax::String {
                 open_quote: TokenSyntax::from('"'),
                 value: "".to_string(),
-                close_quote: TokenSyntax::from('"')
-            }
+                close_quote: TokenSyntax::from('"'),
+            },
         );
     }
 
