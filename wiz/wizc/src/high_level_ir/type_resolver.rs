@@ -260,25 +260,18 @@ impl TypeResolver {
     pub fn preload_extension(&mut self, e: TypedExtension) -> Result<()> {
         let TypedExtension {
             annotations,
-            package,
             name,
             protocol: type_params,
             computed_properties,
             member_functions,
         } = e;
-
-        let current_namespace = self.context.current_namespace.clone();
-        let this_type = TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-            package: TypedPackage::Resolved(Package::from(current_namespace)),
-            name: name.clone(),
-            type_args: None,
-        }));
-        self.context.set_current_type(this_type);
+        let this_type = self.context.full_type_name(name)?;
+        self.context.set_current_type(this_type.clone());
         for computed_property in computed_properties {
             let type_ = self.context.full_type_name(computed_property.type_)?;
-            let ns = self.context.get_current_namespace_mut()?;
-            let rs = ns.get_type_mut(&name).ok_or_else(|| {
-                ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
+            let ns = self.context.get_namespace_mut(this_type.package().into_resolved().names)?;
+            let rs = ns.get_type_mut(&this_type.name()).ok_or_else(|| {
+                ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", this_type))
             })?;
             rs.computed_properties.insert(computed_property.name, type_);
         }
@@ -286,9 +279,9 @@ impl TypeResolver {
             let type_ = self
                 .context
                 .full_type_name(member_function.type_().unwrap())?;
-            let ns = self.context.get_current_namespace_mut()?;
-            let rs = ns.get_type_mut(&name).ok_or_else(|| {
-                ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
+            let ns = self.context.get_namespace_mut(this_type.package().into_resolved().names)?;
+            let rs = ns.get_type_mut(&this_type.name()).ok_or_else(|| {
+                ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", this_type))
             })?;
             rs.member_functions.insert(member_function.name, type_);
         }
@@ -562,16 +555,11 @@ impl TypeResolver {
 
     fn typed_extension(&mut self, e: TypedExtension) -> Result<TypedExtension> {
         let current_namespace = self.context.current_namespace.clone();
-        let this_type = TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-            package: TypedPackage::Resolved(Package::from(current_namespace)),
-            name: e.name.clone(),
-            type_args: None,
-        }));
-        self.context.set_current_type(this_type);
+        let this_type = self.context.full_type_name(e.name)?;
+        self.context.set_current_type(this_type.clone());
         let result = Ok(TypedExtension {
             annotations: e.annotations,
-            package: TypedPackage::Resolved(Package::from(self.context.current_namespace.clone())),
-            name: e.name,
+            name: this_type,
             protocol: e.protocol, // TODO
             computed_properties: e.computed_properties.into_iter().map(|i| i).collect(),
             member_functions: e

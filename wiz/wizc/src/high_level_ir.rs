@@ -484,8 +484,7 @@ impl Ast2HLIR {
         }
         TypedExtension {
             annotations: self.annotations(e.annotations),
-            package: TypedPackage::Raw(Package::new()),
-            name: e.name.token,
+            name: self.type_(e.name),
             protocol: e.protocol_extension.map(|tps| self.type_(tps.protocol)),
             computed_properties,
             member_functions,
