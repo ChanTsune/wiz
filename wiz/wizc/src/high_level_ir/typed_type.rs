@@ -120,10 +120,10 @@ impl TypedValueType {
     pub(crate) fn package(&self) -> TypedPackage {
         match self {
             TypedValueType::Value(v) => v.package.clone(),
-            TypedValueType::Array(_, _) |
-            TypedValueType::Tuple(_) => TypedPackage::Resolved(Package::global()),
-            TypedValueType::Pointer(v) |
-            TypedValueType::Reference(v) => v.package(),
+            TypedValueType::Array(_, _) | TypedValueType::Tuple(_) => {
+                TypedPackage::Resolved(Package::global())
+            }
+            TypedValueType::Pointer(v) | TypedValueType::Reference(v) => v.package(),
         }
     }
 
@@ -132,8 +132,7 @@ impl TypedValueType {
             TypedValueType::Value(v) => v.name.clone(),
             TypedValueType::Array(_, _) => todo!(),
             TypedValueType::Tuple(_) => todo!(),
-            TypedValueType::Pointer(v) |
-            TypedValueType::Reference(v) => v.name()
+            TypedValueType::Pointer(v) | TypedValueType::Reference(v) => v.name(),
         }
     }
 }

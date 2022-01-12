@@ -922,10 +922,7 @@ where
     map(
         tuple((
             extension_keyword,
-            opt(tuple((
-                whitespace0,
-                type_parameters,
-            ))),
+            opt(tuple((whitespace0, type_parameters))),
             whitespace1,
             type_,
             whitespace0,
@@ -939,11 +936,11 @@ where
             whitespace0,
             char('}'),
         )),
-        |(kw,tp, ws, n, _, protocol, _, tc, ws1, _, ws2, properties, _, _)| ExtensionSyntax {
+        |(kw, tp, ws, n, _, protocol, _, tc, ws1, _, ws2, properties, _, _)| ExtensionSyntax {
             annotations: None,
             modifiers: Default::default(),
             extension_keyword: TokenSyntax::from(kw),
-            type_params: tp.map(|(t, tp)|tp.with_leading_trivia(t)),
+            type_params: tp.map(|(t, tp)| tp.with_leading_trivia(t)),
             name: n,
             protocol_extension: protocol.map(|(colon, _, typ)| ProtocolConformSyntax {
                 colon: TokenSyntax::from(colon),

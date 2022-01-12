@@ -269,9 +269,14 @@ impl TypeResolver {
         self.context.set_current_type(this_type.clone());
         for computed_property in computed_properties {
             let type_ = self.context.full_type_name(computed_property.type_)?;
-            let ns = self.context.get_namespace_mut(this_type.package().into_resolved().names)?;
+            let ns = self
+                .context
+                .get_namespace_mut(this_type.package().into_resolved().names)?;
             let rs = ns.get_type_mut(&this_type.name()).ok_or_else(|| {
-                ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", this_type))
+                ResolverError::from(format!(
+                    "Struct {:?} not exist. Maybe before preload",
+                    this_type
+                ))
             })?;
             rs.computed_properties.insert(computed_property.name, type_);
         }
@@ -279,9 +284,14 @@ impl TypeResolver {
             let type_ = self
                 .context
                 .full_type_name(member_function.type_().unwrap())?;
-            let ns = self.context.get_namespace_mut(this_type.package().into_resolved().names)?;
+            let ns = self
+                .context
+                .get_namespace_mut(this_type.package().into_resolved().names)?;
             let rs = ns.get_type_mut(&this_type.name()).ok_or_else(|| {
-                ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", this_type))
+                ResolverError::from(format!(
+                    "Struct {:?} not exist. Maybe before preload",
+                    this_type
+                ))
             })?;
             rs.member_functions.insert(member_function.name, type_);
         }
