@@ -509,7 +509,7 @@ impl HLIR2MLIR {
             annotations,
             package,
             name,
-            type_params,
+            protocol: type_params,
             computed_properties,
             member_functions,
         } = e;

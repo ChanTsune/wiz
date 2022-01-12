@@ -262,7 +262,7 @@ impl TypeResolver {
             annotations,
             package,
             name,
-            type_params,
+            protocol: type_params,
             computed_properties,
             member_functions,
         } = e;
@@ -572,7 +572,7 @@ impl TypeResolver {
             annotations: e.annotations,
             package: TypedPackage::Resolved(Package::from(self.context.current_namespace.clone())),
             name: e.name,
-            type_params: e.type_params, // TODO
+            protocol: e.protocol, // TODO
             computed_properties: e.computed_properties.into_iter().map(|i| i).collect(),
             member_functions: e
                 .member_functions

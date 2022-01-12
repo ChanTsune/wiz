@@ -3,7 +3,7 @@ use crate::syntax::declaration::StructPropertySyntax;
 use crate::syntax::modifier::ModifiersSyntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
-use crate::syntax::type_name::{TypeConstraintsSyntax, TypeParameterListSyntax};
+use crate::syntax::type_name::{TypeConstraintsSyntax, TypeName};
 use crate::syntax::Syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -12,7 +12,7 @@ pub struct ExtensionSyntax {
     pub modifiers: ModifiersSyntax,
     pub extension_keyword: TokenSyntax,
     pub name: TokenSyntax,
-    pub type_params: Option<TypeParameterListSyntax>,
+    pub protocol_extension: Option<ProtocolConformSyntax>,
     pub type_constraints: Option<TypeConstraintsSyntax>,
     pub properties: Vec<StructPropertySyntax>,
 }
@@ -32,7 +32,7 @@ impl Syntax for ExtensionSyntax {
                 modifiers: self.modifiers, // TODO
                 extension_keyword: self.extension_keyword,
                 name: self.name,
-                type_params: self.type_params,
+                protocol_extension: self.protocol_extension,
                 type_constraints: self.type_constraints,
                 properties: self.properties,
             },
@@ -41,7 +41,7 @@ impl Syntax for ExtensionSyntax {
                 modifiers: self.modifiers,
                 extension_keyword: self.extension_keyword,
                 name: self.name,
-                type_params: self.type_params,
+                protocol_extension: self.protocol_extension,
                 type_constraints: self.type_constraints,
                 properties: self.properties,
             },
@@ -54,9 +54,16 @@ impl Syntax for ExtensionSyntax {
             modifiers: self.modifiers,
             extension_keyword: self.extension_keyword,
             name: self.name,
-            type_params: self.type_params,
+            protocol_extension: self.protocol_extension,
             type_constraints: self.type_constraints,
             properties: self.properties, // TODO
         }
     }
+}
+
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct ProtocolConformSyntax {
+    pub colon: TokenSyntax,
+    pub protocol: TypeName,
 }

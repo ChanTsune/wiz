@@ -486,11 +486,8 @@ impl Ast2HLIR {
             annotations: self.annotations(e.annotations),
             package: TypedPackage::Raw(Package::new()),
             name: e.name.token,
-            type_params: e.type_params.map(|tps| {
-                tps.elements
-                    .into_iter()
-                    .map(|p| self.type_param(p.element))
-                    .collect()
+            protocol: e.protocol_extension.map(|tps| {
+                self.type_(tps.protocol)
             }),
             computed_properties,
             member_functions,

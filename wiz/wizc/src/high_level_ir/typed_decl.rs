@@ -104,7 +104,7 @@ pub struct TypedExtension {
     pub(crate) annotations: TypedAnnotations,
     pub(crate) package: TypedPackage,
     pub(crate) name: String,
-    pub(crate) type_params: Option<Vec<TypedTypeParam>>,
+    pub(crate) protocol: Option<TypedType>,
     pub(crate) computed_properties: Vec<TypedComputedProperty>,
     pub(crate) member_functions: Vec<TypedMemberFunction>,
 }
