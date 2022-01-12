@@ -16,7 +16,10 @@ use crate::syntax::declaration::fun_syntax::{
     ArgDef, ArgDefElementSyntax, ArgDefListSyntax, FunBody, FunSyntax, SelfArgDefSyntax,
     ValueArgDef,
 };
-use crate::syntax::declaration::{AliasSyntax, Decl, DeinitializerSyntax, ExtensionSyntax, InitializerSyntax, PackageName, ProtocolConformSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax};
+use crate::syntax::declaration::{
+    AliasSyntax, Decl, DeinitializerSyntax, ExtensionSyntax, InitializerSyntax, PackageName,
+    ProtocolConformSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax,
+};
 use crate::syntax::declaration::{PackageNameElement, VarSyntax};
 use crate::syntax::expression::Expr;
 use crate::syntax::token::TokenSyntax;
@@ -922,11 +925,7 @@ where
             whitespace1,
             identifier,
             whitespace0,
-            opt(tuple((
-                char(':'),
-                whitespace0,
-                type_,
-                ))),
+            opt(tuple((char(':'), whitespace0, type_))),
             whitespace0,
             opt(type_constraints),
             whitespace0,
@@ -936,14 +935,14 @@ where
             whitespace0,
             char('}'),
         )),
-        |(kw, ws, n, _, protocol,_,tc, ws1, _, ws2, properties, _, _)| ExtensionSyntax {
+        |(kw, ws, n, _, protocol, _, tc, ws1, _, ws2, properties, _, _)| ExtensionSyntax {
             annotations: None,
             modifiers: Default::default(),
             extension_keyword: TokenSyntax::from(kw),
             name: TokenSyntax::from(n),
-            protocol_extension: protocol.map(|(colon, _, typ)|ProtocolConformSyntax{
+            protocol_extension: protocol.map(|(colon, _, typ)| ProtocolConformSyntax {
                 colon: TokenSyntax::from(colon),
-                protocol: typ
+                protocol: typ,
             }),
             type_constraints: tc,
             properties,

@@ -486,9 +486,7 @@ impl Ast2HLIR {
             annotations: self.annotations(e.annotations),
             package: TypedPackage::Raw(Package::new()),
             name: e.name.token,
-            protocol: e.protocol_extension.map(|tps| {
-                self.type_(tps.protocol)
-            }),
+            protocol: e.protocol_extension.map(|tps| self.type_(tps.protocol)),
             computed_properties,
             member_functions,
         }

@@ -61,7 +61,6 @@ impl Syntax for ExtensionSyntax {
     }
 }
 
-
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct ProtocolConformSyntax {
     pub colon: TokenSyntax,
