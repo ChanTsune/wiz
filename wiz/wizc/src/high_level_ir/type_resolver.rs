@@ -564,7 +564,6 @@ impl TypeResolver {
     }
 
     fn typed_extension(&mut self, e: TypedExtension) -> Result<TypedExtension> {
-        let current_namespace = self.context.current_namespace.clone();
         let this_type = self.context.full_type_name(e.name)?;
         self.context.set_current_type(this_type.clone());
         let result = Ok(TypedExtension {
