@@ -1,6 +1,6 @@
 use std::collection::vector::UInt8Vector
 
-struct Text {
+struct String {
     val buffer: UInt8Vector
 
     init(_ literal: &str) {
