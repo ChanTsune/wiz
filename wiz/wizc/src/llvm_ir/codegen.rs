@@ -145,7 +145,7 @@ impl<'ctx> CodeGen<'ctx> {
     pub fn name_expr(&self, n: MLName) -> AnyValueEnum<'ctx> {
         match self.get_from_environment(&n.name) {
             None => {
-                panic!("Can not resolve name {}", n.name)
+                panic!("Can not resolve name `{}`", n.name)
             }
             Some(n) => n,
         }

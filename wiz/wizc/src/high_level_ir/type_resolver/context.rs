@@ -581,7 +581,7 @@ impl ResolverContext {
                         env.types
                             .get(&type_.name)
                             .ok_or(ResolverError::from(format!(
-                                "Can not resolve name {:?}",
+                                "Can not resolve name `{}`",
                                 &type_.name
                             )))?;
                     TypedNamedValueType {
