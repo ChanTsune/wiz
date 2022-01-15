@@ -33,9 +33,7 @@ pub(crate) struct TypeResolver {
 
 impl TypeResolver {
     pub fn new() -> Self {
-        Self {
-            context: ResolverContext::new(),
-        }
+        Self::from(ResolverContext::new())
     }
 
     pub(crate) fn global_use<T>(&mut self, name_space: Vec<T>)
@@ -1022,5 +1020,11 @@ impl TypeResolver {
             iterator: self.expr(iterator, None)?,
             block: self.typed_block(block)?,
         })
+    }
+}
+
+impl From<ResolverContext> for TypeResolver {
+    fn from(context: ResolverContext) -> Self {
+        Self { context }
     }
 }
