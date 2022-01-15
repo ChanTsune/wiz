@@ -26,19 +26,11 @@ pub struct NameEnvironment {
     types: HashMap<String, (Vec<String>, ResolverStruct)>,
 }
 
-#[derive(Debug, Eq, PartialEq, Clone)]
-struct ResolverSubscript {
-    target: TypedType,
-    indexes: Vec<TypedType>,
-    return_type: TypedType,
-}
-
 #[derive(Debug, Clone)]
 pub struct ResolverContext {
     used_name_space: Vec<Vec<String>>,
     name_space: NameSpace,
     binary_operators: HashMap<(TypedBinaryOperator, TypedType, TypedType), TypedType>,
-    subscripts: Vec<ResolverSubscript>,
     pub(crate) current_namespace: Vec<String>,
     current_type: Option<TypedType>,
     local_stack: StackedHashMap<String, EnvValue>,
@@ -241,7 +233,6 @@ impl ResolverContext {
             used_name_space: Default::default(),
             name_space: ns,
             binary_operators: Default::default(),
-            subscripts: Default::default(),
             current_namespace: Default::default(),
             current_type: None,
             local_stack: StackedHashMap::new(),
