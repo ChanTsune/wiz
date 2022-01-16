@@ -16,14 +16,12 @@ use std::collections::{HashMap, HashSet};
 #[derive(Debug, Default, Eq, PartialEq, Clone)]
 pub struct NameSpace {
     name_space: Vec<String>,
-    types: HashMap<String, ResolverStruct>,
     values: HashMap<String, EnvValue>,
 }
 
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Default, Eq, PartialEq, Clone)]
 pub struct NameEnvironment {
     names: HashMap<String, (Vec<String>, EnvValue)>,
-    types: HashMap<String, (Vec<String>, ResolverStruct)>,
 }
 
 #[derive(Debug, Clone)]
@@ -47,7 +45,6 @@ impl NameSpace {
     {
         Self {
             name_space: name.into_iter().map(|i| i.to_string()).collect(),
-            types: Default::default(),
             values: Default::default(),
         }
     }
@@ -64,7 +61,7 @@ impl NameSpace {
             match m {
                 EnvValue::NameSpace(m) => m.get_child(ns),
                 EnvValue::Value(_) => None,
-                EnvValue::Type(_) => panic!(),
+                EnvValue::Type(_) => None,
             }
         }
     }
@@ -119,15 +116,21 @@ impl NameSpace {
     }
 
     pub(crate) fn register_type(&mut self, name: String, s: ResolverStruct) {
-        self.types.insert(name, s);
+        self.values.insert(name, EnvValue::from(s));
     }
 
     pub(crate) fn get_type(&self, name: &str) -> Option<&ResolverStruct> {
-        self.types.get(name)
+        self.values.get(name).map(|i|match i {
+            EnvValue::Type(r) => r,
+            _ => panic!()
+        })
     }
 
     pub(crate) fn get_type_mut(&mut self, name: &str) -> Option<&mut ResolverStruct> {
-        self.types.get_mut(name)
+        self.values.get_mut(name).map(|i|match i {
+            EnvValue::Type(r) => r,
+            _ => panic!()
+        })
     }
 
     pub(crate) fn register_value(&mut self, name: String, type_: TypedType) {
@@ -169,7 +172,7 @@ impl NameSpace {
             Some(e) => match e {
                 EnvValue::NameSpace(_) => None,
                 EnvValue::Value(v) => Some(v),
-                EnvValue::Type(_) => panic!(),
+                EnvValue::Type(_) => None,
             },
         }
     }
@@ -179,7 +182,6 @@ impl NameEnvironment {
     fn new() -> Self {
         Self {
             names: Default::default(),
-            types: Default::default(),
         }
     }
 
@@ -187,12 +189,6 @@ impl NameEnvironment {
         self.names.extend(
             name_space
                 .values
-                .iter()
-                .map(|(k, v)| (k.clone(), (name_space.name_space.clone(), v.clone()))),
-        );
-        self.types.extend(
-            name_space
-                .types
                 .iter()
                 .map(|(k, v)| (k.clone(), (name_space.name_space.clone(), v.clone()))),
         );
@@ -335,11 +331,8 @@ impl ResolverContext {
                 } else {
                     let name = u.pop().unwrap();
                     let s = self.get_namespace(u.clone()).unwrap();
-                    if let Some(t) = s.get_type(&name) {
-                        env.types.insert(name.clone(), (u.clone(), t.clone()));
-                    };
-                    if let Some(t) = s.get_value(&name) {
-                        env.names.insert(name, (u, EnvValue::from(t.clone())));
+                    if let Some(t) = s.values.get(&name) {
+                        env.names.insert(name, (u, t.clone()));
                     } else {
                         panic!("Can not find name {:?}", name)
                     };
@@ -489,7 +482,9 @@ impl ResolverContext {
                         name
                     ))
                 }),
-            (_, _) => todo!(),
+            (_, EnvValue::Type(rs)) => {
+                Ok((TypedType::Type(Box::new(rs.self_.clone())), TypedPackage::Resolved(Package::global())))
+            },
         }
     }
 
@@ -572,7 +567,7 @@ impl ResolverContext {
             TypedPackage::Raw(p) => {
                 if p.names.is_empty() {
                     let (ns, t) =
-                        env.types
+                        env.names
                             .get(&type_.name)
                             .ok_or(ResolverError::from(format!(
                                 "Can not resolve name `{}`",
