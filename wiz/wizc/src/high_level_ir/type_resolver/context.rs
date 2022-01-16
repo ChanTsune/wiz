@@ -64,6 +64,7 @@ impl NameSpace {
             match m {
                 EnvValue::NameSpace(m) => m.get_child(ns),
                 EnvValue::Value(_) => None,
+                EnvValue::Type(_) => panic!(),
             }
         }
     }
@@ -80,6 +81,7 @@ impl NameSpace {
             match m {
                 EnvValue::NameSpace(m) => m.get_child_mut(ns),
                 EnvValue::Value(_) => None,
+                EnvValue::Type(_) => panic!(),
             }
         }
     }
@@ -99,6 +101,7 @@ impl NameSpace {
             match self.values.get_mut(n).unwrap() {
                 EnvValue::NameSpace(n) => n.set_child(ns),
                 EnvValue::Value(_) => panic!(),
+                EnvValue::Type(_) => panic!(),
             };
         }
     }
@@ -130,7 +133,7 @@ impl NameSpace {
     pub(crate) fn register_value(&mut self, name: String, type_: TypedType) {
         if let Some(e) = self.values.remove(&name) {
             match e {
-                EnvValue::NameSpace(_) => {
+                EnvValue::NameSpace(_) | EnvValue::Type(_) => {
                     self.values.insert(name, e);
                 }
                 EnvValue::Value(mut v) => {
@@ -147,7 +150,7 @@ impl NameSpace {
     pub(crate) fn register_values(&mut self, name: String, type_: HashSet<TypedType>) {
         if let Some(e) = self.values.remove(&name) {
             match e {
-                EnvValue::NameSpace(_) => {
+                EnvValue::NameSpace(_) | EnvValue::Type(_) => {
                     self.values.insert(name, e);
                 }
                 EnvValue::Value(mut v) => {
@@ -166,6 +169,7 @@ impl NameSpace {
             Some(e) => match e {
                 EnvValue::NameSpace(_) => None,
                 EnvValue::Value(v) => Some(v),
+                EnvValue::Type(_) => panic!()
             },
         }
     }
@@ -303,7 +307,8 @@ impl ResolverContext {
                     todo!()
                 }
                 EnvValue::Value(v) => ns.register_values(name, v),
-            }
+                EnvValue::Type(_) => { ns.values.insert(name, value); }
+            };
         } else {
             self.local_stack.insert(name, value);
         }
@@ -482,6 +487,7 @@ impl ResolverContext {
                         name
                     ))
                 }),
+            (_, _) => todo!(),
         }
     }
 
@@ -615,6 +621,7 @@ impl ResolverContext {
                             }
                         }
                         (ns, EnvValue::Value(t)) => panic!(),
+                        (_, _) => todo!(),
                     }
                 }
             }
