@@ -654,7 +654,9 @@ impl ResolverContext {
 
 #[cfg(test)]
 mod tests {
-    use crate::high_level_ir::type_resolver::context::{EnvValue, NameSpace, ResolverContext, ResolverStruct};
+    use crate::high_level_ir::type_resolver::context::{
+        EnvValue, NameSpace, ResolverContext, ResolverStruct,
+    };
     use crate::high_level_ir::typed_type::{
         Package, TypedNamedValueType, TypedPackage, TypedType, TypedValueType,
     };
