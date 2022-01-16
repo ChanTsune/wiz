@@ -6,7 +6,7 @@ use std::collections::HashSet;
 pub(crate) enum EnvValue {
     NameSpace(NameSpace),
     Value(HashSet<TypedType>),
-    Type(ResolverStruct)
+    Type(ResolverStruct),
 }
 
 impl EnvValue {

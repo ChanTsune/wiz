@@ -169,7 +169,7 @@ impl NameSpace {
             Some(e) => match e {
                 EnvValue::NameSpace(_) => None,
                 EnvValue::Value(v) => Some(v),
-                EnvValue::Type(_) => panic!()
+                EnvValue::Type(_) => panic!(),
             },
         }
     }
@@ -307,7 +307,9 @@ impl ResolverContext {
                     todo!()
                 }
                 EnvValue::Value(v) => ns.register_values(name, v),
-                EnvValue::Type(_) => { ns.values.insert(name, value); }
+                EnvValue::Type(_) => {
+                    ns.values.insert(name, value);
+                }
             };
         } else {
             self.local_stack.insert(name, value);
