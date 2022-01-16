@@ -9,6 +9,7 @@ pub(crate) struct ResolverTypeParam {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct ResolverStruct {
+    pub(crate) self_: TypedType,
     pub(crate) stored_properties: HashMap<String, TypedType>,
     pub(crate) computed_properties: HashMap<String, TypedType>,
     pub(crate) member_functions: HashMap<String, TypedType>,
@@ -18,8 +19,9 @@ pub struct ResolverStruct {
 }
 
 impl ResolverStruct {
-    pub fn new() -> Self {
+    pub fn new(self_: TypedType) -> Self {
         Self {
+            self_,
             stored_properties: Default::default(),
             computed_properties: Default::default(),
             member_functions: Default::default(),

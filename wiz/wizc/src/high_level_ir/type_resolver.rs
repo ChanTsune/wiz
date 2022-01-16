@@ -66,35 +66,37 @@ impl TypeResolver {
         for d in f.body.iter() {
             match d {
                 TypedDecl::Struct(s) => {
-                    ns.register_type(s.name.clone(), ResolverStruct::new());
+                    let self_type = TypedType::Value(TypedValueType::Value(
+                        TypedNamedValueType {
+                            package: TypedPackage::Resolved(Package::from(
+                                current_namespace.clone(),
+                            )),
+                            name: s.name.clone(),
+                            type_args: None,
+                        },
+                    ));
+                    ns.register_type(s.name.clone(), ResolverStruct::new(self_type.clone()));
                     ns.register_value(
                         s.name.clone(),
-                        TypedType::Type(Box::new(TypedType::Value(TypedValueType::Value(
-                            TypedNamedValueType {
-                                package: TypedPackage::Resolved(Package::from(
-                                    current_namespace.clone(),
-                                )),
-                                name: s.name.clone(),
-                                type_args: None,
-                            },
-                        )))),
+                        TypedType::Type(Box::new(self_type)),
                     );
                 }
                 TypedDecl::Class => {}
                 TypedDecl::Enum => {}
                 TypedDecl::Protocol(p) => {
-                    ns.register_type(p.name.clone(), ResolverStruct::new());
+                    let self_type = TypedType::Value(TypedValueType::Value(
+                        TypedNamedValueType {
+                            package: TypedPackage::Resolved(Package::from(
+                                current_namespace.clone(),
+                            )),
+                            name: p.name.clone(),
+                            type_args: None,
+                        },
+                    ));
+                    ns.register_type(p.name.clone(), ResolverStruct::new(self_type.clone()));
                     ns.register_value(
                         p.name.clone(),
-                        TypedType::Type(Box::new(TypedType::Value(TypedValueType::Value(
-                            TypedNamedValueType {
-                                package: TypedPackage::Resolved(Package::from(
-                                    current_namespace.clone(),
-                                )),
-                                name: p.name.clone(),
-                                type_args: None,
-                            },
-                        )))),
+                        TypedType::Type(Box::new(self_type)),
                     );
                 }
                 _ => {}

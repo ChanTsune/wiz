@@ -213,7 +213,7 @@ impl ResolverContext {
             match &t {
                 TypedType::Value(v) => match v {
                     TypedValueType::Value(v) => {
-                        ns.register_type(v.name.clone(), ResolverStruct::new());
+                        ns.register_type(v.name.clone(), ResolverStruct::new(t.clone()));
                         ns.register_value(
                             v.name.clone(),
                             TypedType::Type(Box::new(TypedType::Value(TypedValueType::Value(
