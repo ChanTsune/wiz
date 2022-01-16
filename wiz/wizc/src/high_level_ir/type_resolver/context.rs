@@ -214,10 +214,7 @@ impl ResolverContext {
                 TypedType::Value(v) => match v {
                     TypedValueType::Value(v) => {
                         ns.register_type(v.name.clone(), ResolverStruct::new(t.clone()));
-                        ns.register_value(
-                            v.name.clone(),
-                            TypedType::Type(Box::new(t)),
-                        );
+                        ns.register_value(v.name.clone(), TypedType::Type(Box::new(t)));
                     }
                     TypedValueType::Array(_, _) => {}
                     TypedValueType::Tuple(_) => {}
