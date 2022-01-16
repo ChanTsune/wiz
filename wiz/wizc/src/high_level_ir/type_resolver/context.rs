@@ -216,9 +216,7 @@ impl ResolverContext {
                         ns.register_type(v.name.clone(), ResolverStruct::new(t.clone()));
                         ns.register_value(
                             v.name.clone(),
-                            TypedType::Type(Box::new(TypedType::Value(TypedValueType::Value(
-                                v.clone(),
-                            )))),
+                            TypedType::Type(Box::new(t)),
                         );
                     }
                     TypedValueType::Array(_, _) => {}
