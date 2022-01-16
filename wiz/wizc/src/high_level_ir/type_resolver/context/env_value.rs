@@ -69,6 +69,12 @@ impl From<HashSet<TypedType>> for EnvValue {
     }
 }
 
+impl From<ResolverStruct> for EnvValue {
+    fn from(s: ResolverStruct) -> Self {
+        Self::Type(s)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::high_level_ir::type_resolver::context::{EnvValue, NameSpace};
