@@ -120,16 +120,16 @@ impl NameSpace {
     }
 
     pub(crate) fn get_type(&self, name: &str) -> Option<&ResolverStruct> {
-        self.values.get(name).map(|i|match i {
+        self.values.get(name).map(|i| match i {
             EnvValue::Type(r) => r,
-            _ => panic!()
+            _ => panic!(),
         })
     }
 
     pub(crate) fn get_type_mut(&mut self, name: &str) -> Option<&mut ResolverStruct> {
-        self.values.get_mut(name).map(|i|match i {
+        self.values.get_mut(name).map(|i| match i {
             EnvValue::Type(r) => r,
-            _ => panic!()
+            _ => panic!(),
         })
     }
 
@@ -482,9 +482,10 @@ impl ResolverContext {
                         name
                     ))
                 }),
-            (_, EnvValue::Type(rs)) => {
-                Ok((TypedType::Type(Box::new(rs.self_.clone())), TypedPackage::Resolved(Package::global())))
-            },
+            (_, EnvValue::Type(rs)) => Ok((
+                TypedType::Type(Box::new(rs.self_.clone())),
+                TypedPackage::Resolved(Package::global()),
+            )),
         }
     }
 
