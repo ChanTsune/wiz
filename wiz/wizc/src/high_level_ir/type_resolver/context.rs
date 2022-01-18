@@ -206,23 +206,18 @@ impl NameEnvironment {
         if name_space.is_empty() {
             match self.names.get(type_name) {
                 Some((_, EnvValue::Type(rs))) => Some(rs),
-                _ => None
+                _ => None,
             }
         } else {
             let n = name_space.remove(0);
             match (name_space.is_empty(), self.names.get(&n)) {
-                (false, Some((_, EnvValue::NameSpace(ns)))) => {
-                    match ns.get(name_space) {
-                        Some(EnvValue::NameSpace(ns)) => ns.get_type(type_name),
-                        _ => {
-                            None
-                        },
-                    }
+                (false, Some((_, EnvValue::NameSpace(ns)))) => match ns.get(name_space) {
+                    Some(EnvValue::NameSpace(ns)) => ns.get_type(type_name),
+                    _ => None,
                 },
                 (true, Some((_, EnvValue::NameSpace(ns)))) => ns.get_type(type_name),
                 (_, _) => None,
             }
-
         }
     }
 }
@@ -380,10 +375,11 @@ impl ResolverContext {
             TypedType::Value(v) => match v {
                 TypedValueType::Value(v) => {
                     let ne = self.get_current_name_environment();
-                    let rs = ne.get_type(v.package.clone().into_resolved().names, &v.name)
+                    let rs = ne
+                        .get_type(v.package.clone().into_resolved().names, &v.name)
                         .ok_or_else(|| {
-                        ResolverError::from(format!("Can not resolve type {:?}", t))
-                    })?;
+                            ResolverError::from(format!("Can not resolve type {:?}", t))
+                        })?;
                     rs.get_instance_member_type(&name).cloned().ok_or_else(|| {
                         ResolverError::from(format!("{:?} not has member named `{}`", t, name))
                     })
