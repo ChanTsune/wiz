@@ -4,13 +4,17 @@ use crate::syntax::Syntax;
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TokenSyntax {
     pub leading_trivia: Trivia,
-    pub token: String,
+    token: String,
     pub trailing_trivia: Trivia,
 }
 
 impl TokenSyntax {
     pub fn new() -> Self {
         Self::from("")
+    }
+
+    pub fn token(&self) -> String {
+        self.token.clone()
     }
 }
 

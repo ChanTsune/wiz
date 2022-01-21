@@ -99,7 +99,7 @@ impl Ast2HLIR {
             Some(a) => TypedAnnotations::from(
                 a.elements
                     .into_iter()
-                    .map(|a| a.element.token)
+                    .map(|a| a.element.token())
                     .collect::<Vec<String>>(),
             ),
         }
@@ -123,7 +123,7 @@ impl Ast2HLIR {
             AssignmentStmt::AssignmentAndOperator(a) => {
                 TypedAssignmentStmt::AssignmentAndOperation(TypedAssignmentAndOperation {
                     target: self.expr(a.target),
-                    operator: match &*a.operator.token {
+                    operator: match &*a.operator.token() {
                         "+=" => TypedAssignmentAndOperator::Add,
                         "-=" => TypedAssignmentAndOperator::Sub,
                         "*=" => TypedAssignmentAndOperator::Mul,
@@ -152,7 +152,7 @@ impl Ast2HLIR {
                 iterator,
                 block,
             }) => TypedLoopStmt::For(TypedForStmt {
-                values: values.into_iter().map(|i| i.token).collect(),
+                values: values.into_iter().map(|i| i.token()).collect(),
                 iterator: self.expr(iterator),
                 block: self.block(block),
             }),
@@ -163,7 +163,7 @@ impl Ast2HLIR {
         match d {
             Decl::Var(v) => TypedDecl::Var(self.var_syntax(v)),
             Decl::Fun(f) => TypedDecl::Fun(self.fun_syntax(f)),
-            Decl::Struct(s) => match &*s.struct_keyword.token {
+            Decl::Struct(s) => match &*s.struct_keyword.token() {
                 "struct" => {
                     let struct_ = self.struct_syntax(s);
                     let struct_ = self.default_init_if_needed(struct_);
@@ -189,8 +189,8 @@ impl Ast2HLIR {
         TypedVar {
             annotations: self.annotations(v.annotations),
             package: TypedPackage::Raw(Package::new()),
-            is_mut: v.mutability_keyword.token == "var",
-            name: v.name.token,
+            is_mut: v.mutability_keyword.token() == "var",
+            name: v.name.token(),
             type_: v.type_.map(|t| self.type_(t)),
             value: expr,
         }
@@ -200,10 +200,10 @@ impl Ast2HLIR {
         match a {
             ArgDef::Value(a) => TypedArgDef {
                 label: match a.label {
-                    None => a.name.token.clone(),
-                    Some(label) => label.token,
+                    None => a.name.token().clone(),
+                    Some(label) => label.token(),
                 },
-                name: a.name.token,
+                name: a.name.token(),
                 type_: self.type_(a.type_name),
             },
             ArgDef::Self_(s) => match s.reference {
@@ -240,18 +240,20 @@ impl Ast2HLIR {
         TypedFun {
             annotations: self.annotations(f.annotations),
             package: TypedPackage::Raw(Package::new()),
-            modifiers: f.modifiers.modifiers.into_iter().map(|m| m.token).collect(),
-            name: f.name.token,
+            modifiers: f.modifiers.modifiers.into_iter().map(|m| m.token()).collect(),
+            name: f.name.token(),
             type_params: f.type_params.map(|v| {
                 v.elements
                     .into_iter()
                     .map(|p| TypedTypeParam {
-                        name: p.element.name.token,
+                        name: p.element.name.token(),
                         type_constraint: match p.element.type_constraint {
                             None => {
+                                println!("NONE");
                                 vec![]
                             }
                             Some(tn) => {
+                                println!("SOME");
                                 vec![self.type_(tn.constraint)]
                             }
                         },
@@ -268,7 +270,7 @@ impl Ast2HLIR {
         match tn {
             TypeName::Simple(stn) => TypedType::Value(TypedValueType::Value(TypedNamedValueType {
                 package: TypedPackage::Raw(Package::new()),
-                name: stn.name.token,
+                name: stn.name.token(),
                 type_args: stn.type_args.map(|v| {
                     v.elements
                         .into_iter()
@@ -278,7 +280,7 @@ impl Ast2HLIR {
             })),
             TypeName::Decorated(d) => {
                 let t = self.type_(d.type_);
-                match &*d.decoration.token {
+                match &*d.decoration.token() {
                     "&" => TypedType::Value(TypedValueType::Reference(Box::new(t))),
                     "*" => TypedType::Value(TypedValueType::Pointer(Box::new(t))),
                     a => panic!("Unexpected token {}", a),
@@ -293,10 +295,10 @@ impl Ast2HLIR {
                     package: TypedPackage::Raw(Package::from(
                         name_space
                             .into_iter()
-                            .map(|i| i.simple_type.name.token)
+                            .map(|i| i.simple_type.name.token())
                             .collect::<Vec<String>>(),
                     )),
-                    name: type_name.name.token,
+                    name: type_name.name.token(),
                     type_args: type_name.type_args.map(|v| {
                         v.elements
                             .into_iter()
@@ -310,7 +312,7 @@ impl Ast2HLIR {
 
     fn type_param(&self, tp: TypeParam) -> TypedTypeParam {
         TypedTypeParam {
-            name: tp.name.token,
+            name: tp.name.token(),
             type_constraint: tp
                 .type_constraint
                 .map_or(vec![], |v| vec![self.type_(v.constraint)]),
@@ -342,7 +344,7 @@ impl Ast2HLIR {
         TypedStruct {
             annotations: self.annotations(s.annotations),
             package: TypedPackage::Raw(Package::new()),
-            name: s.name.token,
+            name: s.name.token(),
             type_params: s.type_params.map(|v| {
                 v.elements
                     .into_iter()
@@ -403,7 +405,7 @@ impl Ast2HLIR {
 
     pub fn stored_property_syntax(&self, p: StoredPropertySyntax) -> TypedStoredProperty {
         TypedStoredProperty {
-            name: p.name.token,
+            name: p.name.token(),
             type_: self.type_(p.type_),
         }
     }
@@ -436,7 +438,7 @@ impl Ast2HLIR {
         let rt = return_type.map(|r| self.type_(r));
         let fb = body.map(|b| self.fun_body(b));
         TypedMemberFunction {
-            name: name.token,
+            name: name.token(),
             arg_defs: arg_defs
                 .elements
                 .into_iter()
@@ -458,13 +460,13 @@ impl Ast2HLIR {
             .package_name
             .names
             .into_iter()
-            .map(|i| i.name.token)
+            .map(|i| i.name.token())
             .collect();
-        names.push(u.used_name.token);
+        names.push(u.used_name.token());
         TypedUse {
             annotations: self.annotations(u.annotations),
             package: Package { names },
-            alias: u.alias.map(|a| a.name.token),
+            alias: u.alias.map(|a| a.name.token()),
         }
     }
 
@@ -514,7 +516,7 @@ impl Ast2HLIR {
         TypedProtocol {
             annotations: self.annotations(p.annotations),
             package: TypedPackage::Raw(Package::new()),
-            name: p.name.token,
+            name: p.name.token(),
             type_params: p.type_params.map(|v| {
                 v.elements
                     .into_iter()
@@ -550,11 +552,11 @@ impl Ast2HLIR {
     pub fn literal_syntax(&self, literal: LiteralSyntax) -> TypedLiteral {
         match literal {
             LiteralSyntax::Integer(value) => TypedLiteral::Integer {
-                value: value.token,
+                value: value.token(),
                 type_: None,
             },
             LiteralSyntax::FloatingPoint(value) => TypedLiteral::FloatingPoint {
-                value: value.token,
+                value: value.token(),
                 type_: None,
             },
             LiteralSyntax::String {
@@ -566,7 +568,7 @@ impl Ast2HLIR {
                 type_: Some(TypedType::string_ref()),
             },
             LiteralSyntax::Boolean(syntax) => TypedLiteral::Boolean {
-                value: syntax.token,
+                value: syntax.token(),
                 type_: Some(TypedType::bool()),
             },
             LiteralSyntax::Null => TypedLiteral::NullLiteral { type_: None },
@@ -578,7 +580,7 @@ impl Ast2HLIR {
         let name_space = name_space
             .elements
             .into_iter()
-            .map(|e| e.name.token)
+            .map(|e| e.name.token())
             .collect::<Vec<String>>();
         TypedName {
             package: if name_space.is_empty() {
@@ -586,7 +588,7 @@ impl Ast2HLIR {
             } else {
                 TypedPackage::Raw(Package::from(name_space))
             },
-            name: name.token,
+            name: name.token(),
             type_: None,
         }
     }
@@ -601,7 +603,7 @@ impl Ast2HLIR {
         let right = Box::new(self.expr(*right));
         TypedBinOp {
             left,
-            operator: match &*kind.token {
+            operator: match &*kind.token() {
                 "+" => TypedBinaryOperator::Add,
                 "-" => TypedBinaryOperator::Sub,
                 "*" => TypedBinaryOperator::Mul,
@@ -613,7 +615,7 @@ impl Ast2HLIR {
                 "<=" => TypedBinaryOperator::LessThanEqual,
                 "<" => TypedBinaryOperator::LessThan,
                 "!=" => TypedBinaryOperator::NotEqual,
-                _ => TypedBinaryOperator::InfixFunctionCall(kind.token),
+                _ => TypedBinaryOperator::InfixFunctionCall(kind.token()),
             },
             right,
             type_: None,
@@ -639,7 +641,7 @@ impl Ast2HLIR {
         let target = self.expr(*target);
         TypedPrefixUnaryOp {
             target: Box::new(target),
-            operator: match &*operator.token {
+            operator: match &*operator.token() {
                 "+" => TypedPrefixUnaryOperator::Positive,
                 "-" => TypedPrefixUnaryOperator::Negative,
                 "*" => TypedPrefixUnaryOperator::Dereference,
@@ -659,7 +661,7 @@ impl Ast2HLIR {
         let target = self.expr(*target);
         TypedPostfixUnaryOp {
             target: Box::new(target),
-            operator: match &*operator.token {
+            operator: match &*operator.token() {
                 "!!" => TypedPostfixUnaryOperator::Unwrap,
                 _ => panic!(),
             },
@@ -702,8 +704,8 @@ impl Ast2HLIR {
         let target = self.expr(*target);
         TypedInstanceMember {
             target: Box::new(target),
-            name: name.token,
-            is_safe: navigation_operator.token.ends_with('?'),
+            name: name.token(),
+            is_safe: navigation_operator.token().ends_with('?'),
             type_: None,
         }
     }
@@ -719,7 +721,7 @@ impl Ast2HLIR {
             .elements
             .into_iter()
             .map(|a| TypedCallArg {
-                label: a.element.label.map(|l| l.token),
+                label: a.element.label.map(|l| l.token()),
                 arg: Box::new(self.expr(*a.element.arg)),
                 is_vararg: a.element.asterisk.is_some(),
             })
@@ -778,7 +780,7 @@ impl Ast2HLIR {
     pub fn type_cast(&self, t: TypeCastSyntax) -> TypedTypeCast {
         TypedTypeCast {
             target: Box::new(self.expr(*t.target)),
-            is_safe: t.operator.token.ends_with('?'),
+            is_safe: t.operator.token().ends_with('?'),
             type_: Some(self.type_(t.type_)),
         }
     }
