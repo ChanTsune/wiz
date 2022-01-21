@@ -240,7 +240,12 @@ impl Ast2HLIR {
         TypedFun {
             annotations: self.annotations(f.annotations),
             package: TypedPackage::Raw(Package::new()),
-            modifiers: f.modifiers.modifiers.into_iter().map(|m| m.token()).collect(),
+            modifiers: f
+                .modifiers
+                .modifiers
+                .into_iter()
+                .map(|m| m.token())
+                .collect(),
             name: f.name.token(),
             type_params: f.type_params.map(|v| {
                 v.elements
