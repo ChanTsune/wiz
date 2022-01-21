@@ -232,13 +232,13 @@ impl Ast2HLIR {
         let FunSyntax {
             annotations,
             modifiers,
-            fun_keyword:_,
+            fun_keyword: _,
             name,
             type_params,
             arg_defs,
             return_type,
             type_constraints,
-            body
+            body,
         } = f;
         let args: Vec<TypedArgDef> = arg_defs
             .elements
@@ -251,11 +251,7 @@ impl Ast2HLIR {
         TypedFun {
             annotations: self.annotations(annotations),
             package: TypedPackage::Raw(Package::new()),
-            modifiers: modifiers
-                .modifiers
-                .into_iter()
-                .map(|m| m.token())
-                .collect(),
+            modifiers: modifiers.modifiers.into_iter().map(|m| m.token()).collect(),
             name: name.token(),
             type_params: type_params.map(|v| {
                 v.elements
