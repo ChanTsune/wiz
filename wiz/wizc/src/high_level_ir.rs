@@ -229,25 +229,35 @@ impl Ast2HLIR {
     }
 
     pub fn fun_syntax(&self, f: FunSyntax) -> TypedFun {
-        let args: Vec<TypedArgDef> = f
-            .arg_defs
+        let FunSyntax {
+            annotations,
+            modifiers,
+            fun_keyword:_,
+            name,
+            type_params,
+            arg_defs,
+            return_type,
+            type_constraints,
+            body
+        } = f;
+        let args: Vec<TypedArgDef> = arg_defs
             .elements
             .into_iter()
             .map(|a| self.arg_def(a.element))
             .collect();
-        let body = f.body.map(|b| self.fun_body(b));
+
+        let body = body.map(|b| self.fun_body(b));
 
         TypedFun {
-            annotations: self.annotations(f.annotations),
+            annotations: self.annotations(annotations),
             package: TypedPackage::Raw(Package::new()),
-            modifiers: f
-                .modifiers
+            modifiers: modifiers
                 .modifiers
                 .into_iter()
                 .map(|m| m.token())
                 .collect(),
-            name: f.name.token(),
-            type_params: f.type_params.map(|v| {
+            name: name.token(),
+            type_params: type_params.map(|v| {
                 v.elements
                     .into_iter()
                     .map(|p| TypedTypeParam {
@@ -267,7 +277,7 @@ impl Ast2HLIR {
             }),
             arg_defs: args,
             body,
-            return_type: f.return_type.map(|t| self.type_(t)),
+            return_type: return_type.map(|t| self.type_(t)),
         }
     }
 
