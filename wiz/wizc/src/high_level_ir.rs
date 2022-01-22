@@ -18,6 +18,7 @@ use crate::high_level_ir::typed_stmt::{
 use crate::high_level_ir::typed_type::{
     Package, TypedNamedValueType, TypedPackage, TypedType, TypedTypeParam, TypedValueType,
 };
+use crate::high_level_ir::typed_type_constraint::TypedTypeConstraint;
 use crate::high_level_ir::typed_use::TypedUse;
 use crate::utils::path_string_to_page_name;
 use std::option::Option::Some;
@@ -39,7 +40,6 @@ use wiz_syntax::syntax::statement::{
     AssignmentStmt, ForLoopSyntax, LoopStmt, Stmt, WhileLoopSyntax,
 };
 use wiz_syntax::syntax::type_name::{TypeName, TypeParam, UserTypeName};
-use crate::high_level_ir::typed_type_constraint::TypedTypeConstraint;
 
 pub mod type_resolver;
 pub mod typed_annotation;
@@ -48,8 +48,8 @@ pub mod typed_expr;
 pub mod typed_file;
 pub mod typed_stmt;
 pub mod typed_type;
-pub mod typed_use;
 pub mod typed_type_constraint;
+pub mod typed_use;
 
 pub struct Ast2HLIR;
 
