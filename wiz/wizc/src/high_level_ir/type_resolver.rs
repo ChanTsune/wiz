@@ -287,6 +287,41 @@ impl TypeResolver {
     }
 
     pub fn preload_protocol(&mut self, p: TypedProtocol) -> Result<()> {
+        let TypedProtocol {
+            annotations: _,
+            package: _,
+            name,
+            type_params: _,
+            computed_properties,
+            member_functions,
+        } = p;
+        let current_namespace = self.context.current_namespace.clone();
+        let this_type = TypedType::Value(TypedValueType::Value(TypedNamedValueType {
+            package: TypedPackage::Resolved(Package::from(current_namespace)),
+            name: name.clone(),
+            type_args: None,
+        }));
+        self.context.set_current_type(this_type.clone());
+        for computed_property in computed_properties.into_iter() {
+            let type_ = self.context.full_type_name(computed_property.type_)?;
+            let ns = self.context.get_current_namespace_mut()?;
+            let rs = ns.get_type_mut(&name).ok_or_else(|| {
+                ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
+            })?;
+            rs.computed_properties.insert(computed_property.name, type_);
+        }
+        for member_function in member_functions.into_iter() {
+            let type_ = self
+                .context
+                .full_type_name(member_function.type_().unwrap())?;
+            let ns = self.context.get_current_namespace_mut()?;
+            let rs = ns.get_type_mut(&name).ok_or_else(|| {
+                ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
+            })?;
+            rs.member_functions.insert(member_function.name, type_);
+        }
+        self.context.clear_current_type();
+
         Ok(())
     }
 
