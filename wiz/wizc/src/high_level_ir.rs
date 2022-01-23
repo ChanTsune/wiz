@@ -341,7 +341,7 @@ impl Ast2HLIR {
                         }),
                     }))
                 }
-            },
+            }
             TypeName::Decorated(d) => {
                 let t = self.type_(d.type_);
                 match &*d.decoration.token() {
