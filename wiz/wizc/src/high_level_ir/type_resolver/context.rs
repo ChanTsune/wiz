@@ -202,7 +202,11 @@ impl NameEnvironment {
         )
     }
 
-    pub(crate) fn get_type(&self, mut name_space: Vec<String>, type_name: &str) -> Option<&ResolverStruct> {
+    pub(crate) fn get_type(
+        &self,
+        mut name_space: Vec<String>,
+        type_name: &str,
+    ) -> Option<&ResolverStruct> {
         if name_space.is_empty() {
             match self.names.get(type_name) {
                 Some((_, EnvValue::Type(rs))) => Some(rs),
@@ -221,8 +225,8 @@ impl NameEnvironment {
         }
     }
 
-    pub(crate) fn get_type_by_typed_type(&self, typ:TypedType) -> Option<&ResolverStruct> {
-        self.get_type(typ.package().into_resolved().names,&typ.name())
+    pub(crate) fn get_type_by_typed_type(&self, typ: TypedType) -> Option<&ResolverStruct> {
+        self.get_type(typ.package().into_resolved().names, &typ.name())
     }
 }
 
