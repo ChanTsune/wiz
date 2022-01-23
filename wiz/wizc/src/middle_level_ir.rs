@@ -384,6 +384,7 @@ impl HLIR2MLIR {
             modifiers,
             name,
             type_params,
+            type_constraints,
             arg_defs,
             body,
             return_type,
@@ -507,9 +508,8 @@ impl HLIR2MLIR {
     fn extension(&mut self, e: TypedExtension) -> Vec<MLFun> {
         let TypedExtension {
             annotations,
-            package,
             name,
-            type_params,
+            protocol: type_params,
             computed_properties,
             member_functions,
         } = e;
@@ -527,7 +527,7 @@ impl HLIR2MLIR {
                 let args = args.into_iter().map(|a| self.arg_def(a)).collect();
                 MLFun {
                     modifiers: vec![],
-                    name: self.package_name_mangling(&package, &name)
+                    name: self.package_name_mangling(&name.package(), &name.name())
                         + "::"
                         + &fname
                         + &*if fun_arg_label_type_mangled_name.is_empty() {

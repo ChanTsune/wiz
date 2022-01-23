@@ -128,6 +128,7 @@ fn test_unsafe_pointer() {
                     modifiers: vec![],
                     name: "function".to_string(),
                     type_params: None,
+                    type_constraints: None,
                     arg_defs: vec![TypedArgDef {
                         label: "_".to_string(),
                         name: "a".to_string(),
@@ -246,6 +247,7 @@ fn test_struct_stored_property() {
                     modifiers: vec![],
                     name: "function".to_string(),
                     type_params: None,
+                    type_constraints: None,
                     arg_defs: vec![TypedArgDef {
                         label: "_".to_string(),
                         name: "a".to_string(),
@@ -360,6 +362,7 @@ fn test_struct_init() {
                     modifiers: vec![],
                     name: "function".to_string(),
                     type_params: None,
+                    type_constraints: None,
                     arg_defs: vec![TypedArgDef {
                         label: "_".to_string(),
                         name: "a".to_string(),
@@ -663,6 +666,7 @@ fn test_struct_member_function_call() {
                     modifiers: vec![],
                     name: "function".to_string(),
                     type_params: None,
+                    type_constraints: None,
                     arg_defs: vec![TypedArgDef {
                         label: "_".to_string(),
                         name: "a".to_string(),
@@ -734,6 +738,7 @@ fn test_expr_function_with_no_arg() {
                 modifiers: vec![],
                 name: "function".to_string(),
                 type_params: None,
+                type_constraints: None,
                 arg_defs: vec![],
                 body: Some(TypedFunBody::Expr(TypedExpr::Literal(
                     TypedLiteral::Integer {
@@ -764,6 +769,7 @@ fn test_expr_function_with_arg() {
                 modifiers: vec![],
                 name: "function".to_string(),
                 type_params: None,
+                type_constraints: None,
                 arg_defs: vec![TypedArgDef {
                     label: "_".to_string(),
                     name: "i".to_string(),
@@ -801,6 +807,7 @@ fn test_function_call() {
                     modifiers: vec![],
                     name: "target_function".to_string(),
                     type_params: None,
+                    type_constraints: None,
                     arg_defs: vec![],
                     body: Some(TypedFunBody::Expr(TypedExpr::Literal(
                         TypedLiteral::Integer {
@@ -816,6 +823,7 @@ fn test_function_call() {
                     modifiers: vec![],
                     name: "main".to_string(),
                     type_params: None,
+                    type_constraints: None,
                     arg_defs: vec![],
                     body: Some(TypedFunBody::Block(TypedBlock {
                         body: vec![TypedStmt::Expr(TypedExpr::Call(TypedCall {
@@ -857,6 +865,7 @@ fn test_return_integer_literal() {
                 modifiers: vec![],
                 name: "sample".to_string(),
                 type_params: None,
+                type_constraints: None,
                 arg_defs: vec![],
                 body: Option::from(TypedFunBody::Block(TypedBlock {
                     body: vec![TypedStmt::Expr(TypedExpr::Return(TypedReturn {
@@ -891,6 +900,7 @@ fn test_return_floating_point_literal() {
                 modifiers: vec![],
                 name: "sample".to_string(),
                 type_params: None,
+                type_constraints: None,
                 arg_defs: vec![],
                 body: Option::from(TypedFunBody::Block(TypedBlock {
                     body: vec![TypedStmt::Expr(TypedExpr::Return(TypedReturn {
@@ -927,6 +937,7 @@ fn test_binop() {
                 modifiers: vec![],
                 name: "sample".to_string(),
                 type_params: None,
+                type_constraints: None,
                 arg_defs: vec![],
                 body: Option::from(TypedFunBody::Block(TypedBlock {
                     body: vec![TypedStmt::Expr(TypedExpr::BinOp(TypedBinOp {
@@ -965,6 +976,7 @@ fn test_subscript() {
                 modifiers: vec![],
                 name: "get_first".to_string(),
                 type_params: None,
+                type_constraints: None,
                 arg_defs: vec![TypedArgDef {
                     label: "_".to_string(),
                     name: "p".to_string(),
@@ -1007,6 +1019,7 @@ fn test_if_else() {
                 modifiers: vec![],
                 name: "test_if".to_string(),
                 type_params: None,
+                type_constraints: None,
                 arg_defs: vec![TypedArgDef {
                     label: "i".to_string(),
                     name: "i".to_string(),
@@ -1074,6 +1087,7 @@ fn test_if() {
                 modifiers: vec![],
                 name: "test_if".to_string(),
                 type_params: None,
+                type_constraints: None,
                 arg_defs: vec![TypedArgDef {
                     label: "i".to_string(),
                     name: "i".to_string(),
@@ -1137,6 +1151,7 @@ fn test_reference_dereference() {
                 modifiers: vec![],
                 name: "test_reference_dereference".to_string(),
                 type_params: None,
+                type_constraints: None,
                 arg_defs: vec![],
                 body: Some(TypedFunBody::Block(TypedBlock {
                     body: vec![
@@ -1245,6 +1260,7 @@ fn test_function_overload_by_arguments() {
                     modifiers: vec![],
                     name: "sample".to_string(),
                     type_params: None,
+                    type_constraints: None,
                     arg_defs: vec![TypedArgDef {
                         label: "_".to_string(),
                         name: "d".to_string(),
@@ -1259,6 +1275,7 @@ fn test_function_overload_by_arguments() {
                     modifiers: vec![],
                     name: "sample".to_string(),
                     type_params: None,
+                    type_constraints: None,
                     arg_defs: vec![TypedArgDef {
                         label: "_".to_string(),
                         name: "i".to_string(),
@@ -1273,6 +1290,7 @@ fn test_function_overload_by_arguments() {
                     modifiers: vec![],
                     name: "call".to_string(),
                     type_params: None,
+                    type_constraints: None,
                     arg_defs: vec![],
                     body: Option::from(TypedFunBody::Block(TypedBlock {
                         body: vec![

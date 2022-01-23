@@ -23,6 +23,24 @@ impl TypedType {
     pub(crate) fn is_self(&self) -> bool {
         matches!(self, Self::Self_)
     }
+
+    pub(crate) fn package(&self) -> TypedPackage {
+        match self {
+            TypedType::Self_ => panic!(),
+            TypedType::Value(v) => v.package(),
+            TypedType::Function(_) => todo!(),
+            TypedType::Type(v) => v.package(),
+        }
+    }
+
+    pub(crate) fn name(&self) -> String {
+        match self {
+            TypedType::Self_ => panic!(),
+            TypedType::Value(v) => v.name(),
+            TypedType::Function(_) => todo!(),
+            TypedType::Type(v) => v.name(),
+        }
+    }
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
@@ -98,6 +116,25 @@ impl TypedValueType {
     pub fn is_array(&self) -> bool {
         matches!(self, Self::Array(_, _))
     }
+
+    pub(crate) fn package(&self) -> TypedPackage {
+        match self {
+            TypedValueType::Value(v) => v.package.clone(),
+            TypedValueType::Array(_, _) | TypedValueType::Tuple(_) => {
+                TypedPackage::Resolved(Package::global())
+            }
+            TypedValueType::Pointer(v) | TypedValueType::Reference(v) => v.package(),
+        }
+    }
+
+    pub(crate) fn name(&self) -> String {
+        match self {
+            TypedValueType::Value(v) => v.name.clone(),
+            TypedValueType::Array(_, _) => todo!(),
+            TypedValueType::Tuple(_) => todo!(),
+            TypedValueType::Pointer(v) | TypedValueType::Reference(v) => v.name(),
+        }
+    }
 }
 
 impl ToString for TypedValueType {
@@ -148,7 +185,6 @@ pub struct TypedNamedValueType {
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub struct TypedTypeParam {
     pub(crate) name: String,
-    pub(crate) type_constraint: Vec<TypedType>,
 }
 
 impl TypedPackage {

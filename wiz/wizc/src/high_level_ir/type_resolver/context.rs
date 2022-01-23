@@ -16,21 +16,12 @@ use std::collections::{HashMap, HashSet};
 #[derive(Debug, Default, Eq, PartialEq, Clone)]
 pub struct NameSpace {
     name_space: Vec<String>,
-    types: HashMap<String, ResolverStruct>,
     values: HashMap<String, EnvValue>,
 }
 
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Default, Eq, PartialEq, Clone)]
 pub struct NameEnvironment {
     names: HashMap<String, (Vec<String>, EnvValue)>,
-    types: HashMap<String, (Vec<String>, ResolverStruct)>,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-struct ResolverSubscript {
-    target: TypedType,
-    indexes: Vec<TypedType>,
-    return_type: TypedType,
 }
 
 #[derive(Debug, Clone)]
@@ -38,7 +29,6 @@ pub struct ResolverContext {
     used_name_space: Vec<Vec<String>>,
     name_space: NameSpace,
     binary_operators: HashMap<(TypedBinaryOperator, TypedType, TypedType), TypedType>,
-    subscripts: Vec<ResolverSubscript>,
     pub(crate) current_namespace: Vec<String>,
     current_type: Option<TypedType>,
     local_stack: StackedHashMap<String, EnvValue>,
@@ -55,7 +45,6 @@ impl NameSpace {
     {
         Self {
             name_space: name.into_iter().map(|i| i.to_string()).collect(),
-            types: Default::default(),
             values: Default::default(),
         }
     }
@@ -72,6 +61,7 @@ impl NameSpace {
             match m {
                 EnvValue::NameSpace(m) => m.get_child(ns),
                 EnvValue::Value(_) => None,
+                EnvValue::Type(_) => None,
             }
         }
     }
@@ -88,6 +78,7 @@ impl NameSpace {
             match m {
                 EnvValue::NameSpace(m) => m.get_child_mut(ns),
                 EnvValue::Value(_) => None,
+                EnvValue::Type(_) => panic!(),
             }
         }
     }
@@ -107,6 +98,7 @@ impl NameSpace {
             match self.values.get_mut(n).unwrap() {
                 EnvValue::NameSpace(n) => n.set_child(ns),
                 EnvValue::Value(_) => panic!(),
+                EnvValue::Type(_) => panic!(),
             };
         }
     }
@@ -124,21 +116,27 @@ impl NameSpace {
     }
 
     pub(crate) fn register_type(&mut self, name: String, s: ResolverStruct) {
-        self.types.insert(name, s);
+        self.values.insert(name, EnvValue::from(s));
     }
 
     pub(crate) fn get_type(&self, name: &str) -> Option<&ResolverStruct> {
-        self.types.get(name)
+        self.values.get(name).map(|i| match i {
+            EnvValue::Type(r) => r,
+            _ => panic!(),
+        })
     }
 
     pub(crate) fn get_type_mut(&mut self, name: &str) -> Option<&mut ResolverStruct> {
-        self.types.get_mut(name)
+        self.values.get_mut(name).map(|i| match i {
+            EnvValue::Type(r) => r,
+            _ => panic!(),
+        })
     }
 
     pub(crate) fn register_value(&mut self, name: String, type_: TypedType) {
         if let Some(e) = self.values.remove(&name) {
             match e {
-                EnvValue::NameSpace(_) => {
+                EnvValue::NameSpace(_) | EnvValue::Type(_) => {
                     self.values.insert(name, e);
                 }
                 EnvValue::Value(mut v) => {
@@ -155,7 +153,7 @@ impl NameSpace {
     pub(crate) fn register_values(&mut self, name: String, type_: HashSet<TypedType>) {
         if let Some(e) = self.values.remove(&name) {
             match e {
-                EnvValue::NameSpace(_) => {
+                EnvValue::NameSpace(_) | EnvValue::Type(_) => {
                     self.values.insert(name, e);
                 }
                 EnvValue::Value(mut v) => {
@@ -174,6 +172,7 @@ impl NameSpace {
             Some(e) => match e {
                 EnvValue::NameSpace(_) => None,
                 EnvValue::Value(v) => Some(v),
+                EnvValue::Type(_) => None,
             },
         }
     }
@@ -181,22 +180,13 @@ impl NameSpace {
 
 impl NameEnvironment {
     fn new() -> Self {
-        Self {
-            names: Default::default(),
-            types: Default::default(),
-        }
+        Self::default()
     }
 
     fn use_values_from(&mut self, name_space: &NameSpace) {
         self.names.extend(
             name_space
                 .values
-                .iter()
-                .map(|(k, v)| (k.clone(), (name_space.name_space.clone(), v.clone()))),
-        );
-        self.types.extend(
-            name_space
-                .types
                 .iter()
                 .map(|(k, v)| (k.clone(), (name_space.name_space.clone(), v.clone()))),
         );
@@ -211,6 +201,25 @@ impl NameEnvironment {
                 .map(|(k, v)| (k, (vec![], v))),
         )
     }
+
+    fn get_type(&self, mut name_space: Vec<String>, type_name: &str) -> Option<&ResolverStruct> {
+        if name_space.is_empty() {
+            match self.names.get(type_name) {
+                Some((_, EnvValue::Type(rs))) => Some(rs),
+                _ => None,
+            }
+        } else {
+            let n = name_space.remove(0);
+            match (name_space.is_empty(), self.names.get(&n)) {
+                (false, Some((_, EnvValue::NameSpace(ns)))) => match ns.get(name_space) {
+                    Some(EnvValue::NameSpace(ns)) => ns.get_type(type_name),
+                    _ => None,
+                },
+                (true, Some((_, EnvValue::NameSpace(ns)))) => ns.get_type(type_name),
+                (_, _) => None,
+            }
+        }
+    }
 }
 
 impl ResolverContext {
@@ -221,13 +230,7 @@ impl ResolverContext {
             match &t {
                 TypedType::Value(v) => match v {
                     TypedValueType::Value(v) => {
-                        ns.register_type(v.name.clone(), ResolverStruct::new());
-                        ns.register_value(
-                            v.name.clone(),
-                            TypedType::Type(Box::new(TypedType::Value(TypedValueType::Value(
-                                v.clone(),
-                            )))),
-                        );
+                        ns.register_type(v.name.clone(), ResolverStruct::new(t.clone()));
                     }
                     TypedValueType::Array(_, _) => {}
                     TypedValueType::Tuple(_) => {}
@@ -241,7 +244,6 @@ impl ResolverContext {
             used_name_space: Default::default(),
             name_space: ns,
             binary_operators: Default::default(),
-            subscripts: Default::default(),
             current_namespace: Default::default(),
             current_type: None,
             local_stack: StackedHashMap::new(),
@@ -261,7 +263,7 @@ impl ResolverContext {
         self.get_namespace_mut(self.current_namespace.clone())
     }
 
-    fn get_namespace_mut(&mut self, ns: Vec<String>) -> Result<&mut NameSpace> {
+    pub fn get_namespace_mut(&mut self, ns: Vec<String>) -> Result<&mut NameSpace> {
         let msg = format!("NameSpace {:?} not exist", ns);
         self.name_space
             .get_child_mut(ns)
@@ -272,7 +274,7 @@ impl ResolverContext {
         self.get_namespace(self.current_namespace.clone())
     }
 
-    fn get_namespace(&self, ns: Vec<String>) -> Result<&NameSpace> {
+    pub fn get_namespace(&self, ns: Vec<String>) -> Result<&NameSpace> {
         let msg = format!("NameSpace {:?} not exist", ns);
         self.name_space
             .get_child(ns)
@@ -317,7 +319,10 @@ impl ResolverContext {
                     todo!()
                 }
                 EnvValue::Value(v) => ns.register_values(name, v),
-            }
+                EnvValue::Type(_) => {
+                    ns.values.insert(name, value);
+                }
+            };
         } else {
             self.local_stack.insert(name, value);
         }
@@ -342,11 +347,8 @@ impl ResolverContext {
                 } else {
                     let name = u.pop().unwrap();
                     let s = self.get_namespace(u.clone()).unwrap();
-                    if let Some(t) = s.get_type(&name) {
-                        env.types.insert(name.clone(), (u.clone(), t.clone()));
-                    };
-                    if let Some(t) = s.get_value(&name) {
-                        env.names.insert(name, (u, EnvValue::from(t.clone())));
+                    if let Some(t) = s.values.get(&name) {
+                        env.names.insert(name, (u, t.clone()));
                     } else {
                         panic!("Can not find name {:?}", name)
                     };
@@ -372,10 +374,12 @@ impl ResolverContext {
         match &t {
             TypedType::Value(v) => match v {
                 TypedValueType::Value(v) => {
-                    let ns = self.get_namespace_mut(v.package.clone().into_resolved().names)?;
-                    let rs = ns.get_type(&v.name).ok_or_else(|| {
-                        ResolverError::from(format!("Can not resolve type {:?}", t))
-                    })?;
+                    let ne = self.get_current_name_environment();
+                    let rs = ne
+                        .get_type(v.package.clone().into_resolved().names, &v.name)
+                        .ok_or_else(|| {
+                            ResolverError::from(format!("Can not resolve type {:?}", t))
+                        })?;
                     rs.get_instance_member_type(&name).cloned().ok_or_else(|| {
                         ResolverError::from(format!("{:?} not has member named `{}`", t, name))
                     })
@@ -496,6 +500,10 @@ impl ResolverContext {
                         name
                     ))
                 }),
+            (_, EnvValue::Type(rs)) => Ok((
+                TypedType::Type(Box::new(rs.self_.clone())),
+                TypedPackage::Resolved(Package::global()),
+            )),
         }
     }
 
@@ -578,10 +586,10 @@ impl ResolverContext {
             TypedPackage::Raw(p) => {
                 if p.names.is_empty() {
                     let (ns, t) =
-                        env.types
+                        env.names
                             .get(&type_.name)
                             .ok_or(ResolverError::from(format!(
-                                "Can not resolve name {:?}",
+                                "Can not resolve name `{}`",
                                 &type_.name
                             )))?;
                     TypedNamedValueType {
@@ -629,6 +637,7 @@ impl ResolverContext {
                             }
                         }
                         (ns, EnvValue::Value(t)) => panic!(),
+                        (_, _) => todo!(),
                     }
                 }
             }
@@ -664,11 +673,10 @@ impl ResolverContext {
 
 #[cfg(test)]
 mod tests {
-    use crate::high_level_ir::type_resolver::context::{EnvValue, NameSpace, ResolverContext};
-    use crate::high_level_ir::typed_type::{
-        Package, TypedNamedValueType, TypedPackage, TypedType, TypedValueType,
+    use crate::high_level_ir::type_resolver::context::{
+        EnvValue, NameSpace, ResolverContext, ResolverStruct,
     };
-    use std::collections::HashSet;
+    use crate::high_level_ir::typed_type::TypedType;
 
     #[test]
     fn test_name_space() {
@@ -724,13 +732,7 @@ mod tests {
             env.names.get("Int32"),
             Some(&(
                 vec![],
-                EnvValue::Value(HashSet::from([TypedType::Type(Box::new(
-                    TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-                        package: TypedPackage::Resolved(Package::global()),
-                        name: "Int32".to_string(),
-                        type_args: None
-                    }))
-                ))]))
+                EnvValue::Type(ResolverStruct::new(TypedType::int32()))
             ))
         );
     }

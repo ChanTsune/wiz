@@ -1,4 +1,4 @@
-use crate::high_level_ir::type_resolver::context::NameSpace;
+use crate::high_level_ir::type_resolver::context::{NameSpace, ResolverStruct};
 use crate::high_level_ir::typed_type::TypedType;
 use std::collections::HashSet;
 
@@ -6,6 +6,7 @@ use std::collections::HashSet;
 pub(crate) enum EnvValue {
     NameSpace(NameSpace),
     Value(HashSet<TypedType>),
+    Type(ResolverStruct),
 }
 
 impl EnvValue {
@@ -19,6 +20,7 @@ impl EnvValue {
             match self {
                 EnvValue::NameSpace(n) => n.get(ns),
                 EnvValue::Value(_) => None,
+                EnvValue::Type(_) => todo!(),
             }
         }
     }
@@ -33,6 +35,7 @@ impl EnvValue {
             match self {
                 EnvValue::NameSpace(n) => n.get_mut(ns),
                 EnvValue::Value(_) => None,
+                EnvValue::Type(_) => todo!(),
             }
         }
     }
@@ -42,6 +45,7 @@ impl EnvValue {
             match self {
                 EnvValue::NameSpace(n) => n.set_child(ns),
                 EnvValue::Value(_) => panic!(),
+                EnvValue::Type(_) => panic!(),
             }
         }
     }
@@ -62,6 +66,12 @@ impl From<NameSpace> for EnvValue {
 impl From<HashSet<TypedType>> for EnvValue {
     fn from(typed_type: HashSet<TypedType>) -> Self {
         Self::Value(typed_type)
+    }
+}
+
+impl From<ResolverStruct> for EnvValue {
+    fn from(s: ResolverStruct) -> Self {
+        Self::Type(s)
     }
 }
 

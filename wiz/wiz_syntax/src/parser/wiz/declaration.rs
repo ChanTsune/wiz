@@ -18,7 +18,7 @@ use crate::syntax::declaration::fun_syntax::{
 };
 use crate::syntax::declaration::{
     AliasSyntax, Decl, DeinitializerSyntax, ExtensionSyntax, InitializerSyntax, PackageName,
-    StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax,
+    ProtocolConformSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax,
 };
 use crate::syntax::declaration::{PackageNameElement, VarSyntax};
 use crate::syntax::expression::Expr;
@@ -922,9 +922,12 @@ where
     map(
         tuple((
             extension_keyword,
+            opt(tuple((whitespace0, type_parameters))),
             whitespace1,
-            identifier,
-            opt(type_parameters),
+            type_,
+            whitespace0,
+            opt(tuple((char(':'), whitespace0, type_))),
+            whitespace0,
             opt(type_constraints),
             whitespace0,
             char('{'),
@@ -933,12 +936,16 @@ where
             whitespace0,
             char('}'),
         )),
-        |(kw, ws, n, tp, tc, ws1, _, ws2, properties, _, _)| ExtensionSyntax {
+        |(kw, tp, ws, n, _, protocol, _, tc, ws1, _, ws2, properties, _, _)| ExtensionSyntax {
             annotations: None,
             modifiers: Default::default(),
             extension_keyword: TokenSyntax::from(kw),
-            name: TokenSyntax::from(n),
-            type_params: tp,
+            type_params: tp.map(|(t, tp)| tp.with_leading_trivia(t)),
+            name: n,
+            protocol_extension: protocol.map(|(colon, _, typ)| ProtocolConformSyntax {
+                colon: TokenSyntax::from(colon),
+                protocol: typ,
+            }),
             type_constraints: tc,
             properties,
         },

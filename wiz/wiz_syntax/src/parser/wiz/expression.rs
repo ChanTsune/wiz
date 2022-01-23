@@ -108,7 +108,7 @@ where
     map(
         tuple((
             double_quote,
-            escaped_transform(
+            opt(escaped_transform(
                 not_double_quote_or_back_slash,
                 '\\',
                 alt((
@@ -131,12 +131,12 @@ where
                         },
                     ),
                 )),
-            ),
+            )),
             double_quote,
         )),
         |(a, s, b)| LiteralSyntax::String {
             open_quote: TokenSyntax::from(a),
-            value: s,
+            value: s.unwrap_or_default(),
             close_quote: TokenSyntax::from(b),
         },
     )(s)
@@ -1299,6 +1299,7 @@ where
 
 #[cfg(test)]
 mod tests {
+    use crate::parser::tests::check;
     use crate::parser::wiz::expression::{
         array_expr, boolean_literal, conjunction_expr, disjunction_expr, equality_expr, expr,
         floating_point_literal, if_expr, indexing_suffix, integer_literal, literal_expr, name_expr,
@@ -1391,16 +1392,23 @@ mod tests {
 
     #[test]
     fn test_string_literal() {
-        assert_eq!(
-            string_literal("\"s\\t\\ri\\ng\\\\\""),
-            Ok((
-                "",
-                LiteralSyntax::String {
-                    open_quote: TokenSyntax::from('"'),
-                    value: "s\t\ri\ng\\".to_string(),
-                    close_quote: TokenSyntax::from('"')
-                }
-            ))
+        check(
+            "\"s\\t\\ri\\ng\\\\\"",
+            string_literal,
+            LiteralSyntax::String {
+                open_quote: TokenSyntax::from('"'),
+                value: "s\t\ri\ng\\".to_string(),
+                close_quote: TokenSyntax::from('"'),
+            },
+        );
+        check(
+            r#""""#,
+            string_literal,
+            LiteralSyntax::String {
+                open_quote: TokenSyntax::from('"'),
+                value: "".to_string(),
+                close_quote: TokenSyntax::from('"'),
+            },
         );
     }
 
