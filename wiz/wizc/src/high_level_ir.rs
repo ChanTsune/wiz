@@ -326,16 +326,22 @@ impl Ast2HLIR {
 
     pub fn type_(&self, tn: TypeName) -> TypedType {
         match tn {
-            TypeName::Simple(stn) => TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-                package: TypedPackage::Raw(Package::new()),
-                name: stn.name.token(),
-                type_args: stn.type_args.map(|v| {
-                    v.elements
-                        .into_iter()
-                        .map(|t| self.type_(t.element))
-                        .collect()
-                }),
-            })),
+            TypeName::Simple(stn) => {
+                if stn.name.token() == "Self" {
+                    TypedType::Self_
+                } else {
+                    TypedType::Value(TypedValueType::Value(TypedNamedValueType {
+                        package: TypedPackage::Raw(Package::new()),
+                        name: stn.name.token(),
+                        type_args: stn.type_args.map(|v| {
+                            v.elements
+                                .into_iter()
+                                .map(|t| self.type_(t.element))
+                                .collect()
+                        }),
+                    }))
+                }
+            },
             TypeName::Decorated(d) => {
                 let t = self.type_(d.type_);
                 match &*d.decoration.token() {
