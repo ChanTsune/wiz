@@ -4,6 +4,7 @@ use crate::high_level_ir::typed_stmt::TypedBlock;
 use crate::high_level_ir::typed_type::{
     TypedArgType, TypedFunctionType, TypedPackage, TypedType, TypedTypeParam,
 };
+use crate::high_level_ir::typed_type_constraint::TypedTypeConstraint;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum TypedDecl {
@@ -33,6 +34,7 @@ pub struct TypedFun {
     pub(crate) modifiers: Vec<String>,
     pub(crate) name: String,
     pub(crate) type_params: Option<Vec<TypedTypeParam>>,
+    pub(crate) type_constraints: Option<Vec<TypedTypeConstraint>>,
     pub(crate) arg_defs: Vec<TypedArgDef>,
     pub(crate) body: Option<TypedFunBody>,
     pub(crate) return_type: Option<TypedType>,

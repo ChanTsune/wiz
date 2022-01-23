@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedExtension, TypedFun, TypedFunBody,
@@ -248,6 +249,49 @@ impl Ast2HLIR {
             .map(|a| self.arg_def(a.element))
             .collect();
 
+        let simple_type_constraints = type_params.as_ref().map(|t|t.elements.iter().map(|t|{
+            t.element.clone()
+        }).collect::<Vec<_>>());
+
+        let type_constraints = type_constraints.map(|t|{
+            t.type_constraints.into_iter().map(|t|{
+                t.element
+            }).collect::<Vec<_>>()
+        });
+
+        let type_constraints = match (simple_type_constraints, type_constraints) {
+            (Some(mut a), Some(b)) => Some({
+                a.extend(b);
+                a
+            }),
+            (Some(a), _) | (_, Some(a)) => Some(a),
+            (_, _) => None
+        }.map(|type_constraints|{
+            let mut group = HashMap::new();
+            for type_constraint in type_constraints {
+                let name = type_constraint.name.token();
+                let mut constraints = if group.contains_key(&name) {
+                    group.remove(&name).unwrap()
+                } else {
+                    vec![]
+                };
+                constraints.push(type_constraint.type_constraint);
+                group.insert(name, constraints);
+            }
+            group.into_iter().map(|(k, v)|{
+                TypedTypeConstraint {
+                    type_: TypedType::Type(Box::new(TypedType::Value(TypedValueType::Value(TypedNamedValueType {
+                        package: TypedPackage::Raw(Package::global()),
+                        name: k,
+                        type_args: None
+                    })))),
+                    constraints: v.into_iter().filter_map(|i|i)
+                        .map(|s|self.type_(s.constraint))
+                        .collect()
+                }
+            }).collect()
+        });
+
         let body = body.map(|b| self.fun_body(b));
 
         TypedFun {
@@ -260,19 +304,10 @@ impl Ast2HLIR {
                     .into_iter()
                     .map(|p| TypedTypeParam {
                         name: p.element.name.token(),
-                        type_constraint: match p.element.type_constraint {
-                            None => {
-                                println!("NONE");
-                                vec![]
-                            }
-                            Some(tn) => {
-                                println!("SOME");
-                                vec![self.type_(tn.constraint)]
-                            }
-                        },
                     })
                     .collect()
             }),
+            type_constraints,
             arg_defs: args,
             body,
             return_type: return_type.map(|t| self.type_(t)),
@@ -326,9 +361,6 @@ impl Ast2HLIR {
     fn type_param(&self, tp: TypeParam) -> TypedTypeParam {
         TypedTypeParam {
             name: tp.name.token(),
-            type_constraint: tp
-                .type_constraint
-                .map_or(vec![], |v| vec![self.type_(v.constraint)]),
         }
     }
 

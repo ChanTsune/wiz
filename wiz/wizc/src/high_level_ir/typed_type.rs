@@ -185,7 +185,6 @@ pub struct TypedNamedValueType {
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub struct TypedTypeParam {
     pub(crate) name: String,
-    pub(crate) type_constraint: Vec<TypedType>,
 }
 
 impl TypedPackage {

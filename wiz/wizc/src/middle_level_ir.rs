@@ -384,6 +384,7 @@ impl HLIR2MLIR {
             modifiers,
             name,
             type_params,
+            type_constraints,
             arg_defs,
             body,
             return_type,

@@ -172,7 +172,8 @@ impl TypeResolver {
             package: TypedPackage::Resolved(Package::from(c_name_space)),
             modifiers: f.modifiers,
             name: f.name,
-            type_params: f.type_params, // TODO
+            type_params: f.type_params,
+            type_constraints: f.type_constraints,
             arg_defs,
             body: None,
             return_type: Some(return_type),
@@ -423,7 +424,8 @@ impl TypeResolver {
             package: TypedPackage::Resolved(Package::from(c_name_space)),
             modifiers: f.modifiers,
             name: f.name,
-            type_params: f.type_params, // TODO
+            type_params: f.type_params,
+            type_constraints: f.type_constraints,
             arg_defs,
             body: match f.body {
                 Some(b) => Some(self.typed_fun_body(b)?),
