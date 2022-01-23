@@ -61,3 +61,7 @@ fun println(_ item: Bool) {
         println("false")
     }
 }
+
+protocol Clonable {
+    fun clone(&self): Self
+}

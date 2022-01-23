@@ -71,3 +71,14 @@ struct UInt8Vector {
         self.capacity = newCapacity
     }
 }
+
+extension UInt8Vector: Clonable {
+    fun clone(&self): UInt8Vector {
+        var c = UInt8Vector.init()
+        c.ptr = malloc(self.length)
+        memcpy(c.ptr, self.ptr, self.length)
+        c.length = self.length
+        c.capacity = self.capacity
+        return c
+    }
+}
