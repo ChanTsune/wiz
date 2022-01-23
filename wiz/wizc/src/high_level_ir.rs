@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedExtension, TypedFun, TypedFunBody,
@@ -22,6 +21,7 @@ use crate::high_level_ir::typed_type::{
 use crate::high_level_ir::typed_type_constraint::TypedTypeConstraint;
 use crate::high_level_ir::typed_use::TypedUse;
 use crate::utils::path_string_to_page_name;
+use std::collections::HashMap;
 use std::option::Option::Some;
 use wiz_syntax::syntax::annotation::AnnotationsSyntax;
 use wiz_syntax::syntax::block::BlockSyntax;
@@ -249,14 +249,18 @@ impl Ast2HLIR {
             .map(|a| self.arg_def(a.element))
             .collect();
 
-        let simple_type_constraints = type_params.as_ref().map(|t|t.elements.iter().map(|t|{
-            t.element.clone()
-        }).collect::<Vec<_>>());
+        let simple_type_constraints = type_params.as_ref().map(|t| {
+            t.elements
+                .iter()
+                .map(|t| t.element.clone())
+                .collect::<Vec<_>>()
+        });
 
-        let type_constraints = type_constraints.map(|t|{
-            t.type_constraints.into_iter().map(|t|{
-                t.element
-            }).collect::<Vec<_>>()
+        let type_constraints = type_constraints.map(|t| {
+            t.type_constraints
+                .into_iter()
+                .map(|t| t.element)
+                .collect::<Vec<_>>()
         });
 
         let type_constraints = match (simple_type_constraints, type_constraints) {
@@ -265,8 +269,9 @@ impl Ast2HLIR {
                 a
             }),
             (Some(a), _) | (_, Some(a)) => Some(a),
-            (_, _) => None
-        }.map(|type_constraints|{
+            (_, _) => None,
+        }
+        .map(|type_constraints| {
             let mut group = HashMap::new();
             for type_constraint in type_constraints {
                 let name = type_constraint.name.token();
@@ -278,18 +283,23 @@ impl Ast2HLIR {
                 constraints.push(type_constraint.type_constraint);
                 group.insert(name, constraints);
             }
-            group.into_iter().map(|(k, v)|{
-                TypedTypeConstraint {
-                    type_: TypedType::Type(Box::new(TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-                        package: TypedPackage::Raw(Package::global()),
-                        name: k,
-                        type_args: None
-                    })))),
-                    constraints: v.into_iter().filter_map(|i|i)
-                        .map(|s|self.type_(s.constraint))
-                        .collect()
-                }
-            }).collect()
+            group
+                .into_iter()
+                .map(|(k, v)| TypedTypeConstraint {
+                    type_: TypedType::Type(Box::new(TypedType::Value(TypedValueType::Value(
+                        TypedNamedValueType {
+                            package: TypedPackage::Raw(Package::global()),
+                            name: k,
+                            type_args: None,
+                        },
+                    )))),
+                    constraints: v
+                        .into_iter()
+                        .filter_map(|i| i)
+                        .map(|s| self.type_(s.constraint))
+                        .collect(),
+                })
+                .collect()
         });
 
         let body = body.map(|b| self.fun_body(b));
