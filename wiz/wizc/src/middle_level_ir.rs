@@ -81,7 +81,7 @@ impl HLIR2MLIRContext {
     }
 
     pub(crate) fn get_struct(&self, typ: &MLValueType) -> &MLStruct {
-        self.structs.get(typ).unwrap()
+        self.structs.get(typ).unwrap_or_else(|| panic!("{:?}", typ))
     }
 
     pub(crate) fn struct_has_field(&self, typ: &MLValueType, field_name: &str) -> bool {
@@ -339,8 +339,10 @@ impl HLIR2MLIR {
                 self.module.add_global_var(v);
             }
             TypedDecl::Fun(f) => {
-                let f = FunBuilder::from(self.fun(f));
-                self.module._add_function(f);
+                if let Some(fun) = self.fun(f) {
+                    let f = FunBuilder::from(fun);
+                    self.module._add_function(f);
+                }
             }
             TypedDecl::Struct(s) => {
                 let (st, fns) = self.struct_(s);
@@ -377,7 +379,7 @@ impl HLIR2MLIR {
         }
     }
 
-    fn fun(&mut self, f: TypedFun) -> MLFun {
+    fn fun(&mut self, f: TypedFun) -> Option<MLFun> {
         let TypedFun {
             annotations,
             package,
@@ -389,7 +391,9 @@ impl HLIR2MLIR {
             body,
             return_type,
         } = f;
-        // TODO: use type_params
+        if type_params.is_some() {
+            return None
+        }
         let package_mangled_name = self.package_name_mangling(&package, &name);
         let mangled_name = if annotations.has_annotate("no_mangle") {
             name
@@ -404,13 +408,13 @@ impl HLIR2MLIR {
         self.context
             .set_declaration_annotations(mangled_name.clone(), annotations);
         let args = arg_defs.into_iter().map(|a| self.arg_def(a)).collect();
-        MLFun {
+        Some(MLFun {
             modifiers,
             name: mangled_name,
             arg_defs: args,
             return_type: self.type_(return_type.unwrap()).into_value_type(),
             body: body.map(|b| self.fun_body(b)),
-        }
+        })
     }
 
     fn struct_(&mut self, s: TypedStruct) -> (MLStruct, Vec<MLFun>) {
