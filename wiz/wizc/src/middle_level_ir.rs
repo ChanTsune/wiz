@@ -392,7 +392,7 @@ impl HLIR2MLIR {
             return_type,
         } = f;
         if type_params.is_some() {
-            return None
+            return None;
         }
         let package_mangled_name = self.package_name_mangling(&package, &name);
         let mangled_name = if annotations.has_annotate("no_mangle") {
