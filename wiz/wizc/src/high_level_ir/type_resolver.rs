@@ -160,13 +160,15 @@ impl TypeResolver {
             for type_param in type_params {
                 self.context.register_to_env(
                     type_param.name.clone(),
-                    ResolverStruct::new(TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-                        package: TypedPackage::Resolved(Package::global()),
-                        name: type_param.name.clone(),
-                        type_args: None
-                    })))
+                    ResolverStruct::new(TypedType::Value(TypedValueType::Value(
+                        TypedNamedValueType {
+                            package: TypedPackage::Resolved(Package::global()),
+                            name: type_param.name.clone(),
+                            type_args: None,
+                        },
+                    ))),
                 )
-            };
+            }
         }
         let arg_defs = f
             .arg_defs
@@ -457,13 +459,15 @@ impl TypeResolver {
         self.context.push_local_stack();
         if let Some(type_params) = &f.type_params {
             for type_param in type_params {
-                let mut rs = ResolverStruct::new(TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-                    package: TypedPackage::Resolved(Package::global()),
-                    name: type_param.name.clone(),
-                    type_args: None
-                })));
+                let mut rs = ResolverStruct::new(TypedType::Value(TypedValueType::Value(
+                    TypedNamedValueType {
+                        package: TypedPackage::Resolved(Package::global()),
+                        name: type_param.name.clone(),
+                        type_args: None,
+                    },
+                )));
                 if let Some(tc) = &f.type_constraints {
-                    let con = tc.iter().find(|t|t.type_.name() == type_param.name);
+                    let con = tc.iter().find(|t| t.type_.name() == type_param.name);
                     if let Some(con) = con {
                         for c in con.constraints.iter() {
                             let c = self.context.full_type_name(c.clone())?;
@@ -473,11 +477,8 @@ impl TypeResolver {
                         }
                     }
                 };
-                self.context.register_to_env(
-                    type_param.name.clone(),
-                    rs
-                )
-            };
+                self.context.register_to_env(type_param.name.clone(), rs)
+            }
         }
         let arg_defs = f
             .arg_defs
