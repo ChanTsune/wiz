@@ -329,14 +329,8 @@ impl ToString for TypedNamedValueType {
         };
         fqn + &match &self.type_args {
             None => String::new(),
-            Some(a) => {
-                String::from("<")
-                    + &a.iter()
-                        .map(|a| a.to_string())
-                        .collect::<Vec<String>>()
-                        .join(",")
-                    + ">"
-            }
+            Some(a) =>
+                format!("<{}>", a.iter().map(|t| t.to_string()).collect::<Vec<_>>().join(",")),
         }
     }
 }
