@@ -13,12 +13,11 @@ use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{
     TypedAssignmentAndOperator, TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt,
 };
-use crate::high_level_ir::typed_type::{
-    TypedFunctionType, TypedPackage, TypedType, TypedValueType,
-};
+use crate::high_level_ir::typed_type::{TypedFunctionType, TypedPackage, TypedType, TypedTypeParam, TypedValueType};
 use core::result;
 use std::collections::HashMap;
 use std::error::Error;
+use std::iter::Map;
 use wiz_mir::builder::{BuilderError, FunBuilder, MLIRModule};
 use wiz_mir::expr::{
     MLArray, MLBinOp, MLBinOpKind, MLBlock, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLMember,
@@ -340,7 +339,7 @@ impl HLIR2MLIR {
             }
             TypedDecl::Fun(f) => {
                 if !f.is_generic() {
-                    let f = FunBuilder::from(self.fun(f));
+                    let f = FunBuilder::from(self.fun(f, None));
                     self.module._add_function(f);
                 }
             }
@@ -379,7 +378,7 @@ impl HLIR2MLIR {
         }
     }
 
-    fn fun(&mut self, f: TypedFun) -> MLFun {
+    fn fun(&mut self, f: TypedFun, type_arguments: Option<Map<TypedTypeParam, TypedType>>) -> MLFun {
         let TypedFun {
             annotations,
             package,
