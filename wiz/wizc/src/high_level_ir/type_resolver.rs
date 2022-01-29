@@ -36,8 +36,7 @@ impl TypeResolver {
         Self::from(ResolverContext::new())
     }
 
-    pub(crate) fn global_use<T: ToString>(&mut self, name_space: Vec<T>)
-    {
+    pub(crate) fn global_use<T: ToString>(&mut self, name_space: Vec<T>) {
         self.context
             .use_name_space(name_space.into_iter().map(|n| n.to_string()).collect())
     }
