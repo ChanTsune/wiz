@@ -129,6 +129,10 @@ impl TypedFun {
             }))
         })
     }
+
+    pub fn is_generic(&self) -> bool {
+        self.type_params.is_some()
+    }
 }
 
 impl TypedMemberFunction {
