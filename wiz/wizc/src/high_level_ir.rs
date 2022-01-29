@@ -345,8 +345,8 @@ impl Ast2HLIR {
             TypeName::Decorated(d) => {
                 let t = self.type_(d.type_);
                 match &*d.decoration.token() {
-                    "&" => TypedType::Value(TypedValueType::Reference(Box::new(t))),
-                    "*" => TypedType::Value(TypedValueType::Pointer(Box::new(t))),
+                    "&" => TypedType::refarence(t),
+                    "*" => TypedType::unsafe_pointer(t),
                     a => panic!("Unexpected token {}", a),
                 }
             }
