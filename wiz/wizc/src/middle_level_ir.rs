@@ -510,7 +510,7 @@ impl HLIR2MLIR {
         let TypedExtension {
             annotations,
             name,
-            protocol: type_params,
+            protocol,
             computed_properties,
             member_functions,
         } = e;
