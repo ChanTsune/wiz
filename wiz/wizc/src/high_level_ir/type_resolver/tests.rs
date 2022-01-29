@@ -163,9 +163,7 @@ fn test_unsafe_pointer() {
                                 })),
                                 name: "a".to_string(),
                                 is_safe: false,
-                                type_: Some(TypedType::Value(TypedValueType::Pointer(Box::new(
-                                    TypedType::uint8(),
-                                )))),
+                                type_: Some(TypedType::unsafe_pointer(TypedType::uint8())),
                             }),
                         }))],
                     })),
