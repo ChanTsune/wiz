@@ -13,7 +13,9 @@ use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{
     TypedAssignmentAndOperator, TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt,
 };
-use crate::high_level_ir::typed_type::{TypedFunctionType, TypedPackage, TypedType, TypedTypeParam, TypedValueType};
+use crate::high_level_ir::typed_type::{
+    TypedFunctionType, TypedPackage, TypedType, TypedTypeParam, TypedValueType,
+};
 use core::result;
 use std::collections::HashMap;
 use std::error::Error;
@@ -378,7 +380,11 @@ impl HLIR2MLIR {
         }
     }
 
-    fn fun(&mut self, f: TypedFun, type_arguments: Option<Map<TypedTypeParam, TypedType>>) -> MLFun {
+    fn fun(
+        &mut self,
+        f: TypedFun,
+        type_arguments: Option<Map<TypedTypeParam, TypedType>>,
+    ) -> MLFun {
         let TypedFun {
             annotations,
             package,
