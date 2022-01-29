@@ -405,7 +405,7 @@ impl TypedType {
         Self::Value(TypedValueType::Pointer(Box::new(typ)))
     }
 
-    pub fn refarence(typ: TypedType) -> Self {
+    pub fn reference(typ: TypedType) -> Self {
         Self::Value(TypedValueType::Reference(Box::new(typ)))
     }
 
