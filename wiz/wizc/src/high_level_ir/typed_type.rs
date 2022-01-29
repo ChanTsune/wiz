@@ -405,6 +405,10 @@ impl TypedType {
         Self::Value(TypedValueType::Pointer(Box::new(typ)))
     }
 
+    pub fn refarence(typ: TypedType) -> Self {
+        Self::Value(TypedValueType::Reference(Box::new(typ)))
+    }
+
     pub fn signed_integer_types() -> Vec<TypedType> {
         vec![Self::int8(), Self::int16(), Self::int32(), Self::int64()]
     }
