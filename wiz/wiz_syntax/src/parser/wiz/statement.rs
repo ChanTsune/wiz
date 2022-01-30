@@ -689,15 +689,15 @@ mod tests {
         check(
             "a += 1",
             assignment_stmt,
-                Stmt::Assignment(AssignmentStmt::AssignmentAndOperator(
-                    AssignmentAndOperatorSyntax {
-                        target: Expr::Name(NameExprSyntax::simple( TokenSyntax::from("a"))),
-                        operator: TokenSyntax::from("+=")
-                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                            .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                        value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("1")))
-                    }
-            ))
+            Stmt::Assignment(AssignmentStmt::AssignmentAndOperator(
+                AssignmentAndOperatorSyntax {
+                    target: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
+                    operator: TokenSyntax::from("+=")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("1"))),
+                },
+            )),
         )
     }
 
