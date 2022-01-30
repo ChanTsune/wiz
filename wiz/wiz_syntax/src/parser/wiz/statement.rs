@@ -141,10 +141,7 @@ where
     alt((
         _directly_assignable_postfix_expr,
         map(identifier, |name| {
-            Expr::Name(NameExprSyntax {
-                name_space: Default::default(),
-                name: TokenSyntax::from(name),
-            })
+            Expr::Name(NameExprSyntax::simple(TokenSyntax::from(name)))
         }),
         map(parenthesized_directly_assignable_expr, |e| e),
     ))(s)
@@ -427,19 +424,14 @@ mod tests {
 
     #[test]
     fn test_call_expr_stmt() {
-        assert_eq!(
-            stmt("hoge()"),
-            Ok((
-                "",
+        check(
+            "hoge()",
+            stmt,
                 Stmt::Expr(Expr::Call(CallExprSyntax {
-                    target: Box::new(Expr::Name(NameExprSyntax {
-                        name_space: Default::default(),
-                        name: TokenSyntax::from("hoge")
-                    })),
+                    target: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("hoge")))),
                     args: Some(CallArgListSyntax::new()),
                     tailing_lambda: None
                 }))
-            ))
         )
     }
 
