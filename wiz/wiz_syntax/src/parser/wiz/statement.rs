@@ -427,11 +427,13 @@ mod tests {
         check(
             "hoge()",
             stmt,
-                Stmt::Expr(Expr::Call(CallExprSyntax {
-                    target: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("hoge")))),
-                    args: Some(CallArgListSyntax::new()),
-                    tailing_lambda: None
-                }))
+            Stmt::Expr(Expr::Call(CallExprSyntax {
+                target: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from(
+                    "hoge",
+                )))),
+                args: Some(CallArgListSyntax::new()),
+                tailing_lambda: None,
+            })),
         )
     }
 
