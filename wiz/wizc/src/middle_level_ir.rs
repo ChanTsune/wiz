@@ -776,9 +776,7 @@ impl HLIR2MLIR {
                     type_,
                 } = m;
                 match target.type_().unwrap() {
-                    TypedType::Self_ => {
-                        todo!()
-                    }
+                    TypedType::Self_ => panic!("never execution branch"),
                     TypedType::Value(v) => {
                         let target_type = self.value_type(v);
                         let is_stored = self.context.struct_has_field(&target_type, &name);
@@ -809,9 +807,7 @@ impl HLIR2MLIR {
                         todo!()
                     }
                     TypedType::Type(t) => match *t {
-                        TypedType::Self_ => {
-                            todo!()
-                        }
+                        TypedType::Self_ => panic!("never execution branch"),
                         TypedType::Value(t) => match t {
                             TypedValueType::Value(t) => {
                                 let type_ = self.type_(type_.unwrap());
