@@ -1425,11 +1425,11 @@ mod tests {
         check(
             "std::builtin::println",
             name_expr,
-                Expr::Name(NameExprSyntax {
-                    name_space: NameSpaceSyntax::from(vec!["std", "builtin"]),
-                    name: TokenSyntax::from("println"),
-                    type_arguments: None
-                })
+            Expr::Name(NameExprSyntax {
+                name_space: NameSpaceSyntax::from(vec!["std", "builtin"]),
+                name: TokenSyntax::from("println"),
+                type_arguments: None,
+            }),
         )
     }
 
