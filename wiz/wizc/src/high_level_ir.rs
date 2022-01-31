@@ -637,7 +637,11 @@ impl Ast2HLIR {
     }
 
     pub fn name_syntax(&self, n: NameExprSyntax) -> TypedName {
-        let NameExprSyntax { name_space, name, type_arguments } = n;
+        let NameExprSyntax {
+            name_space,
+            name,
+            type_arguments,
+        } = n;
         let name_space = name_space
             .elements
             .into_iter()

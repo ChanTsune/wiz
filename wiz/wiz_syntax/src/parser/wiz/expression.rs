@@ -192,13 +192,16 @@ where
         + FindSubstring<&'static str>,
     <I as InputIter>::Item: AsChar + Copy,
 {
-    map(tuple((name_space, identifier, opt(type_arguments))), |(name_space, name, type_arguments)| {
-        Expr::Name(NameExprSyntax {
-            name_space,
-            name: TokenSyntax::from(name),
-            type_arguments
-        })
-    })(s)
+    map(
+        tuple((name_space, identifier, opt(type_arguments))),
+        |(name_space, name, type_arguments)| {
+            Expr::Name(NameExprSyntax {
+                name_space,
+                name: TokenSyntax::from(name),
+                type_arguments,
+            })
+        },
+    )(s)
 }
 
 pub fn parenthesized_expr<I>(s: I) -> IResult<I, Expr>
@@ -413,40 +416,43 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(tuple((primary_expr, many0(postfix_suffix))), |(e, suffixes)| {
-        let mut e = e;
-        for suffix in suffixes {
-            e = match suffix {
-                PostfixSuffix::Operator(kind) => {
-                    Expr::UnaryOp(UnaryOperationSyntax::Postfix(PostfixUnaryOperationSyntax {
+    map(
+        tuple((primary_expr, many0(postfix_suffix))),
+        |(e, suffixes)| {
+            let mut e = e;
+            for suffix in suffixes {
+                e = match suffix {
+                    PostfixSuffix::Operator(kind) => {
+                        Expr::UnaryOp(UnaryOperationSyntax::Postfix(PostfixUnaryOperationSyntax {
+                            target: Box::new(e),
+                            operator: TokenSyntax::from(kind),
+                        }))
+                    }
+                    PostfixSuffix::TypeArgumentSuffix(t) => panic!("type argument suffix {:?}", t),
+                    PostfixSuffix::CallSuffix {
+                        args,
+                        tailing_lambda,
+                    } => Expr::Call(CallExprSyntax {
                         target: Box::new(e),
-                        operator: TokenSyntax::from(kind),
-                    }))
-                }
-                PostfixSuffix::TypeArgumentSuffix(t) => panic!("type argument suffix {:?}", t),
-                PostfixSuffix::CallSuffix {
-                    args,
-                    tailing_lambda,
-                } => Expr::Call(CallExprSyntax {
-                    target: Box::new(e),
-                    args,
-                    tailing_lambda,
-                }),
-                PostfixSuffix::IndexingSuffix(indexes) => Expr::Subscript(SubscriptSyntax {
-                    target: Box::new(e),
-                    idx_or_keys: indexes,
-                }),
-                PostfixSuffix::NavigationSuffix { navigation, name } => {
-                    Expr::Member(MemberSyntax {
+                        args,
+                        tailing_lambda,
+                    }),
+                    PostfixSuffix::IndexingSuffix(indexes) => Expr::Subscript(SubscriptSyntax {
                         target: Box::new(e),
-                        name,
-                        navigation_operator: navigation,
-                    })
+                        idx_or_keys: indexes,
+                    }),
+                    PostfixSuffix::NavigationSuffix { navigation, name } => {
+                        Expr::Member(MemberSyntax {
+                            target: Box::new(e),
+                            name,
+                            navigation_operator: navigation,
+                        })
+                    }
                 }
             }
-        }
-        e
-    })(s)
+            e
+        },
+    )(s)
 }
 
 /*
@@ -1302,8 +1308,10 @@ mod tests {
     use crate::syntax::statement::Stmt;
     use crate::syntax::token::TokenSyntax;
     use crate::syntax::trivia::{Trivia, TriviaPiece};
+    use crate::syntax::type_name::{
+        SimpleTypeName, TypeArgumentElementSyntax, TypeArgumentListSyntax, TypeName,
+    };
     use crate::syntax::Syntax;
-    use crate::syntax::type_name::{SimpleTypeName, TypeArgumentElementSyntax, TypeArgumentListSyntax, TypeName};
 
     #[test]
     fn test_integer_literal() {
@@ -1949,13 +1957,13 @@ mod tests {
                     elements: vec![TypeArgumentElementSyntax {
                         element: TypeName::Simple(SimpleTypeName {
                             name: TokenSyntax::from("b"),
-                            type_args: None
+                            type_args: None,
                         }),
-                        trailing_comma: None
+                        trailing_comma: None,
                     }],
                     close: TokenSyntax::from(">"),
                 }),
-            })
+            }),
         );
     }
 }
