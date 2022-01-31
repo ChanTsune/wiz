@@ -187,13 +187,16 @@ where
         + InputLength
         + Clone
         + ToString
-        + Compare<&'static str>,
-    <I as InputIter>::Item: AsChar,
+        + Compare<&'static str>
+        + Slice<Range<usize>>
+        + FindSubstring<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
 {
-    map(tuple((name_space, identifier)), |(name_space, name)| {
+    map(tuple((name_space, identifier, opt(type_arguments))), |(name_space, name, type_arguments)| {
         Expr::Name(NameExprSyntax {
             name_space,
             name: TokenSyntax::from(name),
+            type_arguments
         })
     })(s)
 }
@@ -410,18 +413,17 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(_postfix_expr, |(e, suffixes)| {
+    map(tuple((primary_expr, many0(postfix_suffix))), |(e, suffixes)| {
         let mut e = e;
         for suffix in suffixes {
             e = match suffix {
-                // TODO: impl
                 PostfixSuffix::Operator(kind) => {
                     Expr::UnaryOp(UnaryOperationSyntax::Postfix(PostfixUnaryOperationSyntax {
                         target: Box::new(e),
                         operator: TokenSyntax::from(kind),
                     }))
                 }
-                PostfixSuffix::TypeArgumentSuffix(_) => e,
+                PostfixSuffix::TypeArgumentSuffix(t) => panic!("type argument suffix {:?}", t),
                 PostfixSuffix::CallSuffix {
                     args,
                     tailing_lambda,
@@ -445,26 +447,6 @@ where
         }
         e
     })(s)
-}
-
-pub fn _postfix_expr<I>(s: I) -> IResult<I, (Expr, Vec<PostfixSuffix>)>
-where
-    I: Slice<RangeFrom<usize>>
-        + Slice<Range<usize>>
-        + InputIter
-        + Clone
-        + Offset
-        + InputLength
-        + ToString
-        + InputTake
-        + InputTakeAtPosition
-        + ExtendInto<Item = char, Extender = String>
-        + FindSubstring<&'static str>
-        + Compare<&'static str>,
-    <I as InputIter>::Item: AsChar + Copy,
-    <I as InputTakeAtPosition>::Item: AsChar,
-{
-    tuple((primary_expr, many0(postfix_suffix)))(s)
 }
 
 /*
@@ -1321,6 +1303,7 @@ mod tests {
     use crate::syntax::token::TokenSyntax;
     use crate::syntax::trivia::{Trivia, TriviaPiece};
     use crate::syntax::Syntax;
+    use crate::syntax::type_name::{SimpleTypeName, TypeArgumentElementSyntax, TypeArgumentListSyntax, TypeName};
 
     #[test]
     fn test_integer_literal() {
@@ -1942,6 +1925,29 @@ mod tests {
                 close: TokenSyntax::from("]")
                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
             }),
+        );
+    }
+
+    #[test]
+    fn test_type_arguments_suffix() {
+        check(
+            "a<b>",
+            expr,
+            Expr::Name(NameExprSyntax {
+                name_space: Default::default(),
+                name: TokenSyntax::from("a"),
+                type_arguments: Some(TypeArgumentListSyntax {
+                    open: TokenSyntax::from("<"),
+                    elements: vec![TypeArgumentElementSyntax {
+                        element: TypeName::Simple(SimpleTypeName {
+                            name: TokenSyntax::from("b"),
+                            type_args: None
+                        }),
+                        trailing_comma: None
+                    }],
+                    close: TokenSyntax::from(">"),
+                }),
+            })
         );
     }
 }
