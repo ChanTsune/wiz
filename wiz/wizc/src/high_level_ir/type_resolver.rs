@@ -683,7 +683,10 @@ impl TypeResolver {
             package,
             type_: Some(type_),
             name: n.name,
-            type_arguments: n.type_arguments,
+            type_arguments: match n.type_arguments {
+                None => None,
+                Some(t) => Some(t.into_iter().map(|ta|self.context.full_type_name(ta)).collect::<Result<Vec<_>>>()?)
+            },
         })
     }
 
