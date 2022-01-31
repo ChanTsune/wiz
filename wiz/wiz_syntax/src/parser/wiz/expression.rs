@@ -1942,57 +1942,57 @@ mod tests {
         check(
             "[a]",
             indexing_suffix,
-                PostfixSuffix::IndexingSuffix(SubscriptIndexListSyntax {
-                    open: TokenSyntax::from("["),
-                    elements: vec![SubscriptIndexElementSyntax {
-                        element: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
-                        trailing_comma: None
-                    }],
-                    close: TokenSyntax::from("]")
-                })
+            PostfixSuffix::IndexingSuffix(SubscriptIndexListSyntax {
+                open: TokenSyntax::from("["),
+                elements: vec![SubscriptIndexElementSyntax {
+                    element: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
+                    trailing_comma: None,
+                }],
+                close: TokenSyntax::from("]"),
+            }),
         );
         check(
             "[a, b]",
             indexing_suffix,
-                PostfixSuffix::IndexingSuffix(SubscriptIndexListSyntax {
-                    open: TokenSyntax::from("["),
-                    elements: vec![
-                        SubscriptIndexElementSyntax {
-                            element: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
-                            trailing_comma: Some(TokenSyntax::from(","))
-                        },
-                        SubscriptIndexElementSyntax {
-                            element: Expr::Name(
-                                NameExprSyntax::simple(TokenSyntax::from("b"))
-                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                            ),
-                            trailing_comma: None
-                        },
-                    ],
-                    close: TokenSyntax::from("]")
-                })
+            PostfixSuffix::IndexingSuffix(SubscriptIndexListSyntax {
+                open: TokenSyntax::from("["),
+                elements: vec![
+                    SubscriptIndexElementSyntax {
+                        element: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
+                        trailing_comma: Some(TokenSyntax::from(",")),
+                    },
+                    SubscriptIndexElementSyntax {
+                        element: Expr::Name(
+                            NameExprSyntax::simple(TokenSyntax::from("b"))
+                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        ),
+                        trailing_comma: None,
+                    },
+                ],
+                close: TokenSyntax::from("]"),
+            }),
         );
         check(
             "[a, b, ]",
             indexing_suffix,
-                PostfixSuffix::IndexingSuffix(SubscriptIndexListSyntax {
-                    open: TokenSyntax::from("["),
-                    elements: vec![
-                        SubscriptIndexElementSyntax {
-                            element: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
-                            trailing_comma: Some(TokenSyntax::from(","))
-                        },
-                        SubscriptIndexElementSyntax {
-                            element: Expr::Name(
-                                NameExprSyntax::simple(TokenSyntax::from("b"))
-                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                            ),
-                            trailing_comma: Some(TokenSyntax::from(","))
-                        },
-                    ],
-                    close: TokenSyntax::from("]")
-                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                })
+            PostfixSuffix::IndexingSuffix(SubscriptIndexListSyntax {
+                open: TokenSyntax::from("["),
+                elements: vec![
+                    SubscriptIndexElementSyntax {
+                        element: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
+                        trailing_comma: Some(TokenSyntax::from(",")),
+                    },
+                    SubscriptIndexElementSyntax {
+                        element: Expr::Name(
+                            NameExprSyntax::simple(TokenSyntax::from("b"))
+                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        ),
+                        trailing_comma: Some(TokenSyntax::from(",")),
+                    },
+                ],
+                close: TokenSyntax::from("]")
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+            }),
         );
     }
 }
