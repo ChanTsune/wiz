@@ -683,6 +683,7 @@ impl TypeResolver {
             package,
             type_: Some(type_),
             name: n.name,
+            type_arguments: n.type_arguments,
         })
     }
 

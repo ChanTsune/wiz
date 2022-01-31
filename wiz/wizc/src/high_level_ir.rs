@@ -444,6 +444,7 @@ impl Ast2HLIR {
                                             package: TypedPackage::Raw(Package::new()),
                                             name: "self".to_string(),
                                             type_: None,
+                                            type_arguments: None,
                                         })),
                                         name: p.name.clone(),
                                         is_safe: false,
@@ -453,6 +454,7 @@ impl Ast2HLIR {
                                         package: TypedPackage::Raw(Package::new()),
                                         name: p.name.clone(),
                                         type_: None,
+                                        type_arguments: None,
                                     }),
                                 },
                             ))
@@ -646,7 +648,7 @@ impl Ast2HLIR {
             .elements
             .into_iter()
             .map(|e| e.name.token())
-            .collect::<Vec<String>>();
+            .collect::<Vec<_>>();
         TypedName {
             package: if name_space.is_empty() {
                 TypedPackage::Raw(Package::new())
@@ -655,6 +657,13 @@ impl Ast2HLIR {
             },
             name: name.token(),
             type_: None,
+            type_arguments: type_arguments
+                .map(|t| {
+                    t.elements
+                        .into_iter()
+                        .map(|e| self.type_(e.element))
+                        .collect()
+                }),
         }
     }
 

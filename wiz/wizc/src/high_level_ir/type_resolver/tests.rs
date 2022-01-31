@@ -93,19 +93,21 @@ fn test_unsafe_pointer() {
                                                     type_args: None,
                                                 },
                                             ))),
+                                            type_arguments: None
                                         })),
                                         name: "a".to_string(),
                                         is_safe: false,
-                                        type_: Some(TypedType::Value(TypedValueType::Pointer(
-                                            Box::new(TypedType::uint8()),
-                                        ))),
+                                        type_: Some(TypedType::unsafe_pointer(
+                                            TypedType::uint8(),
+                                        )),
                                     }),
                                     value: TypedExpr::Name(TypedName {
                                         package: TypedPackage::Resolved(Package::new()),
                                         name: "a".to_string(),
-                                        type_: Some(TypedType::Value(TypedValueType::Pointer(
-                                            Box::new(TypedType::uint8()),
-                                        ))),
+                                        type_: Some(TypedType::unsafe_pointer(
+                                            TypedType::uint8(),
+                                        )),
+                                        type_arguments: None
                                     }),
                                 },
                             ))],
@@ -154,6 +156,7 @@ fn test_unsafe_pointer() {
                                             type_args: None,
                                         },
                                     ))),
+                                    type_arguments: None
                                 })),
                                 name: "a".to_string(),
                                 is_safe: false,
@@ -212,6 +215,7 @@ fn test_struct_stored_property() {
                                                     type_args: None,
                                                 },
                                             ))),
+                                            type_arguments: None
                                         })),
                                         name: "a".to_string(),
                                         is_safe: false,
@@ -221,6 +225,7 @@ fn test_struct_stored_property() {
                                         package: TypedPackage::Resolved(Package::new()),
                                         name: "a".to_string(),
                                         type_: Some(TypedType::int64()),
+                                        type_arguments: None
                                     }),
                                 },
                             ))],
@@ -269,6 +274,7 @@ fn test_struct_stored_property() {
                                             type_args: None,
                                         },
                                     ))),
+                                    type_arguments: None
                                 })),
                                 name: "a".to_string(),
                                 is_safe: false,
@@ -327,6 +333,7 @@ fn test_struct_init() {
                                                     type_args: None,
                                                 },
                                             ))),
+                                            type_arguments: None
                                         })),
                                         name: "a".to_string(),
                                         is_safe: false,
@@ -336,6 +343,7 @@ fn test_struct_init() {
                                         package: TypedPackage::Resolved(Package::new()),
                                         name: "a".to_string(),
                                         type_: Some(TypedType::int64()),
+                                        type_arguments: None
                                     }),
                                 },
                             ))],
@@ -391,6 +399,7 @@ fn test_struct_init() {
                                                 type_args: None,
                                             }),
                                         )))),
+                                        type_arguments: None
                                     })),
                                     name: "init".to_string(),
                                     is_safe: false,
@@ -481,6 +490,7 @@ fn test_struct_member_function() {
                                                 type_args: None,
                                             },
                                         ))),
+                                        type_arguments: None
                                     })),
                                     name: "a".to_string(),
                                     is_safe: false,
@@ -490,6 +500,7 @@ fn test_struct_member_function() {
                                     package: TypedPackage::Resolved(Package::new()),
                                     name: "a".to_string(),
                                     type_: Some(TypedType::int64()),
+                                    type_arguments: None
                                 }),
                             },
                         ))],
@@ -530,6 +541,7 @@ fn test_struct_member_function() {
                                             type_args: None,
                                         },
                                     ))),
+                                    type_arguments: None
                                 })),
                                 name: "a".to_string(),
                                 is_safe: false,
@@ -593,6 +605,7 @@ fn test_struct_member_function_call() {
                                                     type_args: None,
                                                 },
                                             ))),
+                                            type_arguments: None
                                         })),
                                         name: "a".to_string(),
                                         is_safe: false,
@@ -602,6 +615,7 @@ fn test_struct_member_function_call() {
                                         package: TypedPackage::Resolved(Package::new()),
                                         name: "a".to_string(),
                                         type_: Some(TypedType::int64()),
+                                        type_arguments: None
                                     }),
                                 },
                             ))],
@@ -642,6 +656,7 @@ fn test_struct_member_function_call() {
                                                 type_args: None,
                                             },
                                         ))),
+                                        type_arguments: None
                                     })),
                                     name: "a".to_string(),
                                     is_safe: false,
@@ -683,6 +698,7 @@ fn test_struct_member_function_call() {
                                             type_args: None,
                                         },
                                     ))),
+                                    type_arguments: None
                                 })),
                                 name: "getA".to_string(),
                                 is_safe: false,
@@ -771,6 +787,7 @@ fn test_expr_function_with_arg() {
                     package: TypedPackage::Resolved(Package::new()),
                     name: "i".to_string(),
                     type_: Some(TypedType::int32()),
+                    type_arguments: None
                 }))),
                 return_type: Some(TypedType::int32()),
             })],
@@ -826,6 +843,7 @@ fn test_function_call() {
                                     arguments: vec![],
                                     return_type: TypedType::int64(),
                                 }))),
+                                type_arguments: None
                             })),
                             args: vec![],
                             type_: Some(TypedType::int64()),
@@ -979,6 +997,7 @@ fn test_subscript() {
                         package: TypedPackage::Resolved(Package::new()),
                         name: "p".to_string(),
                         type_: Some(TypedType::unsafe_pointer(TypedType::uint8())),
+                        type_arguments: None
                     })),
                     indexes: vec![TypedExpr::Literal(TypedLiteral::Integer {
                         value: "0".to_string(),
@@ -1025,6 +1044,7 @@ fn test_if_else() {
                                     package: TypedPackage::Resolved(Package::new()),
                                     name: "i".to_string(),
                                     type_: Some(TypedType::int64()),
+                                    type_arguments: None
                                 })),
                                 operator: TypedBinaryOperator::LessThanEqual,
                                 right: Box::new(TypedExpr::Literal(TypedLiteral::Integer {
@@ -1047,6 +1067,7 @@ fn test_if_else() {
                                     package: TypedPackage::Resolved(Package::new()),
                                     name: "i".to_string(),
                                     type_: Some(TypedType::int64()),
+                                    type_arguments: None
                                 }))],
                             }),
                         }))),
@@ -1092,6 +1113,7 @@ fn test_if() {
                                 package: TypedPackage::Resolved(Package::new()),
                                 name: "i".to_string(),
                                 type_: Some(TypedType::int64()),
+                                type_arguments: None
                             })),
                             operator: TypedBinaryOperator::LessThanEqual,
                             right: Box::new(TypedExpr::Literal(TypedLiteral::Integer {
@@ -1171,6 +1193,7 @@ fn test_reference_dereference() {
                                     package: TypedPackage::Resolved(Package::new()),
                                     name: "a".to_string(),
                                     type_: Some(TypedType::int64()),
+                                    type_arguments: None
                                 })),
                                 operator: TypedPrefixUnaryOperator::Reference,
                                 type_: Some(TypedType::Value(TypedValueType::Reference(Box::new(
@@ -1191,6 +1214,7 @@ fn test_reference_dereference() {
                                     type_: Some(TypedType::Value(TypedValueType::Reference(
                                         Box::new(TypedType::int64()),
                                     ))),
+                                    type_arguments: None
                                 })),
                                 operator: TypedPrefixUnaryOperator::Dereference,
                                 type_: Some(TypedType::int64()),
@@ -1297,6 +1321,7 @@ fn test_function_overload_by_arguments() {
                                         }],
                                         return_type: TypedType::unit(),
                                     }))),
+                                    type_arguments: None
                                 })),
                                 args: vec![TypedCallArg {
                                     label: None,
@@ -1321,6 +1346,7 @@ fn test_function_overload_by_arguments() {
                                         }],
                                         return_type: TypedType::unit(),
                                     }))),
+                                    type_arguments: None
                                 })),
                                 args: vec![TypedCallArg {
                                     label: None,
