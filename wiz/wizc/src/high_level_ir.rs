@@ -657,13 +657,12 @@ impl Ast2HLIR {
             },
             name: name.token(),
             type_: None,
-            type_arguments: type_arguments
-                .map(|t| {
-                    t.elements
-                        .into_iter()
-                        .map(|e| self.type_(e.element))
-                        .collect()
-                }),
+            type_arguments: type_arguments.map(|t| {
+                t.elements
+                    .into_iter()
+                    .map(|e| self.type_(e.element))
+                    .collect()
+            }),
         }
     }
 
