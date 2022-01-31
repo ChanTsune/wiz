@@ -1939,43 +1939,31 @@ mod tests {
 
     #[test]
     fn test_index_suffix() {
-        assert_eq!(
-            indexing_suffix("[a]"),
-            Ok((
-                "",
+        check(
+            "[a]",
+            indexing_suffix,
                 PostfixSuffix::IndexingSuffix(SubscriptIndexListSyntax {
                     open: TokenSyntax::from("["),
                     elements: vec![SubscriptIndexElementSyntax {
-                        element: Expr::Name(NameExprSyntax {
-                            name_space: Default::default(),
-                            name: TokenSyntax::from("a")
-                        }),
+                        element: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
                         trailing_comma: None
                     }],
                     close: TokenSyntax::from("]")
                 })
-            ))
         );
-        assert_eq!(
-            indexing_suffix("[a, b]"),
-            Ok((
-                "",
+        check(
+            "[a, b]",
+            indexing_suffix,
                 PostfixSuffix::IndexingSuffix(SubscriptIndexListSyntax {
                     open: TokenSyntax::from("["),
                     elements: vec![
                         SubscriptIndexElementSyntax {
-                            element: Expr::Name(NameExprSyntax {
-                                name_space: Default::default(),
-                                name: TokenSyntax::from("a")
-                            }),
+                            element: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
                             trailing_comma: Some(TokenSyntax::from(","))
                         },
                         SubscriptIndexElementSyntax {
                             element: Expr::Name(
-                                NameExprSyntax {
-                                    name_space: Default::default(),
-                                    name: TokenSyntax::from("b")
-                                }
+                                NameExprSyntax::simple(TokenSyntax::from("b"))
                                 .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
                             ),
                             trailing_comma: None
@@ -1983,28 +1971,20 @@ mod tests {
                     ],
                     close: TokenSyntax::from("]")
                 })
-            ))
         );
-        assert_eq!(
-            indexing_suffix("[a, b, ]"),
-            Ok((
-                "",
+        check(
+            "[a, b, ]",
+            indexing_suffix,
                 PostfixSuffix::IndexingSuffix(SubscriptIndexListSyntax {
                     open: TokenSyntax::from("["),
                     elements: vec![
                         SubscriptIndexElementSyntax {
-                            element: Expr::Name(NameExprSyntax {
-                                name_space: Default::default(),
-                                name: TokenSyntax::from("a")
-                            }),
+                            element: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
                             trailing_comma: Some(TokenSyntax::from(","))
                         },
                         SubscriptIndexElementSyntax {
                             element: Expr::Name(
-                                NameExprSyntax {
-                                    name_space: Default::default(),
-                                    name: TokenSyntax::from("b")
-                                }
+                                NameExprSyntax::simple(TokenSyntax::from("b"))
                                 .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
                             ),
                             trailing_comma: Some(TokenSyntax::from(","))
@@ -2013,7 +1993,6 @@ mod tests {
                     close: TokenSyntax::from("]")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
                 })
-            ))
         );
     }
 }
