@@ -1438,14 +1438,14 @@ mod tests {
         check(
             "[a]",
             array_expr,
-                Expr::Array(ArraySyntax {
-                    open: TokenSyntax::from("["),
-                    elements: vec![ArrayElementSyntax {
-                        element: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
-                        trailing_comma: None
-                    }],
-                    close: TokenSyntax::from("]")
-                })
+            Expr::Array(ArraySyntax {
+                open: TokenSyntax::from("["),
+                elements: vec![ArrayElementSyntax {
+                    element: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
+                    trailing_comma: None,
+                }],
+                close: TokenSyntax::from("]"),
+            }),
         );
         check(
             "[a, b]",
