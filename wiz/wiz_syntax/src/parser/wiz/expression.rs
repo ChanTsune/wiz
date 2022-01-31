@@ -1638,33 +1638,24 @@ mod tests {
 
     #[test]
     fn test_call_expr_no_args() {
-        assert_eq!(
-            expr("puts()"),
-            Ok((
-                "",
+        check(
+            "puts()",
+            expr,
                 Expr::Call(CallExprSyntax {
-                    target: Box::new(Expr::Name(NameExprSyntax {
-                        name_space: Default::default(),
-                        name: TokenSyntax::from("puts")
-                    })),
+                    target: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("puts")))),
                     args: Some(CallArgListSyntax::new()),
                     tailing_lambda: None,
                 })
-            ))
         );
     }
 
     #[test]
     fn test_call_expr() {
-        assert_eq!(
-            expr("puts(\"Hello, World\")"),
-            Ok((
-                "",
+        check(
+            "puts(\"Hello, World\")",
+            expr,
                 Expr::Call(CallExprSyntax {
-                    target: Box::new(Expr::Name(NameExprSyntax {
-                        name_space: Default::default(),
-                        name: TokenSyntax::from("puts")
-                    })),
+                    target: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("puts")))),
                     args: Some(CallArgListSyntax {
                         open: TokenSyntax::from("("),
                         elements: vec![CallArgElementSyntax {
@@ -1683,21 +1674,16 @@ mod tests {
                     }),
                     tailing_lambda: None,
                 })
-            ))
         );
     }
 
     #[test]
     fn test_call_expr_with_label() {
-        assert_eq!(
-            expr(r#"puts(string: "Hello, World")"#),
-            Ok((
-                "",
+        check(
+            r#"puts(string: "Hello, World")"#,
+            expr,
                 Expr::Call(CallExprSyntax {
-                    target: Box::new(Expr::Name(NameExprSyntax {
-                        name_space: Default::default(),
-                        name: TokenSyntax::from("puts")
-                    })),
+                    target: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("puts")))),
                     args: Some(CallArgListSyntax {
                         open: TokenSyntax::from("("),
                         elements: vec![CallArgElementSyntax {
@@ -1716,23 +1702,18 @@ mod tests {
                     }),
                     tailing_lambda: None,
                 })
-            ))
         );
     }
 
     #[test]
     fn test_if_expr() {
-        assert_eq!(
-            expr(r"if a { }"),
-            Ok((
-                "",
+        check(
+            r"if a { }",
+            expr,
                 Expr::If(IfExprSyntax {
                     if_keyword: TokenSyntax::from("if"),
                     condition: Box::new(Expr::Name(
-                        NameExprSyntax {
-                            name_space: Default::default(),
-                            name: TokenSyntax::from("a")
-                        }
+                        NameExprSyntax::simple(TokenSyntax::from("a"))
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
                     )),
                     body: BlockSyntax {
@@ -1744,35 +1725,25 @@ mod tests {
                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     else_body: None
                 })
-            ))
         )
     }
 
     #[test]
     fn test_if_expr_with_else() {
-        assert_eq!(
-            if_expr(
-                r"if capacity <= length {
+        check(
+                            r"if capacity <= length {
             val newCapacity = if capacity == 0 { 4 } else { capacity * 2 }
-        }"
-            ),
-            Ok((
-                "",
+        }",
+            if_expr,
                 Expr::If(IfExprSyntax {
                     if_keyword: TokenSyntax::from("if"),
                     condition: Box::new(
                         Expr::BinOp(BinaryOperationSyntax {
-                            left: Box::new(Expr::Name(NameExprSyntax {
-                                name_space: Default::default(),
-                                name: TokenSyntax::from("capacity")
-                            })),
+                            left: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("capacity")))),
                             operator: TokenSyntax::from("<=")
                                 .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
                                 .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                            right: Box::new(Expr::Name(NameExprSyntax {
-                                name_space: Default::default(),
-                                name: TokenSyntax::from("length")
-                            }))
+                            right: Box::new(Expr::Name(NameExprSyntax::simple( TokenSyntax::from("length"))))
                         })
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
                     ),
@@ -1791,10 +1762,7 @@ mod tests {
                                 if_keyword: TokenSyntax::from("if"),
                                 condition: Box::new(
                                     Expr::BinOp(BinaryOperationSyntax {
-                                        left: Box::new(Expr::Name(NameExprSyntax {
-                                            name_space: Default::default(),
-                                            name: TokenSyntax::from("capacity")
-                                        })),
+                                        left: Box::new(Expr::Name(NameExprSyntax::simple( TokenSyntax::from("capacity")))),
                                         operator: TokenSyntax::from("==")
                                             .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(
                                                 1
@@ -1827,10 +1795,7 @@ mod tests {
                                         ),
                                         body: vec![Stmt::Expr(Expr::BinOp(
                                             BinaryOperationSyntax {
-                                                left: Box::new(Expr::Name(NameExprSyntax {
-                                                    name_space: Default::default(),
-                                                    name: TokenSyntax::from("capacity")
-                                                })),
+                                                left: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("capacity")))),
                                                 operator: TokenSyntax::from("*")
                                                     .with_leading_trivia(Trivia::from(
                                                         TriviaPiece::Spaces(1)
@@ -1859,23 +1824,18 @@ mod tests {
                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     else_body: None
                 })
-            ))
         )
     }
 
     #[test]
     fn test_if_expr_with_else_empty() {
-        assert_eq!(
-            expr(r"if a { } else { }"),
-            Ok((
-                "",
+        check(
+            r"if a { } else { }",
+            expr,
                 Expr::If(IfExprSyntax {
                     if_keyword: TokenSyntax::from("if"),
                     condition: Box::new(
-                        Expr::Name(NameExprSyntax {
-                            name_space: Default::default(),
-                            name: TokenSyntax::from("a")
-                        })
+                        Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a")))
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
                     ),
                     body: BlockSyntax {
@@ -1897,43 +1857,32 @@ mod tests {
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
                     })
                 })
-            ))
         )
     }
 
     #[test]
     fn test_return() {
-        assert_eq!(
-            return_expr("return name"),
-            Ok((
-                "",
+        check(
+            "return name",
+            return_expr,
                 Expr::Return(ReturnSyntax {
                     return_keyword: TokenSyntax::from("return")
                         .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    value: Some(Box::new(Expr::Name(NameExprSyntax {
-                        name_space: Default::default(),
-                        name: TokenSyntax::from("name")
-                    })))
+                    value: Some(Box::new(Expr::Name(NameExprSyntax::simple( TokenSyntax::from("name")))))
                 })
-            ))
         )
     }
 
     #[test]
     fn test_struct_member() {
-        assert_eq!(
-            expr("a.b"),
-            Ok((
-                "",
+        check(
+            "a.b",
+            expr,
                 Expr::Member(MemberSyntax {
-                    target: Box::new(Expr::Name(NameExprSyntax {
-                        name_space: Default::default(),
-                        name: TokenSyntax::from("a")
-                    })),
+                    target: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a")))),
                     name: TokenSyntax::from("b"),
                     navigation_operator: TokenSyntax::from(".")
                 })
-            ))
         )
     }
 
