@@ -1202,9 +1202,9 @@ mod tests {
         check(
             "= name",
             function_body,
-                FunBody::Expr(Expr::Name(NameExprSyntax::simple(
-                    TokenSyntax::from("name")
-                )))
+            FunBody::Expr(Expr::Name(NameExprSyntax::simple(TokenSyntax::from(
+                "name",
+            )))),
         )
     }
 
