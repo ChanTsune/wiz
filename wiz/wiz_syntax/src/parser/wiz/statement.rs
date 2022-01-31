@@ -443,94 +443,99 @@ mod tests {
             r"while (a < b) {
             a = a + 1
         }",
-
             while_stmt,
-                LoopStmt::While(WhileLoopSyntax {
-                    condition: Expr::BinOp(BinaryOperationSyntax {
-                        left: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a")))),
-                        operator: TokenSyntax::from("<")
-                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                            .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                        right: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("b"))))
-                    }),
-                    block: BlockSyntax {
-                        open: TokenSyntax::from("{").with_trailing_trivia(Trivia::from(vec![
-                            TriviaPiece::Newlines(1),
-                            TriviaPiece::Spaces(12)
-                        ])),
-                        body: vec![Stmt::Assignment(AssignmentStmt::Assignment(
-                            AssignmentSyntax {
-                                target: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
-                                operator: TokenSyntax::from("=")
+            LoopStmt::While(WhileLoopSyntax {
+                condition: Expr::BinOp(BinaryOperationSyntax {
+                    left: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a")))),
+                    operator: TokenSyntax::from("<")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    right: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("b")))),
+                }),
+                block: BlockSyntax {
+                    open: TokenSyntax::from("{").with_trailing_trivia(Trivia::from(vec![
+                        TriviaPiece::Newlines(1),
+                        TriviaPiece::Spaces(12),
+                    ])),
+                    body: vec![Stmt::Assignment(AssignmentStmt::Assignment(
+                        AssignmentSyntax {
+                            target: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
+                            operator: TokenSyntax::from("=")
+                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                                .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                            value: Expr::BinOp(BinaryOperationSyntax {
+                                left: Box::new(Expr::Name(NameExprSyntax::simple(
+                                    TokenSyntax::from("a"),
+                                ))),
+                                operator: TokenSyntax::from("+")
                                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
                                     .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                                value: Expr::BinOp(BinaryOperationSyntax {
-                                    left: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a")))),
-                                    operator: TokenSyntax::from("+")
-                                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                                    right: Box::new(Expr::Literal(LiteralSyntax::Integer(
-                                        TokenSyntax::from("1")
-                                    )))
-                                })
-                            }
-                        ))],
-                        close: TokenSyntax::from("}").with_leading_trivia(Trivia::from(vec![
-                            TriviaPiece::Newlines(1),
-                            TriviaPiece::Spaces(8)
-                        ]))
-                    }
-                })
+                                right: Box::new(Expr::Literal(LiteralSyntax::Integer(
+                                    TokenSyntax::from("1"),
+                                ))),
+                            }),
+                        },
+                    ))],
+                    close: TokenSyntax::from("}").with_leading_trivia(Trivia::from(vec![
+                        TriviaPiece::Newlines(1),
+                        TriviaPiece::Spaces(8),
+                    ])),
+                },
+            }),
         )
     }
 
     #[test]
     fn test_while_stmt() {
         check(
-                r"while a.c < b {
+            r"while a.c < b {
             a = a + 1
         }",
             while_stmt,
-                LoopStmt::While(WhileLoopSyntax {
-                    condition: Expr::BinOp(BinaryOperationSyntax {
-                        left: Box::new(Expr::Member(MemberSyntax {
-                            target: Box::new(Expr::Name(NameExprSyntax::simple( TokenSyntax::from("a")))),
-                            name: TokenSyntax::from("c"),
-                            navigation_operator: TokenSyntax::from(".")
-                        })),
-                        operator: TokenSyntax::from("<")
-                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                            .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                        right: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("b"))))
-                    }),
-                    block: BlockSyntax {
-                        open: TokenSyntax::from("{").with_trailing_trivia(Trivia::from(vec![
-                            TriviaPiece::Newlines(1),
-                            TriviaPiece::Spaces(12)
-                        ])),
-                        body: vec![Stmt::Assignment(AssignmentStmt::Assignment(
-                            AssignmentSyntax {
-                                target: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
-                                operator: TokenSyntax::from("=")
+            LoopStmt::While(WhileLoopSyntax {
+                condition: Expr::BinOp(BinaryOperationSyntax {
+                    left: Box::new(Expr::Member(MemberSyntax {
+                        target: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from(
+                            "a",
+                        )))),
+                        name: TokenSyntax::from("c"),
+                        navigation_operator: TokenSyntax::from("."),
+                    })),
+                    operator: TokenSyntax::from("<")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    right: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("b")))),
+                }),
+                block: BlockSyntax {
+                    open: TokenSyntax::from("{").with_trailing_trivia(Trivia::from(vec![
+                        TriviaPiece::Newlines(1),
+                        TriviaPiece::Spaces(12),
+                    ])),
+                    body: vec![Stmt::Assignment(AssignmentStmt::Assignment(
+                        AssignmentSyntax {
+                            target: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
+                            operator: TokenSyntax::from("=")
+                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                                .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                            value: Expr::BinOp(BinaryOperationSyntax {
+                                left: Box::new(Expr::Name(NameExprSyntax::simple(
+                                    TokenSyntax::from("a"),
+                                ))),
+                                operator: TokenSyntax::from("+")
                                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
                                     .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                                value: Expr::BinOp(BinaryOperationSyntax {
-                                    left: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a")))),
-                                    operator: TokenSyntax::from("+")
-                                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                                    right: Box::new(Expr::Literal(LiteralSyntax::Integer(
-                                        TokenSyntax::from("1")
-                                    )))
-                                })
-                            }
-                        ))],
-                        close: TokenSyntax::from("}").with_leading_trivia(Trivia::from(vec![
-                            TriviaPiece::Newlines(1),
-                            TriviaPiece::Spaces(8)
-                        ]))
-                    }
-                })
+                                right: Box::new(Expr::Literal(LiteralSyntax::Integer(
+                                    TokenSyntax::from("1"),
+                                ))),
+                            }),
+                        },
+                    ))],
+                    close: TokenSyntax::from("}").with_leading_trivia(Trivia::from(vec![
+                        TriviaPiece::Newlines(1),
+                        TriviaPiece::Spaces(8),
+                    ])),
+                },
+            }),
         )
     }
 
@@ -539,11 +544,11 @@ mod tests {
         check(
             "a.b",
             directly_assignable_expr,
-                Expr::Member(MemberSyntax {
-                    target: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a")))),
-                    name: TokenSyntax::from("b"),
-                    navigation_operator: TokenSyntax::from(".")
-                })
+            Expr::Member(MemberSyntax {
+                target: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a")))),
+                name: TokenSyntax::from("b"),
+                navigation_operator: TokenSyntax::from("."),
+            }),
         )
     }
 
@@ -552,11 +557,11 @@ mod tests {
         check(
             "a.b",
             assignable_expr,
-                Expr::Member(MemberSyntax {
-                    target: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a")))),
-                    name: TokenSyntax::from("b"),
-                    navigation_operator: TokenSyntax::from(".")
-                })
+            Expr::Member(MemberSyntax {
+                target: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a")))),
+                name: TokenSyntax::from("b"),
+                navigation_operator: TokenSyntax::from("."),
+            }),
         )
     }
 
@@ -565,13 +570,13 @@ mod tests {
         check(
             "a = b",
             assignment_stmt,
-                Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax {
-                    target: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
-                    operator: TokenSyntax::from("=")
-                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    value: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("b")))
-                }))
+            Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax {
+                target: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
+                operator: TokenSyntax::from("=")
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                    .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                value: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("b"))),
+            })),
         )
     }
 
@@ -580,17 +585,17 @@ mod tests {
         check(
             "a = b.c",
             assignment_stmt,
-                Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax {
-                    target: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
-                    operator: TokenSyntax::from("=")
-                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    value: Expr::Member(MemberSyntax {
-                        target: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("b")))),
-                        name: TokenSyntax::from("c"),
-                        navigation_operator: TokenSyntax::from(".")
-                    })
-                }))
+            Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax {
+                target: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
+                operator: TokenSyntax::from("=")
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                    .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                value: Expr::Member(MemberSyntax {
+                    target: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("b")))),
+                    name: TokenSyntax::from("c"),
+                    navigation_operator: TokenSyntax::from("."),
+                }),
+            })),
         )
     }
 
@@ -599,17 +604,17 @@ mod tests {
         check(
             "a.b = c",
             assignment_stmt,
-                Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax {
-                    target: Expr::Member(MemberSyntax {
-                        target: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a")))),
-                        name: TokenSyntax::from("b"),
-                        navigation_operator: TokenSyntax::from(".")
-                    }),
-                    operator: TokenSyntax::from("=")
-                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    value: Expr::Name(NameExprSyntax::simple( TokenSyntax::from("c"))),
-                }))
+            Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax {
+                target: Expr::Member(MemberSyntax {
+                    target: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a")))),
+                    name: TokenSyntax::from("b"),
+                    navigation_operator: TokenSyntax::from("."),
+                }),
+                operator: TokenSyntax::from("=")
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                    .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                value: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("c"))),
+            })),
         )
     }
 
