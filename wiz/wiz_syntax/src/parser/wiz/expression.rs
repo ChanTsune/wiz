@@ -1447,26 +1447,19 @@ mod tests {
                     close: TokenSyntax::from("]")
                 })
         );
-        assert_eq!(
-            array_expr("[a, b]"),
-            Ok((
-                "",
+        check(
+            "[a, b]",
+            array_expr,
                 Expr::Array(ArraySyntax {
                     open: TokenSyntax::from("["),
                     elements: vec![
                         ArrayElementSyntax {
-                            element: Expr::Name(NameExprSyntax {
-                                name_space: Default::default(),
-                                name: TokenSyntax::from("a")
-                            }),
+                            element: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
                             trailing_comma: Some(TokenSyntax::from(","))
                         },
                         ArrayElementSyntax {
                             element: Expr::Name(
-                                NameExprSyntax {
-                                    name_space: Default::default(),
-                                    name: TokenSyntax::from("b")
-                                }
+                                NameExprSyntax::simple(TokenSyntax::from("b"))
                                 .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
                             ),
                             trailing_comma: None
@@ -1474,45 +1467,32 @@ mod tests {
                     ],
                     close: TokenSyntax::from("]")
                 })
-            ))
         );
-        assert_eq!(
-            array_expr("[a,]"),
-            Ok((
-                "",
+        check(
+            "[a,]",
+            array_expr,
                 Expr::Array(ArraySyntax {
                     open: TokenSyntax::from("["),
                     elements: vec![ArrayElementSyntax {
-                        element: Expr::Name(NameExprSyntax {
-                            name_space: Default::default(),
-                            name: TokenSyntax::from("a")
-                        }),
+                        element: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
                         trailing_comma: Some(TokenSyntax::from(","))
                     }],
                     close: TokenSyntax::from("]")
                 })
-            ))
         );
-        assert_eq!(
-            array_expr("[a, b, ]"),
-            Ok((
-                "",
+        check(
+            "[a, b, ]",
+            array_expr,
                 Expr::Array(ArraySyntax {
                     open: TokenSyntax::from("["),
                     elements: vec![
                         ArrayElementSyntax {
-                            element: Expr::Name(NameExprSyntax {
-                                name_space: Default::default(),
-                                name: TokenSyntax::from("a")
-                            }),
+                            element: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
                             trailing_comma: Some(TokenSyntax::from(","))
                         },
                         ArrayElementSyntax {
                             element: Expr::Name(
-                                NameExprSyntax {
-                                    name_space: Default::default(),
-                                    name: TokenSyntax::from("b")
-                                }
+                                NameExprSyntax::simple(TokenSyntax::from("b"))
                                 .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
                             ),
                             trailing_comma: Some(TokenSyntax::from(","))
@@ -1521,7 +1501,6 @@ mod tests {
                     close: TokenSyntax::from("]")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
                 })
-            ))
         );
     }
 
