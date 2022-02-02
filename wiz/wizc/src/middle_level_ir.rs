@@ -584,7 +584,15 @@ impl HLIR2MLIR {
             self.package_name_mangling(&n.package, &*n.name)
         };
         if let Some(type_arguments) = n.type_arguments {
-            mangled_name += format!("<{}>", type_arguments.into_iter().map(|t|t.to_string()).collect::<Vec<_>>().join(",")).as_str()
+            mangled_name += format!(
+                "<{}>",
+                type_arguments
+                    .into_iter()
+                    .map(|t| t.to_string())
+                    .collect::<Vec<_>>()
+                    .join(",")
+            )
+            .as_str()
         }
         MLName {
             name: mangled_name,
