@@ -960,7 +960,7 @@ impl HLIR2MLIR {
     fn fun_arg_label_type_name_mangling(&self, args: &Vec<TypedArgDef>) -> String {
         args.iter()
             .map(|arg| format!("{}#{}", arg.label, arg.type_.to_string()))
-            .collect::<Vec<String>>()
+            .collect::<Vec<_>>()
             .join("##")
     }
 }
