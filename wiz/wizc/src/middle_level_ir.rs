@@ -575,7 +575,7 @@ impl HLIR2MLIR {
     }
 
     fn name(&self, n: TypedName) -> MLName {
-        let mangled_name = if self
+        let mut mangled_name = if self
             .context
             .declaration_has_annotation(&n.name, "no_mangle")
         {
@@ -583,6 +583,9 @@ impl HLIR2MLIR {
         } else {
             self.package_name_mangling(&n.package, &*n.name)
         };
+        if let Some(type_arguments) = n.type_arguments {
+            mangled_name += format!("<{}>", type_arguments.into_iter().map(|t|t.to_string()).collect::<Vec<_>>().join(",")).as_str()
+        }
         MLName {
             name: mangled_name,
             type_: self.type_(n.type_.unwrap()),
