@@ -25,9 +25,7 @@ mod utils;
 
 fn get_builtin_find_path() -> PathBuf {
     let mut std_path = PathBuf::from(env!("HOME"));
-    std_path.push(".wiz");
-    std_path.push("lib");
-    std_path.push("src");
+    std_path.extend(&[".wiz", "lib", "src"]);
     std_path
 }
 
