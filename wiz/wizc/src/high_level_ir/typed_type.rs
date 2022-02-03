@@ -329,14 +329,13 @@ impl ToString for TypedNamedValueType {
         };
         fqn + &match &self.type_args {
             None => String::new(),
-            Some(a) => {
-                String::from("<")
-                    + &a.iter()
-                        .map(|a| a.to_string())
-                        .collect::<Vec<String>>()
-                        .join(",")
-                    + ">"
-            }
+            Some(a) => format!(
+                "<{}>",
+                a.iter()
+                    .map(|t| t.to_string())
+                    .collect::<Vec<_>>()
+                    .join(",")
+            ),
         }
     }
 }
@@ -404,6 +403,10 @@ impl TypedType {
 
     pub fn unsafe_pointer(typ: TypedType) -> Self {
         Self::Value(TypedValueType::Pointer(Box::new(typ)))
+    }
+
+    pub fn reference(typ: TypedType) -> Self {
+        Self::Value(TypedValueType::Reference(Box::new(typ)))
     }
 
     pub fn signed_integer_types() -> Vec<TypedType> {

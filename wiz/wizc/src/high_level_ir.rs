@@ -326,21 +326,27 @@ impl Ast2HLIR {
 
     pub fn type_(&self, tn: TypeName) -> TypedType {
         match tn {
-            TypeName::Simple(stn) => TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-                package: TypedPackage::Raw(Package::new()),
-                name: stn.name.token(),
-                type_args: stn.type_args.map(|v| {
-                    v.elements
-                        .into_iter()
-                        .map(|t| self.type_(t.element))
-                        .collect()
-                }),
-            })),
+            TypeName::Simple(stn) => {
+                if stn.name.token() == "Self" {
+                    TypedType::Self_
+                } else {
+                    TypedType::Value(TypedValueType::Value(TypedNamedValueType {
+                        package: TypedPackage::Raw(Package::new()),
+                        name: stn.name.token(),
+                        type_args: stn.type_args.map(|v| {
+                            v.elements
+                                .into_iter()
+                                .map(|t| self.type_(t.element))
+                                .collect()
+                        }),
+                    }))
+                }
+            }
             TypeName::Decorated(d) => {
                 let t = self.type_(d.type_);
                 match &*d.decoration.token() {
-                    "&" => TypedType::Value(TypedValueType::Reference(Box::new(t))),
-                    "*" => TypedType::Value(TypedValueType::Pointer(Box::new(t))),
+                    "&" => TypedType::reference(t),
+                    "*" => TypedType::unsafe_pointer(t),
                     a => panic!("Unexpected token {}", a),
                 }
             }
@@ -438,6 +444,7 @@ impl Ast2HLIR {
                                             package: TypedPackage::Raw(Package::new()),
                                             name: "self".to_string(),
                                             type_: None,
+                                            type_arguments: None,
                                         })),
                                         name: p.name.clone(),
                                         is_safe: false,
@@ -447,6 +454,7 @@ impl Ast2HLIR {
                                         package: TypedPackage::Raw(Package::new()),
                                         name: p.name.clone(),
                                         type_: None,
+                                        type_arguments: None,
                                     }),
                                 },
                             ))
@@ -631,12 +639,16 @@ impl Ast2HLIR {
     }
 
     pub fn name_syntax(&self, n: NameExprSyntax) -> TypedName {
-        let NameExprSyntax { name_space, name } = n;
+        let NameExprSyntax {
+            name_space,
+            name,
+            type_arguments,
+        } = n;
         let name_space = name_space
             .elements
             .into_iter()
             .map(|e| e.name.token())
-            .collect::<Vec<String>>();
+            .collect::<Vec<_>>();
         TypedName {
             package: if name_space.is_empty() {
                 TypedPackage::Raw(Package::new())
@@ -645,6 +657,12 @@ impl Ast2HLIR {
             },
             name: name.token(),
             type_: None,
+            type_arguments: type_arguments.map(|t| {
+                t.elements
+                    .into_iter()
+                    .map(|e| self.type_(e.element))
+                    .collect()
+            }),
         }
     }
 

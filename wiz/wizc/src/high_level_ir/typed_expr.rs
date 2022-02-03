@@ -26,6 +26,7 @@ pub struct TypedName {
     pub(crate) package: TypedPackage,
     pub(crate) name: String,
     pub(crate) type_: Option<TypedType>,
+    pub(crate) type_arguments: Option<Vec<TypedType>>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]

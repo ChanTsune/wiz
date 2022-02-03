@@ -187,15 +187,21 @@ where
         + InputLength
         + Clone
         + ToString
-        + Compare<&'static str>,
-    <I as InputIter>::Item: AsChar,
+        + Compare<&'static str>
+        + Slice<Range<usize>>
+        + FindSubstring<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
 {
-    map(tuple((name_space, identifier)), |(name_space, name)| {
-        Expr::Name(NameExprSyntax {
-            name_space,
-            name: TokenSyntax::from(name),
-        })
-    })(s)
+    map(
+        tuple((name_space, identifier, opt(type_arguments))),
+        |(name_space, name, type_arguments)| {
+            Expr::Name(NameExprSyntax {
+                name_space,
+                name: TokenSyntax::from(name),
+                type_arguments,
+            })
+        },
+    )(s)
 }
 
 pub fn parenthesized_expr<I>(s: I) -> IResult<I, Expr>
@@ -410,61 +416,43 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(_postfix_expr, |(e, suffixes)| {
-        let mut e = e;
-        for suffix in suffixes {
-            e = match suffix {
-                // TODO: impl
-                PostfixSuffix::Operator(kind) => {
-                    Expr::UnaryOp(UnaryOperationSyntax::Postfix(PostfixUnaryOperationSyntax {
+    map(
+        tuple((primary_expr, many0(postfix_suffix))),
+        |(e, suffixes)| {
+            let mut e = e;
+            for suffix in suffixes {
+                e = match suffix {
+                    PostfixSuffix::Operator(kind) => {
+                        Expr::UnaryOp(UnaryOperationSyntax::Postfix(PostfixUnaryOperationSyntax {
+                            target: Box::new(e),
+                            operator: TokenSyntax::from(kind),
+                        }))
+                    }
+                    PostfixSuffix::TypeArgumentSuffix(t) => panic!("type argument suffix {:?}", t),
+                    PostfixSuffix::CallSuffix {
+                        args,
+                        tailing_lambda,
+                    } => Expr::Call(CallExprSyntax {
                         target: Box::new(e),
-                        operator: TokenSyntax::from(kind),
-                    }))
-                }
-                PostfixSuffix::TypeArgumentSuffix(_) => e,
-                PostfixSuffix::CallSuffix {
-                    args,
-                    tailing_lambda,
-                } => Expr::Call(CallExprSyntax {
-                    target: Box::new(e),
-                    args,
-                    tailing_lambda,
-                }),
-                PostfixSuffix::IndexingSuffix(indexes) => Expr::Subscript(SubscriptSyntax {
-                    target: Box::new(e),
-                    idx_or_keys: indexes,
-                }),
-                PostfixSuffix::NavigationSuffix { navigation, name } => {
-                    Expr::Member(MemberSyntax {
+                        args,
+                        tailing_lambda,
+                    }),
+                    PostfixSuffix::IndexingSuffix(indexes) => Expr::Subscript(SubscriptSyntax {
                         target: Box::new(e),
-                        name,
-                        navigation_operator: navigation,
-                    })
+                        idx_or_keys: indexes,
+                    }),
+                    PostfixSuffix::NavigationSuffix { navigation, name } => {
+                        Expr::Member(MemberSyntax {
+                            target: Box::new(e),
+                            name,
+                            navigation_operator: navigation,
+                        })
+                    }
                 }
             }
-        }
-        e
-    })(s)
-}
-
-pub fn _postfix_expr<I>(s: I) -> IResult<I, (Expr, Vec<PostfixSuffix>)>
-where
-    I: Slice<RangeFrom<usize>>
-        + Slice<Range<usize>>
-        + InputIter
-        + Clone
-        + Offset
-        + InputLength
-        + ToString
-        + InputTake
-        + InputTakeAtPosition
-        + ExtendInto<Item = char, Extender = String>
-        + FindSubstring<&'static str>
-        + Compare<&'static str>,
-    <I as InputIter>::Item: AsChar + Copy,
-    <I as InputTakeAtPosition>::Item: AsChar,
-{
-    tuple((primary_expr, many0(postfix_suffix)))(s)
+            e
+        },
+    )(s)
 }
 
 /*
@@ -1320,6 +1308,9 @@ mod tests {
     use crate::syntax::statement::Stmt;
     use crate::syntax::token::TokenSyntax;
     use crate::syntax::trivia::{Trivia, TriviaPiece};
+    use crate::syntax::type_name::{
+        SimpleTypeName, TypeArgumentElementSyntax, TypeArgumentListSyntax, TypeName,
+    };
     use crate::syntax::Syntax;
 
     #[test]
@@ -1422,112 +1413,85 @@ mod tests {
 
     #[test]
     fn test_name_expr() {
-        assert_eq!(
-            name_expr("std::builtin::println"),
-            Ok((
-                "",
-                Expr::Name(NameExprSyntax {
-                    name_space: NameSpaceSyntax::from(vec!["std", "builtin"]),
-                    name: TokenSyntax::from("println")
-                })
-            ))
+        check(
+            "std::builtin::println",
+            name_expr,
+            Expr::Name(NameExprSyntax {
+                name_space: NameSpaceSyntax::from(vec!["std", "builtin"]),
+                name: TokenSyntax::from("println"),
+                type_arguments: None,
+            }),
         )
     }
 
     #[test]
     fn test_array_expr() {
-        assert_eq!(
-            array_expr("[a]"),
-            Ok((
-                "",
-                Expr::Array(ArraySyntax {
-                    open: TokenSyntax::from("["),
-                    elements: vec![ArrayElementSyntax {
-                        element: Expr::Name(NameExprSyntax {
-                            name_space: Default::default(),
-                            name: TokenSyntax::from("a")
-                        }),
-                        trailing_comma: None
-                    }],
-                    close: TokenSyntax::from("]")
-                })
-            ))
+        check(
+            "[a]",
+            array_expr,
+            Expr::Array(ArraySyntax {
+                open: TokenSyntax::from("["),
+                elements: vec![ArrayElementSyntax {
+                    element: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
+                    trailing_comma: None,
+                }],
+                close: TokenSyntax::from("]"),
+            }),
         );
-        assert_eq!(
-            array_expr("[a, b]"),
-            Ok((
-                "",
-                Expr::Array(ArraySyntax {
-                    open: TokenSyntax::from("["),
-                    elements: vec![
-                        ArrayElementSyntax {
-                            element: Expr::Name(NameExprSyntax {
-                                name_space: Default::default(),
-                                name: TokenSyntax::from("a")
-                            }),
-                            trailing_comma: Some(TokenSyntax::from(","))
-                        },
-                        ArrayElementSyntax {
-                            element: Expr::Name(
-                                NameExprSyntax {
-                                    name_space: Default::default(),
-                                    name: TokenSyntax::from("b")
-                                }
-                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                            ),
-                            trailing_comma: None
-                        }
-                    ],
-                    close: TokenSyntax::from("]")
-                })
-            ))
+        check(
+            "[a, b]",
+            array_expr,
+            Expr::Array(ArraySyntax {
+                open: TokenSyntax::from("["),
+                elements: vec![
+                    ArrayElementSyntax {
+                        element: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
+                        trailing_comma: Some(TokenSyntax::from(",")),
+                    },
+                    ArrayElementSyntax {
+                        element: Expr::Name(
+                            NameExprSyntax::simple(TokenSyntax::from("b"))
+                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        ),
+                        trailing_comma: None,
+                    },
+                ],
+                close: TokenSyntax::from("]"),
+            }),
         );
-        assert_eq!(
-            array_expr("[a,]"),
-            Ok((
-                "",
-                Expr::Array(ArraySyntax {
-                    open: TokenSyntax::from("["),
-                    elements: vec![ArrayElementSyntax {
-                        element: Expr::Name(NameExprSyntax {
-                            name_space: Default::default(),
-                            name: TokenSyntax::from("a")
-                        }),
-                        trailing_comma: Some(TokenSyntax::from(","))
-                    }],
-                    close: TokenSyntax::from("]")
-                })
-            ))
+        check(
+            "[a,]",
+            array_expr,
+            Expr::Array(ArraySyntax {
+                open: TokenSyntax::from("["),
+                elements: vec![ArrayElementSyntax {
+                    element: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
+                    trailing_comma: Some(TokenSyntax::from(",")),
+                }],
+                close: TokenSyntax::from("]"),
+            }),
         );
-        assert_eq!(
-            array_expr("[a, b, ]"),
-            Ok((
-                "",
-                Expr::Array(ArraySyntax {
-                    open: TokenSyntax::from("["),
-                    elements: vec![
-                        ArrayElementSyntax {
-                            element: Expr::Name(NameExprSyntax {
-                                name_space: Default::default(),
-                                name: TokenSyntax::from("a")
-                            }),
-                            trailing_comma: Some(TokenSyntax::from(","))
-                        },
-                        ArrayElementSyntax {
-                            element: Expr::Name(
-                                NameExprSyntax {
-                                    name_space: Default::default(),
-                                    name: TokenSyntax::from("b")
-                                }
-                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                            ),
-                            trailing_comma: Some(TokenSyntax::from(","))
-                        }
-                    ],
-                    close: TokenSyntax::from("]")
-                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                })
-            ))
+        check(
+            "[a, b, ]",
+            array_expr,
+            Expr::Array(ArraySyntax {
+                open: TokenSyntax::from("["),
+                elements: vec![
+                    ArrayElementSyntax {
+                        element: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
+                        trailing_comma: Some(TokenSyntax::from(",")),
+                    },
+                    ArrayElementSyntax {
+                        element: Expr::Name(
+                            NameExprSyntax::simple(TokenSyntax::from("b"))
+                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        ),
+                        trailing_comma: Some(TokenSyntax::from(",")),
+                    },
+                ],
+                close: TokenSyntax::from("]")
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+            }),
         );
     }
 
@@ -1665,382 +1629,341 @@ mod tests {
 
     #[test]
     fn test_call_expr_no_args() {
-        assert_eq!(
-            expr("puts()"),
-            Ok((
-                "",
-                Expr::Call(CallExprSyntax {
-                    target: Box::new(Expr::Name(NameExprSyntax {
-                        name_space: Default::default(),
-                        name: TokenSyntax::from("puts")
-                    })),
-                    args: Some(CallArgListSyntax::new()),
-                    tailing_lambda: None,
-                })
-            ))
+        check(
+            "puts()",
+            expr,
+            Expr::Call(CallExprSyntax {
+                target: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from(
+                    "puts",
+                )))),
+                args: Some(CallArgListSyntax::new()),
+                tailing_lambda: None,
+            }),
         );
     }
 
     #[test]
     fn test_call_expr() {
-        assert_eq!(
-            expr("puts(\"Hello, World\")"),
-            Ok((
-                "",
-                Expr::Call(CallExprSyntax {
-                    target: Box::new(Expr::Name(NameExprSyntax {
-                        name_space: Default::default(),
-                        name: TokenSyntax::from("puts")
-                    })),
-                    args: Some(CallArgListSyntax {
-                        open: TokenSyntax::from("("),
-                        elements: vec![CallArgElementSyntax {
-                            element: CallArg {
-                                label: None,
-                                arg: Box::from(Expr::Literal(LiteralSyntax::String {
-                                    open_quote: TokenSyntax::from('"'),
-                                    value: "Hello, World".to_string(),
-                                    close_quote: TokenSyntax::from('"'),
-                                })),
-                                asterisk: None
-                            },
-                            trailing_comma: None
-                        }],
-                        close: TokenSyntax::from(")")
-                    }),
-                    tailing_lambda: None,
-                })
-            ))
+        check(
+            "puts(\"Hello, World\")",
+            expr,
+            Expr::Call(CallExprSyntax {
+                target: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from(
+                    "puts",
+                )))),
+                args: Some(CallArgListSyntax {
+                    open: TokenSyntax::from("("),
+                    elements: vec![CallArgElementSyntax {
+                        element: CallArg {
+                            label: None,
+                            arg: Box::from(Expr::Literal(LiteralSyntax::String {
+                                open_quote: TokenSyntax::from('"'),
+                                value: "Hello, World".to_string(),
+                                close_quote: TokenSyntax::from('"'),
+                            })),
+                            asterisk: None,
+                        },
+                        trailing_comma: None,
+                    }],
+                    close: TokenSyntax::from(")"),
+                }),
+                tailing_lambda: None,
+            }),
         );
     }
 
     #[test]
     fn test_call_expr_with_label() {
-        assert_eq!(
-            expr(r#"puts(string: "Hello, World")"#),
-            Ok((
-                "",
-                Expr::Call(CallExprSyntax {
-                    target: Box::new(Expr::Name(NameExprSyntax {
-                        name_space: Default::default(),
-                        name: TokenSyntax::from("puts")
-                    })),
-                    args: Some(CallArgListSyntax {
-                        open: TokenSyntax::from("("),
-                        elements: vec![CallArgElementSyntax {
-                            element: CallArg {
-                                label: Some(TokenSyntax::from("string")),
-                                arg: Box::from(Expr::Literal(LiteralSyntax::String {
-                                    open_quote: TokenSyntax::from('"'),
-                                    value: "Hello, World".to_string(),
-                                    close_quote: TokenSyntax::from('"')
-                                })),
-                                asterisk: None
-                            },
-                            trailing_comma: None
-                        }],
-                        close: TokenSyntax::from(")")
-                    }),
-                    tailing_lambda: None,
-                })
-            ))
+        check(
+            r#"puts(string: "Hello, World")"#,
+            expr,
+            Expr::Call(CallExprSyntax {
+                target: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from(
+                    "puts",
+                )))),
+                args: Some(CallArgListSyntax {
+                    open: TokenSyntax::from("("),
+                    elements: vec![CallArgElementSyntax {
+                        element: CallArg {
+                            label: Some(TokenSyntax::from("string")),
+                            arg: Box::from(Expr::Literal(LiteralSyntax::String {
+                                open_quote: TokenSyntax::from('"'),
+                                value: "Hello, World".to_string(),
+                                close_quote: TokenSyntax::from('"'),
+                            })),
+                            asterisk: None,
+                        },
+                        trailing_comma: None,
+                    }],
+                    close: TokenSyntax::from(")"),
+                }),
+                tailing_lambda: None,
+            }),
         );
     }
 
     #[test]
     fn test_if_expr() {
-        assert_eq!(
-            expr(r"if a { }"),
-            Ok((
-                "",
-                Expr::If(IfExprSyntax {
-                    if_keyword: TokenSyntax::from("if"),
-                    condition: Box::new(Expr::Name(
-                        NameExprSyntax {
-                            name_space: Default::default(),
-                            name: TokenSyntax::from("a")
-                        }
-                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                    )),
-                    body: BlockSyntax {
-                        open: TokenSyntax::from("{")
-                            .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                        body: vec![],
-                        close: TokenSyntax::from("}")
-                    }
-                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    else_body: None
-                })
-            ))
+        check(
+            r"if a { }",
+            expr,
+            Expr::If(IfExprSyntax {
+                if_keyword: TokenSyntax::from("if"),
+                condition: Box::new(Expr::Name(
+                    NameExprSyntax::simple(TokenSyntax::from("a"))
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                )),
+                body: BlockSyntax {
+                    open: TokenSyntax::from("{")
+                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    body: vec![],
+                    close: TokenSyntax::from("}"),
+                }
+                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                else_body: None,
+            }),
         )
     }
 
     #[test]
     fn test_if_expr_with_else() {
-        assert_eq!(
-            if_expr(
-                r"if capacity <= length {
+        check(
+            r"if capacity <= length {
             val newCapacity = if capacity == 0 { 4 } else { capacity * 2 }
-        }"
-            ),
-            Ok((
-                "",
-                Expr::If(IfExprSyntax {
-                    if_keyword: TokenSyntax::from("if"),
-                    condition: Box::new(
-                        Expr::BinOp(BinaryOperationSyntax {
-                            left: Box::new(Expr::Name(NameExprSyntax {
-                                name_space: Default::default(),
-                                name: TokenSyntax::from("capacity")
-                            })),
-                            operator: TokenSyntax::from("<=")
-                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                                .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                            right: Box::new(Expr::Name(NameExprSyntax {
-                                name_space: Default::default(),
-                                name: TokenSyntax::from("length")
-                            }))
-                        })
-                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                    ),
-                    body: BlockSyntax {
-                        open: TokenSyntax::from("{").with_trailing_trivia(Trivia::from(vec![
-                            TriviaPiece::Newlines(1),
-                            TriviaPiece::Spaces(12)
-                        ])),
-                        body: vec![Stmt::Decl(Decl::Var(VarSyntax {
-                            annotations: None,
-                            mutability_keyword: TokenSyntax::from("val")
-                                .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                            name: TokenSyntax::from("newCapacity"),
-                            type_: None,
-                            value: Expr::If(IfExprSyntax {
-                                if_keyword: TokenSyntax::from("if"),
-                                condition: Box::new(
-                                    Expr::BinOp(BinaryOperationSyntax {
-                                        left: Box::new(Expr::Name(NameExprSyntax {
-                                            name_space: Default::default(),
-                                            name: TokenSyntax::from("capacity")
-                                        })),
-                                        operator: TokenSyntax::from("==")
-                                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(
-                                                1
-                                            )))
-                                            .with_trailing_trivia(Trivia::from(
-                                                TriviaPiece::Spaces(1)
-                                            )),
-                                        right: Box::new(Expr::Literal(LiteralSyntax::Integer(
-                                            TokenSyntax::from("0")
-                                        )))
-                                    })
-                                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                                ),
+        }",
+            if_expr,
+            Expr::If(IfExprSyntax {
+                if_keyword: TokenSyntax::from("if"),
+                condition: Box::new(
+                    Expr::BinOp(BinaryOperationSyntax {
+                        left: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from(
+                            "capacity",
+                        )))),
+                        operator: TokenSyntax::from("<=")
+                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                            .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        right: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from(
+                            "length",
+                        )))),
+                    })
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                ),
+                body: BlockSyntax {
+                    open: TokenSyntax::from("{").with_trailing_trivia(Trivia::from(vec![
+                        TriviaPiece::Newlines(1),
+                        TriviaPiece::Spaces(12),
+                    ])),
+                    body: vec![Stmt::Decl(Decl::Var(VarSyntax {
+                        annotations: None,
+                        mutability_keyword: TokenSyntax::from("val")
+                            .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        name: TokenSyntax::from("newCapacity"),
+                        type_: None,
+                        value: Expr::If(IfExprSyntax {
+                            if_keyword: TokenSyntax::from("if"),
+                            condition: Box::new(
+                                Expr::BinOp(BinaryOperationSyntax {
+                                    left: Box::new(Expr::Name(NameExprSyntax::simple(
+                                        TokenSyntax::from("capacity"),
+                                    ))),
+                                    operator: TokenSyntax::from("==")
+                                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                                    right: Box::new(Expr::Literal(LiteralSyntax::Integer(
+                                        TokenSyntax::from("0"),
+                                    ))),
+                                })
+                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                            ),
+                            body: BlockSyntax {
+                                open: TokenSyntax::from("{")
+                                    .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                                body: vec![Stmt::Expr(Expr::Literal(LiteralSyntax::Integer(
+                                    TokenSyntax::from("4"),
+                                )))],
+                                close: TokenSyntax::from("}")
+                                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                            }
+                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                            else_body: Some(ElseSyntax {
+                                else_keyword: TokenSyntax::from("else")
+                                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                                 body: BlockSyntax {
                                     open: TokenSyntax::from("{")
                                         .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                                    body: vec![Stmt::Expr(Expr::Literal(LiteralSyntax::Integer(
-                                        TokenSyntax::from("4")
-                                    )))],
+                                    body: vec![Stmt::Expr(Expr::BinOp(BinaryOperationSyntax {
+                                        left: Box::new(Expr::Name(NameExprSyntax::simple(
+                                            TokenSyntax::from("capacity"),
+                                        ))),
+                                        operator: TokenSyntax::from("*")
+                                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(
+                                                1,
+                                            )))
+                                            .with_trailing_trivia(Trivia::from(
+                                                TriviaPiece::Spaces(1),
+                                            )),
+                                        right: Box::new(Expr::Literal(LiteralSyntax::Integer(
+                                            TokenSyntax::from("2"),
+                                        ))),
+                                    }))],
                                     close: TokenSyntax::from("}")
-                                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                                 }
                                 .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                                else_body: Some(ElseSyntax {
-                                    else_keyword: TokenSyntax::from("else")
-                                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                                    body: BlockSyntax {
-                                        open: TokenSyntax::from("{").with_trailing_trivia(
-                                            Trivia::from(TriviaPiece::Spaces(1))
-                                        ),
-                                        body: vec![Stmt::Expr(Expr::BinOp(
-                                            BinaryOperationSyntax {
-                                                left: Box::new(Expr::Name(NameExprSyntax {
-                                                    name_space: Default::default(),
-                                                    name: TokenSyntax::from("capacity")
-                                                })),
-                                                operator: TokenSyntax::from("*")
-                                                    .with_leading_trivia(Trivia::from(
-                                                        TriviaPiece::Spaces(1)
-                                                    ))
-                                                    .with_trailing_trivia(Trivia::from(
-                                                        TriviaPiece::Spaces(1)
-                                                    )),
-                                                right: Box::new(Expr::Literal(
-                                                    LiteralSyntax::Integer(TokenSyntax::from("2"))
-                                                ))
-                                            }
-                                        ))],
-                                        close: TokenSyntax::from("}").with_leading_trivia(
-                                            Trivia::from(TriviaPiece::Spaces(1))
-                                        )
-                                    }
-                                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                                })
-                            })
-                        }))],
-                        close: TokenSyntax::from("}").with_leading_trivia(Trivia::from(vec![
-                            TriviaPiece::Newlines(1),
-                            TriviaPiece::Spaces(8)
-                        ]))
-                    }
-                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    else_body: None
-                })
-            ))
+                            }),
+                        }),
+                    }))],
+                    close: TokenSyntax::from("}").with_leading_trivia(Trivia::from(vec![
+                        TriviaPiece::Newlines(1),
+                        TriviaPiece::Spaces(8),
+                    ])),
+                }
+                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                else_body: None,
+            }),
         )
     }
 
     #[test]
     fn test_if_expr_with_else_empty() {
-        assert_eq!(
-            expr(r"if a { } else { }"),
-            Ok((
-                "",
-                Expr::If(IfExprSyntax {
-                    if_keyword: TokenSyntax::from("if"),
-                    condition: Box::new(
-                        Expr::Name(NameExprSyntax {
-                            name_space: Default::default(),
-                            name: TokenSyntax::from("a")
-                        })
-                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                    ),
+        check(
+            r"if a { } else { }",
+            expr,
+            Expr::If(IfExprSyntax {
+                if_keyword: TokenSyntax::from("if"),
+                condition: Box::new(
+                    Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a")))
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                ),
+                body: BlockSyntax {
+                    open: TokenSyntax::from("{")
+                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    body: vec![],
+                    close: TokenSyntax::from("}"),
+                }
+                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                else_body: Some(ElseSyntax {
+                    else_keyword: TokenSyntax::from("else")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     body: BlockSyntax {
                         open: TokenSyntax::from("{")
                             .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                         body: vec![],
-                        close: TokenSyntax::from("}")
+                        close: TokenSyntax::from("}"),
                     }
                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    else_body: Some(ElseSyntax {
-                        else_keyword: TokenSyntax::from("else")
-                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                        body: BlockSyntax {
-                            open: TokenSyntax::from("{")
-                                .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                            body: vec![],
-                            close: TokenSyntax::from("}")
-                        }
-                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                    })
-                })
-            ))
+                }),
+            }),
         )
     }
 
     #[test]
     fn test_return() {
-        assert_eq!(
-            return_expr("return name"),
-            Ok((
-                "",
-                Expr::Return(ReturnSyntax {
-                    return_keyword: TokenSyntax::from("return")
-                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    value: Some(Box::new(Expr::Name(NameExprSyntax {
-                        name_space: Default::default(),
-                        name: TokenSyntax::from("name")
-                    })))
-                })
-            ))
+        check(
+            "return name",
+            return_expr,
+            Expr::Return(ReturnSyntax {
+                return_keyword: TokenSyntax::from("return")
+                    .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                value: Some(Box::new(Expr::Name(NameExprSyntax::simple(
+                    TokenSyntax::from("name"),
+                )))),
+            }),
         )
     }
 
     #[test]
     fn test_struct_member() {
-        assert_eq!(
-            expr("a.b"),
-            Ok((
-                "",
-                Expr::Member(MemberSyntax {
-                    target: Box::new(Expr::Name(NameExprSyntax {
-                        name_space: Default::default(),
-                        name: TokenSyntax::from("a")
-                    })),
-                    name: TokenSyntax::from("b"),
-                    navigation_operator: TokenSyntax::from(".")
-                })
-            ))
+        check(
+            "a.b",
+            expr,
+            Expr::Member(MemberSyntax {
+                target: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a")))),
+                name: TokenSyntax::from("b"),
+                navigation_operator: TokenSyntax::from("."),
+            }),
         )
     }
 
     #[test]
     fn test_index_suffix() {
-        assert_eq!(
-            indexing_suffix("[a]"),
-            Ok((
-                "",
-                PostfixSuffix::IndexingSuffix(SubscriptIndexListSyntax {
-                    open: TokenSyntax::from("["),
-                    elements: vec![SubscriptIndexElementSyntax {
-                        element: Expr::Name(NameExprSyntax {
-                            name_space: Default::default(),
-                            name: TokenSyntax::from("a")
+        check(
+            "[a]",
+            indexing_suffix,
+            PostfixSuffix::IndexingSuffix(SubscriptIndexListSyntax {
+                open: TokenSyntax::from("["),
+                elements: vec![SubscriptIndexElementSyntax {
+                    element: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
+                    trailing_comma: None,
+                }],
+                close: TokenSyntax::from("]"),
+            }),
+        );
+        check(
+            "[a, b]",
+            indexing_suffix,
+            PostfixSuffix::IndexingSuffix(SubscriptIndexListSyntax {
+                open: TokenSyntax::from("["),
+                elements: vec![
+                    SubscriptIndexElementSyntax {
+                        element: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
+                        trailing_comma: Some(TokenSyntax::from(",")),
+                    },
+                    SubscriptIndexElementSyntax {
+                        element: Expr::Name(
+                            NameExprSyntax::simple(TokenSyntax::from("b"))
+                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        ),
+                        trailing_comma: None,
+                    },
+                ],
+                close: TokenSyntax::from("]"),
+            }),
+        );
+        check(
+            "[a, b, ]",
+            indexing_suffix,
+            PostfixSuffix::IndexingSuffix(SubscriptIndexListSyntax {
+                open: TokenSyntax::from("["),
+                elements: vec![
+                    SubscriptIndexElementSyntax {
+                        element: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
+                        trailing_comma: Some(TokenSyntax::from(",")),
+                    },
+                    SubscriptIndexElementSyntax {
+                        element: Expr::Name(
+                            NameExprSyntax::simple(TokenSyntax::from("b"))
+                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        ),
+                        trailing_comma: Some(TokenSyntax::from(",")),
+                    },
+                ],
+                close: TokenSyntax::from("]")
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+            }),
+        );
+    }
+
+    #[test]
+    fn test_type_arguments_suffix() {
+        check(
+            "a<b>",
+            expr,
+            Expr::Name(NameExprSyntax {
+                name_space: Default::default(),
+                name: TokenSyntax::from("a"),
+                type_arguments: Some(TypeArgumentListSyntax {
+                    open: TokenSyntax::from("<"),
+                    elements: vec![TypeArgumentElementSyntax {
+                        element: TypeName::Simple(SimpleTypeName {
+                            name: TokenSyntax::from("b"),
+                            type_args: None,
                         }),
-                        trailing_comma: None
+                        trailing_comma: None,
                     }],
-                    close: TokenSyntax::from("]")
-                })
-            ))
-        );
-        assert_eq!(
-            indexing_suffix("[a, b]"),
-            Ok((
-                "",
-                PostfixSuffix::IndexingSuffix(SubscriptIndexListSyntax {
-                    open: TokenSyntax::from("["),
-                    elements: vec![
-                        SubscriptIndexElementSyntax {
-                            element: Expr::Name(NameExprSyntax {
-                                name_space: Default::default(),
-                                name: TokenSyntax::from("a")
-                            }),
-                            trailing_comma: Some(TokenSyntax::from(","))
-                        },
-                        SubscriptIndexElementSyntax {
-                            element: Expr::Name(
-                                NameExprSyntax {
-                                    name_space: Default::default(),
-                                    name: TokenSyntax::from("b")
-                                }
-                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                            ),
-                            trailing_comma: None
-                        },
-                    ],
-                    close: TokenSyntax::from("]")
-                })
-            ))
-        );
-        assert_eq!(
-            indexing_suffix("[a, b, ]"),
-            Ok((
-                "",
-                PostfixSuffix::IndexingSuffix(SubscriptIndexListSyntax {
-                    open: TokenSyntax::from("["),
-                    elements: vec![
-                        SubscriptIndexElementSyntax {
-                            element: Expr::Name(NameExprSyntax {
-                                name_space: Default::default(),
-                                name: TokenSyntax::from("a")
-                            }),
-                            trailing_comma: Some(TokenSyntax::from(","))
-                        },
-                        SubscriptIndexElementSyntax {
-                            element: Expr::Name(
-                                NameExprSyntax {
-                                    name_space: Default::default(),
-                                    name: TokenSyntax::from("b")
-                                }
-                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                            ),
-                            trailing_comma: Some(TokenSyntax::from(","))
-                        },
-                    ],
-                    close: TokenSyntax::from("]")
-                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                })
-            ))
+                    close: TokenSyntax::from(">"),
+                }),
+            }),
         );
     }
 }

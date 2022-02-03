@@ -955,6 +955,7 @@ where
 
 #[cfg(test)]
 mod tests {
+    use crate::parser::tests::check;
     use crate::parser::wiz::declaration::{
         block, function_body, function_decl, member_function, package_name, stored_property,
         struct_properties, struct_syntax, type_constraint, type_constraints, use_syntax, var_decl,
@@ -1198,15 +1199,12 @@ mod tests {
 
     #[test]
     fn test_function_body_expr_case() {
-        assert_eq!(
-            function_body("= name"),
-            Ok((
-                "",
-                FunBody::Expr(Expr::Name(NameExprSyntax {
-                    name_space: Default::default(),
-                    name: TokenSyntax::from("name")
-                }))
-            ))
+        check(
+            "= name",
+            function_body,
+            FunBody::Expr(Expr::Name(NameExprSyntax::simple(TokenSyntax::from(
+                "name",
+            )))),
         )
     }
 
