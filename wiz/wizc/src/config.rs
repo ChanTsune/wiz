@@ -17,6 +17,10 @@ impl<'ctx> Config<'ctx> {
         Path::new(self.input)
     }
 
+    pub(crate) fn name(&self) -> Option<&'ctx str> {
+        self.name
+    }
+
     pub(crate) fn output(&self) -> Option<&'ctx str> {
         self.output
     }

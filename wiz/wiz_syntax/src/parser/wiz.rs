@@ -56,13 +56,13 @@ pub fn parse_from_file_path(path: &Path) -> Result<WizFile> {
     Ok(f)
 }
 
-pub fn read_package_from_path(path: &Path) -> Result<SourceSet> {
+pub fn read_package_from_path(path: &Path, name: Option<&str>) -> Result<SourceSet> {
     let dir = fs::read_dir(path)?;
     for item in dir.into_iter() {
         let dir_entry = item.unwrap();
         if dir_entry.file_name().to_str().unwrap() == "src" {
             return Ok(SourceSet::Dir {
-                name: path.file_name().unwrap().to_str().unwrap().to_string(),
+                name: name.unwrap_or_else(||path.file_name().unwrap().to_str().unwrap()).to_string(),
                 items: match read_package_files(dir_entry.path().as_path())? {
                     SourceSet::File(_) => {
                         panic!("never execution branch executed!!")

@@ -84,7 +84,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
     };
 
     let input_source = if input.is_dir() {
-        read_package_from_path(input)?
+        read_package_from_path(input, config.name())?
     } else {
         SourceSet::File(parse_from_file_path(input)?)
     };
@@ -113,7 +113,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
 
     let source_sets = lib_paths
         .into_iter()
-        .map(|p| read_package_from_path(p.as_path()))
+        .map(|p| read_package_from_path(p.as_path(), None))
         .collect::<parser::result::Result<Vec<_>>>()?;
 
     println!("=== convert to hlir ===");
