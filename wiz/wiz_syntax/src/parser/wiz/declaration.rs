@@ -965,8 +965,8 @@ mod tests {
         ArgDef, ArgDefElementSyntax, ArgDefListSyntax, FunBody, FunSyntax, ValueArgDef,
     };
     use crate::syntax::declaration::{
-        AliasSyntax, DeclKind, PackageName, StoredPropertySyntax, StructPropertySyntax, StructSyntax,
-        UseSyntax,
+        AliasSyntax, DeclKind, PackageName, StoredPropertySyntax, StructPropertySyntax,
+        StructSyntax, UseSyntax,
     };
     use crate::syntax::declaration::{PackageNameElement, VarSyntax};
     use crate::syntax::expression::{BinaryOperationSyntax, Expr, NameExprSyntax};
