@@ -32,7 +32,10 @@ impl Syntax for DeclarationSyntax {
                 annotations: None,
                 kind: self.kind.with_leading_trivia(trivia),
             },
-            Some(annotations) => Self { annotations: Some(annotations.with_leading_trivia(trivia)), kind: self.kind },
+            Some(annotations) => Self {
+                annotations: Some(annotations.with_leading_trivia(trivia)),
+                kind: self.kind,
+            },
         }
     }
 
