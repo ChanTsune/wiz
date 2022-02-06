@@ -839,8 +839,7 @@ where
             alt((identifier, map(tag("*"), |i: I| i.to_string()))),
             opt(tuple((whitespace1, as_keyword, whitespace1, identifier))),
         )),
-        |(u, _, pkg, n, alias)| UseSyntax {
-            annotations: None,
+        |(u, ws, pkg, n, alias)| UseSyntax {
             use_keyword: TokenSyntax::from(u),
             package_name: pkg,
             used_name: TokenSyntax::from(n),
@@ -1518,36 +1517,30 @@ mod tests {
 
     #[test]
     fn test_use() {
-        assert_eq!(
-            use_syntax("use abc"),
-            Ok((
-                "",
-                UseSyntax {
-                    annotations: None,
-                    use_keyword: TokenSyntax::from("use"),
-                    package_name: PackageName { names: vec![] },
-                    used_name: TokenSyntax::from("abc"),
-                    alias: None
-                }
-            ))
+        check(
+            "use abc",
+            use_syntax,
+            UseSyntax {
+                use_keyword: TokenSyntax::from("use"),
+                package_name: PackageName { names: vec![] },
+                used_name: TokenSyntax::from("abc"),
+                alias: None
+            }
         );
-        assert_eq!(
-            use_syntax("use abc as def"),
-            Ok((
-                "",
-                UseSyntax {
-                    annotations: None,
-                    use_keyword: TokenSyntax::from("use"),
-                    package_name: PackageName { names: vec![] },
-                    used_name: TokenSyntax::from("abc"),
-                    alias: Some(AliasSyntax {
-                        as_keyword: TokenSyntax::from("as")
-                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                        name: TokenSyntax::from("def")
-                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    })
-                }
-            ))
+        check(
+            "use abc as def",
+            use_syntax,
+            UseSyntax {
+                use_keyword: TokenSyntax::from("use"),
+                package_name: PackageName { names: vec![] },
+                used_name: TokenSyntax::from("abc"),
+                alias: Some(AliasSyntax {
+                    as_keyword: TokenSyntax::from("as")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    name: TokenSyntax::from("def")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                })
+            }
         );
     }
 }

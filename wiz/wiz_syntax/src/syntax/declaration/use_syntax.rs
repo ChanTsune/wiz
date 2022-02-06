@@ -5,51 +5,31 @@ use crate::syntax::Syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct UseSyntax {
-    pub annotations: Option<AnnotationsSyntax>,
     pub use_keyword: TokenSyntax,
     pub package_name: PackageName,
     pub used_name: TokenSyntax,
     pub alias: Option<AliasSyntax>,
 }
 
-impl Annotatable for UseSyntax {
-    fn with_annotation(mut self, a: AnnotationsSyntax) -> Self {
-        self.annotations = Some(a);
-        self
-    }
-}
-
 impl Syntax for UseSyntax {
     fn with_leading_trivia(self, trivia: Trivia) -> Self {
-        match self.annotations {
-            None => Self {
-                annotations: None,
-                use_keyword: self.use_keyword.with_leading_trivia(trivia),
-                package_name: self.package_name,
-                used_name: self.used_name,
-                alias: self.alias,
-            },
-            Some(annotations) => Self {
-                annotations: Some(annotations.with_leading_trivia(trivia)),
-                use_keyword: self.use_keyword,
-                package_name: self.package_name,
-                used_name: self.used_name,
-                alias: self.alias,
-            },
+        Self {
+            use_keyword: self.use_keyword.with_leading_trivia(trivia),
+            package_name: self.package_name,
+            used_name: self.used_name,
+            alias: self.alias,
         }
     }
 
     fn with_trailing_trivia(self, trivia: Trivia) -> Self {
         match self.alias {
             None => Self {
-                annotations: self.annotations,
                 use_keyword: self.use_keyword,
                 package_name: self.package_name,
                 used_name: self.used_name.with_trailing_trivia(trivia),
                 alias: None,
             },
             Some(alias) => Self {
-                annotations: self.annotations,
                 use_keyword: self.use_keyword,
                 package_name: self.package_name,
                 used_name: self.used_name,
