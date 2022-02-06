@@ -60,10 +60,10 @@ pub enum DeclKind {
 impl Annotatable for DeclKind {
     fn with_annotation(self, a: AnnotationsSyntax) -> Self {
         match self {
-            DeclKind::Var(v) => DeclKind::Var(v.with_annotation(a)),
+            DeclKind::Var(_) => DeclKind::Var(panic!()),
             DeclKind::Fun(f) => DeclKind::Fun(f.with_annotation(a)),
             DeclKind::Struct(s) => DeclKind::Struct(s.with_annotation(a)),
-            DeclKind::ExternC(e) => DeclKind::ExternC(e.with_annotation(a)),
+            DeclKind::ExternC(_) => DeclKind::ExternC(panic!()),
             DeclKind::Enum { .. } => DeclKind::Enum {},
             DeclKind::Extension(e) => DeclKind::Extension(e.with_annotation(a)),
             DeclKind::Use(u) => DeclKind::Use(u.with_annotation(a)),
@@ -107,16 +107,8 @@ impl Syntax for DeclKind {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct ExternCSyntax {
-    pub annotations: Option<AnnotationsSyntax>,
     pub extern_keyword: TokenSyntax,
     pub left_brace: TokenSyntax,
     pub declarations: Vec<DeclKind>,
     pub right_brace: TokenSyntax,
-}
-
-impl Annotatable for ExternCSyntax {
-    fn with_annotation(mut self, a: AnnotationsSyntax) -> Self {
-        self.annotations = Some(a);
-        self
-    }
 }

@@ -759,7 +759,6 @@ where
     map(
         tuple((alt((var_keyword, val_keyword)), whitespace1, var_body)),
         |(mutability_keyword, ws, (name, t, e)): (I, _, _)| VarSyntax {
-            annotations: None,
             mutability_keyword: TokenSyntax::from(mutability_keyword).with_trailing_trivia(ws),
             name: TokenSyntax::from(name),
             type_: t,
@@ -1322,7 +1321,6 @@ mod tests {
             Ok((
                 "",
                 DeclKind::Var(VarSyntax {
-                    annotations: None,
                     mutability_keyword: TokenSyntax::from("val")
                         .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     name: TokenSyntax::from("a"),
@@ -1343,7 +1341,6 @@ mod tests {
             Ok((
                 "",
                 DeclKind::Var(VarSyntax {
-                    annotations: None,
                     mutability_keyword: TokenSyntax::from("val")
                         .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     name: TokenSyntax::from("a"),

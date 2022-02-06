@@ -1754,7 +1754,6 @@ mod tests {
                         TriviaPiece::Spaces(12),
                     ])),
                     body: vec![Stmt::Decl(DeclKind::Var(VarSyntax {
-                        annotations: None,
                         mutability_keyword: TokenSyntax::from("val")
                             .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                         name: TokenSyntax::from("newCapacity"),
