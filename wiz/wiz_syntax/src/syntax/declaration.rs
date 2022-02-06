@@ -20,6 +20,31 @@ mod use_syntax;
 mod var_syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
+pub struct DeclarationSyntax {
+    pub annotations: Option<AnnotationsSyntax>,
+    pub kind: DeclKind,
+}
+
+impl Syntax for DeclarationSyntax {
+    fn with_leading_trivia(self, trivia: Trivia) -> Self {
+        match self.annotations {
+            None => Self {
+                annotations: None,
+                kind: self.kind.with_leading_trivia(trivia),
+            },
+            Some(annotations) => Self { annotations: Some(annotations.with_leading_trivia(trivia)), kind: self.kind },
+        }
+    }
+
+    fn with_trailing_trivia(self, trivia: Trivia) -> Self {
+        Self {
+            annotations: self.annotations,
+            kind: self.kind.with_trailing_trivia(trivia),
+        }
+    }
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum DeclKind {
     Var(VarSyntax),
     Fun(FunSyntax),
