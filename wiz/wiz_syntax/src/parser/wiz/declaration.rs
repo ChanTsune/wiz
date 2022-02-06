@@ -17,7 +17,7 @@ use crate::syntax::declaration::fun_syntax::{
     ValueArgDef,
 };
 use crate::syntax::declaration::{
-    AliasSyntax, Decl, DeinitializerSyntax, ExtensionSyntax, InitializerSyntax, PackageName,
+    AliasSyntax, DeclKind, DeinitializerSyntax, ExtensionSyntax, InitializerSyntax, PackageName,
     ProtocolConformSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax,
 };
 use crate::syntax::declaration::{PackageNameElement, VarSyntax};
@@ -39,7 +39,7 @@ use nom::{
 };
 use std::ops::{Range, RangeFrom};
 
-pub fn decl<I>(s: I) -> IResult<I, Decl>
+pub fn decl<I>(s: I) -> IResult<I, DeclKind>
 where
     I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
@@ -76,7 +76,7 @@ where
 
 //region struct
 
-pub fn struct_decl<I>(s: I) -> IResult<I, Decl>
+pub fn struct_decl<I>(s: I) -> IResult<I, DeclKind>
 where
     I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
@@ -93,7 +93,7 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(struct_syntax, Decl::Struct)(s)
+    map(struct_syntax, DeclKind::Struct)(s)
 }
 
 // <struct_decl> ::= "struct" <identifier> <type_parameters>? "{" <struct_properties> "}"
@@ -402,7 +402,7 @@ where
 
 //region func
 
-pub fn function_decl<I>(s: I) -> IResult<I, Decl>
+pub fn function_decl<I>(s: I) -> IResult<I, DeclKind>
 where
     I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
@@ -419,7 +419,7 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(function_syntax, Decl::Fun)(s)
+    map(function_syntax, DeclKind::Fun)(s)
 }
 
 pub fn function_syntax<I>(s: I) -> IResult<I, FunSyntax>
@@ -719,7 +719,7 @@ where
 
 //region var
 
-pub fn var_decl<I>(s: I) -> IResult<I, Decl>
+pub fn var_decl<I>(s: I) -> IResult<I, DeclKind>
 where
     I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
@@ -736,7 +736,7 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(var_syntax, Decl::Var)(s)
+    map(var_syntax, DeclKind::Var)(s)
 }
 
 pub fn var_syntax<I>(s: I) -> IResult<I, VarSyntax>
@@ -802,7 +802,7 @@ where
 //endregion
 
 //region use
-pub fn use_decl<I>(s: I) -> IResult<I, Decl>
+pub fn use_decl<I>(s: I) -> IResult<I, DeclKind>
 where
     I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
@@ -815,7 +815,7 @@ where
         + Compare<&'static str>,
     <I as InputIter>::Item: AsChar + Copy,
 {
-    map(use_syntax, Decl::Use)(s)
+    map(use_syntax, DeclKind::Use)(s)
 }
 
 // <use> ::= "use" <package_name> ("as" <identifier>)?
@@ -882,7 +882,7 @@ where
 //endregion
 
 //region extension
-pub fn extension_decl<I>(s: I) -> IResult<I, Decl>
+pub fn extension_decl<I>(s: I) -> IResult<I, DeclKind>
 where
     I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
@@ -899,7 +899,7 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(extension_syntax, Decl::Extension)(s)
+    map(extension_syntax, DeclKind::Extension)(s)
 }
 
 pub fn extension_syntax<I>(s: I) -> IResult<I, ExtensionSyntax>
@@ -965,7 +965,7 @@ mod tests {
         ArgDef, ArgDefElementSyntax, ArgDefListSyntax, FunBody, FunSyntax, ValueArgDef,
     };
     use crate::syntax::declaration::{
-        AliasSyntax, Decl, PackageName, StoredPropertySyntax, StructPropertySyntax, StructSyntax,
+        AliasSyntax, DeclKind, PackageName, StoredPropertySyntax, StructPropertySyntax, StructSyntax,
         UseSyntax,
     };
     use crate::syntax::declaration::{PackageNameElement, VarSyntax};
@@ -1214,7 +1214,7 @@ mod tests {
             function_decl("fun function() {}"),
             Ok((
                 "",
-                Decl::Fun(FunSyntax {
+                DeclKind::Fun(FunSyntax {
                     annotations: None,
                     modifiers: Default::default(),
                     fun_keyword: TokenSyntax::from("fun"),
@@ -1240,7 +1240,7 @@ mod tests {
             function_decl("fun puts(_ item: String): Unit"),
             Ok((
                 "",
-                Decl::Fun(FunSyntax {
+                DeclKind::Fun(FunSyntax {
                     annotations: None,
                     modifiers: Default::default(),
                     fun_keyword: TokenSyntax::from("fun"),
@@ -1282,7 +1282,7 @@ mod tests {
             function_decl("fun puts(item: String): Unit"),
             Ok((
                 "",
-                Decl::Fun(FunSyntax {
+                DeclKind::Fun(FunSyntax {
                     annotations: None,
                     modifiers: Default::default(),
                     fun_keyword: TokenSyntax::from("fun"),
@@ -1321,7 +1321,7 @@ mod tests {
             var_decl("val a: Int = 1"),
             Ok((
                 "",
-                Decl::Var(VarSyntax {
+                DeclKind::Var(VarSyntax {
                     annotations: None,
                     mutability_keyword: TokenSyntax::from("val")
                         .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
@@ -1342,7 +1342,7 @@ mod tests {
             var_decl("val a = 1"),
             Ok((
                 "",
-                Decl::Var(VarSyntax {
+                DeclKind::Var(VarSyntax {
                     annotations: None,
                     mutability_keyword: TokenSyntax::from("val")
                         .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),

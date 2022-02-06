@@ -27,7 +27,7 @@ use wiz_syntax::syntax::annotation::AnnotationsSyntax;
 use wiz_syntax::syntax::block::BlockSyntax;
 use wiz_syntax::syntax::declaration::fun_syntax::{ArgDef, FunBody, FunSyntax};
 use wiz_syntax::syntax::declaration::{
-    Decl, InitializerSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax,
+    DeclKind, InitializerSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax,
 };
 use wiz_syntax::syntax::declaration::{ExtensionSyntax, VarSyntax};
 use wiz_syntax::syntax::expression::{
@@ -74,7 +74,7 @@ impl Ast2HLIR {
         let mut uses = vec![];
         let mut others = vec![];
         for l in syntax.body.into_iter() {
-            if let Decl::Use(u) = l {
+            if let DeclKind::Use(u) = l {
                 uses.push(self.use_syntax(u));
             } else {
                 others.push(l);
@@ -162,11 +162,11 @@ impl Ast2HLIR {
         }
     }
 
-    pub fn decl(&self, d: Decl) -> TypedDecl {
+    pub fn decl(&self, d: DeclKind) -> TypedDecl {
         match d {
-            Decl::Var(v) => TypedDecl::Var(self.var_syntax(v)),
-            Decl::Fun(f) => TypedDecl::Fun(self.fun_syntax(f)),
-            Decl::Struct(s) => match &*s.struct_keyword.token() {
+            DeclKind::Var(v) => TypedDecl::Var(self.var_syntax(v)),
+            DeclKind::Fun(f) => TypedDecl::Fun(self.fun_syntax(f)),
+            DeclKind::Struct(s) => match &*s.struct_keyword.token() {
                 "struct" => {
                     let struct_ = self.struct_syntax(s);
                     let struct_ = self.default_init_if_needed(struct_);
@@ -178,10 +178,10 @@ impl Ast2HLIR {
                 }
                 kw => panic!("Unknown keyword `{}`", kw),
             },
-            Decl::ExternC { .. } => TypedDecl::Class,
-            Decl::Enum { .. } => TypedDecl::Enum,
-            Decl::Extension(e) => TypedDecl::Extension(self.extension_syntax(e)),
-            Decl::Use(_) => {
+            DeclKind::ExternC { .. } => TypedDecl::Class,
+            DeclKind::Enum { .. } => TypedDecl::Enum,
+            DeclKind::Extension(e) => TypedDecl::Extension(self.extension_syntax(e)),
+            DeclKind::Use(_) => {
                 panic!("Never execution branch executed!!")
             }
         }

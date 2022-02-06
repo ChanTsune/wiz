@@ -1,4 +1,4 @@
-use super::declaration::Decl;
+use super::declaration::DeclKind;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::Syntax;
 
@@ -17,7 +17,7 @@ pub struct WizFile {
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct FileSyntax {
     pub leading_trivia: Trivia,
-    pub body: Vec<Decl>,
+    pub body: Vec<DeclKind>,
     pub trailing_trivia: Trivia,
 }
 

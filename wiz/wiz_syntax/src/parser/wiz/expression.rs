@@ -1295,7 +1295,7 @@ mod tests {
         value_arguments,
     };
     use crate::syntax::block::BlockSyntax;
-    use crate::syntax::declaration::Decl;
+    use crate::syntax::declaration::DeclKind;
     use crate::syntax::declaration::VarSyntax;
     use crate::syntax::expression::{
         ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallArgElementSyntax,
@@ -1753,7 +1753,7 @@ mod tests {
                         TriviaPiece::Newlines(1),
                         TriviaPiece::Spaces(12),
                     ])),
-                    body: vec![Stmt::Decl(Decl::Var(VarSyntax {
+                    body: vec![Stmt::Decl(DeclKind::Var(VarSyntax {
                         annotations: None,
                         mutability_keyword: TokenSyntax::from("val")
                             .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
