@@ -69,6 +69,10 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         );
     let matches = app.get_matches();
     let config = Config::from(&matches);
+    run_compiler(config)
+}
+
+fn run_compiler(config: Config) -> result::Result<(), Box<dyn Error>> {
     let output = config.output();
     let out_dir = config.out_dir();
     let paths = config.paths();
