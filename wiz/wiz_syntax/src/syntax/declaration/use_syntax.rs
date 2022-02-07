@@ -1,4 +1,3 @@
-use crate::syntax::annotation::{Annotatable, AnnotationsSyntax};
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::Syntax;

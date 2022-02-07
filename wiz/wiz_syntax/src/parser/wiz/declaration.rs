@@ -132,7 +132,6 @@ where
         )),
         |(struct_keyword, nws, name, _, params, body)| match body {
             Some((_, open, _, properties, _, close)) => StructSyntax {
-                annotations: None,
                 struct_keyword: TokenSyntax::from(struct_keyword),
                 name: TokenSyntax::from(name).with_leading_trivia(nws),
                 type_params: params,
@@ -141,7 +140,6 @@ where
                 close: TokenSyntax::from(close),
             },
             None => StructSyntax {
-                annotations: None,
                 struct_keyword: TokenSyntax::from(struct_keyword),
                 name: TokenSyntax::from(name).with_leading_trivia(nws),
                 type_params: params,
@@ -1054,7 +1052,6 @@ mod tests {
             Ok((
                 "",
                 StructSyntax {
-                    annotations: None,
                     struct_keyword: TokenSyntax::from("struct"),
                     name: TokenSyntax::from("A")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
