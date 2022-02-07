@@ -1,6 +1,6 @@
-use std::error::Error;
 use crate::constant::MANIFEST_FILE_NAME;
 use crate::core::error::CliError;
+use std::error::Error;
 use std::path::PathBuf;
 
 pub(crate) struct Workspace {
