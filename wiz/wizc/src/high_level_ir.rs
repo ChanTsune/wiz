@@ -94,7 +94,10 @@ impl Ast2HLIR {
     }
 
     pub fn file_syntax(&mut self, f: FileSyntax) -> Vec<TypedDecl> {
-        f.body.into_iter().map(|d| self.decl(d.kind, d.annotations)).collect()
+        f.body
+            .into_iter()
+            .map(|d| self.decl(d.kind, d.annotations))
+            .collect()
     }
 
     pub(crate) fn annotations(&self, a: Option<AnnotationsSyntax>) -> TypedAnnotations {
@@ -380,7 +383,11 @@ impl Ast2HLIR {
         }
     }
 
-    pub fn struct_syntax(&self, s: StructSyntax, annotations: Option<AnnotationsSyntax>) -> TypedStruct {
+    pub fn struct_syntax(
+        &self,
+        s: StructSyntax,
+        annotations: Option<AnnotationsSyntax>,
+    ) -> TypedStruct {
         let mut stored_properties: Vec<TypedStoredProperty> = vec![];
         let mut computed_properties: Vec<TypedComputedProperty> = vec![];
         let mut initializers: Vec<TypedInitializer> = vec![];
@@ -532,7 +539,11 @@ impl Ast2HLIR {
         }
     }
 
-    fn extension_syntax(&self, e: ExtensionSyntax, annotations: Option<AnnotationsSyntax>) -> TypedExtension {
+    fn extension_syntax(
+        &self,
+        e: ExtensionSyntax,
+        annotations: Option<AnnotationsSyntax>,
+    ) -> TypedExtension {
         let mut computed_properties = vec![];
         let mut member_functions = vec![];
         for prop in e.properties {
@@ -555,7 +566,11 @@ impl Ast2HLIR {
         }
     }
 
-    fn protocol_syntax(&self, p: StructSyntax, annotations: Option<AnnotationsSyntax>) -> TypedProtocol {
+    fn protocol_syntax(
+        &self,
+        p: StructSyntax,
+        annotations: Option<AnnotationsSyntax>,
+    ) -> TypedProtocol {
         let mut computed_properties: Vec<TypedComputedProperty> = vec![];
         let mut member_functions: Vec<TypedMemberFunction> = vec![];
         for p in p.properties {

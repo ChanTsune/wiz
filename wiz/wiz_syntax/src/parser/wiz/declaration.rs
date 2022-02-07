@@ -15,7 +15,11 @@ use crate::syntax::declaration::fun_syntax::{
     ArgDef, ArgDefElementSyntax, ArgDefListSyntax, FunBody, FunSyntax, SelfArgDefSyntax,
     ValueArgDef,
 };
-use crate::syntax::declaration::{AliasSyntax, DeclarationSyntax, DeclKind, DeinitializerSyntax, ExtensionSyntax, InitializerSyntax, PackageName, ProtocolConformSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax};
+use crate::syntax::declaration::{
+    AliasSyntax, DeclKind, DeclarationSyntax, DeinitializerSyntax, ExtensionSyntax,
+    InitializerSyntax, PackageName, ProtocolConformSyntax, StoredPropertySyntax,
+    StructPropertySyntax, StructSyntax, UseSyntax,
+};
 use crate::syntax::declaration::{PackageNameElement, VarSyntax};
 use crate::syntax::expression::Expr;
 use crate::syntax::token::TokenSyntax;
@@ -1511,8 +1515,8 @@ mod tests {
                 use_keyword: TokenSyntax::from("use"),
                 package_name: PackageName { names: vec![] },
                 used_name: TokenSyntax::from("abc"),
-                alias: None
-            }
+                alias: None,
+            },
         );
         check(
             "use abc as def",
@@ -1526,8 +1530,8 @@ mod tests {
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     name: TokenSyntax::from("def")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                })
-            }
+                }),
+            },
         );
     }
 }

@@ -1,4 +1,4 @@
-use crate::syntax::annotation::{AnnotationsSyntax};
+use crate::syntax::annotation::AnnotationsSyntax;
 pub use crate::syntax::declaration::extension_syntax::{ExtensionSyntax, ProtocolConformSyntax};
 use crate::syntax::declaration::fun_syntax::FunSyntax;
 pub use crate::syntax::declaration::struct_syntax::{
