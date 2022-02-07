@@ -1295,7 +1295,7 @@ mod tests {
         value_arguments,
     };
     use crate::syntax::block::BlockSyntax;
-    use crate::syntax::declaration::DeclKind;
+    use crate::syntax::declaration::{DeclarationSyntax, DeclKind};
     use crate::syntax::declaration::VarSyntax;
     use crate::syntax::expression::{
         ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallArgElementSyntax,
@@ -1753,7 +1753,7 @@ mod tests {
                         TriviaPiece::Newlines(1),
                         TriviaPiece::Spaces(12),
                     ])),
-                    body: vec![Stmt::Decl(DeclKind::Var(VarSyntax {
+                    body: vec![Stmt::Decl(DeclarationSyntax { annotations: None, kind: DeclKind::Var(VarSyntax {
                         mutability_keyword: TokenSyntax::from("val")
                             .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                         name: TokenSyntax::from("newCapacity"),
@@ -1772,7 +1772,7 @@ mod tests {
                                         TokenSyntax::from("0"),
                                     ))),
                                 })
-                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                             ),
                             body: BlockSyntax {
                                 open: TokenSyntax::from("{")
@@ -1783,7 +1783,7 @@ mod tests {
                                 close: TokenSyntax::from("}")
                                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                             }
-                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                             else_body: Some(ElseSyntax {
                                 else_keyword: TokenSyntax::from("else")
                                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
@@ -1808,10 +1808,10 @@ mod tests {
                                     close: TokenSyntax::from("}")
                                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                                 }
-                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                             }),
                         }),
-                    }))],
+                    }) })],
                     close: TokenSyntax::from("}").with_leading_trivia(Trivia::from(vec![
                         TriviaPiece::Newlines(1),
                         TriviaPiece::Spaces(8),

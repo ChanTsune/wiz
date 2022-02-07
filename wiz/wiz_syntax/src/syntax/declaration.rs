@@ -1,4 +1,4 @@
-use crate::syntax::annotation::{Annotatable, AnnotationsSyntax};
+use crate::syntax::annotation::{AnnotationsSyntax};
 pub use crate::syntax::declaration::extension_syntax::{ExtensionSyntax, ProtocolConformSyntax};
 use crate::syntax::declaration::fun_syntax::FunSyntax;
 pub use crate::syntax::declaration::struct_syntax::{
@@ -58,20 +58,6 @@ pub enum DeclKind {
     },
     Extension(ExtensionSyntax),
     Use(UseSyntax),
-}
-
-impl Annotatable for DeclKind {
-    fn with_annotation(self, a: AnnotationsSyntax) -> Self {
-        match self {
-            DeclKind::Var(_) => DeclKind::Var(panic!()),
-            DeclKind::Fun(_) => DeclKind::Fun(panic!()),
-            DeclKind::Struct(_) => DeclKind::Struct(panic!()),
-            DeclKind::ExternC(_) => DeclKind::ExternC(panic!()),
-            DeclKind::Enum { .. } => DeclKind::Enum {},
-            DeclKind::Extension(e) => DeclKind::Extension(panic!()),
-            DeclKind::Use(_) => DeclKind::Use(panic!()),
-        }
-    }
 }
 
 impl Syntax for DeclKind {

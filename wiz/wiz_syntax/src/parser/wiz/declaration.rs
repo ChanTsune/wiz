@@ -10,16 +10,12 @@ use crate::parser::wiz::lexical_structure::{
 };
 use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_parameters};
-use crate::syntax::annotation::Annotatable;
 use crate::syntax::block::BlockSyntax;
 use crate::syntax::declaration::fun_syntax::{
     ArgDef, ArgDefElementSyntax, ArgDefListSyntax, FunBody, FunSyntax, SelfArgDefSyntax,
     ValueArgDef,
 };
-use crate::syntax::declaration::{
-    AliasSyntax, DeclKind, DeinitializerSyntax, ExtensionSyntax, InitializerSyntax, PackageName,
-    ProtocolConformSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax,
-};
+use crate::syntax::declaration::{AliasSyntax, DeclarationSyntax, DeclKind, DeinitializerSyntax, ExtensionSyntax, InitializerSyntax, PackageName, ProtocolConformSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax};
 use crate::syntax::declaration::{PackageNameElement, VarSyntax};
 use crate::syntax::expression::Expr;
 use crate::syntax::token::TokenSyntax;
@@ -39,7 +35,7 @@ use nom::{
 };
 use std::ops::{Range, RangeFrom};
 
-pub fn decl<I>(s: I) -> IResult<I, DeclKind>
+pub fn decl<I>(s: I) -> IResult<I, DeclarationSyntax>
 where
     I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
@@ -67,9 +63,9 @@ where
                 extension_decl,
             )),
         )),
-        |(a, d)| match a {
-            Some((a, _)) => d.with_annotation(a),
-            None => d,
+        |(a, d)| DeclarationSyntax {
+            annotations: a.map(|(a, _)| a),
+            kind: d,
         },
     )(s)
 }
