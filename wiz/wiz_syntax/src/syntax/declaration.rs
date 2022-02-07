@@ -64,7 +64,7 @@ impl Annotatable for DeclKind {
     fn with_annotation(self, a: AnnotationsSyntax) -> Self {
         match self {
             DeclKind::Var(_) => DeclKind::Var(panic!()),
-            DeclKind::Fun(f) => DeclKind::Fun(f.with_annotation(a)),
+            DeclKind::Fun(_) => DeclKind::Fun(panic!()),
             DeclKind::Struct(_) => DeclKind::Struct(panic!()),
             DeclKind::ExternC(_) => DeclKind::ExternC(panic!()),
             DeclKind::Enum { .. } => DeclKind::Enum {},

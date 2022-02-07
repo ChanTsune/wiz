@@ -453,7 +453,6 @@ where
         )),
         |(f, ws, name, type_params, args, _, return_type, _, type_constraints, _, body)| {
             FunSyntax {
-                annotations: None,
                 modifiers: Default::default(),
                 fun_keyword: TokenSyntax::from(f),
                 name: TokenSyntax::from(name).with_leading_trivia(ws),
@@ -1078,7 +1077,6 @@ mod tests {
             Ok((
                 "",
                 StructPropertySyntax::Method(FunSyntax {
-                    annotations: None,
                     modifiers: ModifiersSyntax::new(),
                     fun_keyword: TokenSyntax::from("fun"),
                     name: TokenSyntax::from("function")
@@ -1210,7 +1208,6 @@ mod tests {
             Ok((
                 "",
                 DeclKind::Fun(FunSyntax {
-                    annotations: None,
                     modifiers: Default::default(),
                     fun_keyword: TokenSyntax::from("fun"),
                     name: TokenSyntax::from("function")
@@ -1236,7 +1233,6 @@ mod tests {
             Ok((
                 "",
                 DeclKind::Fun(FunSyntax {
-                    annotations: None,
                     modifiers: Default::default(),
                     fun_keyword: TokenSyntax::from("fun"),
                     name: TokenSyntax::from("puts")
@@ -1278,7 +1274,6 @@ mod tests {
             Ok((
                 "",
                 DeclKind::Fun(FunSyntax {
-                    annotations: None,
                     modifiers: Default::default(),
                     fun_keyword: TokenSyntax::from("fun"),
                     name: TokenSyntax::from("puts")
