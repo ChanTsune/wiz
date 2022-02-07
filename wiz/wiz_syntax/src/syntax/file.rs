@@ -1,5 +1,4 @@
 use crate::syntax::declaration::DeclarationSyntax;
-use super::declaration::DeclKind;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::Syntax;
 

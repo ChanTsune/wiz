@@ -75,8 +75,8 @@ impl Ast2HLIR {
         let mut uses = vec![];
         let mut others = vec![];
         for l in syntax.body.into_iter() {
-            if let DeclKind::Use(u) = l {
-                uses.push(self.use_syntax(u, None));
+            if let DeclKind::Use(u) = l.kind {
+                uses.push(self.use_syntax(u, l.annotations));
             } else {
                 others.push(l);
             }
@@ -94,7 +94,7 @@ impl Ast2HLIR {
     }
 
     pub fn file_syntax(&mut self, f: FileSyntax) -> Vec<TypedDecl> {
-        f.body.into_iter().map(|d| self.decl(d, None)).collect()
+        f.body.into_iter().map(|d| self.decl(d.kind, d.annotations)).collect()
     }
 
     pub(crate) fn annotations(&self, a: Option<AnnotationsSyntax>) -> TypedAnnotations {
@@ -111,7 +111,7 @@ impl Ast2HLIR {
 
     pub fn stmt(&self, s: Stmt) -> TypedStmt {
         match s {
-            Stmt::Decl(decl) => TypedStmt::Decl(self.decl(decl, None)),
+            Stmt::Decl(decl) => TypedStmt::Decl(self.decl(decl.kind, decl.annotations)),
             Stmt::Expr(expr) => TypedStmt::Expr(self.expr(expr)),
             Stmt::Assignment(a) => TypedStmt::Assignment(self.assignment(a)),
             Stmt::Loop(l) => TypedStmt::Loop(self.loop_stmt(l)),
