@@ -2,7 +2,7 @@ mod assignment_syntax;
 mod for_loop_syntax;
 mod while_loop_syntax;
 
-use crate::syntax::declaration::{DeclarationSyntax, DeclKind};
+use crate::syntax::declaration::{DeclarationSyntax};
 use crate::syntax::expression::Expr;
 pub use crate::syntax::statement::assignment_syntax::{
     AssignmentAndOperatorSyntax, AssignmentStmt, AssignmentSyntax,
