@@ -68,7 +68,7 @@ impl Annotatable for DeclKind {
             DeclKind::Struct(_) => DeclKind::Struct(panic!()),
             DeclKind::ExternC(_) => DeclKind::ExternC(panic!()),
             DeclKind::Enum { .. } => DeclKind::Enum {},
-            DeclKind::Extension(e) => DeclKind::Extension(e.with_annotation(a)),
+            DeclKind::Extension(e) => DeclKind::Extension(panic!()),
             DeclKind::Use(_) => DeclKind::Use(panic!()),
         }
     }
