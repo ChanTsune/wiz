@@ -37,8 +37,5 @@ pub(crate) fn construct_workspace_from(cws: PathBuf) -> Result<Workspace, Box<dy
             cws.display()
         ))));
     }
-    Ok(Workspace {
-        cws,
-        manifest_path,
-    })
+    Ok(Workspace { cws, manifest_path })
 }
