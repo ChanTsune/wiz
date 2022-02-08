@@ -29,9 +29,9 @@ pub(crate) fn construct_workspace_from(cws: PathBuf) -> Result<Workspace, Box<dy
             cws.display()
         ))));
     }
-    let mut manifest = cws.clone();
-    manifest.push(MANIFEST_FILE_NAME);
-    if !manifest.exists() {
+    let mut manifest_path = cws.clone();
+    manifest_path.push(MANIFEST_FILE_NAME);
+    if !manifest_path.exists() {
         return Err(Box::new(CliError::from(format!(
             "could not find `Package.wiz` in `{}`",
             cws.display()
@@ -39,6 +39,6 @@ pub(crate) fn construct_workspace_from(cws: PathBuf) -> Result<Workspace, Box<dy
     }
     Ok(Workspace {
         cws,
-        manifest_path: manifest,
+        manifest_path,
     })
 }
