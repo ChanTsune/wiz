@@ -1,1 +1,1 @@
-pub(crate) const MANIFEST_FILE_NAME: &str = "Package.wiz";
+pub(crate) const MANIFEST_FILE_NAME: &str = "Package.toml";

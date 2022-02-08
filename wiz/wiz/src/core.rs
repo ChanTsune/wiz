@@ -14,9 +14,14 @@ pub(crate) fn create_project(path: &Path, project_name: &str) -> Result<(), Box<
     writeln!(
         package_wiz,
         r#"
-val package = Package.init(
-    name: {:?},
-)"#,
+[package]
+name = {:?}
+version = "0.1.0"
+
+[dependencies]
+core = "0.0.0"
+std = "0.0.0"
+"#,
         project_name
     )?;
     path.pop();
