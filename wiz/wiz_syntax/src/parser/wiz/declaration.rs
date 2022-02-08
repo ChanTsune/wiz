@@ -10,15 +10,15 @@ use crate::parser::wiz::lexical_structure::{
 };
 use crate::parser::wiz::statement::stmts;
 use crate::parser::wiz::type_::{type_, type_parameters};
-use crate::syntax::annotation::Annotatable;
 use crate::syntax::block::BlockSyntax;
 use crate::syntax::declaration::fun_syntax::{
     ArgDef, ArgDefElementSyntax, ArgDefListSyntax, FunBody, FunSyntax, SelfArgDefSyntax,
     ValueArgDef,
 };
 use crate::syntax::declaration::{
-    AliasSyntax, Decl, DeinitializerSyntax, ExtensionSyntax, InitializerSyntax, PackageName,
-    ProtocolConformSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax,
+    AliasSyntax, DeclKind, DeclarationSyntax, DeinitializerSyntax, ExtensionSyntax,
+    InitializerSyntax, PackageName, ProtocolConformSyntax, StoredPropertySyntax,
+    StructPropertySyntax, StructSyntax, UseSyntax,
 };
 use crate::syntax::declaration::{PackageNameElement, VarSyntax};
 use crate::syntax::expression::Expr;
@@ -39,7 +39,7 @@ use nom::{
 };
 use std::ops::{Range, RangeFrom};
 
-pub fn decl<I>(s: I) -> IResult<I, Decl>
+pub fn decl<I>(s: I) -> IResult<I, DeclarationSyntax>
 where
     I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
@@ -67,16 +67,16 @@ where
                 extension_decl,
             )),
         )),
-        |(a, d)| match a {
-            Some((a, _)) => d.with_annotation(a),
-            None => d,
+        |(a, d)| DeclarationSyntax {
+            annotations: a.map(|(a, _)| a),
+            kind: d,
         },
     )(s)
 }
 
 //region struct
 
-pub fn struct_decl<I>(s: I) -> IResult<I, Decl>
+pub fn struct_decl<I>(s: I) -> IResult<I, DeclKind>
 where
     I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
@@ -93,7 +93,7 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(struct_syntax, Decl::Struct)(s)
+    map(struct_syntax, DeclKind::Struct)(s)
 }
 
 // <struct_decl> ::= "struct" <identifier> <type_parameters>? "{" <struct_properties> "}"
@@ -132,7 +132,6 @@ where
         )),
         |(struct_keyword, nws, name, _, params, body)| match body {
             Some((_, open, _, properties, _, close)) => StructSyntax {
-                annotations: None,
                 struct_keyword: TokenSyntax::from(struct_keyword),
                 name: TokenSyntax::from(name).with_leading_trivia(nws),
                 type_params: params,
@@ -141,7 +140,6 @@ where
                 close: TokenSyntax::from(close),
             },
             None => StructSyntax {
-                annotations: None,
                 struct_keyword: TokenSyntax::from(struct_keyword),
                 name: TokenSyntax::from(name).with_leading_trivia(nws),
                 type_params: params,
@@ -402,7 +400,7 @@ where
 
 //region func
 
-pub fn function_decl<I>(s: I) -> IResult<I, Decl>
+pub fn function_decl<I>(s: I) -> IResult<I, DeclKind>
 where
     I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
@@ -419,7 +417,7 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(function_syntax, Decl::Fun)(s)
+    map(function_syntax, DeclKind::Fun)(s)
 }
 
 pub fn function_syntax<I>(s: I) -> IResult<I, FunSyntax>
@@ -455,7 +453,6 @@ where
         )),
         |(f, ws, name, type_params, args, _, return_type, _, type_constraints, _, body)| {
             FunSyntax {
-                annotations: None,
                 modifiers: Default::default(),
                 fun_keyword: TokenSyntax::from(f),
                 name: TokenSyntax::from(name).with_leading_trivia(ws),
@@ -719,7 +716,7 @@ where
 
 //region var
 
-pub fn var_decl<I>(s: I) -> IResult<I, Decl>
+pub fn var_decl<I>(s: I) -> IResult<I, DeclKind>
 where
     I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
@@ -736,7 +733,7 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(var_syntax, Decl::Var)(s)
+    map(var_syntax, DeclKind::Var)(s)
 }
 
 pub fn var_syntax<I>(s: I) -> IResult<I, VarSyntax>
@@ -759,7 +756,6 @@ where
     map(
         tuple((alt((var_keyword, val_keyword)), whitespace1, var_body)),
         |(mutability_keyword, ws, (name, t, e)): (I, _, _)| VarSyntax {
-            annotations: None,
             mutability_keyword: TokenSyntax::from(mutability_keyword).with_trailing_trivia(ws),
             name: TokenSyntax::from(name),
             type_: t,
@@ -802,7 +798,7 @@ where
 //endregion
 
 //region use
-pub fn use_decl<I>(s: I) -> IResult<I, Decl>
+pub fn use_decl<I>(s: I) -> IResult<I, DeclKind>
 where
     I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
@@ -815,7 +811,7 @@ where
         + Compare<&'static str>,
     <I as InputIter>::Item: AsChar + Copy,
 {
-    map(use_syntax, Decl::Use)(s)
+    map(use_syntax, DeclKind::Use)(s)
 }
 
 // <use> ::= "use" <package_name> ("as" <identifier>)?
@@ -840,8 +836,7 @@ where
             alt((identifier, map(tag("*"), |i: I| i.to_string()))),
             opt(tuple((whitespace1, as_keyword, whitespace1, identifier))),
         )),
-        |(u, _, pkg, n, alias)| UseSyntax {
-            annotations: None,
+        |(u, ws, pkg, n, alias)| UseSyntax {
             use_keyword: TokenSyntax::from(u),
             package_name: pkg,
             used_name: TokenSyntax::from(n),
@@ -882,7 +877,7 @@ where
 //endregion
 
 //region extension
-pub fn extension_decl<I>(s: I) -> IResult<I, Decl>
+pub fn extension_decl<I>(s: I) -> IResult<I, DeclKind>
 where
     I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
@@ -899,7 +894,7 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(extension_syntax, Decl::Extension)(s)
+    map(extension_syntax, DeclKind::Extension)(s)
 }
 
 pub fn extension_syntax<I>(s: I) -> IResult<I, ExtensionSyntax>
@@ -937,7 +932,6 @@ where
             char('}'),
         )),
         |(kw, tp, ws, n, _, protocol, _, tc, ws1, _, ws2, properties, _, _)| ExtensionSyntax {
-            annotations: None,
             modifiers: Default::default(),
             extension_keyword: TokenSyntax::from(kw),
             type_params: tp.map(|(t, tp)| tp.with_leading_trivia(t)),
@@ -965,8 +959,8 @@ mod tests {
         ArgDef, ArgDefElementSyntax, ArgDefListSyntax, FunBody, FunSyntax, ValueArgDef,
     };
     use crate::syntax::declaration::{
-        AliasSyntax, Decl, PackageName, StoredPropertySyntax, StructPropertySyntax, StructSyntax,
-        UseSyntax,
+        AliasSyntax, DeclKind, PackageName, StoredPropertySyntax, StructPropertySyntax,
+        StructSyntax, UseSyntax,
     };
     use crate::syntax::declaration::{PackageNameElement, VarSyntax};
     use crate::syntax::expression::{BinaryOperationSyntax, Expr, NameExprSyntax};
@@ -1056,7 +1050,6 @@ mod tests {
             Ok((
                 "",
                 StructSyntax {
-                    annotations: None,
                     struct_keyword: TokenSyntax::from("struct"),
                     name: TokenSyntax::from("A")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
@@ -1083,7 +1076,6 @@ mod tests {
             Ok((
                 "",
                 StructPropertySyntax::Method(FunSyntax {
-                    annotations: None,
                     modifiers: ModifiersSyntax::new(),
                     fun_keyword: TokenSyntax::from("fun"),
                     name: TokenSyntax::from("function")
@@ -1214,8 +1206,7 @@ mod tests {
             function_decl("fun function() {}"),
             Ok((
                 "",
-                Decl::Fun(FunSyntax {
-                    annotations: None,
+                DeclKind::Fun(FunSyntax {
                     modifiers: Default::default(),
                     fun_keyword: TokenSyntax::from("fun"),
                     name: TokenSyntax::from("function")
@@ -1240,8 +1231,7 @@ mod tests {
             function_decl("fun puts(_ item: String): Unit"),
             Ok((
                 "",
-                Decl::Fun(FunSyntax {
-                    annotations: None,
+                DeclKind::Fun(FunSyntax {
                     modifiers: Default::default(),
                     fun_keyword: TokenSyntax::from("fun"),
                     name: TokenSyntax::from("puts")
@@ -1282,8 +1272,7 @@ mod tests {
             function_decl("fun puts(item: String): Unit"),
             Ok((
                 "",
-                Decl::Fun(FunSyntax {
-                    annotations: None,
+                DeclKind::Fun(FunSyntax {
                     modifiers: Default::default(),
                     fun_keyword: TokenSyntax::from("fun"),
                     name: TokenSyntax::from("puts")
@@ -1321,8 +1310,7 @@ mod tests {
             var_decl("val a: Int = 1"),
             Ok((
                 "",
-                Decl::Var(VarSyntax {
-                    annotations: None,
+                DeclKind::Var(VarSyntax {
                     mutability_keyword: TokenSyntax::from("val")
                         .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     name: TokenSyntax::from("a"),
@@ -1342,8 +1330,7 @@ mod tests {
             var_decl("val a = 1"),
             Ok((
                 "",
-                Decl::Var(VarSyntax {
-                    annotations: None,
+                DeclKind::Var(VarSyntax {
                     mutability_keyword: TokenSyntax::from("val")
                         .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     name: TokenSyntax::from("a"),
@@ -1521,36 +1508,30 @@ mod tests {
 
     #[test]
     fn test_use() {
-        assert_eq!(
-            use_syntax("use abc"),
-            Ok((
-                "",
-                UseSyntax {
-                    annotations: None,
-                    use_keyword: TokenSyntax::from("use"),
-                    package_name: PackageName { names: vec![] },
-                    used_name: TokenSyntax::from("abc"),
-                    alias: None
-                }
-            ))
+        check(
+            "use abc",
+            use_syntax,
+            UseSyntax {
+                use_keyword: TokenSyntax::from("use"),
+                package_name: PackageName { names: vec![] },
+                used_name: TokenSyntax::from("abc"),
+                alias: None,
+            },
         );
-        assert_eq!(
-            use_syntax("use abc as def"),
-            Ok((
-                "",
-                UseSyntax {
-                    annotations: None,
-                    use_keyword: TokenSyntax::from("use"),
-                    package_name: PackageName { names: vec![] },
-                    used_name: TokenSyntax::from("abc"),
-                    alias: Some(AliasSyntax {
-                        as_keyword: TokenSyntax::from("as")
-                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                        name: TokenSyntax::from("def")
-                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    })
-                }
-            ))
+        check(
+            "use abc as def",
+            use_syntax,
+            UseSyntax {
+                use_keyword: TokenSyntax::from("use"),
+                package_name: PackageName { names: vec![] },
+                used_name: TokenSyntax::from("abc"),
+                alias: Some(AliasSyntax {
+                    as_keyword: TokenSyntax::from("as")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    name: TokenSyntax::from("def")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                }),
+            },
         );
     }
 }

@@ -27,7 +27,8 @@ use wiz_syntax::syntax::annotation::AnnotationsSyntax;
 use wiz_syntax::syntax::block::BlockSyntax;
 use wiz_syntax::syntax::declaration::fun_syntax::{ArgDef, FunBody, FunSyntax};
 use wiz_syntax::syntax::declaration::{
-    Decl, InitializerSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax,
+    DeclKind, InitializerSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax,
+    UseSyntax,
 };
 use wiz_syntax::syntax::declaration::{ExtensionSyntax, VarSyntax};
 use wiz_syntax::syntax::expression::{
@@ -74,8 +75,8 @@ impl Ast2HLIR {
         let mut uses = vec![];
         let mut others = vec![];
         for l in syntax.body.into_iter() {
-            if let Decl::Use(u) = l {
-                uses.push(self.use_syntax(u));
+            if let DeclKind::Use(u) = l.kind {
+                uses.push(self.use_syntax(u, l.annotations));
             } else {
                 others.push(l);
             }
@@ -93,7 +94,10 @@ impl Ast2HLIR {
     }
 
     pub fn file_syntax(&mut self, f: FileSyntax) -> Vec<TypedDecl> {
-        f.body.into_iter().map(|d| self.decl(d)).collect()
+        f.body
+            .into_iter()
+            .map(|d| self.decl(d.kind, d.annotations))
+            .collect()
     }
 
     pub(crate) fn annotations(&self, a: Option<AnnotationsSyntax>) -> TypedAnnotations {
@@ -110,7 +114,7 @@ impl Ast2HLIR {
 
     pub fn stmt(&self, s: Stmt) -> TypedStmt {
         match s {
-            Stmt::Decl(decl) => TypedStmt::Decl(self.decl(decl)),
+            Stmt::Decl(decl) => TypedStmt::Decl(self.decl(decl.kind, decl.annotations)),
             Stmt::Expr(expr) => TypedStmt::Expr(self.expr(expr)),
             Stmt::Assignment(a) => TypedStmt::Assignment(self.assignment(a)),
             Stmt::Loop(l) => TypedStmt::Loop(self.loop_stmt(l)),
@@ -162,35 +166,35 @@ impl Ast2HLIR {
         }
     }
 
-    pub fn decl(&self, d: Decl) -> TypedDecl {
+    pub fn decl(&self, d: DeclKind, annotation: Option<AnnotationsSyntax>) -> TypedDecl {
         match d {
-            Decl::Var(v) => TypedDecl::Var(self.var_syntax(v)),
-            Decl::Fun(f) => TypedDecl::Fun(self.fun_syntax(f)),
-            Decl::Struct(s) => match &*s.struct_keyword.token() {
+            DeclKind::Var(v) => TypedDecl::Var(self.var_syntax(v, annotation)),
+            DeclKind::Fun(f) => TypedDecl::Fun(self.fun_syntax(f, annotation)),
+            DeclKind::Struct(s) => match &*s.struct_keyword.token() {
                 "struct" => {
-                    let struct_ = self.struct_syntax(s);
+                    let struct_ = self.struct_syntax(s, annotation);
                     let struct_ = self.default_init_if_needed(struct_);
                     TypedDecl::Struct(struct_)
                 }
                 "protocol" => {
-                    let protocol = self.protocol_syntax(s);
+                    let protocol = self.protocol_syntax(s, annotation);
                     TypedDecl::Protocol(protocol)
                 }
                 kw => panic!("Unknown keyword `{}`", kw),
             },
-            Decl::ExternC { .. } => TypedDecl::Class,
-            Decl::Enum { .. } => TypedDecl::Enum,
-            Decl::Extension(e) => TypedDecl::Extension(self.extension_syntax(e)),
-            Decl::Use(_) => {
+            DeclKind::ExternC { .. } => TypedDecl::Class,
+            DeclKind::Enum { .. } => TypedDecl::Enum,
+            DeclKind::Extension(e) => TypedDecl::Extension(self.extension_syntax(e, annotation)),
+            DeclKind::Use(_) => {
                 panic!("Never execution branch executed!!")
             }
         }
     }
 
-    pub fn var_syntax(&self, v: VarSyntax) -> TypedVar {
+    pub fn var_syntax(&self, v: VarSyntax, annotation: Option<AnnotationsSyntax>) -> TypedVar {
         let expr = self.expr(v.value);
         TypedVar {
-            annotations: self.annotations(v.annotations),
+            annotations: self.annotations(annotation),
             package: TypedPackage::Raw(Package::new()),
             is_mut: v.mutability_keyword.token() == "var",
             name: v.name.token(),
@@ -231,9 +235,8 @@ impl Ast2HLIR {
         }
     }
 
-    pub fn fun_syntax(&self, f: FunSyntax) -> TypedFun {
+    pub fn fun_syntax(&self, f: FunSyntax, annotations: Option<AnnotationsSyntax>) -> TypedFun {
         let FunSyntax {
-            annotations,
             modifiers,
             fun_keyword: _,
             name,
@@ -380,7 +383,11 @@ impl Ast2HLIR {
         }
     }
 
-    pub fn struct_syntax(&self, s: StructSyntax) -> TypedStruct {
+    pub fn struct_syntax(
+        &self,
+        s: StructSyntax,
+        annotations: Option<AnnotationsSyntax>,
+    ) -> TypedStruct {
         let mut stored_properties: Vec<TypedStoredProperty> = vec![];
         let mut computed_properties: Vec<TypedComputedProperty> = vec![];
         let mut initializers: Vec<TypedInitializer> = vec![];
@@ -403,7 +410,7 @@ impl Ast2HLIR {
             };
         }
         TypedStruct {
-            annotations: self.annotations(s.annotations),
+            annotations: self.annotations(annotations),
             package: TypedPackage::Raw(Package::new()),
             name: s.name.token(),
             type_params: s.type_params.map(|v| {
@@ -487,7 +494,6 @@ impl Ast2HLIR {
 
     pub fn member_function(&self, member_function: FunSyntax) -> TypedMemberFunction {
         let FunSyntax {
-            annotations: _,
             modifiers: _,
             fun_keyword: _,
             name,
@@ -518,7 +524,7 @@ impl Ast2HLIR {
         }
     }
 
-    pub fn use_syntax(&self, u: UseSyntax) -> TypedUse {
+    pub fn use_syntax(&self, u: UseSyntax, annotations: Option<AnnotationsSyntax>) -> TypedUse {
         let mut names: Vec<_> = u
             .package_name
             .names
@@ -527,13 +533,17 @@ impl Ast2HLIR {
             .collect();
         names.push(u.used_name.token());
         TypedUse {
-            annotations: self.annotations(u.annotations),
+            annotations: self.annotations(annotations),
             package: Package { names },
             alias: u.alias.map(|a| a.name.token()),
         }
     }
 
-    fn extension_syntax(&self, e: ExtensionSyntax) -> TypedExtension {
+    fn extension_syntax(
+        &self,
+        e: ExtensionSyntax,
+        annotations: Option<AnnotationsSyntax>,
+    ) -> TypedExtension {
         let mut computed_properties = vec![];
         let mut member_functions = vec![];
         for prop in e.properties {
@@ -548,7 +558,7 @@ impl Ast2HLIR {
             }
         }
         TypedExtension {
-            annotations: self.annotations(e.annotations),
+            annotations: self.annotations(annotations),
             name: self.type_(e.name),
             protocol: e.protocol_extension.map(|tps| self.type_(tps.protocol)),
             computed_properties,
@@ -556,7 +566,11 @@ impl Ast2HLIR {
         }
     }
 
-    fn protocol_syntax(&self, p: StructSyntax) -> TypedProtocol {
+    fn protocol_syntax(
+        &self,
+        p: StructSyntax,
+        annotations: Option<AnnotationsSyntax>,
+    ) -> TypedProtocol {
         let mut computed_properties: Vec<TypedComputedProperty> = vec![];
         let mut member_functions: Vec<TypedMemberFunction> = vec![];
         for p in p.properties {
@@ -577,7 +591,7 @@ impl Ast2HLIR {
             };
         }
         TypedProtocol {
-            annotations: self.annotations(p.annotations),
+            annotations: self.annotations(annotations),
             package: TypedPackage::Raw(Package::new()),
             name: p.name.token(),
             type_params: p.type_params.map(|v| {
