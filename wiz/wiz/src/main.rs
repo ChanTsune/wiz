@@ -3,9 +3,9 @@ mod constant;
 mod core;
 mod external_subcommand;
 mod init;
+pub mod manifest;
 mod new;
 mod subcommand;
-pub mod manifest;
 
 use crate::build::build_command;
 use crate::init::init_command;

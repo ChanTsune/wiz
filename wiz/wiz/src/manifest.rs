@@ -1,7 +1,7 @@
+use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::error::Error;
 use std::path::Path;
-use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize, Serialize)]
 pub struct Manifest {
@@ -22,7 +22,7 @@ pub fn read(path: &Path) -> Result<Manifest, Box<dyn Error>> {
 }
 
 pub fn write(path: &Path, manifest: &Manifest) -> Result<(), Box<dyn Error>> {
-    let file  = toml::to_string(manifest)?;
+    let file = toml::to_string(manifest)?;
     std::fs::write(path, file)?;
     Ok(())
 }
