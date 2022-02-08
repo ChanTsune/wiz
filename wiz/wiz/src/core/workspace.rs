@@ -5,7 +5,7 @@ use std::path::PathBuf;
 
 pub(crate) struct Workspace {
     pub(crate) cws: PathBuf,
-    pub(crate) manifest: PathBuf,
+    pub(crate) manifest_path: PathBuf,
 }
 
 pub(crate) fn construct_workspace_from(cws: PathBuf) -> Result<Workspace, Box<dyn Error>> {
@@ -23,5 +23,5 @@ pub(crate) fn construct_workspace_from(cws: PathBuf) -> Result<Workspace, Box<dy
             cws.display()
         ))));
     }
-    Ok(Workspace { cws, manifest })
+    Ok(Workspace { cws, manifest_path: manifest })
 }
