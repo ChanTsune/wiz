@@ -2,7 +2,7 @@ use crate::constant::MANIFEST_FILE_NAME;
 use crate::core::error::CliError;
 use crate::core::manifest::{self, Manifest};
 use std::error::Error;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 pub(crate) struct Workspace {
     pub(crate) cws: PathBuf,
@@ -22,7 +22,8 @@ impl Workspace {
     }
 }
 
-pub(crate) fn construct_workspace_from(cws: PathBuf) -> Result<Workspace, Box<dyn Error>> {
+pub(crate) fn construct_workspace_from(cws: &Path) -> Result<Workspace, Box<dyn Error>> {
+    let cws = cws.to_path_buf();
     if !cws.is_dir() {
         return Err(Box::new(CliError::from(format!(
             "{} is not directory",

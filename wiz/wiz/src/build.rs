@@ -8,7 +8,7 @@ use std::option::Option::Some;
 use std::path::PathBuf;
 
 pub(crate) fn build_command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn Error>> {
-    let ws = construct_workspace_from(env::current_dir()?)?;
+    let ws = construct_workspace_from(&env::current_dir()?)?;
 
     let target_dir = if let Some(target_dir) = options.value_of("target-dir") {
         let d = PathBuf::from(target_dir);
