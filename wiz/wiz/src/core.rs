@@ -5,8 +5,8 @@ use std::io::{BufWriter, Write};
 use std::path::Path;
 
 pub mod error;
-pub mod workspace;
 pub mod manifest;
+pub mod workspace;
 
 pub(crate) fn create_project(path: &Path, project_name: &str) -> Result<(), Box<dyn Error>> {
     let mut path = path.to_path_buf();

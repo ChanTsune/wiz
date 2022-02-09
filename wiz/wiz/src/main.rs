@@ -11,7 +11,7 @@ use crate::build::build_command;
 use crate::init::init_command;
 use crate::new::new_command;
 use ansi_term::Color;
-use clap::{App, AppSettings, Arg, crate_version};
+use clap::{crate_version, App, AppSettings, Arg};
 use std::error::Error;
 use std::process::exit;
 use crate::check::check_command;
