@@ -1,6 +1,6 @@
 use crate::constant::MANIFEST_FILE_NAME;
 use crate::core::error::CliError;
-use crate::manifest::{self, Manifest};
+use crate::core::manifest::{self, Manifest};
 use std::error::Error;
 use std::path::PathBuf;
 
@@ -33,7 +33,7 @@ pub(crate) fn construct_workspace_from(cws: PathBuf) -> Result<Workspace, Box<dy
     manifest_path.push(MANIFEST_FILE_NAME);
     if !manifest_path.exists() {
         return Err(Box::new(CliError::from(format!(
-            "could not find `Package.wiz` in `{}`",
+            "could not find `{}` in `{}`",MANIFEST_FILE_NAME,
             cws.display()
         ))));
     }
