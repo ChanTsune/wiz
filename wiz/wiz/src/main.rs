@@ -1,20 +1,20 @@
 mod build;
+mod check;
 mod constant;
 mod core;
 mod external_subcommand;
 mod init;
 mod new;
 mod subcommand;
-mod check;
 
 use crate::build::build_command;
+use crate::check::check_command;
 use crate::init::init_command;
 use crate::new::new_command;
 use ansi_term::Color;
 use clap::{crate_version, App, AppSettings, Arg};
 use std::error::Error;
 use std::process::exit;
-use crate::check::check_command;
 
 fn cli() -> Result<(), Box<dyn Error>> {
     let app = App::new("wiz")
@@ -44,20 +44,28 @@ fn cli() -> Result<(), Box<dyn Error>> {
                         .long("target-triple")
                         .takes_value(true)
                         .help("Build target platform"),
-                ).arg(
+                )
+                .arg(
                     Arg::new("manifest-path")
                         .long("manifest-path")
-                        .takes_value(true).help("Path to the manifest file"),
+                        .takes_value(true)
+                        .help("Path to the manifest file"),
                 ),
         )
-        .subcommand(App::new("check").about("Check the current package")
-            .arg(
-            Arg::new("manifest").long("manifest").help("Check manifest.toml"),
-        ).arg(
-            Arg::new("manifest-path")
-                .long("manifest-path")
-                .takes_value(true).help("Path to the manifest file"),
-        )
+        .subcommand(
+            App::new("check")
+                .about("Check the current package")
+                .arg(
+                    Arg::new("manifest")
+                        .long("manifest")
+                        .help("Check manifest.toml"),
+                )
+                .arg(
+                    Arg::new("manifest-path")
+                        .long("manifest-path")
+                        .takes_value(true)
+                        .help("Path to the manifest file"),
+                ),
         )
         .arg(
             Arg::new("quite")
@@ -83,7 +91,7 @@ fn cli() -> Result<(), Box<dyn Error>> {
         Some((cmd, option)) => {
             external_subcommand::try_execute(cmd, option)?;
         }
-        _ => panic!()
+        _ => panic!(),
     }
     Ok(())
 }
