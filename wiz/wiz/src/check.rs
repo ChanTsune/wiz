@@ -3,6 +3,7 @@ use clap::ArgMatches;
 use std::env;
 use std::error::Error;
 use std::path::PathBuf;
+use crate::core::dep::resolve_manifest_dependencies;
 
 pub(crate) fn check_command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn Error>> {
     let manifest_path = options.value_of("manifest-path");
@@ -15,5 +16,7 @@ pub(crate) fn check_command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn
     if options.is_present("manifest") {
         println!("{:?}", ws.get_manifest()?);
     };
+    let resolved_dependencies = resolve_manifest_dependencies(&ws.get_manifest()?)?;
+    println!("{:?}", resolved_dependencies);
     Ok(())
 }
