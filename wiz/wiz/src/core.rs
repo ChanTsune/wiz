@@ -6,10 +6,10 @@ use std::fs::{create_dir_all, File};
 use std::io::{BufWriter, Write};
 use std::path::Path;
 
+pub mod dep;
 pub mod error;
 pub mod manifest;
 pub mod workspace;
-pub mod dep;
 
 pub(crate) fn create_project(path: &Path, project_name: &str) -> Result<(), Box<dyn Error>> {
     let mut path = path.to_path_buf();

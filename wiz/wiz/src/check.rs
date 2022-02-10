@@ -1,9 +1,9 @@
+use crate::core::dep::resolve_manifest_dependencies;
 use crate::core::workspace::construct_workspace_from;
 use clap::ArgMatches;
 use std::env;
 use std::error::Error;
 use std::path::PathBuf;
-use crate::core::dep::resolve_manifest_dependencies;
 
 pub(crate) fn check_command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn Error>> {
     let manifest_path = options.value_of("manifest-path");
