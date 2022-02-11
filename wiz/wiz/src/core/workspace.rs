@@ -30,8 +30,7 @@ pub(crate) fn construct_workspace_from(cws: &Path) -> Result<Workspace, Box<dyn 
             cws.display()
         ))));
     }
-    let mut manifest_path = cws.clone();
-    manifest_path.push(MANIFEST_FILE_NAME);
+    let manifest_path = cws.join(MANIFEST_FILE_NAME);
     if !manifest_path.exists() {
         return Err(Box::new(CliError::from(format!(
             "could not find `{}` in `{}`",
