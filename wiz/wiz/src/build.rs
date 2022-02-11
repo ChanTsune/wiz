@@ -33,9 +33,7 @@ pub(crate) fn build_command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn
             d
         }
     } else {
-        let mut current_dir = env::current_dir()?;
-        current_dir.push("target");
-        current_dir
+        env::current_dir()?.join("target")
     };
 
     let mut args = vec![ws.cws.to_str().unwrap()];
