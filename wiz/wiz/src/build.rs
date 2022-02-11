@@ -67,7 +67,7 @@ fn compile_dependencies(
         args.extend(["--out-dir", target_dir]);
         args.extend(["--name", dep.name.as_str()]);
         args.extend(["--type", "lib"]);
-        super::subcommand::execute("wizc", &args)?;
+        super::subcommand::output("wizc", &args)?;
     }
     Ok(())
 }
