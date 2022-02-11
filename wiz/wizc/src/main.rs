@@ -1,6 +1,7 @@
-use crate::config::Config;
+use crate::config::{BuildType, Config};
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::type_resolver::TypeResolver;
+use crate::high_level_ir::wlib::WLib;
 use crate::high_level_ir::Ast2HLIR;
 use crate::llvm_ir::codegen::CodeGen;
 use crate::middle_level_ir::{hlir2mlir, HLIR2MLIR};
@@ -46,7 +47,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
             Arg::new("type")
                 .long("type")
                 .takes_value(true)
-                .possible_values(&["bin", "test", "lib"]),
+                .possible_values(BuildType::all_str()),
         )
         .arg(Arg::new("output").short('o').takes_value(true))
         .arg(Arg::new("out-dir").long("out-dir").takes_value(true))
@@ -80,12 +81,9 @@ fn run_compiler(config: Config) -> result::Result<(), Box<dyn Error>> {
     let out_dir = out_dir
         .map(PathBuf::from)
         .unwrap_or_else(|| env::current_dir().unwrap());
+    let build_type = config.type_().unwrap_or_else(|| BuildType::Binary);
 
-    let mut mlir_out_dir = {
-        let mut t = out_dir.clone();
-        t.push("mlir");
-        t
-    };
+    let mut mlir_out_dir = out_dir.join("mlir");
 
     let input_source = if input.is_dir() {
         read_package_from_path(input, config.name())?
@@ -162,6 +160,17 @@ fn run_compiler(config: Config) -> result::Result<(), Box<dyn Error>> {
         .collect::<Result<Vec<_>>>()?;
 
     let hlfiles = type_resolver.source_set(hlfiles)?;
+
+    match build_type {
+        BuildType::Library => {
+            let wlib = WLib::new(hlfiles.clone());
+            let wlib_path = out_dir.join(format!("{}.wlib", config.name().unwrap_or_default()));
+            wlib.write_to(&wlib_path);
+            println!("library written to {}", wlib_path.display());
+            return Ok(());
+        }
+        _ => {}
+    };
 
     println!("===== convert to mlir =====");
 
