@@ -14,6 +14,7 @@ use std::{env, fs, result};
 use wiz_syntax::parser;
 use wiz_syntax::parser::wiz::{parse_from_file_path, read_package_from_path};
 use wiz_syntax::syntax::file::SourceSet;
+use crate::high_level_ir::wlib::WLib;
 
 mod config;
 mod constants;
@@ -80,6 +81,7 @@ fn run_compiler(config: Config) -> result::Result<(), Box<dyn Error>> {
     let out_dir = out_dir
         .map(PathBuf::from)
         .unwrap_or_else(|| env::current_dir().unwrap());
+    let build_type = config.type_().unwrap_or_else(|| BuildType::Binary);
 
     let mut mlir_out_dir = out_dir.join("mlir");
 
@@ -158,6 +160,17 @@ fn run_compiler(config: Config) -> result::Result<(), Box<dyn Error>> {
         .collect::<Result<Vec<_>>>()?;
 
     let hlfiles = type_resolver.source_set(hlfiles)?;
+
+    match build_type {
+        BuildType::Library => {
+            let wlib = WLib::new(hlfiles.clone());
+            let wlib_path = out_dir.join(format!("{}.wlib", config.name().unwrap_or_default()));
+            wlib.write_to(&wlib_path);
+            println!("library written to {}", wlib_path.display());
+            return Ok(());
+        }
+        _ => {}
+    };
 
     println!("===== convert to mlir =====");
 
