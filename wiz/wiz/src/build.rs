@@ -1,3 +1,4 @@
+use crate::core::dep::resolve_manifest_dependencies;
 use crate::core::error::CliError;
 use crate::core::workspace::construct_workspace_from;
 use clap::ArgMatches;
@@ -6,10 +7,8 @@ use std::error::Error;
 use std::fs::create_dir_all;
 use std::option::Option::Some;
 use std::path::PathBuf;
-use crate::core::dep::resolve_manifest_dependencies;
 
 pub(crate) fn build_command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn Error>> {
-
     let manifest_path = options.value_of("manifest-path");
     let manifest_path = if let Some(manifest_path) = manifest_path {
         PathBuf::from(manifest_path).parent().unwrap().to_path_buf()
