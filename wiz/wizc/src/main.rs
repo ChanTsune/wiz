@@ -81,11 +81,7 @@ fn run_compiler(config: Config) -> result::Result<(), Box<dyn Error>> {
         .map(PathBuf::from)
         .unwrap_or_else(|| env::current_dir().unwrap());
 
-    let mut mlir_out_dir = {
-        let mut t = out_dir.clone();
-        t.push("mlir");
-        t
-    };
+    let mut mlir_out_dir = out_dir.join("mlir");
 
     let input_source = if input.is_dir() {
         read_package_from_path(input, config.name())?
