@@ -1,6 +1,6 @@
-use crate::core::dep::resolve_manifest_dependencies;
+use crate::core::dep::{resolve_manifest_dependencies, ResolvedDependencyTree};
 use crate::core::error::CliError;
-use crate::core::workspace::construct_workspace_from;
+use crate::core::workspace::{construct_workspace_from, Workspace};
 use clap::ArgMatches;
 use std::env;
 use std::error::Error;
@@ -35,6 +35,9 @@ pub(crate) fn build_command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn
     } else {
         env::current_dir()?.join("target")
     };
+    create_dir_all(&target_dir)?;
+
+    compile_dependencies(&ws, &resolved_dependencies.dependencies, target_dir.to_str().unwrap())?;
 
     let mut args = vec![ws.cws.to_str().unwrap()];
     args.extend(["--out-dir", &target_dir.to_str().unwrap()]);
@@ -46,6 +49,18 @@ pub(crate) fn build_command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn
         args.extend(["--target-triple", target_triple]);
     };
 
-    create_dir_all(&target_dir)?;
     super::subcommand::execute("wizc", &args)
+}
+
+
+fn compile_dependencies(ws: &Workspace, dependencies: &[ResolvedDependencyTree], target_dir: &str) -> Result<(), Box<dyn Error>> {
+    for dep in dependencies {
+        compile_dependencies(ws, &dep.dependencies, target_dir)?;
+        let mut args = vec![ws.cws.to_str().unwrap()];
+        args.extend(["--out-dir", target_dir]);
+        args.extend(["--name", dep.name.as_str()]);
+        args.extend(["--type", "lib"]);
+        super::subcommand::execute("wizc", &args)?;
+    }
+    Ok(())
 }
