@@ -5,8 +5,9 @@ use crate::high_level_ir::typed_type::{
     TypedArgType, TypedFunctionType, TypedPackage, TypedType, TypedTypeParam,
 };
 use crate::high_level_ir::typed_type_constraint::TypedTypeConstraint;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub enum TypedDecl {
     Var(TypedVar),
     Fun(TypedFun),
@@ -17,7 +18,7 @@ pub enum TypedDecl {
     Extension(TypedExtension),
 }
 
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedVar {
     pub(crate) annotations: TypedAnnotations,
     pub(crate) package: TypedPackage,
@@ -27,7 +28,7 @@ pub struct TypedVar {
     pub(crate) value: TypedExpr,
 }
 
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedFun {
     pub(crate) annotations: TypedAnnotations,
     pub(crate) package: TypedPackage,
@@ -40,7 +41,7 @@ pub struct TypedFun {
     pub(crate) return_type: Option<TypedType>,
 }
 
-#[derive(Debug, Eq, PartialEq, Clone, Hash)]
+#[derive(Debug, Eq, PartialEq, Clone, Hash, Serialize, Deserialize)]
 pub struct TypedArgDef {
     pub(crate) label: String,
     pub(crate) name: String,
@@ -56,13 +57,13 @@ impl TypedArgDef {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub enum TypedFunBody {
     Expr(TypedExpr),
     Block(TypedBlock),
 }
 
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedStruct {
     pub(crate) annotations: TypedAnnotations,
     pub(crate) package: TypedPackage,
@@ -74,25 +75,25 @@ pub struct TypedStruct {
     pub(crate) member_functions: Vec<TypedMemberFunction>,
 }
 
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedInitializer {
     pub(crate) args: Vec<TypedArgDef>,
     pub(crate) body: TypedFunBody,
 }
 
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedStoredProperty {
     pub(crate) name: String,
     pub(crate) type_: TypedType,
 }
 
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedComputedProperty {
     pub(crate) name: String,
     pub(crate) type_: TypedType,
 }
 
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedMemberFunction {
     pub(crate) name: String,
     pub(crate) type_params: Option<Vec<TypedTypeParam>>,
@@ -101,7 +102,7 @@ pub struct TypedMemberFunction {
     pub(crate) return_type: Option<TypedType>,
 }
 
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedExtension {
     pub(crate) annotations: TypedAnnotations,
     pub(crate) name: TypedType,
@@ -110,7 +111,7 @@ pub struct TypedExtension {
     pub(crate) member_functions: Vec<TypedMemberFunction>,
 }
 
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedProtocol {
     pub(crate) annotations: TypedAnnotations,
     pub(crate) package: TypedPackage,

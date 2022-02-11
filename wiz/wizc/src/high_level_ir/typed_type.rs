@@ -1,17 +1,18 @@
 use crate::constants;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Eq, PartialEq, Clone, Hash)]
+#[derive(Debug, Eq, PartialEq, Clone, Hash, Serialize, Deserialize)]
 pub enum TypedPackage {
     Raw(Package),
     Resolved(Package),
 }
 
-#[derive(Debug, Eq, PartialEq, Clone, Hash)]
+#[derive(Debug, Eq, PartialEq, Clone, Hash, Serialize, Deserialize)]
 pub struct Package {
     pub(crate) names: Vec<String>,
 }
 
-#[derive(Debug, Eq, PartialEq, Clone, Hash)]
+#[derive(Debug, Eq, PartialEq, Clone, Hash, Serialize, Deserialize)]
 pub enum TypedType {
     Self_,
     Value(TypedValueType),
@@ -43,7 +44,7 @@ impl TypedType {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Clone, Hash)]
+#[derive(Debug, Eq, PartialEq, Clone, Hash, Serialize, Deserialize)]
 pub enum TypedValueType {
     Value(TypedNamedValueType), // Primitive | Struct | Union | Enum
     Array(Box<TypedType>, usize),
@@ -157,13 +158,13 @@ impl ToString for TypedValueType {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Clone, Hash)]
+#[derive(Debug, Eq, PartialEq, Clone, Hash, Serialize, Deserialize)]
 pub struct TypedFunctionType {
     pub arguments: Vec<TypedArgType>,
     pub return_type: TypedType,
 }
 
-#[derive(Debug, Eq, PartialEq, Clone, Hash)]
+#[derive(Debug, Eq, PartialEq, Clone, Hash, Serialize, Deserialize)]
 pub struct TypedArgType {
     pub label: String,
     pub typ: TypedType,
@@ -175,14 +176,14 @@ impl TypedArgType {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Clone, Hash)]
+#[derive(Debug, Eq, PartialEq, Clone, Hash, Serialize, Deserialize)]
 pub struct TypedNamedValueType {
     pub(crate) package: TypedPackage,
     pub(crate) name: String,
     pub(crate) type_args: Option<Vec<TypedType>>,
 }
 
-#[derive(Debug, Eq, PartialEq, Clone, Hash)]
+#[derive(Debug, Eq, PartialEq, Clone, Hash, Serialize, Deserialize)]
 pub struct TypedTypeParam {
     pub(crate) name: String,
 }

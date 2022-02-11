@@ -11,5 +11,7 @@ inkwell = { git = "https://github.com/TheDan64/inkwell", rev = "4ddaa3b", featur
 either = "1.6.1"
 linked-hash-map = "0.5.4"
 clap = "3.0.0"
+serde = { version = "1.0.136", features = ["derive"]}
+serde_json = "1.0.78"
 wiz_syntax = { path = "../wiz_syntax" }
 wiz_mir = { path = "../wiz_mir" }
