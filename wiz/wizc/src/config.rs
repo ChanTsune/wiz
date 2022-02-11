@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 pub struct Config<'ctx> {
     input: &'ctx str,
     name: Option<&'ctx str>,
-    type_: Option<&'ctx str>,
+    type_: Option<BuildType>,
     output: Option<&'ctx str>,
     out_dir: Option<&'ctx str>,
     paths: Vec<&'ctx str>,
@@ -19,6 +19,10 @@ impl<'ctx> Config<'ctx> {
 
     pub(crate) fn name(&self) -> Option<&'ctx str> {
         self.name
+    }
+
+    pub (crate) fn type_(&self) -> Option<BuildType> {
+        self.type_
     }
 
     pub(crate) fn output(&self) -> Option<&'ctx str> {
@@ -43,12 +47,36 @@ impl<'ctx> From<&'ctx ArgMatches> for Config<'ctx> {
         Self {
             input: matches.value_of("input").unwrap(),
             name: matches.value_of("name"),
-            type_: matches.value_of("type"),
+            type_: matches.value_of("type").map(BuildType::from),
             output: matches.value_of("output"),
             out_dir: matches.value_of("out-dir"),
             paths: matches.values_of("path").unwrap_or_default().collect(),
             l: None,
             target_triple: matches.value_of("target-triple"),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BuildType {
+    Binary,
+    Library,
+    Test,
+}
+
+impl BuildType {
+    pub fn all_str() -> &'static[&'static str] {
+        &["bin", "lib", "test"]
+    }
+}
+
+impl From<&str> for BuildType {
+    fn from(s: &str) -> Self {
+        match s {
+            "bin" => BuildType::Binary,
+            "lib" => BuildType::Library,
+            "test" => BuildType::Test,
+            _ => panic!("Unknown build type: {}", s),
         }
     }
 }

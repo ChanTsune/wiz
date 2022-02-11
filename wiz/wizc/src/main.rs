@@ -1,4 +1,4 @@
-use crate::config::Config;
+use crate::config::{BuildType, Config};
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::Ast2HLIR;
@@ -46,7 +46,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
             Arg::new("type")
                 .long("type")
                 .takes_value(true)
-                .possible_values(&["bin", "test", "lib"]),
+                .possible_values(BuildType::all_str()),
         )
         .arg(Arg::new("output").short('o').takes_value(true))
         .arg(Arg::new("out-dir").long("out-dir").takes_value(true))
