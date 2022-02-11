@@ -37,7 +37,11 @@ pub(crate) fn build_command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn
     };
     create_dir_all(&target_dir)?;
 
-    compile_dependencies(&ws, &resolved_dependencies.dependencies, target_dir.to_str().unwrap())?;
+    compile_dependencies(
+        &ws,
+        &resolved_dependencies.dependencies,
+        target_dir.to_str().unwrap(),
+    )?;
 
     let mut args = vec![ws.cws.to_str().unwrap()];
     args.extend(["--out-dir", &target_dir.to_str().unwrap()]);
@@ -52,8 +56,11 @@ pub(crate) fn build_command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn
     super::subcommand::execute("wizc", &args)
 }
 
-
-fn compile_dependencies(ws: &Workspace, dependencies: &[ResolvedDependencyTree], target_dir: &str) -> Result<(), Box<dyn Error>> {
+fn compile_dependencies(
+    ws: &Workspace,
+    dependencies: &[ResolvedDependencyTree],
+    target_dir: &str,
+) -> Result<(), Box<dyn Error>> {
     for dep in dependencies {
         compile_dependencies(ws, &dep.dependencies, target_dir)?;
         let mut args = vec![ws.cws.to_str().unwrap()];
