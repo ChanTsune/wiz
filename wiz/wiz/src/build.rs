@@ -6,9 +6,22 @@ use std::error::Error;
 use std::fs::create_dir_all;
 use std::option::Option::Some;
 use std::path::PathBuf;
+use crate::core::dep::resolve_manifest_dependencies;
 
 pub(crate) fn build_command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn Error>> {
-    let ws = construct_workspace_from(&env::current_dir()?)?;
+
+    let manifest_path = options.value_of("manifest-path");
+    let manifest_path = if let Some(manifest_path) = manifest_path {
+        PathBuf::from(manifest_path).parent().unwrap().to_path_buf()
+    } else {
+        env::current_dir()?
+    };
+
+    let ws = construct_workspace_from(&manifest_path)?;
+
+    let resolved_dependencies = resolve_manifest_dependencies(&ws.get_manifest()?)?;
+
+    println!("{:?}", resolved_dependencies);
 
     let target_dir = if let Some(target_dir) = options.value_of("target-dir") {
         let d = PathBuf::from(target_dir);
