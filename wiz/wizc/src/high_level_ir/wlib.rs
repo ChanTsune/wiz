@@ -1,7 +1,7 @@
-use std::path::Path;
-use std::fmt::Debug;
-use serde::{Serialize, Deserialize};
 use crate::high_level_ir::typed_file::TypedSourceSet;
+use serde::{Deserialize, Serialize};
+use std::fmt::Debug;
+use std::path::Path;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WLib {
@@ -10,9 +10,7 @@ pub struct WLib {
 
 impl WLib {
     pub fn new(typed_ir: TypedSourceSet) -> WLib {
-        WLib {
-            typed_ir,
-        }
+        WLib { typed_ir }
     }
 
     pub fn read_from(path: &Path) -> WLib {
@@ -25,6 +23,4 @@ impl WLib {
         let file = serde_json::to_string(self).unwrap();
         std::fs::write(path, file).unwrap();
     }
-
 }
-
