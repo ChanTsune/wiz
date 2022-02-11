@@ -17,7 +17,7 @@ pub fn resolve_manifest_dependencies(
 ) -> Result<ResolvedDependencyTree, Box<dyn Error>> {
     let home_dir =
         env::home_dir().ok_or_else(|| Box::new(CliError::from("Could not find home directory")))?;
-    let builtin_package_dir = home_dir.join(".wiz/lib/");
+    let builtin_package_dir = home_dir.join(".wiz/lib/src/");
     let package_index_cache_dir = home_dir.join(".wiz/repository/");
     let package_dirs = vec![builtin_package_dir, package_index_cache_dir];
     let mut result = Vec::new();
