@@ -21,7 +21,7 @@ impl<'ctx> Config<'ctx> {
         self.name
     }
 
-    pub (crate) fn type_(&self) -> Option<BuildType> {
+    pub(crate) fn type_(&self) -> Option<BuildType> {
         self.type_
     }
 
@@ -65,7 +65,7 @@ pub enum BuildType {
 }
 
 impl BuildType {
-    pub fn all_str() -> &'static[&'static str] {
+    pub fn all_str() -> &'static [&'static str] {
         &["bin", "lib", "test"]
     }
 }
