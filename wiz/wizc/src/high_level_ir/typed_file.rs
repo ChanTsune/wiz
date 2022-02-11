@@ -1,7 +1,7 @@
 use crate::high_level_ir::typed_decl::TypedDecl;
 use crate::high_level_ir::typed_use::TypedUse;
-use std::cmp::Ordering;
 use serde::{Deserialize, Serialize};
+use std::cmp::Ordering;
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub enum TypedSourceSet {
