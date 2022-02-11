@@ -1,8 +1,9 @@
 use crate::high_level_ir::typed_decl::TypedDecl;
 use crate::high_level_ir::typed_use::TypedUse;
 use std::cmp::Ordering;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub enum TypedSourceSet {
     File(TypedFile),
     Dir {
@@ -32,7 +33,7 @@ impl PartialOrd for TypedSourceSet {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedFile {
     pub(crate) name: String,
     pub(crate) uses: Vec<TypedUse>,

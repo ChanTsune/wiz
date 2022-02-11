@@ -1,4 +1,6 @@
-#[derive(Debug, Eq, PartialEq, Clone)]
+use serde::{Serialize, Deserialize};
+
+#[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedAnnotations {
     annotations: Vec<String>,
 }
