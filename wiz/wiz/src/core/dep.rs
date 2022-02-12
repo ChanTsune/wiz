@@ -44,7 +44,12 @@ pub fn resolve_manifest_dependencies(
     Ok(ResolvedDependencyTree {
         name: manifest.package.name.clone(),
         version: manifest.package.version.clone(),
-        src_path: manifest_path.parent().unwrap().to_str().unwrap().to_string(),
+        src_path: manifest_path
+            .parent()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_string(),
         dependencies: result,
     })
 }
