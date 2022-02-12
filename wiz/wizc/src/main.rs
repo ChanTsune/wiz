@@ -139,8 +139,8 @@ fn run_compiler(config: Config) -> result::Result<(), Box<dyn Error>> {
     println!("=== resolve type ===");
 
     let mut type_resolver = TypeResolver::new();
-    type_resolver.global_use(vec!["core", "builtin", "*"]);
-    type_resolver.global_use(vec!["std", "builtin", "*"]);
+    type_resolver.global_use(&["core", "builtin", "*"]);
+    type_resolver.global_use(&["std", "builtin", "*"]);
 
     println!("===== detect types =====");
     // detect types
