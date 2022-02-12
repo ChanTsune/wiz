@@ -68,6 +68,11 @@ fn main() -> result::Result<(), Box<dyn Error>> {
                 .short('L')
                 .takes_value(true)
                 .multiple_occurrences(true),
+        ).arg(
+            Arg::new("library")
+                .long("library")
+                .takes_value(true)
+                .multiple_occurrences(true),
         );
     let matches = app.get_matches();
     let config = Config::from(&matches);
