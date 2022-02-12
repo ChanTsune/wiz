@@ -1,8 +1,8 @@
-use std::collections::BTreeSet;
 use crate::core::dep::{resolve_manifest_dependencies, ResolvedDependencyTree};
 use crate::core::error::CliError;
 use crate::core::workspace::{construct_workspace_from, Workspace};
 use clap::ArgMatches;
+use std::collections::BTreeSet;
 use std::env;
 use std::error::Error;
 use std::fs::create_dir_all;
