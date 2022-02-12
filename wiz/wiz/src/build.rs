@@ -1,3 +1,4 @@
+use std::collections::BTreeSet;
 use crate::core::dep::{resolve_manifest_dependencies, ResolvedDependencyTree};
 use crate::core::error::CliError;
 use crate::core::workspace::{construct_workspace_from, Workspace};
@@ -37,7 +38,7 @@ pub(crate) fn build_command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn
     };
     create_dir_all(&target_dir)?;
 
-    compile_dependencies(
+    let wlib_paths = compile_dependencies(
         &ws,
         &resolved_dependencies.dependencies,
         target_dir.to_str().unwrap(),
@@ -48,6 +49,10 @@ pub(crate) fn build_command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn
 
     args.extend(["--name", ws.cws.file_name().unwrap().to_str().unwrap()]);
     args.extend(["--type", "bin"]);
+
+    for wlib_path in wlib_paths.iter() {
+        args.extend(["--library", wlib_path]);
+    }
 
     if let Some(target_triple) = options.value_of("target-triple") {
         args.extend(["--target-triple", target_triple]);
@@ -60,15 +65,21 @@ fn compile_dependencies(
     ws: &Workspace,
     dependencies: &[ResolvedDependencyTree],
     target_dir: &str,
-) -> Result<(), Box<dyn Error>> {
+) -> Result<BTreeSet<String>, Box<dyn Error>> {
+    let mut wlib_paths = BTreeSet::new();
     for dep in dependencies {
-        compile_dependencies(ws, &dep.dependencies, target_dir)?;
+        let dep_wlib_paths = compile_dependencies(ws, &dep.dependencies, target_dir)?;
         let mut args = vec![ws.cws.to_str().unwrap()];
         args.extend(["--out-dir", target_dir]);
         args.extend(["--name", dep.name.as_str()]);
         args.extend(["--type", "lib"]);
+        for wlib_path in dep_wlib_paths.iter() {
+            args.extend(["--library", wlib_path]);
+        }
         let output = super::subcommand::output("wizc", &args)?;
         println!("{}", String::from_utf8_lossy(&output.stdout));
+        wlib_paths.extend(dep_wlib_paths);
+        wlib_paths.insert(format!("{}/{}.wlib", target_dir, dep.name));
     }
-    Ok(())
+    Ok(wlib_paths)
 }
