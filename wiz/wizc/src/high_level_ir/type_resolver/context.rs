@@ -26,6 +26,7 @@ pub struct NameEnvironment {
 
 #[derive(Debug, Clone)]
 pub struct ResolverContext {
+    global_used_name_space: Vec<Vec<String>>,
     used_name_space: Vec<Vec<String>>,
     name_space: NameSpace,
     binary_operators: HashMap<(TypedBinaryOperator, TypedType, TypedType), TypedType>,
@@ -249,6 +250,7 @@ impl ResolverContext {
             };
         }
         Self {
+            global_used_name_space: Default::default(),
             used_name_space: Default::default(),
             name_space: ns,
             binary_operators: Default::default(),
