@@ -86,13 +86,13 @@ fn run_compiler(config: Config) -> result::Result<(), Box<dyn Error>> {
 
     let mut mlir_out_dir = out_dir.join("mlir");
 
+    println!("=== parse files ===");
+
     let input_source = if input.is_dir() {
         read_package_from_path(input, config.name())?
     } else {
         SourceSet::File(parse_from_file_path(input)?)
     };
-
-    println!("=== parse files ===");
 
     let mut lib_paths = vec![];
 
