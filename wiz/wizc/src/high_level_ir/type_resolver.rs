@@ -38,7 +38,7 @@ impl TypeResolver {
 
     pub(crate) fn global_use<T: ToString>(&mut self, name_space: &[T]) {
         self.context
-            .use_name_space(name_space.into_iter().map(|n| n.to_string()).collect())
+            .global_use_name_space(name_space.into_iter().map(|n| n.to_string()).collect())
     }
 
     pub fn detect_type_from_source_set(&mut self, s: &TypedSourceSet) -> Result<()> {

@@ -369,6 +369,10 @@ impl ResolverContext {
         env
     }
 
+    pub(crate) fn global_use_name_space(&mut self, ns: Vec<String>) {
+        self.global_used_name_space.push(ns);
+    }
+
     pub(crate) fn use_name_space(&mut self, n: Vec<String>) {
         self.used_name_space.push(n);
     }
