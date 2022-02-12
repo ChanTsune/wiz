@@ -12,7 +12,7 @@ pub(crate) fn path_string_to_page_name(path: String) -> String {
         .to_string()
 }
 
-pub(crate) fn timer<T, F:FnOnce() -> T>(f: F) -> T {
+pub(crate) fn timer<T, F: FnOnce() -> T>(f: F) -> T {
     let start = std::time::Instant::now();
     let r = f();
     println!("{}ms", start.elapsed().as_millis());
