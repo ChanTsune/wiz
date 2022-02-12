@@ -1,9 +1,9 @@
 use crate::constant::MANIFEST_FILE_NAME;
-use crate::core::error::CliError;
 use crate::core::manifest;
 use crate::core::manifest::Manifest;
 use std::env;
 use std::error::Error;
+use std::path::PathBuf;
 
 #[derive(Debug, Clone)]
 pub struct ResolvedDependencyTree {
@@ -15,8 +15,7 @@ pub struct ResolvedDependencyTree {
 pub fn resolve_manifest_dependencies(
     manifest: &Manifest,
 ) -> Result<ResolvedDependencyTree, Box<dyn Error>> {
-    let home_dir =
-        env::home_dir().ok_or_else(|| Box::new(CliError::from("Could not find home directory")))?;
+    let home_dir = PathBuf::from(env!("HOME"));
     let builtin_package_dir = home_dir.join(".wiz/lib/src/");
     let package_index_cache_dir = home_dir.join(".wiz/repository/");
     let package_dirs = vec![builtin_package_dir, package_index_cache_dir];
