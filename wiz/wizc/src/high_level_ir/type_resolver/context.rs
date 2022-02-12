@@ -342,14 +342,12 @@ impl ResolverContext {
         let mut env = NameEnvironment::new();
         env.use_values_from(self.get_namespace(vec![]).unwrap());
         env.use_values_from(self.get_current_namespace().unwrap());
-        let used_ns = self.global_used_name_space.iter()
+        let used_ns = self
+            .global_used_name_space
+            .iter()
             .cloned()
             .map(|ns| (true, ns))
-            .chain(
-            self.used_name_space.iter()
-                .cloned()
-                .map(|ns| (false, ns))
-            );
+            .chain(self.used_name_space.iter().cloned().map(|ns| (false, ns)));
         for (is_global, mut u) in used_ns {
             if u.last().is_some() && u.last().unwrap() == "*" {
                 let _ = u.pop();
@@ -367,7 +365,7 @@ impl ResolverContext {
                     let s = self.get_namespace(u.clone()).unwrap();
                     if let Some(t) = s.values.get(&name) {
                         env.names.insert(name, (u, t.clone()));
-                    } else if !is_global{
+                    } else if !is_global {
                         panic!("Can not find name {:?}", name)
                     };
                 };
