@@ -78,6 +78,9 @@ fn compile_dependencies(
         }
         let output = super::subcommand::output("wizc", &args)?;
         println!("{}", String::from_utf8_lossy(&output.stdout));
+        if !output.stderr.is_empty() {
+            eprintln!("{}", String::from_utf8_lossy(&output.stderr));
+        }
         wlib_paths.extend(dep_wlib_paths);
         wlib_paths.insert(format!("{}/{}.wlib", target_dir, dep.name));
     }
