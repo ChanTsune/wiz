@@ -9,10 +9,12 @@ use std::path::PathBuf;
 pub struct ResolvedDependencyTree {
     pub name: String,
     pub version: String,
+    pub src_path: String,
     pub dependencies: Vec<ResolvedDependencyTree>,
 }
 
 pub fn resolve_manifest_dependencies(
+    manifest_path: &PathBuf,
     manifest: &Manifest,
 ) -> Result<ResolvedDependencyTree, Box<dyn Error>> {
     let home_dir = PathBuf::from(env!("HOME"));
@@ -29,7 +31,7 @@ pub fn resolve_manifest_dependencies(
                 .join(MANIFEST_FILE_NAME);
             if manifest_path.exists() {
                 let manifest = manifest::read(&manifest_path)?;
-                let dependency = resolve_manifest_dependencies(&manifest)?;
+                let dependency = resolve_manifest_dependencies(&manifest_path, &manifest)?;
                 result.push(dependency);
                 resolved = true;
                 break;
@@ -42,6 +44,7 @@ pub fn resolve_manifest_dependencies(
     Ok(ResolvedDependencyTree {
         name: manifest.package.name.clone(),
         version: manifest.package.version.clone(),
+        src_path: manifest_path.parent().unwrap().to_str().unwrap().to_string(),
         dependencies: result,
     })
 }

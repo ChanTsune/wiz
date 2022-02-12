@@ -19,7 +19,7 @@ pub(crate) fn build_command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn
 
     let ws = construct_workspace_from(&manifest_path)?;
 
-    let resolved_dependencies = resolve_manifest_dependencies(&ws.get_manifest()?)?;
+    let resolved_dependencies = resolve_manifest_dependencies(&manifest_path,&ws.get_manifest()?)?;
 
     println!("{:?}", resolved_dependencies);
 
@@ -69,7 +69,7 @@ fn compile_dependencies(
     let mut wlib_paths = BTreeSet::new();
     for dep in dependencies {
         let dep_wlib_paths = compile_dependencies(ws, &dep.dependencies, target_dir)?;
-        let mut args = vec![ws.cws.to_str().unwrap()];
+        let mut args = vec![dep.src_path.as_str()];
         args.extend(["--out-dir", target_dir]);
         args.extend(["--name", dep.name.as_str()]);
         args.extend(["--type", "lib"]);
