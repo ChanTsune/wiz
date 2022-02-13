@@ -626,7 +626,10 @@ impl TypeResolver {
         let result = Ok(TypedExtension {
             annotations: e.annotations,
             name: this_type,
-            protocol: e.protocol, // TODO
+            protocol: match e.protocol {
+                Some(p) => Some(self.context.full_type_name(p)?),
+                None => None,
+            },
             computed_properties: e.computed_properties.into_iter().map(|i| i).collect(),
             member_functions: e
                 .member_functions
