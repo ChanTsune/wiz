@@ -34,7 +34,7 @@ impl Session {
         }
     }
 
-    pub(crate) fn timer<T, F: FnOnce() -> T>(name: &str, f: F) -> T {
+    pub(crate) fn timer<T, F: FnOnce() -> T>(&self, name: &str, f: F) -> T {
         let start = Instant::now();
         let r = f();
         println!("{}: {}ms", name, start.elapsed().as_millis());
