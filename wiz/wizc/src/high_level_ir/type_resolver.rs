@@ -379,7 +379,7 @@ impl TypeResolver {
             TypedDecl::Struct(s) => TypedDecl::Struct(self.typed_struct(s)?),
             TypedDecl::Class => TypedDecl::Class,
             TypedDecl::Enum => TypedDecl::Enum,
-            TypedDecl::Protocol(p) => TypedDecl::Protocol(p),
+            TypedDecl::Protocol(p) => TypedDecl::Protocol(self.typed_protocol(p)?),
             TypedDecl::Extension(e) => TypedDecl::Extension(self.typed_extension(e)?),
         })
     }
@@ -639,6 +639,30 @@ impl TypeResolver {
         });
         self.context.clear_current_type();
         result
+    }
+
+    fn typed_protocol(&mut self, p: TypedProtocol) -> Result<TypedProtocol> {
+        let current_namespace = self.context.current_namespace.clone();
+        let this_type = TypedType::Value(TypedValueType::Value(TypedNamedValueType {
+            package: TypedPackage::Resolved(Package::from(current_namespace)),
+            name: p.name.clone(),
+            type_args: None,
+        }));
+        self.context.set_current_type(this_type.clone());
+        let result = TypedProtocol {
+            annotations: p.annotations,
+            package: TypedPackage::Resolved(Package::from(self.context.current_namespace.clone())),
+            name: p.name,
+            type_params: p.type_params, // TODO type params
+            member_functions: p
+                .member_functions
+                .into_iter()
+                .map(|m| self.typed_member_function(m))
+                .collect::<Result<Vec<_>>>()?,
+            computed_properties: vec![]
+        };
+        self.context.clear_current_type();
+        Ok(result)
     }
 
     fn typed_block(&mut self, b: TypedBlock) -> Result<TypedBlock> {
