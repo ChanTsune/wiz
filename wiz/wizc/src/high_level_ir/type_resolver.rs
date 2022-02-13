@@ -25,6 +25,7 @@ use crate::high_level_ir::typed_type::{
     Package, TypedArgType, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType,
     TypedValueType,
 };
+use crate::high_level_ir::typed_type_constraint::TypedTypeConstraint;
 
 #[derive(Debug, Clone)]
 pub(crate) struct TypeResolver {
@@ -494,7 +495,10 @@ impl TypeResolver {
             modifiers: f.modifiers,
             name: f.name,
             type_params: f.type_params,
-            type_constraints: f.type_constraints,
+            type_constraints: match f.type_constraints {
+                None => None,
+                Some(tc) => Some(self.typed_type_constraints(tc)?),
+            },
             arg_defs,
             body: match f.body {
                 Some(b) => Some(self.typed_fun_body(b)?),
@@ -673,6 +677,17 @@ impl TypeResolver {
                 .map(|s| self.stmt(s))
                 .collect::<Result<Vec<TypedStmt>>>()?,
         })
+    }
+
+    fn typed_type_constraints(&mut self, type_constraints: Vec<TypedTypeConstraint>) -> Result<Vec<TypedTypeConstraint>> {
+        type_constraints.into_iter().map(|t| {
+            Ok(TypedTypeConstraint {
+                type_: self.context.full_type_name(t.type_)?,
+                constraints: t.constraints.into_iter().map(|c| {
+                    self.context.full_type_name(c)
+                }).collect::<Result<_>>()?,
+            })
+        }).collect::<Result<_>>()
     }
 
     pub fn expr(&mut self, e: TypedExpr, type_annotation: Option<TypedType>) -> Result<TypedExpr> {
