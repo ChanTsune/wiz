@@ -2,7 +2,7 @@ use crate::config::{BuildType, Config};
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::wlib::WLib;
-use crate::high_level_ir::{Ast2HLIR, ast2hlir};
+use crate::high_level_ir::{ast2hlir, Ast2HLIR};
 use crate::llvm_ir::codegen::CodeGen;
 use crate::middle_level_ir::{hlir2mlir, HLIR2MLIR};
 use crate::utils::timer;
@@ -128,12 +128,13 @@ fn run_compiler(config: Config) -> result::Result<(), Box<dyn Error>> {
             .into_iter()
             .map(|p| read_package_from_path(p.as_path(), None))
             .collect::<parser::result::Result<Vec<_>>>()?;
-        source_sets
-            .into_iter()
-            .map(|s| ast2hlir(s))
-            .collect()
+        source_sets.into_iter().map(|s| ast2hlir(s)).collect()
     } else {
-        config.libraries().iter().map(|p|WLib::read_from(p).typed_ir).collect()
+        config
+            .libraries()
+            .iter()
+            .map(|p| WLib::read_from(p).typed_ir)
+            .collect()
     };
 
     println!("=== convert to hlir ===");
