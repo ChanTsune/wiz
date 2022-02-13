@@ -701,11 +701,17 @@ impl TypeResolver {
         n: TypedName,
         type_annotation: Option<TypedType>,
     ) -> Result<TypedName> {
-        let (type_, package) = self.context.resolve_name_type(
-            n.package.into_raw().names,
-            n.name.clone(),
-            type_annotation,
-        )?;
+        let (type_, package) = {
+            if n.package.is_resolved() {
+                (n.type_.unwrap(), n.package)
+            } else {
+                self.context.resolve_name_type(
+                    n.package.into_raw().names,
+                    n.name.clone(),
+                    type_annotation,
+                )?
+            }
+        };
         Result::Ok(TypedName {
             package,
             type_: Some(type_),
