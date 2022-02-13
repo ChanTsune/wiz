@@ -26,6 +26,7 @@ pub struct NameEnvironment {
 
 #[derive(Debug, Clone)]
 pub struct ResolverContext {
+    global_used_name_space: Vec<Vec<String>>,
     used_name_space: Vec<Vec<String>>,
     name_space: NameSpace,
     binary_operators: HashMap<(TypedBinaryOperator, TypedType, TypedType), TypedType>,
@@ -249,6 +250,7 @@ impl ResolverContext {
             };
         }
         Self {
+            global_used_name_space: Default::default(),
             used_name_space: Default::default(),
             name_space: ns,
             binary_operators: Default::default(),
@@ -340,12 +342,18 @@ impl ResolverContext {
         let mut env = NameEnvironment::new();
         env.use_values_from(self.get_namespace(vec![]).unwrap());
         env.use_values_from(self.get_current_namespace().unwrap());
-        for mut u in self.used_name_space.iter().cloned() {
+        let used_ns = self
+            .global_used_name_space
+            .iter()
+            .cloned()
+            .map(|ns| (true, ns))
+            .chain(self.used_name_space.iter().cloned().map(|ns| (false, ns)));
+        for (is_global, mut u) in used_ns {
             if u.last().is_some() && u.last().unwrap() == "*" {
                 let _ = u.pop();
                 if let Result::Ok(n) = self.get_namespace(u.clone()) {
                     env.use_values_from(n);
-                } else {
+                } else if !is_global {
                     panic!("Can not resolve name space {:?}", u);
                 }
             } else {
@@ -357,7 +365,7 @@ impl ResolverContext {
                     let s = self.get_namespace(u.clone()).unwrap();
                     if let Some(t) = s.values.get(&name) {
                         env.names.insert(name, (u, t.clone()));
-                    } else {
+                    } else if !is_global {
                         panic!("Can not find name {:?}", name)
                     };
                 };
@@ -365,6 +373,10 @@ impl ResolverContext {
         }
         env.use_values_from_local(&self.local_stack);
         env
+    }
+
+    pub(crate) fn global_use_name_space(&mut self, ns: Vec<String>) {
+        self.global_used_name_space.push(ns);
     }
 
     pub(crate) fn use_name_space(&mut self, n: Vec<String>) {

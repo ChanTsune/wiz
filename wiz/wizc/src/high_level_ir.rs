@@ -56,6 +56,11 @@ pub mod wlib;
 
 pub struct Ast2HLIR;
 
+pub fn ast2hlir(s: SourceSet) -> TypedSourceSet {
+    let mut converter = Ast2HLIR::new();
+    converter.source_set(s)
+}
+
 impl Ast2HLIR {
     pub fn new() -> Self {
         Self {}

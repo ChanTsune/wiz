@@ -2,9 +2,10 @@ use crate::config::{BuildType, Config};
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::wlib::WLib;
-use crate::high_level_ir::Ast2HLIR;
+use crate::high_level_ir::{ast2hlir, Ast2HLIR};
 use crate::llvm_ir::codegen::CodeGen;
 use crate::middle_level_ir::{hlir2mlir, HLIR2MLIR};
+use crate::utils::timer;
 use clap::{App, Arg};
 use inkwell::context::Context;
 use std::error::Error;
@@ -67,10 +68,16 @@ fn main() -> result::Result<(), Box<dyn Error>> {
                 .short('L')
                 .takes_value(true)
                 .multiple_occurrences(true),
+        )
+        .arg(
+            Arg::new("library")
+                .long("library")
+                .takes_value(true)
+                .multiple_occurrences(true),
         );
     let matches = app.get_matches();
     let config = Config::from(&matches);
-    run_compiler(config)
+    timer(|| run_compiler(config))
 }
 
 fn run_compiler(config: Config) -> result::Result<(), Box<dyn Error>> {
@@ -85,13 +92,13 @@ fn run_compiler(config: Config) -> result::Result<(), Box<dyn Error>> {
 
     let mut mlir_out_dir = out_dir.join("mlir");
 
+    println!("=== parse files ===");
+
     let input_source = if input.is_dir() {
         read_package_from_path(input, config.name())?
     } else {
         SourceSet::File(parse_from_file_path(input)?)
     };
-
-    println!("=== parse files ===");
 
     let mut lib_paths = vec![];
 
@@ -113,27 +120,34 @@ fn run_compiler(config: Config) -> result::Result<(), Box<dyn Error>> {
         }
     }
 
-    let source_sets = lib_paths
-        .into_iter()
-        .map(|p| read_package_from_path(p.as_path(), None))
-        .collect::<parser::result::Result<Vec<_>>>()?;
+    println!("=== load dependencies ===");
+    let libraries = config.libraries();
+
+    let std_hlir: Vec<_> = if libraries.is_empty() {
+        let source_sets = lib_paths
+            .into_iter()
+            .map(|p| read_package_from_path(p.as_path(), None))
+            .collect::<parser::result::Result<Vec<_>>>()?;
+        source_sets.into_iter().map(|s| ast2hlir(s)).collect()
+    } else {
+        config
+            .libraries()
+            .iter()
+            .map(|p| WLib::read_from(p).typed_ir)
+            .collect()
+    };
 
     println!("=== convert to hlir ===");
 
     let mut ast2hlir = Ast2HLIR::new();
-
-    let std_hlir: Vec<_> = source_sets
-        .into_iter()
-        .map(|s| ast2hlir.source_set(s))
-        .collect();
 
     let hlfiles = ast2hlir.source_set(input_source);
 
     println!("=== resolve type ===");
 
     let mut type_resolver = TypeResolver::new();
-    type_resolver.global_use(vec!["core", "builtin", "*"]);
-    type_resolver.global_use(vec!["std", "builtin", "*"]);
+    type_resolver.global_use(&["core", "builtin", "*"]);
+    type_resolver.global_use(&["std", "builtin", "*"]);
 
     println!("===== detect types =====");
     // detect types
@@ -149,6 +163,8 @@ fn run_compiler(config: Config) -> result::Result<(), Box<dyn Error>> {
         type_resolver.preload_source_set(hlir.clone())?;
     }
 
+    println!("===== preload decls for input source =====");
+
     type_resolver.preload_source_set(hlfiles.clone())?;
 
     println!("===== resolve types =====");
@@ -158,6 +174,8 @@ fn run_compiler(config: Config) -> result::Result<(), Box<dyn Error>> {
         .into_iter()
         .map(|s| type_resolver.source_set(s))
         .collect::<Result<Vec<_>>>()?;
+
+    println!("===== resolve types for input source =====");
 
     let hlfiles = type_resolver.source_set(hlfiles)?;
 
