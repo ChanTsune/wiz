@@ -13,5 +13,6 @@ linked-hash-map = "0.5.4"
 clap = "3.0.0"
 serde = { version = "1.0.136", features = ["derive"]}
 serde_json = "1.0.78"
+wiz_session = { path = "../wiz_session" }
 wiz_syntax = { path = "../wiz_syntax" }
 wiz_mir = { path = "../wiz_mir" }
