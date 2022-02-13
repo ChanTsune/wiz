@@ -200,7 +200,9 @@ impl TypedPackage {
     pub(crate) fn into_raw(self) -> Package {
         match self {
             TypedPackage::Raw(p) => p,
-            TypedPackage::Resolved(_) => panic!("cannot convert resolved package to raw ({:?})", self),
+            TypedPackage::Resolved(_) => {
+                panic!("cannot convert resolved package to raw ({:?})", self)
+            }
         }
     }
 
