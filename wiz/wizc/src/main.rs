@@ -2,7 +2,7 @@ use crate::config::{BuildType, Config};
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::wlib::WLib;
-use crate::high_level_ir::Ast2HLIR;
+use crate::high_level_ir::{Ast2HLIR, ast2hlir};
 use crate::llvm_ir::codegen::CodeGen;
 use crate::middle_level_ir::{hlir2mlir, HLIR2MLIR};
 use crate::utils::timer;
@@ -120,19 +120,25 @@ fn run_compiler(config: Config) -> result::Result<(), Box<dyn Error>> {
         }
     }
 
-    let source_sets = lib_paths
-        .into_iter()
-        .map(|p| read_package_from_path(p.as_path(), None))
-        .collect::<parser::result::Result<Vec<_>>>()?;
+    println!("=== load dependencies ===");
+    let libraries = config.libraries();
+
+    let std_hlir: Vec<_> = if libraries.is_empty() {
+        let source_sets = lib_paths
+            .into_iter()
+            .map(|p| read_package_from_path(p.as_path(), None))
+            .collect::<parser::result::Result<Vec<_>>>()?;
+        source_sets
+            .into_iter()
+            .map(|s| ast2hlir(s))
+            .collect()
+    } else {
+        config.libraries().iter().map(|p|WLib::read_from(p).typed_ir).collect()
+    };
 
     println!("=== convert to hlir ===");
 
     let mut ast2hlir = Ast2HLIR::new();
-
-    let std_hlir: Vec<_> = source_sets
-        .into_iter()
-        .map(|s| ast2hlir.source_set(s))
-        .collect();
 
     let hlfiles = ast2hlir.source_set(input_source);
 
@@ -156,6 +162,8 @@ fn run_compiler(config: Config) -> result::Result<(), Box<dyn Error>> {
         type_resolver.preload_source_set(hlir.clone())?;
     }
 
+    println!("===== preload decls for input source =====");
+
     type_resolver.preload_source_set(hlfiles.clone())?;
 
     println!("===== resolve types =====");
@@ -165,6 +173,8 @@ fn run_compiler(config: Config) -> result::Result<(), Box<dyn Error>> {
         .into_iter()
         .map(|s| type_resolver.source_set(s))
         .collect::<Result<Vec<_>>>()?;
+
+    println!("===== resolve types for input source =====");
 
     let hlfiles = type_resolver.source_set(hlfiles)?;
 
