@@ -9,14 +9,16 @@ pub struct Session {
 
 impl Session {
     pub fn new() -> Session {
-        Session { timers: Default::default() }
+        Session {
+            timers: Default::default(),
+        }
     }
 
     pub fn start(&mut self, id: &str) {
         self.timers.insert(id.to_string(), (Instant::now(), None));
     }
 
-    pub fn stop(&mut self, id:&str) {
+    pub fn stop(&mut self, id: &str) {
         let now = Instant::now();
         let start = self.timers.get_mut(id);
         if let Some((start, duration)) = start {
@@ -25,7 +27,7 @@ impl Session {
         }
     }
 
-    pub fn get_duration(&self, id:&str) -> Option<Duration> {
+    pub fn get_duration(&self, id: &str) -> Option<Duration> {
         match self.timers.get(id) {
             None => None,
             Some((_, duration)) => duration.clone(),
