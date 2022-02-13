@@ -79,9 +79,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
     let config = Config::from(&matches);
 
     let mut session = Session::new();
-    session.timer("compile", ||{
-        run_compiler(config)
-    })
+    session.timer("compile", || run_compiler(config))
 }
 
 fn run_compiler(config: Config) -> result::Result<(), Box<dyn Error>> {
