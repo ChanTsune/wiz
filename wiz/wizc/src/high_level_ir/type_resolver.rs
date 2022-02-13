@@ -679,15 +679,23 @@ impl TypeResolver {
         })
     }
 
-    fn typed_type_constraints(&mut self, type_constraints: Vec<TypedTypeConstraint>) -> Result<Vec<TypedTypeConstraint>> {
-        type_constraints.into_iter().map(|t| {
-            Ok(TypedTypeConstraint {
-                type_: self.context.full_type_name(t.type_)?,
-                constraints: t.constraints.into_iter().map(|c| {
-                    self.context.full_type_name(c)
-                }).collect::<Result<_>>()?,
+    fn typed_type_constraints(
+        &mut self,
+        type_constraints: Vec<TypedTypeConstraint>,
+    ) -> Result<Vec<TypedTypeConstraint>> {
+        type_constraints
+            .into_iter()
+            .map(|t| {
+                Ok(TypedTypeConstraint {
+                    type_: self.context.full_type_name(t.type_)?,
+                    constraints: t
+                        .constraints
+                        .into_iter()
+                        .map(|c| self.context.full_type_name(c))
+                        .collect::<Result<_>>()?,
+                })
             })
-        }).collect::<Result<_>>()
+            .collect::<Result<_>>()
     }
 
     pub fn expr(&mut self, e: TypedExpr, type_annotation: Option<TypedType>) -> Result<TypedExpr> {
