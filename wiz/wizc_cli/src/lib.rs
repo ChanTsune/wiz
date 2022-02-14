@@ -4,7 +4,6 @@ use clap::{App, Arg};
 pub use config::build_type::BuildType;
 pub use config::Config;
 
-
 pub fn app(name: &str) -> App {
     let app = App::new(name)
         .arg(Arg::new("input").required(true))
