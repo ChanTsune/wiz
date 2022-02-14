@@ -1,5 +1,8 @@
+pub(crate) mod build_type;
+
 use clap::ArgMatches;
 use std::path::{Path, PathBuf};
+use crate::config::build_type::BuildType;
 
 pub struct Config<'ctx> {
     input: &'ctx str,
@@ -14,35 +17,35 @@ pub struct Config<'ctx> {
 }
 
 impl<'ctx> Config<'ctx> {
-    pub(crate) fn input(&self) -> &Path {
+    pub fn input(&self) -> &Path {
         Path::new(self.input)
     }
 
-    pub(crate) fn name(&self) -> Option<&'ctx str> {
+    pub fn name(&self) -> Option<&'ctx str> {
         self.name
     }
 
-    pub(crate) fn type_(&self) -> Option<BuildType> {
+    pub fn type_(&self) -> Option<BuildType> {
         self.type_
     }
 
-    pub(crate) fn output(&self) -> Option<&'ctx str> {
+    pub fn output(&self) -> Option<&'ctx str> {
         self.output
     }
 
-    pub(crate) fn out_dir(&self) -> Option<&'ctx str> {
+    pub fn out_dir(&self) -> Option<&'ctx str> {
         self.out_dir
     }
 
-    pub(crate) fn paths(&self) -> Vec<PathBuf> {
+    pub fn paths(&self) -> Vec<PathBuf> {
         self.paths.iter().map(PathBuf::from).collect()
     }
 
-    pub(crate) fn target_triple(&self) -> Option<&'ctx str> {
+    pub fn target_triple(&self) -> Option<&'ctx str> {
         self.target_triple
     }
 
-    pub(crate) fn libraries(&self) -> Vec<PathBuf> {
+    pub fn libraries(&self) -> Vec<PathBuf> {
         self.libraries.iter().map(PathBuf::from).collect()
     }
 }
@@ -59,30 +62,6 @@ impl<'ctx> From<&'ctx ArgMatches> for Config<'ctx> {
             l: None,
             target_triple: matches.value_of("target-triple"),
             libraries: matches.values_of("library").unwrap_or_default().collect(),
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum BuildType {
-    Binary,
-    Library,
-    Test,
-}
-
-impl BuildType {
-    pub fn all_str() -> &'static [&'static str] {
-        &["bin", "lib", "test"]
-    }
-}
-
-impl From<&str> for BuildType {
-    fn from(s: &str) -> Self {
-        match s {
-            "bin" => BuildType::Binary,
-            "lib" => BuildType::Library,
-            "test" => BuildType::Test,
-            _ => panic!("Unknown build type: {}", s),
         }
     }
 }
