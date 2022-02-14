@@ -4,7 +4,6 @@ use clap::{App, Arg};
 pub use config::build_type::BuildType;
 pub use config::Config;
 
-
 pub fn app(name: &str) -> App {
     App::new(name)
         .arg(position("input").required(true))
