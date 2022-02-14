@@ -6,42 +6,44 @@ pub use config::Config;
 
 
 pub fn app(name: &str) -> App {
-    let app = App::new(name)
-        .arg(Arg::new("input").required(true))
-        .arg(Arg::new("name").long("name").takes_value(true))
-        .arg(
-            Arg::new("type")
-                .long("type")
+    App::new(name)
+        .arg(position("input").required(true))
+        .arg(long("name").takes_value(true))
+        .arg(long("type")
                 .takes_value(true)
                 .possible_values(BuildType::all_str()),
         )
-        .arg(Arg::new("output").short('o').takes_value(true))
-        .arg(Arg::new("out-dir").long("out-dir").takes_value(true))
-        .arg(
-            Arg::new("target-triple")
-                .long("target-triple")
+        .arg(short("output",'o').takes_value(true))
+        .arg(long("out-dir").takes_value(true))
+        .arg(long("target-triple")
                 .takes_value(true),
         )
-        .arg(
-            Arg::new("path")
-                .short('p')
+        .arg(short("path", 'p')
                 .takes_value(true)
                 .multiple_occurrences(true),
         )
-        .arg(
-            Arg::new("L")
-                .short('L')
+        .arg(short("L", 'L')
                 .takes_value(true)
                 .multiple_occurrences(true),
         )
-        .arg(
-            Arg::new("library")
-                .long("library")
+        .arg(long("library")
                 .takes_value(true)
                 .multiple_occurrences(true),
-        );
-    app
+        )
 }
+
+fn position(name: &str) -> Arg {
+    Arg::new(name)
+}
+
+fn long(name: &str) -> Arg {
+    Arg::new(name).long(name)
+}
+
+fn short(name: &str, s: char) -> Arg {
+    Arg::new(name).short(s)
+}
+
 
 #[cfg(test)]
 mod tests {
