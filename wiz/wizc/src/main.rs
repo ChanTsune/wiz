@@ -5,7 +5,6 @@ use crate::high_level_ir::wlib::WLib;
 use crate::high_level_ir::{ast2hlir, Ast2HLIR};
 use crate::llvm_ir::codegen::CodeGen;
 use crate::middle_level_ir::{hlir2mlir, HLIR2MLIR};
-use crate::utils::timer;
 use clap::{App, Arg};
 use inkwell::context::Context;
 use std::error::Error;
@@ -13,6 +12,7 @@ use std::io::Write;
 use std::option::Option::Some;
 use std::path::{Path, PathBuf};
 use std::{env, fs, result};
+use wiz_session::Session;
 use wiz_syntax::parser;
 use wiz_syntax::parser::wiz::{parse_from_file_path, read_package_from_path};
 use wiz_syntax::syntax::file::SourceSet;
@@ -77,7 +77,9 @@ fn main() -> result::Result<(), Box<dyn Error>> {
         );
     let matches = app.get_matches();
     let config = Config::from(&matches);
-    timer(|| run_compiler(config))
+
+    let mut session = Session::new();
+    session.timer("compile", || run_compiler(config))
 }
 
 fn run_compiler(config: Config) -> result::Result<(), Box<dyn Error>> {
