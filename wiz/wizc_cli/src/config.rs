@@ -1,8 +1,8 @@
 pub(crate) mod build_type;
 
+use crate::config::build_type::BuildType;
 use clap::ArgMatches;
 use std::path::{Path, PathBuf};
-use crate::config::build_type::BuildType;
 
 pub struct Config<'ctx> {
     input: &'ctx str,

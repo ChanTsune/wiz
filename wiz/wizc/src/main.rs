@@ -1,4 +1,3 @@
-use wizc_cli::{BuildType, Config};
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::wlib::WLib;
@@ -16,6 +15,7 @@ use wiz_session::Session;
 use wiz_syntax::parser;
 use wiz_syntax::parser::wiz::{parse_from_file_path, read_package_from_path};
 use wiz_syntax::syntax::file::SourceSet;
+use wizc_cli::{BuildType, Config};
 
 mod constants;
 mod ext;

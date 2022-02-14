@@ -1,6 +1,6 @@
 mod config;
-pub use config::Config;
 pub use config::build_type::BuildType;
+pub use config::Config;
 
 #[cfg(test)]
 mod tests {
