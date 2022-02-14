@@ -4,7 +4,6 @@ use crate::high_level_ir::wlib::WLib;
 use crate::high_level_ir::{ast2hlir, Ast2HLIR};
 use crate::llvm_ir::codegen::CodeGen;
 use crate::middle_level_ir::{hlir2mlir, HLIR2MLIR};
-use clap::{App, Arg};
 use inkwell::context::Context;
 use std::error::Error;
 use std::io::Write;
@@ -40,40 +39,7 @@ fn get_builtin_lib() -> Vec<&'static str> {
 
 fn main() -> result::Result<(), Box<dyn Error>> {
     println!("Args {:?}", env::args());
-    let app = App::new("wizc")
-        .arg(Arg::new("input").required(true))
-        .arg(Arg::new("name").long("name").takes_value(true))
-        .arg(
-            Arg::new("type")
-                .long("type")
-                .takes_value(true)
-                .possible_values(BuildType::all_str()),
-        )
-        .arg(Arg::new("output").short('o').takes_value(true))
-        .arg(Arg::new("out-dir").long("out-dir").takes_value(true))
-        .arg(
-            Arg::new("target-triple")
-                .long("target-triple")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::new("path")
-                .short('p')
-                .takes_value(true)
-                .multiple_occurrences(true),
-        )
-        .arg(
-            Arg::new("L")
-                .short('L')
-                .takes_value(true)
-                .multiple_occurrences(true),
-        )
-        .arg(
-            Arg::new("library")
-                .long("library")
-                .takes_value(true)
-                .multiple_occurrences(true),
-        );
+    let app = wizc_cli::app("wizc");
     let matches = app.get_matches();
     let config = Config::from(&matches);
 
