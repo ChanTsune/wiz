@@ -14,11 +14,12 @@ use crate::high_level_ir::typed_stmt::{
     TypedAssignmentAndOperator, TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt,
 };
 use crate::high_level_ir::typed_type::{
-    TypedFunctionType, TypedPackage, TypedType, TypedValueType,
+    TypedFunctionType, TypedPackage, TypedType, TypedTypeParam, TypedValueType,
 };
 use core::result;
 use std::collections::HashMap;
 use std::error::Error;
+use std::iter::Map;
 use wiz_mir::builder::{BuilderError, FunBuilder, MLIRModule};
 use wiz_mir::expr::{
     MLArray, MLBinOp, MLBinOpKind, MLBlock, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLMember,
@@ -81,7 +82,7 @@ impl HLIR2MLIRContext {
     }
 
     pub(crate) fn get_struct(&self, typ: &MLValueType) -> &MLStruct {
-        self.structs.get(typ).unwrap()
+        self.structs.get(typ).unwrap_or_else(|| panic!("{:?}", typ))
     }
 
     pub(crate) fn struct_has_field(&self, typ: &MLValueType, field_name: &str) -> bool {
@@ -339,8 +340,10 @@ impl HLIR2MLIR {
                 self.module.add_global_var(v);
             }
             TypedDecl::Fun(f) => {
-                let f = FunBuilder::from(self.fun(f));
-                self.module._add_function(f);
+                if !f.is_generic() {
+                    let f = FunBuilder::from(self.fun(f, None));
+                    self.module._add_function(f);
+                }
             }
             TypedDecl::Struct(s) => {
                 let (st, fns) = self.struct_(s);
@@ -377,7 +380,11 @@ impl HLIR2MLIR {
         }
     }
 
-    fn fun(&mut self, f: TypedFun) -> MLFun {
+    fn fun(
+        &mut self,
+        f: TypedFun,
+        type_arguments: Option<Map<TypedTypeParam, TypedType>>,
+    ) -> MLFun {
         let TypedFun {
             annotations,
             package,
@@ -389,7 +396,6 @@ impl HLIR2MLIR {
             body,
             return_type,
         } = f;
-        // TODO: use type_params
         let package_mangled_name = self.package_name_mangling(&package, &name);
         let mangled_name = if annotations.has_annotate("no_mangle") {
             name
@@ -509,7 +515,7 @@ impl HLIR2MLIR {
         let TypedExtension {
             annotations,
             name,
-            protocol: type_params,
+            protocol,
             computed_properties,
             member_functions,
         } = e;
@@ -569,7 +575,7 @@ impl HLIR2MLIR {
     }
 
     fn name(&self, n: TypedName) -> MLName {
-        let mangled_name = if self
+        let mut mangled_name = if self
             .context
             .declaration_has_annotation(&n.name, "no_mangle")
         {
@@ -577,6 +583,17 @@ impl HLIR2MLIR {
         } else {
             self.package_name_mangling(&n.package, &*n.name)
         };
+        if let Some(type_arguments) = n.type_arguments {
+            mangled_name += format!(
+                "<{}>",
+                type_arguments
+                    .into_iter()
+                    .map(|t| t.to_string())
+                    .collect::<Vec<_>>()
+                    .join(",")
+            )
+            .as_str()
+        }
         MLName {
             name: mangled_name,
             type_: self.type_(n.type_.unwrap()),
@@ -770,9 +787,7 @@ impl HLIR2MLIR {
                     type_,
                 } = m;
                 match target.type_().unwrap() {
-                    TypedType::Self_ => {
-                        todo!()
-                    }
+                    TypedType::Self_ => panic!("never execution branch"),
                     TypedType::Value(v) => {
                         let target_type = self.value_type(v);
                         let is_stored = self.context.struct_has_field(&target_type, &name);
@@ -803,9 +818,7 @@ impl HLIR2MLIR {
                         todo!()
                     }
                     TypedType::Type(t) => match *t {
-                        TypedType::Self_ => {
-                            todo!()
-                        }
+                        TypedType::Self_ => panic!("never execution branch"),
                         TypedType::Value(t) => match t {
                             TypedValueType::Value(t) => {
                                 let type_ = self.type_(type_.unwrap());
@@ -947,7 +960,7 @@ impl HLIR2MLIR {
     fn fun_arg_label_type_name_mangling(&self, args: &Vec<TypedArgDef>) -> String {
         args.iter()
             .map(|arg| format!("{}#{}", arg.label, arg.type_.to_string()))
-            .collect::<Vec<String>>()
+            .collect::<Vec<_>>()
             .join("##")
     }
 }

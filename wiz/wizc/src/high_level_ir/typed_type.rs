@@ -1,17 +1,18 @@
 use crate::constants;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Eq, PartialEq, Clone, Hash)]
+#[derive(Debug, Eq, PartialEq, Clone, Hash, Serialize, Deserialize)]
 pub enum TypedPackage {
     Raw(Package),
     Resolved(Package),
 }
 
-#[derive(Debug, Eq, PartialEq, Clone, Hash)]
+#[derive(Debug, Eq, PartialEq, Clone, Hash, Serialize, Deserialize)]
 pub struct Package {
     pub(crate) names: Vec<String>,
 }
 
-#[derive(Debug, Eq, PartialEq, Clone, Hash)]
+#[derive(Debug, Eq, PartialEq, Clone, Hash, Serialize, Deserialize)]
 pub enum TypedType {
     Self_,
     Value(TypedValueType),
@@ -43,7 +44,7 @@ impl TypedType {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Clone, Hash)]
+#[derive(Debug, Eq, PartialEq, Clone, Hash, Serialize, Deserialize)]
 pub enum TypedValueType {
     Value(TypedNamedValueType), // Primitive | Struct | Union | Enum
     Array(Box<TypedType>, usize),
@@ -157,13 +158,13 @@ impl ToString for TypedValueType {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Clone, Hash)]
+#[derive(Debug, Eq, PartialEq, Clone, Hash, Serialize, Deserialize)]
 pub struct TypedFunctionType {
     pub arguments: Vec<TypedArgType>,
     pub return_type: TypedType,
 }
 
-#[derive(Debug, Eq, PartialEq, Clone, Hash)]
+#[derive(Debug, Eq, PartialEq, Clone, Hash, Serialize, Deserialize)]
 pub struct TypedArgType {
     pub label: String,
     pub typ: TypedType,
@@ -175,14 +176,14 @@ impl TypedArgType {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Clone, Hash)]
+#[derive(Debug, Eq, PartialEq, Clone, Hash, Serialize, Deserialize)]
 pub struct TypedNamedValueType {
     pub(crate) package: TypedPackage,
     pub(crate) name: String,
     pub(crate) type_args: Option<Vec<TypedType>>,
 }
 
-#[derive(Debug, Eq, PartialEq, Clone, Hash)]
+#[derive(Debug, Eq, PartialEq, Clone, Hash, Serialize, Deserialize)]
 pub struct TypedTypeParam {
     pub(crate) name: String,
 }
@@ -200,16 +201,14 @@ impl TypedPackage {
         match self {
             TypedPackage::Raw(p) => p,
             TypedPackage::Resolved(_) => {
-                panic!()
+                panic!("cannot convert resolved package to raw ({:?})", self)
             }
         }
     }
 
     pub(crate) fn into_resolved(self) -> Package {
         match self {
-            TypedPackage::Raw(_) => {
-                panic!()
-            }
+            TypedPackage::Raw(_) => panic!("cannot convert raw package to resolved ({:?})", self),
             TypedPackage::Resolved(p) => p,
         }
     }
@@ -329,14 +328,13 @@ impl ToString for TypedNamedValueType {
         };
         fqn + &match &self.type_args {
             None => String::new(),
-            Some(a) => {
-                String::from("<")
-                    + &a.iter()
-                        .map(|a| a.to_string())
-                        .collect::<Vec<String>>()
-                        .join(",")
-                    + ">"
-            }
+            Some(a) => format!(
+                "<{}>",
+                a.iter()
+                    .map(|t| t.to_string())
+                    .collect::<Vec<_>>()
+                    .join(",")
+            ),
         }
     }
 }
@@ -404,6 +402,10 @@ impl TypedType {
 
     pub fn unsafe_pointer(typ: TypedType) -> Self {
         Self::Value(TypedValueType::Pointer(Box::new(typ)))
+    }
+
+    pub fn reference(typ: TypedType) -> Self {
+        Self::Value(TypedValueType::Reference(Box::new(typ)))
     }
 
     pub fn signed_integer_types() -> Vec<TypedType> {

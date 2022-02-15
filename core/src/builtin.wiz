@@ -37,3 +37,6 @@ fun atoi(_ item: &str): Int64
 
 #[no_mangle]
 fun memmove(_ dist: *UInt8, _ src: *UInt8, _ size: UInt64): *UInt8
+
+#[no_mangle]
+fun memcpy(_ dist: *UInt8, _ src: *UInt8, _ count: UInt64): Int32

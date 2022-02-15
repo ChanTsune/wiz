@@ -25,6 +25,7 @@ use crate::high_level_ir::typed_type::{
     Package, TypedArgType, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType,
     TypedValueType,
 };
+use crate::high_level_ir::typed_type_constraint::TypedTypeConstraint;
 
 #[derive(Debug, Clone)]
 pub(crate) struct TypeResolver {
@@ -36,12 +37,9 @@ impl TypeResolver {
         Self::from(ResolverContext::new())
     }
 
-    pub(crate) fn global_use<T>(&mut self, name_space: Vec<T>)
-    where
-        T: ToString,
-    {
+    pub(crate) fn global_use<T: ToString>(&mut self, name_space: &[T]) {
         self.context
-            .use_name_space(name_space.into_iter().map(|n| n.to_string()).collect())
+            .global_use_name_space(name_space.into_iter().map(|n| n.to_string()).collect())
     }
 
     pub fn detect_type_from_source_set(&mut self, s: &TypedSourceSet) -> Result<()> {
@@ -156,6 +154,20 @@ impl TypeResolver {
     pub fn preload_fun(&mut self, f: TypedFun) -> Result<TypedFun> {
         let c_name_space = self.context.current_namespace.clone();
         self.context.push_local_stack();
+        if let Some(type_params) = &f.type_params {
+            for type_param in type_params {
+                self.context.register_to_env(
+                    type_param.name.clone(),
+                    ResolverStruct::new(TypedType::Value(TypedValueType::Value(
+                        TypedNamedValueType {
+                            package: TypedPackage::Resolved(Package::global()),
+                            name: type_param.name.clone(),
+                            type_args: None,
+                        },
+                    ))),
+                )
+            }
+        }
         let arg_defs = f
             .arg_defs
             .into_iter()
@@ -248,7 +260,7 @@ impl TypeResolver {
         let TypedExtension {
             annotations,
             name,
-            protocol: type_params,
+            protocol,
             computed_properties,
             member_functions,
         } = e;
@@ -287,6 +299,41 @@ impl TypeResolver {
     }
 
     pub fn preload_protocol(&mut self, p: TypedProtocol) -> Result<()> {
+        let TypedProtocol {
+            annotations: _,
+            package: _,
+            name,
+            type_params: _,
+            computed_properties,
+            member_functions,
+        } = p;
+        let current_namespace = self.context.current_namespace.clone();
+        let this_type = TypedType::Value(TypedValueType::Value(TypedNamedValueType {
+            package: TypedPackage::Resolved(Package::from(current_namespace)),
+            name: name.clone(),
+            type_args: None,
+        }));
+        self.context.set_current_type(this_type.clone());
+        for computed_property in computed_properties.into_iter() {
+            let type_ = self.context.full_type_name(computed_property.type_)?;
+            let ns = self.context.get_current_namespace_mut()?;
+            let rs = ns.get_type_mut(&name).ok_or_else(|| {
+                ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
+            })?;
+            rs.computed_properties.insert(computed_property.name, type_);
+        }
+        for member_function in member_functions.into_iter() {
+            let type_ = self
+                .context
+                .full_type_name(member_function.type_().unwrap())?;
+            let ns = self.context.get_current_namespace_mut()?;
+            let rs = ns.get_type_mut(&name).ok_or_else(|| {
+                ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
+            })?;
+            rs.member_functions.insert(member_function.name, type_);
+        }
+        self.context.clear_current_type();
+
         Ok(())
     }
 
@@ -333,7 +380,7 @@ impl TypeResolver {
             TypedDecl::Struct(s) => TypedDecl::Struct(self.typed_struct(s)?),
             TypedDecl::Class => TypedDecl::Class,
             TypedDecl::Enum => TypedDecl::Enum,
-            TypedDecl::Protocol(p) => TypedDecl::Protocol(p),
+            TypedDecl::Protocol(p) => TypedDecl::Protocol(self.typed_protocol(p)?),
             TypedDecl::Extension(e) => TypedDecl::Extension(self.typed_extension(e)?),
         })
     }
@@ -408,6 +455,29 @@ impl TypeResolver {
     pub fn typed_fun(&mut self, f: TypedFun) -> Result<TypedFun> {
         let c_name_space = self.context.current_namespace.clone();
         self.context.push_local_stack();
+        if let Some(type_params) = &f.type_params {
+            for type_param in type_params {
+                let mut rs = ResolverStruct::new(TypedType::Value(TypedValueType::Value(
+                    TypedNamedValueType {
+                        package: TypedPackage::Resolved(Package::global()),
+                        name: type_param.name.clone(),
+                        type_args: None,
+                    },
+                )));
+                if let Some(tc) = &f.type_constraints {
+                    let con = tc.iter().find(|t| t.type_.name() == type_param.name);
+                    if let Some(con) = con {
+                        for c in con.constraints.iter() {
+                            let c = self.context.full_type_name(c.clone())?;
+                            let ne = self.context.get_current_name_environment();
+                            let crs = ne.get_type_by_typed_type(c).unwrap();
+                            rs.member_functions.extend(crs.member_functions.clone());
+                        }
+                    }
+                };
+                self.context.register_to_env(type_param.name.clone(), rs)
+            }
+        }
         let arg_defs = f
             .arg_defs
             .into_iter()
@@ -425,7 +495,10 @@ impl TypeResolver {
             modifiers: f.modifiers,
             name: f.name,
             type_params: f.type_params,
-            type_constraints: f.type_constraints,
+            type_constraints: match f.type_constraints {
+                None => None,
+                Some(tc) => Some(self.typed_type_constraints(tc)?),
+            },
             arg_defs,
             body: match f.body {
                 Some(b) => Some(self.typed_fun_body(b)?),
@@ -557,7 +630,10 @@ impl TypeResolver {
         let result = Ok(TypedExtension {
             annotations: e.annotations,
             name: this_type,
-            protocol: e.protocol, // TODO
+            protocol: match e.protocol {
+                Some(p) => Some(self.context.full_type_name(p)?),
+                None => None,
+            },
             computed_properties: e.computed_properties.into_iter().map(|i| i).collect(),
             member_functions: e
                 .member_functions
@@ -569,6 +645,30 @@ impl TypeResolver {
         result
     }
 
+    fn typed_protocol(&mut self, p: TypedProtocol) -> Result<TypedProtocol> {
+        let current_namespace = self.context.current_namespace.clone();
+        let this_type = TypedType::Value(TypedValueType::Value(TypedNamedValueType {
+            package: TypedPackage::Resolved(Package::from(current_namespace)),
+            name: p.name.clone(),
+            type_args: None,
+        }));
+        self.context.set_current_type(this_type.clone());
+        let result = TypedProtocol {
+            annotations: p.annotations,
+            package: TypedPackage::Resolved(Package::from(self.context.current_namespace.clone())),
+            name: p.name,
+            type_params: p.type_params, // TODO type params
+            member_functions: p
+                .member_functions
+                .into_iter()
+                .map(|m| self.typed_member_function(m))
+                .collect::<Result<Vec<_>>>()?,
+            computed_properties: vec![],
+        };
+        self.context.clear_current_type();
+        Ok(result)
+    }
+
     fn typed_block(&mut self, b: TypedBlock) -> Result<TypedBlock> {
         Result::Ok(TypedBlock {
             body: b
@@ -577,6 +677,25 @@ impl TypeResolver {
                 .map(|s| self.stmt(s))
                 .collect::<Result<Vec<TypedStmt>>>()?,
         })
+    }
+
+    fn typed_type_constraints(
+        &mut self,
+        type_constraints: Vec<TypedTypeConstraint>,
+    ) -> Result<Vec<TypedTypeConstraint>> {
+        type_constraints
+            .into_iter()
+            .map(|t| {
+                Ok(TypedTypeConstraint {
+                    type_: self.context.full_type_name(t.type_)?,
+                    constraints: t
+                        .constraints
+                        .into_iter()
+                        .map(|c| self.context.full_type_name(c))
+                        .collect::<Result<_>>()?,
+                })
+            })
+            .collect::<Result<_>>()
     }
 
     pub fn expr(&mut self, e: TypedExpr, type_annotation: Option<TypedType>) -> Result<TypedExpr> {
@@ -605,15 +724,29 @@ impl TypeResolver {
         n: TypedName,
         type_annotation: Option<TypedType>,
     ) -> Result<TypedName> {
-        let (type_, package) = self.context.resolve_name_type(
-            n.package.into_raw().names,
-            n.name.clone(),
-            type_annotation,
-        )?;
+        let (type_, package) = {
+            if n.package.is_resolved() {
+                (n.type_.unwrap(), n.package)
+            } else {
+                self.context.resolve_name_type(
+                    n.package.into_raw().names,
+                    n.name.clone(),
+                    type_annotation,
+                )?
+            }
+        };
         Result::Ok(TypedName {
             package,
             type_: Some(type_),
             name: n.name,
+            type_arguments: match n.type_arguments {
+                None => None,
+                Some(t) => Some(
+                    t.into_iter()
+                        .map(|ta| self.context.full_type_name(ta))
+                        .collect::<Result<Vec<_>>>()?,
+                ),
+            },
         })
     }
 

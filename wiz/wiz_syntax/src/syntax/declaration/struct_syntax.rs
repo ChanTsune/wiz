@@ -1,4 +1,3 @@
-use crate::syntax::annotation::{Annotatable, AnnotationsSyntax};
 use crate::syntax::declaration::fun_syntax::{ArgDefListSyntax, FunBody, FunSyntax};
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
@@ -7,7 +6,6 @@ use crate::syntax::Syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct StructSyntax {
-    pub annotations: Option<AnnotationsSyntax>,
     pub struct_keyword: TokenSyntax,
     pub name: TokenSyntax,
     pub type_params: Option<TypeParameterListSyntax>,
@@ -16,40 +14,20 @@ pub struct StructSyntax {
     pub close: TokenSyntax,
 }
 
-impl Annotatable for StructSyntax {
-    fn with_annotation(mut self, a: AnnotationsSyntax) -> Self {
-        self.annotations = Some(a);
-        self
-    }
-}
-
 impl Syntax for StructSyntax {
     fn with_leading_trivia(self, trivia: Trivia) -> Self {
-        match self.annotations {
-            None => Self {
-                annotations: None,
-                struct_keyword: self.struct_keyword.with_leading_trivia(trivia),
-                name: self.name,
-                type_params: self.type_params,
-                open: self.open,
-                properties: self.properties,
-                close: self.close,
-            },
-            Some(annotations) => Self {
-                annotations: Some(annotations.with_leading_trivia(trivia)),
-                struct_keyword: self.struct_keyword,
-                name: self.name,
-                type_params: self.type_params,
-                open: self.open,
-                properties: self.properties,
-                close: self.close,
-            },
+        Self {
+            struct_keyword: self.struct_keyword.with_leading_trivia(trivia),
+            name: self.name,
+            type_params: self.type_params,
+            open: self.open,
+            properties: self.properties,
+            close: self.close,
         }
     }
 
     fn with_trailing_trivia(self, trivia: Trivia) -> Self {
         Self {
-            annotations: self.annotations,
             struct_keyword: self.struct_keyword,
             name: self.name,
             type_params: self.type_params,

@@ -9,17 +9,17 @@
 <!-- PROJECT LOGO -->
 <div align="center">
     <p><a href="https://github.com/ChanTsune/wiz"><img src="./icon.svg" width="120" hight="120"/></a></p>
-    <p><h3>Wiz programming language</h3></p>
+    <p><h3>Wiz Programming Language</h3></p>
     <p>Programming is modern-day magic
 </p>
 </div>
 
 
-## Getting start
+## Getting started
 
-### Requirments
+### Requirements
 
-|Tool|version|
+|**Tool**|**Version**|
 |:-:|:-:|
 |Rust|latest|
 |llvm|12|
@@ -28,13 +28,13 @@
 
 1. Install Rust
 
-Install Rust from https://www.rust-lang.org/tools/install
+Install Rust from https://www.rust-lang.org/tools/install.
 
 2. Install LLVM
 
-We recomended use `llvmenv` for install llvm.
+We recomended using `llvmenv` to install LLVM.
 
-**Use llvmenv**
+**Using llvmenv**
 ```bash
 cargo install llvmenv
 ```
@@ -45,7 +45,7 @@ llvmenv build-entry 12.0
 llvmenv global 12.0.0
 ```
 
-**Use Homebrew for Mac**
+**Using Homebrew on Mac**
 
 ```bash
 brew install llvm@12
@@ -55,13 +55,13 @@ brew install llvm@12
 export LLVM_SYS_120_PREFIX="$(brew --prefix llvm@12)"
 ```
 
-**Use apt for Debian Linux**
+**Using apt on Debian Linux**
 
 ```bash
 sudo apt install clang-12 llvm-12
 ```
 
-3. Build and Install wiz
+3. Build and install wiz
 
 ```bash
 sh install.sh

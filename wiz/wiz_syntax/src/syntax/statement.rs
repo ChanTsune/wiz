@@ -2,7 +2,7 @@ mod assignment_syntax;
 mod for_loop_syntax;
 mod while_loop_syntax;
 
-use crate::syntax::declaration::Decl;
+use crate::syntax::declaration::DeclarationSyntax;
 use crate::syntax::expression::Expr;
 pub use crate::syntax::statement::assignment_syntax::{
     AssignmentAndOperatorSyntax, AssignmentStmt, AssignmentSyntax,
@@ -14,7 +14,7 @@ use crate::syntax::Syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Stmt {
-    Decl(Decl),
+    Decl(DeclarationSyntax),
     Expr(Expr),
     Assignment(AssignmentStmt),
     Loop(LoopStmt),

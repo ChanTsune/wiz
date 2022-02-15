@@ -3,6 +3,7 @@
 WIZ_HOME=${WIZ_HOME:-"$HOME/.wiz"}
 BIN_DIR="$WIZ_HOME/bin"
 LIB_DIR="$WIZ_HOME/lib"
+VERSION="0.0.0"
 
 echo "WIZ_HOME=$WIZ_HOME"
 echo "BIN_DIR=$BIN_DIR"
@@ -45,8 +46,8 @@ build_install() {
 
 install_builtin_lib() {
     mkdir -p "$LIB_DIR/src"
-    copy_lib_src core
-    copy_lib_src std
+    copy_lib_src core "$VERSION"
+    copy_lib_src std "$VERSION"
 }
 
 install_shell_env() {
@@ -55,6 +56,7 @@ install_shell_env() {
 
 copy_lib_src() {
     cp -r "$1" "$LIB_DIR/src/$1"
+    cp -r "$1" "$LIB_DIR/src/$1/$2"
 }
 
 err() {
