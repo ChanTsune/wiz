@@ -12,4 +12,5 @@ clap = { version = "3.0.0", features = ["cargo"]}
 ansi_term = "0.12"
 toml = "0.5.8"
 serde = { version = "1.0.136", features = ["derive"]}
+wizc_cli = { path = "../wizc_cli" }
 wiz_session = { path = "../wiz_session" }
