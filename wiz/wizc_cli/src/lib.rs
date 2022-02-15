@@ -39,9 +39,13 @@ fn short(name: &str, s: char) -> Arg {
 
 #[cfg(test)]
 mod tests {
+    use std::path::PathBuf;
+
     #[test]
-    fn it_works() {
-        let result = 2 + 2;
-        assert_eq!(result, 4);
+    fn test_parse_arg() {
+        let app = super::app("test");
+        let matches = app.get_matches_from(&["test", "main.wiz"]);
+        let config = super::Config::from(&matches);
+        assert_eq!(config.input().to_path_buf(), PathBuf::from("main.wiz"));
     }
 }
