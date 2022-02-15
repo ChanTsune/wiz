@@ -30,9 +30,9 @@ where
 {
     fn from(token: T) -> Self {
         Self {
-            leading_trivia: Trivia::new(),
+            leading_trivia: Trivia::default(),
             token: token.to_string(),
-            trailing_trivia: Trivia::new(),
+            trailing_trivia: Trivia::default(),
         }
     }
 }
