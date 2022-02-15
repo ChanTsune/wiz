@@ -1,7 +1,7 @@
 use crate::syntax::trivia::Trivia;
 use crate::syntax::Syntax;
 
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, Default)]
 pub struct TokenSyntax {
     pub leading_trivia: Trivia,
     token: String,
@@ -9,18 +9,8 @@ pub struct TokenSyntax {
 }
 
 impl TokenSyntax {
-    pub fn new() -> Self {
-        Self::from("")
-    }
-
     pub fn token(&self) -> String {
         self.token.clone()
-    }
-}
-
-impl Default for TokenSyntax {
-    fn default() -> Self {
-        Self::new()
     }
 }
 
