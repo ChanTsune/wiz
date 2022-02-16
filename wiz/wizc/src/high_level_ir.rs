@@ -243,7 +243,6 @@ impl Ast2HLIR {
 
     pub fn fun_syntax(&self, f: FunSyntax, annotations: Option<AnnotationsSyntax>) -> TypedFun {
         let FunSyntax {
-            modifiers,
             fun_keyword: _,
             name,
             type_params,
@@ -316,7 +315,7 @@ impl Ast2HLIR {
         TypedFun {
             annotations: self.annotations(annotations),
             package: TypedPackage::Raw(Package::new()),
-            modifiers: modifiers.modifiers.into_iter().map(|m| m.token()).collect(),
+            modifiers: vec![],
             name: name.token(),
             type_params: type_params.map(|v| {
                 v.elements
@@ -500,7 +499,6 @@ impl Ast2HLIR {
 
     pub fn member_function(&self, member_function: FunSyntax) -> TypedMemberFunction {
         let FunSyntax {
-            modifiers: _,
             fun_keyword: _,
             name,
             type_params,
