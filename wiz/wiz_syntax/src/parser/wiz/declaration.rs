@@ -1076,7 +1076,7 @@ mod tests {
             Ok((
                 "",
                 StructPropertySyntax::Method(FunSyntax {
-                    modifiers: ModifiersSyntax::new(),
+                    modifiers: ModifiersSyntax::default(),
                     fun_keyword: TokenSyntax::from("fun"),
                     name: TokenSyntax::from("function")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
