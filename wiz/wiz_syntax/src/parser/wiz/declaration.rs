@@ -931,7 +931,6 @@ where
             char('}'),
         )),
         |(kw, tp, ws, n, _, protocol, _, tc, ws1, _, ws2, properties, _, _)| ExtensionSyntax {
-            modifiers: Default::default(),
             extension_keyword: TokenSyntax::from(kw),
             type_params: tp.map(|(t, tp)| tp.with_leading_trivia(t)),
             name: n,
