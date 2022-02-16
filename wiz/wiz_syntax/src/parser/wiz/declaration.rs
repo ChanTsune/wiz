@@ -453,7 +453,6 @@ where
         )),
         |(f, ws, name, type_params, args, _, return_type, _, type_constraints, _, body)| {
             FunSyntax {
-                modifiers: Default::default(),
                 fun_keyword: TokenSyntax::from(f),
                 name: TokenSyntax::from(name).with_leading_trivia(ws),
                 type_params,
@@ -965,7 +964,6 @@ mod tests {
     use crate::syntax::declaration::{PackageNameElement, VarSyntax};
     use crate::syntax::expression::{BinaryOperationSyntax, Expr, NameExprSyntax};
     use crate::syntax::literal::LiteralSyntax;
-    use crate::syntax::modifier::ModifiersSyntax;
     use crate::syntax::statement::Stmt;
     use crate::syntax::token::TokenSyntax;
     use crate::syntax::trivia::{Trivia, TriviaPiece};
@@ -1076,7 +1074,6 @@ mod tests {
             Ok((
                 "",
                 StructPropertySyntax::Method(FunSyntax {
-                    modifiers: ModifiersSyntax::default(),
                     fun_keyword: TokenSyntax::from("fun"),
                     name: TokenSyntax::from("function")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
@@ -1207,7 +1204,6 @@ mod tests {
             Ok((
                 "",
                 DeclKind::Fun(FunSyntax {
-                    modifiers: Default::default(),
                     fun_keyword: TokenSyntax::from("fun"),
                     name: TokenSyntax::from("function")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
@@ -1232,7 +1228,6 @@ mod tests {
             Ok((
                 "",
                 DeclKind::Fun(FunSyntax {
-                    modifiers: Default::default(),
                     fun_keyword: TokenSyntax::from("fun"),
                     name: TokenSyntax::from("puts")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
@@ -1273,7 +1268,6 @@ mod tests {
             Ok((
                 "",
                 DeclKind::Fun(FunSyntax {
-                    modifiers: Default::default(),
                     fun_keyword: TokenSyntax::from("fun"),
                     name: TokenSyntax::from("puts")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
