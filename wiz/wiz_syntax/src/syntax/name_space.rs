@@ -17,10 +17,6 @@ impl NameSpaceSyntax {
             trailing_trivia: Default::default(),
         }
     }
-
-    pub(crate) fn is_empty(&self) -> bool {
-        self.elements.is_empty()
-    }
 }
 
 impl Syntax for NameSpaceSyntax {
