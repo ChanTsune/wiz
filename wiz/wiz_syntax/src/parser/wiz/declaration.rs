@@ -1061,14 +1061,12 @@ mod tests {
 
     #[test]
     fn test_struct_syntax() {
-        assert_eq!(
-            struct_syntax(
+        check(
                 r##"struct A {
         var a: String
         }"##
-            ),
-            Ok((
-                "",
+            ,
+                struct_syntax,
                 StructSyntax {
                     struct_keyword: TokenSyntax::from("struct"),
                     name: TokenSyntax::from("A")
@@ -1089,8 +1087,7 @@ mod tests {
                         close: TokenSyntax::from("}")
                     }
                 }
-            ))
-        )
+        );
     }
 
     #[test]
