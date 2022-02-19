@@ -397,7 +397,7 @@ impl Ast2HLIR {
         let mut computed_properties: Vec<TypedComputedProperty> = vec![];
         let mut initializers: Vec<TypedInitializer> = vec![];
         let mut member_functions: Vec<TypedMemberFunction> = vec![];
-        for p in s.properties {
+        for p in s.body.properties {
             match p {
                 StructPropertySyntax::StoredProperty(v) => {
                     stored_properties.push(self.stored_property_syntax(v));
@@ -577,7 +577,7 @@ impl Ast2HLIR {
     ) -> TypedProtocol {
         let mut computed_properties: Vec<TypedComputedProperty> = vec![];
         let mut member_functions: Vec<TypedMemberFunction> = vec![];
-        for p in p.properties {
+        for p in p.body.properties {
             match p {
                 StructPropertySyntax::StoredProperty(v) => {
                     panic!("protocol is not allowed stored property {:?}", v)
