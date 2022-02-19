@@ -27,12 +27,6 @@ where
     }
 }
 
-impl TokenSyntax {
-    fn to_string(&self) -> String {
-        self.leading_trivia.to_string() + &*self.token + &*self.trailing_trivia.to_string()
-    }
-}
-
 impl Syntax for TokenSyntax {
     fn with_leading_trivia(self, trivia: Trivia) -> Self {
         Self {
