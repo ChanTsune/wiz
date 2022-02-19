@@ -15,7 +15,11 @@ use crate::syntax::declaration::fun_syntax::{
     ArgDef, ArgDefElementSyntax, ArgDefListSyntax, FunBody, FunSyntax, SelfArgDefSyntax,
     ValueArgDef,
 };
-use crate::syntax::declaration::{AliasSyntax, DeclKind, DeclarationSyntax, DeinitializerSyntax, ExtensionSyntax, InitializerSyntax, PackageName, ProtocolConformSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax, StructBodySyntax};
+use crate::syntax::declaration::{
+    AliasSyntax, DeclKind, DeclarationSyntax, DeinitializerSyntax, ExtensionSyntax,
+    InitializerSyntax, PackageName, ProtocolConformSyntax, StoredPropertySyntax, StructBodySyntax,
+    StructPropertySyntax, StructSyntax, UseSyntax,
+};
 use crate::syntax::declaration::{PackageNameElement, VarSyntax};
 use crate::syntax::expression::Expr;
 use crate::syntax::token::TokenSyntax;
@@ -117,10 +121,7 @@ where
             identifier,
             whitespace0,
             opt(type_parameters),
-            opt(tuple((
-                whitespace0,
-                struct_body_syntax,
-            ))),
+            opt(tuple((whitespace0, struct_body_syntax))),
         )),
         |(struct_keyword, nws, name, _, params, body)| match body {
             Some((_, body)) => StructSyntax {
@@ -141,8 +142,8 @@ where
 
 // <struct_body> ::= "{" <struct_properties> "}"
 pub fn struct_body_syntax<I>(s: I) -> IResult<I, StructBodySyntax>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + Clone
@@ -154,8 +155,8 @@ pub fn struct_body_syntax<I>(s: I) -> IResult<I, StructBodySyntax>
         + ExtendInto<Item = char, Extender = String>
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
-        <I as InputTakeAtPosition>::Item: AsChar,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
         tuple((
@@ -978,7 +979,10 @@ mod tests {
     use crate::syntax::declaration::fun_syntax::{
         ArgDef, ArgDefElementSyntax, ArgDefListSyntax, FunBody, FunSyntax, ValueArgDef,
     };
-    use crate::syntax::declaration::{AliasSyntax, DeclKind, PackageName, StoredPropertySyntax, StructBodySyntax, StructPropertySyntax, StructSyntax, UseSyntax};
+    use crate::syntax::declaration::{
+        AliasSyntax, DeclKind, PackageName, StoredPropertySyntax, StructBodySyntax,
+        StructPropertySyntax, StructSyntax, UseSyntax,
+    };
     use crate::syntax::declaration::{PackageNameElement, VarSyntax};
     use crate::syntax::expression::{BinaryOperationSyntax, Expr, NameExprSyntax};
     use crate::syntax::literal::LiteralSyntax;
@@ -1072,14 +1076,16 @@ mod tests {
                     type_params: None,
                     body: StructBodySyntax {
                         open: TokenSyntax::from("{"),
-                        properties: vec![StructPropertySyntax::StoredProperty(StoredPropertySyntax {
-                            mutability_keyword: TokenSyntax::from("var"),
-                            name: TokenSyntax::from("a"),
-                            type_: TypeName::Simple(SimpleTypeName {
-                                name: TokenSyntax::from("String"),
-                                type_args: None
-                            })
-                        })],
+                        properties: vec![StructPropertySyntax::StoredProperty(
+                            StoredPropertySyntax {
+                                mutability_keyword: TokenSyntax::from("var"),
+                                name: TokenSyntax::from("a"),
+                                type_: TypeName::Simple(SimpleTypeName {
+                                    name: TokenSyntax::from("String"),
+                                    type_args: None
+                                })
+                            }
+                        )],
                         close: TokenSyntax::from("}")
                     }
                 }

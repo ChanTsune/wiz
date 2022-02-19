@@ -1,4 +1,4 @@
-use crate::syntax::declaration::properties_syntax::{StructBodySyntax};
+use crate::syntax::declaration::properties_syntax::StructBodySyntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::type_name::TypeParameterListSyntax;
