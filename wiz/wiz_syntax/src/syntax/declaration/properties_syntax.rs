@@ -4,6 +4,31 @@ use crate::syntax::trivia::Trivia;
 use crate::syntax::type_name::TypeName;
 use crate::syntax::Syntax;
 
+#[derive(Debug, Eq, PartialEq, Clone, Default)]
+pub struct StructBodySyntax {
+    pub open: TokenSyntax,
+    pub properties: Vec<StructPropertySyntax>,
+    pub close: TokenSyntax,
+}
+
+impl Syntax for StructBodySyntax {
+    fn with_leading_trivia(self, trivia: Trivia) -> Self {
+        Self {
+            open: self.open.with_leading_trivia(trivia),
+            properties: self.properties,
+            close: self.close,
+        }
+    }
+
+    fn with_trailing_trivia(self, trivia: Trivia) -> Self {
+        Self {
+            open: self.open,
+            properties: self.properties,
+            close: self.close.with_trailing_trivia(trivia),
+        }
+    }
+}
+
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum StructPropertySyntax {
     StoredProperty(StoredPropertySyntax),

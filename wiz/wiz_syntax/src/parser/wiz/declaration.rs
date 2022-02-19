@@ -15,11 +15,7 @@ use crate::syntax::declaration::fun_syntax::{
     ArgDef, ArgDefElementSyntax, ArgDefListSyntax, FunBody, FunSyntax, SelfArgDefSyntax,
     ValueArgDef,
 };
-use crate::syntax::declaration::{
-    AliasSyntax, DeclKind, DeclarationSyntax, DeinitializerSyntax, ExtensionSyntax,
-    InitializerSyntax, PackageName, ProtocolConformSyntax, StoredPropertySyntax,
-    StructPropertySyntax, StructSyntax, UseSyntax,
-};
+use crate::syntax::declaration::{AliasSyntax, DeclKind, DeclarationSyntax, DeinitializerSyntax, ExtensionSyntax, InitializerSyntax, PackageName, ProtocolConformSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax, StructBodySyntax};
 use crate::syntax::declaration::{PackageNameElement, VarSyntax};
 use crate::syntax::expression::Expr;
 use crate::syntax::token::TokenSyntax;
@@ -96,7 +92,7 @@ where
     map(struct_syntax, DeclKind::Struct)(s)
 }
 
-// <struct_decl> ::= "struct" <identifier> <type_parameters>? "{" <struct_properties> "}"
+// <struct_decl> ::= "struct" <identifier> <type_parameters>? <struct_body>
 pub fn struct_syntax<I>(s: I) -> IResult<I, StructSyntax>
 where
     I: Slice<RangeFrom<usize>>
@@ -123,30 +119,56 @@ where
             opt(type_parameters),
             opt(tuple((
                 whitespace0,
-                char('{'),
-                whitespace0,
-                struct_properties,
-                whitespace0,
-                char('}'),
+                struct_body_syntax,
             ))),
         )),
         |(struct_keyword, nws, name, _, params, body)| match body {
-            Some((_, open, _, properties, _, close)) => StructSyntax {
+            Some((_, body)) => StructSyntax {
                 struct_keyword: TokenSyntax::from(struct_keyword),
                 name: TokenSyntax::from(name).with_leading_trivia(nws),
                 type_params: params,
-                open: TokenSyntax::from(open),
-                properties,
-                close: TokenSyntax::from(close),
+                body,
             },
             None => StructSyntax {
                 struct_keyword: TokenSyntax::from(struct_keyword),
                 name: TokenSyntax::from(name).with_leading_trivia(nws),
                 type_params: params,
-                open: Default::default(),
-                properties: vec![],
-                close: Default::default(),
+                body: Default::default(),
             },
+        },
+    )(s)
+}
+
+// <struct_body> ::= "{" <struct_properties> "}"
+pub fn struct_body_syntax<I>(s: I) -> IResult<I, StructBodySyntax>
+    where
+        I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+        <I as InputIter>::Item: AsChar + Copy,
+        <I as InputTakeAtPosition>::Item: AsChar,
+{
+    map(
+        tuple((
+            char('{'),
+            whitespace0,
+            struct_properties,
+            whitespace0,
+            char('}'),
+        )),
+        |(open, _, properties, _, close)| StructBodySyntax {
+            open: TokenSyntax::from(open),
+            properties,
+            close: TokenSyntax::from(close),
         },
     )(s)
 }
@@ -956,10 +978,7 @@ mod tests {
     use crate::syntax::declaration::fun_syntax::{
         ArgDef, ArgDefElementSyntax, ArgDefListSyntax, FunBody, FunSyntax, ValueArgDef,
     };
-    use crate::syntax::declaration::{
-        AliasSyntax, DeclKind, PackageName, StoredPropertySyntax, StructPropertySyntax,
-        StructSyntax, UseSyntax,
-    };
+    use crate::syntax::declaration::{AliasSyntax, DeclKind, PackageName, StoredPropertySyntax, StructBodySyntax, StructPropertySyntax, StructSyntax, UseSyntax};
     use crate::syntax::declaration::{PackageNameElement, VarSyntax};
     use crate::syntax::expression::{BinaryOperationSyntax, Expr, NameExprSyntax};
     use crate::syntax::literal::LiteralSyntax;
@@ -1051,16 +1070,18 @@ mod tests {
                     name: TokenSyntax::from("A")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     type_params: None,
-                    open: TokenSyntax::from("{"),
-                    properties: vec![StructPropertySyntax::StoredProperty(StoredPropertySyntax {
-                        mutability_keyword: TokenSyntax::from("var"),
-                        name: TokenSyntax::from("a"),
-                        type_: TypeName::Simple(SimpleTypeName {
-                            name: TokenSyntax::from("String"),
-                            type_args: None
-                        })
-                    })],
-                    close: TokenSyntax::from("}")
+                    body: StructBodySyntax {
+                        open: TokenSyntax::from("{"),
+                        properties: vec![StructPropertySyntax::StoredProperty(StoredPropertySyntax {
+                            mutability_keyword: TokenSyntax::from("var"),
+                            name: TokenSyntax::from("a"),
+                            type_: TypeName::Simple(SimpleTypeName {
+                                name: TokenSyntax::from("String"),
+                                type_args: None
+                            })
+                        })],
+                        close: TokenSyntax::from("}")
+                    }
                 }
             ))
         )
