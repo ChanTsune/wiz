@@ -1,14 +1,12 @@
 use crate::syntax::annotation::AnnotationsSyntax;
 pub use crate::syntax::declaration::extension_syntax::{ExtensionSyntax, ProtocolConformSyntax};
 use crate::syntax::declaration::fun_syntax::FunSyntax;
-pub use crate::syntax::declaration::struct_syntax::{
-    StructSyntax,
+pub use crate::syntax::declaration::properties_syntax::{
+    DeinitializerSyntax, InitializerSyntax, StoredPropertySyntax, StructPropertySyntax,
 };
+pub use crate::syntax::declaration::struct_syntax::StructSyntax;
 pub use crate::syntax::declaration::use_syntax::{
     AliasSyntax, PackageName, PackageNameElement, UseSyntax,
-};
-pub use crate::syntax::declaration::properties_syntax::{
-    StructPropertySyntax, StoredPropertySyntax, InitializerSyntax, DeinitializerSyntax,
 };
 pub use crate::syntax::declaration::var_syntax::VarSyntax;
 use crate::syntax::token::TokenSyntax;
@@ -17,10 +15,10 @@ use crate::syntax::Syntax;
 
 mod extension_syntax;
 pub mod fun_syntax;
+mod properties_syntax;
 mod struct_syntax;
 mod use_syntax;
 mod var_syntax;
-mod properties_syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct DeclarationSyntax {

@@ -1,7 +1,7 @@
 use crate::syntax::declaration::properties_syntax::StructPropertySyntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
-use crate::syntax::type_name::{TypeParameterListSyntax};
+use crate::syntax::type_name::TypeParameterListSyntax;
 use crate::syntax::Syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
