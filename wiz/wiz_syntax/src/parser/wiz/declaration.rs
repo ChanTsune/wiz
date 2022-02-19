@@ -1062,31 +1062,28 @@ mod tests {
     #[test]
     fn test_struct_syntax() {
         check(
-                r##"struct A {
+            r##"struct A {
         var a: String
-        }"##
-            ,
-                struct_syntax,
-                StructSyntax {
-                    struct_keyword: TokenSyntax::from("struct"),
-                    name: TokenSyntax::from("A")
-                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    type_params: None,
-                    body: StructBodySyntax {
-                        open: TokenSyntax::from("{"),
-                        properties: vec![StructPropertySyntax::StoredProperty(
-                            StoredPropertySyntax {
-                                mutability_keyword: TokenSyntax::from("var"),
-                                name: TokenSyntax::from("a"),
-                                type_: TypeName::Simple(SimpleTypeName {
-                                    name: TokenSyntax::from("String"),
-                                    type_args: None
-                                })
-                            }
-                        )],
-                        close: TokenSyntax::from("}")
-                    }
-                }
+        }"##,
+            struct_syntax,
+            StructSyntax {
+                struct_keyword: TokenSyntax::from("struct"),
+                name: TokenSyntax::from("A")
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                type_params: None,
+                body: StructBodySyntax {
+                    open: TokenSyntax::from("{"),
+                    properties: vec![StructPropertySyntax::StoredProperty(StoredPropertySyntax {
+                        mutability_keyword: TokenSyntax::from("var"),
+                        name: TokenSyntax::from("a"),
+                        type_: TypeName::Simple(SimpleTypeName {
+                            name: TokenSyntax::from("String"),
+                            type_args: None,
+                        }),
+                    })],
+                    close: TokenSyntax::from("}"),
+                },
+            },
         );
     }
 
