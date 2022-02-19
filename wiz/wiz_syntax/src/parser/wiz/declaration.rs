@@ -947,13 +947,9 @@ where
             whitespace0,
             opt(type_constraints),
             whitespace0,
-            char('{'),
-            whitespace0,
-            struct_properties,
-            whitespace0,
-            char('}'),
+            struct_body_syntax,
         )),
-        |(kw, tp, ws, n, _, protocol, _, tc, ws1, _, ws2, properties, _, _)| ExtensionSyntax {
+        |(kw, tp, ws, n, _, protocol, _, tc, ws1, body)| ExtensionSyntax {
             extension_keyword: TokenSyntax::from(kw),
             type_params: tp.map(|(t, tp)| tp.with_leading_trivia(t)),
             name: n,
@@ -962,7 +958,7 @@ where
                 protocol: typ,
             }),
             type_constraints: tc,
-            properties,
+            body,
         },
     )(s)
 }

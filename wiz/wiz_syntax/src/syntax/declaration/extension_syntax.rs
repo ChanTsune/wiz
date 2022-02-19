@@ -1,4 +1,4 @@
-use crate::syntax::declaration::StructPropertySyntax;
+use crate::syntax::declaration::{StructBodySyntax};
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::type_name::{TypeConstraintsSyntax, TypeName, TypeParameterListSyntax};
@@ -11,7 +11,7 @@ pub struct ExtensionSyntax {
     pub name: TypeName,
     pub protocol_extension: Option<ProtocolConformSyntax>,
     pub type_constraints: Option<TypeConstraintsSyntax>,
-    pub properties: Vec<StructPropertySyntax>,
+    pub body: StructBodySyntax,
 }
 
 impl Syntax for ExtensionSyntax {
@@ -22,7 +22,7 @@ impl Syntax for ExtensionSyntax {
             name: self.name,
             protocol_extension: self.protocol_extension,
             type_constraints: self.type_constraints,
-            properties: self.properties,
+            body: self.body,
         }
     }
 
@@ -33,7 +33,7 @@ impl Syntax for ExtensionSyntax {
             name: self.name,
             protocol_extension: self.protocol_extension,
             type_constraints: self.type_constraints,
-            properties: self.properties, // TODO
+            body: self.body.with_trailing_trivia(trivia),
         }
     }
 }
