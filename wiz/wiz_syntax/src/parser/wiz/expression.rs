@@ -13,7 +13,7 @@ use crate::parser::wiz::operators::{
     member_access_operator, multiplicative_operator, postfix_operator, prefix_operator,
     range_operator,
 };
-use crate::parser::wiz::statement::stmts;
+use crate::parser::wiz::statement::{stmt};
 use crate::parser::wiz::type_::{type_, type_arguments};
 use crate::syntax::block::BlockSyntax;
 use crate::syntax::expression::{
@@ -900,7 +900,7 @@ where
     <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
-        tuple((char('{'), stmts, char('}'))),
+        tuple((char('{'), many0(stmt), char('}'))),
         |(open, stms, close)| LambdaSyntax {
             open: TokenSyntax::from(open),
             stmts: stms,
@@ -1714,10 +1714,10 @@ mod tests {
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                 )),
                 body: BlockSyntax {
-                    open: TokenSyntax::from("{")
-                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    open: TokenSyntax::from("{"),
                     body: vec![],
-                    close: TokenSyntax::from("}"),
+                    close: TokenSyntax::from("}")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                 }
                 .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                 else_body: None,
@@ -1749,11 +1749,9 @@ mod tests {
                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                 ),
                 body: BlockSyntax {
-                    open: TokenSyntax::from("{").with_trailing_trivia(Trivia::from(vec![
-                        TriviaPiece::Newlines(1),
-                        TriviaPiece::Spaces(12),
-                    ])),
-                    body: vec![Stmt::Decl(DeclarationSyntax {
+                    open: TokenSyntax::from("{"),
+                    body: vec![
+                        Stmt::Decl(DeclarationSyntax {
                         annotations: None,
                         kind: DeclKind::Var(VarSyntax {
                             mutability_keyword: TokenSyntax::from("val"),
@@ -1781,11 +1779,13 @@ mod tests {
                                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                                 ),
                                 body: BlockSyntax {
-                                    open: TokenSyntax::from("{")
-                                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                                    body: vec![Stmt::Expr(Expr::Literal(LiteralSyntax::Integer(
+                                    open: TokenSyntax::from("{"),
+                                    body: vec![
+                                        Stmt::Expr(Expr::Literal(LiteralSyntax::Integer(
                                         TokenSyntax::from("4"),
-                                    )))],
+                                    )))
+                                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
+                                    ],
                                     close: TokenSyntax::from("}")
                                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                                 }
@@ -1794,10 +1794,9 @@ mod tests {
                                     else_keyword: TokenSyntax::from("else")
                                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                                     body: BlockSyntax {
-                                        open: TokenSyntax::from("{").with_trailing_trivia(
-                                            Trivia::from(TriviaPiece::Spaces(1)),
-                                        ),
-                                        body: vec![Stmt::Expr(Expr::BinOp(
+                                        open: TokenSyntax::from("{"),
+                                        body: vec![
+                                            Stmt::Expr(Expr::BinOp(
                                             BinaryOperationSyntax {
                                                 left: Box::new(Expr::Name(NameExprSyntax::simple(
                                                     TokenSyntax::from("capacity"),
@@ -1813,7 +1812,10 @@ mod tests {
                                                     LiteralSyntax::Integer(TokenSyntax::from("2")),
                                                 )),
                                             },
-                                        ))],
+                                        )).with_leading_trivia(
+                                                Trivia::from(TriviaPiece::Spaces(1)),
+                                            )
+                                        ],
                                         close: TokenSyntax::from("}").with_leading_trivia(
                                             Trivia::from(TriviaPiece::Spaces(1)),
                                         ),
@@ -1822,7 +1824,11 @@ mod tests {
                                 }),
                             }),
                         }),
-                    })],
+                    }).with_leading_trivia(Trivia::from(vec![
+                            TriviaPiece::Newlines(1),
+                            TriviaPiece::Spaces(12),
+                        ]))
+                    ],
                     close: TokenSyntax::from("}").with_leading_trivia(Trivia::from(vec![
                         TriviaPiece::Newlines(1),
                         TriviaPiece::Spaces(8),
@@ -1846,20 +1852,20 @@ mod tests {
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                 ),
                 body: BlockSyntax {
-                    open: TokenSyntax::from("{")
-                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    open: TokenSyntax::from("{"),
                     body: vec![],
-                    close: TokenSyntax::from("}"),
+                    close: TokenSyntax::from("}")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                 }
                 .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                 else_body: Some(ElseSyntax {
                     else_keyword: TokenSyntax::from("else")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     body: BlockSyntax {
-                        open: TokenSyntax::from("{")
-                            .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        open: TokenSyntax::from("{"),
                         body: vec![],
-                        close: TokenSyntax::from("}"),
+                        close: TokenSyntax::from("}")
+                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     }
                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                 }),

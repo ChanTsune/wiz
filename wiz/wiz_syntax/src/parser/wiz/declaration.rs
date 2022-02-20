@@ -8,7 +8,7 @@ use crate::parser::wiz::keywords::{
 use crate::parser::wiz::lexical_structure::{
     identifier, trivia_piece_line_ending, whitespace0, whitespace1, whitespace_without_eol0,
 };
-use crate::parser::wiz::statement::stmts;
+use crate::parser::wiz::statement::{stmt};
 use crate::parser::wiz::type_::{type_, type_parameters};
 use crate::syntax::block::BlockSyntax;
 use crate::syntax::declaration::fun_syntax::{
@@ -730,10 +730,10 @@ where
     <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
-        tuple((char('{'), whitespace0, stmts, whitespace0, char('}'))),
-        |(open, ows, stmts, cws, close)| BlockSyntax {
-            open: TokenSyntax::from(open).with_trailing_trivia(ows),
-            body: stmts,
+        tuple((char('{'), many0(tuple((whitespace0, stmt))), whitespace0, char('}'))),
+        |(open, stmts, cws, close)| BlockSyntax {
+            open: TokenSyntax::from(open),
+            body: stmts.into_iter().map(|(ws, s)| s.with_leading_trivia(ws)).collect(),
             close: TokenSyntax::from(close).with_leading_trivia(cws),
         },
     )(s)
@@ -1169,27 +1169,25 @@ mod tests {
 
     #[test]
     fn test_block() {
-        assert_eq!(
-            block(
+        check(
                 r"{
     1
-}"
-            ),
-            Ok((
-                "",
+}",
+                block,
                 BlockSyntax {
-                    open: TokenSyntax::from("{").with_trailing_trivia(Trivia::from(vec![
-                        TriviaPiece::Newlines(1),
-                        TriviaPiece::Spaces(4)
-                    ])),
-                    body: vec![Stmt::Expr(Expr::Literal(LiteralSyntax::Integer(
+                    open: TokenSyntax::from("{"),
+                    body: vec![
+                        Stmt::Expr(Expr::Literal(LiteralSyntax::Integer(
                         TokenSyntax::from("1")
-                    )))],
+                    ))).with_leading_trivia(Trivia::from(vec![
+                            TriviaPiece::Newlines(1),
+                            TriviaPiece::Spaces(4)
+                        ]))
+                    ],
                     close: TokenSyntax::from("}")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Newlines(1)))
                 }
-            ))
-        )
+        );
     }
 
     #[test]

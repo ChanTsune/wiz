@@ -354,33 +354,7 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(
-        tuple((
-            whitespace0,
-            alt((decl_stmt, assignment_stmt, loop_stmt, expr_stmt)),
-        )),
-        |(ws, stm)| stm.with_leading_trivia(ws),
-    )(s)
-}
-
-pub fn stmts<I>(s: I) -> IResult<I, Vec<Stmt>>
-where
-    I: Slice<RangeFrom<usize>>
-        + Slice<Range<usize>>
-        + InputIter
-        + Clone
-        + InputLength
-        + ToString
-        + InputTake
-        + Offset
-        + InputTakeAtPosition
-        + ExtendInto<Item = char, Extender = String>
-        + FindSubstring<&'static str>
-        + Compare<&'static str>,
-    <I as InputIter>::Item: AsChar + Copy,
-    <I as InputTakeAtPosition>::Item: AsChar,
-{
-    many0(stmt)(s)
+            alt((decl_stmt, assignment_stmt, loop_stmt, expr_stmt))(s)
 }
 
 pub fn file(s: Span) -> IResult<Span, FileSyntax> {
@@ -449,11 +423,9 @@ mod tests {
                     right: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("b")))),
                 }),
                 block: BlockSyntax {
-                    open: TokenSyntax::from("{").with_trailing_trivia(Trivia::from(vec![
-                        TriviaPiece::Newlines(1),
-                        TriviaPiece::Spaces(12),
-                    ])),
-                    body: vec![Stmt::Assignment(AssignmentStmt::Assignment(
+                    open: TokenSyntax::from("{"),
+                    body: vec![
+                        Stmt::Assignment(AssignmentStmt::Assignment(
                         AssignmentSyntax {
                             target: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
                             operator: TokenSyntax::from("=")
@@ -471,7 +443,11 @@ mod tests {
                             })
                             .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                         },
-                    ))],
+                    )).with_leading_trivia(Trivia::from(vec![
+                            TriviaPiece::Newlines(1),
+                            TriviaPiece::Spaces(12),
+                        ]))
+                    ],
                     close: TokenSyntax::from("}").with_leading_trivia(Trivia::from(vec![
                         TriviaPiece::Newlines(1),
                         TriviaPiece::Spaces(8),
@@ -503,11 +479,9 @@ mod tests {
                     right: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("b")))),
                 }),
                 block: BlockSyntax {
-                    open: TokenSyntax::from("{").with_trailing_trivia(Trivia::from(vec![
-                        TriviaPiece::Newlines(1),
-                        TriviaPiece::Spaces(12),
-                    ])),
-                    body: vec![Stmt::Assignment(AssignmentStmt::Assignment(
+                    open: TokenSyntax::from("{"),
+                    body: vec![
+                        Stmt::Assignment(AssignmentStmt::Assignment(
                         AssignmentSyntax {
                             target: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
                             operator: TokenSyntax::from("=")
@@ -525,7 +499,11 @@ mod tests {
                             })
                             .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                         },
-                    ))],
+                    )).with_leading_trivia(Trivia::from(vec![
+                            TriviaPiece::Newlines(1),
+                            TriviaPiece::Spaces(12),
+                        ]))
+                    ],
                     close: TokenSyntax::from("}").with_leading_trivia(Trivia::from(vec![
                         TriviaPiece::Newlines(1),
                         TriviaPiece::Spaces(8),
