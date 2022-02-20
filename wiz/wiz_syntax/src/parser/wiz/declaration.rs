@@ -1241,36 +1241,37 @@ mod tests {
         check(
             "fun puts(_ item: String): Unit",
             function_decl,
-                DeclKind::Fun(FunSyntax {
-                    fun_keyword: TokenSyntax::from("fun"),
-                    name: TokenSyntax::from("puts")
-                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    type_params: None,
-                    arg_defs: ArgDefListSyntax {
-                        open: TokenSyntax::from("("),
-                        elements: vec![ArgDefElementSyntax {
-                            element: ArgDef::Value(ValueArgDef {
-                                label: Some(
-                                    TokenSyntax::from("_")
-                                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                                ),
-                                name: TokenSyntax::from("item"),
-                                type_name: TypeName::Simple(SimpleTypeName {
-                                    name: TokenSyntax::from("String").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                                    type_args: None
-                                })
+            DeclKind::Fun(FunSyntax {
+                fun_keyword: TokenSyntax::from("fun"),
+                name: TokenSyntax::from("puts")
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                type_params: None,
+                arg_defs: ArgDefListSyntax {
+                    open: TokenSyntax::from("("),
+                    elements: vec![ArgDefElementSyntax {
+                        element: ArgDef::Value(ValueArgDef {
+                            label: Some(
+                                TokenSyntax::from("_")
+                                    .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                            ),
+                            name: TokenSyntax::from("item"),
+                            type_name: TypeName::Simple(SimpleTypeName {
+                                name: TokenSyntax::from("String")
+                                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                                type_args: None,
                             }),
-                            trailing_comma: None
-                        }],
-                        close: TokenSyntax::from(")")
-                    },
-                    return_type: Some(TypeName::Simple(SimpleTypeName {
-                        name: TokenSyntax::from("Unit"),
-                        type_args: None
-                    })),
-                    type_constraints: None,
-                    body: None,
-                })
+                        }),
+                        trailing_comma: None,
+                    }],
+                    close: TokenSyntax::from(")"),
+                },
+                return_type: Some(TypeName::Simple(SimpleTypeName {
+                    name: TokenSyntax::from("Unit"),
+                    type_args: None,
+                })),
+                type_constraints: None,
+                body: None,
+            }),
         );
     }
 
@@ -1279,33 +1280,34 @@ mod tests {
         check(
             "fun puts(item: String): Unit",
             function_decl,
-                DeclKind::Fun(FunSyntax {
-                    fun_keyword: TokenSyntax::from("fun"),
-                    name: TokenSyntax::from("puts")
-                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    type_params: None,
-                    arg_defs: ArgDefListSyntax {
-                        open: TokenSyntax::from("("),
-                        elements: vec![ArgDefElementSyntax {
-                            element: ArgDef::Value(ValueArgDef {
-                                label: None,
-                                name: TokenSyntax::from("item"),
-                                type_name: TypeName::Simple(SimpleTypeName {
-                                    name: TokenSyntax::from("String").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                                    type_args: None
-                                })
+            DeclKind::Fun(FunSyntax {
+                fun_keyword: TokenSyntax::from("fun"),
+                name: TokenSyntax::from("puts")
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                type_params: None,
+                arg_defs: ArgDefListSyntax {
+                    open: TokenSyntax::from("("),
+                    elements: vec![ArgDefElementSyntax {
+                        element: ArgDef::Value(ValueArgDef {
+                            label: None,
+                            name: TokenSyntax::from("item"),
+                            type_name: TypeName::Simple(SimpleTypeName {
+                                name: TokenSyntax::from("String")
+                                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                                type_args: None,
                             }),
-                            trailing_comma: None
-                        }],
-                        close: TokenSyntax::from(")")
-                    },
-                    return_type: Some(TypeName::Simple(SimpleTypeName {
-                        name: TokenSyntax::from("Unit"),
-                        type_args: None
-                    })),
-                    type_constraints: None,
-                    body: None,
-                })
+                        }),
+                        trailing_comma: None,
+                    }],
+                    close: TokenSyntax::from(")"),
+                },
+                return_type: Some(TypeName::Simple(SimpleTypeName {
+                    name: TokenSyntax::from("Unit"),
+                    type_args: None,
+                })),
+                type_constraints: None,
+                body: None,
+            }),
         );
     }
 
