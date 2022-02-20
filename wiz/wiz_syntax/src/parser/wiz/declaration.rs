@@ -783,8 +783,8 @@ where
     map(
         tuple((alt((var_keyword, val_keyword)), whitespace1, var_body)),
         |(mutability_keyword, ws, (name, t, e)): (I, _, _)| VarSyntax {
-            mutability_keyword: TokenSyntax::from(mutability_keyword).with_trailing_trivia(ws),
-            name: TokenSyntax::from(name),
+            mutability_keyword: TokenSyntax::from(mutability_keyword),
+            name: TokenSyntax::from(name).with_leading_trivia(ws),
             type_: t,
             value: e,
         },
@@ -1324,9 +1324,9 @@ mod tests {
             Ok((
                 "",
                 DeclKind::Var(VarSyntax {
-                    mutability_keyword: TokenSyntax::from("val")
-                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    name: TokenSyntax::from("a"),
+                    mutability_keyword: TokenSyntax::from("val"),
+                    name: TokenSyntax::from("a")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     type_: Some(TypeName::Simple(SimpleTypeName {
                         name: TokenSyntax::from("Int"),
                         type_args: None
@@ -1344,9 +1344,9 @@ mod tests {
             Ok((
                 "",
                 DeclKind::Var(VarSyntax {
-                    mutability_keyword: TokenSyntax::from("val")
-                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    name: TokenSyntax::from("a"),
+                    mutability_keyword: TokenSyntax::from("val"),
+                    name: TokenSyntax::from("a")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     type_: None,
                     value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("1")))
                 })

@@ -1756,9 +1756,9 @@ mod tests {
                     body: vec![Stmt::Decl(DeclarationSyntax {
                         annotations: None,
                         kind: DeclKind::Var(VarSyntax {
-                            mutability_keyword: TokenSyntax::from("val")
-                                .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                            name: TokenSyntax::from("newCapacity"),
+                            mutability_keyword: TokenSyntax::from("val"),
+                            name: TokenSyntax::from("newCapacity")
+                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                             type_: None,
                             value: Expr::If(IfExprSyntax {
                                 if_keyword: TokenSyntax::from("if"),
