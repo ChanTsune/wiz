@@ -563,7 +563,6 @@ where
     alt((
         map(
             tuple((
-                whitespace0,
                 opt(tuple((function_value_label, whitespace1))),
                 function_value_name,
                 whitespace0,
@@ -571,7 +570,7 @@ where
                 whitespace0,
                 type_,
             )),
-            |(_, label, name, _, _, _, typ)| {
+            |(label, name, _, _, _, typ)| {
                 ArgDef::Value(ValueArgDef {
                     label: label
                         .map(|(label, ws)| TokenSyntax::from(label).with_trailing_trivia(ws)),
