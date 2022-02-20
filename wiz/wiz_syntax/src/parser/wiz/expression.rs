@@ -249,7 +249,7 @@ where
         |(r, e): (I, _)| {
             Expr::Return(ReturnSyntax {
                 return_keyword: TokenSyntax::from(r),
-                value: e.map(|(ws, e)|Box::new(e.with_leading_trivia(ws))),
+                value: e.map(|(ws, e)| Box::new(e.with_leading_trivia(ws))),
             })
         },
     )(s)
@@ -1874,9 +1874,10 @@ mod tests {
             return_expr,
             Expr::Return(ReturnSyntax {
                 return_keyword: TokenSyntax::from("return"),
-                value: Some(Box::new(Expr::Name(NameExprSyntax::simple(
-                    TokenSyntax::from("name"),
-                )).with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))))),
+                value: Some(Box::new(
+                    Expr::Name(NameExprSyntax::simple(TokenSyntax::from("name")))
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                )),
             }),
         )
     }
