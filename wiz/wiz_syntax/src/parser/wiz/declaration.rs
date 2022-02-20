@@ -966,23 +966,21 @@ where
             opt(tuple((whitespace0, type_parameters))),
             whitespace1,
             type_,
-            whitespace0,
-            opt(tuple((char(':'), whitespace0, type_))),
-            whitespace0,
-            opt(type_constraints),
+            opt(tuple((whitespace0, char(':'), whitespace0, type_))),
+            opt(tuple((whitespace0, type_constraints))),
             whitespace0,
             struct_body_syntax,
         )),
-        |(kw, tp, ws, n, _, protocol, _, tc, ws1, body)| ExtensionSyntax {
+        |(kw, tp, ws, n, protocol, tc, ws1, body)| ExtensionSyntax {
             extension_keyword: TokenSyntax::from(kw),
             type_params: tp.map(|(t, tp)| tp.with_leading_trivia(t)),
             name: n.with_leading_trivia(ws),
-            protocol_extension: protocol.map(|(colon, _, typ)| ProtocolConformSyntax {
-                colon: TokenSyntax::from(colon),
-                protocol: typ,
+            protocol_extension: protocol.map(|(lws, colon, tws, typ)| ProtocolConformSyntax {
+                colon: TokenSyntax::from(colon).with_leading_trivia(lws),
+                protocol: typ.with_leading_trivia(tws),
             }),
-            type_constraints: tc,
-            body,
+            type_constraints: tc.map(|(t, tc)| tc.with_leading_trivia(t)),
+            body: body.with_leading_trivia(ws1),
         },
     )(s)
 }
