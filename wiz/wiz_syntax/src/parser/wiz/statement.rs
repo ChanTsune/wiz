@@ -419,8 +419,10 @@ mod tests {
                     left: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a")))),
                     operator: TokenSyntax::from("<")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    right: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("b")))
-                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))),
+                    right: Box::new(
+                        Expr::Name(NameExprSyntax::simple(TokenSyntax::from("b")))
+                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    ),
                 }),
                 block: BlockSyntax {
                     open: TokenSyntax::from("{"),
@@ -435,9 +437,10 @@ mod tests {
                                 ))),
                                 operator: TokenSyntax::from("+")
                                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                                right: Box::new(Expr::Literal(LiteralSyntax::Integer(
-                                    TokenSyntax::from("1"),
-                                )).with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))),
+                                right: Box::new(
+                                    Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("1")))
+                                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                                ),
                             })
                             .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                         }))
@@ -473,8 +476,10 @@ mod tests {
                     })),
                     operator: TokenSyntax::from("<")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    right: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("b")))
-                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))),
+                    right: Box::new(
+                        Expr::Name(NameExprSyntax::simple(TokenSyntax::from("b")))
+                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    ),
                 }),
                 block: BlockSyntax {
                     open: TokenSyntax::from("{"),
@@ -489,9 +494,10 @@ mod tests {
                                 ))),
                                 operator: TokenSyntax::from("+")
                                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                                right: Box::new(Expr::Literal(LiteralSyntax::Integer(
-                                    TokenSyntax::from("1"),
-                                )).with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))),
+                                right: Box::new(
+                                    Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("1")))
+                                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                                ),
                             })
                             .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                         }))

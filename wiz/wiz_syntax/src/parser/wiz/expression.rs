@@ -609,8 +609,7 @@ where
     for (lws, op, rws, ex) in v {
         bin_op = Expr::BinOp(BinaryOperationSyntax {
             left: Box::new(bin_op),
-            operator: TokenSyntax::from(op)
-                .with_leading_trivia(lws),
+            operator: TokenSyntax::from(op).with_leading_trivia(lws),
             right: Box::new(ex.with_leading_trivia(rws)),
         })
     }
@@ -1510,54 +1509,54 @@ mod tests {
         check(
             "1||2 || 3",
             disjunction_expr,
-                Expr::BinOp(BinaryOperationSyntax {
-                    left: Box::from(Expr::BinOp(BinaryOperationSyntax {
-                        left: Box::from(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from(
-                            "1"
-                        )))),
-                        operator: TokenSyntax::from("||"),
-                        right: Box::from(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from(
-                            "2"
-                        ))))
-                    })),
-                    operator: TokenSyntax::from("||")
-                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+            Expr::BinOp(BinaryOperationSyntax {
+                left: Box::from(Expr::BinOp(BinaryOperationSyntax {
+                    left: Box::from(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from(
+                        "1",
+                    )))),
+                    operator: TokenSyntax::from("||"),
                     right: Box::from(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from(
-                        "3"
-                    )))
-                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))))
-                })
+                        "2",
+                    )))),
+                })),
+                operator: TokenSyntax::from("||")
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                right: Box::from(
+                    Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("3")))
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                ),
+            }),
         );
     }
 
     #[test]
     fn test_conjunction_expr() {
         check(
-                r"1 &&
-            2 && 3"
-                    ,
-                conjunction_expr,
-                Expr::BinOp(BinaryOperationSyntax {
-                    left: Box::from(Expr::BinOp(BinaryOperationSyntax {
-                        left: Box::from(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from(
-                            "1"
-                        )))),
-                        operator: TokenSyntax::from("&&")
-                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                        right: Box::from(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from(
-                            "2"
-                        ))).with_leading_trivia(Trivia::from(vec![
-                            TriviaPiece::Newlines(1),
-                            TriviaPiece::Spaces(12)
-                        ])))
-                    })),
+            r"1 &&
+            2 && 3",
+            conjunction_expr,
+            Expr::BinOp(BinaryOperationSyntax {
+                left: Box::from(Expr::BinOp(BinaryOperationSyntax {
+                    left: Box::from(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from(
+                        "1",
+                    )))),
                     operator: TokenSyntax::from("&&")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    right: Box::from(Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from(
-                        "3"
-                    )))
-                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))))
-                })
+                    right: Box::from(
+                        Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("2")))
+                            .with_leading_trivia(Trivia::from(vec![
+                                TriviaPiece::Newlines(1),
+                                TriviaPiece::Spaces(12),
+                            ])),
+                    ),
+                })),
+                operator: TokenSyntax::from("&&")
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                right: Box::from(
+                    Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("3")))
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                ),
+            }),
         );
     }
 
@@ -1734,9 +1733,10 @@ mod tests {
                         )))),
                         operator: TokenSyntax::from("<=")
                             .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                        right: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from(
-                            "length",
-                        ))).with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))),
+                        right: Box::new(
+                            Expr::Name(NameExprSyntax::simple(TokenSyntax::from("length")))
+                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        ),
                     })
                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                 ),
@@ -1756,16 +1756,17 @@ mod tests {
                                         left: Box::new(Expr::Name(NameExprSyntax::simple(
                                             TokenSyntax::from("capacity"),
                                         ))),
-                                        operator: TokenSyntax::from("==")
-                                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(
-                                                1,
-                                            ))),
-                                        right: Box::new(Expr::Literal(LiteralSyntax::Integer(
-                                            TokenSyntax::from("0"),
-                                        ))
+                                        operator: TokenSyntax::from("==").with_leading_trivia(
+                                            Trivia::from(TriviaPiece::Spaces(1)),
+                                        ),
+                                        right: Box::new(
+                                            Expr::Literal(LiteralSyntax::Integer(
+                                                TokenSyntax::from("0"),
+                                            ))
                                             .with_leading_trivia(Trivia::from(
                                                 TriviaPiece::Spaces(1),
-                                            ))),
+                                            )),
+                                        ),
                                     })
                                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                                 ),
@@ -1793,11 +1794,14 @@ mod tests {
                                                     .with_leading_trivia(Trivia::from(
                                                         TriviaPiece::Spaces(1),
                                                     )),
-                                                right: Box::new(Expr::Literal(
-                                                    LiteralSyntax::Integer(TokenSyntax::from("2")),
-                                                ).with_leading_trivia(Trivia::from(
+                                                right: Box::new(
+                                                    Expr::Literal(LiteralSyntax::Integer(
+                                                        TokenSyntax::from("2"),
+                                                    ))
+                                                    .with_leading_trivia(Trivia::from(
                                                         TriviaPiece::Spaces(1),
-                                                    ))),
+                                                    )),
+                                                ),
                                             },
                                         ))
                                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))],
