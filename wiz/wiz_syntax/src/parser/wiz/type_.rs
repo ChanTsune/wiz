@@ -283,10 +283,8 @@ where
         |(name, typ)| TypeParam {
             name: TokenSyntax::from(name),
             type_constraint: typ.map(|(lws, c, ws, t)| TypeConstraintSyntax {
-                sep: TokenSyntax::from(c)
-                    .with_leading_trivia(lws)
-                    .with_trailing_trivia(ws),
-                constraint: t,
+                sep: TokenSyntax::from(c).with_leading_trivia(lws),
+                constraint: t.with_leading_trivia(ws),
             }),
         },
     )(s)
@@ -294,6 +292,7 @@ where
 
 #[cfg(test)]
 mod tests {
+    use crate::parser::tests::check;
     use crate::parser::wiz::type_::{decorated_type, type_parameter, type_parameters, user_type};
     use crate::syntax::token::TokenSyntax;
     use crate::syntax::trivia::{Trivia, TriviaPiece};
@@ -374,223 +373,207 @@ mod tests {
 
     #[test]
     fn test_type_parameter() {
-        assert_eq!(
-            type_parameter("T:Int"),
-            Ok((
-                "",
-                TypeParam {
-                    name: TokenSyntax::from("T"),
-                    type_constraint: Some(TypeConstraintSyntax {
-                        sep: TokenSyntax::from(":"),
-                        constraint: TypeName::Simple(SimpleTypeName {
-                            name: TokenSyntax::from("Int"),
-                            type_args: None
-                        })
-                    })
-                }
-            ))
+        check(
+            "T:Int",
+            type_parameter,
+            TypeParam {
+                name: TokenSyntax::from("T"),
+                type_constraint: Some(TypeConstraintSyntax {
+                    sep: TokenSyntax::from(":"),
+                    constraint: TypeName::Simple(SimpleTypeName {
+                        name: TokenSyntax::from("Int"),
+                        type_args: None,
+                    }),
+                }),
+            },
         );
-        assert_eq!(
-            type_parameter("T :Int"),
-            Ok((
-                "",
-                TypeParam {
-                    name: TokenSyntax::from("T"),
-                    type_constraint: Some(TypeConstraintSyntax {
-                        sep: TokenSyntax::from(":")
-                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                        constraint: TypeName::Simple(SimpleTypeName {
-                            name: TokenSyntax::from("Int"),
-                            type_args: None
-                        })
-                    })
-                }
-            ))
+        check(
+            "T :Int",
+            type_parameter,
+            TypeParam {
+                name: TokenSyntax::from("T"),
+                type_constraint: Some(TypeConstraintSyntax {
+                    sep: TokenSyntax::from(":")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    constraint: TypeName::Simple(SimpleTypeName {
+                        name: TokenSyntax::from("Int"),
+                        type_args: None,
+                    }),
+                }),
+            },
         );
-        assert_eq!(
-            type_parameter("T: Int"),
-            Ok((
-                "",
-                TypeParam {
-                    name: TokenSyntax::from("T"),
-                    type_constraint: Some(TypeConstraintSyntax {
-                        sep: TokenSyntax::from(":")
-                            .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                        constraint: TypeName::Simple(SimpleTypeName {
-                            name: TokenSyntax::from("Int"),
-                            type_args: None
-                        })
+        check(
+            "T: Int",
+            type_parameter,
+            TypeParam {
+                name: TokenSyntax::from("T"),
+                type_constraint: Some(TypeConstraintSyntax {
+                    sep: TokenSyntax::from(":"),
+                    constraint: TypeName::Simple(SimpleTypeName {
+                        name: TokenSyntax::from("Int"),
+                        type_args: None,
                     })
-                }
-            ))
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                }),
+            },
         );
-        assert_eq!(
-            type_parameter("T : Int"),
-            Ok((
-                "",
-                TypeParam {
-                    name: TokenSyntax::from("T"),
-                    type_constraint: Some(TypeConstraintSyntax {
-                        sep: TokenSyntax::from(":")
-                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                            .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                        constraint: TypeName::Simple(SimpleTypeName {
-                            name: TokenSyntax::from("Int"),
-                            type_args: None
-                        })
+        check(
+            "T : Int",
+            type_parameter,
+            TypeParam {
+                name: TokenSyntax::from("T"),
+                type_constraint: Some(TypeConstraintSyntax {
+                    sep: TokenSyntax::from(":")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    constraint: TypeName::Simple(SimpleTypeName {
+                        name: TokenSyntax::from("Int"),
+                        type_args: None,
                     })
-                }
-            ))
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                }),
+            },
         );
     }
 
     #[test]
     fn test_type_parameters_single() {
-        assert_eq!(
-            type_parameters("<T: A >"),
-            Ok((
-                "",
-                TypeParameterListSyntax {
-                    open: TokenSyntax::from("<"),
-                    elements: vec![TypeParameterElementSyntax {
-                        element: TypeParam {
-                            name: TokenSyntax::from("T"),
-                            type_constraint: Some(TypeConstraintSyntax {
-                                sep: TokenSyntax::from(":")
-                                    .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                                constraint: TypeName::Simple(SimpleTypeName {
-                                    name: TokenSyntax::from("A"),
-                                    type_args: None
-                                })
+        check(
+            "<T: A >",
+            type_parameters,
+            TypeParameterListSyntax {
+                open: TokenSyntax::from("<"),
+                elements: vec![TypeParameterElementSyntax {
+                    element: TypeParam {
+                        name: TokenSyntax::from("T"),
+                        type_constraint: Some(TypeConstraintSyntax {
+                            sep: TokenSyntax::from(":"),
+                            constraint: TypeName::Simple(SimpleTypeName {
+                                name: TokenSyntax::from("A"),
+                                type_args: None,
                             })
-                        },
-                        trailing_comma: None
-                    }],
-                    close: TokenSyntax::from(">")
-                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                }
-            ))
+                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        }),
+                    },
+                    trailing_comma: None,
+                }],
+                close: TokenSyntax::from(">")
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+            },
         );
     }
 
     #[test]
     fn test_type_parameters_single_with_trailing_comma() {
-        assert_eq!(
-            type_parameters("<T: A,>"),
-            Ok((
-                "",
-                TypeParameterListSyntax {
-                    open: TokenSyntax::from("<"),
-                    elements: vec![TypeParameterElementSyntax {
-                        element: TypeParam {
-                            name: TokenSyntax::from("T"),
-                            type_constraint: Some(TypeConstraintSyntax {
-                                sep: TokenSyntax::from(":")
-                                    .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                                constraint: TypeName::Simple(SimpleTypeName {
-                                    name: TokenSyntax::from("A"),
-                                    type_args: None
-                                })
+        check(
+            "<T: A,>",
+            type_parameters,
+            TypeParameterListSyntax {
+                open: TokenSyntax::from("<"),
+                elements: vec![TypeParameterElementSyntax {
+                    element: TypeParam {
+                        name: TokenSyntax::from("T"),
+                        type_constraint: Some(TypeConstraintSyntax {
+                            sep: TokenSyntax::from(":"),
+                            constraint: TypeName::Simple(SimpleTypeName {
+                                name: TokenSyntax::from("A"),
+                                type_args: None,
                             })
-                        },
-                        trailing_comma: Some(TokenSyntax::from(","))
-                    }],
-                    close: TokenSyntax::from(">")
-                }
-            ))
+                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        }),
+                    },
+                    trailing_comma: Some(TokenSyntax::from(",")),
+                }],
+                close: TokenSyntax::from(">"),
+            },
         );
     }
 
     #[test]
     fn test_type_parameters_multi() {
-        assert_eq!(
-            type_parameters("<T: A, U :B>"),
-            Ok((
-                "",
-                TypeParameterListSyntax {
-                    open: TokenSyntax::from("<"),
-                    elements: vec![
-                        TypeParameterElementSyntax {
-                            element: TypeParam {
-                                name: TokenSyntax::from("T"),
-                                type_constraint: Some(TypeConstraintSyntax {
-                                    sep: TokenSyntax::from(":")
-                                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                                    constraint: TypeName::Simple(SimpleTypeName {
-                                        name: TokenSyntax::from("A"),
-                                        type_args: None
-                                    })
+        check(
+            "<T: A, U :B>",
+            type_parameters,
+            TypeParameterListSyntax {
+                open: TokenSyntax::from("<"),
+                elements: vec![
+                    TypeParameterElementSyntax {
+                        element: TypeParam {
+                            name: TokenSyntax::from("T"),
+                            type_constraint: Some(TypeConstraintSyntax {
+                                sep: TokenSyntax::from(":"),
+                                constraint: TypeName::Simple(SimpleTypeName {
+                                    name: TokenSyntax::from("A"),
+                                    type_args: None,
                                 })
-                            },
-                            trailing_comma: Some(TokenSyntax::from(","))
+                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                            }),
                         },
-                        TypeParameterElementSyntax {
-                            element: TypeParam {
-                                name: TokenSyntax::from("U")
+                        trailing_comma: Some(TokenSyntax::from(",")),
+                    },
+                    TypeParameterElementSyntax {
+                        element: TypeParam {
+                            name: TokenSyntax::from("U")
+                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                            type_constraint: Some(TypeConstraintSyntax {
+                                sep: TokenSyntax::from(":")
                                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                                type_constraint: Some(TypeConstraintSyntax {
-                                    sep: TokenSyntax::from(":")
-                                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                                    constraint: TypeName::Simple(SimpleTypeName {
-                                        name: TokenSyntax::from("B"),
-                                        type_args: None
-                                    })
-                                })
-                            },
-                            trailing_comma: None
-                        }
-                    ],
-                    close: TokenSyntax::from(">")
-                }
-            ))
+                                constraint: TypeName::Simple(SimpleTypeName {
+                                    name: TokenSyntax::from("B"),
+                                    type_args: None,
+                                }),
+                            }),
+                        },
+                        trailing_comma: None,
+                    },
+                ],
+                close: TokenSyntax::from(">"),
+            },
         );
     }
 
     #[test]
     fn test_type_parameters_multi_with_trailing_comma() {
-        assert_eq!(
-            type_parameters("<T: A, U :B ,>"),
-            Ok((
-                "",
-                TypeParameterListSyntax {
-                    open: TokenSyntax::from("<"),
-                    elements: vec![
-                        TypeParameterElementSyntax {
-                            element: TypeParam {
-                                name: TokenSyntax::from("T"),
-                                type_constraint: Some(TypeConstraintSyntax {
-                                    sep: TokenSyntax::from(":")
-                                        .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                                    constraint: TypeName::Simple(SimpleTypeName {
-                                        name: TokenSyntax::from("A"),
-                                        type_args: None
-                                    })
+        check(
+            "<T: A, U :B ,>",
+            type_parameters,
+            TypeParameterListSyntax {
+                open: TokenSyntax::from("<"),
+                elements: vec![
+                    TypeParameterElementSyntax {
+                        element: TypeParam {
+                            name: TokenSyntax::from("T"),
+                            type_constraint: Some(TypeConstraintSyntax {
+                                sep: TokenSyntax::from(":"),
+                                constraint: TypeName::Simple(SimpleTypeName {
+                                    name: TokenSyntax::from("A"),
+                                    type_args: None,
                                 })
-                            },
-                            trailing_comma: Some(TokenSyntax::from(","))
+                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                            }),
                         },
-                        TypeParameterElementSyntax {
-                            element: TypeParam {
-                                name: TokenSyntax::from("U")
+                        trailing_comma: Some(TokenSyntax::from(",")),
+                    },
+                    TypeParameterElementSyntax {
+                        element: TypeParam {
+                            name: TokenSyntax::from("U")
+                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                            type_constraint: Some(TypeConstraintSyntax {
+                                sep: TokenSyntax::from(":")
                                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                                type_constraint: Some(TypeConstraintSyntax {
-                                    sep: TokenSyntax::from(":")
-                                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                                    constraint: TypeName::Simple(SimpleTypeName {
-                                        name: TokenSyntax::from("B"),
-                                        type_args: None
-                                    })
-                                })
-                            },
-                            trailing_comma: Some(
-                                TokenSyntax::from(",")
-                                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))
-                            )
-                        }
-                    ],
-                    close: TokenSyntax::from(">")
-                }
-            ))
+                                constraint: TypeName::Simple(SimpleTypeName {
+                                    name: TokenSyntax::from("B"),
+                                    type_args: None,
+                                }),
+                            }),
+                        },
+                        trailing_comma: Some(
+                            TokenSyntax::from(",")
+                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        ),
+                    },
+                ],
+                close: TokenSyntax::from(">"),
+            },
         );
     }
 }
