@@ -570,12 +570,12 @@ where
                 whitespace0,
                 type_,
             )),
-            |(label, name, _, _, _, typ)| {
+            |(label, name, _, _, ws, typ)| {
                 ArgDef::Value(ValueArgDef {
                     label: label
                         .map(|(label, ws)| TokenSyntax::from(label).with_trailing_trivia(ws)),
                     name: TokenSyntax::from(name),
-                    type_name: typ,
+                    type_name: typ.with_leading_trivia(ws),
                 })
             },
         ),
@@ -1238,10 +1238,9 @@ mod tests {
 
     #[test]
     fn test_function_no_body() {
-        assert_eq!(
-            function_decl("fun puts(_ item: String): Unit"),
-            Ok((
-                "",
+        check(
+            "fun puts(_ item: String): Unit",
+            function_decl,
                 DeclKind::Fun(FunSyntax {
                     fun_keyword: TokenSyntax::from("fun"),
                     name: TokenSyntax::from("puts")
@@ -1257,7 +1256,7 @@ mod tests {
                                 ),
                                 name: TokenSyntax::from("item"),
                                 type_name: TypeName::Simple(SimpleTypeName {
-                                    name: TokenSyntax::from("String"),
+                                    name: TokenSyntax::from("String").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                                     type_args: None
                                 })
                             }),
@@ -1272,16 +1271,14 @@ mod tests {
                     type_constraints: None,
                     body: None,
                 })
-            ))
-        )
+        );
     }
 
     #[test]
     fn test_function_short_label() {
-        assert_eq!(
-            function_decl("fun puts(item: String): Unit"),
-            Ok((
-                "",
+        check(
+            "fun puts(item: String): Unit",
+            function_decl,
                 DeclKind::Fun(FunSyntax {
                     fun_keyword: TokenSyntax::from("fun"),
                     name: TokenSyntax::from("puts")
@@ -1294,7 +1291,7 @@ mod tests {
                                 label: None,
                                 name: TokenSyntax::from("item"),
                                 type_name: TypeName::Simple(SimpleTypeName {
-                                    name: TokenSyntax::from("String"),
+                                    name: TokenSyntax::from("String").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                                     type_args: None
                                 })
                             }),
@@ -1309,8 +1306,7 @@ mod tests {
                     type_constraints: None,
                     body: None,
                 })
-            ))
-        )
+        );
     }
 
     #[test]
