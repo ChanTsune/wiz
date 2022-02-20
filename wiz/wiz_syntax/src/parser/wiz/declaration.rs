@@ -391,8 +391,8 @@ where
         tuple((deinit_keyword, whitespace0, function_body)),
         |(deinit, ws, body): (I, _, _)| {
             StructPropertySyntax::Deinit(DeinitializerSyntax {
-                deinit_keyword: TokenSyntax::from(deinit).with_trailing_trivia(ws),
-                body,
+                deinit_keyword: TokenSyntax::from(deinit),
+                body: body.with_leading_trivia(ws),
             })
         },
     )(s)
