@@ -354,7 +354,7 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-            alt((decl_stmt, assignment_stmt, loop_stmt, expr_stmt))(s)
+    alt((decl_stmt, assignment_stmt, loop_stmt, expr_stmt))(s)
 }
 
 pub fn file(s: Span) -> IResult<Span, FileSyntax> {
@@ -425,8 +425,7 @@ mod tests {
                 block: BlockSyntax {
                     open: TokenSyntax::from("{"),
                     body: vec![
-                        Stmt::Assignment(AssignmentStmt::Assignment(
-                        AssignmentSyntax {
+                        Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax {
                             target: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
                             operator: TokenSyntax::from("=")
                                 .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
@@ -442,11 +441,11 @@ mod tests {
                                 ))),
                             })
                             .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                        },
-                    )).with_leading_trivia(Trivia::from(vec![
+                        }))
+                        .with_leading_trivia(Trivia::from(vec![
                             TriviaPiece::Newlines(1),
                             TriviaPiece::Spaces(12),
-                        ]))
+                        ])),
                     ],
                     close: TokenSyntax::from("}").with_leading_trivia(Trivia::from(vec![
                         TriviaPiece::Newlines(1),
@@ -481,8 +480,7 @@ mod tests {
                 block: BlockSyntax {
                     open: TokenSyntax::from("{"),
                     body: vec![
-                        Stmt::Assignment(AssignmentStmt::Assignment(
-                        AssignmentSyntax {
+                        Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax {
                             target: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
                             operator: TokenSyntax::from("=")
                                 .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
@@ -498,11 +496,11 @@ mod tests {
                                 ))),
                             })
                             .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                        },
-                    )).with_leading_trivia(Trivia::from(vec![
+                        }))
+                        .with_leading_trivia(Trivia::from(vec![
                             TriviaPiece::Newlines(1),
                             TriviaPiece::Spaces(12),
-                        ]))
+                        ])),
                     ],
                     close: TokenSyntax::from("}").with_leading_trivia(Trivia::from(vec![
                         TriviaPiece::Newlines(1),
