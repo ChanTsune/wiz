@@ -245,11 +245,11 @@ where
     <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
-        tuple((return_keyword, whitespace1, opt(expr))),
-        |(r, ws, e): (I, _, _)| {
+        tuple((return_keyword, opt(tuple((whitespace1, expr))))),
+        |(r, e): (I, _)| {
             Expr::Return(ReturnSyntax {
-                return_keyword: TokenSyntax::from(r).with_trailing_trivia(ws),
-                value: e.map(Box::new),
+                return_keyword: TokenSyntax::from(r),
+                value: e.map(|(ws, e)|Box::new(e.with_leading_trivia(ws))),
             })
         },
     )(s)
@@ -1873,11 +1873,10 @@ mod tests {
             "return name",
             return_expr,
             Expr::Return(ReturnSyntax {
-                return_keyword: TokenSyntax::from("return")
-                    .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                return_keyword: TokenSyntax::from("return"),
                 value: Some(Box::new(Expr::Name(NameExprSyntax::simple(
                     TokenSyntax::from("name"),
-                )))),
+                )).with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))))),
             }),
         )
     }
