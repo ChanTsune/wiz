@@ -530,10 +530,9 @@ impl Ast2HLIR {
 
     pub fn use_syntax(&self, u: UseSyntax, annotations: Option<AnnotationsSyntax>) -> TypedUse {
         let mut names: Vec<_> = u
-            .package_name.map(|pn| pn.names
-            .into_iter()
-            .map(|i| i.name.token())
-            .collect()).unwrap_or_default();
+            .package_name
+            .map(|pn| pn.names.into_iter().map(|i| i.name.token()).collect())
+            .unwrap_or_default();
         names.push(u.used_name.token());
         TypedUse {
             annotations: self.annotations(annotations),

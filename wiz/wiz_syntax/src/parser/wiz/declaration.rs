@@ -889,7 +889,7 @@ where
                     as_keyword: TokenSyntax::from(a).with_leading_trivia(lws),
                     name: TokenSyntax::from(n).with_leading_trivia(rws),
                 }),
-            }
+            },
         },
     )(s)
 }
@@ -1537,7 +1537,8 @@ mod tests {
             UseSyntax {
                 use_keyword: TokenSyntax::from("use"),
                 package_name: None,
-                used_name: TokenSyntax::from("abc").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                used_name: TokenSyntax::from("abc")
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                 alias: None,
             },
         );
@@ -1547,7 +1548,8 @@ mod tests {
             UseSyntax {
                 use_keyword: TokenSyntax::from("use"),
                 package_name: None,
-                used_name: TokenSyntax::from("abc").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                used_name: TokenSyntax::from("abc")
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                 alias: Some(AliasSyntax {
                     as_keyword: TokenSyntax::from("as")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
