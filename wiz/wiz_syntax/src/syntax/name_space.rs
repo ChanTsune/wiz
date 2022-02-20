@@ -2,25 +2,11 @@ use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::Syntax;
 
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, Default)]
 pub struct NameSpaceSyntax {
     pub leading_trivia: Trivia,
     pub elements: Vec<NameSpaceElementSyntax>,
     pub trailing_trivia: Trivia,
-}
-
-impl NameSpaceSyntax {
-    pub fn new() -> Self {
-        Self {
-            leading_trivia: Default::default(),
-            elements: vec![],
-            trailing_trivia: Default::default(),
-        }
-    }
-
-    pub(crate) fn is_empty(&self) -> bool {
-        self.elements.is_empty()
-    }
 }
 
 impl Syntax for NameSpaceSyntax {
@@ -38,12 +24,6 @@ impl Syntax for NameSpaceSyntax {
             elements: self.elements,
             trailing_trivia: trivia,
         }
-    }
-}
-
-impl Default for NameSpaceSyntax {
-    fn default() -> Self {
-        Self::new()
     }
 }
 

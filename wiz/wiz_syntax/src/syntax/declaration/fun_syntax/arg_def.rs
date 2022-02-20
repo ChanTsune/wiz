@@ -30,6 +30,7 @@ impl Syntax for ArgDef {
 pub struct ValueArgDef {
     pub label: Option<TokenSyntax>,
     pub name: TokenSyntax,
+    pub colon: TokenSyntax,
     pub type_name: TypeName,
 }
 
@@ -39,11 +40,13 @@ impl Syntax for ValueArgDef {
             Some(label) => Self {
                 label: Some(label.with_leading_trivia(trivia)),
                 name: self.name,
+                colon: self.colon,
                 type_name: self.type_name,
             },
             None => Self {
                 label: None,
                 name: self.name.with_leading_trivia(trivia),
+                colon: self.colon,
                 type_name: self.type_name,
             },
         }
@@ -53,6 +56,7 @@ impl Syntax for ValueArgDef {
         Self {
             label: self.label,
             name: self.name,
+            colon: self.colon,
             type_name: self.type_name.with_trailing_trivia(trivia),
         }
     }

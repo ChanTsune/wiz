@@ -44,21 +44,9 @@ impl ToString for TriviaPiece {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, Default)]
 pub struct Trivia {
     peaces: Vec<TriviaPiece>,
-}
-
-impl Trivia {
-    pub fn new() -> Self {
-        Self { peaces: vec![] }
-    }
-}
-
-impl Default for Trivia {
-    fn default() -> Self {
-        Self::new()
-    }
 }
 
 impl Add<Trivia> for Trivia {

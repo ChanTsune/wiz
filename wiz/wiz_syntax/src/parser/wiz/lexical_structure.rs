@@ -441,7 +441,7 @@ mod tests {
 
     #[test]
     fn test_whitespace0() {
-        assert_eq!(whitespace0(""), Ok(("", Trivia::new())));
+        assert_eq!(whitespace0(""), Ok(("", Trivia::default())));
         assert_eq!(
             whitespace0("\n"),
             Ok(("", Trivia::from(TriviaPiece::Newlines(1))))

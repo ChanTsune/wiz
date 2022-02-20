@@ -373,9 +373,9 @@ where
                     alt((
                         block,
                         map(if_expr, |ib| BlockSyntax {
-                            open: TokenSyntax::new(),
+                            open: TokenSyntax::default(),
                             body: vec![Stmt::Expr(ib)],
-                            close: TokenSyntax::new(),
+                            close: TokenSyntax::default(),
                         }),
                     )),
                 )),

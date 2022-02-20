@@ -243,7 +243,6 @@ impl Ast2HLIR {
 
     pub fn fun_syntax(&self, f: FunSyntax, annotations: Option<AnnotationsSyntax>) -> TypedFun {
         let FunSyntax {
-            modifiers,
             fun_keyword: _,
             name,
             type_params,
@@ -316,7 +315,7 @@ impl Ast2HLIR {
         TypedFun {
             annotations: self.annotations(annotations),
             package: TypedPackage::Raw(Package::new()),
-            modifiers: modifiers.modifiers.into_iter().map(|m| m.token()).collect(),
+            modifiers: vec![],
             name: name.token(),
             type_params: type_params.map(|v| {
                 v.elements
@@ -398,7 +397,7 @@ impl Ast2HLIR {
         let mut computed_properties: Vec<TypedComputedProperty> = vec![];
         let mut initializers: Vec<TypedInitializer> = vec![];
         let mut member_functions: Vec<TypedMemberFunction> = vec![];
-        for p in s.properties {
+        for p in s.body.properties {
             match p {
                 StructPropertySyntax::StoredProperty(v) => {
                     stored_properties.push(self.stored_property_syntax(v));
@@ -500,7 +499,6 @@ impl Ast2HLIR {
 
     pub fn member_function(&self, member_function: FunSyntax) -> TypedMemberFunction {
         let FunSyntax {
-            modifiers: _,
             fun_keyword: _,
             name,
             type_params,
@@ -552,7 +550,7 @@ impl Ast2HLIR {
     ) -> TypedExtension {
         let mut computed_properties = vec![];
         let mut member_functions = vec![];
-        for prop in e.properties {
+        for prop in e.body.properties {
             match prop {
                 StructPropertySyntax::StoredProperty(_) => {
                     panic!("Stored property not allowed here.")
@@ -579,7 +577,7 @@ impl Ast2HLIR {
     ) -> TypedProtocol {
         let mut computed_properties: Vec<TypedComputedProperty> = vec![];
         let mut member_functions: Vec<TypedMemberFunction> = vec![];
-        for p in p.properties {
+        for p in p.body.properties {
             match p {
                 StructPropertySyntax::StoredProperty(v) => {
                     panic!("protocol is not allowed stored property {:?}", v)

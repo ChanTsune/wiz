@@ -2,7 +2,6 @@ pub use crate::syntax::declaration::fun_syntax::arg_def::{
     ArgDef, ArgDefElementSyntax, ArgDefListSyntax, SelfArgDefSyntax, ValueArgDef,
 };
 pub use crate::syntax::declaration::fun_syntax::body_def::FunBody;
-use crate::syntax::modifier::ModifiersSyntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::type_name::{TypeConstraintsSyntax, TypeName, TypeParameterListSyntax};
@@ -13,7 +12,6 @@ mod body_def;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct FunSyntax {
-    pub modifiers: ModifiersSyntax,
     pub fun_keyword: TokenSyntax,
     pub name: TokenSyntax,
     pub type_params: Option<TypeParameterListSyntax>,
@@ -26,8 +24,7 @@ pub struct FunSyntax {
 impl Syntax for FunSyntax {
     fn with_leading_trivia(self, trivia: Trivia) -> Self {
         Self {
-            modifiers: self.modifiers, // TODO
-            fun_keyword: self.fun_keyword,
+            fun_keyword: self.fun_keyword.with_leading_trivia(trivia),
             name: self.name,
             type_params: self.type_params,
             arg_defs: self.arg_defs,
@@ -42,7 +39,6 @@ impl Syntax for FunSyntax {
             None => match self.type_constraints {
                 None => match self.return_type {
                     None => Self {
-                        modifiers: self.modifiers,
                         fun_keyword: self.fun_keyword,
                         name: self.name,
                         type_params: self.type_params,
@@ -52,7 +48,6 @@ impl Syntax for FunSyntax {
                         body: self.body,
                     },
                     Some(return_type) => Self {
-                        modifiers: self.modifiers,
                         fun_keyword: self.fun_keyword,
                         name: self.name,
                         type_params: self.type_params,
@@ -63,7 +58,6 @@ impl Syntax for FunSyntax {
                     },
                 },
                 Some(type_constraints) => Self {
-                    modifiers: self.modifiers,
                     fun_keyword: self.fun_keyword,
                     name: self.name,
                     type_params: self.type_params,
@@ -74,7 +68,6 @@ impl Syntax for FunSyntax {
                 },
             },
             Some(body) => Self {
-                modifiers: self.modifiers,
                 fun_keyword: self.fun_keyword,
                 name: self.name,
                 type_params: self.type_params,
