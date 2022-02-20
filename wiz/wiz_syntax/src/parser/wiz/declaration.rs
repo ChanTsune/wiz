@@ -571,12 +571,20 @@ where
                 type_,
             )),
             |(label, name, cws, colon, ws, typ)| {
-                ArgDef::Value(ValueArgDef {
-                    label: label
-                        .map(|(label, ws)| TokenSyntax::from(label).with_trailing_trivia(ws)),
-                    name: TokenSyntax::from(name),
-                    colon: TokenSyntax::from(colon).with_leading_trivia(cws),
-                    type_name: typ.with_leading_trivia(ws),
+                ArgDef::Value(match label {
+                    None => ValueArgDef {
+                            label: None,
+                            name: TokenSyntax::from(name),
+                            colon: TokenSyntax::from(colon).with_leading_trivia(cws),
+                            type_name: typ.with_leading_trivia(ws),
+                        },
+                    Some((label, lws)) =>
+                        ValueArgDef {
+                            label: Some(TokenSyntax::from(label)),
+                            name: TokenSyntax::from(name).with_leading_trivia(lws),
+                            colon: TokenSyntax::from(colon).with_leading_trivia(cws),
+                            type_name: typ.with_leading_trivia(ws),
+                        },
                 })
             },
         ),
@@ -1251,11 +1259,8 @@ mod tests {
                     open: TokenSyntax::from("("),
                     elements: vec![ArgDefElementSyntax {
                         element: ArgDef::Value(ValueArgDef {
-                            label: Some(
-                                TokenSyntax::from("_")
-                                    .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                            ),
-                            name: TokenSyntax::from("item"),
+                            label: Some(TokenSyntax::from("_")),
+                            name: TokenSyntax::from("item").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                             colon: TokenSyntax::from(":"),
                             type_name: TypeName::Simple(SimpleTypeName {
                                 name: TokenSyntax::from("String")
