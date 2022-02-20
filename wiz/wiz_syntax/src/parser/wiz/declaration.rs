@@ -31,7 +31,7 @@ use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
 use nom::combinator::{map, opt};
-use nom::multi::many0;
+use nom::multi::{many0, many1};
 use nom::sequence::tuple;
 use nom::{
     AsChar, Compare, ExtendInto, FindSubstring, IResult, InputIter, InputLength, InputTake,
@@ -867,18 +867,29 @@ where
         tuple((
             use_keyword,
             whitespace1,
-            package_name,
+            opt(package_name),
             alt((identifier, map(tag("*"), |i: I| i.to_string()))),
             opt(tuple((whitespace1, as_keyword, whitespace1, identifier))),
         )),
-        |(u, ws, pkg, n, alias)| UseSyntax {
-            use_keyword: TokenSyntax::from(u),
-            package_name: pkg,
-            used_name: TokenSyntax::from(n),
-            alias: alias.map(|(lws, a, rws, n)| AliasSyntax {
-                as_keyword: TokenSyntax::from(a).with_leading_trivia(lws),
-                name: TokenSyntax::from(n).with_leading_trivia(rws),
-            }),
+        |(u, ws, pkg, n, alias)| match pkg {
+            None => UseSyntax {
+                use_keyword: TokenSyntax::from(u),
+                package_name: None,
+                used_name: TokenSyntax::from(n).with_leading_trivia(ws),
+                alias: alias.map(|(lws, a, rws, n)| AliasSyntax {
+                    as_keyword: TokenSyntax::from(a).with_leading_trivia(lws),
+                    name: TokenSyntax::from(n).with_leading_trivia(rws),
+                }),
+            },
+            Some(pkg) => UseSyntax {
+                use_keyword: TokenSyntax::from(u),
+                package_name: Some(pkg.with_leading_trivia(ws)),
+                used_name: TokenSyntax::from(n),
+                alias: alias.map(|(lws, a, rws, n)| AliasSyntax {
+                    as_keyword: TokenSyntax::from(a).with_leading_trivia(lws),
+                    name: TokenSyntax::from(n).with_leading_trivia(rws),
+                }),
+            }
         },
     )(s)
 }
@@ -896,7 +907,7 @@ where
     <I as InputIter>::Item: AsChar,
 {
     map(
-        many0(tuple((identifier, tag("::")))),
+        many1(tuple((identifier, tag("::")))),
         |i: Vec<(String, I)>| PackageName {
             names: i
                 .into_iter()
@@ -1525,8 +1536,8 @@ mod tests {
             use_syntax,
             UseSyntax {
                 use_keyword: TokenSyntax::from("use"),
-                package_name: PackageName { names: vec![] },
-                used_name: TokenSyntax::from("abc"),
+                package_name: None,
+                used_name: TokenSyntax::from("abc").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                 alias: None,
             },
         );
@@ -1535,8 +1546,8 @@ mod tests {
             use_syntax,
             UseSyntax {
                 use_keyword: TokenSyntax::from("use"),
-                package_name: PackageName { names: vec![] },
-                used_name: TokenSyntax::from("abc"),
+                package_name: None,
+                used_name: TokenSyntax::from("abc").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                 alias: Some(AliasSyntax {
                     as_keyword: TokenSyntax::from("as")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),

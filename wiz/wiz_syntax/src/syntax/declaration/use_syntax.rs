@@ -5,7 +5,7 @@ use crate::syntax::Syntax;
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct UseSyntax {
     pub use_keyword: TokenSyntax,
-    pub package_name: PackageName,
+    pub package_name: Option<PackageName>,
     pub used_name: TokenSyntax,
     pub alias: Option<AliasSyntax>,
 }
