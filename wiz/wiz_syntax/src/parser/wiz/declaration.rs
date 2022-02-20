@@ -570,11 +570,12 @@ where
                 whitespace0,
                 type_,
             )),
-            |(label, name, _, _, ws, typ)| {
+            |(label, name, cws, colon, ws, typ)| {
                 ArgDef::Value(ValueArgDef {
                     label: label
                         .map(|(label, ws)| TokenSyntax::from(label).with_trailing_trivia(ws)),
                     name: TokenSyntax::from(name),
+                    colon: TokenSyntax::from(colon).with_leading_trivia(cws),
                     type_name: typ.with_leading_trivia(ws),
                 })
             },
@@ -1255,6 +1256,7 @@ mod tests {
                                     .with_trailing_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                             ),
                             name: TokenSyntax::from("item"),
+                            colon: TokenSyntax::from(":"),
                             type_name: TypeName::Simple(SimpleTypeName {
                                 name: TokenSyntax::from("String")
                                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
@@ -1291,6 +1293,7 @@ mod tests {
                         element: ArgDef::Value(ValueArgDef {
                             label: None,
                             name: TokenSyntax::from("item"),
+                            colon: TokenSyntax::from(":"),
                             type_name: TypeName::Simple(SimpleTypeName {
                                 name: TokenSyntax::from("String")
                                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
