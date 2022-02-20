@@ -98,15 +98,13 @@ where
             match &*op {
                 "=" => Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax {
                     target,
-                    operator: TokenSyntax::from(op)
-                        .with_leading_trivia(ws),
+                    operator: TokenSyntax::from(op).with_leading_trivia(ws),
                     value: value.with_leading_trivia(ews),
                 })),
                 _ => Stmt::Assignment(AssignmentStmt::AssignmentAndOperator(
                     AssignmentAndOperatorSyntax {
                         target,
-                        operator: TokenSyntax::from(op)
-                            .with_leading_trivia(ws),
+                        operator: TokenSyntax::from(op).with_leading_trivia(ws),
                         value: value.with_leading_trivia(ews),
                     },
                 )),
@@ -471,7 +469,7 @@ mod tests {
                                     TokenSyntax::from("1"),
                                 ))),
                             })
-                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                         },
                     ))],
                     close: TokenSyntax::from("}").with_leading_trivia(Trivia::from(vec![
@@ -525,7 +523,7 @@ mod tests {
                                     TokenSyntax::from("1"),
                                 ))),
                             })
-                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                         },
                     ))],
                     close: TokenSyntax::from("}").with_leading_trivia(Trivia::from(vec![
@@ -592,7 +590,7 @@ mod tests {
                     name: TokenSyntax::from("c"),
                     navigation_operator: TokenSyntax::from("."),
                 })
-                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
             })),
         )
     }
