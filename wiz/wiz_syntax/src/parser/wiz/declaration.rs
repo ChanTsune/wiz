@@ -119,21 +119,20 @@ where
             alt((struct_keyword, protocol_keyword)),
             whitespace1,
             identifier,
-            whitespace0,
-            opt(type_parameters),
+            opt(tuple((whitespace0, type_parameters))),
             opt(tuple((whitespace0, struct_body_syntax))),
         )),
-        |(struct_keyword, nws, name, _, params, body)| match body {
+        |(struct_keyword, nws, name, params, body)| match body {
             Some((_, body)) => StructSyntax {
-                struct_keyword: TokenSyntax::from(struct_keyword),
+                struct_keyword,
                 name: TokenSyntax::from(name).with_leading_trivia(nws),
-                type_params: params,
+                type_params: params.map(|(ws, p)|p.with_leading_trivia(ws)),
                 body,
             },
             None => StructSyntax {
                 struct_keyword: TokenSyntax::from(struct_keyword),
                 name: TokenSyntax::from(name).with_leading_trivia(nws),
-                type_params: params,
+                type_params: params.map(|(ws, p)|p.with_leading_trivia(ws)),
                 body: Default::default(),
             },
         },

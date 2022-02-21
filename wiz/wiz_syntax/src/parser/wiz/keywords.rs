@@ -14,11 +14,11 @@ pub fn token<T, Input, Error: ParseError<Input>>(
     map(tag(tkn), TokenSyntax::from)
 }
 
-pub fn struct_keyword<I>(s: I) -> IResult<I, I>
+pub fn struct_keyword<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: InputTake + Compare<&'static str>,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    tag("struct")(s)
+    token("struct")(s)
 }
 
 pub fn fun_keyword<I>(s: I) -> IResult<I, I>
@@ -56,11 +56,11 @@ where
     tag("extension")(s)
 }
 
-pub fn protocol_keyword<I>(s: I) -> IResult<I, I>
+pub fn protocol_keyword<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: InputTake + Compare<&'static str>,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    tag("protocol")(s)
+    token("protocol")(s)
 }
 
 pub fn while_keyword<I>(s: I) -> IResult<I, I>
@@ -163,16 +163,22 @@ where
 
 #[cfg(test)]
 mod tests {
+    use crate::parser::tests::check;
     use crate::parser::wiz::keywords::{
         as_keyword, deinit_keyword, else_keyword, extension_keyword, extern_keyword, false_keyword,
         for_keyword, fun_keyword, if_keyword, in_keyword, init_keyword, protocol_keyword,
         return_keyword, self_keyword, struct_keyword, true_keyword, use_keyword, val_keyword,
         var_keyword, where_keyword, while_keyword,
     };
+    use crate::syntax::token::TokenSyntax;
 
     #[test]
     fn test_struct_keyword() {
-        assert_eq!(struct_keyword("struct"), Ok(("", "struct")))
+        check(
+            "struct",
+            struct_keyword,
+            TokenSyntax::from("struct"),
+        );
     }
 
     #[test]
@@ -202,7 +208,11 @@ mod tests {
 
     #[test]
     fn test_protocol_keyword() {
-        assert_eq!(protocol_keyword("protocol"), Ok(("", "protocol")))
+        check(
+            "protocol",
+            protocol_keyword,
+            TokenSyntax::from("protocol"),
+        );
     }
 
     #[test]
