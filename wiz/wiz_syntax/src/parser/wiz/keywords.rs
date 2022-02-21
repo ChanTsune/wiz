@@ -1,15 +1,15 @@
+use crate::syntax::token::TokenSyntax;
 use nom::bytes::complete::tag;
-use nom::{Compare, IResult, InputTake, InputLength};
 use nom::combinator::map;
 use nom::error::ParseError;
-use crate::syntax::token::TokenSyntax;
+use nom::{Compare, IResult, InputLength, InputTake};
 
 pub fn token<T, Input, Error: ParseError<Input>>(
     tkn: T,
 ) -> impl FnMut(Input) -> IResult<Input, TokenSyntax, Error>
-    where
-        Input: InputTake + Compare<T> + ToString,
-        T: InputLength + Clone,
+where
+    Input: InputTake + Compare<T> + ToString,
+    T: InputLength + Clone,
 {
     map(tag(tkn), TokenSyntax::from)
 }
