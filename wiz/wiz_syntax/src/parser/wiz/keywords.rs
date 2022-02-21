@@ -21,11 +21,11 @@ where
     token("struct")(s)
 }
 
-pub fn fun_keyword<I>(s: I) -> IResult<I, I>
+pub fn fun_keyword<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: InputTake + Compare<&'static str>,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    tag("fun")(s)
+    token("fun")(s)
 }
 
 pub fn where_keyword<I>(s: I) -> IResult<I, I>
@@ -179,7 +179,7 @@ mod tests {
 
     #[test]
     fn test_fun_keyword() {
-        assert_eq!(fun_keyword("fun"), Ok(("", "fun")))
+        check("fun", fun_keyword, TokenSyntax::from("fun"));
     }
 
     #[test]
