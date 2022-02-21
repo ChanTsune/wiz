@@ -174,11 +174,7 @@ mod tests {
 
     #[test]
     fn test_struct_keyword() {
-        check(
-            "struct",
-            struct_keyword,
-            TokenSyntax::from("struct"),
-        );
+        check("struct", struct_keyword, TokenSyntax::from("struct"));
     }
 
     #[test]
@@ -208,11 +204,7 @@ mod tests {
 
     #[test]
     fn test_protocol_keyword() {
-        check(
-            "protocol",
-            protocol_keyword,
-            TokenSyntax::from("protocol"),
-        );
+        check("protocol", protocol_keyword, TokenSyntax::from("protocol"));
     }
 
     #[test]

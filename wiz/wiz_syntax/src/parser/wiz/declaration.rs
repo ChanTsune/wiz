@@ -126,13 +126,13 @@ where
             Some((_, body)) => StructSyntax {
                 struct_keyword,
                 name: TokenSyntax::from(name).with_leading_trivia(nws),
-                type_params: params.map(|(ws, p)|p.with_leading_trivia(ws)),
+                type_params: params.map(|(ws, p)| p.with_leading_trivia(ws)),
                 body,
             },
             None => StructSyntax {
                 struct_keyword: TokenSyntax::from(struct_keyword),
                 name: TokenSyntax::from(name).with_leading_trivia(nws),
-                type_params: params.map(|(ws, p)|p.with_leading_trivia(ws)),
+                type_params: params.map(|(ws, p)| p.with_leading_trivia(ws)),
                 body: Default::default(),
             },
         },
