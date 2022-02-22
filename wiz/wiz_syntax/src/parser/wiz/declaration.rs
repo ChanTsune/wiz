@@ -818,6 +818,7 @@ where
                 mutability_keyword: TokenSyntax::from(mutability_keyword),
                 name: TokenSyntax::from(name).with_leading_trivia(ws),
                 type_annotation: t.map(|(ws, t)| t.with_leading_trivia(ws)),
+                equal: TokenSyntax::from(eq).with_leading_trivia(elws),
                 value: e.with_leading_trivia(erws),
             }
         },
@@ -1350,6 +1351,7 @@ mod tests {
                     })
                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                 }),
+                equal: TokenSyntax::from("=").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                 value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("1")))
                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
             }),
@@ -1366,6 +1368,7 @@ mod tests {
                 name: TokenSyntax::from("a")
                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                 type_annotation: None,
+                equal: TokenSyntax::from("=").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                 value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("1")))
                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
             }),
