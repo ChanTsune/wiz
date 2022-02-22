@@ -470,16 +470,14 @@ where
             opt(tuple((whitespace0, type_constraints))),
             opt(tuple((whitespace0, function_body))),
         )),
-        |(f, ws, name, type_params, args, return_type, type_constraints, body)| {
-            FunSyntax {
-                fun_keyword: f,
-                name: TokenSyntax::from(name).with_leading_trivia(ws),
-                type_params,
-                arg_defs: args,
-                return_type: return_type.map(|(_, _, _, t)| t),
-                type_constraints: type_constraints.map(|(ws, c)| c.with_leading_trivia(ws)),
-                body: body.map(|(ws, body)|body.with_leading_trivia(ws)),
-            }
+        |(f, ws, name, type_params, args, return_type, type_constraints, body)| FunSyntax {
+            fun_keyword: f,
+            name: TokenSyntax::from(name).with_leading_trivia(ws),
+            type_params,
+            arg_defs: args,
+            return_type: return_type.map(|(_, _, _, t)| t),
+            type_constraints: type_constraints.map(|(ws, c)| c.with_leading_trivia(ws)),
+            body: body.map(|(ws, body)| body.with_leading_trivia(ws)),
         },
     )(s)
 }
@@ -1106,20 +1104,21 @@ mod tests {
         check(
             "fun function() {}",
             member_function,
-                StructPropertySyntax::Method(FunSyntax {
-                    fun_keyword: TokenSyntax::from("fun"),
-                    name: TokenSyntax::from("function")
+            StructPropertySyntax::Method(FunSyntax {
+                fun_keyword: TokenSyntax::from("fun"),
+                name: TokenSyntax::from("function")
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                type_params: None,
+                arg_defs: ArgDefListSyntax::default(),
+                return_type: None,
+                type_constraints: None,
+                body: Some(FunBody::Block(BlockSyntax {
+                    open: TokenSyntax::from("{")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    type_params: None,
-                    arg_defs: ArgDefListSyntax::default(),
-                    return_type: None,
-                    type_constraints: None,
-                    body: Some(FunBody::Block(BlockSyntax {
-                        open: TokenSyntax::from("{").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                        body: vec![],
-                        close: TokenSyntax::from("}")
-                    })),
-                })
+                    body: vec![],
+                    close: TokenSyntax::from("}"),
+                })),
+            }),
         );
     }
 
@@ -1233,22 +1232,21 @@ mod tests {
         check(
             "fun function() {}",
             function_decl,
-                DeclKind::Fun(FunSyntax {
-                    fun_keyword: TokenSyntax::from("fun"),
-                    name: TokenSyntax::from("function")
+            DeclKind::Fun(FunSyntax {
+                fun_keyword: TokenSyntax::from("fun"),
+                name: TokenSyntax::from("function")
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                type_params: None,
+                arg_defs: ArgDefListSyntax::default(),
+                return_type: None,
+                type_constraints: None,
+                body: Some(FunBody::Block(BlockSyntax {
+                    open: TokenSyntax::from("{")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    type_params: None,
-                    arg_defs: ArgDefListSyntax::default(),
-                    return_type: None,
-                    type_constraints: None,
-                    body: Some(FunBody::Block(BlockSyntax {
-                        open: TokenSyntax::from("{").with_leading_trivia(Trivia::from(
-                            TriviaPiece::Spaces(1),
-                        )),
-                        body: vec![],
-                        close: TokenSyntax::from("}")
-                    })),
-                })
+                    body: vec![],
+                    close: TokenSyntax::from("}"),
+                })),
+            }),
         );
     }
 
