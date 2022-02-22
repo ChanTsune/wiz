@@ -12,8 +12,8 @@ pub use crate::syntax::declaration::use_syntax::{
 pub use crate::syntax::declaration::var_syntax::VarSyntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
-use crate::syntax::Syntax;
 use crate::syntax::type_name::TypeName;
+use crate::syntax::Syntax;
 
 mod extension_syntax;
 pub mod fun_syntax;
