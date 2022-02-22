@@ -328,7 +328,7 @@ impl Ast2HLIR {
             type_constraints,
             arg_defs: args,
             body,
-            return_type: return_type.map(|t| self.type_(t)),
+            return_type: return_type.map(|t| self.type_(t.type_)),
         }
     }
 
@@ -508,7 +508,7 @@ impl Ast2HLIR {
             body,
         } = member_function;
 
-        let rt = return_type.map(|r| self.type_(r));
+        let rt = return_type.map(|r| self.type_(r.type_));
         let fb = body.map(|b| self.fun_body(b));
         TypedMemberFunction {
             name: name.token(),
