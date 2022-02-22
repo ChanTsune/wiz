@@ -466,22 +466,19 @@ where
             identifier,
             opt(type_parameters),
             function_value_parameters,
-            whitespace0,
-            opt(tuple((char(':'), whitespace0, type_))),
-            whitespace0,
-            opt(type_constraints),
-            whitespace0,
-            opt(function_body),
+            opt(tuple((whitespace0, char(':'), whitespace0, type_))),
+            opt(tuple((whitespace0, type_constraints))),
+            opt(tuple((whitespace0, function_body))),
         )),
-        |(f, ws, name, type_params, args, _, return_type, _, type_constraints, _, body)| {
+        |(f, ws, name, type_params, args, return_type, type_constraints, body)| {
             FunSyntax {
-                fun_keyword: TokenSyntax::from(f),
+                fun_keyword: f,
                 name: TokenSyntax::from(name).with_leading_trivia(ws),
                 type_params,
                 arg_defs: args,
-                return_type: return_type.map(|(_, _, t)| t),
-                type_constraints,
-                body,
+                return_type: return_type.map(|(_, _, _, t)| t),
+                type_constraints: type_constraints.map(|(ws, c)| c.with_leading_trivia(ws)),
+                body: body.map(|(ws, body)|body.with_leading_trivia(ws)),
             }
         },
     )(s)
@@ -1106,10 +1103,9 @@ mod tests {
 
     #[test]
     fn test_member_function() {
-        assert_eq!(
-            member_function("fun function() {}"),
-            Ok((
-                "",
+        check(
+            "fun function() {}",
+            member_function,
                 StructPropertySyntax::Method(FunSyntax {
                     fun_keyword: TokenSyntax::from("fun"),
                     name: TokenSyntax::from("function")
@@ -1119,13 +1115,12 @@ mod tests {
                     return_type: None,
                     type_constraints: None,
                     body: Some(FunBody::Block(BlockSyntax {
-                        open: TokenSyntax::from("{"),
+                        open: TokenSyntax::from("{").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                         body: vec![],
                         close: TokenSyntax::from("}")
                     })),
                 })
-            ))
-        )
+        );
     }
 
     #[test]
@@ -1235,10 +1230,9 @@ mod tests {
 
     #[test]
     fn test_function_decl() {
-        assert_eq!(
-            function_decl("fun function() {}"),
-            Ok((
-                "",
+        check(
+            "fun function() {}",
+            function_decl,
                 DeclKind::Fun(FunSyntax {
                     fun_keyword: TokenSyntax::from("fun"),
                     name: TokenSyntax::from("function")
@@ -1248,13 +1242,14 @@ mod tests {
                     return_type: None,
                     type_constraints: None,
                     body: Some(FunBody::Block(BlockSyntax {
-                        open: TokenSyntax::from("{"),
+                        open: TokenSyntax::from("{").with_leading_trivia(Trivia::from(
+                            TriviaPiece::Spaces(1),
+                        )),
                         body: vec![],
                         close: TokenSyntax::from("}")
                     })),
                 })
-            ))
-        )
+        );
     }
 
     #[test]
