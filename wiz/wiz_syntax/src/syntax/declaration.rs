@@ -13,6 +13,7 @@ pub use crate::syntax::declaration::var_syntax::VarSyntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::Syntax;
+use crate::syntax::type_name::TypeName;
 
 mod extension_syntax;
 pub mod fun_syntax;
@@ -102,4 +103,26 @@ pub struct ExternCSyntax {
     pub left_brace: TokenSyntax,
     pub declarations: Vec<DeclKind>,
     pub right_brace: TokenSyntax,
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct TypeAnnotationSyntax {
+    pub colon: TokenSyntax,
+    pub type_: TypeName,
+}
+
+impl Syntax for TypeAnnotationSyntax {
+    fn with_leading_trivia(self, trivia: Trivia) -> Self {
+        Self {
+            colon: self.colon.with_leading_trivia(trivia),
+            type_: self.type_,
+        }
+    }
+
+    fn with_trailing_trivia(self, trivia: Trivia) -> Self {
+        Self {
+            colon: self.colon,
+            type_: self.type_.with_trailing_trivia(trivia),
+        }
+    }
 }

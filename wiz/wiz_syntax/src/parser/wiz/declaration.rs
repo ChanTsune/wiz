@@ -15,11 +15,7 @@ use crate::syntax::declaration::fun_syntax::{
     ArgDef, ArgDefElementSyntax, ArgDefListSyntax, FunBody, FunSyntax, SelfArgDefSyntax,
     ValueArgDef,
 };
-use crate::syntax::declaration::{
-    AliasSyntax, DeclKind, DeclarationSyntax, DeinitializerSyntax, ExtensionSyntax,
-    InitializerSyntax, PackageName, ProtocolConformSyntax, StoredPropertySyntax, StructBodySyntax,
-    StructPropertySyntax, StructSyntax, UseSyntax,
-};
+use crate::syntax::declaration::{AliasSyntax, DeclKind, DeclarationSyntax, DeinitializerSyntax, ExtensionSyntax, InitializerSyntax, PackageName, ProtocolConformSyntax, StoredPropertySyntax, StructBodySyntax, StructPropertySyntax, StructSyntax, UseSyntax, TypeAnnotationSyntax};
 use crate::syntax::declaration::{PackageNameElement, VarSyntax};
 use crate::syntax::expression::Expr;
 use crate::syntax::token::TokenSyntax;
@@ -72,6 +68,25 @@ where
             kind: d,
         },
     )(s)
+}
+
+pub fn type_annotation_syntax<I>(s: I) -> IResult<I, TypeAnnotationSyntax>
+where
+        I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + InputTake
+        + InputLength
+        + Clone
+        + ToString
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+        <I as InputIter>::Item: AsChar + Copy,
+{
+    map(tuple((char(':'), whitespace0, type_)), |(c, ws, t)| TypeAnnotationSyntax {
+        colon: TokenSyntax::from(c),
+        type_: t.with_leading_trivia(ws),
+    })(s)
 }
 
 //region struct
@@ -466,7 +481,7 @@ where
             identifier,
             opt(type_parameters),
             function_value_parameters,
-            opt(tuple((whitespace0, char(':'), whitespace0, type_))),
+            opt(tuple((whitespace0, type_annotation_syntax))),
             opt(tuple((whitespace0, type_constraints))),
             opt(tuple((whitespace0, function_body))),
         )),
@@ -475,7 +490,7 @@ where
             name: TokenSyntax::from(name).with_leading_trivia(ws),
             type_params,
             arg_defs: args,
-            return_type: return_type.map(|(_, _, _, t)| t),
+            return_type: return_type.map(|(ws, t)| t.with_leading_trivia(ws)),
             type_constraints: type_constraints.map(|(ws, c)| c.with_leading_trivia(ws)),
             body: body.map(|(ws, body)| body.with_leading_trivia(ws)),
         },
@@ -991,10 +1006,7 @@ mod tests {
     use crate::syntax::declaration::fun_syntax::{
         ArgDef, ArgDefElementSyntax, ArgDefListSyntax, FunBody, FunSyntax, ValueArgDef,
     };
-    use crate::syntax::declaration::{
-        AliasSyntax, DeclKind, PackageName, StoredPropertySyntax, StructBodySyntax,
-        StructPropertySyntax, StructSyntax, UseSyntax,
-    };
+    use crate::syntax::declaration::{AliasSyntax, DeclKind, PackageName, StoredPropertySyntax, StructBodySyntax, StructPropertySyntax, StructSyntax, TypeAnnotationSyntax, UseSyntax};
     use crate::syntax::declaration::{PackageNameElement, VarSyntax};
     use crate::syntax::expression::{BinaryOperationSyntax, Expr, NameExprSyntax};
     use crate::syntax::literal::LiteralSyntax;
@@ -1278,10 +1290,13 @@ mod tests {
                     }],
                     close: TokenSyntax::from(")"),
                 },
-                return_type: Some(TypeName::Simple(SimpleTypeName {
-                    name: TokenSyntax::from("Unit"),
-                    type_args: None,
-                })),
+                return_type: Some(TypeAnnotationSyntax {
+                    colon: TokenSyntax::from(":"),
+                    type_: TypeName::Simple(SimpleTypeName {
+                        name: TokenSyntax::from("Unit"),
+                        type_args: None,
+                    }).with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                }),
                 type_constraints: None,
                 body: None,
             }),
@@ -1315,10 +1330,13 @@ mod tests {
                     }],
                     close: TokenSyntax::from(")"),
                 },
-                return_type: Some(TypeName::Simple(SimpleTypeName {
-                    name: TokenSyntax::from("Unit"),
-                    type_args: None,
-                })),
+                return_type: Some(TypeAnnotationSyntax {
+                    colon: TokenSyntax::from(":"),
+                    type_: TypeName::Simple(SimpleTypeName {
+                        name: TokenSyntax::from("Unit"),
+                        type_args: None,
+                    }).with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                }),
                 type_constraints: None,
                 body: None,
             }),
