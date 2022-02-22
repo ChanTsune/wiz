@@ -1750,7 +1750,8 @@ mod tests {
                                 .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                             type_: None,
                             value: Expr::If(IfExprSyntax {
-                                if_keyword: TokenSyntax::from("if").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                                if_keyword: TokenSyntax::from("if")
+                                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                                 condition: Box::new(
                                     Expr::BinOp(BinaryOperationSyntax {
                                         left: Box::new(Expr::Name(NameExprSyntax::simple(

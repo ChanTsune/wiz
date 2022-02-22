@@ -807,17 +807,19 @@ where
             alt((var_keyword, val_keyword)),
             whitespace1,
             identifier,
-               opt(tuple((whitespace0, type_annotation_syntax))),
-               whitespace0,
-               char('='),
-               whitespace0,
-               expr,
+            opt(tuple((whitespace0, type_annotation_syntax))),
+            whitespace0,
+            char('='),
+            whitespace0,
+            expr,
         )),
-        |(mutability_keyword, ws, name, t, elws, eq, erws, e): (I, _, _, _, _, _, _, _)| VarSyntax {
-            mutability_keyword: TokenSyntax::from(mutability_keyword),
-            name: TokenSyntax::from(name).with_leading_trivia(ws),
-            type_: t.map(|(ws, t)| t.with_leading_trivia(ws)),
-            value: e.with_leading_trivia(erws),
+        |(mutability_keyword, ws, name, t, elws, eq, erws, e): (I, _, _, _, _, _, _, _)| {
+            VarSyntax {
+                mutability_keyword: TokenSyntax::from(mutability_keyword),
+                name: TokenSyntax::from(name).with_leading_trivia(ws),
+                type_: t.map(|(ws, t)| t.with_leading_trivia(ws)),
+                value: e.with_leading_trivia(erws),
+            }
         },
     )(s)
 }
@@ -1348,9 +1350,8 @@ mod tests {
                     })
                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                 }),
-                value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("1"))).with_leading_trivia(
-                    Trivia::from(TriviaPiece::Spaces(1)),
-                ),
+                value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("1")))
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
             }),
         );
     }
@@ -1360,13 +1361,14 @@ mod tests {
         check(
             "val a = 1",
             var_decl,
-                DeclKind::Var(VarSyntax {
-                    mutability_keyword: TokenSyntax::from("val"),
-                    name: TokenSyntax::from("a")
-                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    type_: None,
-                    value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("1"))).with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                })
+            DeclKind::Var(VarSyntax {
+                mutability_keyword: TokenSyntax::from("val"),
+                name: TokenSyntax::from("a")
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                type_: None,
+                value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("1")))
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+            }),
         );
     }
 
