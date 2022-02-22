@@ -1336,19 +1336,22 @@ mod tests {
         check(
             "val a: Int = 1",
             var_decl,
-                DeclKind::Var(VarSyntax {
-                    mutability_keyword: TokenSyntax::from("val"),
-                    name: TokenSyntax::from("a")
-                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    type_: Some(TypeAnnotationSyntax {
-                        colon: TokenSyntax::from(":"),
-                        type_: TypeName::Simple(SimpleTypeName {
-                            name: TokenSyntax::from("Int"),
-                            type_args: None
-                        }).with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    }),
-                    value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("1"))).with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                })
+            DeclKind::Var(VarSyntax {
+                mutability_keyword: TokenSyntax::from("val"),
+                name: TokenSyntax::from("a")
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                type_: Some(TypeAnnotationSyntax {
+                    colon: TokenSyntax::from(":"),
+                    type_: TypeName::Simple(SimpleTypeName {
+                        name: TokenSyntax::from("Int"),
+                        type_args: None,
+                    })
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                }),
+                value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("1"))).with_leading_trivia(
+                    Trivia::from(TriviaPiece::Spaces(1)),
+                ),
+            }),
         );
     }
 
