@@ -21,7 +21,6 @@ use crate::syntax::declaration::{
     StructPropertySyntax, StructSyntax, TypeAnnotationSyntax, UseSyntax,
 };
 use crate::syntax::declaration::{PackageNameElement, VarSyntax};
-use crate::syntax::expression::Expr;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::type_name::{
     TypeConstraintElementSyntax, TypeConstraintSyntax, TypeConstraintsSyntax, TypeName, TypeParam,
@@ -804,43 +803,22 @@ where
     <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
-        tuple((alt((var_keyword, val_keyword)), whitespace1, var_body)),
-        |(mutability_keyword, ws, (name, t, e)): (I, _, _)| VarSyntax {
+        tuple((
+            alt((var_keyword, val_keyword)),
+            whitespace1,
+            identifier,
+               opt(tuple((whitespace0, type_annotation_syntax))),
+               whitespace0,
+               char('='),
+               whitespace0,
+               expr,
+        )),
+        |(mutability_keyword, ws, name, t, elws, eq, erws, e): (I, _, _, _, _, _, _, _)| VarSyntax {
             mutability_keyword: TokenSyntax::from(mutability_keyword),
             name: TokenSyntax::from(name).with_leading_trivia(ws),
-            type_: t,
-            value: e,
+            type_: t.map(|(ws, t)| t.with_leading_trivia(ws)),
+            value: e.with_leading_trivia(erws),
         },
-    )(s)
-}
-
-pub fn var_body<I>(s: I) -> IResult<I, (String, Option<TypeAnnotationSyntax>, Expr)>
-where
-    I: Slice<RangeFrom<usize>>
-        + Slice<Range<usize>>
-        + InputIter
-        + Clone
-        + InputLength
-        + ToString
-        + InputTake
-        + Offset
-        + InputTakeAtPosition
-        + ExtendInto<Item = char, Extender = String>
-        + FindSubstring<&'static str>
-        + Compare<&'static str>,
-    <I as InputIter>::Item: AsChar + Copy,
-    <I as InputTakeAtPosition>::Item: AsChar,
-{
-    map(
-        tuple((
-            identifier,
-            opt(tuple((whitespace0, type_annotation_syntax))),
-            whitespace0,
-            char('='),
-            whitespace0,
-            expr,
-        )),
-        |(name, t, _, _, _, e)| (name, t.map(|(ws, t)| t.with_leading_trivia(ws)), e),
     )(s)
 }
 
@@ -1369,26 +1347,24 @@ mod tests {
                             type_args: None
                         }).with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     }),
-                    value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("1")))
+                    value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("1"))).with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                 })
         );
     }
 
     #[test]
     fn test_var_decl_without_type() {
-        assert_eq!(
-            var_decl("val a = 1"),
-            Ok((
-                "",
+        check(
+            "val a = 1",
+            var_decl,
                 DeclKind::Var(VarSyntax {
                     mutability_keyword: TokenSyntax::from("val"),
                     name: TokenSyntax::from("a")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     type_: None,
-                    value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("1")))
+                    value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("1"))).with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                 })
-            ))
-        )
+        );
     }
 
     #[test]
