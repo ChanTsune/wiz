@@ -817,7 +817,7 @@ where
             VarSyntax {
                 mutability_keyword: TokenSyntax::from(mutability_keyword),
                 name: TokenSyntax::from(name).with_leading_trivia(ws),
-                type_: t.map(|(ws, t)| t.with_leading_trivia(ws)),
+                type_annotation: t.map(|(ws, t)| t.with_leading_trivia(ws)),
                 value: e.with_leading_trivia(erws),
             }
         },
@@ -1342,7 +1342,7 @@ mod tests {
                 mutability_keyword: TokenSyntax::from("val"),
                 name: TokenSyntax::from("a")
                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                type_: Some(TypeAnnotationSyntax {
+                type_annotation: Some(TypeAnnotationSyntax {
                     colon: TokenSyntax::from(":"),
                     type_: TypeName::Simple(SimpleTypeName {
                         name: TokenSyntax::from("Int"),
@@ -1365,7 +1365,7 @@ mod tests {
                 mutability_keyword: TokenSyntax::from("val"),
                 name: TokenSyntax::from("a")
                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                type_: None,
+                type_annotation: None,
                 value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("1")))
                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
             }),

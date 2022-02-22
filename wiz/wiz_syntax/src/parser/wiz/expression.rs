@@ -1748,7 +1748,7 @@ mod tests {
                             mutability_keyword: TokenSyntax::from("val"),
                             name: TokenSyntax::from("newCapacity")
                                 .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                            type_: None,
+                            type_annotation: None,
                             value: Expr::If(IfExprSyntax {
                                 if_keyword: TokenSyntax::from("if")
                                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),

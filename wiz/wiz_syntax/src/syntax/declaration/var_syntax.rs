@@ -8,7 +8,7 @@ use crate::syntax::Syntax;
 pub struct VarSyntax {
     pub mutability_keyword: TokenSyntax,
     pub name: TokenSyntax,
-    pub type_: Option<TypeAnnotationSyntax>,
+    pub type_annotation: Option<TypeAnnotationSyntax>,
     pub value: Expr,
 }
 
@@ -17,7 +17,7 @@ impl Syntax for VarSyntax {
         Self {
             mutability_keyword: self.mutability_keyword.with_leading_trivia(trivia),
             name: self.name,
-            type_: self.type_,
+            type_annotation: self.type_annotation,
             value: self.value,
         }
     }
@@ -26,7 +26,7 @@ impl Syntax for VarSyntax {
         Self {
             mutability_keyword: self.mutability_keyword,
             name: self.name,
-            type_: self.type_,
+            type_annotation: self.type_annotation,
             value: self.value.with_trailing_trivia(trivia),
         }
     }

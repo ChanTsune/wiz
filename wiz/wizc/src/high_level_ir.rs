@@ -204,7 +204,7 @@ impl Ast2HLIR {
             package: TypedPackage::Raw(Package::new()),
             is_mut: v.mutability_keyword.token() == "var",
             name: v.name.token(),
-            type_: v.type_.map(|t| self.type_(t.type_)),
+            type_: v.type_annotation.map(|t| self.type_(t.type_)),
             value: expr,
         }
     }
