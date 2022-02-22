@@ -15,7 +15,11 @@ use crate::syntax::declaration::fun_syntax::{
     ArgDef, ArgDefElementSyntax, ArgDefListSyntax, FunBody, FunSyntax, SelfArgDefSyntax,
     ValueArgDef,
 };
-use crate::syntax::declaration::{AliasSyntax, DeclKind, DeclarationSyntax, DeinitializerSyntax, ExtensionSyntax, InitializerSyntax, PackageName, ProtocolConformSyntax, StoredPropertySyntax, StructBodySyntax, StructPropertySyntax, StructSyntax, UseSyntax, TypeAnnotationSyntax};
+use crate::syntax::declaration::{
+    AliasSyntax, DeclKind, DeclarationSyntax, DeinitializerSyntax, ExtensionSyntax,
+    InitializerSyntax, PackageName, ProtocolConformSyntax, StoredPropertySyntax, StructBodySyntax,
+    StructPropertySyntax, StructSyntax, TypeAnnotationSyntax, UseSyntax,
+};
 use crate::syntax::declaration::{PackageNameElement, VarSyntax};
 use crate::syntax::expression::Expr;
 use crate::syntax::token::TokenSyntax;
@@ -72,7 +76,7 @@ where
 
 pub fn type_annotation_syntax<I>(s: I) -> IResult<I, TypeAnnotationSyntax>
 where
-        I: Slice<RangeFrom<usize>>
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + InputTake
@@ -81,11 +85,13 @@ where
         + ToString
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
+    <I as InputIter>::Item: AsChar + Copy,
 {
-    map(tuple((char(':'), whitespace0, type_)), |(c, ws, t)| TypeAnnotationSyntax {
-        colon: TokenSyntax::from(c),
-        type_: t.with_leading_trivia(ws),
+    map(tuple((char(':'), whitespace0, type_)), |(c, ws, t)| {
+        TypeAnnotationSyntax {
+            colon: TokenSyntax::from(c),
+            type_: t.with_leading_trivia(ws),
+        }
     })(s)
 }
 
@@ -1005,7 +1011,10 @@ mod tests {
     use crate::syntax::declaration::fun_syntax::{
         ArgDef, ArgDefElementSyntax, ArgDefListSyntax, FunBody, FunSyntax, ValueArgDef,
     };
-    use crate::syntax::declaration::{AliasSyntax, DeclKind, PackageName, StoredPropertySyntax, StructBodySyntax, StructPropertySyntax, StructSyntax, TypeAnnotationSyntax, UseSyntax};
+    use crate::syntax::declaration::{
+        AliasSyntax, DeclKind, PackageName, StoredPropertySyntax, StructBodySyntax,
+        StructPropertySyntax, StructSyntax, TypeAnnotationSyntax, UseSyntax,
+    };
     use crate::syntax::declaration::{PackageNameElement, VarSyntax};
     use crate::syntax::expression::{BinaryOperationSyntax, Expr, NameExprSyntax};
     use crate::syntax::literal::LiteralSyntax;
@@ -1294,7 +1303,8 @@ mod tests {
                     type_: TypeName::Simple(SimpleTypeName {
                         name: TokenSyntax::from("Unit"),
                         type_args: None,
-                    }).with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    })
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                 }),
                 type_constraints: None,
                 body: None,
@@ -1334,7 +1344,8 @@ mod tests {
                     type_: TypeName::Simple(SimpleTypeName {
                         name: TokenSyntax::from("Unit"),
                         type_args: None,
-                    }).with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    })
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                 }),
                 type_constraints: None,
                 body: None,
