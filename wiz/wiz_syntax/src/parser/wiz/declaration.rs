@@ -1351,7 +1351,8 @@ mod tests {
                     })
                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                 }),
-                equal: TokenSyntax::from("=").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                equal: TokenSyntax::from("=")
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                 value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("1")))
                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
             }),
@@ -1368,7 +1369,8 @@ mod tests {
                 name: TokenSyntax::from("a")
                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                 type_annotation: None,
-                equal: TokenSyntax::from("=").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                equal: TokenSyntax::from("=")
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                 value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("1")))
                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
             }),
