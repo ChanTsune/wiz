@@ -808,7 +808,7 @@ where
     )(s)
 }
 
-pub fn var_body<I>(s: I) -> IResult<I, (String, Option<TypeName>, Expr)>
+pub fn var_body<I>(s: I) -> IResult<I, (String, Option<TypeAnnotationSyntax>, Expr)>
 where
     I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
@@ -828,14 +828,13 @@ where
     map(
         tuple((
             identifier,
-            whitespace0,
-            opt(tuple((char(':'), whitespace0, type_))),
+            opt(tuple((whitespace0, type_annotation_syntax))),
             whitespace0,
             char('='),
             whitespace0,
             expr,
         )),
-        |(name, _, t, _, _, _, e)| (name, t.map(|(_, _, t)| t), e),
+        |(name, t, _, _, _, e)| (name, t.map(|(ws, t)| t.with_leading_trivia(ws)), e),
     )(s)
 }
 
@@ -1345,22 +1344,23 @@ mod tests {
 
     #[test]
     fn test_var_decl() {
-        assert_eq!(
-            var_decl("val a: Int = 1"),
-            Ok((
-                "",
+        check(
+            "val a: Int = 1",
+            var_decl,
                 DeclKind::Var(VarSyntax {
                     mutability_keyword: TokenSyntax::from("val"),
                     name: TokenSyntax::from("a")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    type_: Some(TypeName::Simple(SimpleTypeName {
-                        name: TokenSyntax::from("Int"),
-                        type_args: None
-                    })),
+                    type_: Some(TypeAnnotationSyntax {
+                        colon: TokenSyntax::from(":"),
+                        type_: TypeName::Simple(SimpleTypeName {
+                            name: TokenSyntax::from("Int"),
+                            type_args: None
+                        }).with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    }),
                     value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("1")))
                 })
-            ))
-        )
+        );
     }
 
     #[test]

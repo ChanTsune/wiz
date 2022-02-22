@@ -1,14 +1,14 @@
+use crate::syntax::declaration::TypeAnnotationSyntax;
 use crate::syntax::expression::Expr;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
-use crate::syntax::type_name::TypeName;
 use crate::syntax::Syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct VarSyntax {
     pub mutability_keyword: TokenSyntax,
     pub name: TokenSyntax,
-    pub type_: Option<TypeName>,
+    pub type_: Option<TypeAnnotationSyntax>,
     pub value: Expr,
 }
 
