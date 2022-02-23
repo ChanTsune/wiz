@@ -9,7 +9,7 @@ use crate::parser::wiz::lexical_structure::{
     identifier, trivia_piece_line_ending, whitespace0, whitespace1, whitespace_without_eol0,
 };
 use crate::parser::wiz::statement::stmt;
-use crate::parser::wiz::type_::{type_, type_parameters};
+use crate::parser::wiz::type_::{type_, type_parameter, type_parameters};
 use crate::syntax::block::BlockSyntax;
 use crate::syntax::declaration::fun_syntax::{
     ArgDef, ArgDefElementSyntax, ArgDefListSyntax, FunBody, FunSyntax, SelfArgDefSyntax,
@@ -23,7 +23,7 @@ use crate::syntax::declaration::{
 use crate::syntax::declaration::{PackageNameElement, VarSyntax};
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::type_name::{
-    TypeConstraintElementSyntax, TypeConstraintSyntax, TypeConstraintsSyntax, TypeParam,
+    TypeConstraintElementSyntax, TypeConstraintsSyntax
 };
 use crate::syntax::Syntax;
 use nom::branch::alt;
@@ -590,8 +590,8 @@ where
         tuple((
             where_keyword,
             whitespace1,
-            many0(tuple((whitespace0, type_constraint, whitespace0, comma))),
-            opt(tuple((whitespace0, type_constraint))),
+            many0(tuple((whitespace0, type_parameter, whitespace0, comma))),
+            opt(tuple((whitespace0, type_parameter))),
         )),
         |(where_keyword, ws, t, ts)| {
             let mut type_constraints: Vec<_> = t
@@ -615,31 +615,6 @@ where
                 where_keyword,
                 type_constraints,
             }
-        },
-    )(s)
-}
-
-pub fn type_constraint<I>(s: I) -> IResult<I, TypeParam>
-where
-    I: Slice<RangeFrom<usize>>
-        + Slice<Range<usize>>
-        + InputIter
-        + Clone
-        + InputLength
-        + ToString
-        + InputTake
-        + FindSubstring<&'static str>
-        + Compare<&'static str>,
-    <I as InputIter>::Item: AsChar + Copy,
-{
-    map(
-        tuple((identifier, whitespace0, char(':'), whitespace0, type_)),
-        |(id, lws, sep, rws, typ)| TypeParam {
-            name: TokenSyntax::from(id),
-            type_constraint: Some(TypeConstraintSyntax {
-                sep: TokenSyntax::from(sep).with_leading_trivia(lws),
-                constraint: typ.with_leading_trivia(rws),
-            }),
         },
     )(s)
 }
@@ -929,7 +904,7 @@ mod tests {
     use crate::parser::tests::check;
     use crate::parser::wiz::declaration::{
         block, function_body, function_decl, member_function, package_name, stored_property,
-        struct_properties, struct_syntax, type_constraint, type_constraints, use_syntax, var_decl,
+        struct_properties, struct_syntax, type_constraints, use_syntax, var_decl,
     };
     use crate::syntax::block::BlockSyntax;
     use crate::syntax::declaration::fun_syntax::{
@@ -1334,25 +1309,6 @@ mod tests {
                 value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("1")))
                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
             }),
-        );
-    }
-
-    #[test]
-    fn test_type_constraint() {
-        check(
-            "T: Printable",
-            type_constraint,
-            TypeParam {
-                name: TokenSyntax::from("T"),
-                type_constraint: Some(TypeConstraintSyntax {
-                    sep: TokenSyntax::from(":"),
-                    constraint: TypeName::Simple(SimpleTypeName {
-                        name: TokenSyntax::from("Printable"),
-                        type_args: None,
-                    })
-                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                }),
-            },
         );
     }
 

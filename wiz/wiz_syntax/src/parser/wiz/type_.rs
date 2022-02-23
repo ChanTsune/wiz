@@ -246,7 +246,7 @@ where
     )(s)
 }
 
-// <type_parameter> ::= <identifier> (":", <type>)?
+// <type_parameter> ::= <identifier> <type_constraint>?
 pub fn type_parameter<I>(s: I) -> IResult<I, TypeParam>
 where
     I: Slice<RangeFrom<usize>>
@@ -263,16 +263,33 @@ where
     map(
         tuple((
             identifier,
-            opt(tuple((whitespace0, char(':'), whitespace0, type_))),
+            opt(tuple((whitespace0, type_constraint_syntax))),
         )),
         |(name, typ)| TypeParam {
             name: TokenSyntax::from(name),
-            type_constraint: typ.map(|(lws, c, ws, t)| TypeConstraintSyntax {
-                sep: TokenSyntax::from(c).with_leading_trivia(lws),
-                constraint: t.with_leading_trivia(ws),
-            }),
+            type_constraint: typ.map(|(ws, t)| t.with_leading_trivia(ws)),
         },
     )(s)
+}
+
+// <type_constraint> ::= ":" <type>
+pub fn type_constraint_syntax<I>(s: I) -> IResult<I, TypeConstraintSyntax>
+where
+        I: Slice<RangeFrom<usize>>
+        + InputIter
+        + InputTake
+        + InputLength
+        + Clone
+        + Compare<&'static str>
+        + FindSubstring<&'static str>
+        + ToString
+        + Slice<Range<usize>>,
+        <I as InputIter>::Item: AsChar + Copy,
+{
+    map(tuple((token(":"), whitespace0, type_)), |(sep, lws, t)| TypeConstraintSyntax {
+        sep,
+        constraint: t.with_leading_trivia(lws),
+    })(s)
 }
 
 #[cfg(test)]
