@@ -275,7 +275,7 @@ where
 // <type_constraint> ::= ":" <type>
 pub fn type_constraint_syntax<I>(s: I) -> IResult<I, TypeConstraintSyntax>
 where
-        I: Slice<RangeFrom<usize>>
+    I: Slice<RangeFrom<usize>>
         + InputIter
         + InputTake
         + InputLength
@@ -284,11 +284,13 @@ where
         + FindSubstring<&'static str>
         + ToString
         + Slice<Range<usize>>,
-        <I as InputIter>::Item: AsChar + Copy,
+    <I as InputIter>::Item: AsChar + Copy,
 {
-    map(tuple((token(":"), whitespace0, type_)), |(sep, lws, t)| TypeConstraintSyntax {
-        sep,
-        constraint: t.with_leading_trivia(lws),
+    map(tuple((token(":"), whitespace0, type_)), |(sep, lws, t)| {
+        TypeConstraintSyntax {
+            sep,
+            constraint: t.with_leading_trivia(lws),
+        }
     })(s)
 }
 

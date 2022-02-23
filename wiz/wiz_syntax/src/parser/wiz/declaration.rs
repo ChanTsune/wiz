@@ -22,9 +22,7 @@ use crate::syntax::declaration::{
 };
 use crate::syntax::declaration::{PackageNameElement, VarSyntax};
 use crate::syntax::token::TokenSyntax;
-use crate::syntax::type_name::{
-    TypeConstraintElementSyntax, TypeConstraintsSyntax
-};
+use crate::syntax::type_name::{TypeConstraintElementSyntax, TypeConstraintsSyntax};
 use crate::syntax::Syntax;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
