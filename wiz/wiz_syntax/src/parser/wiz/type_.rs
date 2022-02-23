@@ -186,7 +186,7 @@ where
                     trailing_comma: Some(TokenSyntax::from(com).with_leading_trivia(rws)),
                 })
                 .collect();
-            if let Some((ws,p)) = typ {
+            if let Some((ws, p)) = typ {
                 elements.push(TypeArgumentElementSyntax {
                     element: p.with_leading_trivia(ws),
                     trailing_comma: None,
