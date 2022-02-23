@@ -591,10 +591,9 @@ where
             where_keyword,
             whitespace1,
             many0(tuple((whitespace0, type_constraint, whitespace0, comma))),
-            whitespace0,
-            opt(type_constraint),
+            opt(tuple((whitespace0, type_constraint))),
         )),
-        |(where_keyword, ws, t, lws, ts)| {
+        |(where_keyword, ws, t, ts)| {
             let mut type_constraints: Vec<_> = t
                 .into_iter()
                 .map(|(lws, ta, rws, c)| TypeConstraintElementSyntax {
@@ -602,9 +601,9 @@ where
                     trailing_comma: Some(TokenSyntax::from(c).with_leading_trivia(rws)),
                 })
                 .collect();
-            if let Some(ts) = ts {
+            if let Some((ws, ts)) = ts {
                 type_constraints.push(TypeConstraintElementSyntax {
-                    element: ts.with_leading_trivia(lws),
+                    element: ts.with_leading_trivia(ws),
                     trailing_comma: None,
                 })
             };
