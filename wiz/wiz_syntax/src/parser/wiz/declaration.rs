@@ -23,7 +23,7 @@ use crate::syntax::declaration::{
 use crate::syntax::declaration::{PackageNameElement, VarSyntax};
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::type_name::{
-    TypeConstraintElementSyntax, TypeConstraintSyntax, TypeConstraintsSyntax, TypeName, TypeParam,
+    TypeConstraintElementSyntax, TypeConstraintSyntax, TypeConstraintsSyntax, TypeParam,
 };
 use crate::syntax::Syntax;
 use nom::branch::alt;
@@ -257,7 +257,7 @@ where
     alt((stored_property, initializer, deinitializer, member_function))(s)
 }
 
-// <stored_property> ::= <mutable_stored_property> | <immutable_stored_property>
+// <stored_property> ::= ("var" | "val") <identifier> ":" <type>
 pub fn stored_property<I>(s: I) -> IResult<I, StructPropertySyntax>
 where
     I: Slice<RangeFrom<usize>>
@@ -272,61 +272,13 @@ where
     <I as InputIter>::Item: AsChar + Copy,
 {
     map(
-        alt((mutable_stored_property, immutable_stored_property)),
+        stored_property_syntax,
         StructPropertySyntax::StoredProperty,
     )(s)
 }
 
-// <mutable_stored_property> ::= "var" <stored_property_body>
-pub fn mutable_stored_property<I>(s: I) -> IResult<I, StoredPropertySyntax>
-where
-    I: Slice<RangeFrom<usize>>
-        + Slice<Range<usize>>
-        + InputIter
-        + InputTake
-        + InputLength
-        + Clone
-        + ToString
-        + FindSubstring<&'static str>
-        + Compare<&'static str>,
-    <I as InputIter>::Item: AsChar + Copy,
-{
-    map(
-        tuple((var_keyword, stored_property_body)),
-        |(var, (name, _, typ))| StoredPropertySyntax {
-            mutability_keyword: TokenSyntax::from(var),
-            name: TokenSyntax::from(name),
-            type_: typ,
-        },
-    )(s)
-}
-
-// <immutable_stored_property> ::= "val" <stored_property_body>
-pub fn immutable_stored_property<I>(s: I) -> IResult<I, StoredPropertySyntax>
-where
-    I: Slice<RangeFrom<usize>>
-        + Slice<Range<usize>>
-        + InputIter
-        + InputTake
-        + InputLength
-        + Clone
-        + ToString
-        + FindSubstring<&'static str>
-        + Compare<&'static str>,
-    <I as InputIter>::Item: AsChar + Copy,
-{
-    map(
-        tuple((val_keyword, stored_property_body)),
-        |(val, (name, _, typ))| StoredPropertySyntax {
-            mutability_keyword: TokenSyntax::from(val),
-            name: TokenSyntax::from(name),
-            type_: typ,
-        },
-    )(s)
-}
-
-// <stored_property_body> ::= <identifier> ":" <type>
-pub fn stored_property_body<I>(s: I) -> IResult<I, (String, char, TypeName)>
+// <stored_property> ::= ("var" | "val") <identifier> ":" <type>
+pub fn stored_property_syntax<I>(s: I) -> IResult<I, StoredPropertySyntax>
 where
     I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
@@ -341,14 +293,17 @@ where
 {
     map(
         tuple((
+            alt((var_keyword, val_keyword)),
             whitespace1,
-            identifier,
-            whitespace0,
-            char(':'),
-            whitespace0,
-            type_,
+               identifier,
+               whitespace0,
+               type_annotation_syntax,
         )),
-        |(_, name, _, c, _, typ)| (name, c, typ),
+        |(var, ws, name, tws, typ)| StoredPropertySyntax {
+            mutability_keyword: TokenSyntax::from(var),
+            name: TokenSyntax::from(name).with_leading_trivia(ws),
+            type_: typ.with_leading_trivia(tws),
+        },
     )(s)
 }
 
@@ -1010,65 +965,69 @@ mod tests {
 
     #[test]
     fn test_struct_properties() {
-        assert_eq!(
-            struct_properties(
+        check(
                 r"val a: Int64
                  val b: Int64
-            "
-            ),
-            Ok((
-                "",
+            ",
+            struct_properties,
                 vec![
                     StructPropertySyntax::StoredProperty(StoredPropertySyntax {
                         mutability_keyword: TokenSyntax::from("val"),
-                        name: TokenSyntax::from("a"),
-                        type_: TypeName::Simple(SimpleTypeName {
-                            name: TokenSyntax::from("Int64"),
-                            type_args: None
-                        })
+                        name: TokenSyntax::from("a").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        type_: TypeAnnotationSyntax {
+                            colon: TokenSyntax::from(":"),
+                            type_: TypeName::Simple(SimpleTypeName {
+                                name: TokenSyntax::from("Int64"),
+                                type_args: None
+                            }).with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        },
                     }),
                     StructPropertySyntax::StoredProperty(StoredPropertySyntax {
                         mutability_keyword: TokenSyntax::from("val"),
-                        name: TokenSyntax::from("b"),
-                        type_: TypeName::Simple(SimpleTypeName {
-                            name: TokenSyntax::from("Int64"),
-                            type_args: None
-                        })
+                        name: TokenSyntax::from("b").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        type_: TypeAnnotationSyntax {
+                            colon: TokenSyntax::from(":"),
+                            type_: TypeName::Simple(SimpleTypeName {
+                                name: TokenSyntax::from("Int64"),
+                                type_args: None
+                            }).with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        },
                     }),
                 ]
-            ))
-        )
+        );
     }
 
     #[test]
     fn test_stored_property() {
-        assert_eq!(
-            stored_property("val a: Int64"),
-            Ok((
-                "",
+        check(
+            "val a: Int64",
+            stored_property,
                 StructPropertySyntax::StoredProperty(StoredPropertySyntax {
                     mutability_keyword: TokenSyntax::from("val"),
-                    name: TokenSyntax::from("a"),
-                    type_: TypeName::Simple(SimpleTypeName {
-                        name: TokenSyntax::from("Int64"),
-                        type_args: None
-                    })
+                    name: TokenSyntax::from("a").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    type_: TypeAnnotationSyntax {
+                        colon: TokenSyntax::from(":"),
+                        type_: TypeName::Simple(SimpleTypeName {
+                            name: TokenSyntax::from("Int64"),
+                            type_args: None
+                        }).with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    },
                 })
-            ))
         );
-        assert_eq!(
-            stored_property("var a: Int64"),
-            Ok((
-                "",
+        check(
+            "var a: Int64",
+            stored_property,
                 StructPropertySyntax::StoredProperty(StoredPropertySyntax {
                     mutability_keyword: TokenSyntax::from("var"),
-                    name: TokenSyntax::from("a"),
-                    type_: TypeName::Simple(SimpleTypeName {
-                        name: TokenSyntax::from("Int64"),
-                        type_args: None
-                    })
+                    name: TokenSyntax::from("a").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    type_: TypeAnnotationSyntax {
+                        colon: TokenSyntax::from(":"),
+                        type_: TypeName::Simple(SimpleTypeName {
+                            name: TokenSyntax::from("Int64"),
+                            type_args: None
+                        }).with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    },
                 })
-            ))
         );
     }
 
@@ -1088,11 +1047,14 @@ mod tests {
                     open: TokenSyntax::from("{"),
                     properties: vec![StructPropertySyntax::StoredProperty(StoredPropertySyntax {
                         mutability_keyword: TokenSyntax::from("var"),
-                        name: TokenSyntax::from("a"),
-                        type_: TypeName::Simple(SimpleTypeName {
-                            name: TokenSyntax::from("String"),
-                            type_args: None,
-                        }),
+                        name: TokenSyntax::from("a").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        type_: TypeAnnotationSyntax {
+                            colon: TokenSyntax::from(":"),
+                            type_: TypeName::Simple(SimpleTypeName {
+                                name: TokenSyntax::from("String"),
+                                type_args: None
+                            }).with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        },
                     })],
                     close: TokenSyntax::from("}"),
                 },

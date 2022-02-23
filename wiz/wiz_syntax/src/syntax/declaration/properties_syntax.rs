@@ -1,7 +1,7 @@
 use crate::syntax::declaration::fun_syntax::{ArgDefListSyntax, FunBody, FunSyntax};
+use crate::syntax::declaration::TypeAnnotationSyntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
-use crate::syntax::type_name::TypeName;
 use crate::syntax::Syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone, Default)]
@@ -80,7 +80,7 @@ impl Syntax for StructPropertySyntax {
 pub struct StoredPropertySyntax {
     pub mutability_keyword: TokenSyntax,
     pub name: TokenSyntax,
-    pub type_: TypeName,
+    pub type_: TypeAnnotationSyntax,
 }
 
 impl Syntax for StoredPropertySyntax {
