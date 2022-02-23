@@ -16,7 +16,13 @@ use crate::parser::wiz::operators::{
 use crate::parser::wiz::statement::stmt;
 use crate::parser::wiz::type_::{type_, type_arguments};
 use crate::syntax::block::BlockSyntax;
-use crate::syntax::expression::{ArgLabelSyntax, ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallArgElementSyntax, CallArgListSyntax, CallExprSyntax, ElseSyntax, Expr, IfExprSyntax, LambdaSyntax, MemberSyntax, NameExprSyntax, PostfixSuffix, PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax, ReturnSyntax, SubscriptIndexElementSyntax, SubscriptIndexListSyntax, SubscriptSyntax, TypeCastSyntax, UnaryOperationSyntax};
+use crate::syntax::expression::{
+    ArgLabelSyntax, ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg,
+    CallArgElementSyntax, CallArgListSyntax, CallExprSyntax, ElseSyntax, Expr, IfExprSyntax,
+    LambdaSyntax, MemberSyntax, NameExprSyntax, PostfixSuffix, PostfixUnaryOperationSyntax,
+    PrefixUnaryOperationSyntax, ReturnSyntax, SubscriptIndexElementSyntax,
+    SubscriptIndexListSyntax, SubscriptSyntax, TypeCastSyntax, UnaryOperationSyntax,
+};
 use crate::syntax::literal::LiteralSyntax;
 use crate::syntax::statement::Stmt;
 use crate::syntax::token::TokenSyntax;
@@ -807,12 +813,7 @@ where
     <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
-        tuple((
-            opt(arg_label_syntax),
-            whitespace0,
-            opt(token("*")),
-            expr,
-        )),
+        tuple((opt(arg_label_syntax), whitespace0, opt(token("*")), expr)),
         |(arg_label, ws, is_vararg, arg)| match is_vararg {
             None => CallArg {
                 label: arg_label,
@@ -823,15 +824,15 @@ where
                 label: arg_label,
                 asterisk: Some(asterisk.with_leading_trivia(ws)),
                 arg: Box::new(arg),
-            }
+            },
         },
     )(s)
 }
 
 // <arg_label> ::= <identifier> ":"
 pub fn arg_label_syntax<I>(s: I) -> IResult<I, ArgLabelSyntax>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + Clone
@@ -843,13 +844,16 @@ pub fn arg_label_syntax<I>(s: I) -> IResult<I, ArgLabelSyntax>
         + ExtendInto<Item = char, Extender = String>
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
-        <I as InputTakeAtPosition>::Item: AsChar,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(tuple((identifier, whitespace0, token(":"))),|(label, ws, colon)|ArgLabelSyntax {
-        label: TokenSyntax::from(label),
-        colon: colon.with_leading_trivia(ws),
-    })(s)
+    map(
+        tuple((identifier, whitespace0, token(":"))),
+        |(label, ws, colon)| ArgLabelSyntax {
+            label: TokenSyntax::from(label),
+            colon: colon.with_leading_trivia(ws),
+        },
+    )(s)
 }
 
 /*
@@ -1296,7 +1300,12 @@ mod tests {
     use crate::syntax::block::BlockSyntax;
     use crate::syntax::declaration::VarSyntax;
     use crate::syntax::declaration::{DeclKind, DeclarationSyntax};
-    use crate::syntax::expression::{ArgLabelSyntax, ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallArgElementSyntax, CallArgListSyntax, CallExprSyntax, ElseSyntax, Expr, IfExprSyntax, MemberSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax, SubscriptIndexElementSyntax, SubscriptIndexListSyntax};
+    use crate::syntax::expression::{
+        ArgLabelSyntax, ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg,
+        CallArgElementSyntax, CallArgListSyntax, CallExprSyntax, ElseSyntax, Expr, IfExprSyntax,
+        MemberSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax, SubscriptIndexElementSyntax,
+        SubscriptIndexListSyntax,
+    };
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::name_space::NameSpaceSyntax;
     use crate::syntax::statement::Stmt;
@@ -1677,11 +1686,14 @@ mod tests {
                                 label: TokenSyntax::from("string"),
                                 colon: TokenSyntax::from(":"),
                             }),
-                            arg: Box::from(Expr::Literal(LiteralSyntax::String {
-                                open_quote: TokenSyntax::from('"'),
-                                value: "Hello, World".to_string(),
-                                close_quote: TokenSyntax::from('"'),
-                            }).with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))),
+                            arg: Box::from(
+                                Expr::Literal(LiteralSyntax::String {
+                                    open_quote: TokenSyntax::from('"'),
+                                    value: "Hello, World".to_string(),
+                                    close_quote: TokenSyntax::from('"'),
+                                })
+                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                            ),
                             asterisk: None,
                         },
                         trailing_comma: None,
