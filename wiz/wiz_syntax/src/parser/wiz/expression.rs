@@ -814,14 +814,13 @@ where
 {
     map(
         tuple((
-            whitespace0,
-            opt(tuple((identifier, whitespace0, char(':'), whitespace0))),
-            opt(char('*')),
+            opt(tuple((identifier, whitespace0, token(":"), whitespace0))),
+            opt(token("*")),
             expr,
         )),
-        |(_, arg_label, is_vararg, arg)| CallArg {
+        |(arg_label, is_vararg, arg)| CallArg {
             label: arg_label.map(|(label, _, _, _)| TokenSyntax::from(label)),
-            asterisk: is_vararg.map(|a| TokenSyntax::from(a)),
+            asterisk: is_vararg,
             arg: Box::new(arg),
         },
     )(s)
