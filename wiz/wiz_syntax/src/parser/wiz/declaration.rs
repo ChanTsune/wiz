@@ -271,10 +271,7 @@ where
         + Compare<&'static str>,
     <I as InputIter>::Item: AsChar + Copy,
 {
-    map(
-        stored_property_syntax,
-        StructPropertySyntax::StoredProperty,
-    )(s)
+    map(stored_property_syntax, StructPropertySyntax::StoredProperty)(s)
 }
 
 // <stored_property> ::= ("var" | "val") <identifier> ":" <type>
@@ -295,9 +292,9 @@ where
         tuple((
             alt((var_keyword, val_keyword)),
             whitespace1,
-               identifier,
-               whitespace0,
-               type_annotation_syntax,
+            identifier,
+            whitespace0,
+            type_annotation_syntax,
         )),
         |(var, ws, name, tws, typ)| StoredPropertySyntax {
             mutability_keyword: TokenSyntax::from(var),
@@ -966,34 +963,38 @@ mod tests {
     #[test]
     fn test_struct_properties() {
         check(
-                r"val a: Int64
+            r"val a: Int64
                  val b: Int64
             ",
             struct_properties,
-                vec![
-                    StructPropertySyntax::StoredProperty(StoredPropertySyntax {
-                        mutability_keyword: TokenSyntax::from("val"),
-                        name: TokenSyntax::from("a").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                        type_: TypeAnnotationSyntax {
-                            colon: TokenSyntax::from(":"),
-                            type_: TypeName::Simple(SimpleTypeName {
-                                name: TokenSyntax::from("Int64"),
-                                type_args: None
-                            }).with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                        },
-                    }),
-                    StructPropertySyntax::StoredProperty(StoredPropertySyntax {
-                        mutability_keyword: TokenSyntax::from("val"),
-                        name: TokenSyntax::from("b").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                        type_: TypeAnnotationSyntax {
-                            colon: TokenSyntax::from(":"),
-                            type_: TypeName::Simple(SimpleTypeName {
-                                name: TokenSyntax::from("Int64"),
-                                type_args: None
-                            }).with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                        },
-                    }),
-                ]
+            vec![
+                StructPropertySyntax::StoredProperty(StoredPropertySyntax {
+                    mutability_keyword: TokenSyntax::from("val"),
+                    name: TokenSyntax::from("a")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    type_: TypeAnnotationSyntax {
+                        colon: TokenSyntax::from(":"),
+                        type_: TypeName::Simple(SimpleTypeName {
+                            name: TokenSyntax::from("Int64"),
+                            type_args: None,
+                        })
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    },
+                }),
+                StructPropertySyntax::StoredProperty(StoredPropertySyntax {
+                    mutability_keyword: TokenSyntax::from("val"),
+                    name: TokenSyntax::from("b")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    type_: TypeAnnotationSyntax {
+                        colon: TokenSyntax::from(":"),
+                        type_: TypeName::Simple(SimpleTypeName {
+                            name: TokenSyntax::from("Int64"),
+                            type_args: None,
+                        })
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    },
+                }),
+            ],
         );
     }
 
@@ -1002,32 +1003,36 @@ mod tests {
         check(
             "val a: Int64",
             stored_property,
-                StructPropertySyntax::StoredProperty(StoredPropertySyntax {
-                    mutability_keyword: TokenSyntax::from("val"),
-                    name: TokenSyntax::from("a").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    type_: TypeAnnotationSyntax {
-                        colon: TokenSyntax::from(":"),
-                        type_: TypeName::Simple(SimpleTypeName {
-                            name: TokenSyntax::from("Int64"),
-                            type_args: None
-                        }).with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    },
-                })
+            StructPropertySyntax::StoredProperty(StoredPropertySyntax {
+                mutability_keyword: TokenSyntax::from("val"),
+                name: TokenSyntax::from("a")
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                type_: TypeAnnotationSyntax {
+                    colon: TokenSyntax::from(":"),
+                    type_: TypeName::Simple(SimpleTypeName {
+                        name: TokenSyntax::from("Int64"),
+                        type_args: None,
+                    })
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                },
+            }),
         );
         check(
             "var a: Int64",
             stored_property,
-                StructPropertySyntax::StoredProperty(StoredPropertySyntax {
-                    mutability_keyword: TokenSyntax::from("var"),
-                    name: TokenSyntax::from("a").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    type_: TypeAnnotationSyntax {
-                        colon: TokenSyntax::from(":"),
-                        type_: TypeName::Simple(SimpleTypeName {
-                            name: TokenSyntax::from("Int64"),
-                            type_args: None
-                        }).with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    },
-                })
+            StructPropertySyntax::StoredProperty(StoredPropertySyntax {
+                mutability_keyword: TokenSyntax::from("var"),
+                name: TokenSyntax::from("a")
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                type_: TypeAnnotationSyntax {
+                    colon: TokenSyntax::from(":"),
+                    type_: TypeName::Simple(SimpleTypeName {
+                        name: TokenSyntax::from("Int64"),
+                        type_args: None,
+                    })
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                },
+            }),
         );
     }
 
@@ -1047,13 +1052,15 @@ mod tests {
                     open: TokenSyntax::from("{"),
                     properties: vec![StructPropertySyntax::StoredProperty(StoredPropertySyntax {
                         mutability_keyword: TokenSyntax::from("var"),
-                        name: TokenSyntax::from("a").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        name: TokenSyntax::from("a")
+                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                         type_: TypeAnnotationSyntax {
                             colon: TokenSyntax::from(":"),
                             type_: TypeName::Simple(SimpleTypeName {
                                 name: TokenSyntax::from("String"),
-                                type_args: None
-                            }).with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                                type_args: None,
+                            })
+                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                         },
                     })],
                     close: TokenSyntax::from("}"),
