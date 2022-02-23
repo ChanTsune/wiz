@@ -1,7 +1,10 @@
 use crate::parser::wiz::annotation::annotations_syntax;
 use crate::parser::wiz::character::{ampersand, comma};
 use crate::parser::wiz::expression::expr;
-use crate::parser::wiz::keywords::{as_keyword, deinit_keyword, extension_keyword, fun_keyword, init_keyword, protocol_keyword, self_keyword, struct_keyword, token, use_keyword, val_keyword, var_keyword, where_keyword};
+use crate::parser::wiz::keywords::{
+    as_keyword, deinit_keyword, extension_keyword, fun_keyword, init_keyword, protocol_keyword,
+    self_keyword, struct_keyword, token, use_keyword, val_keyword, var_keyword, where_keyword,
+};
 use crate::parser::wiz::lexical_structure::{
     identifier, trivia_piece_line_ending, whitespace0, whitespace1, whitespace_without_eol0,
 };
@@ -485,7 +488,7 @@ where
                     trailing_comma: Some(TokenSyntax::from(c).with_leading_trivia(rws)),
                 })
                 .collect();
-            if let Some((ws, e)) = element{
+            if let Some((ws, e)) = element {
                 elements.push(ArgDefElementSyntax {
                     element: e.with_leading_trivia(ws),
                     trailing_comma: None,
