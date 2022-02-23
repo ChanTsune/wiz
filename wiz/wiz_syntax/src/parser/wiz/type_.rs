@@ -1,4 +1,5 @@
 use crate::parser::wiz::character::{ampersand, comma};
+use crate::parser::wiz::keywords::token;
 use crate::parser::wiz::lexical_structure::{identifier, whitespace0};
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::type_name::{
@@ -15,7 +16,6 @@ use nom::multi::many0;
 use nom::sequence::tuple;
 use nom::{AsChar, Compare, FindSubstring, IResult, InputIter, InputLength, InputTake, Slice};
 use std::ops::{Range, RangeFrom};
-use crate::parser::wiz::keywords::token;
 
 pub fn type_<I>(s: I) -> IResult<I, TypeName>
 where
