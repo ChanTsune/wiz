@@ -28,11 +28,11 @@ where
     token("fun")(s)
 }
 
-pub fn where_keyword<I>(s: I) -> IResult<I, I>
+pub fn where_keyword<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: InputTake + Compare<&'static str>,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    tag("where")(s)
+    token("where")(s)
 }
 
 pub fn var_keyword<I>(s: I) -> IResult<I, I>
@@ -184,7 +184,7 @@ mod tests {
 
     #[test]
     fn test_where_keyword() {
-        assert_eq!(where_keyword("where"), Ok(("", "where")))
+        check("where", where_keyword, TokenSyntax::from("where"));
     }
 
     #[test]

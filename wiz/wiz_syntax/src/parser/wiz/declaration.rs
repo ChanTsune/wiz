@@ -621,7 +621,7 @@ where
                 type_constraints.insert(0, t);
             };
             TypeConstraintsSyntax {
-                where_keyword: TokenSyntax::from(where_keyword),
+                where_keyword,
                 type_constraints,
             }
         },
