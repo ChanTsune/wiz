@@ -1,4 +1,5 @@
 use crate::parser::wiz::character::comma;
+use crate::parser::wiz::keywords::token;
 use crate::parser::wiz::lexical_structure::{identifier, whitespace0};
 use crate::syntax::annotation::{Annotation, AnnotationsSyntax};
 use crate::syntax::token::TokenSyntax;
@@ -8,7 +9,6 @@ use nom::multi::many0;
 use nom::sequence::tuple;
 use nom::{AsChar, Compare, FindSubstring, IResult, InputIter, InputLength, InputTake, Slice};
 use std::ops::{Range, RangeFrom};
-use crate::parser::wiz::keywords::token;
 
 pub fn annotations_syntax<I>(s: I) -> IResult<I, AnnotationsSyntax>
 where
