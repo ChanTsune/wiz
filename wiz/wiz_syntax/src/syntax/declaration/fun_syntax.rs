@@ -2,9 +2,10 @@ pub use crate::syntax::declaration::fun_syntax::arg_def::{
     ArgDef, ArgDefElementSyntax, ArgDefListSyntax, SelfArgDefSyntax, ValueArgDef,
 };
 pub use crate::syntax::declaration::fun_syntax::body_def::FunBody;
+use crate::syntax::declaration::TypeAnnotationSyntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
-use crate::syntax::type_name::{TypeConstraintsSyntax, TypeName, TypeParameterListSyntax};
+use crate::syntax::type_name::{TypeConstraintsSyntax, TypeParameterListSyntax};
 use crate::syntax::Syntax;
 
 mod arg_def;
@@ -16,7 +17,7 @@ pub struct FunSyntax {
     pub name: TokenSyntax,
     pub type_params: Option<TypeParameterListSyntax>,
     pub arg_defs: ArgDefListSyntax,
-    pub return_type: Option<TypeName>,
+    pub return_type: Option<TypeAnnotationSyntax>,
     pub type_constraints: Option<TypeConstraintsSyntax>,
     pub body: Option<FunBody>,
 }

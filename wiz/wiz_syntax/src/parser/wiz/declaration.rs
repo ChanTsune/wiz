@@ -3,7 +3,7 @@ use crate::parser::wiz::character::{ampersand, comma};
 use crate::parser::wiz::expression::expr;
 use crate::parser::wiz::keywords::{
     as_keyword, deinit_keyword, extension_keyword, fun_keyword, init_keyword, protocol_keyword,
-    self_keyword, struct_keyword, use_keyword, val_keyword, var_keyword, where_keyword,
+    self_keyword, struct_keyword, token, use_keyword, val_keyword, var_keyword, where_keyword,
 };
 use crate::parser::wiz::lexical_structure::{
     identifier, trivia_piece_line_ending, whitespace0, whitespace1, whitespace_without_eol0,
@@ -18,13 +18,12 @@ use crate::syntax::declaration::fun_syntax::{
 use crate::syntax::declaration::{
     AliasSyntax, DeclKind, DeclarationSyntax, DeinitializerSyntax, ExtensionSyntax,
     InitializerSyntax, PackageName, ProtocolConformSyntax, StoredPropertySyntax, StructBodySyntax,
-    StructPropertySyntax, StructSyntax, UseSyntax,
+    StructPropertySyntax, StructSyntax, TypeAnnotationSyntax, UseSyntax,
 };
 use crate::syntax::declaration::{PackageNameElement, VarSyntax};
-use crate::syntax::expression::Expr;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::type_name::{
-    TypeConstraintElementSyntax, TypeConstraintSyntax, TypeConstraintsSyntax, TypeName, TypeParam,
+    TypeConstraintElementSyntax, TypeConstraintSyntax, TypeConstraintsSyntax, TypeParam,
 };
 use crate::syntax::Syntax;
 use nom::branch::alt;
@@ -74,6 +73,27 @@ where
     )(s)
 }
 
+pub fn type_annotation_syntax<I>(s: I) -> IResult<I, TypeAnnotationSyntax>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + InputTake
+        + InputLength
+        + Clone
+        + ToString
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+{
+    map(tuple((char(':'), whitespace0, type_)), |(c, ws, t)| {
+        TypeAnnotationSyntax {
+            colon: TokenSyntax::from(c),
+            type_: t.with_leading_trivia(ws),
+        }
+    })(s)
+}
+
 //region struct
 
 pub fn struct_decl<I>(s: I) -> IResult<I, DeclKind>
@@ -119,21 +139,20 @@ where
             alt((struct_keyword, protocol_keyword)),
             whitespace1,
             identifier,
-            whitespace0,
-            opt(type_parameters),
+            opt(tuple((whitespace0, type_parameters))),
             opt(tuple((whitespace0, struct_body_syntax))),
         )),
-        |(struct_keyword, nws, name, _, params, body)| match body {
+        |(struct_keyword, nws, name, params, body)| match body {
             Some((_, body)) => StructSyntax {
-                struct_keyword: TokenSyntax::from(struct_keyword),
+                struct_keyword,
                 name: TokenSyntax::from(name).with_leading_trivia(nws),
-                type_params: params,
+                type_params: params.map(|(ws, p)| p.with_leading_trivia(ws)),
                 body,
             },
             None => StructSyntax {
                 struct_keyword: TokenSyntax::from(struct_keyword),
                 name: TokenSyntax::from(name).with_leading_trivia(nws),
-                type_params: params,
+                type_params: params.map(|(ws, p)| p.with_leading_trivia(ws)),
                 body: Default::default(),
             },
         },
@@ -238,7 +257,7 @@ where
     alt((stored_property, initializer, deinitializer, member_function))(s)
 }
 
-// <stored_property> ::= <mutable_stored_property> | <immutable_stored_property>
+// <stored_property> ::= ("var" | "val") <identifier> ":" <type>
 pub fn stored_property<I>(s: I) -> IResult<I, StructPropertySyntax>
 where
     I: Slice<RangeFrom<usize>>
@@ -252,62 +271,11 @@ where
         + Compare<&'static str>,
     <I as InputIter>::Item: AsChar + Copy,
 {
-    map(
-        alt((mutable_stored_property, immutable_stored_property)),
-        StructPropertySyntax::StoredProperty,
-    )(s)
+    map(stored_property_syntax, StructPropertySyntax::StoredProperty)(s)
 }
 
-// <mutable_stored_property> ::= "var" <stored_property_body>
-pub fn mutable_stored_property<I>(s: I) -> IResult<I, StoredPropertySyntax>
-where
-    I: Slice<RangeFrom<usize>>
-        + Slice<Range<usize>>
-        + InputIter
-        + InputTake
-        + InputLength
-        + Clone
-        + ToString
-        + FindSubstring<&'static str>
-        + Compare<&'static str>,
-    <I as InputIter>::Item: AsChar + Copy,
-{
-    map(
-        tuple((var_keyword, stored_property_body)),
-        |(var, (name, _, typ))| StoredPropertySyntax {
-            mutability_keyword: TokenSyntax::from(var),
-            name: TokenSyntax::from(name),
-            type_: typ,
-        },
-    )(s)
-}
-
-// <immutable_stored_property> ::= "val" <stored_property_body>
-pub fn immutable_stored_property<I>(s: I) -> IResult<I, StoredPropertySyntax>
-where
-    I: Slice<RangeFrom<usize>>
-        + Slice<Range<usize>>
-        + InputIter
-        + InputTake
-        + InputLength
-        + Clone
-        + ToString
-        + FindSubstring<&'static str>
-        + Compare<&'static str>,
-    <I as InputIter>::Item: AsChar + Copy,
-{
-    map(
-        tuple((val_keyword, stored_property_body)),
-        |(val, (name, _, typ))| StoredPropertySyntax {
-            mutability_keyword: TokenSyntax::from(val),
-            name: TokenSyntax::from(name),
-            type_: typ,
-        },
-    )(s)
-}
-
-// <stored_property_body> ::= <identifier> ":" <type>
-pub fn stored_property_body<I>(s: I) -> IResult<I, (String, char, TypeName)>
+// <stored_property> ::= ("var" | "val") <identifier> ":" <type>
+pub fn stored_property_syntax<I>(s: I) -> IResult<I, StoredPropertySyntax>
 where
     I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
@@ -322,14 +290,17 @@ where
 {
     map(
         tuple((
+            alt((var_keyword, val_keyword)),
             whitespace1,
             identifier,
             whitespace0,
-            char(':'),
-            whitespace0,
-            type_,
+            type_annotation_syntax,
         )),
-        |(_, name, _, c, _, typ)| (name, c, typ),
+        |(var, ws, name, tws, typ)| StoredPropertySyntax {
+            mutability_keyword: TokenSyntax::from(var),
+            name: TokenSyntax::from(name).with_leading_trivia(ws),
+            type_: typ.with_leading_trivia(tws),
+        },
     )(s)
 }
 
@@ -467,23 +438,18 @@ where
             identifier,
             opt(type_parameters),
             function_value_parameters,
-            whitespace0,
-            opt(tuple((char(':'), whitespace0, type_))),
-            whitespace0,
-            opt(type_constraints),
-            whitespace0,
-            opt(function_body),
+            opt(tuple((whitespace0, type_annotation_syntax))),
+            opt(tuple((whitespace0, type_constraints))),
+            opt(tuple((whitespace0, function_body))),
         )),
-        |(f, ws, name, type_params, args, _, return_type, _, type_constraints, _, body)| {
-            FunSyntax {
-                fun_keyword: TokenSyntax::from(f),
-                name: TokenSyntax::from(name).with_leading_trivia(ws),
-                type_params,
-                arg_defs: args,
-                return_type: return_type.map(|(_, _, t)| t),
-                type_constraints,
-                body,
-            }
+        |(f, ws, name, type_params, args, return_type, type_constraints, body)| FunSyntax {
+            fun_keyword: f,
+            name: TokenSyntax::from(name).with_leading_trivia(ws),
+            type_params,
+            arg_defs: args,
+            return_type: return_type.map(|(ws, t)| t.with_leading_trivia(ws)),
+            type_constraints: type_constraints.map(|(ws, c)| c.with_leading_trivia(ws)),
+            body: body.map(|(ws, body)| body.with_leading_trivia(ws)),
         },
     )(s)
 }
@@ -503,20 +469,18 @@ where
 {
     map(
         tuple((
-            char('('),
+            token("("),
             many0(tuple((
                 whitespace0,
                 function_value_parameter,
                 whitespace0,
                 comma,
             ))),
+            opt(tuple((whitespace0, function_value_parameter))),
             whitespace0,
-            opt(function_value_parameter),
-            whitespace0,
-            char(')'),
+            token(")"),
         )),
-        |(open, elements, ws, element, tws, close)| {
-            let mut close = TokenSyntax::from(close);
+        |(open, elements, element, tws, close)| {
             let mut elements: Vec<_> = elements
                 .into_iter()
                 .map(|(lws, e, rws, c)| ArgDefElementSyntax {
@@ -524,23 +488,17 @@ where
                     trailing_comma: Some(TokenSyntax::from(c).with_leading_trivia(rws)),
                 })
                 .collect();
-            match element {
-                None => {
-                    close = close.with_leading_trivia(ws + tws);
-                }
-                Some(e) => {
-                    elements.push(ArgDefElementSyntax {
-                        element: e.with_leading_trivia(ws),
-                        trailing_comma: None,
-                    });
-                    close = close.with_leading_trivia(tws);
-                }
+            if let Some((ws, e)) = element {
+                elements.push(ArgDefElementSyntax {
+                    element: e.with_leading_trivia(ws),
+                    trailing_comma: None,
+                });
             };
 
             ArgDefListSyntax {
-                open: TokenSyntax::from(open),
+                open,
                 elements,
-                close,
+                close: close.with_leading_trivia(tws),
             }
         },
     )(s)
@@ -633,10 +591,9 @@ where
             where_keyword,
             whitespace1,
             many0(tuple((whitespace0, type_constraint, whitespace0, comma))),
-            whitespace0,
-            opt(type_constraint),
+            opt(tuple((whitespace0, type_constraint))),
         )),
-        |(where_keyword, ws, t, lws, ts)| {
+        |(where_keyword, ws, t, ts)| {
             let mut type_constraints: Vec<_> = t
                 .into_iter()
                 .map(|(lws, ta, rws, c)| TypeConstraintElementSyntax {
@@ -644,9 +601,9 @@ where
                     trailing_comma: Some(TokenSyntax::from(c).with_leading_trivia(rws)),
                 })
                 .collect();
-            if let Some(ts) = ts {
+            if let Some((ws, ts)) = ts {
                 type_constraints.push(TypeConstraintElementSyntax {
-                    element: ts.with_leading_trivia(lws),
+                    element: ts.with_leading_trivia(ws),
                     trailing_comma: None,
                 })
             };
@@ -655,7 +612,7 @@ where
                 type_constraints.insert(0, t);
             };
             TypeConstraintsSyntax {
-                where_keyword: TokenSyntax::from(where_keyword),
+                where_keyword,
                 type_constraints,
             }
         },
@@ -789,44 +746,25 @@ where
     <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
-        tuple((alt((var_keyword, val_keyword)), whitespace1, var_body)),
-        |(mutability_keyword, ws, (name, t, e)): (I, _, _)| VarSyntax {
-            mutability_keyword: TokenSyntax::from(mutability_keyword),
-            name: TokenSyntax::from(name).with_leading_trivia(ws),
-            type_: t,
-            value: e,
-        },
-    )(s)
-}
-
-pub fn var_body<I>(s: I) -> IResult<I, (String, Option<TypeName>, Expr)>
-where
-    I: Slice<RangeFrom<usize>>
-        + Slice<Range<usize>>
-        + InputIter
-        + Clone
-        + InputLength
-        + ToString
-        + InputTake
-        + Offset
-        + InputTakeAtPosition
-        + ExtendInto<Item = char, Extender = String>
-        + FindSubstring<&'static str>
-        + Compare<&'static str>,
-    <I as InputIter>::Item: AsChar + Copy,
-    <I as InputTakeAtPosition>::Item: AsChar,
-{
-    map(
         tuple((
+            alt((var_keyword, val_keyword)),
+            whitespace1,
             identifier,
-            whitespace0,
-            opt(tuple((char(':'), whitespace0, type_))),
+            opt(tuple((whitespace0, type_annotation_syntax))),
             whitespace0,
             char('='),
             whitespace0,
             expr,
         )),
-        |(name, _, t, _, _, _, e)| (name, t.map(|(_, _, t)| t), e),
+        |(mutability_keyword, ws, name, t, elws, eq, erws, e): (I, _, _, _, _, _, _, _)| {
+            VarSyntax {
+                mutability_keyword: TokenSyntax::from(mutability_keyword),
+                name: TokenSyntax::from(name).with_leading_trivia(ws),
+                type_annotation: t.map(|(ws, t)| t.with_leading_trivia(ws)),
+                equal: TokenSyntax::from(eq).with_leading_trivia(elws),
+                value: e.with_leading_trivia(erws),
+            }
+        },
     )(s)
 }
 
@@ -999,7 +937,7 @@ mod tests {
     };
     use crate::syntax::declaration::{
         AliasSyntax, DeclKind, PackageName, StoredPropertySyntax, StructBodySyntax,
-        StructPropertySyntax, StructSyntax, UseSyntax,
+        StructPropertySyntax, StructSyntax, TypeAnnotationSyntax, UseSyntax,
     };
     use crate::syntax::declaration::{PackageNameElement, VarSyntax};
     use crate::syntax::expression::{BinaryOperationSyntax, Expr, NameExprSyntax};
@@ -1015,65 +953,77 @@ mod tests {
 
     #[test]
     fn test_struct_properties() {
-        assert_eq!(
-            struct_properties(
-                r"val a: Int64
+        check(
+            r"val a: Int64
                  val b: Int64
-            "
-            ),
-            Ok((
-                "",
-                vec![
-                    StructPropertySyntax::StoredProperty(StoredPropertySyntax {
-                        mutability_keyword: TokenSyntax::from("val"),
-                        name: TokenSyntax::from("a"),
+            ",
+            struct_properties,
+            vec![
+                StructPropertySyntax::StoredProperty(StoredPropertySyntax {
+                    mutability_keyword: TokenSyntax::from("val"),
+                    name: TokenSyntax::from("a")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    type_: TypeAnnotationSyntax {
+                        colon: TokenSyntax::from(":"),
                         type_: TypeName::Simple(SimpleTypeName {
                             name: TokenSyntax::from("Int64"),
-                            type_args: None
+                            type_args: None,
                         })
-                    }),
-                    StructPropertySyntax::StoredProperty(StoredPropertySyntax {
-                        mutability_keyword: TokenSyntax::from("val"),
-                        name: TokenSyntax::from("b"),
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    },
+                }),
+                StructPropertySyntax::StoredProperty(StoredPropertySyntax {
+                    mutability_keyword: TokenSyntax::from("val"),
+                    name: TokenSyntax::from("b")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    type_: TypeAnnotationSyntax {
+                        colon: TokenSyntax::from(":"),
                         type_: TypeName::Simple(SimpleTypeName {
                             name: TokenSyntax::from("Int64"),
-                            type_args: None
+                            type_args: None,
                         })
-                    }),
-                ]
-            ))
-        )
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    },
+                }),
+            ],
+        );
     }
 
     #[test]
     fn test_stored_property() {
-        assert_eq!(
-            stored_property("val a: Int64"),
-            Ok((
-                "",
-                StructPropertySyntax::StoredProperty(StoredPropertySyntax {
-                    mutability_keyword: TokenSyntax::from("val"),
-                    name: TokenSyntax::from("a"),
+        check(
+            "val a: Int64",
+            stored_property,
+            StructPropertySyntax::StoredProperty(StoredPropertySyntax {
+                mutability_keyword: TokenSyntax::from("val"),
+                name: TokenSyntax::from("a")
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                type_: TypeAnnotationSyntax {
+                    colon: TokenSyntax::from(":"),
                     type_: TypeName::Simple(SimpleTypeName {
                         name: TokenSyntax::from("Int64"),
-                        type_args: None
+                        type_args: None,
                     })
-                })
-            ))
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                },
+            }),
         );
-        assert_eq!(
-            stored_property("var a: Int64"),
-            Ok((
-                "",
-                StructPropertySyntax::StoredProperty(StoredPropertySyntax {
-                    mutability_keyword: TokenSyntax::from("var"),
-                    name: TokenSyntax::from("a"),
+        check(
+            "var a: Int64",
+            stored_property,
+            StructPropertySyntax::StoredProperty(StoredPropertySyntax {
+                mutability_keyword: TokenSyntax::from("var"),
+                name: TokenSyntax::from("a")
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                type_: TypeAnnotationSyntax {
+                    colon: TokenSyntax::from(":"),
                     type_: TypeName::Simple(SimpleTypeName {
                         name: TokenSyntax::from("Int64"),
-                        type_args: None
+                        type_args: None,
                     })
-                })
-            ))
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                },
+            }),
         );
     }
 
@@ -1093,11 +1043,16 @@ mod tests {
                     open: TokenSyntax::from("{"),
                     properties: vec![StructPropertySyntax::StoredProperty(StoredPropertySyntax {
                         mutability_keyword: TokenSyntax::from("var"),
-                        name: TokenSyntax::from("a"),
-                        type_: TypeName::Simple(SimpleTypeName {
-                            name: TokenSyntax::from("String"),
-                            type_args: None,
-                        }),
+                        name: TokenSyntax::from("a")
+                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        type_: TypeAnnotationSyntax {
+                            colon: TokenSyntax::from(":"),
+                            type_: TypeName::Simple(SimpleTypeName {
+                                name: TokenSyntax::from("String"),
+                                type_args: None,
+                            })
+                            .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        },
                     })],
                     close: TokenSyntax::from("}"),
                 },
@@ -1107,26 +1062,25 @@ mod tests {
 
     #[test]
     fn test_member_function() {
-        assert_eq!(
-            member_function("fun function() {}"),
-            Ok((
-                "",
-                StructPropertySyntax::Method(FunSyntax {
-                    fun_keyword: TokenSyntax::from("fun"),
-                    name: TokenSyntax::from("function")
+        check(
+            "fun function() {}",
+            member_function,
+            StructPropertySyntax::Method(FunSyntax {
+                fun_keyword: TokenSyntax::from("fun"),
+                name: TokenSyntax::from("function")
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                type_params: None,
+                arg_defs: ArgDefListSyntax::default(),
+                return_type: None,
+                type_constraints: None,
+                body: Some(FunBody::Block(BlockSyntax {
+                    open: TokenSyntax::from("{")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    type_params: None,
-                    arg_defs: ArgDefListSyntax::default(),
-                    return_type: None,
-                    type_constraints: None,
-                    body: Some(FunBody::Block(BlockSyntax {
-                        open: TokenSyntax::from("{"),
-                        body: vec![],
-                        close: TokenSyntax::from("}")
-                    })),
-                })
-            ))
-        )
+                    body: vec![],
+                    close: TokenSyntax::from("}"),
+                })),
+            }),
+        );
     }
 
     #[test]
@@ -1236,26 +1190,25 @@ mod tests {
 
     #[test]
     fn test_function_decl() {
-        assert_eq!(
-            function_decl("fun function() {}"),
-            Ok((
-                "",
-                DeclKind::Fun(FunSyntax {
-                    fun_keyword: TokenSyntax::from("fun"),
-                    name: TokenSyntax::from("function")
+        check(
+            "fun function() {}",
+            function_decl,
+            DeclKind::Fun(FunSyntax {
+                fun_keyword: TokenSyntax::from("fun"),
+                name: TokenSyntax::from("function")
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                type_params: None,
+                arg_defs: ArgDefListSyntax::default(),
+                return_type: None,
+                type_constraints: None,
+                body: Some(FunBody::Block(BlockSyntax {
+                    open: TokenSyntax::from("{")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    type_params: None,
-                    arg_defs: ArgDefListSyntax::default(),
-                    return_type: None,
-                    type_constraints: None,
-                    body: Some(FunBody::Block(BlockSyntax {
-                        open: TokenSyntax::from("{"),
-                        body: vec![],
-                        close: TokenSyntax::from("}")
-                    })),
-                })
-            ))
-        )
+                    body: vec![],
+                    close: TokenSyntax::from("}"),
+                })),
+            }),
+        );
     }
 
     #[test]
@@ -1286,10 +1239,14 @@ mod tests {
                     }],
                     close: TokenSyntax::from(")"),
                 },
-                return_type: Some(TypeName::Simple(SimpleTypeName {
-                    name: TokenSyntax::from("Unit"),
-                    type_args: None,
-                })),
+                return_type: Some(TypeAnnotationSyntax {
+                    colon: TokenSyntax::from(":"),
+                    type_: TypeName::Simple(SimpleTypeName {
+                        name: TokenSyntax::from("Unit"),
+                        type_args: None,
+                    })
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                }),
                 type_constraints: None,
                 body: None,
             }),
@@ -1323,10 +1280,14 @@ mod tests {
                     }],
                     close: TokenSyntax::from(")"),
                 },
-                return_type: Some(TypeName::Simple(SimpleTypeName {
-                    name: TokenSyntax::from("Unit"),
-                    type_args: None,
-                })),
+                return_type: Some(TypeAnnotationSyntax {
+                    colon: TokenSyntax::from(":"),
+                    type_: TypeName::Simple(SimpleTypeName {
+                        name: TokenSyntax::from("Unit"),
+                        type_args: None,
+                    })
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                }),
                 type_constraints: None,
                 body: None,
             }),
@@ -1335,39 +1296,45 @@ mod tests {
 
     #[test]
     fn test_var_decl() {
-        assert_eq!(
-            var_decl("val a: Int = 1"),
-            Ok((
-                "",
-                DeclKind::Var(VarSyntax {
-                    mutability_keyword: TokenSyntax::from("val"),
-                    name: TokenSyntax::from("a")
-                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    type_: Some(TypeName::Simple(SimpleTypeName {
+        check(
+            "val a: Int = 1",
+            var_decl,
+            DeclKind::Var(VarSyntax {
+                mutability_keyword: TokenSyntax::from("val"),
+                name: TokenSyntax::from("a")
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                type_annotation: Some(TypeAnnotationSyntax {
+                    colon: TokenSyntax::from(":"),
+                    type_: TypeName::Simple(SimpleTypeName {
                         name: TokenSyntax::from("Int"),
-                        type_args: None
-                    })),
-                    value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("1")))
-                })
-            ))
-        )
+                        type_args: None,
+                    })
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                }),
+                equal: TokenSyntax::from("=")
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("1")))
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+            }),
+        );
     }
 
     #[test]
     fn test_var_decl_without_type() {
-        assert_eq!(
-            var_decl("val a = 1"),
-            Ok((
-                "",
-                DeclKind::Var(VarSyntax {
-                    mutability_keyword: TokenSyntax::from("val"),
-                    name: TokenSyntax::from("a")
-                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    type_: None,
-                    value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("1")))
-                })
-            ))
-        )
+        check(
+            "val a = 1",
+            var_decl,
+            DeclKind::Var(VarSyntax {
+                mutability_keyword: TokenSyntax::from("val"),
+                name: TokenSyntax::from("a")
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                type_annotation: None,
+                equal: TokenSyntax::from("=")
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("1")))
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+            }),
+        );
     }
 
     #[test]

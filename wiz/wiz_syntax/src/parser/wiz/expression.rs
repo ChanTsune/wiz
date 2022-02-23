@@ -1,7 +1,7 @@
 use crate::parser::wiz::character::{comma, dot, double_quote, not_double_quote_or_back_slash};
 use crate::parser::wiz::declaration::block;
 use crate::parser::wiz::keywords::{
-    else_keyword, false_keyword, if_keyword, return_keyword, true_keyword,
+    else_keyword, false_keyword, if_keyword, return_keyword, token, true_keyword,
 };
 use crate::parser::wiz::lexical_structure::{
     identifier, whitespace0, whitespace1, whitespace_without_eol0,
@@ -30,7 +30,7 @@ use crate::syntax::trivia::Trivia;
 use crate::syntax::type_name::TypeName;
 use crate::syntax::Syntax;
 use nom::branch::{alt, permutation};
-use nom::bytes::complete::{escaped_transform, tag, take_until, take_while_m_n};
+use nom::bytes::complete::{escaped_transform, take_until, take_while_m_n};
 use nom::character::complete::{char, digit1};
 use nom::combinator::{map, opt, value};
 use nom::multi::many0;
@@ -193,7 +193,7 @@ where
     <I as InputIter>::Item: AsChar + Copy,
 {
     map(
-        tuple((name_space, identifier, opt(type_arguments))),
+        tuple((opt(name_space), identifier, opt(type_arguments))),
         |(name_space, name, type_arguments)| {
             Expr::Name(NameExprSyntax {
                 name_space,
@@ -274,15 +274,13 @@ where
 {
     map(
         tuple((
-            tag("["),
+            token("["),
             many0(tuple((whitespace0, expr, whitespace0, comma))),
+            opt(tuple((whitespace0, expr))),
             whitespace0,
-            opt(expr),
-            whitespace0,
-            tag("]"),
+            token("]"),
         )),
-        |(open, elements, ws, element, tws, close): (I, _, _, _, _, I)| {
-            let mut close = TokenSyntax::from(close);
+        |(open, elements, element, tws, close)| {
             let mut elements: Vec<_> = elements
                 .into_iter()
                 .map(|(lws, e, rws, c)| ArrayElementSyntax {
@@ -290,23 +288,16 @@ where
                     trailing_comma: Some(TokenSyntax::from(c).with_leading_trivia(rws)),
                 })
                 .collect();
-            match element {
-                None => {
-                    close = close.with_leading_trivia(ws + tws);
-                }
-                Some(e) => {
-                    elements.push(ArrayElementSyntax {
-                        element: e.with_leading_trivia(ws),
-                        trailing_comma: None,
-                    });
-                    close = close.with_leading_trivia(tws);
-                }
+            if let Some((lws, e)) = element {
+                elements.push(ArrayElementSyntax {
+                    element: e.with_leading_trivia(lws),
+                    trailing_comma: None,
+                });
             };
-
             Expr::Array(ArraySyntax {
-                open: TokenSyntax::from(open),
+                open,
                 elements,
-                close,
+                close: close.with_leading_trivia(tws),
             })
         },
     )(s)
@@ -535,15 +526,13 @@ where
 {
     map(
         tuple((
-            char('['),
+            token("["),
             many0(tuple((whitespace0, expr, whitespace0, comma))),
+            opt(tuple((whitespace0, expr))),
             whitespace0,
-            opt(expr),
-            whitespace0,
-            char(']'),
+            token("]"),
         )),
-        |(open, t, ws, typ, tws, close)| {
-            let mut close = TokenSyntax::from(close);
+        |(open, t, typ, tws, close)| {
             let mut elements: Vec<_> = t
                 .into_iter()
                 .map(|(lws, tp, rws, com)| SubscriptIndexElementSyntax {
@@ -551,22 +540,16 @@ where
                     trailing_comma: Some(TokenSyntax::from(com).with_leading_trivia(rws)),
                 })
                 .collect();
-            match typ {
-                None => {
-                    close = close.with_leading_trivia(ws + tws);
-                }
-                Some(p) => {
-                    elements.push(SubscriptIndexElementSyntax {
-                        element: p.with_leading_trivia(ws),
-                        trailing_comma: None,
-                    });
-                    close = close.with_leading_trivia(tws);
-                }
-            };
+            if let Some((ws, p)) = typ {
+                elements.push(SubscriptIndexElementSyntax {
+                    element: p.with_leading_trivia(ws),
+                    trailing_comma: None,
+                });
+            }
             PostfixSuffix::IndexingSuffix(SubscriptIndexListSyntax {
-                open: TokenSyntax::from(open),
+                open,
                 elements,
-                close,
+                close: close.with_leading_trivia(tws),
             })
         },
     )(s)
@@ -781,15 +764,13 @@ where
 {
     map(
         tuple((
-            char('('),
+            token("("),
             many0(tuple((whitespace0, value_argument, whitespace0, comma))),
+            opt(tuple((whitespace0, value_argument))),
             whitespace0,
-            opt(value_argument),
-            whitespace0,
-            char(')'),
+            token(")"),
         )),
-        |(open, t, ws, typ, tws, close)| {
-            let mut close = TokenSyntax::from(close);
+        |(open, t, typ, tws, close)| {
             let mut elements: Vec<_> = t
                 .into_iter()
                 .map(|(lws, tp, rws, com)| CallArgElementSyntax {
@@ -797,22 +778,16 @@ where
                     trailing_comma: Some(TokenSyntax::from(com).with_leading_trivia(rws)),
                 })
                 .collect();
-            match typ {
-                None => {
-                    close = close.with_leading_trivia(ws + tws);
-                }
-                Some(p) => {
-                    elements.push(CallArgElementSyntax {
-                        element: p.with_leading_trivia(ws),
-                        trailing_comma: None,
-                    });
-                    close = close.with_leading_trivia(tws);
-                }
+            if let Some((ws, p)) = typ {
+                elements.push(CallArgElementSyntax {
+                    element: p.with_leading_trivia(ws),
+                    trailing_comma: None,
+                });
             };
             CallArgListSyntax {
-                open: TokenSyntax::from(open),
+                open,
                 elements,
-                close,
+                close: close.with_leading_trivia(tws),
             }
         },
     )(s)
@@ -1415,7 +1390,7 @@ mod tests {
             "std::builtin::println",
             name_expr,
             Expr::Name(NameExprSyntax {
-                name_space: NameSpaceSyntax::from(vec!["std", "builtin"]),
+                name_space: Some(NameSpaceSyntax::from(vec!["std", "builtin"])),
                 name: TokenSyntax::from("println"),
                 type_arguments: None,
             }),
@@ -1748,9 +1723,12 @@ mod tests {
                             mutability_keyword: TokenSyntax::from("val"),
                             name: TokenSyntax::from("newCapacity")
                                 .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                            type_: None,
+                            type_annotation: None,
+                            equal: TokenSyntax::from("=")
+                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                             value: Expr::If(IfExprSyntax {
-                                if_keyword: TokenSyntax::from("if"),
+                                if_keyword: TokenSyntax::from("if")
+                                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                                 condition: Box::new(
                                     Expr::BinOp(BinaryOperationSyntax {
                                         left: Box::new(Expr::Name(NameExprSyntax::simple(

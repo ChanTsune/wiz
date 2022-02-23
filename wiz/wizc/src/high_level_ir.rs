@@ -38,6 +38,7 @@ use wiz_syntax::syntax::expression::{
 };
 use wiz_syntax::syntax::file::{FileSyntax, SourceSet, WizFile};
 use wiz_syntax::syntax::literal::LiteralSyntax;
+use wiz_syntax::syntax::name_space::NameSpaceSyntax;
 use wiz_syntax::syntax::statement::{
     AssignmentStmt, ForLoopSyntax, LoopStmt, Stmt, WhileLoopSyntax,
 };
@@ -204,7 +205,7 @@ impl Ast2HLIR {
             package: TypedPackage::Raw(Package::new()),
             is_mut: v.mutability_keyword.token() == "var",
             name: v.name.token(),
-            type_: v.type_.map(|t| self.type_(t)),
+            type_: v.type_annotation.map(|t| self.type_(t.type_)),
             value: expr,
         }
     }
@@ -328,7 +329,7 @@ impl Ast2HLIR {
             type_constraints,
             arg_defs: args,
             body,
-            return_type: return_type.map(|t| self.type_(t)),
+            return_type: return_type.map(|t| self.type_(t.type_)),
         }
     }
 
@@ -481,7 +482,7 @@ impl Ast2HLIR {
     pub fn stored_property_syntax(&self, p: StoredPropertySyntax) -> TypedStoredProperty {
         TypedStoredProperty {
             name: p.name.token(),
-            type_: self.type_(p.type_),
+            type_: self.type_(p.type_.type_),
         }
     }
 
@@ -508,7 +509,7 @@ impl Ast2HLIR {
             body,
         } = member_function;
 
-        let rt = return_type.map(|r| self.type_(r));
+        let rt = return_type.map(|r| self.type_(r.type_));
         let fb = body.map(|b| self.fun_body(b));
         TypedMemberFunction {
             name: name.token(),
@@ -660,16 +661,16 @@ impl Ast2HLIR {
             name,
             type_arguments,
         } = n;
-        let name_space = name_space
-            .elements
-            .into_iter()
-            .map(|e| e.name.token())
-            .collect::<Vec<_>>();
         TypedName {
-            package: if name_space.is_empty() {
-                TypedPackage::Raw(Package::new())
-            } else {
-                TypedPackage::Raw(Package::from(name_space))
+            package: match name_space {
+                None => TypedPackage::Raw(Package::new()),
+                Some(name_space) => TypedPackage::Raw(Package::from(
+                    name_space
+                        .elements
+                        .into_iter()
+                        .map(|e| e.name.token())
+                        .collect::<Vec<_>>(),
+                )),
             },
             name: name.token(),
             type_: None,

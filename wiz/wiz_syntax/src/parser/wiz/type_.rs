@@ -1,4 +1,5 @@
 use crate::parser::wiz::character::{ampersand, comma};
+use crate::parser::wiz::keywords::token;
 use crate::parser::wiz::lexical_structure::{identifier, whitespace0};
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::type_name::{
@@ -171,15 +172,13 @@ where
 {
     map(
         tuple((
-            char('<'),
+            token("<"),
             many0(tuple((whitespace0, type_, whitespace0, comma))),
+            opt(tuple((whitespace0, type_))),
             whitespace0,
-            opt(type_),
-            whitespace0,
-            char('>'),
+            token(">"),
         )),
-        |(open, t, ws, typ, tws, close)| {
-            let mut close = TokenSyntax::from(close);
+        |(open, t, typ, tws, close)| {
             let mut elements: Vec<_> = t
                 .into_iter()
                 .map(|(lws, tp, rws, com)| TypeArgumentElementSyntax {
@@ -187,22 +186,16 @@ where
                     trailing_comma: Some(TokenSyntax::from(com).with_leading_trivia(rws)),
                 })
                 .collect();
-            match typ {
-                None => {
-                    close = close.with_leading_trivia(ws + tws);
-                }
-                Some(p) => {
-                    elements.push(TypeArgumentElementSyntax {
-                        element: p.with_leading_trivia(ws),
-                        trailing_comma: None,
-                    });
-                    close = close.with_leading_trivia(tws);
-                }
+            if let Some((ws, p)) = typ {
+                elements.push(TypeArgumentElementSyntax {
+                    element: p.with_leading_trivia(ws),
+                    trailing_comma: None,
+                });
             };
             TypeArgumentListSyntax {
-                open: TokenSyntax::from(open),
+                open,
                 elements,
-                close,
+                close: close.with_leading_trivia(tws),
             }
         },
     )(s)
@@ -224,15 +217,13 @@ where
 {
     map(
         tuple((
-            char('<'),
+            token("<"),
             many0(tuple((whitespace0, type_parameter, whitespace0, comma))),
+            opt(tuple((whitespace0, type_parameter))),
             whitespace0,
-            opt(type_parameter),
-            whitespace0,
-            char('>'),
+            token(">"),
         )),
-        |(open, params, ws, param, tws, close)| {
-            let mut close = TokenSyntax::from(close);
+        |(open, params, param, tws, close)| {
             let mut elements: Vec<_> = params
                 .into_iter()
                 .map(|(lws, tp, rws, com)| TypeParameterElementSyntax {
@@ -240,22 +231,16 @@ where
                     trailing_comma: Some(TokenSyntax::from(com).with_leading_trivia(rws)),
                 })
                 .collect();
-            match param {
-                None => {
-                    close = close.with_leading_trivia(ws + tws);
-                }
-                Some(p) => {
-                    elements.push(TypeParameterElementSyntax {
-                        element: p.with_leading_trivia(ws),
-                        trailing_comma: None,
-                    });
-                    close = close.with_leading_trivia(tws);
-                }
+            if let Some((ws, p)) = param {
+                elements.push(TypeParameterElementSyntax {
+                    element: p.with_leading_trivia(ws),
+                    trailing_comma: None,
+                });
             };
             TypeParameterListSyntax {
-                open: TokenSyntax::from(open),
+                open,
                 elements,
-                close,
+                close: close.with_leading_trivia(tws),
             }
         },
     )(s)

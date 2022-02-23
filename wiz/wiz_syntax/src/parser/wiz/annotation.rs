@@ -1,9 +1,9 @@
 use crate::parser::wiz::character::comma;
+use crate::parser::wiz::keywords::token;
 use crate::parser::wiz::lexical_structure::{identifier, whitespace0};
 use crate::syntax::annotation::{Annotation, AnnotationsSyntax};
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::Syntax;
-use nom::bytes::complete::tag;
 use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
@@ -25,15 +25,13 @@ where
 {
     map(
         tuple((
-            tag("#["),
+            token("#["),
             many0(tuple((whitespace0, identifier, whitespace0, comma))),
+            opt(tuple((whitespace0, identifier))),
             whitespace0,
-            opt(identifier),
-            whitespace0,
-            tag("]"),
+            token("]"),
         )),
-        |(open, v, ws, a, tws, close): (I, _, _, _, _, I)| {
-            let mut close = TokenSyntax::from(close);
+        |(open, v, a, tws, close)| {
             let mut annotations: Vec<_> = v
                 .into_iter()
                 .map(|(lws, a, rws, cma)| Annotation {
@@ -42,23 +40,17 @@ where
                 })
                 .collect();
 
-            match a {
-                None => {
-                    close = close.with_leading_trivia(ws + tws);
-                }
-                Some(p) => {
-                    annotations.push(Annotation {
-                        element: TokenSyntax::from(p).with_leading_trivia(ws),
-                        trailing_comma: None,
-                    });
-                    close = close.with_leading_trivia(tws);
-                }
-            };
+            if let Some((ws, p)) = a {
+                annotations.push(Annotation {
+                    element: TokenSyntax::from(p).with_leading_trivia(ws),
+                    trailing_comma: None,
+                });
+            }
 
             AnnotationsSyntax {
                 open: TokenSyntax::from(open),
                 elements: annotations,
-                close,
+                close: close.with_leading_trivia(tws),
             }
         },
     )(s)

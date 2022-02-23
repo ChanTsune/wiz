@@ -1,9 +1,9 @@
+use crate::parser::wiz::keywords::token;
 use crate::parser::wiz::lexical_structure::identifier;
 use crate::syntax::name_space::{NameSpaceElementSyntax, NameSpaceSyntax};
 use crate::syntax::token::TokenSyntax;
-use nom::bytes::complete::tag;
 use nom::combinator::map;
-use nom::multi::many0;
+use nom::multi::many1;
 use nom::sequence::tuple;
 use nom::{AsChar, Compare, IResult, InputIter, InputLength, InputTake, Slice};
 use std::ops::RangeFrom;
@@ -19,7 +19,7 @@ where
         + Compare<&'static str>,
     <I as InputIter>::Item: AsChar,
 {
-    map(many0(name_space_element), |elements| NameSpaceSyntax {
+    map(many1(name_space_element), |elements| NameSpaceSyntax {
         leading_trivia: Default::default(),
         elements,
         trailing_trivia: Default::default(),
@@ -37,10 +37,10 @@ where
         + Compare<&'static str>,
     <I as InputIter>::Item: AsChar,
 {
-    map(tuple((identifier, tag("::"))), |(i, sep): (_, I)| {
+    map(tuple((identifier, token("::"))), |(i, separator)| {
         NameSpaceElementSyntax {
             name: TokenSyntax::from(i),
-            separator: TokenSyntax::from(sep),
+            separator,
         }
     })(s)
 }
@@ -60,7 +60,6 @@ mod tests {
 
     #[test]
     fn test_name_space() {
-        assert_eq!(name_space(""), Ok(("", NameSpaceSyntax::default())));
         assert_eq!(
             name_space("a::b::"),
             Ok(("", NameSpaceSyntax::from(vec!["a", "b"])))
