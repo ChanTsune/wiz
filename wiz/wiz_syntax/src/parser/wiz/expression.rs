@@ -1,8 +1,6 @@
 use crate::parser::wiz::character::{comma, dot, double_quote, not_double_quote_or_back_slash};
 use crate::parser::wiz::declaration::block;
-use crate::parser::wiz::keywords::{
-    else_keyword, false_keyword, if_keyword, return_keyword, true_keyword,
-};
+use crate::parser::wiz::keywords::{else_keyword, false_keyword, if_keyword, return_keyword, token, true_keyword};
 use crate::parser::wiz::lexical_structure::{
     identifier, whitespace0, whitespace1, whitespace_without_eol0,
 };
@@ -30,7 +28,7 @@ use crate::syntax::trivia::Trivia;
 use crate::syntax::type_name::TypeName;
 use crate::syntax::Syntax;
 use nom::branch::{alt, permutation};
-use nom::bytes::complete::{escaped_transform, tag, take_until, take_while_m_n};
+use nom::bytes::complete::{escaped_transform, take_until, take_while_m_n};
 use nom::character::complete::{char, digit1};
 use nom::combinator::{map, opt, value};
 use nom::multi::many0;
@@ -274,15 +272,13 @@ where
 {
     map(
         tuple((
-            tag("["),
+            token("["),
             many0(tuple((whitespace0, expr, whitespace0, comma))),
+            opt(tuple((whitespace0, expr))),
             whitespace0,
-            opt(expr),
-            whitespace0,
-            tag("]"),
+            token("]"),
         )),
-        |(open, elements, ws, element, tws, close): (I, _, _, _, _, I)| {
-            let mut close = TokenSyntax::from(close);
+        |(open, elements, element, tws, close)| {
             let mut elements: Vec<_> = elements
                 .into_iter()
                 .map(|(lws, e, rws, c)| ArrayElementSyntax {
@@ -290,23 +286,19 @@ where
                     trailing_comma: Some(TokenSyntax::from(c).with_leading_trivia(rws)),
                 })
                 .collect();
-            match element {
-                None => {
-                    close = close.with_leading_trivia(ws + tws);
+            let element = element.map(|(lws, e)| {
+                ArrayElementSyntax {
+                    element: e.with_leading_trivia(lws),
+                    trailing_comma: None,
                 }
-                Some(e) => {
-                    elements.push(ArrayElementSyntax {
-                        element: e.with_leading_trivia(ws),
-                        trailing_comma: None,
-                    });
-                    close = close.with_leading_trivia(tws);
-                }
+            });
+            if let Some(element) = element {
+                elements.push(element);
             };
-
             Expr::Array(ArraySyntax {
-                open: TokenSyntax::from(open),
+                open,
                 elements,
-                close,
+                close: close.with_leading_trivia(tws),
             })
         },
     )(s)
