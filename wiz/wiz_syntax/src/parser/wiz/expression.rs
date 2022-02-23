@@ -16,13 +16,7 @@ use crate::parser::wiz::operators::{
 use crate::parser::wiz::statement::stmt;
 use crate::parser::wiz::type_::{type_, type_arguments};
 use crate::syntax::block::BlockSyntax;
-use crate::syntax::expression::{
-    ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallArgElementSyntax,
-    CallArgListSyntax, CallExprSyntax, ElseSyntax, Expr, IfExprSyntax, LambdaSyntax, MemberSyntax,
-    NameExprSyntax, PostfixSuffix, PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax,
-    ReturnSyntax, SubscriptIndexElementSyntax, SubscriptIndexListSyntax, SubscriptSyntax,
-    TypeCastSyntax, UnaryOperationSyntax,
-};
+use crate::syntax::expression::{ArgLabelSyntax, ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallArgElementSyntax, CallArgListSyntax, CallExprSyntax, ElseSyntax, Expr, IfExprSyntax, LambdaSyntax, MemberSyntax, NameExprSyntax, PostfixSuffix, PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax, ReturnSyntax, SubscriptIndexElementSyntax, SubscriptIndexListSyntax, SubscriptSyntax, TypeCastSyntax, UnaryOperationSyntax};
 use crate::syntax::literal::LiteralSyntax;
 use crate::syntax::statement::Stmt;
 use crate::syntax::token::TokenSyntax;
@@ -793,7 +787,7 @@ where
     )(s)
 }
 /*
-<value_argument> ::= (<identifier> ":")? "*"? <expr>
+<value_argument> ::= <arg_label>? "*"? <expr>
 */
 pub fn value_argument<I>(s: I) -> IResult<I, CallArg>
 where
@@ -814,17 +808,50 @@ where
 {
     map(
         tuple((
-            opt(tuple((identifier, whitespace0, token(":"), whitespace0))),
+            opt(arg_label_syntax),
+            whitespace0,
             opt(token("*")),
             expr,
         )),
-        |(arg_label, is_vararg, arg)| CallArg {
-            label: arg_label.map(|(label, _, _, _)| TokenSyntax::from(label)),
-            asterisk: is_vararg,
-            arg: Box::new(arg),
+        |(arg_label, ws, is_vararg, arg)| match is_vararg {
+            None => CallArg {
+                label: arg_label,
+                asterisk: None,
+                arg: Box::new(arg.with_leading_trivia(ws)),
+            },
+            Some(asterisk) => CallArg {
+                label: arg_label,
+                asterisk: Some(asterisk.with_leading_trivia(ws)),
+                arg: Box::new(arg),
+            }
         },
     )(s)
 }
+
+// <arg_label> ::= <identifier> ":"
+pub fn arg_label_syntax<I>(s: I) -> IResult<I, ArgLabelSyntax>
+    where
+        I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+        <I as InputIter>::Item: AsChar + Copy,
+        <I as InputTakeAtPosition>::Item: AsChar,
+{
+    map(tuple((identifier, whitespace0, token(":"))),|(label, ws, colon)|ArgLabelSyntax {
+        label: TokenSyntax::from(label),
+        colon: colon.with_leading_trivia(ws),
+    })(s)
+}
+
 /*
 <annotated_lambda> ::= <label>? <lambda_literal>
 */
@@ -1269,12 +1296,7 @@ mod tests {
     use crate::syntax::block::BlockSyntax;
     use crate::syntax::declaration::VarSyntax;
     use crate::syntax::declaration::{DeclKind, DeclarationSyntax};
-    use crate::syntax::expression::{
-        ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallArgElementSyntax,
-        CallArgListSyntax, CallExprSyntax, ElseSyntax, Expr, IfExprSyntax, MemberSyntax,
-        NameExprSyntax, PostfixSuffix, ReturnSyntax, SubscriptIndexElementSyntax,
-        SubscriptIndexListSyntax,
-    };
+    use crate::syntax::expression::{ArgLabelSyntax, ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallArgElementSyntax, CallArgListSyntax, CallExprSyntax, ElseSyntax, Expr, IfExprSyntax, MemberSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax, SubscriptIndexElementSyntax, SubscriptIndexListSyntax};
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::name_space::NameSpaceSyntax;
     use crate::syntax::statement::Stmt;
@@ -1651,12 +1673,15 @@ mod tests {
                     open: TokenSyntax::from("("),
                     elements: vec![CallArgElementSyntax {
                         element: CallArg {
-                            label: Some(TokenSyntax::from("string")),
+                            label: Some(ArgLabelSyntax {
+                                label: TokenSyntax::from("string"),
+                                colon: TokenSyntax::from(":"),
+                            }),
                             arg: Box::from(Expr::Literal(LiteralSyntax::String {
                                 open_quote: TokenSyntax::from('"'),
                                 value: "Hello, World".to_string(),
                                 close_quote: TokenSyntax::from('"'),
-                            })),
+                            }).with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))),
                             asterisk: None,
                         },
                         trailing_comma: None,

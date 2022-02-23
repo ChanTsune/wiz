@@ -38,7 +38,6 @@ use wiz_syntax::syntax::expression::{
 };
 use wiz_syntax::syntax::file::{FileSyntax, SourceSet, WizFile};
 use wiz_syntax::syntax::literal::LiteralSyntax;
-use wiz_syntax::syntax::name_space::NameSpaceSyntax;
 use wiz_syntax::syntax::statement::{
     AssignmentStmt, ForLoopSyntax, LoopStmt, Stmt, WhileLoopSyntax,
 };
@@ -811,7 +810,7 @@ impl Ast2HLIR {
             .elements
             .into_iter()
             .map(|a| TypedCallArg {
-                label: a.element.label.map(|l| l.token()),
+                label: a.element.label.map(|l| l.label.token()),
                 arg: Box::new(self.expr(*a.element.arg)),
                 is_vararg: a.element.asterisk.is_some(),
             })

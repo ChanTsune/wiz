@@ -12,7 +12,7 @@ mod unary_operation_syntax;
 pub use crate::syntax::expression::array_syntax::{ArrayElementSyntax, ArraySyntax};
 pub use crate::syntax::expression::binary_operation_syntax::BinaryOperationSyntax;
 pub use crate::syntax::expression::call_syntax::{
-    CallArg, CallArgElementSyntax, CallArgListSyntax, CallExprSyntax, LambdaSyntax,
+    CallArg, CallArgElementSyntax, CallArgListSyntax, CallExprSyntax, LambdaSyntax, ArgLabelSyntax
 };
 pub use crate::syntax::expression::if_syntax::{ElseSyntax, IfExprSyntax};
 pub use crate::syntax::expression::member_syntax::MemberSyntax;
