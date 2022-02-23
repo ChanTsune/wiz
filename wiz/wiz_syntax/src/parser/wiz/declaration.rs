@@ -1,10 +1,7 @@
 use crate::parser::wiz::annotation::annotations_syntax;
 use crate::parser::wiz::character::{ampersand, comma};
 use crate::parser::wiz::expression::expr;
-use crate::parser::wiz::keywords::{
-    as_keyword, deinit_keyword, extension_keyword, fun_keyword, init_keyword, protocol_keyword,
-    self_keyword, struct_keyword, use_keyword, val_keyword, var_keyword, where_keyword,
-};
+use crate::parser::wiz::keywords::{as_keyword, deinit_keyword, extension_keyword, fun_keyword, init_keyword, protocol_keyword, self_keyword, struct_keyword, token, use_keyword, val_keyword, var_keyword, where_keyword};
 use crate::parser::wiz::lexical_structure::{
     identifier, trivia_piece_line_ending, whitespace0, whitespace1, whitespace_without_eol0,
 };
@@ -469,20 +466,18 @@ where
 {
     map(
         tuple((
-            char('('),
+            token("("),
             many0(tuple((
                 whitespace0,
                 function_value_parameter,
                 whitespace0,
                 comma,
             ))),
+            opt(tuple((whitespace0, function_value_parameter))),
             whitespace0,
-            opt(function_value_parameter),
-            whitespace0,
-            char(')'),
+            token(")"),
         )),
-        |(open, elements, ws, element, tws, close)| {
-            let mut close = TokenSyntax::from(close);
+        |(open, elements, element, tws, close)| {
             let mut elements: Vec<_> = elements
                 .into_iter()
                 .map(|(lws, e, rws, c)| ArgDefElementSyntax {
@@ -490,23 +485,17 @@ where
                     trailing_comma: Some(TokenSyntax::from(c).with_leading_trivia(rws)),
                 })
                 .collect();
-            match element {
-                None => {
-                    close = close.with_leading_trivia(ws + tws);
-                }
-                Some(e) => {
-                    elements.push(ArgDefElementSyntax {
-                        element: e.with_leading_trivia(ws),
-                        trailing_comma: None,
-                    });
-                    close = close.with_leading_trivia(tws);
-                }
+            if let Some((ws, e)) = element{
+                elements.push(ArgDefElementSyntax {
+                    element: e.with_leading_trivia(ws),
+                    trailing_comma: None,
+                });
             };
 
             ArgDefListSyntax {
-                open: TokenSyntax::from(open),
+                open,
                 elements,
-                close,
+                close: close.with_leading_trivia(tws),
             }
         },
     )(s)
