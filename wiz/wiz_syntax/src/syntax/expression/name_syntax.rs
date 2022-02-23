@@ -33,7 +33,7 @@ impl Syntax for NameExprSyntax {
                 name_space: Some(name_space.with_leading_trivia(trivia)),
                 name: self.name,
                 type_arguments: self.type_arguments,
-            }
+            },
         }
     }
 

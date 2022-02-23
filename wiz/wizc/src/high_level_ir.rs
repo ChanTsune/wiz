@@ -664,10 +664,13 @@ impl Ast2HLIR {
         TypedName {
             package: match name_space {
                 None => TypedPackage::Raw(Package::new()),
-                Some(name_space) => TypedPackage::Raw(Package::from(name_space            .elements
-                    .into_iter()
-                    .map(|e| e.name.token())
-                    .collect::<Vec<_>>())),
+                Some(name_space) => TypedPackage::Raw(Package::from(
+                    name_space
+                        .elements
+                        .into_iter()
+                        .map(|e| e.name.token())
+                        .collect::<Vec<_>>(),
+                )),
             },
             name: name.token(),
             type_: None,
