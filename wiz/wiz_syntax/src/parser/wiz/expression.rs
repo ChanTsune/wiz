@@ -1,6 +1,8 @@
 use crate::parser::wiz::character::{comma, dot, double_quote, not_double_quote_or_back_slash};
 use crate::parser::wiz::declaration::block;
-use crate::parser::wiz::keywords::{else_keyword, false_keyword, if_keyword, return_keyword, token, true_keyword};
+use crate::parser::wiz::keywords::{
+    else_keyword, false_keyword, if_keyword, return_keyword, token, true_keyword,
+};
 use crate::parser::wiz::lexical_structure::{
     identifier, whitespace0, whitespace1, whitespace_without_eol0,
 };
@@ -286,11 +288,9 @@ where
                     trailing_comma: Some(TokenSyntax::from(c).with_leading_trivia(rws)),
                 })
                 .collect();
-            let element = element.map(|(lws, e)| {
-                ArrayElementSyntax {
-                    element: e.with_leading_trivia(lws),
-                    trailing_comma: None,
-                }
+            let element = element.map(|(lws, e)| ArrayElementSyntax {
+                element: e.with_leading_trivia(lws),
+                trailing_comma: None,
             });
             if let Some(element) = element {
                 elements.push(element);
