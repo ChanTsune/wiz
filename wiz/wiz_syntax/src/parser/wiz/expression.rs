@@ -193,7 +193,7 @@ where
     <I as InputIter>::Item: AsChar + Copy,
 {
     map(
-        tuple((name_space, identifier, opt(type_arguments))),
+        tuple((opt(name_space), identifier, opt(type_arguments))),
         |(name_space, name, type_arguments)| {
             Expr::Name(NameExprSyntax {
                 name_space,
@@ -1415,7 +1415,7 @@ mod tests {
             "std::builtin::println",
             name_expr,
             Expr::Name(NameExprSyntax {
-                name_space: NameSpaceSyntax::from(vec!["std", "builtin"]),
+                name_space: Some(NameSpaceSyntax::from(vec!["std", "builtin"])),
                 name: TokenSyntax::from("println"),
                 type_arguments: None,
             }),

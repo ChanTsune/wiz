@@ -38,6 +38,7 @@ use wiz_syntax::syntax::expression::{
 };
 use wiz_syntax::syntax::file::{FileSyntax, SourceSet, WizFile};
 use wiz_syntax::syntax::literal::LiteralSyntax;
+use wiz_syntax::syntax::name_space::NameSpaceSyntax;
 use wiz_syntax::syntax::statement::{
     AssignmentStmt, ForLoopSyntax, LoopStmt, Stmt, WhileLoopSyntax,
 };
@@ -660,16 +661,13 @@ impl Ast2HLIR {
             name,
             type_arguments,
         } = n;
-        let name_space = name_space
-            .elements
-            .into_iter()
-            .map(|e| e.name.token())
-            .collect::<Vec<_>>();
         TypedName {
-            package: if name_space.is_empty() {
-                TypedPackage::Raw(Package::new())
-            } else {
-                TypedPackage::Raw(Package::from(name_space))
+            package: match name_space {
+                None => TypedPackage::Raw(Package::new()),
+                Some(name_space) => TypedPackage::Raw(Package::from(name_space            .elements
+                    .into_iter()
+                    .map(|e| e.name.token())
+                    .collect::<Vec<_>>())),
             },
             name: name.token(),
             type_: None,
