@@ -545,10 +545,10 @@ where
         ),
         map(
             tuple((opt(ampersand), whitespace0, self_keyword)),
-            |(amp, ws, s): (_, _, I)| {
+            |(amp, ws, s)| {
                 ArgDef::Self_(SelfArgDefSyntax {
                     reference: amp.map(TokenSyntax::from),
-                    self_: TokenSyntax::from(s).with_leading_trivia(ws),
+                    self_: s.with_leading_trivia(ws),
                 })
             },
         ),

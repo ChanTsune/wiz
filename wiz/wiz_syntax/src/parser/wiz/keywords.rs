@@ -133,11 +133,11 @@ where
     tag("in")(s)
 }
 
-pub fn self_keyword<I>(s: I) -> IResult<I, I>
+pub fn self_keyword<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: InputTake + Compare<&'static str>,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    tag("self")(s)
+    token("self")(s)
 }
 
 pub fn true_keyword<I>(s: I) -> IResult<I, I>
@@ -259,7 +259,7 @@ mod tests {
 
     #[test]
     fn test_self_keyword() {
-        assert_eq!(self_keyword("self"), Ok(("", "self")))
+        check("self", self_keyword, TokenSyntax::from("self"));
     }
 
     #[test]
