@@ -1,3 +1,4 @@
+use crate::parser::wiz::keywords::token;
 use crate::parser::wiz::lexical_structure::identifier;
 use crate::syntax::name_space::{NameSpaceElementSyntax, NameSpaceSyntax};
 use crate::syntax::token::TokenSyntax;
@@ -6,7 +7,6 @@ use nom::multi::many0;
 use nom::sequence::tuple;
 use nom::{AsChar, Compare, IResult, InputIter, InputLength, InputTake, Slice};
 use std::ops::RangeFrom;
-use crate::parser::wiz::keywords::token;
 
 pub fn name_space<I>(s: I) -> IResult<I, NameSpaceSyntax>
 where
