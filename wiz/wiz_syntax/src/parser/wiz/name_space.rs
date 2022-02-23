@@ -1,12 +1,12 @@
 use crate::parser::wiz::lexical_structure::identifier;
 use crate::syntax::name_space::{NameSpaceElementSyntax, NameSpaceSyntax};
 use crate::syntax::token::TokenSyntax;
-use nom::bytes::complete::tag;
 use nom::combinator::map;
 use nom::multi::many0;
 use nom::sequence::tuple;
 use nom::{AsChar, Compare, IResult, InputIter, InputLength, InputTake, Slice};
 use std::ops::RangeFrom;
+use crate::parser::wiz::keywords::token;
 
 pub fn name_space<I>(s: I) -> IResult<I, NameSpaceSyntax>
 where
@@ -37,10 +37,10 @@ where
         + Compare<&'static str>,
     <I as InputIter>::Item: AsChar,
 {
-    map(tuple((identifier, tag("::"))), |(i, sep): (_, I)| {
+    map(tuple((identifier, token("::"))), |(i, separator)| {
         NameSpaceElementSyntax {
             name: TokenSyntax::from(i),
-            separator: TokenSyntax::from(sep),
+            separator,
         }
     })(s)
 }
