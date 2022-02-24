@@ -178,12 +178,12 @@ mod tests {
 
     #[test]
     fn test_var_keyword() {
-        check("var",var_keyword, TokenSyntax::from( "var"));
+        check("var", var_keyword, TokenSyntax::from("var"));
     }
 
     #[test]
     fn test_val_keyword() {
-        check("val",val_keyword, TokenSyntax::from("val"));
+        check("val", val_keyword, TokenSyntax::from("val"));
     }
 
     #[test]

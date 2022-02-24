@@ -699,14 +699,12 @@ where
             whitespace0,
             expr,
         )),
-        |(mutability_keyword, ws, name, t, elws, eq, erws, e)| {
-            VarSyntax {
-                mutability_keyword,
-                name: TokenSyntax::from(name).with_leading_trivia(ws),
-                type_annotation: t.map(|(ws, t)| t.with_leading_trivia(ws)),
-                equal: TokenSyntax::from(eq).with_leading_trivia(elws),
-                value: e.with_leading_trivia(erws),
-            }
+        |(mutability_keyword, ws, name, t, elws, eq, erws, e)| VarSyntax {
+            mutability_keyword,
+            name: TokenSyntax::from(name).with_leading_trivia(ws),
+            type_annotation: t.map(|(ws, t)| t.with_leading_trivia(ws)),
+            equal: TokenSyntax::from(eq).with_leading_trivia(elws),
+            value: e.with_leading_trivia(erws),
         },
     )(s)
 }
