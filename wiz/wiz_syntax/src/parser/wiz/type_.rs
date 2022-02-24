@@ -1,6 +1,5 @@
 use crate::parser::wiz::character::{ampersand, comma};
-use crate::parser::wiz::keywords::token;
-use crate::parser::wiz::lexical_structure::{identifier, whitespace0};
+use crate::parser::wiz::lexical_structure::{identifier, token, whitespace0};
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::type_name::{
     DecoratedTypeName, SimpleTypeName, TypeArgumentElementSyntax, TypeArgumentListSyntax,

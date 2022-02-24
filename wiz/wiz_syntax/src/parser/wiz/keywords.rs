@@ -1,18 +1,7 @@
 use crate::syntax::token::TokenSyntax;
 use nom::bytes::complete::tag;
-use nom::combinator::map;
-use nom::error::ParseError;
-use nom::{Compare, IResult, InputLength, InputTake};
-
-pub fn token<T, Input, Error: ParseError<Input>>(
-    tkn: T,
-) -> impl FnMut(Input) -> IResult<Input, TokenSyntax, Error>
-where
-    Input: InputTake + Compare<T> + ToString,
-    T: InputLength + Clone,
-{
-    map(tag(tkn), TokenSyntax::from)
-}
+use nom::{Compare, IResult, InputTake};
+use crate::parser::wiz::lexical_structure::token;
 
 pub fn struct_keyword<I>(s: I) -> IResult<I, TokenSyntax>
 where

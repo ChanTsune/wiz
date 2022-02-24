@@ -11,6 +11,19 @@ use nom::multi::{many0, many1};
 use nom::sequence::tuple;
 use nom::{AsChar, Compare, FindSubstring, IResult, InputIter, InputLength, InputTake, Slice};
 use std::iter::FromIterator;
+use nom::error::ParseError;
+use crate::syntax::token::TokenSyntax;
+
+pub fn token<T, Input, Error: ParseError<Input>>(
+    tkn: T,
+) -> impl FnMut(Input) -> IResult<Input, TokenSyntax, Error>
+    where
+        Input: InputTake + Compare<T> + ToString,
+        T: InputLength + Clone,
+{
+    map(tag(tkn), TokenSyntax::from)
+}
+
 
 pub fn whitespace0<I>(s: I) -> IResult<I, Trivia>
 where

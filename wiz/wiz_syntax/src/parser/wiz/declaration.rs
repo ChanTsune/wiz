@@ -3,11 +3,9 @@ use crate::parser::wiz::character::{ampersand, comma};
 use crate::parser::wiz::expression::expr;
 use crate::parser::wiz::keywords::{
     as_keyword, deinit_keyword, extension_keyword, fun_keyword, init_keyword, protocol_keyword,
-    self_keyword, struct_keyword, token, use_keyword, val_keyword, var_keyword, where_keyword,
+    self_keyword, struct_keyword, use_keyword, val_keyword, var_keyword, where_keyword,
 };
-use crate::parser::wiz::lexical_structure::{
-    identifier, trivia_piece_line_ending, whitespace0, whitespace1, whitespace_without_eol0,
-};
+use crate::parser::wiz::lexical_structure::{identifier, token, trivia_piece_line_ending, whitespace0, whitespace1, whitespace_without_eol0};
 use crate::parser::wiz::statement::stmt;
 use crate::parser::wiz::type_::{type_, type_parameter, type_parameters};
 use crate::syntax::block::BlockSyntax;

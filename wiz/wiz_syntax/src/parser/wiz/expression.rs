@@ -1,11 +1,9 @@
 use crate::parser::wiz::character::{comma, dot, double_quote, not_double_quote_or_back_slash};
 use crate::parser::wiz::declaration::block;
 use crate::parser::wiz::keywords::{
-    else_keyword, false_keyword, if_keyword, return_keyword, token, true_keyword,
+    else_keyword, false_keyword, if_keyword, return_keyword, true_keyword,
 };
-use crate::parser::wiz::lexical_structure::{
-    identifier, whitespace0, whitespace1, whitespace_without_eol0,
-};
+use crate::parser::wiz::lexical_structure::{identifier, token, whitespace0, whitespace1, whitespace_without_eol0};
 use crate::parser::wiz::name_space::name_space;
 use crate::parser::wiz::operators::{
     additive_operator, as_operator, comparison_operator, conjunction_operator,
