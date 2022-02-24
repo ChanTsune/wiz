@@ -1013,7 +1013,8 @@ mod tests {
                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                 type_params: None,
                 body: StructBodySyntax {
-                    open: TokenSyntax::from("{").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    open: TokenSyntax::from("{")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     properties: vec![StructPropertySyntax::StoredProperty(StoredPropertySyntax {
                         mutability_keyword: TokenSyntax::from("var"),
                         name: TokenSyntax::from("a")
