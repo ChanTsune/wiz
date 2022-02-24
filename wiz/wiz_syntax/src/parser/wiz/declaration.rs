@@ -141,11 +141,11 @@ where
             opt(tuple((whitespace0, struct_body_syntax))),
         )),
         |(struct_keyword, nws, name, params, body)| match body {
-            Some((_, body)) => StructSyntax {
+            Some((ws, body)) => StructSyntax {
                 struct_keyword,
                 name: TokenSyntax::from(name).with_leading_trivia(nws),
                 type_params: params.map(|(ws, p)| p.with_leading_trivia(ws)),
-                body,
+                body: body.with_leading_trivia(ws),
             },
             None => StructSyntax {
                 struct_keyword: TokenSyntax::from(struct_keyword),
@@ -1013,7 +1013,7 @@ mod tests {
                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                 type_params: None,
                 body: StructBodySyntax {
-                    open: TokenSyntax::from("{"),
+                    open: TokenSyntax::from("{").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     properties: vec![StructPropertySyntax::StoredProperty(StoredPropertySyntax {
                         mutability_keyword: TokenSyntax::from("var"),
                         name: TokenSyntax::from("a")
