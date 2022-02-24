@@ -325,13 +325,13 @@ where
             whitespace1,
             block,
         )),
-        |(for_keyword, _, value, _, in_keyword, _, iterator, _, block)| {
+        |(for_keyword, w, value, iw, in_keyword, itw, iterator, bws, block)| {
             LoopStmt::For(ForLoopSyntax {
                 for_keyword: TokenSyntax::from(for_keyword),
-                values: vec![TokenSyntax::from(value)],
-                in_keyword: TokenSyntax::from(in_keyword),
-                iterator,
-                block,
+                values: vec![TokenSyntax::from(value).with_leading_trivia(w)],
+                in_keyword: TokenSyntax::from(in_keyword).with_leading_trivia(iw),
+                iterator: iterator.with_leading_trivia(itw),
+                block: block.with_leading_trivia(bws),
             })
         },
     )(s)
