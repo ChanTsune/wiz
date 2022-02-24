@@ -35,7 +35,7 @@ where
                 .into_iter()
                 .map(|(lws, a, rws, cma)| Annotation {
                     element: TokenSyntax::from(a).with_leading_trivia(lws),
-                    trailing_comma: Some(TokenSyntax::from(cma).with_leading_trivia(rws)),
+                    trailing_comma: Some(cma.with_leading_trivia(rws)),
                 })
                 .collect();
 

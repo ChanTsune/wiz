@@ -285,7 +285,7 @@ where
                 .into_iter()
                 .map(|(lws, e, rws, c)| ArrayElementSyntax {
                     element: e.with_leading_trivia(lws),
-                    trailing_comma: Some(TokenSyntax::from(c).with_leading_trivia(rws)),
+                    trailing_comma: Some(c.with_leading_trivia(rws)),
                 })
                 .collect();
             if let Some((lws, e)) = element {
@@ -537,7 +537,7 @@ where
                 .into_iter()
                 .map(|(lws, tp, rws, com)| SubscriptIndexElementSyntax {
                     element: tp.with_leading_trivia(lws),
-                    trailing_comma: Some(TokenSyntax::from(com).with_leading_trivia(rws)),
+                    trailing_comma: Some(com.with_leading_trivia(rws)),
                 })
                 .collect();
             if let Some((ws, p)) = typ {
@@ -775,7 +775,7 @@ where
                 .into_iter()
                 .map(|(lws, tp, rws, com)| CallArgElementSyntax {
                     element: tp.with_leading_trivia(lws),
-                    trailing_comma: Some(TokenSyntax::from(com).with_leading_trivia(rws)),
+                    trailing_comma: Some(com.with_leading_trivia(rws)),
                 })
                 .collect();
             if let Some((ws, p)) = typ {

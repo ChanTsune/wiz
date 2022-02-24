@@ -1,8 +1,10 @@
 use nom::bytes::complete::take_while_m_n;
 use nom::character::complete::char;
 use nom::combinator::map;
-use nom::{AsChar, IResult, InputIter, InputLength, InputTake, Slice};
+use nom::{AsChar, IResult, InputIter, InputLength, InputTake, Slice, Compare};
 use std::ops::RangeFrom;
+use crate::parser::wiz::lexical_structure::token;
+use crate::syntax::token::TokenSyntax;
 
 pub fn not_double_quote_or_back_slash<I>(s: I) -> IResult<I, char>
 where
@@ -88,12 +90,11 @@ where
     char('.')(s)
 }
 
-pub fn comma<I>(s: I) -> IResult<I, char>
+pub fn comma<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: Slice<RangeFrom<usize>> + InputIter,
-    <I as InputIter>::Item: AsChar,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    char(',')(s)
+    token(",")(s)
 }
 
 pub fn space<I>(s: I) -> IResult<I, char>
@@ -122,10 +123,12 @@ where
 
 #[cfg(test)]
 mod tests {
+    use crate::parser::tests::check;
     use crate::parser::wiz::character::{
         alphabet, ampersand, backticks, comma, cr, digit, dot, double_quote, form_feed,
         not_double_quote_or_back_slash, space, under_score, vertical_tab,
     };
+    use crate::syntax::token::TokenSyntax;
 
     #[test]
     fn test_alphabet() {
@@ -169,7 +172,7 @@ mod tests {
 
     #[test]
     fn test_comma() {
-        assert_eq!(comma(","), Ok(("", ',')));
+        check(",", comma, TokenSyntax::from(","));
     }
 
     #[test]

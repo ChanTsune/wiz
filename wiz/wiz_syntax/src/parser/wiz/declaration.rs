@@ -483,7 +483,7 @@ where
                 .into_iter()
                 .map(|(lws, e, rws, c)| ArgDefElementSyntax {
                     element: e.with_leading_trivia(lws),
-                    trailing_comma: Some(TokenSyntax::from(c).with_leading_trivia(rws)),
+                    trailing_comma: Some(c.with_leading_trivia(rws)),
                 })
                 .collect();
             if let Some((ws, e)) = element {
@@ -596,7 +596,7 @@ where
                 .into_iter()
                 .map(|(lws, ta, rws, c)| TypeConstraintElementSyntax {
                     element: ta.with_leading_trivia(lws),
-                    trailing_comma: Some(TokenSyntax::from(c).with_leading_trivia(rws)),
+                    trailing_comma: Some(c.with_leading_trivia(rws)),
                 })
                 .collect();
             if let Some((ws, ts)) = ts {

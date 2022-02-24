@@ -182,7 +182,7 @@ where
                 .into_iter()
                 .map(|(lws, tp, rws, com)| TypeArgumentElementSyntax {
                     element: tp.with_leading_trivia(lws),
-                    trailing_comma: Some(TokenSyntax::from(com).with_leading_trivia(rws)),
+                    trailing_comma: Some(com.with_leading_trivia(rws)),
                 })
                 .collect();
             if let Some((ws, p)) = typ {
@@ -227,7 +227,7 @@ where
                 .into_iter()
                 .map(|(lws, tp, rws, com)| TypeParameterElementSyntax {
                     element: tp.with_leading_trivia(lws),
-                    trailing_comma: Some(TokenSyntax::from(com).with_leading_trivia(rws)),
+                    trailing_comma: Some(com.with_leading_trivia(rws)),
                 })
                 .collect();
             if let Some((ws, p)) = param {
