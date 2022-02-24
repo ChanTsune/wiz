@@ -1,29 +1,28 @@
 use crate::parser::wiz::character::{
     alphabet, backticks, cr, digit, form_feed, space, under_score, vertical_tab,
 };
+use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::{Trivia, TriviaPiece};
 use nom::branch::{alt, permutation};
 use nom::bytes::complete::{tag, take_until, take_while_m_n};
 use nom::character::complete::{crlf, newline, tab};
 use nom::combinator::{map, opt};
+use nom::error::ParseError;
 use nom::lib::std::ops::{Range, RangeFrom};
 use nom::multi::{many0, many1};
 use nom::sequence::tuple;
 use nom::{AsChar, Compare, FindSubstring, IResult, InputIter, InputLength, InputTake, Slice};
 use std::iter::FromIterator;
-use nom::error::ParseError;
-use crate::syntax::token::TokenSyntax;
 
 pub fn token<T, Input, Error: ParseError<Input>>(
     tkn: T,
 ) -> impl FnMut(Input) -> IResult<Input, TokenSyntax, Error>
-    where
-        Input: InputTake + Compare<T> + ToString,
-        T: InputLength + Clone,
+where
+    Input: InputTake + Compare<T> + ToString,
+    T: InputLength + Clone,
 {
     map(tag(tkn), TokenSyntax::from)
 }
-
 
 pub fn whitespace0<I>(s: I) -> IResult<I, Trivia>
 where
