@@ -522,7 +522,7 @@ where
                 opt(tuple((function_value_label, whitespace1))),
                 function_value_name,
                 whitespace0,
-                char(':'),
+                token(":"),
                 whitespace0,
                 type_,
             )),
@@ -531,7 +531,7 @@ where
                     None => ValueArgDef {
                         label: None,
                         name: TokenSyntax::from(name),
-                        colon: TokenSyntax::from(colon).with_leading_trivia(cws),
+                        colon: colon.with_leading_trivia(cws),
                         type_name: typ.with_leading_trivia(ws),
                     },
                     Some((label, lws)) => ValueArgDef {
