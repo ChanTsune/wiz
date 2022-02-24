@@ -24,18 +24,18 @@ where
     token("where")(s)
 }
 
-pub fn var_keyword<I>(s: I) -> IResult<I, I>
+pub fn var_keyword<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: InputTake + Compare<&'static str>,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    tag("var")(s)
+    token("var")(s)
 }
 
-pub fn val_keyword<I>(s: I) -> IResult<I, I>
+pub fn val_keyword<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: InputTake + Compare<&'static str>,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    tag("val")(s)
+    token("val")(s)
 }
 
 pub fn extension_keyword<I>(s: I) -> IResult<I, I>
@@ -178,12 +178,12 @@ mod tests {
 
     #[test]
     fn test_var_keyword() {
-        assert_eq!(var_keyword("var"), Ok(("", "var")))
+        check("var",var_keyword, TokenSyntax::from( "var"));
     }
 
     #[test]
     fn test_val_keyword() {
-        assert_eq!(val_keyword("val"), Ok(("", "val")))
+        check("val",val_keyword, TokenSyntax::from("val"));
     }
 
     #[test]
