@@ -84,9 +84,9 @@ where
         + Compare<&'static str>,
     <I as InputIter>::Item: AsChar + Copy,
 {
-    map(tuple((char(':'), whitespace0, type_)), |(c, ws, t)| {
+    map(tuple((token(":"), whitespace0, type_)), |(c, ws, t)| {
         TypeAnnotationSyntax {
-            colon: TokenSyntax::from(c),
+            colon: c,
             type_: t.with_leading_trivia(ws),
         }
     })(s)
