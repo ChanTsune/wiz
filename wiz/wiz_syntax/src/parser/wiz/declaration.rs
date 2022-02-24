@@ -158,6 +158,7 @@ where
 }
 
 // <struct_body> ::= "{" <struct_properties> "}"
+// <struct_properties> ::= (<struct_property> ("\n" <struct_property>)* "\n"?)?
 pub fn struct_body_syntax<I>(s: I) -> IResult<I, StructBodySyntax>
 where
     I: Slice<RangeFrom<usize>>
@@ -177,56 +178,22 @@ where
 {
     map(
         tuple((
-            char('{'),
+            token("{"),
+            opt(struct_property),
+            many0(tuple((whitespace1, struct_property))),
             whitespace0,
-            struct_properties,
-            whitespace0,
-            char('}'),
+            token("}"),
         )),
-        |(open, _, properties, _, close)| StructBodySyntax {
-            open: TokenSyntax::from(open),
-            properties,
-            close: TokenSyntax::from(close),
-        },
-    )(s)
-}
-
-// <struct_properties> ::= (<struct_property> ("\n" <struct_property>)* "\n"?)?
-pub fn struct_properties<I>(s: I) -> IResult<I, Vec<StructPropertySyntax>>
-where
-    I: Slice<RangeFrom<usize>>
-        + Slice<Range<usize>>
-        + InputIter
-        + Clone
-        + InputLength
-        + ToString
-        + InputTake
-        + Offset
-        + InputTakeAtPosition
-        + ExtendInto<Item = char, Extender = String>
-        + FindSubstring<&'static str>
-        + Compare<&'static str>,
-    <I as InputIter>::Item: AsChar + Copy,
-    <I as InputTakeAtPosition>::Item: AsChar,
-{
-    map(
-        opt(tuple((
-            struct_property,
-            whitespace_without_eol0,
-            many0(tuple((
-                trivia_piece_line_ending,
-                whitespace0,
-                struct_property,
-            ))),
-            whitespace0,
-        ))),
-        |o| match o {
-            None => vec![],
-            Some((p, _, ps, _)) => {
-                let mut ps: Vec<StructPropertySyntax> = ps.into_iter().map(|(_, _, p)| p).collect();
-                ps.insert(0, p);
-                ps
-            }
+        |(open, property ,properties, cws, close)| StructBodySyntax {
+            open,
+            properties: {
+               let mut properties: Vec<_> = properties.into_iter().map(|(ws, p)| p.with_leading_trivia(ws)).collect();
+                if let Some(p) = property {
+                    properties.push(p);
+                }
+                properties
+            },
+            close: close.with_leading_trivia(cws),
         },
     )(s)
 }
@@ -902,7 +869,7 @@ mod tests {
     use crate::parser::tests::check;
     use crate::parser::wiz::declaration::{
         block, function_body, function_decl, member_function, package_name, stored_property,
-        struct_properties, struct_syntax, type_constraints, use_syntax, var_decl,
+        struct_syntax, type_constraints, use_syntax, var_decl,
     };
     use crate::syntax::block::BlockSyntax;
     use crate::syntax::declaration::fun_syntax::{
@@ -923,44 +890,6 @@ mod tests {
         TypeName, TypeParam,
     };
     use crate::syntax::Syntax;
-
-    #[test]
-    fn test_struct_properties() {
-        check(
-            r"val a: Int64
-                 val b: Int64
-            ",
-            struct_properties,
-            vec![
-                StructPropertySyntax::StoredProperty(StoredPropertySyntax {
-                    mutability_keyword: TokenSyntax::from("val"),
-                    name: TokenSyntax::from("a")
-                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    type_: TypeAnnotationSyntax {
-                        colon: TokenSyntax::from(":"),
-                        type_: TypeName::Simple(SimpleTypeName {
-                            name: TokenSyntax::from("Int64"),
-                            type_args: None,
-                        })
-                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    },
-                }),
-                StructPropertySyntax::StoredProperty(StoredPropertySyntax {
-                    mutability_keyword: TokenSyntax::from("val"),
-                    name: TokenSyntax::from("b")
-                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    type_: TypeAnnotationSyntax {
-                        colon: TokenSyntax::from(":"),
-                        type_: TypeName::Simple(SimpleTypeName {
-                            name: TokenSyntax::from("Int64"),
-                            type_args: None,
-                        })
-                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    },
-                }),
-            ],
-        );
-    }
 
     #[test]
     fn test_stored_property() {
@@ -1003,9 +932,7 @@ mod tests {
     #[test]
     fn test_struct_syntax() {
         check(
-            r##"struct A {
-        var a: String
-        }"##,
+            r"struct A {var a: String}",
             struct_syntax,
             StructSyntax {
                 struct_keyword: TokenSyntax::from("struct"),
