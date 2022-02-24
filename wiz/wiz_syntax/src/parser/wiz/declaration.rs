@@ -184,10 +184,13 @@ where
             whitespace0,
             token("}"),
         )),
-        |(open, property ,properties, cws, close)| StructBodySyntax {
+        |(open, property, properties, cws, close)| StructBodySyntax {
             open,
             properties: {
-               let mut properties: Vec<_> = properties.into_iter().map(|(ws, p)| p.with_leading_trivia(ws)).collect();
+                let mut properties: Vec<_> = properties
+                    .into_iter()
+                    .map(|(ws, p)| p.with_leading_trivia(ws))
+                    .collect();
                 if let Some(p) = property {
                     properties.push(p);
                 }
