@@ -84,7 +84,7 @@ where
 {
     map(
         permutation((char('r'), double_quote, take_until("\""), double_quote)),
-        |(r, a, b, c): (char, char, I, char)| LiteralSyntax::String {
+        |(r, a, b, c): (_, _, I, _)| LiteralSyntax::String {
             open_quote: TokenSyntax::from(r.to_string() + &*a.to_string()),
             value: b.to_string(),
             close_quote: TokenSyntax::from(c),
