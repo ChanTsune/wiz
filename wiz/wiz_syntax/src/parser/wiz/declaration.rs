@@ -789,7 +789,7 @@ where
 {
     map(
         many1(tuple((identifier, tag("::")))),
-        |i: Vec<(String, I)>| PackageName {
+        |i: Vec<(_, I)>| PackageName {
             names: i
                 .into_iter()
                 .map(|(name, sep)| PackageNameElement {
