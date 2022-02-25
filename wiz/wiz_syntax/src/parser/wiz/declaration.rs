@@ -787,9 +787,8 @@ where
         + Compare<&'static str>,
     <I as InputIter>::Item: AsChar,
 {
-    map(
-        many1(tuple((identifier, tag("::")))),
-        |i: Vec<(_, I)>| PackageName {
+    map(many1(tuple((identifier, tag("::")))), |i: Vec<(_, I)>| {
+        PackageName {
             names: i
                 .into_iter()
                 .map(|(name, sep)| PackageNameElement {
@@ -797,8 +796,8 @@ where
                     sep: TokenSyntax::from(sep),
                 })
                 .collect(),
-        },
-    )(s)
+        }
+    })(s)
 }
 
 //endregion
