@@ -1,10 +1,10 @@
 use crate::parser::wiz::declaration::{block, decl};
 use crate::parser::wiz::expression::{expr, postfix_expr, prefix_expr};
 use crate::parser::wiz::keywords::{for_keyword, in_keyword, while_keyword};
-use crate::parser::wiz::lexical_structure::{identifier, whitespace0, whitespace1};
+use crate::parser::wiz::lexical_structure::{identifier, token, whitespace0, whitespace1};
 use crate::parser::wiz::operators::{assignment_and_operator, assignment_operator};
 use crate::parser::Span;
-use crate::syntax::expression::{Expr, NameExprSyntax};
+use crate::syntax::expression::{Expr, NameExprSyntax, ParenthesizedExprSyntax};
 use crate::syntax::file::FileSyntax;
 use crate::syntax::statement::{
     AssignmentAndOperatorSyntax, AssignmentStmt, AssignmentSyntax, ForLoopSyntax, LoopStmt, Stmt,
@@ -217,8 +217,12 @@ where
     <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
-        tuple((char('('), assignable_expr, char(')'))),
-        |(_, e, _)| e,
+        tuple((token("("),whitespace0, assignable_expr,whitespace0, token(")"))),
+        |(open_paren,ows, e, cws,close_paren)| Expr::Parenthesized(ParenthesizedExprSyntax {
+            open_paren,
+            expr: Box::new(e.with_leading_trivia(ows)),
+            close_paren: close_paren.with_leading_trivia(cws),
+        }),
     )(s)
 }
 

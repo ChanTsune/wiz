@@ -625,6 +625,7 @@ impl Ast2HLIR {
             Expr::Lambda(l) => TypedExpr::Lambda(self.lambda_syntax(l)),
             Expr::Return(r) => TypedExpr::Return(self.return_syntax(r)),
             Expr::TypeCast(t) => TypedExpr::TypeCast(self.type_cast(t)),
+            Expr::Parenthesized(p) => self.expr(*p.expr),
         }
     }
 
