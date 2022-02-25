@@ -152,7 +152,7 @@ impl Ast2HLIR {
 
     pub fn loop_stmt(&self, l: LoopStmt) -> TypedLoopStmt {
         match l {
-            LoopStmt::While(WhileLoopSyntax { condition, block }) => {
+            LoopStmt::While(WhileLoopSyntax { while_keyword:_, condition, block}) => {
                 TypedLoopStmt::While(TypedWhileLoopStmt {
                     condition: self.expr(condition),
                     block: self.block(block),
