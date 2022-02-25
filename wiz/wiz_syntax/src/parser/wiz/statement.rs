@@ -425,7 +425,7 @@ mod tests {
     #[test]
     fn test_while_stmt_with_bracket() {
         check(
-            r"while (a < b) {
+            r"while a < b {
             a = a + 1
         }",
             while_stmt,
