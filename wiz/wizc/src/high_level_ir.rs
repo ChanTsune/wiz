@@ -237,7 +237,7 @@ impl Ast2HLIR {
     pub fn fun_body(&self, body: FunBody) -> TypedFunBody {
         match body {
             FunBody::Block(block) => TypedFunBody::Block(self.block(block)),
-            FunBody::Expr(expr) => TypedFunBody::Expr(self.expr(expr)),
+            FunBody::Expr(expr) => TypedFunBody::Expr(self.expr(expr.expr)),
         }
     }
 
