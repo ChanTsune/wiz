@@ -401,7 +401,10 @@ mod tests {
         assignable_expr, assignment_stmt, directly_assignable_expr, file, stmt, while_stmt,
     };
     use crate::syntax::block::BlockSyntax;
-    use crate::syntax::expression::{BinaryOperationSyntax, CallArgListSyntax, CallExprSyntax, Expr, MemberSyntax, NameExprSyntax, ParenthesizedExprSyntax};
+    use crate::syntax::expression::{
+        BinaryOperationSyntax, CallArgListSyntax, CallExprSyntax, Expr, MemberSyntax,
+        NameExprSyntax, ParenthesizedExprSyntax,
+    };
     use crate::syntax::file::FileSyntax;
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::statement::{
@@ -446,7 +449,7 @@ mod tests {
                                 .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                         ),
                     })),
-                    close_paren: TokenSyntax::from(")")
+                    close_paren: TokenSyntax::from(")"),
                 }),
                 block: BlockSyntax {
                     open: TokenSyntax::from("{"),
