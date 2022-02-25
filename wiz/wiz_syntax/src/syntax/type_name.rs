@@ -82,8 +82,7 @@ impl Syntax for TypeNameSpaceElementSyntax {
     }
 }
 
-impl<T: ToString> From<T> for TypeNameSpaceElementSyntax
-{
+impl<T: ToString> From<T> for TypeNameSpaceElementSyntax {
     fn from(name: T) -> Self {
         Self {
             simple_type: SimpleTypeName::from(name),
@@ -152,8 +151,7 @@ impl Syntax for SimpleTypeName {
     }
 }
 
-impl<T: ToString> From<T> for SimpleTypeName
-{
+impl<T: ToString> From<T> for SimpleTypeName {
     fn from(name: T) -> Self {
         Self {
             name: TokenSyntax::from(name),
