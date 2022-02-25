@@ -1,11 +1,7 @@
 use crate::parser::wiz::character::{ampersand, comma};
 use crate::parser::wiz::lexical_structure::{identifier, token, whitespace0};
 use crate::syntax::token::TokenSyntax;
-use crate::syntax::type_name::{
-    DecoratedTypeName, SimpleTypeName, TypeArgumentElementSyntax, TypeArgumentListSyntax,
-    TypeConstraintSyntax, TypeName, TypeNameSpaceElementSyntax, TypeParam,
-    TypeParameterElementSyntax, TypeParameterListSyntax, UserTypeName,
-};
+use crate::syntax::type_name::{DecoratedTypeName, ParenthesizedTypeName, SimpleTypeName, TypeArgumentElementSyntax, TypeArgumentListSyntax, TypeConstraintSyntax, TypeName, TypeNameSpaceElementSyntax, TypeParam, TypeParameterElementSyntax, TypeParameterListSyntax, UserTypeName};
 use crate::syntax::Syntax;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
@@ -50,7 +46,13 @@ where
         + Compare<&'static str>,
     <I as InputIter>::Item: AsChar + Copy,
 {
-    map(tuple((char('('), type_, char(')'))), |(_, type_, _)| type_)(s)
+    map(tuple((token("("),whitespace0, type_,whitespace0, token(")"))), |(open_paren,ows, type_, cws, close_paren)| TypeName::Parenthesized(
+    ParenthesizedTypeName {
+        open_paren,
+        type_name: Box::new(type_.with_leading_trivia(ows)),
+        close_paren: close_paren.with_trailing_trivia(cws),
+    }
+))(s)
 }
 
 pub fn decorated_type<I>(s: I) -> IResult<I, DecoratedTypeName>

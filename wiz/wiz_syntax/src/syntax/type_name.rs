@@ -8,6 +8,7 @@ pub enum TypeName {
     NameSpaced(Box<UserTypeName>),
     Simple(SimpleTypeName),
     Decorated(Box<DecoratedTypeName>),
+    Parenthesized(ParenthesizedTypeName),
 }
 
 impl Syntax for TypeName {
@@ -18,6 +19,7 @@ impl Syntax for TypeName {
             }
             TypeName::Simple(s) => TypeName::Simple(s.with_leading_trivia(trivia)),
             TypeName::Decorated(d) => TypeName::Decorated(Box::new(d.with_leading_trivia(trivia))),
+            TypeName::Parenthesized(p) => TypeName::Parenthesized(p.with_leading_trivia(trivia)),
         }
     }
 
@@ -28,6 +30,32 @@ impl Syntax for TypeName {
             }
             TypeName::Simple(s) => TypeName::Simple(s.with_trailing_trivia(trivia)),
             TypeName::Decorated(d) => TypeName::Decorated(Box::new(d.with_trailing_trivia(trivia))),
+            TypeName::Parenthesized(p) => TypeName::Parenthesized(p.with_trailing_trivia(trivia)),
+        }
+    }
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct ParenthesizedTypeName {
+    pub open_paren: TokenSyntax,
+    pub type_name: Box<TypeName>,
+    pub close_paren: TokenSyntax,
+}
+
+impl Syntax for ParenthesizedTypeName {
+    fn with_leading_trivia(self, trivia: Trivia) -> Self {
+        Self {
+            open_paren: self.open_paren.with_leading_trivia(trivia),
+            type_name: self.type_name,
+            close_paren: self.close_paren,
+        }
+    }
+
+    fn with_trailing_trivia(self, trivia: Trivia) -> Self {
+        Self {
+            open_paren: self.open_paren,
+            type_name: self.type_name,
+            close_paren: self.close_paren.with_trailing_trivia(trivia),
         }
     }
 }
@@ -54,9 +82,7 @@ impl Syntax for TypeNameSpaceElementSyntax {
     }
 }
 
-impl<T> From<T> for TypeNameSpaceElementSyntax
-where
-    T: ToString,
+impl<T: ToString> From<T> for TypeNameSpaceElementSyntax
 {
     fn from(name: T) -> Self {
         Self {
@@ -126,9 +152,7 @@ impl Syntax for SimpleTypeName {
     }
 }
 
-impl<T> From<T> for SimpleTypeName
-where
-    T: ToString,
+impl<T: ToString> From<T> for SimpleTypeName
 {
     fn from(name: T) -> Self {
         Self {

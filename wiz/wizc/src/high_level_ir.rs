@@ -379,6 +379,7 @@ impl Ast2HLIR {
                     }),
                 }))
             }
+            TypeName::Parenthesized(p) => self.type_(*p.type_name),
         }
     }
 
