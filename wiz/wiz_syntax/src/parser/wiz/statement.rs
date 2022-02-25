@@ -13,7 +13,6 @@ use crate::syntax::statement::{
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::Syntax;
 use nom::branch::alt;
-use nom::character::complete::char;
 use nom::combinator::map;
 use nom::multi::many0;
 use nom::sequence::tuple;
@@ -247,8 +246,12 @@ where
     <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
-        tuple((char('('), directly_assignable_expr, char(')'))),
-        |(_, e, _)| e,
+        tuple((token("("), whitespace0, directly_assignable_expr, whitespace0,token(")"))),
+        |(open_paren,ows, e, cws, close_paren)| Expr::Parenthesized(ParenthesizedExprSyntax {
+            open_paren,
+            expr: Box::new(e.with_leading_trivia(ows)),
+            close_paren: close_paren.with_leading_trivia(cws),
+        }),
     )(s)
 }
 
