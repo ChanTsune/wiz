@@ -9,7 +9,10 @@ use crate::parser::wiz::lexical_structure::{identifier, token, whitespace0, whit
 use crate::parser::wiz::statement::stmt;
 use crate::parser::wiz::type_::{type_, type_parameter, type_parameters};
 use crate::syntax::block::BlockSyntax;
-use crate::syntax::declaration::fun_syntax::{ArgDef, ArgDefElementSyntax, ArgDefListSyntax, ExprFunBodySyntax, FunBody, FunSyntax, SelfArgDefSyntax, ValueArgDef};
+use crate::syntax::declaration::fun_syntax::{
+    ArgDef, ArgDefElementSyntax, ArgDefListSyntax, ExprFunBodySyntax, FunBody, FunSyntax,
+    SelfArgDefSyntax, ValueArgDef,
+};
 use crate::syntax::declaration::{
     AliasSyntax, DeclKind, DeclarationSyntax, DeinitializerSyntax, ExtensionSyntax,
     InitializerSyntax, PackageName, ProtocolConformSyntax, StoredPropertySyntax, StructBodySyntax,
@@ -871,7 +874,10 @@ mod tests {
         struct_syntax, type_constraints, use_syntax, var_decl,
     };
     use crate::syntax::block::BlockSyntax;
-    use crate::syntax::declaration::fun_syntax::{ArgDef, ArgDefElementSyntax, ArgDefListSyntax, ExprFunBodySyntax, FunBody, FunSyntax, ValueArgDef};
+    use crate::syntax::declaration::fun_syntax::{
+        ArgDef, ArgDefElementSyntax, ArgDefListSyntax, ExprFunBodySyntax, FunBody, FunSyntax,
+        ValueArgDef,
+    };
     use crate::syntax::declaration::{
         AliasSyntax, DeclKind, PackageName, StoredPropertySyntax, StructBodySyntax,
         StructPropertySyntax, StructSyntax, TypeAnnotationSyntax, UseSyntax,
@@ -1082,9 +1088,8 @@ mod tests {
             function_body,
             FunBody::Expr(ExprFunBodySyntax {
                 equal: TokenSyntax::from("="),
-                expr: Expr::Name(NameExprSyntax::simple(TokenSyntax::from(
-                    "name",
-                ))).with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                expr: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("name")))
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
             }),
         )
     }

@@ -1,7 +1,7 @@
 pub use crate::syntax::declaration::fun_syntax::arg_def::{
     ArgDef, ArgDefElementSyntax, ArgDefListSyntax, SelfArgDefSyntax, ValueArgDef,
 };
-pub use crate::syntax::declaration::fun_syntax::body_def::{FunBody, ExprFunBodySyntax};
+pub use crate::syntax::declaration::fun_syntax::body_def::{ExprFunBodySyntax, FunBody};
 use crate::syntax::declaration::TypeAnnotationSyntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
