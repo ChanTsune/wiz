@@ -16,7 +16,14 @@ use crate::parser::wiz::operators::{
 use crate::parser::wiz::statement::stmt;
 use crate::parser::wiz::type_::{type_, type_arguments};
 use crate::syntax::block::BlockSyntax;
-use crate::syntax::expression::{ArgLabelSyntax, ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallArgElementSyntax, CallArgListSyntax, CallExprSyntax, ElseSyntax, Expr, IfExprSyntax, LambdaSyntax, MemberSyntax, NameExprSyntax, ParenthesizedExprSyntax, PostfixSuffix, PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax, ReturnSyntax, SubscriptIndexElementSyntax, SubscriptIndexListSyntax, SubscriptSyntax, TypeCastSyntax, UnaryOperationSyntax};
+use crate::syntax::expression::{
+    ArgLabelSyntax, ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg,
+    CallArgElementSyntax, CallArgListSyntax, CallExprSyntax, ElseSyntax, Expr, IfExprSyntax,
+    LambdaSyntax, MemberSyntax, NameExprSyntax, ParenthesizedExprSyntax, PostfixSuffix,
+    PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax, ReturnSyntax,
+    SubscriptIndexElementSyntax, SubscriptIndexListSyntax, SubscriptSyntax, TypeCastSyntax,
+    UnaryOperationSyntax,
+};
 use crate::syntax::literal::LiteralSyntax;
 use crate::syntax::statement::Stmt;
 use crate::syntax::token::TokenSyntax;
@@ -217,11 +224,13 @@ where
 {
     map(
         tuple((token("("), whitespace0, expr, whitespace0, token(")"))),
-        |(open_paren, ows, expr, cws, close_paren)| Expr::Parenthesized(ParenthesizedExprSyntax {
-            open_paren,
-            expr: Box::new(expr.with_leading_trivia(ows)),
-            close_paren: close_paren.with_trailing_trivia(cws),
-        }),
+        |(open_paren, ows, expr, cws, close_paren)| {
+            Expr::Parenthesized(ParenthesizedExprSyntax {
+                open_paren,
+                expr: Box::new(expr.with_leading_trivia(ows)),
+                close_paren: close_paren.with_trailing_trivia(cws),
+            })
+        },
     )(s)
 }
 
