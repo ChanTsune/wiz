@@ -1232,11 +1232,11 @@ where
         )),
         |(e, v): (_, Vec<(_, I, _, _)>)| {
             let mut bin_op = e;
-            for (_, op, _, typ) in v {
+            for (ws, op, tws, typ) in v {
                 bin_op = Expr::TypeCast(TypeCastSyntax {
                     target: Box::new(bin_op),
-                    operator: TokenSyntax::from(op),
-                    type_: typ,
+                    operator: TokenSyntax::from(op).with_leading_trivia(ws),
+                    type_: typ.with_leading_trivia(tws),
                 })
             }
             bin_op
