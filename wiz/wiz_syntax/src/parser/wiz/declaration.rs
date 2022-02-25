@@ -53,7 +53,8 @@ where
 {
     map(
         tuple((
-            opt(tuple((annotations_syntax, whitespace0))),
+            opt(annotations_syntax),
+            whitespace0,
             alt((
                 use_decl,
                 struct_decl,
@@ -62,9 +63,9 @@ where
                 extension_decl,
             )),
         )),
-        |(a, d)| DeclarationSyntax {
-            annotations: a.map(|(a, _)| a),
-            kind: d,
+        |(a,ws, d)| DeclarationSyntax {
+            annotations: a,
+            kind: d.with_leading_trivia(ws),
         },
     )(s)
 }
