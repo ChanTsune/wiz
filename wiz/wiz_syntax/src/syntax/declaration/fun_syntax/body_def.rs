@@ -1,8 +1,8 @@
 use crate::syntax::block::BlockSyntax;
 use crate::syntax::expression::Expr;
+use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::Syntax;
-use crate::syntax::token::TokenSyntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum FunBody {
