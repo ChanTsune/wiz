@@ -401,10 +401,7 @@ mod tests {
         assignable_expr, assignment_stmt, directly_assignable_expr, file, stmt, while_stmt,
     };
     use crate::syntax::block::BlockSyntax;
-    use crate::syntax::expression::{
-        BinaryOperationSyntax, CallArgListSyntax, CallExprSyntax, Expr, MemberSyntax,
-        NameExprSyntax,
-    };
+    use crate::syntax::expression::{BinaryOperationSyntax, CallArgListSyntax, CallExprSyntax, Expr, MemberSyntax, NameExprSyntax, ParenthesizedExprSyntax};
     use crate::syntax::file::FileSyntax;
     use crate::syntax::literal::LiteralSyntax;
     use crate::syntax::statement::{
@@ -433,19 +430,23 @@ mod tests {
     #[test]
     fn test_while_stmt_with_bracket() {
         check(
-            r"while a < b {
+            r"while (a < b) {
             a = a + 1
         }",
             while_stmt,
             LoopStmt::While(WhileLoopSyntax {
-                condition: Expr::BinOp(BinaryOperationSyntax {
-                    left: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a")))),
-                    operator: TokenSyntax::from("<")
-                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    right: Box::new(
-                        Expr::Name(NameExprSyntax::simple(TokenSyntax::from("b")))
+                condition: Expr::Parenthesized(ParenthesizedExprSyntax {
+                    open_paren: TokenSyntax::from("("),
+                    expr: Box::new(Expr::BinOp(BinaryOperationSyntax {
+                        left: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a")))),
+                        operator: TokenSyntax::from("<")
                             .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    ),
+                        right: Box::new(
+                            Expr::Name(NameExprSyntax::simple(TokenSyntax::from("b")))
+                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        ),
+                    })),
+                    close_paren: TokenSyntax::from(")")
                 }),
                 block: BlockSyntax {
                     open: TokenSyntax::from("{"),
