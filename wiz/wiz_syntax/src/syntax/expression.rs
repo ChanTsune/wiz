@@ -4,11 +4,11 @@ mod call_syntax;
 mod if_syntax;
 mod member_syntax;
 mod name_syntax;
+mod parenthesized_syntax;
 mod return_syntax;
 mod subscript_syntax;
 mod type_cast_syntax;
 mod unary_operation_syntax;
-mod parenthesized_syntax;
 
 pub use crate::syntax::expression::array_syntax::{ArrayElementSyntax, ArraySyntax};
 pub use crate::syntax::expression::binary_operation_syntax::BinaryOperationSyntax;

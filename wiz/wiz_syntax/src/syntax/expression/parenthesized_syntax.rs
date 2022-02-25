@@ -1,7 +1,7 @@
 use crate::syntax::expression::Expr;
-use crate::syntax::Syntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
+use crate::syntax::Syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct ParenthesizedExprSyntax {
