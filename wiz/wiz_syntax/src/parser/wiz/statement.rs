@@ -441,7 +441,8 @@ mod tests {
             LoopStmt::While(WhileLoopSyntax {
                 while_keyword: TokenSyntax::from("while"),
                 condition: Expr::Parenthesized(ParenthesizedExprSyntax {
-                    open_paren: TokenSyntax::from("(").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    open_paren: TokenSyntax::from("(")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     expr: Box::new(Expr::BinOp(BinaryOperationSyntax {
                         left: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a")))),
                         operator: TokenSyntax::from("<")
@@ -454,7 +455,8 @@ mod tests {
                     close_paren: TokenSyntax::from(")"),
                 }),
                 block: BlockSyntax {
-                    open: TokenSyntax::from("{").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    open: TokenSyntax::from("{")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     body: vec![
                         Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax {
                             target: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
@@ -497,13 +499,16 @@ mod tests {
             LoopStmt::While(WhileLoopSyntax {
                 while_keyword: TokenSyntax::from("while"),
                 condition: Expr::BinOp(BinaryOperationSyntax {
-                    left: Box::new(Expr::Member(MemberSyntax {
-                        target: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from(
-                            "a",
-                        )))),
-                        name: TokenSyntax::from("c"),
-                        navigation_operator: TokenSyntax::from("."),
-                    }).with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1)))),
+                    left: Box::new(
+                        Expr::Member(MemberSyntax {
+                            target: Box::new(Expr::Name(NameExprSyntax::simple(
+                                TokenSyntax::from("a"),
+                            ))),
+                            name: TokenSyntax::from("c"),
+                            navigation_operator: TokenSyntax::from("."),
+                        })
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    ),
                     operator: TokenSyntax::from("<")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     right: Box::new(
@@ -512,7 +517,8 @@ mod tests {
                     ),
                 }),
                 block: BlockSyntax {
-                    open: TokenSyntax::from("{").with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    open: TokenSyntax::from("{")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     body: vec![
                         Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax {
                             target: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
