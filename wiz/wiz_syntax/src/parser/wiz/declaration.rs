@@ -63,7 +63,7 @@ where
                 extension_decl,
             )),
         )),
-        |(a,ws, d)| DeclarationSyntax {
+        |(a, ws, d)| DeclarationSyntax {
             annotations: a,
             kind: d.with_leading_trivia(ws),
         },
