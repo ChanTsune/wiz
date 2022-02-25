@@ -254,12 +254,20 @@ where
     <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
-        tuple((token("("), whitespace0, directly_assignable_expr, whitespace0,token(")"))),
-        |(open_paren,ows, e, cws, close_paren)| Expr::Parenthesized(ParenthesizedExprSyntax {
-            open_paren,
-            expr: Box::new(e.with_leading_trivia(ows)),
-            close_paren: close_paren.with_leading_trivia(cws),
-        }),
+        tuple((
+            token("("),
+            whitespace0,
+            directly_assignable_expr,
+            whitespace0,
+            token(")"),
+        )),
+        |(open_paren, ows, e, cws, close_paren)| {
+            Expr::Parenthesized(ParenthesizedExprSyntax {
+                open_paren,
+                expr: Box::new(e.with_leading_trivia(ows)),
+                close_paren: close_paren.with_leading_trivia(cws),
+            })
+        },
     )(s)
 }
 
