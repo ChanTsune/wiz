@@ -52,11 +52,11 @@ where
     token("protocol")(s)
 }
 
-pub fn while_keyword<I>(s: I) -> IResult<I, I>
+pub fn while_keyword<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: InputTake + Compare<&'static str>,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    tag("while")(s)
+    token("while")(s)
 }
 
 pub fn for_keyword<I>(s: I) -> IResult<I, I>
@@ -198,7 +198,7 @@ mod tests {
 
     #[test]
     fn test_while_keyword() {
-        assert_eq!(while_keyword("while"), Ok(("", "while")))
+        check("while", while_keyword, TokenSyntax::from("while"));
     }
 
     #[test]
