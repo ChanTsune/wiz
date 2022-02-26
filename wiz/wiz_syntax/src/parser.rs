@@ -28,7 +28,6 @@ impl Location {
     }
 }
 
-
 impl<'a> From<&Span<'a>> for Location {
     fn from(span: &Span<'a>) -> Self {
         Self {
