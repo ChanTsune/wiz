@@ -23,18 +23,18 @@ pub fn parse_from_string(string: &str) -> Result<WizFile> {
     return match file(Span::from(string)) {
         Ok((s, f)) => {
             if !s.is_empty() {
-                return Result::Err(ParseError::ParseError(format!(
+                return Err(ParseError::ParseError(format!(
                     "{:?}{}",
                     Location::from(&s),
                     s
                 )));
             }
-            Result::Ok(WizFile {
+            Ok(WizFile {
                 name: String::new(),
                 syntax: f,
             })
         }
-        Err(_) => Result::Err(ParseError::from(String::new())),
+        Err(_) => Err(ParseError::from(String::new())),
     };
 }
 
