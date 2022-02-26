@@ -1,7 +1,7 @@
 use crate::parser::error::ParseError;
 use crate::parser::result::Result;
 use crate::parser::wiz::statement::file;
-use crate::parser::{Location, Span};
+use crate::parser::{get_line_offset, Location, Span};
 use crate::syntax::file::{SourceSet, WizFile};
 use std::fs;
 use std::fs::{read_to_string, File};
@@ -23,11 +23,8 @@ pub fn parse_from_string(string: &str) -> Result<WizFile> {
     return match file(Span::from(string)) {
         Ok((s, f)) => {
             if !s.is_empty() {
-                return Err(ParseError::ParseError(format!(
-                    "{:?}{}",
-                    Location::from(&s),
-                    s
-                )));
+                let location = Location::from(&s);
+                return Err(ParseError::ParseError(get_error_location_src(string, &location)));
             }
             Ok(WizFile {
                 name: String::new(),
@@ -93,5 +90,26 @@ fn read_package_files(path: &Path) -> Result<SourceSet> {
         })
     } else {
         Result::Ok(SourceSet::File(parse_from_file_path(path)?))
+    }
+}
+
+fn get_error_location_src(src: &str, location: &Location) -> String {
+    let line_offset = get_line_offset(src, location);
+    let error_line = src.lines().nth(location.line as usize - 1).unwrap_or_default();
+    format!("{} | {}\n{}^", location.line, error_line, " ".repeat(location.line.to_string().len() + 3 + line_offset))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_from_string() {
+        let result = parse_from_string("unknown_token");
+        if let Err(e) = result {
+            assert_eq!(e.to_string(), "1 | unknown_token\n    ^");
+        } else {
+            panic!("never execution branch executed!!");
+        }
     }
 }
