@@ -81,18 +81,18 @@ pub fn read_package_from_path(path: &Path, name: Option<&str>) -> Result<SourceS
 }
 
 fn read_package_files(path: &Path) -> Result<SourceSet> {
-    if path.is_dir() {
+    Ok(if path.is_dir() {
         let dir = fs::read_dir(path)?;
-        Result::Ok(SourceSet::Dir {
+        SourceSet::Dir {
             name: path.file_name().unwrap().to_str().unwrap().to_string(),
             items: dir
                 .into_iter()
                 .map(|d| read_package_files(&*d.unwrap().path()))
-                .collect::<Result<Vec<SourceSet>>>()?,
-        })
+                .collect::<Result<_>>()?,
+        }
     } else {
-        Result::Ok(SourceSet::File(parse_from_file_path(path)?))
-    }
+        SourceSet::File(parse_from_file_path(path)?)
+    })
 }
 
 fn get_error_location_src(src: &str, location: &Location) -> String {
