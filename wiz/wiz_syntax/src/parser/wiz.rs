@@ -25,7 +25,7 @@ pub fn parse_from_string(string: &str) -> Result<WizFile> {
             if !s.is_empty() {
                 return Result::Err(ParseError::ParseError(format!(
                     "{:?}{}",
-                    Location::from(s),
+                    Location::from(&s),
                     s
                 )));
             }

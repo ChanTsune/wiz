@@ -1,5 +1,6 @@
 use crate::syntax::trivia::Trivia;
 use std::fmt::Debug;
+use crate::parser::Location;
 
 pub mod annotation;
 pub mod block;
@@ -18,4 +19,7 @@ pub mod type_name;
 pub trait Syntax: Debug + Eq + PartialEq + Clone {
     fn with_leading_trivia(self, trivia: Trivia) -> Self;
     fn with_trailing_trivia(self, trivia: Trivia) -> Self;
+    fn span(&self) -> Location {
+        Location::default()
+    }
 }
