@@ -15,3 +15,11 @@ where
         panic!("{:?}", result)
     }
 }
+
+#[test]
+fn test_get_location() {
+    use super::*;
+    let location = Location::new(1, 0);
+    assert_eq!(location.offset(), 1);
+    assert_eq!(location.line(), 0);
+}

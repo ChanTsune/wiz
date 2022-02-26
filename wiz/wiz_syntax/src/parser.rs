@@ -14,6 +14,21 @@ pub struct Location {
     line: u32,
 }
 
+impl Location {
+    pub fn new(offset: usize, line: u32) -> Self {
+        Self { offset, line }
+    }
+
+    pub fn offset(&self) -> usize {
+        self.offset
+    }
+
+    pub fn line(&self) -> u32 {
+        self.line
+    }
+}
+
+
 impl<'a> From<&Span<'a>> for Location {
     fn from(span: &Span<'a>) -> Self {
         Self {
