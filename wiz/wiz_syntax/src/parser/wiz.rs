@@ -24,7 +24,9 @@ pub fn parse_from_string(string: &str) -> Result<WizFile> {
         Ok((s, f)) => {
             if !s.is_empty() {
                 let location = Location::from(&s);
-                return Err(ParseError::ParseError(get_error_location_src(string, &location)));
+                return Err(ParseError::ParseError(get_error_location_src(
+                    string, &location,
+                )));
             }
             Ok(WizFile {
                 name: String::new(),
@@ -95,8 +97,16 @@ fn read_package_files(path: &Path) -> Result<SourceSet> {
 
 fn get_error_location_src(src: &str, location: &Location) -> String {
     let line_offset = get_line_offset(src, location);
-    let error_line = src.lines().nth(location.line as usize - 1).unwrap_or_default();
-    format!("{} | {}\n{}^", location.line, error_line, " ".repeat(location.line.to_string().len() + 3 + line_offset))
+    let error_line = src
+        .lines()
+        .nth(location.line as usize - 1)
+        .unwrap_or_default();
+    format!(
+        "{} | {}\n{}^",
+        location.line,
+        error_line,
+        " ".repeat(location.line.to_string().len() + 3 + line_offset)
+    )
 }
 
 #[cfg(test)]

@@ -37,7 +37,6 @@ impl<'a> From<&Span<'a>> for Location {
     }
 }
 
-
 fn get_line_offset(s: &str, location: &Location) -> usize {
     let mut n = 1usize;
     let target_line = location.line() as usize;
