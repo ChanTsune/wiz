@@ -1,6 +1,6 @@
+use crate::parser::Location;
 use crate::syntax::trivia::Trivia;
 use std::fmt::Debug;
-use crate::parser::Location;
 
 pub mod annotation;
 pub mod block;
