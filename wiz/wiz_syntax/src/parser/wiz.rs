@@ -24,14 +24,15 @@ pub fn parse_from_string(string: &str) -> Result<WizFile> {
         Ok((s, f)) => {
             if !s.is_empty() {
                 let location = Location::from(&s);
-                return Err(ParseError::SyntaxError(get_error_location_src(
+                Err(ParseError::from(get_error_location_src(
                     string, &location,
-                )));
+                )))
+            } else {
+                Ok(WizFile {
+                    name: String::new(),
+                    syntax: f,
+                })
             }
-            Ok(WizFile {
-                name: String::new(),
-                syntax: f,
-            })
         }
         Err(_) => Err(ParseError::from(String::new())),
     };
