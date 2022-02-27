@@ -97,12 +97,11 @@ where
     token(",")(s)
 }
 
-pub fn space<I>(s: I) -> IResult<I, char>
+pub fn space<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: Slice<RangeFrom<usize>> + InputIter,
-    <I as InputIter>::Item: AsChar,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    char(' ')(s)
+    token(" ")(s)
 }
 
 pub fn carriage_return<I>(s: I) -> IResult<I, TokenSyntax>
@@ -175,7 +174,7 @@ mod tests {
 
     #[test]
     fn test_space() {
-        assert_eq!(space(" "), Ok(("", ' ')))
+        check(" ", space, TokenSyntax::from(" "));
     }
 
     #[test]

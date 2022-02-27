@@ -280,8 +280,7 @@ where
 
 pub fn spaces<I>(s: I) -> IResult<I, TriviaPiece>
 where
-    I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength,
-    <I as InputIter>::Item: AsChar,
+    I: InputTake + InputLength + Compare<&'static str> + ToString + Clone,
 {
     map(many1(space), |l| TriviaPiece::Spaces(l.len() as i64))(s)
 }
