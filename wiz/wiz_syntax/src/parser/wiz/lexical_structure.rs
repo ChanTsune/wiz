@@ -305,8 +305,7 @@ where
 
 pub fn form_feeds<I>(s: I) -> IResult<I, TriviaPiece>
 where
-    I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength,
-    <I as InputIter>::Item: AsChar,
+    I: InputTake + InputLength + Compare<&'static str> + ToString + Clone,
 {
     map(many1(form_feed), |l| TriviaPiece::FormFeeds(l.len() as i64))(s)
 }

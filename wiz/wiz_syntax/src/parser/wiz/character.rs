@@ -58,12 +58,11 @@ where
     char('\x0b')(s)
 }
 
-pub fn form_feed<I>(s: I) -> IResult<I, char>
+pub fn form_feed<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: Slice<RangeFrom<usize>> + InputIter,
-    <I as InputIter>::Item: AsChar,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    char('\x0c')(s)
+    token("\x0c")(s)
 }
 
 pub fn double_quote<I>(s: I) -> IResult<I, char>
@@ -149,7 +148,7 @@ mod tests {
 
     #[test]
     fn test_form_feed() {
-        assert_eq!(form_feed("\x0c"), Ok(("", '\x0c')))
+        check("\x0c", form_feed, TokenSyntax::from( "\x0c"));
     }
 
     #[test]
