@@ -185,7 +185,7 @@ mod tests {
 
     #[test]
     fn test_ampersand() {
-        check("&",ampersand, TokenSyntax::from("&"));
+        check("&", ampersand, TokenSyntax::from("&"));
     }
 
     #[test]
