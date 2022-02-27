@@ -80,12 +80,11 @@ where
     char('`')(s)
 }
 
-pub fn dot<I>(s: I) -> IResult<I, char>
+pub fn dot<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: Slice<RangeFrom<usize>> + InputIter,
-    <I as InputIter>::Item: AsChar,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    char('.')(s)
+    token(".")(s)
 }
 
 pub fn comma<I>(s: I) -> IResult<I, TokenSyntax>
@@ -162,7 +161,7 @@ mod tests {
 
     #[test]
     fn test_dot() {
-        assert_eq!(dot("."), Ok(("", '.')))
+        check(".", dot, TokenSyntax::from("."));
     }
 
     #[test]
