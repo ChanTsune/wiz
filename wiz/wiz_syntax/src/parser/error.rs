@@ -11,8 +11,8 @@ pub enum ParseError {
 impl Display for ParseError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            ParseError::ParseError(e) => f.write_str(e),
-            ParseError::IOError(e) => f.write_str(&e.to_string()),
+            Self::ParseError(e) => f.write_str(e),
+            Self::IOError(e) => f.write_str(&e.to_string()),
         }
     }
 }
