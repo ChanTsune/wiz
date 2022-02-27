@@ -1,9 +1,9 @@
 use crate::parser::wiz::keywords::{as_keyword, in_keyword};
+use crate::parser::wiz::lexical_structure::token;
+use crate::syntax::token::TokenSyntax;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::{Compare, IResult, InputTake};
-use crate::parser::wiz::lexical_structure::token;
-use crate::syntax::token::TokenSyntax;
 
 fn simple_member_access_operator<I>(s: I) -> IResult<I, I>
 where
@@ -242,7 +242,7 @@ mod tests {
     #[test]
     fn test_is_operator() {
         check("is", is_operator, TokenSyntax::from("is"));
-        check("!is",is_operator, TokenSyntax::from("!is"));
+        check("!is", is_operator, TokenSyntax::from("!is"));
     }
 
     #[test]
