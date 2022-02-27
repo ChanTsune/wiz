@@ -38,11 +38,11 @@ where
     token("val")(s)
 }
 
-pub fn extension_keyword<I>(s: I) -> IResult<I, I>
+pub fn extension_keyword<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: InputTake + Compare<&'static str>,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    tag("extension")(s)
+    token("extension")(s)
 }
 
 pub fn protocol_keyword<I>(s: I) -> IResult<I, TokenSyntax>
@@ -188,7 +188,7 @@ mod tests {
 
     #[test]
     fn test_extension_keyword() {
-        assert_eq!(extension_keyword("extension"), Ok(("", "extension")))
+        check("extension", extension_keyword, TokenSyntax::from("extension"));
     }
 
     #[test]

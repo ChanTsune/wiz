@@ -852,7 +852,7 @@ where
             struct_body_syntax,
         )),
         |(kw, tp, ws, n, protocol, tc, ws1, body)| ExtensionSyntax {
-            extension_keyword: TokenSyntax::from(kw),
+            extension_keyword: kw,
             type_params: tp.map(|(t, tp)| tp.with_leading_trivia(t)),
             name: n.with_leading_trivia(ws),
             protocol_extension: protocol.map(|(lws, colon, tws, typ)| ProtocolConformSyntax {
