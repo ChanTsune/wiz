@@ -19,12 +19,12 @@ pub mod operators;
 pub mod statement;
 pub mod type_;
 
-pub fn parse_from_string(string: &str) -> Result<WizFile> {
-    return match file(Span::from(string)) {
+pub fn parse_from_string(src: &str) -> Result<WizFile> {
+    return match file(Span::from(src)) {
         Ok((s, f)) => {
             if !s.is_empty() {
                 let location = Location::from(&s);
-                Err(ParseError::from(get_error_location_src(string, &location)))
+                Err(ParseError::from(get_error_location_src(src, &location)))
             } else {
                 Ok(WizFile {
                     name: String::new(),
