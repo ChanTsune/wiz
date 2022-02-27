@@ -188,7 +188,11 @@ mod tests {
 
     #[test]
     fn test_extension_keyword() {
-        check("extension", extension_keyword, TokenSyntax::from("extension"));
+        check(
+            "extension",
+            extension_keyword,
+            TokenSyntax::from("extension"),
+        );
     }
 
     #[test]
