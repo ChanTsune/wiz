@@ -166,9 +166,9 @@ where
 {
     let (e, expr) = postfix_expr(s)?;
     match expr {
-        Expr::Member { .. } => IResult::Ok((e, expr)),
-        Expr::Subscript { .. } => IResult::Ok((e, expr)),
-        _ => IResult::Err(Error(error::Error::new(e, error::ErrorKind::Alt))),
+        Expr::Member { .. } => Ok((e, expr)),
+        Expr::Subscript { .. } => Ok((e, expr)),
+        _ => Err(Error(error::Error::new(e, error::ErrorKind::Alt))),
     }
 }
 
