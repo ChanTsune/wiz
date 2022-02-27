@@ -105,12 +105,11 @@ where
     char(' ')(s)
 }
 
-pub fn cr<I>(s: I) -> IResult<I, char>
+pub fn carriage_return<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: Slice<RangeFrom<usize>> + InputIter,
-    <I as InputIter>::Item: AsChar,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    char('\r')(s)
+    token("\r")(s)
 }
 
 pub fn ampersand<I>(s: I) -> IResult<I, TokenSyntax>
@@ -124,7 +123,7 @@ where
 mod tests {
     use crate::parser::tests::check;
     use crate::parser::wiz::character::{
-        alphabet, ampersand, backticks, comma, cr, digit, dot, double_quote, form_feed,
+        alphabet, ampersand, backticks, comma, carriage_return, digit, dot, double_quote, form_feed,
         not_double_quote_or_back_slash, space, under_score, vertical_tab,
     };
     use crate::syntax::token::TokenSyntax;
@@ -180,8 +179,8 @@ mod tests {
     }
 
     #[test]
-    fn test_cr() {
-        assert_eq!(cr("\r"), Ok(("", '\r')))
+    fn test_carriage_return() {
+        check("\r",carriage_return, TokenSyntax::from("\r"));
     }
 
     #[test]

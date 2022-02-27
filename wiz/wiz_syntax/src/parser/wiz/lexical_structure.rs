@@ -1,5 +1,5 @@
 use crate::parser::wiz::character::{
-    alphabet, backticks, cr, digit, form_feed, space, under_score, vertical_tab,
+    alphabet, backticks, carriage_return, digit, form_feed, space, under_score, vertical_tab,
 };
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::{Trivia, TriviaPiece};
@@ -322,10 +322,9 @@ where
 
 pub fn carriage_returns<I>(s: I) -> IResult<I, TriviaPiece>
 where
-    I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength,
-    <I as InputIter>::Item: AsChar,
+    I: InputTake + InputLength + Compare<&'static str> + ToString + Clone,
 {
-    map(many1(cr), |l| TriviaPiece::CarriageReturns(l.len() as i64))(s)
+    map(many1(carriage_return), |l| TriviaPiece::CarriageReturns(l.len() as i64))(s)
 }
 
 pub fn carriage_return_line_feeds<I>(s: I) -> IResult<I, TriviaPiece>
