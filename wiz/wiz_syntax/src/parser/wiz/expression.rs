@@ -138,9 +138,7 @@ pub fn boolean_literal<I>(s: I) -> IResult<I, LiteralSyntax>
 where
     I: InputTake + Compare<&'static str> + Clone + ToString,
 {
-    map(alt((true_keyword, false_keyword)),
-        LiteralSyntax::Boolean
-    )(s)
+    map(alt((true_keyword, false_keyword)), LiteralSyntax::Boolean)(s)
 }
 
 pub fn literal_expr<I>(s: I) -> IResult<I, Expr>
