@@ -115,7 +115,7 @@ where
                             char('u'),
                             take_while_m_n(4, 4, |c: <I as InputIter>::Item| c.is_hex_digit()),
                         )),
-                        |(_, code): (char, I)| -> char {
+                        |(_, code): (_, I)| -> char {
                             decode_utf16(vec![u16::from_str_radix(&*code.to_string(), 16).unwrap()])
                                 .next()
                                 .unwrap()
