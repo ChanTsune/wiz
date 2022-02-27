@@ -142,7 +142,7 @@ mod tests {
 
     #[test]
     fn test_vertical_tab() {
-        check("\x0b", vertical_tab, TokenSyntax::from( "\x0b"));
+        check("\x0b", vertical_tab, TokenSyntax::from("\x0b"));
     }
 
     #[test]
