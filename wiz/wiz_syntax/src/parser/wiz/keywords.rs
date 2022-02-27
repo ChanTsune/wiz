@@ -80,11 +80,11 @@ where
     tag("else")(s)
 }
 
-pub fn return_keyword<I>(s: I) -> IResult<I, I>
+pub fn return_keyword<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: InputTake + Compare<&'static str>,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    tag("return")(s)
+    token("return")(s)
 }
 
 pub fn init_keyword<I>(s: I) -> IResult<I, I>
@@ -218,7 +218,7 @@ mod tests {
 
     #[test]
     fn test_return_keyword() {
-        assert_eq!(return_keyword("return"), Ok(("", "return")))
+        check("return", return_keyword, TokenSyntax::from("return"));
     }
 
     #[test]

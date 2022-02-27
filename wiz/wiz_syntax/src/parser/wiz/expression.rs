@@ -249,9 +249,9 @@ where
 {
     map(
         tuple((return_keyword, opt(tuple((whitespace1, expr))))),
-        |(r, e): (I, _)| {
+        |(r, e)| {
             Expr::Return(ReturnSyntax {
-                return_keyword: TokenSyntax::from(r),
+                return_keyword: r,
                 value: e.map(|(ws, e)| Box::new(e.with_leading_trivia(ws))),
             })
         },
