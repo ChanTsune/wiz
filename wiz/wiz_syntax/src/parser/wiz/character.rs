@@ -50,12 +50,11 @@ where
     char('_')(s)
 }
 
-pub fn vertical_tab<I>(s: I) -> IResult<I, char>
+pub fn vertical_tab<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: Slice<RangeFrom<usize>> + InputIter,
-    <I as InputIter>::Item: AsChar,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    char('\x0b')(s)
+    token("\x0b")(s)
 }
 
 pub fn form_feed<I>(s: I) -> IResult<I, TokenSyntax>
@@ -143,7 +142,7 @@ mod tests {
 
     #[test]
     fn test_vertical_tab() {
-        assert_eq!(vertical_tab("\x0b"), Ok(("", '\x0b')))
+        check("\x0b", vertical_tab, TokenSyntax::from( "\x0b"));
     }
 
     #[test]

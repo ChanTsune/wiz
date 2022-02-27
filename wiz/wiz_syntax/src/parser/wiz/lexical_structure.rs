@@ -295,8 +295,7 @@ where
 
 pub fn vertical_tabs<I>(s: I) -> IResult<I, TriviaPiece>
 where
-    I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength,
-    <I as InputIter>::Item: AsChar,
+    I: InputTake + InputLength + Compare<&'static str> + ToString + Clone,
 {
     map(many1(vertical_tab), |l| {
         TriviaPiece::VerticalTabs(l.len() as i64)
