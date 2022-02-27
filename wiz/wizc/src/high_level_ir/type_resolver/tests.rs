@@ -33,7 +33,7 @@ fn check(source: &str, typed_file: TypedFile) {
     let _ = resolver.preload_file(file.clone()).unwrap();
     let f = resolver.file(file);
 
-    assert_eq!(f, Result::Ok(typed_file));
+    assert_eq!(f, Ok(typed_file));
 }
 
 #[test]
