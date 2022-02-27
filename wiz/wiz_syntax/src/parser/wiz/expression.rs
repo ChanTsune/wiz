@@ -968,8 +968,8 @@ where
                 ),
                 map(
                     tuple((whitespace1, is_operator, whitespace1, type_)),
-                    |(ows, op, ews, type_): (_, I, _, _)| P::IS {
-                        op: TokenSyntax::from(op).with_leading_trivia(ows),
+                    |(ows, op, ews, type_)| P::IS {
+                        op: op.with_leading_trivia(ows),
                         type_: type_.with_leading_trivia(ews),
                     },
                 ),
