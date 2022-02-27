@@ -786,13 +786,13 @@ where
         + Compare<&'static str>,
     <I as InputIter>::Item: AsChar,
 {
-    map(many1(tuple((identifier, tag("::")))), |i: Vec<(_, I)>| {
+    map(many1(tuple((identifier, token("::")))), |i| {
         PackageName {
             names: i
                 .into_iter()
                 .map(|(name, sep)| PackageNameElement {
                     name: TokenSyntax::from(name),
-                    sep: TokenSyntax::from(sep),
+                    sep,
                 })
                 .collect(),
         }
