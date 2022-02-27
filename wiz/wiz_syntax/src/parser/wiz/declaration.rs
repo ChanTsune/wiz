@@ -633,18 +633,18 @@ where
 {
     map(
         tuple((
-            char('{'),
+            token("{"),
             many0(tuple((whitespace0, stmt))),
             whitespace0,
-            char('}'),
+            token("}"),
         )),
         |(open, stmts, cws, close)| BlockSyntax {
-            open: TokenSyntax::from(open),
+            open,
             body: stmts
                 .into_iter()
                 .map(|(ws, s)| s.with_leading_trivia(ws))
                 .collect(),
-            close: TokenSyntax::from(close).with_leading_trivia(cws),
+            close: close.with_leading_trivia(cws),
         },
     )(s)
 }
