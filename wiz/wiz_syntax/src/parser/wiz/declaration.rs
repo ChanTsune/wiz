@@ -697,7 +697,7 @@ where
             identifier,
             opt(tuple((whitespace0, type_annotation_syntax))),
             whitespace0,
-            char('='),
+            token("="),
             whitespace0,
             expr,
         )),
@@ -705,7 +705,7 @@ where
             mutability_keyword,
             name: TokenSyntax::from(name).with_leading_trivia(ws),
             type_annotation: t.map(|(ws, t)| t.with_leading_trivia(ws)),
-            equal: TokenSyntax::from(eq).with_leading_trivia(elws),
+            equal: eq.with_leading_trivia(elws),
             value: e.with_leading_trivia(erws),
         },
     )(s)
