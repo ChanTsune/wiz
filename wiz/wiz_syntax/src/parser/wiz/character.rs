@@ -123,8 +123,8 @@ where
 mod tests {
     use crate::parser::tests::check;
     use crate::parser::wiz::character::{
-        alphabet, ampersand, backticks, comma, carriage_return, digit, dot, double_quote, form_feed,
-        not_double_quote_or_back_slash, space, under_score, vertical_tab,
+        alphabet, ampersand, backticks, carriage_return, comma, digit, dot, double_quote,
+        form_feed, not_double_quote_or_back_slash, space, under_score, vertical_tab,
     };
     use crate::syntax::token::TokenSyntax;
 
@@ -180,7 +180,7 @@ mod tests {
 
     #[test]
     fn test_carriage_return() {
-        check("\r",carriage_return, TokenSyntax::from("\r"));
+        check("\r", carriage_return, TokenSyntax::from("\r"));
     }
 
     #[test]
