@@ -29,13 +29,13 @@ pub enum TriviaPiece {
 impl ToString for TriviaPiece {
     fn to_string(&self) -> String {
         match self {
-            TriviaPiece::Spaces(i) => String::from(' ').repeat(*i as usize),
-            TriviaPiece::Tabs(i) => String::from('\t').repeat(*i as usize),
-            TriviaPiece::VerticalTabs(i) => String::from('\x0b').repeat(*i as usize),
-            TriviaPiece::FormFeeds(i) => String::from('\x0c').repeat(*i as usize),
-            TriviaPiece::Newlines(i) => String::from('\n').repeat(*i as usize),
-            TriviaPiece::CarriageReturns(i) => String::from('\r').repeat(*i as usize),
-            TriviaPiece::CarriageReturnLineFeeds(i) => String::from("\r\n").repeat(*i as usize),
+            TriviaPiece::Spaces(i) => " ".repeat(*i as usize),
+            TriviaPiece::Tabs(i) => "\t".repeat(*i as usize),
+            TriviaPiece::VerticalTabs(i) => "\x0b".repeat(*i as usize),
+            TriviaPiece::FormFeeds(i) => "\x0c".repeat(*i as usize),
+            TriviaPiece::Newlines(i) => "\n".repeat(*i as usize),
+            TriviaPiece::CarriageReturns(i) => "\r".repeat(*i as usize),
+            TriviaPiece::CarriageReturnLineFeeds(i) => "\r\n".repeat(*i as usize),
             TriviaPiece::LineComment(s) => s.clone(),
             TriviaPiece::BlockComment(s) => s.clone(),
             TriviaPiece::DocLineComment(s) => s.clone(),
