@@ -8,7 +8,6 @@ use crate::syntax::type_name::{
 };
 use crate::syntax::Syntax;
 use nom::branch::alt;
-use nom::bytes::complete::tag;
 use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
@@ -117,7 +116,7 @@ where
 {
     map(
         tuple((
-            many0(tuple((simple_user_type, tag("::")))),
+            many0(tuple((simple_user_type, token("::")))),
             simple_user_type,
         )),
         |(name_space, type_name)| {
@@ -129,7 +128,7 @@ where
                         .into_iter()
                         .map(|(simple_type, sep)| TypeNameSpaceElementSyntax {
                             simple_type,
-                            sep: TokenSyntax::from(sep),
+                            sep,
                         })
                         .collect(),
                     type_name,
