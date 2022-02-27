@@ -846,7 +846,7 @@ where
             opt(tuple((whitespace0, type_parameters))),
             whitespace1,
             type_,
-            opt(tuple((whitespace0, char(':'), whitespace0, type_))),
+            opt(tuple((whitespace0, token(":"), whitespace0, type_))),
             opt(tuple((whitespace0, type_constraints))),
             whitespace0,
             struct_body_syntax,
@@ -856,7 +856,7 @@ where
             type_params: tp.map(|(t, tp)| tp.with_leading_trivia(t)),
             name: n.with_leading_trivia(ws),
             protocol_extension: protocol.map(|(lws, colon, tws, typ)| ProtocolConformSyntax {
-                colon: TokenSyntax::from(colon).with_leading_trivia(lws),
+                colon: colon.with_leading_trivia(lws),
                 protocol: typ.with_leading_trivia(tws),
             }),
             type_constraints: tc.map(|(t, tc)| tc.with_leading_trivia(t)),
