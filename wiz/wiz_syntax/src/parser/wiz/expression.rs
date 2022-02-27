@@ -874,12 +874,7 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(
-        tuple((
-            lambda_literal,
-        )),
-        |(lmd,)| lmd,
-    )(s)
+    map(tuple((lambda_literal,)), |(lmd,)| lmd)(s)
 }
 
 pub fn lambda_literal<I>(s: I) -> IResult<I, LambdaSyntax>
