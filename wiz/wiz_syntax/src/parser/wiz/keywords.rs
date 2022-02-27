@@ -129,18 +129,18 @@ where
     token("self")(s)
 }
 
-pub fn true_keyword<I>(s: I) -> IResult<I, I>
+pub fn true_keyword<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: InputTake + Compare<&'static str>,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    tag("true")(s)
+    token("true")(s)
 }
 
-pub fn false_keyword<I>(s: I) -> IResult<I, I>
+pub fn false_keyword<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: InputTake + Compare<&'static str>,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    tag("false")(s)
+    token("false")(s)
 }
 
 pub fn extern_keyword<I>(s: I) -> IResult<I, I>
@@ -257,12 +257,12 @@ mod tests {
 
     #[test]
     fn test_true_keyword() {
-        assert_eq!(true_keyword("true"), Ok(("", "true")))
+        check("true", true_keyword, TokenSyntax::from("true"));
     }
 
     #[test]
     fn test_false_keyword() {
-        assert_eq!(false_keyword("false"), Ok(("", "false")))
+        check("false", false_keyword, TokenSyntax::from("false"));
     }
 
     #[test]
