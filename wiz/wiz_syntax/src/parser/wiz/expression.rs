@@ -64,9 +64,7 @@ where
     <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(tuple((digit1, dot, digit1)), |(i, d, f): (I, _, I)| {
-        LiteralSyntax::FloatingPoint(TokenSyntax::from(
-            i.to_string() + "." + &*f.to_string(),
-        ))
+        LiteralSyntax::FloatingPoint(TokenSyntax::from(i.to_string() + "." + &*f.to_string()))
     })(s)
 }
 
