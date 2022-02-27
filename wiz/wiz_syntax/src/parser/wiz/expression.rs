@@ -56,10 +56,8 @@ pub fn floating_point_literal<I>(s: I) -> IResult<I, LiteralSyntax>
 where
     I: InputTake
         + Compare<&'static str>
-        + Slice<RangeFrom<usize>>
         + InputIter
         + Clone
-        + InputLength
         + ToString
         + InputTakeAtPosition,
     <I as InputIter>::Item: AsChar,
