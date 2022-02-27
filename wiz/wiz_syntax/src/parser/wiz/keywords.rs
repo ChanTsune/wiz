@@ -94,11 +94,11 @@ where
     token("init")(s)
 }
 
-pub fn deinit_keyword<I>(s: I) -> IResult<I, I>
+pub fn deinit_keyword<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: InputTake + Compare<&'static str>,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    tag("deinit")(s)
+    token("deinit")(s)
 }
 
 pub fn use_keyword<I>(s: I) -> IResult<I, I>
@@ -232,7 +232,7 @@ mod tests {
 
     #[test]
     fn test_deinit_keyword() {
-        assert_eq!(deinit_keyword("deinit"), Ok(("", "deinit")))
+        check("deinit", deinit_keyword, TokenSyntax::from("deinit"));
     }
 
     #[test]
