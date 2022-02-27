@@ -1,0 +1,9 @@
+use std::string::String
+
+protocol Printable {
+    fun description(&self): String
+}
+
+protocol DebugPrintable {
+    fun debugDescription(&self): String
+}
