@@ -876,10 +876,9 @@ where
 {
     map(
         tuple((
-            opt(label), // TODO: label
             lambda_literal,
         )),
-        |(l, lmd)| lmd,
+        |(lmd,)| lmd,
     )(s)
 }
 
@@ -908,23 +907,6 @@ where
             close,
         },
     )(s)
-}
-
-pub fn label<I>(s: I) -> IResult<I, char>
-where
-    I: Slice<RangeFrom<usize>>
-        + Slice<Range<usize>>
-        + InputIter
-        + Clone
-        + InputLength
-        + ToString
-        + InputTake
-        + FindSubstring<&'static str>
-        + Compare<&'static str>,
-    <I as InputIter>::Item: AsChar + Copy,
-{
-    // TODO: Impl
-    char(' ')(s)
 }
 
 /*
