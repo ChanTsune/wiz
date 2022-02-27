@@ -9,7 +9,6 @@ use crate::syntax::type_name::{
 use crate::syntax::Syntax;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::char;
 use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
@@ -77,11 +76,11 @@ where
 {
     map(
         tuple((
-            alt((char('*'), ampersand)),
+            alt((token("*"), ampersand)),
             alt((type_reference, parenthesized_type)),
         )),
         |(p, type_name)| DecoratedTypeName {
-            decoration: TokenSyntax::from(p),
+            decoration: p,
             type_: type_name,
         },
     )(s)

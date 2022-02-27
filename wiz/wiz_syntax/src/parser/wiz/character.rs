@@ -113,12 +113,11 @@ where
     char('\r')(s)
 }
 
-pub fn ampersand<I>(s: I) -> IResult<I, char>
+pub fn ampersand<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: Slice<RangeFrom<usize>> + InputIter,
-    <I as InputIter>::Item: AsChar,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    char('&')(s)
+    token("&")(s)
 }
 
 #[cfg(test)]
@@ -187,7 +186,7 @@ mod tests {
 
     #[test]
     fn test_ampersand() {
-        assert_eq!(ampersand("&"), Ok(("", '&')));
+        check("&",ampersand, TokenSyntax::from("&"));
     }
 
     #[test]
