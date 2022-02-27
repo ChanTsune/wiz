@@ -1,4 +1,6 @@
 use crate::parser::wiz::keywords::{as_keyword, in_keyword};
+use crate::parser::wiz::lexical_structure::token;
+use crate::syntax::token::TokenSyntax;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::{Compare, IResult, InputTake};
@@ -137,21 +139,23 @@ where
     alt((tag("!in"), in_keyword))(s)
 }
 
-pub fn is_operator<I>(s: I) -> IResult<I, I>
+pub fn is_operator<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: InputTake + Compare<&'static str> + Clone,
+    I: InputTake + Compare<&'static str> + Clone + ToString,
 {
-    alt((tag("!is"), tag("is")))(s)
+    alt((token("!is"), token("is")))(s)
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::parser::tests::check;
     use crate::parser::wiz::operators::{
         additive_operator, assignment_and_operator, assignment_operator, comparison_operator,
         conjunction_operator, disjunction_operator, elvis_operator, equality_operator, in_operator,
         is_operator, member_access_operator, multiplicative_operator, postfix_operator,
         prefix_operator, range_operator,
     };
+    use crate::syntax::token::TokenSyntax;
 
     #[test]
     fn test_member_access_operator() {
@@ -237,8 +241,8 @@ mod tests {
 
     #[test]
     fn test_is_operator() {
-        assert_eq!(is_operator("is"), Ok(("", "is")));
-        assert_eq!(is_operator("!is"), Ok(("", "!is")));
+        check("is", is_operator, TokenSyntax::from("is"));
+        check("!is", is_operator, TokenSyntax::from("!is"));
     }
 
     #[test]

@@ -1,10 +1,10 @@
 use crate::parser::wiz::declaration::{block, decl};
 use crate::parser::wiz::expression::{expr, postfix_expr, prefix_expr};
 use crate::parser::wiz::keywords::{for_keyword, in_keyword, while_keyword};
-use crate::parser::wiz::lexical_structure::{identifier, whitespace0, whitespace1};
+use crate::parser::wiz::lexical_structure::{identifier, token, whitespace0, whitespace1};
 use crate::parser::wiz::operators::{assignment_and_operator, assignment_operator};
 use crate::parser::Span;
-use crate::syntax::expression::{Expr, NameExprSyntax};
+use crate::syntax::expression::{Expr, NameExprSyntax, ParenthesizedExprSyntax};
 use crate::syntax::file::FileSyntax;
 use crate::syntax::statement::{
     AssignmentAndOperatorSyntax, AssignmentStmt, AssignmentSyntax, ForLoopSyntax, LoopStmt, Stmt,
@@ -13,7 +13,6 @@ use crate::syntax::statement::{
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::Syntax;
 use nom::branch::alt;
-use nom::character::complete::char;
 use nom::combinator::map;
 use nom::multi::many0;
 use nom::sequence::tuple;
@@ -167,9 +166,9 @@ where
 {
     let (e, expr) = postfix_expr(s)?;
     match expr {
-        Expr::Member { .. } => IResult::Ok((e, expr)),
-        Expr::Subscript { .. } => IResult::Ok((e, expr)),
-        _ => IResult::Err(Error(error::Error::new(e, error::ErrorKind::Alt))),
+        Expr::Member { .. } => Ok((e, expr)),
+        Expr::Subscript { .. } => Ok((e, expr)),
+        _ => Err(Error(error::Error::new(e, error::ErrorKind::Alt))),
     }
 }
 
@@ -217,8 +216,20 @@ where
     <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
-        tuple((char('('), assignable_expr, char(')'))),
-        |(_, e, _)| e,
+        tuple((
+            token("("),
+            whitespace0,
+            assignable_expr,
+            whitespace0,
+            token(")"),
+        )),
+        |(open_paren, ows, e, cws, close_paren)| {
+            Expr::Parenthesized(ParenthesizedExprSyntax {
+                open_paren,
+                expr: Box::new(e.with_leading_trivia(ows)),
+                close_paren: close_paren.with_leading_trivia(cws),
+            })
+        },
     )(s)
 }
 
@@ -243,8 +254,20 @@ where
     <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
-        tuple((char('('), directly_assignable_expr, char(')'))),
-        |(_, e, _)| e,
+        tuple((
+            token("("),
+            whitespace0,
+            directly_assignable_expr,
+            whitespace0,
+            token(")"),
+        )),
+        |(open_paren, ows, e, cws, close_paren)| {
+            Expr::Parenthesized(ParenthesizedExprSyntax {
+                open_paren,
+                expr: Box::new(e.with_leading_trivia(ows)),
+                close_paren: close_paren.with_leading_trivia(cws),
+            })
+        },
     )(s)
 }
 
@@ -287,10 +310,11 @@ where
 {
     map(
         tuple((while_keyword, whitespace1, expr, whitespace1, block)),
-        |(_, _, e, _, b)| {
+        |(w, ws, e, bws, b)| {
             LoopStmt::While(WhileLoopSyntax {
-                condition: e,
-                block: b,
+                while_keyword: w,
+                condition: e.with_leading_trivia(ws),
+                block: b.with_leading_trivia(bws),
             })
         },
     )(s)
@@ -325,13 +349,13 @@ where
             whitespace1,
             block,
         )),
-        |(for_keyword, _, value, _, in_keyword, _, iterator, _, block)| {
+        |(for_keyword, w, value, iw, in_keyword, itw, iterator, bws, block)| {
             LoopStmt::For(ForLoopSyntax {
                 for_keyword: TokenSyntax::from(for_keyword),
-                values: vec![TokenSyntax::from(value)],
-                in_keyword: TokenSyntax::from(in_keyword),
-                iterator,
-                block,
+                values: vec![TokenSyntax::from(value).with_leading_trivia(w)],
+                in_keyword: TokenSyntax::from(in_keyword).with_leading_trivia(iw),
+                iterator: iterator.with_leading_trivia(itw),
+                block: block.with_leading_trivia(bws),
             })
         },
     )(s)
@@ -380,7 +404,7 @@ mod tests {
     use crate::syntax::block::BlockSyntax;
     use crate::syntax::expression::{
         BinaryOperationSyntax, CallArgListSyntax, CallExprSyntax, Expr, MemberSyntax,
-        NameExprSyntax,
+        NameExprSyntax, ParenthesizedExprSyntax,
     };
     use crate::syntax::file::FileSyntax;
     use crate::syntax::literal::LiteralSyntax;
@@ -415,17 +439,24 @@ mod tests {
         }",
             while_stmt,
             LoopStmt::While(WhileLoopSyntax {
-                condition: Expr::BinOp(BinaryOperationSyntax {
-                    left: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a")))),
-                    operator: TokenSyntax::from("<")
+                while_keyword: TokenSyntax::from("while"),
+                condition: Expr::Parenthesized(ParenthesizedExprSyntax {
+                    open_paren: TokenSyntax::from("(")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    right: Box::new(
-                        Expr::Name(NameExprSyntax::simple(TokenSyntax::from("b")))
+                    expr: Box::new(Expr::BinOp(BinaryOperationSyntax {
+                        left: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a")))),
+                        operator: TokenSyntax::from("<")
                             .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    ),
+                        right: Box::new(
+                            Expr::Name(NameExprSyntax::simple(TokenSyntax::from("b")))
+                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                        ),
+                    })),
+                    close_paren: TokenSyntax::from(")"),
                 }),
                 block: BlockSyntax {
-                    open: TokenSyntax::from("{"),
+                    open: TokenSyntax::from("{")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     body: vec![
                         Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax {
                             target: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),
@@ -466,14 +497,18 @@ mod tests {
         }",
             while_stmt,
             LoopStmt::While(WhileLoopSyntax {
+                while_keyword: TokenSyntax::from("while"),
                 condition: Expr::BinOp(BinaryOperationSyntax {
-                    left: Box::new(Expr::Member(MemberSyntax {
-                        target: Box::new(Expr::Name(NameExprSyntax::simple(TokenSyntax::from(
-                            "a",
-                        )))),
-                        name: TokenSyntax::from("c"),
-                        navigation_operator: TokenSyntax::from("."),
-                    })),
+                    left: Box::new(
+                        Expr::Member(MemberSyntax {
+                            target: Box::new(Expr::Name(NameExprSyntax::simple(
+                                TokenSyntax::from("a"),
+                            ))),
+                            name: TokenSyntax::from("c"),
+                            navigation_operator: TokenSyntax::from("."),
+                        })
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                    ),
                     operator: TokenSyntax::from("<")
                         .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     right: Box::new(
@@ -482,7 +517,8 @@ mod tests {
                     ),
                 }),
                 block: BlockSyntax {
-                    open: TokenSyntax::from("{"),
+                    open: TokenSyntax::from("{")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     body: vec![
                         Stmt::Assignment(AssignmentStmt::Assignment(AssignmentSyntax {
                             target: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("a"))),

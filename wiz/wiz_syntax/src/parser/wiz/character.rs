@@ -1,7 +1,9 @@
+use crate::parser::wiz::lexical_structure::token;
+use crate::syntax::token::TokenSyntax;
 use nom::bytes::complete::take_while_m_n;
 use nom::character::complete::char;
 use nom::combinator::map;
-use nom::{AsChar, IResult, InputIter, InputLength, InputTake, Slice};
+use nom::{AsChar, Compare, IResult, InputIter, InputLength, InputTake, Slice};
 use std::ops::RangeFrom;
 
 pub fn not_double_quote_or_back_slash<I>(s: I) -> IResult<I, char>
@@ -48,20 +50,18 @@ where
     char('_')(s)
 }
 
-pub fn vertical_tab<I>(s: I) -> IResult<I, char>
+pub fn vertical_tab<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: Slice<RangeFrom<usize>> + InputIter,
-    <I as InputIter>::Item: AsChar,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    char('\x0b')(s)
+    token("\x0b")(s)
 }
 
-pub fn form_feed<I>(s: I) -> IResult<I, char>
+pub fn form_feed<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: Slice<RangeFrom<usize>> + InputIter,
-    <I as InputIter>::Item: AsChar,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    char('\x0c')(s)
+    token("\x0c")(s)
 }
 
 pub fn double_quote<I>(s: I) -> IResult<I, char>
@@ -80,52 +80,49 @@ where
     char('`')(s)
 }
 
-pub fn dot<I>(s: I) -> IResult<I, char>
+pub fn dot<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: Slice<RangeFrom<usize>> + InputIter,
-    <I as InputIter>::Item: AsChar,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    char('.')(s)
+    token(".")(s)
 }
 
-pub fn comma<I>(s: I) -> IResult<I, char>
+pub fn comma<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: Slice<RangeFrom<usize>> + InputIter,
-    <I as InputIter>::Item: AsChar,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    char(',')(s)
+    token(",")(s)
 }
 
-pub fn space<I>(s: I) -> IResult<I, char>
+pub fn space<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: Slice<RangeFrom<usize>> + InputIter,
-    <I as InputIter>::Item: AsChar,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    char(' ')(s)
+    token(" ")(s)
 }
 
-pub fn cr<I>(s: I) -> IResult<I, char>
+pub fn carriage_return<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: Slice<RangeFrom<usize>> + InputIter,
-    <I as InputIter>::Item: AsChar,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    char('\r')(s)
+    token("\r")(s)
 }
 
-pub fn ampersand<I>(s: I) -> IResult<I, char>
+pub fn ampersand<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: Slice<RangeFrom<usize>> + InputIter,
-    <I as InputIter>::Item: AsChar,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    char('&')(s)
+    token("&")(s)
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::parser::tests::check;
     use crate::parser::wiz::character::{
-        alphabet, ampersand, backticks, comma, cr, digit, dot, double_quote, form_feed,
-        not_double_quote_or_back_slash, space, under_score, vertical_tab,
+        alphabet, ampersand, backticks, carriage_return, comma, digit, dot, double_quote,
+        form_feed, not_double_quote_or_back_slash, space, under_score, vertical_tab,
     };
+    use crate::syntax::token::TokenSyntax;
 
     #[test]
     fn test_alphabet() {
@@ -144,12 +141,12 @@ mod tests {
 
     #[test]
     fn test_vertical_tab() {
-        assert_eq!(vertical_tab("\x0b"), Ok(("", '\x0b')))
+        check("\x0b", vertical_tab, TokenSyntax::from("\x0b"));
     }
 
     #[test]
     fn test_form_feed() {
-        assert_eq!(form_feed("\x0c"), Ok(("", '\x0c')))
+        check("\x0c", form_feed, TokenSyntax::from("\x0c"));
     }
 
     #[test]
@@ -164,27 +161,27 @@ mod tests {
 
     #[test]
     fn test_dot() {
-        assert_eq!(dot("."), Ok(("", '.')))
+        check(".", dot, TokenSyntax::from("."));
     }
 
     #[test]
     fn test_comma() {
-        assert_eq!(comma(","), Ok(("", ',')));
+        check(",", comma, TokenSyntax::from(","));
     }
 
     #[test]
     fn test_space() {
-        assert_eq!(space(" "), Ok(("", ' ')))
+        check(" ", space, TokenSyntax::from(" "));
     }
 
     #[test]
-    fn test_cr() {
-        assert_eq!(cr("\r"), Ok(("", '\r')))
+    fn test_carriage_return() {
+        check("\r", carriage_return, TokenSyntax::from("\r"));
     }
 
     #[test]
     fn test_ampersand() {
-        assert_eq!(ampersand("&"), Ok(("", '&')));
+        check("&", ampersand, TokenSyntax::from("&"));
     }
 
     #[test]

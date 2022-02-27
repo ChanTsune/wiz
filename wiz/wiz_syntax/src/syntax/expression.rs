@@ -4,6 +4,7 @@ mod call_syntax;
 mod if_syntax;
 mod member_syntax;
 mod name_syntax;
+mod parenthesized_syntax;
 mod return_syntax;
 mod subscript_syntax;
 mod type_cast_syntax;
@@ -12,11 +13,12 @@ mod unary_operation_syntax;
 pub use crate::syntax::expression::array_syntax::{ArrayElementSyntax, ArraySyntax};
 pub use crate::syntax::expression::binary_operation_syntax::BinaryOperationSyntax;
 pub use crate::syntax::expression::call_syntax::{
-    CallArg, CallArgElementSyntax, CallArgListSyntax, CallExprSyntax, LambdaSyntax,
+    ArgLabelSyntax, CallArg, CallArgElementSyntax, CallArgListSyntax, CallExprSyntax, LambdaSyntax,
 };
 pub use crate::syntax::expression::if_syntax::{ElseSyntax, IfExprSyntax};
 pub use crate::syntax::expression::member_syntax::MemberSyntax;
 pub use crate::syntax::expression::name_syntax::NameExprSyntax;
+pub use crate::syntax::expression::parenthesized_syntax::ParenthesizedExprSyntax;
 pub use crate::syntax::expression::return_syntax::ReturnSyntax;
 pub use crate::syntax::expression::subscript_syntax::{
     SubscriptIndexElementSyntax, SubscriptIndexListSyntax, SubscriptSyntax,
@@ -57,6 +59,7 @@ pub enum Expr {
     Lambda(LambdaSyntax),
     Return(ReturnSyntax),
     TypeCast(TypeCastSyntax),
+    Parenthesized(ParenthesizedExprSyntax),
 }
 
 impl Syntax for Expr {
@@ -88,6 +91,7 @@ impl Syntax for Expr {
             }
             Expr::Return(r) => Expr::Return(r.with_leading_trivia(trivia)),
             Expr::TypeCast(t) => Expr::TypeCast(t.with_leading_trivia(trivia)),
+            Expr::Parenthesized(p) => Expr::Parenthesized(p.with_leading_trivia(trivia)),
         }
     }
 
@@ -119,6 +123,7 @@ impl Syntax for Expr {
             }
             Expr::Return(r) => Expr::Return(r.with_trailing_trivia(trivia)),
             Expr::TypeCast(t) => Expr::TypeCast(t.with_trailing_trivia(trivia)),
+            Expr::Parenthesized(p) => Expr::Parenthesized(p.with_trailing_trivia(trivia)),
         }
     }
 }

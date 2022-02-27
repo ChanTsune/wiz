@@ -140,7 +140,7 @@ fn run_compiler(config: Config) -> result::Result<(), Box<dyn Error>> {
     let std_hlir: Vec<_> = std_hlir
         .into_iter()
         .map(|s| type_resolver.source_set(s))
-        .collect::<Result<Vec<_>>>()?;
+        .collect::<Result<_>>()?;
 
     println!("===== resolve types for input source =====");
 

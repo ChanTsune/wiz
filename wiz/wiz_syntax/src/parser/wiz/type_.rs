@@ -1,16 +1,13 @@
 use crate::parser::wiz::character::{ampersand, comma};
-use crate::parser::wiz::keywords::token;
-use crate::parser::wiz::lexical_structure::{identifier, whitespace0};
+use crate::parser::wiz::lexical_structure::{identifier, token, whitespace0};
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::type_name::{
-    DecoratedTypeName, SimpleTypeName, TypeArgumentElementSyntax, TypeArgumentListSyntax,
-    TypeConstraintSyntax, TypeName, TypeNameSpaceElementSyntax, TypeParam,
+    DecoratedTypeName, ParenthesizedTypeName, SimpleTypeName, TypeArgumentElementSyntax,
+    TypeArgumentListSyntax, TypeConstraintSyntax, TypeName, TypeNameSpaceElementSyntax, TypeParam,
     TypeParameterElementSyntax, TypeParameterListSyntax, UserTypeName,
 };
 use crate::syntax::Syntax;
 use nom::branch::alt;
-use nom::bytes::complete::tag;
-use nom::character::complete::char;
 use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
@@ -51,7 +48,16 @@ where
         + Compare<&'static str>,
     <I as InputIter>::Item: AsChar + Copy,
 {
-    map(tuple((char('('), type_, char(')'))), |(_, type_, _)| type_)(s)
+    map(
+        tuple((token("("), whitespace0, type_, whitespace0, token(")"))),
+        |(open_paren, ows, type_, cws, close_paren)| {
+            TypeName::Parenthesized(ParenthesizedTypeName {
+                open_paren,
+                type_name: Box::new(type_.with_leading_trivia(ows)),
+                close_paren: close_paren.with_trailing_trivia(cws),
+            })
+        },
+    )(s)
 }
 
 pub fn decorated_type<I>(s: I) -> IResult<I, DecoratedTypeName>
@@ -69,11 +75,11 @@ where
 {
     map(
         tuple((
-            alt((char('*'), ampersand)),
+            alt((token("*"), ampersand)),
             alt((type_reference, parenthesized_type)),
         )),
         |(p, type_name)| DecoratedTypeName {
-            decoration: TokenSyntax::from(p),
+            decoration: p,
             type_: type_name,
         },
     )(s)
@@ -110,7 +116,7 @@ where
 {
     map(
         tuple((
-            many0(tuple((simple_user_type, tag("::")))),
+            many0(tuple((simple_user_type, token("::")))),
             simple_user_type,
         )),
         |(name_space, type_name)| {
@@ -120,10 +126,7 @@ where
                 TypeName::NameSpaced(Box::new(UserTypeName {
                     name_space: name_space
                         .into_iter()
-                        .map(|(simple_type, sep)| TypeNameSpaceElementSyntax {
-                            simple_type,
-                            sep: TokenSyntax::from(sep),
-                        })
+                        .map(|(simple_type, sep)| TypeNameSpaceElementSyntax { simple_type, sep })
                         .collect(),
                     type_name,
                 }))
@@ -183,7 +186,7 @@ where
                 .into_iter()
                 .map(|(lws, tp, rws, com)| TypeArgumentElementSyntax {
                     element: tp.with_leading_trivia(lws),
-                    trailing_comma: Some(TokenSyntax::from(com).with_leading_trivia(rws)),
+                    trailing_comma: Some(com.with_leading_trivia(rws)),
                 })
                 .collect();
             if let Some((ws, p)) = typ {
@@ -228,7 +231,7 @@ where
                 .into_iter()
                 .map(|(lws, tp, rws, com)| TypeParameterElementSyntax {
                     element: tp.with_leading_trivia(lws),
-                    trailing_comma: Some(TokenSyntax::from(com).with_leading_trivia(rws)),
+                    trailing_comma: Some(com.with_leading_trivia(rws)),
                 })
                 .collect();
             if let Some((ws, p)) = param {
@@ -246,7 +249,7 @@ where
     )(s)
 }
 
-// <type_parameter> ::= <identifier> (":", <type>)?
+// <type_parameter> ::= <identifier> <type_constraint>?
 pub fn type_parameter<I>(s: I) -> IResult<I, TypeParam>
 where
     I: Slice<RangeFrom<usize>>
@@ -263,16 +266,35 @@ where
     map(
         tuple((
             identifier,
-            opt(tuple((whitespace0, char(':'), whitespace0, type_))),
+            opt(tuple((whitespace0, type_constraint_syntax))),
         )),
         |(name, typ)| TypeParam {
             name: TokenSyntax::from(name),
-            type_constraint: typ.map(|(lws, c, ws, t)| TypeConstraintSyntax {
-                sep: TokenSyntax::from(c).with_leading_trivia(lws),
-                constraint: t.with_leading_trivia(ws),
-            }),
+            type_constraint: typ.map(|(ws, t)| t.with_leading_trivia(ws)),
         },
     )(s)
+}
+
+// <type_constraint> ::= ":" <type>
+pub fn type_constraint_syntax<I>(s: I) -> IResult<I, TypeConstraintSyntax>
+where
+    I: Slice<RangeFrom<usize>>
+        + InputIter
+        + InputTake
+        + InputLength
+        + Clone
+        + Compare<&'static str>
+        + FindSubstring<&'static str>
+        + ToString
+        + Slice<Range<usize>>,
+    <I as InputIter>::Item: AsChar + Copy,
+{
+    map(tuple((token(":"), whitespace0, type_)), |(sep, lws, t)| {
+        TypeConstraintSyntax {
+            sep,
+            constraint: t.with_leading_trivia(lws),
+        }
+    })(s)
 }
 
 #[cfg(test)]

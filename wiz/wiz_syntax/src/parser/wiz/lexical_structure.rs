@@ -1,16 +1,28 @@
 use crate::parser::wiz::character::{
-    alphabet, backticks, cr, digit, form_feed, space, under_score, vertical_tab,
+    alphabet, backticks, carriage_return, digit, form_feed, space, under_score, vertical_tab,
 };
+use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::{Trivia, TriviaPiece};
 use nom::branch::{alt, permutation};
 use nom::bytes::complete::{tag, take_until, take_while_m_n};
 use nom::character::complete::{crlf, newline, tab};
 use nom::combinator::{map, opt};
+use nom::error::ParseError;
 use nom::lib::std::ops::{Range, RangeFrom};
 use nom::multi::{many0, many1};
 use nom::sequence::tuple;
 use nom::{AsChar, Compare, FindSubstring, IResult, InputIter, InputLength, InputTake, Slice};
 use std::iter::FromIterator;
+
+pub fn token<T, Input, Error: ParseError<Input>>(
+    tkn: T,
+) -> impl FnMut(Input) -> IResult<Input, TokenSyntax, Error>
+where
+    Input: InputTake + Compare<T> + ToString,
+    T: InputLength + Clone,
+{
+    map(tag(tkn), TokenSyntax::from)
+}
 
 pub fn whitespace0<I>(s: I) -> IResult<I, Trivia>
 where
@@ -268,8 +280,7 @@ where
 
 pub fn spaces<I>(s: I) -> IResult<I, TriviaPiece>
 where
-    I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength,
-    <I as InputIter>::Item: AsChar,
+    I: InputTake + InputLength + Compare<&'static str> + ToString + Clone,
 {
     map(many1(space), |l| TriviaPiece::Spaces(l.len() as i64))(s)
 }
@@ -284,8 +295,7 @@ where
 
 pub fn vertical_tabs<I>(s: I) -> IResult<I, TriviaPiece>
 where
-    I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength,
-    <I as InputIter>::Item: AsChar,
+    I: InputTake + InputLength + Compare<&'static str> + ToString + Clone,
 {
     map(many1(vertical_tab), |l| {
         TriviaPiece::VerticalTabs(l.len() as i64)
@@ -294,8 +304,7 @@ where
 
 pub fn form_feeds<I>(s: I) -> IResult<I, TriviaPiece>
 where
-    I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength,
-    <I as InputIter>::Item: AsChar,
+    I: InputTake + InputLength + Compare<&'static str> + ToString + Clone,
 {
     map(many1(form_feed), |l| TriviaPiece::FormFeeds(l.len() as i64))(s)
 }
@@ -310,10 +319,11 @@ where
 
 pub fn carriage_returns<I>(s: I) -> IResult<I, TriviaPiece>
 where
-    I: Slice<RangeFrom<usize>> + InputIter + Clone + InputLength,
-    <I as InputIter>::Item: AsChar,
+    I: InputTake + InputLength + Compare<&'static str> + ToString + Clone,
 {
-    map(many1(cr), |l| TriviaPiece::CarriageReturns(l.len() as i64))(s)
+    map(many1(carriage_return), |l| {
+        TriviaPiece::CarriageReturns(l.len() as i64)
+    })(s)
 }
 
 pub fn carriage_return_line_feeds<I>(s: I) -> IResult<I, TriviaPiece>
@@ -382,22 +392,6 @@ where
         line_comment,
         block_comment,
     ))(s)
-}
-
-pub fn trivia_piece_line_ending<I>(s: I) -> IResult<I, TriviaPiece>
-where
-    I: Slice<RangeFrom<usize>>
-        + Slice<Range<usize>>
-        + InputIter
-        + Clone
-        + InputLength
-        + ToString
-        + InputTake
-        + FindSubstring<&'static str>
-        + Compare<&'static str>,
-    <I as InputIter>::Item: AsChar + Copy,
-{
-    alt((carriage_return_line_feeds, newlines, carriage_returns))(s)
 }
 
 #[cfg(test)]

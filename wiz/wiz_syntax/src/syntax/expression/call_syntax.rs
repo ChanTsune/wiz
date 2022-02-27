@@ -66,7 +66,7 @@ pub type CallArgElementSyntax = ElementSyntax<CallArg>;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct CallArg {
-    pub label: Option<TokenSyntax>,
+    pub label: Option<ArgLabelSyntax>,
     pub asterisk: Option<TokenSyntax>,
     pub arg: Box<Expr>,
 }
@@ -99,6 +99,28 @@ impl Syntax for CallArg {
             label: self.label,
             asterisk: self.asterisk,
             arg: Box::new(self.arg.with_trailing_trivia(trivia)),
+        }
+    }
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct ArgLabelSyntax {
+    pub label: TokenSyntax,
+    pub colon: TokenSyntax,
+}
+
+impl Syntax for ArgLabelSyntax {
+    fn with_leading_trivia(self, trivia: Trivia) -> Self {
+        Self {
+            label: self.label.with_leading_trivia(trivia),
+            colon: self.colon,
+        }
+    }
+
+    fn with_trailing_trivia(self, trivia: Trivia) -> Self {
+        Self {
+            label: self.label,
+            colon: self.colon.with_trailing_trivia(trivia),
         }
     }
 }

@@ -1,6 +1,5 @@
 use crate::parser::wiz::character::comma;
-use crate::parser::wiz::keywords::token;
-use crate::parser::wiz::lexical_structure::{identifier, whitespace0};
+use crate::parser::wiz::lexical_structure::{identifier, token, whitespace0};
 use crate::syntax::annotation::{Annotation, AnnotationsSyntax};
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::Syntax;
@@ -36,7 +35,7 @@ where
                 .into_iter()
                 .map(|(lws, a, rws, cma)| Annotation {
                     element: TokenSyntax::from(a).with_leading_trivia(lws),
-                    trailing_comma: Some(TokenSyntax::from(cma).with_leading_trivia(rws)),
+                    trailing_comma: Some(cma.with_leading_trivia(rws)),
                 })
                 .collect();
 

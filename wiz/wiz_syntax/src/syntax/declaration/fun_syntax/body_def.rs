@@ -1,12 +1,13 @@
 use crate::syntax::block::BlockSyntax;
 use crate::syntax::expression::Expr;
+use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::Syntax;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum FunBody {
     Block(BlockSyntax),
-    Expr(Expr),
+    Expr(ExprFunBodySyntax),
 }
 
 impl Syntax for FunBody {
@@ -21,6 +22,28 @@ impl Syntax for FunBody {
         match self {
             FunBody::Block(b) => FunBody::Block(b.with_trailing_trivia(trivia)),
             FunBody::Expr(e) => FunBody::Expr(e.with_trailing_trivia(trivia)),
+        }
+    }
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct ExprFunBodySyntax {
+    pub equal: TokenSyntax,
+    pub expr: Expr,
+}
+
+impl Syntax for ExprFunBodySyntax {
+    fn with_leading_trivia(self, trivia: Trivia) -> Self {
+        Self {
+            equal: self.equal.with_leading_trivia(trivia),
+            expr: self.expr,
+        }
+    }
+
+    fn with_trailing_trivia(self, trivia: Trivia) -> Self {
+        Self {
+            equal: self.equal,
+            expr: self.expr.with_trailing_trivia(trivia),
         }
     }
 }

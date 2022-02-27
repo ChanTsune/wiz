@@ -1,10 +1,10 @@
 use crate::parser::wiz::character::{comma, dot, double_quote, not_double_quote_or_back_slash};
 use crate::parser::wiz::declaration::block;
 use crate::parser::wiz::keywords::{
-    else_keyword, false_keyword, if_keyword, return_keyword, token, true_keyword,
+    else_keyword, false_keyword, if_keyword, return_keyword, true_keyword,
 };
 use crate::parser::wiz::lexical_structure::{
-    identifier, whitespace0, whitespace1, whitespace_without_eol0,
+    identifier, token, whitespace0, whitespace1, whitespace_without_eol0,
 };
 use crate::parser::wiz::name_space::name_space;
 use crate::parser::wiz::operators::{
@@ -17,11 +17,12 @@ use crate::parser::wiz::statement::stmt;
 use crate::parser::wiz::type_::{type_, type_arguments};
 use crate::syntax::block::BlockSyntax;
 use crate::syntax::expression::{
-    ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallArgElementSyntax,
-    CallArgListSyntax, CallExprSyntax, ElseSyntax, Expr, IfExprSyntax, LambdaSyntax, MemberSyntax,
-    NameExprSyntax, PostfixSuffix, PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax,
-    ReturnSyntax, SubscriptIndexElementSyntax, SubscriptIndexListSyntax, SubscriptSyntax,
-    TypeCastSyntax, UnaryOperationSyntax,
+    ArgLabelSyntax, ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg,
+    CallArgElementSyntax, CallArgListSyntax, CallExprSyntax, ElseSyntax, Expr, IfExprSyntax,
+    LambdaSyntax, MemberSyntax, NameExprSyntax, ParenthesizedExprSyntax, PostfixSuffix,
+    PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax, ReturnSyntax,
+    SubscriptIndexElementSyntax, SubscriptIndexListSyntax, SubscriptSyntax, TypeCastSyntax,
+    UnaryOperationSyntax,
 };
 use crate::syntax::literal::LiteralSyntax;
 use crate::syntax::statement::Stmt;
@@ -53,21 +54,12 @@ where
 
 pub fn floating_point_literal<I>(s: I) -> IResult<I, LiteralSyntax>
 where
-    I: InputTake
-        + Compare<&'static str>
-        + Slice<RangeFrom<usize>>
-        + InputIter
-        + Clone
-        + InputLength
-        + ToString
-        + InputTakeAtPosition,
+    I: InputTake + Compare<&'static str> + InputIter + Clone + ToString + InputTakeAtPosition,
     <I as InputIter>::Item: AsChar,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(tuple((digit1, dot, digit1)), |(i, d, f): (I, char, I)| {
-        LiteralSyntax::FloatingPoint(TokenSyntax::from(
-            i.to_string() + &*d.to_string() + &*f.to_string(),
-        ))
+    map(tuple((digit1, dot, digit1)), |(i, d, f): (I, _, I)| {
+        LiteralSyntax::FloatingPoint(TokenSyntax::from(i.to_string() + "." + &*f.to_string()))
     })(s)
 }
 
@@ -84,7 +76,7 @@ where
 {
     map(
         permutation((char('r'), double_quote, take_until("\""), double_quote)),
-        |(r, a, b, c): (char, char, I, char)| LiteralSyntax::String {
+        |(r, a, b, c): (_, _, I, _)| LiteralSyntax::String {
             open_quote: TokenSyntax::from(r.to_string() + &*a.to_string()),
             value: b.to_string(),
             close_quote: TokenSyntax::from(c),
@@ -123,7 +115,7 @@ where
                             char('u'),
                             take_while_m_n(4, 4, |c: <I as InputIter>::Item| c.is_hex_digit()),
                         )),
-                        |(_, code): (char, I)| -> char {
+                        |(_, code): (_, I)| -> char {
                             decode_utf16(vec![u16::from_str_radix(&*code.to_string(), 16).unwrap()])
                                 .next()
                                 .unwrap()
@@ -146,9 +138,7 @@ pub fn boolean_literal<I>(s: I) -> IResult<I, LiteralSyntax>
 where
     I: InputTake + Compare<&'static str> + Clone + ToString,
 {
-    map(alt((true_keyword, false_keyword)), |b: I| {
-        LiteralSyntax::Boolean(TokenSyntax::from(b))
-    })(s)
+    map(alt((true_keyword, false_keyword)), LiteralSyntax::Boolean)(s)
 }
 
 pub fn literal_expr<I>(s: I) -> IResult<I, Expr>
@@ -222,8 +212,14 @@ where
     <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
-        tuple((char('('), whitespace0, expr, whitespace0, char(')'))),
-        |(_, _, expr, _, _)| expr,
+        tuple((token("("), whitespace0, expr, whitespace0, token(")"))),
+        |(open_paren, ows, expr, cws, close_paren)| {
+            Expr::Parenthesized(ParenthesizedExprSyntax {
+                open_paren,
+                expr: Box::new(expr.with_leading_trivia(ows)),
+                close_paren: close_paren.with_trailing_trivia(cws),
+            })
+        },
     )(s)
 }
 
@@ -246,9 +242,9 @@ where
 {
     map(
         tuple((return_keyword, opt(tuple((whitespace1, expr))))),
-        |(r, e): (I, _)| {
+        |(r, e)| {
             Expr::Return(ReturnSyntax {
-                return_keyword: TokenSyntax::from(r),
+                return_keyword: r,
                 value: e.map(|(ws, e)| Box::new(e.with_leading_trivia(ws))),
             })
         },
@@ -285,7 +281,7 @@ where
                 .into_iter()
                 .map(|(lws, e, rws, c)| ArrayElementSyntax {
                     element: e.with_leading_trivia(lws),
-                    trailing_comma: Some(TokenSyntax::from(c).with_leading_trivia(rws)),
+                    trailing_comma: Some(c.with_leading_trivia(rws)),
                 })
                 .collect();
             if let Some((lws, e)) = element {
@@ -537,7 +533,7 @@ where
                 .into_iter()
                 .map(|(lws, tp, rws, com)| SubscriptIndexElementSyntax {
                     element: tp.with_leading_trivia(lws),
-                    trailing_comma: Some(TokenSyntax::from(com).with_leading_trivia(rws)),
+                    trailing_comma: Some(com.with_leading_trivia(rws)),
                 })
                 .collect();
             if let Some((ws, p)) = typ {
@@ -775,7 +771,7 @@ where
                 .into_iter()
                 .map(|(lws, tp, rws, com)| CallArgElementSyntax {
                     element: tp.with_leading_trivia(lws),
-                    trailing_comma: Some(TokenSyntax::from(com).with_leading_trivia(rws)),
+                    trailing_comma: Some(com.with_leading_trivia(rws)),
                 })
                 .collect();
             if let Some((ws, p)) = typ {
@@ -793,7 +789,7 @@ where
     )(s)
 }
 /*
-<value_argument> ::= (<identifier> ":")? "*"? <expr>
+<value_argument> ::= <arg_label>? "*"? <expr>
 */
 pub fn value_argument<I>(s: I) -> IResult<I, CallArg>
 where
@@ -813,19 +809,49 @@ where
     <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
-        tuple((
-            whitespace0,
-            opt(tuple((identifier, whitespace0, char(':'), whitespace0))),
-            opt(char('*')),
-            expr,
-        )),
-        |(_, arg_label, is_vararg, arg)| CallArg {
-            label: arg_label.map(|(label, _, _, _)| TokenSyntax::from(label)),
-            asterisk: is_vararg.map(|a| TokenSyntax::from(a)),
-            arg: Box::new(arg),
+        tuple((opt(arg_label_syntax), whitespace0, opt(token("*")), expr)),
+        |(arg_label, ws, is_vararg, arg)| match is_vararg {
+            None => CallArg {
+                label: arg_label,
+                asterisk: None,
+                arg: Box::new(arg.with_leading_trivia(ws)),
+            },
+            Some(asterisk) => CallArg {
+                label: arg_label,
+                asterisk: Some(asterisk.with_leading_trivia(ws)),
+                arg: Box::new(arg),
+            },
         },
     )(s)
 }
+
+// <arg_label> ::= <identifier> ":"
+pub fn arg_label_syntax<I>(s: I) -> IResult<I, ArgLabelSyntax>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + Clone
+        + InputLength
+        + ToString
+        + InputTake
+        + Offset
+        + InputTakeAtPosition
+        + ExtendInto<Item = char, Extender = String>
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+    <I as InputTakeAtPosition>::Item: AsChar,
+{
+    map(
+        tuple((identifier, whitespace0, token(":"))),
+        |(label, ws, colon)| ArgLabelSyntax {
+            label: TokenSyntax::from(label),
+            colon: colon.with_leading_trivia(ws),
+        },
+    )(s)
+}
+
 /*
 <annotated_lambda> ::= <label>? <lambda_literal>
 */
@@ -846,13 +872,7 @@ where
     <I as InputIter>::Item: AsChar + Copy,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
-    map(
-        tuple((
-            opt(label), // TODO: label
-            lambda_literal,
-        )),
-        |(l, lmd)| lmd,
-    )(s)
+    map(tuple((lambda_literal,)), |(lmd,)| lmd)(s)
 }
 
 pub fn lambda_literal<I>(s: I) -> IResult<I, LambdaSyntax>
@@ -873,30 +893,13 @@ where
     <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
-        tuple((char('{'), many0(stmt), char('}'))),
+        tuple((token("{"), many0(stmt), token("}"))),
         |(open, stms, close)| LambdaSyntax {
-            open: TokenSyntax::from(open),
+            open,
             stmts: stms,
-            close: TokenSyntax::from(close),
+            close,
         },
     )(s)
-}
-
-pub fn label<I>(s: I) -> IResult<I, char>
-where
-    I: Slice<RangeFrom<usize>>
-        + Slice<Range<usize>>
-        + InputIter
-        + Clone
-        + InputLength
-        + ToString
-        + InputTake
-        + FindSubstring<&'static str>
-        + Compare<&'static str>,
-    <I as InputIter>::Item: AsChar + Copy,
-{
-    // TODO: Impl
-    char(' ')(s)
 }
 
 /*
@@ -965,8 +968,8 @@ where
                 ),
                 map(
                     tuple((whitespace1, is_operator, whitespace1, type_)),
-                    |(ows, op, ews, type_): (_, I, _, _)| P::IS {
-                        op: TokenSyntax::from(op).with_leading_trivia(ows),
+                    |(ows, op, ews, type_)| P::IS {
+                        op: op.with_leading_trivia(ows),
                         type_: type_.with_leading_trivia(ews),
                     },
                 ),
@@ -1195,11 +1198,11 @@ where
         )),
         |(e, v): (_, Vec<(_, I, _, _)>)| {
             let mut bin_op = e;
-            for (_, op, _, typ) in v {
+            for (ws, op, tws, typ) in v {
                 bin_op = Expr::TypeCast(TypeCastSyntax {
                     target: Box::new(bin_op),
-                    operator: TokenSyntax::from(op),
-                    type_: typ,
+                    operator: TokenSyntax::from(op).with_leading_trivia(ws),
+                    type_: typ.with_leading_trivia(tws),
                 })
             }
             bin_op
@@ -1271,9 +1274,9 @@ mod tests {
     use crate::syntax::declaration::VarSyntax;
     use crate::syntax::declaration::{DeclKind, DeclarationSyntax};
     use crate::syntax::expression::{
-        ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg, CallArgElementSyntax,
-        CallArgListSyntax, CallExprSyntax, ElseSyntax, Expr, IfExprSyntax, MemberSyntax,
-        NameExprSyntax, PostfixSuffix, ReturnSyntax, SubscriptIndexElementSyntax,
+        ArgLabelSyntax, ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg,
+        CallArgElementSyntax, CallArgListSyntax, CallExprSyntax, ElseSyntax, Expr, IfExprSyntax,
+        MemberSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax, SubscriptIndexElementSyntax,
         SubscriptIndexListSyntax,
     };
     use crate::syntax::literal::LiteralSyntax;
@@ -1652,12 +1655,18 @@ mod tests {
                     open: TokenSyntax::from("("),
                     elements: vec![CallArgElementSyntax {
                         element: CallArg {
-                            label: Some(TokenSyntax::from("string")),
-                            arg: Box::from(Expr::Literal(LiteralSyntax::String {
-                                open_quote: TokenSyntax::from('"'),
-                                value: "Hello, World".to_string(),
-                                close_quote: TokenSyntax::from('"'),
-                            })),
+                            label: Some(ArgLabelSyntax {
+                                label: TokenSyntax::from("string"),
+                                colon: TokenSyntax::from(":"),
+                            }),
+                            arg: Box::from(
+                                Expr::Literal(LiteralSyntax::String {
+                                    open_quote: TokenSyntax::from('"'),
+                                    value: "Hello, World".to_string(),
+                                    close_quote: TokenSyntax::from('"'),
+                                })
+                                .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+                            ),
                             asterisk: None,
                         },
                         trailing_comma: None,

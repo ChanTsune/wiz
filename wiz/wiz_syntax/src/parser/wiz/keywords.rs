@@ -1,18 +1,7 @@
+use crate::parser::wiz::lexical_structure::token;
 use crate::syntax::token::TokenSyntax;
 use nom::bytes::complete::tag;
-use nom::combinator::map;
-use nom::error::ParseError;
-use nom::{Compare, IResult, InputLength, InputTake};
-
-pub fn token<T, Input, Error: ParseError<Input>>(
-    tkn: T,
-) -> impl FnMut(Input) -> IResult<Input, TokenSyntax, Error>
-where
-    Input: InputTake + Compare<T> + ToString,
-    T: InputLength + Clone,
-{
-    map(tag(tkn), TokenSyntax::from)
-}
+use nom::{Compare, IResult, InputTake};
 
 pub fn struct_keyword<I>(s: I) -> IResult<I, TokenSyntax>
 where
@@ -35,25 +24,25 @@ where
     token("where")(s)
 }
 
-pub fn var_keyword<I>(s: I) -> IResult<I, I>
+pub fn var_keyword<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: InputTake + Compare<&'static str>,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    tag("var")(s)
+    token("var")(s)
 }
 
-pub fn val_keyword<I>(s: I) -> IResult<I, I>
+pub fn val_keyword<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: InputTake + Compare<&'static str>,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    tag("val")(s)
+    token("val")(s)
 }
 
-pub fn extension_keyword<I>(s: I) -> IResult<I, I>
+pub fn extension_keyword<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: InputTake + Compare<&'static str>,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    tag("extension")(s)
+    token("extension")(s)
 }
 
 pub fn protocol_keyword<I>(s: I) -> IResult<I, TokenSyntax>
@@ -63,11 +52,11 @@ where
     token("protocol")(s)
 }
 
-pub fn while_keyword<I>(s: I) -> IResult<I, I>
+pub fn while_keyword<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: InputTake + Compare<&'static str>,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    tag("while")(s)
+    token("while")(s)
 }
 
 pub fn for_keyword<I>(s: I) -> IResult<I, I>
@@ -91,25 +80,25 @@ where
     tag("else")(s)
 }
 
-pub fn return_keyword<I>(s: I) -> IResult<I, I>
+pub fn return_keyword<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: InputTake + Compare<&'static str>,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    tag("return")(s)
+    token("return")(s)
 }
 
-pub fn init_keyword<I>(s: I) -> IResult<I, I>
+pub fn init_keyword<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: InputTake + Compare<&'static str>,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    tag("init")(s)
+    token("init")(s)
 }
 
-pub fn deinit_keyword<I>(s: I) -> IResult<I, I>
+pub fn deinit_keyword<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: InputTake + Compare<&'static str>,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    tag("deinit")(s)
+    token("deinit")(s)
 }
 
 pub fn use_keyword<I>(s: I) -> IResult<I, I>
@@ -133,32 +122,32 @@ where
     tag("in")(s)
 }
 
-pub fn self_keyword<I>(s: I) -> IResult<I, I>
+pub fn self_keyword<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: InputTake + Compare<&'static str>,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    tag("self")(s)
+    token("self")(s)
 }
 
-pub fn true_keyword<I>(s: I) -> IResult<I, I>
+pub fn true_keyword<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: InputTake + Compare<&'static str>,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    tag("true")(s)
+    token("true")(s)
 }
 
-pub fn false_keyword<I>(s: I) -> IResult<I, I>
+pub fn false_keyword<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: InputTake + Compare<&'static str>,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    tag("false")(s)
+    token("false")(s)
 }
 
-pub fn extern_keyword<I>(s: I) -> IResult<I, I>
+pub fn extern_keyword<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: InputTake + Compare<&'static str>,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    tag("extern")(s)
+    token("extern")(s)
 }
 
 #[cfg(test)]
@@ -189,17 +178,21 @@ mod tests {
 
     #[test]
     fn test_var_keyword() {
-        assert_eq!(var_keyword("var"), Ok(("", "var")))
+        check("var", var_keyword, TokenSyntax::from("var"));
     }
 
     #[test]
     fn test_val_keyword() {
-        assert_eq!(val_keyword("val"), Ok(("", "val")))
+        check("val", val_keyword, TokenSyntax::from("val"));
     }
 
     #[test]
     fn test_extension_keyword() {
-        assert_eq!(extension_keyword("extension"), Ok(("", "extension")))
+        check(
+            "extension",
+            extension_keyword,
+            TokenSyntax::from("extension"),
+        );
     }
 
     #[test]
@@ -209,7 +202,7 @@ mod tests {
 
     #[test]
     fn test_while_keyword() {
-        assert_eq!(while_keyword("while"), Ok(("", "while")))
+        check("while", while_keyword, TokenSyntax::from("while"));
     }
 
     #[test]
@@ -229,17 +222,17 @@ mod tests {
 
     #[test]
     fn test_return_keyword() {
-        assert_eq!(return_keyword("return"), Ok(("", "return")))
+        check("return", return_keyword, TokenSyntax::from("return"));
     }
 
     #[test]
     fn test_init_keyword() {
-        assert_eq!(init_keyword("init"), Ok(("", "init")))
+        check("init", init_keyword, TokenSyntax::from("init"));
     }
 
     #[test]
     fn test_deinit_keyword() {
-        assert_eq!(deinit_keyword("deinit"), Ok(("", "deinit")))
+        check("deinit", deinit_keyword, TokenSyntax::from("deinit"));
     }
 
     #[test]
@@ -259,21 +252,21 @@ mod tests {
 
     #[test]
     fn test_self_keyword() {
-        assert_eq!(self_keyword("self"), Ok(("", "self")))
+        check("self", self_keyword, TokenSyntax::from("self"));
     }
 
     #[test]
     fn test_true_keyword() {
-        assert_eq!(true_keyword("true"), Ok(("", "true")))
+        check("true", true_keyword, TokenSyntax::from("true"));
     }
 
     #[test]
     fn test_false_keyword() {
-        assert_eq!(false_keyword("false"), Ok(("", "false")))
+        check("false", false_keyword, TokenSyntax::from("false"));
     }
 
     #[test]
     fn test_extern_keyword() {
-        assert_eq!(extern_keyword("extern"), Ok(("", "extern")));
+        check("extern", extern_keyword, TokenSyntax::from("extern"));
     }
 }

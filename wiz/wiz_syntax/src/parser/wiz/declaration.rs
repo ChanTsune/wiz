@@ -3,17 +3,15 @@ use crate::parser::wiz::character::{ampersand, comma};
 use crate::parser::wiz::expression::expr;
 use crate::parser::wiz::keywords::{
     as_keyword, deinit_keyword, extension_keyword, fun_keyword, init_keyword, protocol_keyword,
-    self_keyword, struct_keyword, token, use_keyword, val_keyword, var_keyword, where_keyword,
+    self_keyword, struct_keyword, use_keyword, val_keyword, var_keyword, where_keyword,
 };
-use crate::parser::wiz::lexical_structure::{
-    identifier, trivia_piece_line_ending, whitespace0, whitespace1, whitespace_without_eol0,
-};
+use crate::parser::wiz::lexical_structure::{identifier, token, whitespace0, whitespace1};
 use crate::parser::wiz::statement::stmt;
-use crate::parser::wiz::type_::{type_, type_parameters};
+use crate::parser::wiz::type_::{type_, type_parameter, type_parameters};
 use crate::syntax::block::BlockSyntax;
 use crate::syntax::declaration::fun_syntax::{
-    ArgDef, ArgDefElementSyntax, ArgDefListSyntax, FunBody, FunSyntax, SelfArgDefSyntax,
-    ValueArgDef,
+    ArgDef, ArgDefElementSyntax, ArgDefListSyntax, ExprFunBodySyntax, FunBody, FunSyntax,
+    SelfArgDefSyntax, ValueArgDef,
 };
 use crate::syntax::declaration::{
     AliasSyntax, DeclKind, DeclarationSyntax, DeinitializerSyntax, ExtensionSyntax,
@@ -22,13 +20,10 @@ use crate::syntax::declaration::{
 };
 use crate::syntax::declaration::{PackageNameElement, VarSyntax};
 use crate::syntax::token::TokenSyntax;
-use crate::syntax::type_name::{
-    TypeConstraintElementSyntax, TypeConstraintSyntax, TypeConstraintsSyntax, TypeParam,
-};
+use crate::syntax::type_name::{TypeConstraintElementSyntax, TypeConstraintsSyntax};
 use crate::syntax::Syntax;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::char;
 use nom::combinator::{map, opt};
 use nom::multi::{many0, many1};
 use nom::sequence::tuple;
@@ -57,7 +52,8 @@ where
 {
     map(
         tuple((
-            opt(tuple((annotations_syntax, whitespace0))),
+            opt(annotations_syntax),
+            whitespace0,
             alt((
                 use_decl,
                 struct_decl,
@@ -66,9 +62,9 @@ where
                 extension_decl,
             )),
         )),
-        |(a, d)| DeclarationSyntax {
-            annotations: a.map(|(a, _)| a),
-            kind: d,
+        |(a, ws, d)| DeclarationSyntax {
+            annotations: a,
+            kind: d.with_leading_trivia(ws),
         },
     )(s)
 }
@@ -86,9 +82,9 @@ where
         + Compare<&'static str>,
     <I as InputIter>::Item: AsChar + Copy,
 {
-    map(tuple((char(':'), whitespace0, type_)), |(c, ws, t)| {
+    map(tuple((token(":"), whitespace0, type_)), |(c, ws, t)| {
         TypeAnnotationSyntax {
-            colon: TokenSyntax::from(c),
+            colon: c,
             type_: t.with_leading_trivia(ws),
         }
     })(s)
@@ -143,11 +139,11 @@ where
             opt(tuple((whitespace0, struct_body_syntax))),
         )),
         |(struct_keyword, nws, name, params, body)| match body {
-            Some((_, body)) => StructSyntax {
+            Some((ws, body)) => StructSyntax {
                 struct_keyword,
                 name: TokenSyntax::from(name).with_leading_trivia(nws),
                 type_params: params.map(|(ws, p)| p.with_leading_trivia(ws)),
-                body,
+                body: body.with_leading_trivia(ws),
             },
             None => StructSyntax {
                 struct_keyword: TokenSyntax::from(struct_keyword),
@@ -160,6 +156,7 @@ where
 }
 
 // <struct_body> ::= "{" <struct_properties> "}"
+// <struct_properties> ::= (<struct_property> ("\n" <struct_property>)* "\n"?)?
 pub fn struct_body_syntax<I>(s: I) -> IResult<I, StructBodySyntax>
 where
     I: Slice<RangeFrom<usize>>
@@ -179,56 +176,25 @@ where
 {
     map(
         tuple((
-            char('{'),
+            token("{"),
+            opt(struct_property),
+            many0(tuple((whitespace1, struct_property))),
             whitespace0,
-            struct_properties,
-            whitespace0,
-            char('}'),
+            token("}"),
         )),
-        |(open, _, properties, _, close)| StructBodySyntax {
-            open: TokenSyntax::from(open),
-            properties,
-            close: TokenSyntax::from(close),
-        },
-    )(s)
-}
-
-// <struct_properties> ::= (<struct_property> ("\n" <struct_property>)* "\n"?)?
-pub fn struct_properties<I>(s: I) -> IResult<I, Vec<StructPropertySyntax>>
-where
-    I: Slice<RangeFrom<usize>>
-        + Slice<Range<usize>>
-        + InputIter
-        + Clone
-        + InputLength
-        + ToString
-        + InputTake
-        + Offset
-        + InputTakeAtPosition
-        + ExtendInto<Item = char, Extender = String>
-        + FindSubstring<&'static str>
-        + Compare<&'static str>,
-    <I as InputIter>::Item: AsChar + Copy,
-    <I as InputTakeAtPosition>::Item: AsChar,
-{
-    map(
-        opt(tuple((
-            struct_property,
-            whitespace_without_eol0,
-            many0(tuple((
-                trivia_piece_line_ending,
-                whitespace0,
-                struct_property,
-            ))),
-            whitespace0,
-        ))),
-        |o| match o {
-            None => vec![],
-            Some((p, _, ps, _)) => {
-                let mut ps: Vec<StructPropertySyntax> = ps.into_iter().map(|(_, _, p)| p).collect();
-                ps.insert(0, p);
-                ps
-            }
+        |(open, property, properties, cws, close)| StructBodySyntax {
+            open,
+            properties: {
+                let mut properties: Vec<_> = properties
+                    .into_iter()
+                    .map(|(ws, p)| p.with_leading_trivia(ws))
+                    .collect();
+                if let Some(p) = property {
+                    properties.push(p);
+                }
+                properties
+            },
+            close: close.with_leading_trivia(cws),
         },
     )(s)
 }
@@ -330,9 +296,9 @@ where
             whitespace0,
             function_body,
         )),
-        |(init, ws, args, bws, body): (I, _, _, _, _)| {
+        |(init, ws, args, bws, body)| {
             StructPropertySyntax::Init(InitializerSyntax {
-                init_keyword: TokenSyntax::from(init),
+                init_keyword: init,
                 args: args.with_leading_trivia(ws),
                 body: body.with_leading_trivia(bws),
             })
@@ -360,9 +326,9 @@ where
 {
     map(
         tuple((deinit_keyword, whitespace0, function_body)),
-        |(deinit, ws, body): (I, _, _)| {
+        |(deinit, ws, body)| {
             StructPropertySyntax::Deinit(DeinitializerSyntax {
-                deinit_keyword: TokenSyntax::from(deinit),
+                deinit_keyword: deinit,
                 body: body.with_leading_trivia(ws),
             })
         },
@@ -485,7 +451,7 @@ where
                 .into_iter()
                 .map(|(lws, e, rws, c)| ArgDefElementSyntax {
                     element: e.with_leading_trivia(lws),
-                    trailing_comma: Some(TokenSyntax::from(c).with_leading_trivia(rws)),
+                    trailing_comma: Some(c.with_leading_trivia(rws)),
                 })
                 .collect();
             if let Some((ws, e)) = element {
@@ -524,7 +490,7 @@ where
                 opt(tuple((function_value_label, whitespace1))),
                 function_value_name,
                 whitespace0,
-                char(':'),
+                token(":"),
                 whitespace0,
                 type_,
             )),
@@ -533,7 +499,7 @@ where
                     None => ValueArgDef {
                         label: None,
                         name: TokenSyntax::from(name),
-                        colon: TokenSyntax::from(colon).with_leading_trivia(cws),
+                        colon: colon.with_leading_trivia(cws),
                         type_name: typ.with_leading_trivia(ws),
                     },
                     Some((label, lws)) => ValueArgDef {
@@ -547,10 +513,10 @@ where
         ),
         map(
             tuple((opt(ampersand), whitespace0, self_keyword)),
-            |(amp, ws, s): (_, _, I)| {
+            |(amp, ws, s)| {
                 ArgDef::Self_(SelfArgDefSyntax {
-                    reference: amp.map(TokenSyntax::from),
-                    self_: TokenSyntax::from(s).with_leading_trivia(ws),
+                    reference: amp,
+                    self_: s.with_leading_trivia(ws),
                 })
             },
         ),
@@ -590,15 +556,15 @@ where
         tuple((
             where_keyword,
             whitespace1,
-            many0(tuple((whitespace0, type_constraint, whitespace0, comma))),
-            opt(tuple((whitespace0, type_constraint))),
+            many0(tuple((whitespace0, type_parameter, whitespace0, comma))),
+            opt(tuple((whitespace0, type_parameter))),
         )),
         |(where_keyword, ws, t, ts)| {
             let mut type_constraints: Vec<_> = t
                 .into_iter()
                 .map(|(lws, ta, rws, c)| TypeConstraintElementSyntax {
                     element: ta.with_leading_trivia(lws),
-                    trailing_comma: Some(TokenSyntax::from(c).with_leading_trivia(rws)),
+                    trailing_comma: Some(c.with_leading_trivia(rws)),
                 })
                 .collect();
             if let Some((ws, ts)) = ts {
@@ -615,31 +581,6 @@ where
                 where_keyword,
                 type_constraints,
             }
-        },
-    )(s)
-}
-
-pub fn type_constraint<I>(s: I) -> IResult<I, TypeParam>
-where
-    I: Slice<RangeFrom<usize>>
-        + Slice<Range<usize>>
-        + InputIter
-        + Clone
-        + InputLength
-        + ToString
-        + InputTake
-        + FindSubstring<&'static str>
-        + Compare<&'static str>,
-    <I as InputIter>::Item: AsChar + Copy,
-{
-    map(
-        tuple((identifier, whitespace0, char(':'), whitespace0, type_)),
-        |(id, lws, sep, rws, typ)| TypeParam {
-            name: TokenSyntax::from(id),
-            type_constraint: Some(TypeConstraintSyntax {
-                sep: TokenSyntax::from(sep).with_leading_trivia(lws),
-                constraint: typ.with_leading_trivia(rws),
-            }),
         },
     )(s)
 }
@@ -663,8 +604,11 @@ where
 {
     alt((
         map(block, FunBody::Block),
-        map(tuple((char('='), whitespace0, expr)), |(_, _, ex)| {
-            FunBody::Expr(ex)
+        map(tuple((token("="), whitespace0, expr)), |(equal, ws, ex)| {
+            FunBody::Expr(ExprFunBodySyntax {
+                equal,
+                expr: ex.with_leading_trivia(ws),
+            })
         }),
     ))(s)
 }
@@ -688,18 +632,18 @@ where
 {
     map(
         tuple((
-            char('{'),
+            token("{"),
             many0(tuple((whitespace0, stmt))),
             whitespace0,
-            char('}'),
+            token("}"),
         )),
         |(open, stmts, cws, close)| BlockSyntax {
-            open: TokenSyntax::from(open),
+            open,
             body: stmts
                 .into_iter()
                 .map(|(ws, s)| s.with_leading_trivia(ws))
                 .collect(),
-            close: TokenSyntax::from(close).with_leading_trivia(cws),
+            close: close.with_leading_trivia(cws),
         },
     )(s)
 }
@@ -752,18 +696,16 @@ where
             identifier,
             opt(tuple((whitespace0, type_annotation_syntax))),
             whitespace0,
-            char('='),
+            token("="),
             whitespace0,
             expr,
         )),
-        |(mutability_keyword, ws, name, t, elws, eq, erws, e): (I, _, _, _, _, _, _, _)| {
-            VarSyntax {
-                mutability_keyword: TokenSyntax::from(mutability_keyword),
-                name: TokenSyntax::from(name).with_leading_trivia(ws),
-                type_annotation: t.map(|(ws, t)| t.with_leading_trivia(ws)),
-                equal: TokenSyntax::from(eq).with_leading_trivia(elws),
-                value: e.with_leading_trivia(erws),
-            }
+        |(mutability_keyword, ws, name, t, elws, eq, erws, e)| VarSyntax {
+            mutability_keyword,
+            name: TokenSyntax::from(name).with_leading_trivia(ws),
+            type_annotation: t.map(|(ws, t)| t.with_leading_trivia(ws)),
+            equal: eq.with_leading_trivia(elws),
+            value: e.with_leading_trivia(erws),
         },
     )(s)
 }
@@ -844,18 +786,15 @@ where
         + Compare<&'static str>,
     <I as InputIter>::Item: AsChar,
 {
-    map(
-        many1(tuple((identifier, tag("::")))),
-        |i: Vec<(String, I)>| PackageName {
-            names: i
-                .into_iter()
-                .map(|(name, sep)| PackageNameElement {
-                    name: TokenSyntax::from(name),
-                    sep: TokenSyntax::from(sep),
-                })
-                .collect(),
-        },
-    )(s)
+    map(many1(tuple((identifier, token("::")))), |i| PackageName {
+        names: i
+            .into_iter()
+            .map(|(name, sep)| PackageNameElement {
+                name: TokenSyntax::from(name),
+                sep,
+            })
+            .collect(),
+    })(s)
 }
 
 //endregion
@@ -904,17 +843,17 @@ where
             opt(tuple((whitespace0, type_parameters))),
             whitespace1,
             type_,
-            opt(tuple((whitespace0, char(':'), whitespace0, type_))),
+            opt(tuple((whitespace0, token(":"), whitespace0, type_))),
             opt(tuple((whitespace0, type_constraints))),
             whitespace0,
             struct_body_syntax,
         )),
         |(kw, tp, ws, n, protocol, tc, ws1, body)| ExtensionSyntax {
-            extension_keyword: TokenSyntax::from(kw),
+            extension_keyword: kw,
             type_params: tp.map(|(t, tp)| tp.with_leading_trivia(t)),
             name: n.with_leading_trivia(ws),
             protocol_extension: protocol.map(|(lws, colon, tws, typ)| ProtocolConformSyntax {
-                colon: TokenSyntax::from(colon).with_leading_trivia(lws),
+                colon: colon.with_leading_trivia(lws),
                 protocol: typ.with_leading_trivia(tws),
             }),
             type_constraints: tc.map(|(t, tc)| tc.with_leading_trivia(t)),
@@ -929,11 +868,12 @@ mod tests {
     use crate::parser::tests::check;
     use crate::parser::wiz::declaration::{
         block, function_body, function_decl, member_function, package_name, stored_property,
-        struct_properties, struct_syntax, type_constraint, type_constraints, use_syntax, var_decl,
+        struct_syntax, type_constraints, use_syntax, var_decl,
     };
     use crate::syntax::block::BlockSyntax;
     use crate::syntax::declaration::fun_syntax::{
-        ArgDef, ArgDefElementSyntax, ArgDefListSyntax, FunBody, FunSyntax, ValueArgDef,
+        ArgDef, ArgDefElementSyntax, ArgDefListSyntax, ExprFunBodySyntax, FunBody, FunSyntax,
+        ValueArgDef,
     };
     use crate::syntax::declaration::{
         AliasSyntax, DeclKind, PackageName, StoredPropertySyntax, StructBodySyntax,
@@ -950,44 +890,6 @@ mod tests {
         TypeName, TypeParam,
     };
     use crate::syntax::Syntax;
-
-    #[test]
-    fn test_struct_properties() {
-        check(
-            r"val a: Int64
-                 val b: Int64
-            ",
-            struct_properties,
-            vec![
-                StructPropertySyntax::StoredProperty(StoredPropertySyntax {
-                    mutability_keyword: TokenSyntax::from("val"),
-                    name: TokenSyntax::from("a")
-                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    type_: TypeAnnotationSyntax {
-                        colon: TokenSyntax::from(":"),
-                        type_: TypeName::Simple(SimpleTypeName {
-                            name: TokenSyntax::from("Int64"),
-                            type_args: None,
-                        })
-                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    },
-                }),
-                StructPropertySyntax::StoredProperty(StoredPropertySyntax {
-                    mutability_keyword: TokenSyntax::from("val"),
-                    name: TokenSyntax::from("b")
-                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    type_: TypeAnnotationSyntax {
-                        colon: TokenSyntax::from(":"),
-                        type_: TypeName::Simple(SimpleTypeName {
-                            name: TokenSyntax::from("Int64"),
-                            type_args: None,
-                        })
-                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                    },
-                }),
-            ],
-        );
-    }
 
     #[test]
     fn test_stored_property() {
@@ -1030,9 +932,7 @@ mod tests {
     #[test]
     fn test_struct_syntax() {
         check(
-            r##"struct A {
-        var a: String
-        }"##,
+            r"struct A {var a: String}",
             struct_syntax,
             StructSyntax {
                 struct_keyword: TokenSyntax::from("struct"),
@@ -1040,7 +940,8 @@ mod tests {
                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                 type_params: None,
                 body: StructBodySyntax {
-                    open: TokenSyntax::from("{"),
+                    open: TokenSyntax::from("{")
+                        .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
                     properties: vec![StructPropertySyntax::StoredProperty(StoredPropertySyntax {
                         mutability_keyword: TokenSyntax::from("var"),
                         name: TokenSyntax::from("a")
@@ -1182,9 +1083,11 @@ mod tests {
         check(
             "= name",
             function_body,
-            FunBody::Expr(Expr::Name(NameExprSyntax::simple(TokenSyntax::from(
-                "name",
-            )))),
+            FunBody::Expr(ExprFunBodySyntax {
+                equal: TokenSyntax::from("="),
+                expr: Expr::Name(NameExprSyntax::simple(TokenSyntax::from("name")))
+                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
+            }),
         )
     }
 
@@ -1334,25 +1237,6 @@ mod tests {
                 value: Expr::Literal(LiteralSyntax::Integer(TokenSyntax::from("1")))
                     .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
             }),
-        );
-    }
-
-    #[test]
-    fn test_type_constraint() {
-        check(
-            "T: Printable",
-            type_constraint,
-            TypeParam {
-                name: TokenSyntax::from("T"),
-                type_constraint: Some(TypeConstraintSyntax {
-                    sep: TokenSyntax::from(":"),
-                    constraint: TypeName::Simple(SimpleTypeName {
-                        name: TokenSyntax::from("Printable"),
-                        type_args: None,
-                    })
-                    .with_leading_trivia(Trivia::from(TriviaPiece::Spaces(1))),
-                }),
-            },
         );
     }
 

@@ -4,15 +4,15 @@ use std::io;
 
 #[derive(Debug)]
 pub enum ParseError {
-    ParseError(String),
+    SyntaxError(String),
     IOError(io::Error),
 }
 
 impl Display for ParseError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            ParseError::ParseError(e) => f.write_str(e),
-            ParseError::IOError(e) => f.write_str(&e.to_string()),
+            Self::SyntaxError(e) => f.write_str(e),
+            Self::IOError(e) => f.write_str(&e.to_string()),
         }
     }
 }
@@ -21,7 +21,7 @@ impl Error for ParseError {}
 
 impl From<String> for ParseError {
     fn from(str: String) -> Self {
-        Self::ParseError(str)
+        Self::SyntaxError(str)
     }
 }
 

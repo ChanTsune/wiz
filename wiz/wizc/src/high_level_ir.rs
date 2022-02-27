@@ -38,7 +38,6 @@ use wiz_syntax::syntax::expression::{
 };
 use wiz_syntax::syntax::file::{FileSyntax, SourceSet, WizFile};
 use wiz_syntax::syntax::literal::LiteralSyntax;
-use wiz_syntax::syntax::name_space::NameSpaceSyntax;
 use wiz_syntax::syntax::statement::{
     AssignmentStmt, ForLoopSyntax, LoopStmt, Stmt, WhileLoopSyntax,
 };
@@ -153,12 +152,14 @@ impl Ast2HLIR {
 
     pub fn loop_stmt(&self, l: LoopStmt) -> TypedLoopStmt {
         match l {
-            LoopStmt::While(WhileLoopSyntax { condition, block }) => {
-                TypedLoopStmt::While(TypedWhileLoopStmt {
-                    condition: self.expr(condition),
-                    block: self.block(block),
-                })
-            }
+            LoopStmt::While(WhileLoopSyntax {
+                while_keyword: _,
+                condition,
+                block,
+            }) => TypedLoopStmt::While(TypedWhileLoopStmt {
+                condition: self.expr(condition),
+                block: self.block(block),
+            }),
             LoopStmt::For(ForLoopSyntax {
                 for_keyword: _,
                 values,
@@ -238,7 +239,7 @@ impl Ast2HLIR {
     pub fn fun_body(&self, body: FunBody) -> TypedFunBody {
         match body {
             FunBody::Block(block) => TypedFunBody::Block(self.block(block)),
-            FunBody::Expr(expr) => TypedFunBody::Expr(self.expr(expr)),
+            FunBody::Expr(expr) => TypedFunBody::Expr(self.expr(expr.expr)),
         }
     }
 
@@ -380,6 +381,7 @@ impl Ast2HLIR {
                     }),
                 }))
             }
+            TypeName::Parenthesized(p) => self.type_(*p.type_name),
         }
     }
 
@@ -626,6 +628,7 @@ impl Ast2HLIR {
             Expr::Lambda(l) => TypedExpr::Lambda(self.lambda_syntax(l)),
             Expr::Return(r) => TypedExpr::Return(self.return_syntax(r)),
             Expr::TypeCast(t) => TypedExpr::TypeCast(self.type_cast(t)),
+            Expr::Parenthesized(p) => self.expr(*p.expr),
         }
     }
 
@@ -811,7 +814,7 @@ impl Ast2HLIR {
             .elements
             .into_iter()
             .map(|a| TypedCallArg {
-                label: a.element.label.map(|l| l.token()),
+                label: a.element.label.map(|l| l.label.token()),
                 arg: Box::new(self.expr(*a.element.arg)),
                 is_vararg: a.element.asterisk.is_some(),
             })

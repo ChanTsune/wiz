@@ -1,5 +1,4 @@
-use crate::parser::wiz::keywords::token;
-use crate::parser::wiz::lexical_structure::identifier;
+use crate::parser::wiz::lexical_structure::{identifier, token};
 use crate::syntax::name_space::{NameSpaceElementSyntax, NameSpaceSyntax};
 use crate::syntax::token::TokenSyntax;
 use nom::combinator::map;
