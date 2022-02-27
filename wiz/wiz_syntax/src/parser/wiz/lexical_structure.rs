@@ -324,7 +324,9 @@ pub fn carriage_returns<I>(s: I) -> IResult<I, TriviaPiece>
 where
     I: InputTake + InputLength + Compare<&'static str> + ToString + Clone,
 {
-    map(many1(carriage_return), |l| TriviaPiece::CarriageReturns(l.len() as i64))(s)
+    map(many1(carriage_return), |l| {
+        TriviaPiece::CarriageReturns(l.len() as i64)
+    })(s)
 }
 
 pub fn carriage_return_line_feeds<I>(s: I) -> IResult<I, TriviaPiece>
