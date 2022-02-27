@@ -126,10 +126,7 @@ where
                 TypeName::NameSpaced(Box::new(UserTypeName {
                     name_space: name_space
                         .into_iter()
-                        .map(|(simple_type, sep)| TypeNameSpaceElementSyntax {
-                            simple_type,
-                            sep,
-                        })
+                        .map(|(simple_type, sep)| TypeNameSpaceElementSyntax { simple_type, sep })
                         .collect(),
                     type_name,
                 }))
