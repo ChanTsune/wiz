@@ -54,12 +54,7 @@ where
 
 pub fn floating_point_literal<I>(s: I) -> IResult<I, LiteralSyntax>
 where
-    I: InputTake
-        + Compare<&'static str>
-        + InputIter
-        + Clone
-        + ToString
-        + InputTakeAtPosition,
+    I: InputTake + Compare<&'static str> + InputIter + Clone + ToString + InputTakeAtPosition,
     <I as InputIter>::Item: AsChar,
     <I as InputTakeAtPosition>::Item: AsChar,
 {
