@@ -147,7 +147,7 @@ mod tests {
 
     #[test]
     fn test_form_feed() {
-        check("\x0c", form_feed, TokenSyntax::from( "\x0c"));
+        check("\x0c", form_feed, TokenSyntax::from("\x0c"));
     }
 
     #[test]
