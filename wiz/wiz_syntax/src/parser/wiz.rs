@@ -20,7 +20,7 @@ pub mod statement;
 pub mod type_;
 
 pub fn parse_from_string(src: &str) -> Result<WizFile> {
-    return match file(Span::from(src)) {
+    match file(Span::from(src)) {
         Ok((s, f)) => {
             if !s.is_empty() {
                 let location = Location::from(&s);
@@ -33,7 +33,7 @@ pub fn parse_from_string(src: &str) -> Result<WizFile> {
             }
         }
         Err(_) => Err(ParseError::from(String::new())),
-    };
+    }
 }
 
 pub fn parse_from_file(mut file: File) -> Result<WizFile> {
