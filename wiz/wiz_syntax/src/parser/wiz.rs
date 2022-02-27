@@ -24,7 +24,7 @@ pub fn parse_from_string(string: &str) -> Result<WizFile> {
         Ok((s, f)) => {
             if !s.is_empty() {
                 let location = Location::from(&s);
-                return Err(ParseError::ParseError(get_error_location_src(
+                return Err(ParseError::SyntaxError(get_error_location_src(
                     string, &location,
                 )));
             }
