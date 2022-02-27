@@ -901,11 +901,11 @@ where
     <I as InputTakeAtPosition>::Item: AsChar,
 {
     map(
-        tuple((char('{'), many0(stmt), char('}'))),
+        tuple((token("{"), many0(stmt), token("}"))),
         |(open, stms, close)| LambdaSyntax {
-            open: TokenSyntax::from(open),
+            open,
             stmts: stms,
-            close: TokenSyntax::from(close),
+            close,
         },
     )(s)
 }
