@@ -143,11 +143,11 @@ where
     token("false")(s)
 }
 
-pub fn extern_keyword<I>(s: I) -> IResult<I, I>
+pub fn extern_keyword<I>(s: I) -> IResult<I, TokenSyntax>
 where
-    I: InputTake + Compare<&'static str>,
+    I: InputTake + Compare<&'static str> + ToString,
 {
-    tag("extern")(s)
+    token("extern")(s)
 }
 
 #[cfg(test)]
@@ -267,6 +267,6 @@ mod tests {
 
     #[test]
     fn test_extern_keyword() {
-        assert_eq!(extern_keyword("extern"), Ok(("", "extern")));
+        check("extern", extern_keyword, TokenSyntax::from("extern"));
     }
 }
