@@ -10,6 +10,8 @@ use std::io::Write;
 use std::option::Option::Some;
 use std::path::{Path, PathBuf};
 use std::{env, fs, result};
+use std::ffi::CString;
+use llvm_sys::target_machine::LLVMGetDefaultTargetTriple;
 use wiz_session::Session;
 use wiz_syntax::parser;
 use wiz_syntax::parser::wiz::{parse_from_file_path, read_package_from_path};
@@ -203,6 +205,8 @@ fn run_compiler(config: Config) -> result::Result<(), Box<dyn Error>> {
 
     if let Some(target_triple) = config.target_triple() {
         codegen.set_target_triple(target_triple);
+    } else {
+        codegen.set_target_triple(&String::from(unsafe { CString::from_raw(LLVMGetDefaultTargetTriple()).to_string_lossy() }))
     }
 
     let mut out_path = out_dir;
