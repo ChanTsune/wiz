@@ -8,7 +8,6 @@ use inkwell::context::Context;
 use inkwell::targets::{TargetMachine, TargetTriple};
 use std::error::Error;
 use std::io::Write;
-use std::option::Option::Some;
 use std::path::{Path, PathBuf};
 use std::{env, fs, result};
 use wiz_session::Session;
