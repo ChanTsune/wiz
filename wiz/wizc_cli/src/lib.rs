@@ -23,7 +23,11 @@ pub fn app(name: &str) -> App {
         )
         .arg(short("L", 'L').takes_value(true).multiple_occurrences(true))
         .arg(long("library").takes_value(true).multiple_occurrences(true))
-        .arg(long("emit").takes_value(true).possible_values(&["llvm-ir", "object"]))
+        .arg(
+            long("emit")
+                .takes_value(true)
+                .possible_values(&["llvm-ir", "object"]),
+        )
 }
 
 fn position(name: &str) -> Arg {
