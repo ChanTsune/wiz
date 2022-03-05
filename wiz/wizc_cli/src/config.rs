@@ -14,6 +14,7 @@ pub struct Config<'ctx> {
     l: Option<&'ctx str>,
     target_triple: Option<&'ctx str>,
     libraries: Vec<&'ctx str>,
+    emit: Option<&'ctx str>,
 }
 
 impl<'ctx> Config<'ctx> {
@@ -48,6 +49,10 @@ impl<'ctx> Config<'ctx> {
     pub fn libraries(&self) -> Vec<PathBuf> {
         self.libraries.iter().map(PathBuf::from).collect()
     }
+
+    pub fn emit(&self) -> Option<&'ctx str> {
+        self.emit
+    }
 }
 
 impl<'ctx> From<&'ctx ArgMatches> for Config<'ctx> {
@@ -62,6 +67,7 @@ impl<'ctx> From<&'ctx ArgMatches> for Config<'ctx> {
             l: None,
             target_triple: matches.value_of("target-triple"),
             libraries: matches.values_of("library").unwrap_or_default().collect(),
+            emit: matches.value_of("emit"),
         }
     }
 }

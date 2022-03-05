@@ -193,6 +193,8 @@ fn run_compiler(config: Config) -> result::Result<(), Box<dyn Error>> {
 
     codegen.file(mlfile.clone());
 
+    let emit = config.emit().unwrap_or("llvm-ir");
+
     let output = if let Some(output) = output {
         String::from(output)
     } else {
@@ -212,11 +214,13 @@ fn run_compiler(config: Config) -> result::Result<(), Box<dyn Error>> {
 
     println!("Output Path -> {:?}", out_path);
 
-    codegen.print_to_file(&out_path)?;
-    out_path.set_extension("o");
-    codegen.write_as_object(&out_path)?;
-    out_path.set_extension("s");
-    codegen.write_as_assembly(&out_path)?;
-
+    match emit {
+        "llvm-ir" => {
+            codegen.print_to_file(&out_path)?;
+        }
+        _ => {
+            codegen.write_as_object(&out_path)?;
+        }
+    };
     Ok(())
 }
