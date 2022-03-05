@@ -351,13 +351,13 @@ impl ResolverContext {
         for (is_global, mut u) in used_ns {
             if u.last().is_some() && u.last().unwrap() == "*" {
                 let _ = u.pop();
-                if let Result::Ok(n) = self.get_namespace(u.clone()) {
+                if let Ok(n) = self.get_namespace(u.clone()) {
                     env.use_values_from(n);
                 } else if !is_global {
                     panic!("Can not resolve name space {:?}", u);
                 }
             } else {
-                if let Result::Ok(n) = self.get_namespace(u.clone()) {
+                if let Ok(n) = self.get_namespace(u.clone()) {
                     let name = u.pop().unwrap();
                     env.names.insert(name, (u, EnvValue::from(n.clone())));
                 } else {
@@ -557,7 +557,7 @@ impl ResolverContext {
             | TypedBinaryOperator::GrateThan
             | TypedBinaryOperator::LessThanEqual
             | TypedBinaryOperator::LessThan
-            | TypedBinaryOperator::NotEqual => Result::Ok(TypedType::bool()),
+            | TypedBinaryOperator::NotEqual => Ok(TypedType::bool()),
             TypedBinaryOperator::InfixFunctionCall(op) => {
                 todo!("InfixFunctionCall => {}", op)
             }
@@ -580,7 +580,7 @@ impl ResolverContext {
     }
 
     fn full_value_type_name(&self, type_: TypedValueType) -> Result<TypedValueType> {
-        Result::Ok(match type_ {
+        Ok(match type_ {
             TypedValueType::Value(t) => TypedValueType::Value(self.full_named_value_type_name(t)?),
             TypedValueType::Array(_, _) => {
                 todo!()
@@ -602,7 +602,7 @@ impl ResolverContext {
         type_: TypedNamedValueType,
     ) -> Result<TypedNamedValueType> {
         let env = self.get_current_name_environment();
-        Result::Ok(match type_.package {
+        Ok(match type_.package {
             TypedPackage::Raw(p) => {
                 if p.names.is_empty() {
                     let (ns, t) =
@@ -669,7 +669,7 @@ impl ResolverContext {
         if typ.is_self() {
             self.resolve_current_type()
         } else {
-            Result::Ok(match typ {
+            Ok(match typ {
                 TypedType::Value(v) => TypedType::Value(self.full_value_type_name(v)?),
                 TypedType::Type(v) => TypedType::Type(Box::new(self.full_type_name(*v)?)),
                 TypedType::Self_ => self.resolve_current_type()?,
@@ -678,7 +678,7 @@ impl ResolverContext {
                         .arguments
                         .into_iter()
                         .map(|a| {
-                            Result::Ok(TypedArgType {
+                            Ok(TypedArgType {
                                 label: a.label,
                                 typ: self.full_type_name(a.typ)?,
                             })

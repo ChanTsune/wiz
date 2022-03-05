@@ -5,9 +5,9 @@ use crate::high_level_ir::{ast2hlir, Ast2HLIR};
 use crate::llvm_ir::codegen::CodeGen;
 use crate::middle_level_ir::{hlir2mlir, HLIR2MLIR};
 use inkwell::context::Context;
+use inkwell::targets::{TargetMachine, TargetTriple};
 use std::error::Error;
 use std::io::Write;
-use std::option::Option::Some;
 use std::path::{Path, PathBuf};
 use std::{env, fs, result};
 use wiz_session::Session;
@@ -193,6 +193,8 @@ fn run_compiler(config: Config) -> result::Result<(), Box<dyn Error>> {
 
     codegen.file(mlfile.clone());
 
+    let emit = config.emit().unwrap_or("llvm-ir");
+
     let output = if let Some(output) = output {
         String::from(output)
     } else {
@@ -202,7 +204,9 @@ fn run_compiler(config: Config) -> result::Result<(), Box<dyn Error>> {
     };
 
     if let Some(target_triple) = config.target_triple() {
-        codegen.set_target_triple(target_triple);
+        codegen.set_target_triple(&TargetTriple::create(target_triple));
+    } else {
+        codegen.set_target_triple(&TargetMachine::get_default_triple())
     }
 
     let mut out_path = out_dir;
@@ -210,7 +214,13 @@ fn run_compiler(config: Config) -> result::Result<(), Box<dyn Error>> {
 
     println!("Output Path -> {:?}", out_path);
 
-    codegen.print_to_file(out_path)?;
-
+    match emit {
+        "llvm-ir" => {
+            codegen.print_to_file(&out_path)?;
+        }
+        _ => {
+            codegen.write_as_object(&out_path)?;
+        }
+    };
     Ok(())
 }

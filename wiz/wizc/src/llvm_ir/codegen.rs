@@ -5,7 +5,7 @@ use inkwell::context::Context;
 use inkwell::execution_engine::ExecutionEngine;
 use inkwell::module::Module;
 use inkwell::support::LLVMString;
-use inkwell::targets::TargetTriple;
+use inkwell::targets::{CodeModel, FileType, RelocMode, Target, TargetTriple};
 use inkwell::types::{AnyType, AnyTypeEnum, BasicMetadataTypeEnum, BasicType, BasicTypeEnum};
 use inkwell::values::{
     AnyValue, AnyValueEnum, BasicMetadataValueEnum, BasicValueEnum, FunctionValue,
@@ -1093,14 +1093,47 @@ impl<'ctx> CodeGen<'ctx> {
     }
 
     /// Set Target Triple
-    pub fn set_target_triple(&mut self, triple: &str) {
-        let target_triple = TargetTriple::create(triple);
-        self.module.set_triple(&target_triple)
+    pub fn set_target_triple(&mut self, triple: &TargetTriple) {
+        self.module.set_triple(triple)
     }
 
     /// Write LLVM IR to file to the given path.
     pub fn print_to_file<P: AsRef<Path>>(&self, path: P) -> Result<(), LLVMString> {
         self.module.print_to_file(path)
+    }
+
+    /// Write Object file to given path.
+    pub fn write_as_object<P: AsRef<Path>>(&self, path: P) -> Result<(), LLVMString> {
+        let triple = self.module.get_triple();
+        let target = Target::from_triple(&triple)?;
+        let target_machine = target
+            .create_target_machine(
+                &triple,
+                "generic",
+                "",
+                OptimizationLevel::Default,
+                RelocMode::Default,
+                CodeModel::Default,
+            )
+            .unwrap();
+        target_machine.write_to_file(&self.module, FileType::Object, path.as_ref())
+    }
+
+    /// Write Assembly to given path.
+    pub fn write_as_assembly<P: AsRef<Path>>(&self, path: P) -> Result<(), LLVMString> {
+        let triple = self.module.get_triple();
+        let target = Target::from_triple(&triple)?;
+        let target_machine = target
+            .create_target_machine(
+                &triple,
+                "generic",
+                "",
+                OptimizationLevel::Default,
+                RelocMode::Default,
+                CodeModel::Default,
+            )
+            .unwrap();
+        target_machine.write_to_file(&self.module, FileType::Assembly, path.as_ref())
     }
 
     fn ml_type_to_type(&self, ml_type: MLValueType) -> AnyTypeEnum<'ctx> {
