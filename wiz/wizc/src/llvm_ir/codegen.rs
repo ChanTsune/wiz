@@ -1093,9 +1093,8 @@ impl<'ctx> CodeGen<'ctx> {
     }
 
     /// Set Target Triple
-    pub fn set_target_triple(&mut self, triple: &str) {
-        let target_triple = TargetTriple::create(triple);
-        self.module.set_triple(&target_triple)
+    pub fn set_target_triple(&mut self, triple: &TargetTriple) {
+        self.module.set_triple(triple)
     }
 
     /// Write LLVM IR to file to the given path.
