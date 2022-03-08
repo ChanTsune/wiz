@@ -1,15 +1,20 @@
 use crate::parser::wiz::character::{ampersand, comma};
 use crate::parser::wiz::lexical_structure::{identifier, token, whitespace0};
 use crate::syntax::token::TokenSyntax;
-use crate::syntax::type_name::{ArrayTypeSyntax, DecoratedTypeName, ParenthesizedTypeName, SimpleTypeName, TypeArgumentElementSyntax, TypeArgumentListSyntax, TypeConstraintSyntax, TypeName, TypeNameSpaceElementSyntax, TypeParam, TypeParameterElementSyntax, TypeParameterListSyntax, UserTypeName};
+use crate::syntax::type_name::{
+    ArrayTypeSyntax, DecoratedTypeName, ParenthesizedTypeName, SimpleTypeName,
+    TypeArgumentElementSyntax, TypeArgumentListSyntax, TypeConstraintSyntax, TypeName,
+    TypeNameSpaceElementSyntax, TypeParam, TypeParameterElementSyntax, TypeParameterListSyntax,
+    UserTypeName,
+};
 use crate::syntax::Syntax;
 use nom::branch::alt;
+use nom::character::complete::anychar;
 use nom::combinator::{map, opt};
 use nom::multi::{many0, many1};
 use nom::sequence::tuple;
 use nom::{AsChar, Compare, FindSubstring, IResult, InputIter, InputLength, InputTake, Slice};
 use std::ops::{Range, RangeFrom};
-use nom::character::complete::{anychar};
 
 pub fn type_<I>(s: I) -> IResult<I, TypeName>
 where
@@ -295,8 +300,8 @@ where
 }
 
 pub fn array_type_syntax<I>(s: I) -> IResult<I, ArrayTypeSyntax>
-    where
-        I: Slice<RangeFrom<usize>>
+where
+    I: Slice<RangeFrom<usize>>
         + Slice<Range<usize>>
         + InputIter
         + InputTake
@@ -305,18 +310,28 @@ pub fn array_type_syntax<I>(s: I) -> IResult<I, ArrayTypeSyntax>
         + ToString
         + FindSubstring<&'static str>
         + Compare<&'static str>,
-        <I as InputIter>::Item: AsChar + Copy,
+    <I as InputIter>::Item: AsChar + Copy,
 {
-    map(tuple((token("["),whitespace0,type_, whitespace0,token(";"),whitespace0,many1(anychar), whitespace0 ,token("]"))),
-        |(open, ws1, typ, ws2, semi, ws3, size, ws4, close)| {
-        ArrayTypeSyntax {
+    map(
+        tuple((
+            token("["),
+            whitespace0,
+            type_,
+            whitespace0,
+            token(";"),
+            whitespace0,
+            many1(anychar),
+            whitespace0,
+            token("]"),
+        )),
+        |(open, ws1, typ, ws2, semi, ws3, size, ws4, close)| ArrayTypeSyntax {
             open,
             type_: typ.with_leading_trivia(ws1),
             semicolon: semi.with_leading_trivia(ws2),
             size: TokenSyntax::from(size.into_iter().collect::<String>()).with_leading_trivia(ws3),
-            close: close.with_leading_trivia(ws4)
-        }
-    })(s)
+            close: close.with_leading_trivia(ws4),
+        },
+    )(s)
 }
 
 #[cfg(test)]
