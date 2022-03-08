@@ -296,6 +296,7 @@ pub struct ArrayTypeSyntax {
     pub open: TokenSyntax,
     pub type_: TypeName,
     pub semicolon: TokenSyntax,
+    pub size: TokenSyntax,
     pub close: TokenSyntax,
 }
 
@@ -305,6 +306,7 @@ impl Syntax for ArrayTypeSyntax {
             open: self.open.with_leading_trivia(trivia),
             type_: self.type_,
             semicolon: self.semicolon,
+            size: self.size,
             close: self.close,
         }
     }
@@ -314,6 +316,7 @@ impl Syntax for ArrayTypeSyntax {
             open: self.open,
             type_: self.type_,
             semicolon: self.semicolon,
+            size: self.size,
             close: self.close.with_trailing_trivia(trivia),
         }
     }

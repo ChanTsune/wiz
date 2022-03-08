@@ -382,6 +382,7 @@ impl Ast2HLIR {
                 }))
             }
             TypeName::Parenthesized(p) => self.type_(*p.type_name),
+            TypeName::Array(a) => TypedType::Value(TypedValueType::Array(Box::new(self.type_(a.type_)), a.size.token().parse().unwrap()))
         }
     }
 
