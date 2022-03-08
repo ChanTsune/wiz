@@ -1139,7 +1139,7 @@ impl<'ctx> CodeGen<'ctx> {
     fn ml_type_to_type(&self, ml_type: MLValueType) -> AnyTypeEnum<'ctx> {
         match ml_type {
             MLValueType::Primitive(name) => match name {
-                MLPrimitiveType::Unit => AnyTypeEnum::from(self.context.void_type()),
+                MLPrimitiveType::Unit | MLPrimitiveType::Noting => AnyTypeEnum::from(self.context.void_type()),
                 MLPrimitiveType::Int8 | MLPrimitiveType::UInt8 => {
                     AnyTypeEnum::from(self.context.i8_type())
                 }
