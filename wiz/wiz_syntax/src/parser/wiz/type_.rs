@@ -9,7 +9,7 @@ use crate::syntax::type_name::{
 };
 use crate::syntax::Syntax;
 use nom::branch::alt;
-use nom::character::complete::anychar;
+use nom::character::complete::char;
 use nom::combinator::{map, opt};
 use nom::multi::{many0, many1};
 use nom::sequence::tuple;
@@ -320,7 +320,7 @@ where
             whitespace0,
             token(";"),
             whitespace0,
-            many1(anychar),
+            many1(alt((char('0'),char('1'),char('2'),char('3'),char('4'),char('5'),char('6'),char('7'),char('8'),char('9')))),
             whitespace0,
             token("]"),
         )),
@@ -337,14 +337,10 @@ where
 #[cfg(test)]
 mod tests {
     use crate::parser::tests::check;
-    use crate::parser::wiz::type_::{decorated_type, type_parameter, type_parameters, user_type};
+    use crate::parser::wiz::type_::{array_type_syntax, decorated_type, type_parameter, type_parameters, user_type};
     use crate::syntax::token::TokenSyntax;
     use crate::syntax::trivia::{Trivia, TriviaPiece};
-    use crate::syntax::type_name::{
-        DecoratedTypeName, SimpleTypeName, TypeConstraintSyntax, TypeName,
-        TypeNameSpaceElementSyntax, TypeParam, TypeParameterElementSyntax, TypeParameterListSyntax,
-        UserTypeName,
-    };
+    use crate::syntax::type_name::{ArrayTypeSyntax, DecoratedTypeName, SimpleTypeName, TypeConstraintSyntax, TypeName, TypeNameSpaceElementSyntax, TypeParam, TypeParameterElementSyntax, TypeParameterListSyntax, UserTypeName};
     use crate::syntax::Syntax;
 
     #[test]
@@ -619,5 +615,16 @@ mod tests {
                 close: TokenSyntax::from(">"),
             },
         );
+    }
+
+    #[test]
+    fn test_array_type_syntax() {
+        check("[Int64;12]", array_type_syntax, ArrayTypeSyntax {
+            open: TokenSyntax::from("["),
+            type_: TypeName::Simple(SimpleTypeName::from("Int64")),
+            semicolon: TokenSyntax::from(";"),
+            size: TokenSyntax::from("12"),
+            close: TokenSyntax::from("]"),
+        });
     }
 }
