@@ -582,8 +582,8 @@ impl ResolverContext {
     fn full_value_type_name(&self, type_: TypedValueType) -> Result<TypedValueType> {
         Ok(match type_ {
             TypedValueType::Value(t) => TypedValueType::Value(self.full_named_value_type_name(t)?),
-            TypedValueType::Array(_, _) => {
-                todo!()
+            TypedValueType::Array(a, n) => {
+                TypedValueType::Array(Box::new(self.full_type_name(*a)?), n)
             }
             TypedValueType::Tuple(_) => {
                 todo!()
