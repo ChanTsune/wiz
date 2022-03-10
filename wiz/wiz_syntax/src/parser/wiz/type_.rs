@@ -33,6 +33,7 @@ where
         parenthesized_type,
         map(decorated_type, |t| TypeName::Decorated(Box::new(t))),
         type_reference,
+        map(array_type_syntax, |a| TypeName::Array(Box::new(a))),
         // function_type,
     ))(s)
 }
