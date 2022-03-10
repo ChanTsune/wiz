@@ -9,6 +9,7 @@ pub enum TypeName {
     Simple(SimpleTypeName),
     Decorated(Box<DecoratedTypeName>),
     Parenthesized(ParenthesizedTypeName),
+    Array(Box<ArrayTypeSyntax>),
 }
 
 impl Syntax for TypeName {
@@ -20,6 +21,7 @@ impl Syntax for TypeName {
             TypeName::Simple(s) => TypeName::Simple(s.with_leading_trivia(trivia)),
             TypeName::Decorated(d) => TypeName::Decorated(Box::new(d.with_leading_trivia(trivia))),
             TypeName::Parenthesized(p) => TypeName::Parenthesized(p.with_leading_trivia(trivia)),
+            TypeName::Array(a) => TypeName::Array(Box::new(a.with_leading_trivia(trivia))),
         }
     }
 
@@ -31,6 +33,7 @@ impl Syntax for TypeName {
             TypeName::Simple(s) => TypeName::Simple(s.with_trailing_trivia(trivia)),
             TypeName::Decorated(d) => TypeName::Decorated(Box::new(d.with_trailing_trivia(trivia))),
             TypeName::Parenthesized(p) => TypeName::Parenthesized(p.with_trailing_trivia(trivia)),
+            TypeName::Array(a) => TypeName::Array(Box::new(a.with_trailing_trivia(trivia))),
         }
     }
 }
@@ -287,3 +290,34 @@ impl Syntax for TypeConstraintsSyntax {
 }
 
 pub type TypeConstraintElementSyntax = ElementSyntax<TypeParam>;
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct ArrayTypeSyntax {
+    pub open: TokenSyntax,
+    pub type_: TypeName,
+    pub semicolon: TokenSyntax,
+    pub size: TokenSyntax,
+    pub close: TokenSyntax,
+}
+
+impl Syntax for ArrayTypeSyntax {
+    fn with_leading_trivia(self, trivia: Trivia) -> Self {
+        Self {
+            open: self.open.with_leading_trivia(trivia),
+            type_: self.type_,
+            semicolon: self.semicolon,
+            size: self.size,
+            close: self.close,
+        }
+    }
+
+    fn with_trailing_trivia(self, trivia: Trivia) -> Self {
+        Self {
+            open: self.open,
+            type_: self.type_,
+            semicolon: self.semicolon,
+            size: self.size,
+            close: self.close.with_trailing_trivia(trivia),
+        }
+    }
+}

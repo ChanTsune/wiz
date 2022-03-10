@@ -2,14 +2,16 @@ use crate::parser::wiz::character::{ampersand, comma};
 use crate::parser::wiz::lexical_structure::{identifier, token, whitespace0};
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::type_name::{
-    DecoratedTypeName, ParenthesizedTypeName, SimpleTypeName, TypeArgumentElementSyntax,
-    TypeArgumentListSyntax, TypeConstraintSyntax, TypeName, TypeNameSpaceElementSyntax, TypeParam,
-    TypeParameterElementSyntax, TypeParameterListSyntax, UserTypeName,
+    ArrayTypeSyntax, DecoratedTypeName, ParenthesizedTypeName, SimpleTypeName,
+    TypeArgumentElementSyntax, TypeArgumentListSyntax, TypeConstraintSyntax, TypeName,
+    TypeNameSpaceElementSyntax, TypeParam, TypeParameterElementSyntax, TypeParameterListSyntax,
+    UserTypeName,
 };
 use crate::syntax::Syntax;
 use nom::branch::alt;
+use nom::character::complete::char;
 use nom::combinator::{map, opt};
-use nom::multi::many0;
+use nom::multi::{many0, many1};
 use nom::sequence::tuple;
 use nom::{AsChar, Compare, FindSubstring, IResult, InputIter, InputLength, InputTake, Slice};
 use std::ops::{Range, RangeFrom};
@@ -31,6 +33,7 @@ where
         parenthesized_type,
         map(decorated_type, |t| TypeName::Decorated(Box::new(t))),
         type_reference,
+        map(array_type_syntax, |a| TypeName::Array(Box::new(a))),
         // function_type,
     ))(s)
 }
@@ -297,14 +300,62 @@ where
     })(s)
 }
 
+pub fn array_type_syntax<I>(s: I) -> IResult<I, ArrayTypeSyntax>
+where
+    I: Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + InputTake
+        + InputLength
+        + Clone
+        + ToString
+        + FindSubstring<&'static str>
+        + Compare<&'static str>,
+    <I as InputIter>::Item: AsChar + Copy,
+{
+    map(
+        tuple((
+            token("["),
+            whitespace0,
+            type_,
+            whitespace0,
+            token(";"),
+            whitespace0,
+            many1(alt((
+                char('0'),
+                char('1'),
+                char('2'),
+                char('3'),
+                char('4'),
+                char('5'),
+                char('6'),
+                char('7'),
+                char('8'),
+                char('9'),
+            ))),
+            whitespace0,
+            token("]"),
+        )),
+        |(open, ws1, typ, ws2, semi, ws3, size, ws4, close)| ArrayTypeSyntax {
+            open,
+            type_: typ.with_leading_trivia(ws1),
+            semicolon: semi.with_leading_trivia(ws2),
+            size: TokenSyntax::from(size.into_iter().collect::<String>()).with_leading_trivia(ws3),
+            close: close.with_leading_trivia(ws4),
+        },
+    )(s)
+}
+
 #[cfg(test)]
 mod tests {
     use crate::parser::tests::check;
-    use crate::parser::wiz::type_::{decorated_type, type_parameter, type_parameters, user_type};
+    use crate::parser::wiz::type_::{
+        array_type_syntax, decorated_type, type_parameter, type_parameters, user_type,
+    };
     use crate::syntax::token::TokenSyntax;
     use crate::syntax::trivia::{Trivia, TriviaPiece};
     use crate::syntax::type_name::{
-        DecoratedTypeName, SimpleTypeName, TypeConstraintSyntax, TypeName,
+        ArrayTypeSyntax, DecoratedTypeName, SimpleTypeName, TypeConstraintSyntax, TypeName,
         TypeNameSpaceElementSyntax, TypeParam, TypeParameterElementSyntax, TypeParameterListSyntax,
         UserTypeName,
     };
@@ -580,6 +631,21 @@ mod tests {
                     },
                 ],
                 close: TokenSyntax::from(">"),
+            },
+        );
+    }
+
+    #[test]
+    fn test_array_type_syntax() {
+        check(
+            "[Int64;12]",
+            array_type_syntax,
+            ArrayTypeSyntax {
+                open: TokenSyntax::from("["),
+                type_: TypeName::Simple(SimpleTypeName::from("Int64")),
+                semicolon: TokenSyntax::from(";"),
+                size: TokenSyntax::from("12"),
+                close: TokenSyntax::from("]"),
             },
         );
     }
