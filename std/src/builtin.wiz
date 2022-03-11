@@ -5,7 +5,7 @@
 // }
 
 fun println() {
-    putchar(10 as Int32)
+    putchar(10)
 }
 
 fun print(_ item: &str) {
@@ -30,7 +30,7 @@ fun print(_ item: Int64) {
 
 fun println(_ item: Int64) {
     if item < 0 {
-        putchar(45 as Int32)
+        putchar(45)
         print(-item)
     } else {
         print(item)
