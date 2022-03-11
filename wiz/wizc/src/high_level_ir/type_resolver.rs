@@ -1002,24 +1002,32 @@ impl TypeResolver {
     }
 
     pub fn typed_call(&mut self, c: TypedCall) -> Result<TypedCall> {
-        let (target, args) =
-        match self.expr((*c.target).clone(), None) {
+        let (target, args) = match self.expr((*c.target).clone(), None) {
             Ok(TypedExpr::Name(n)) => {
                 let target = TypedExpr::Name(n);
                 if let TypedType::Function(f) = target.type_().unwrap() {
                     if c.args.len() != f.arguments.len() {
-                        Err(ResolverError::from(format!("{:?} required {} arguments, but {} were given.", target, f.arguments.len(), c.args.len())))
+                        Err(ResolverError::from(format!(
+                            "{:?} required {} arguments, but {} were given.",
+                            target,
+                            f.arguments.len(),
+                            c.args.len()
+                        )))
                     } else {
-                        Ok((target, c
-                            .args
-                            .into_iter()
-                            .zip(f.arguments)
-                            .map(|(c, annotation)| self.typed_call_arg(c, Some(annotation.typ)))
-                            .collect::<Result<Vec<_>>>()?
+                        Ok((
+                            target,
+                            c.args
+                                .into_iter()
+                                .zip(f.arguments)
+                                .map(|(c, annotation)| self.typed_call_arg(c, Some(annotation.typ)))
+                                .collect::<Result<Vec<_>>>()?,
                         ))
                     }
                 } else {
-                    Err(ResolverError::from(format!("{:?} is not callable.", target)))
+                    Err(ResolverError::from(format!(
+                        "{:?} is not callable.",
+                        target
+                    )))
                 }
             }
             Ok(_) | Err(_) => {
