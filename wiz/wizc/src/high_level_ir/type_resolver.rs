@@ -639,7 +639,7 @@ impl TypeResolver {
                 .member_functions
                 .into_iter()
                 .map(|m| self.typed_member_function(m))
-                .collect::<Result<Vec<_>>>()?,
+                .collect::<Result<_>>()?,
         });
         self.context.clear_current_type();
         result
@@ -662,7 +662,7 @@ impl TypeResolver {
                 .member_functions
                 .into_iter()
                 .map(|m| self.typed_member_function(m))
-                .collect::<Result<Vec<_>>>()?,
+                .collect::<Result<_>>()?,
             computed_properties: vec![],
         };
         self.context.clear_current_type();
