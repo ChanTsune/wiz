@@ -70,16 +70,16 @@ fun vector_methods() {
     println(vector.length as Int64)
 
     var poped = vector.pop()
-    assert(poped as Int64 == 111)
-    assert(vector.length as Int64 == 4)
+    assert(poped == 111)
+    assert(vector.length == 4)
 
     val removed = vector.remove(index: 0 as UInt64)
-    assert(removed as Int64 == 72)
-    assert(vector.length as Int64 == 3)
+    assert(removed == 72)
+    assert(vector.length == 3)
 
     val removed_ = vector.remove(index: 2 as UInt64)
-    assert(removed_ as Int64 == 108)
-    assert(vector.length as Int64 == 2)
+    assert(removed_ == 108)
+    assert(vector.length == 2)
 
 }
 
