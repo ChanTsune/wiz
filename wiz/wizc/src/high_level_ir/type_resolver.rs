@@ -1002,22 +1002,46 @@ impl TypeResolver {
     }
 
     pub fn typed_call(&mut self, c: TypedCall) -> Result<TypedCall> {
-        let args = c
-            .args
-            .into_iter()
-            .map(|c| self.typed_call_arg(c, None))
-            .collect::<Result<Vec<_>>>()?;
-        let arg_annotation = TypedType::Function(Box::new(TypedFunctionType {
-            arguments: args
-                .iter()
-                .map(|a| TypedArgType {
-                    label: a.label.clone().unwrap_or("_".to_string()),
-                    typ: a.arg.type_().unwrap(),
-                })
-                .collect(),
-            return_type: TypedType::noting(),
-        }));
-        let target = Box::new(self.expr(*c.target, Some(arg_annotation))?);
+        let (target, args) =
+        match self.expr((*c.target).clone(), None) {
+            Ok(TypedExpr::Name(n)) => {
+                let target = TypedExpr::Name(n);
+                if let TypedType::Function(f) = target.type_().unwrap() {
+                    if c.args.len() != f.arguments.len() {
+                        Err(ResolverError::from(format!("{:?} required {} arguments, but {} were given.", target, f.arguments.len(), c.args.len())))
+                    } else {
+                        Ok((target, c
+                            .args
+                            .into_iter()
+                            .zip(f.arguments)
+                            .map(|(c, annotation)| self.typed_call_arg(c, Some(annotation.typ)))
+                            .collect::<Result<Vec<_>>>()?
+                        ))
+                    }
+                } else {
+                    Err(ResolverError::from(format!("{:?} is not callable.", target)))
+                }
+            }
+            Ok(_) | Err(_) => {
+                let args = c
+                    .args
+                    .into_iter()
+                    .map(|c| self.typed_call_arg(c, None))
+                    .collect::<Result<Vec<_>>>()?;
+                let arg_annotation = TypedType::Function(Box::new(TypedFunctionType {
+                    arguments: args
+                        .iter()
+                        .map(|a| TypedArgType {
+                            label: a.label.clone().unwrap_or("_".to_string()),
+                            typ: a.arg.type_().unwrap(),
+                        })
+                        .collect(),
+                    return_type: TypedType::noting(),
+                }));
+                let target = self.expr(*c.target, Some(arg_annotation))?;
+                Ok((target, args))
+            }
+        }?;
         let c_type = match target.type_().unwrap() {
             TypedType::Value(v) => Err(ResolverError::from(format!("{:?} is not callable.", v))),
             TypedType::Type(t) => Err(ResolverError::from(format!("{:?} is not callable.", t))),
@@ -1025,7 +1049,7 @@ impl TypeResolver {
             TypedType::Function(f) => Ok(f.return_type),
         }?;
         Ok(TypedCall {
-            target,
+            target: Box::new(target),
             args,
             type_: Some(c_type),
         })
