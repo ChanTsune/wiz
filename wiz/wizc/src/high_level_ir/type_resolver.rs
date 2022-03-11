@@ -1005,7 +1005,7 @@ impl TypeResolver {
         let args = c
             .args
             .into_iter()
-            .map(|c| self.typed_call_arg(c))
+            .map(|c| self.typed_call_arg(c, None))
             .collect::<Result<Vec<_>>>()?;
         let arg_annotation = TypedType::Function(Box::new(TypedFunctionType {
             arguments: args
@@ -1031,10 +1031,10 @@ impl TypeResolver {
         })
     }
 
-    pub fn typed_call_arg(&mut self, a: TypedCallArg) -> Result<TypedCallArg> {
+    pub fn typed_call_arg(&mut self, a: TypedCallArg, type_annotation: Option<TypedType>) -> Result<TypedCallArg> {
         Ok(TypedCallArg {
             label: a.label,
-            arg: Box::new(self.expr(*a.arg, None)?),
+            arg: Box::new(self.expr(*a.arg, type_annotation)?),
             is_vararg: a.is_vararg,
         })
     }
