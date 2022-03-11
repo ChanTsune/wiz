@@ -1031,7 +1031,11 @@ impl TypeResolver {
         })
     }
 
-    pub fn typed_call_arg(&mut self, a: TypedCallArg, type_annotation: Option<TypedType>) -> Result<TypedCallArg> {
+    pub fn typed_call_arg(
+        &mut self,
+        a: TypedCallArg,
+        type_annotation: Option<TypedType>,
+    ) -> Result<TypedCallArg> {
         Ok(TypedCallArg {
             label: a.label,
             arg: Box::new(self.expr(*a.arg, type_annotation)?),
