@@ -65,7 +65,7 @@ fun vector_methods() {
         putchar(v as Int32)
         i += 1
     }
-    putchar(10 as Int32)
+    putchar(10)
 
     println(vector.length as Int64)
 
