@@ -5,7 +5,6 @@ use crate::high_level_ir::{ast2hlir, Ast2HLIR};
 use crate::llvm_ir::codegen::CodeGen;
 use crate::middle_level_ir::{hlir2mlir, HLIR2MLIR};
 use inkwell::context::Context;
-use inkwell::targets::{TargetMachine, TargetTriple};
 use std::error::Error;
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -202,12 +201,6 @@ fn run_compiler(config: Config) -> result::Result<(), Box<dyn Error>> {
         output_path.set_extension("ll");
         String::from(output_path.to_str().unwrap())
     };
-
-    if let Some(target_triple) = config.target_triple() {
-        codegen.set_target_triple(&TargetTriple::create(target_triple));
-    } else {
-        codegen.set_target_triple(&TargetMachine::get_default_triple())
-    }
 
     let mut out_path = out_dir;
     out_path.push(output);
