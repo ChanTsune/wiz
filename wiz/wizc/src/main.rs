@@ -185,7 +185,7 @@ fn run_compiler(config: Config) -> result::Result<(), Box<dyn Error>> {
 
     let module_name = &mlfile.name;
     let context = Context::create();
-    let mut codegen = CodeGen::new(&context, module_name);
+    let mut codegen = CodeGen::new(&context, module_name, config.target_triple());
 
     for m in std_mlir.iter() {
         codegen.file(m.clone());

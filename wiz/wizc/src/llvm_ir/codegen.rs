@@ -68,7 +68,7 @@ pub struct CodeGen<'ctx> {
 }
 
 impl<'ctx> CodeGen<'ctx> {
-    pub(crate) fn new(context: &'ctx Context, name: &str) -> Self {
+    pub(crate) fn new(context: &'ctx Context, name: &str, target_triple: Option<&str>) -> Self {
         let module: Module<'ctx> = context.create_module(name);
         let execution_engine: ExecutionEngine<'ctx> = module
             .create_jit_execution_engine(OptimizationLevel::None)
