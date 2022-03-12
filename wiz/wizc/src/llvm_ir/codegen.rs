@@ -1110,7 +1110,8 @@ impl<'ctx> CodeGen<'ctx> {
     /// Write Object file to given path.
     pub fn write_as_object<P: AsRef<Path>>(&self, path: P) -> Result<(), LLVMString> {
         let triple = self.module.get_triple();
-        let target_machine = self.target
+        let target_machine = self
+            .target
             .create_target_machine(
                 &triple,
                 "generic",
@@ -1126,7 +1127,8 @@ impl<'ctx> CodeGen<'ctx> {
     /// Write Assembly to given path.
     pub fn write_as_assembly<P: AsRef<Path>>(&self, path: P) -> Result<(), LLVMString> {
         let triple = self.module.get_triple();
-        let target_machine = self.target
+        let target_machine = self
+            .target
             .create_target_machine(
                 &triple,
                 "generic",
