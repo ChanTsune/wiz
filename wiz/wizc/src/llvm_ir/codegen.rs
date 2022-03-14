@@ -1159,6 +1159,11 @@ impl<'ctx> CodeGen<'ctx> {
                 MLPrimitiveType::Int64 | MLPrimitiveType::UInt64 => {
                     AnyTypeEnum::from(self.context.i64_type())
                 }
+                MLPrimitiveType::Size | MLPrimitiveType::USize => {
+                    AnyTypeEnum::from(self
+                                          .context
+                                          .ptr_sized_int_type(self.execution_engine.get_target_data(), None))
+                }
                 MLPrimitiveType::Bool => AnyTypeEnum::from(self.context.bool_type()),
                 MLPrimitiveType::Float => AnyTypeEnum::from(self.context.f32_type()),
                 MLPrimitiveType::Double => AnyTypeEnum::from(self.context.f64_type()),
