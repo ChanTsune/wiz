@@ -5,7 +5,7 @@ use inkwell::context::Context;
 use inkwell::execution_engine::ExecutionEngine;
 use inkwell::module::Module;
 use inkwell::support::LLVMString;
-use inkwell::targets::{CodeModel, FileType, RelocMode, Target, TargetTriple};
+use inkwell::targets::{CodeModel, FileType, RelocMode, Target, TargetMachine, TargetTriple};
 use inkwell::types::{AnyType, AnyTypeEnum, BasicMetadataTypeEnum, BasicType, BasicTypeEnum};
 use inkwell::values::{
     AnyValue, AnyValueEnum, BasicMetadataValueEnum, BasicValueEnum, FunctionValue,
@@ -64,12 +64,21 @@ pub struct CodeGen<'ctx> {
     pub(crate) module: Module<'ctx>,
     pub(crate) builder: Builder<'ctx>,
     pub(crate) execution_engine: ExecutionEngine<'ctx>,
+    pub(crate) target: Target,
     pub(crate) ml_context: MLContext<'ctx>,
 }
 
 impl<'ctx> CodeGen<'ctx> {
-    pub(crate) fn new(context: &'ctx Context, name: &str) -> Self {
+    pub(crate) fn new(context: &'ctx Context, name: &str, target_triple: Option<&str>) -> Self {
+        let target_triple = if let Some(target_triple) = target_triple {
+            TargetTriple::create(target_triple)
+        } else {
+            TargetMachine::get_default_triple()
+        };
+
         let module: Module<'ctx> = context.create_module(name);
+        module.set_triple(&target_triple);
+
         let execution_engine: ExecutionEngine<'ctx> = module
             .create_jit_execution_engine(OptimizationLevel::None)
             .unwrap();
@@ -78,6 +87,7 @@ impl<'ctx> CodeGen<'ctx> {
             module,
             builder: context.create_builder(),
             execution_engine,
+            target: Target::from_triple(&target_triple).unwrap(),
             ml_context: MLContext::new(),
         }
     }
@@ -1092,11 +1102,6 @@ impl<'ctx> CodeGen<'ctx> {
         }
     }
 
-    /// Set Target Triple
-    pub fn set_target_triple(&mut self, triple: &TargetTriple) {
-        self.module.set_triple(triple)
-    }
-
     /// Write LLVM IR to file to the given path.
     pub fn print_to_file<P: AsRef<Path>>(&self, path: P) -> Result<(), LLVMString> {
         self.module.print_to_file(path)
@@ -1105,8 +1110,8 @@ impl<'ctx> CodeGen<'ctx> {
     /// Write Object file to given path.
     pub fn write_as_object<P: AsRef<Path>>(&self, path: P) -> Result<(), LLVMString> {
         let triple = self.module.get_triple();
-        let target = Target::from_triple(&triple)?;
-        let target_machine = target
+        let target_machine = self
+            .target
             .create_target_machine(
                 &triple,
                 "generic",
@@ -1122,8 +1127,8 @@ impl<'ctx> CodeGen<'ctx> {
     /// Write Assembly to given path.
     pub fn write_as_assembly<P: AsRef<Path>>(&self, path: P) -> Result<(), LLVMString> {
         let triple = self.module.get_triple();
-        let target = Target::from_triple(&triple)?;
-        let target_machine = target
+        let target_machine = self
+            .target
             .create_target_machine(
                 &triple,
                 "generic",
@@ -1154,6 +1159,10 @@ impl<'ctx> CodeGen<'ctx> {
                 MLPrimitiveType::Int64 | MLPrimitiveType::UInt64 => {
                     AnyTypeEnum::from(self.context.i64_type())
                 }
+                MLPrimitiveType::Size | MLPrimitiveType::USize => AnyTypeEnum::from(
+                    self.context
+                        .ptr_sized_int_type(self.execution_engine.get_target_data(), None),
+                ),
                 MLPrimitiveType::Bool => AnyTypeEnum::from(self.context.bool_type()),
                 MLPrimitiveType::Float => AnyTypeEnum::from(self.context.f32_type()),
                 MLPrimitiveType::Double => AnyTypeEnum::from(self.context.f64_type()),

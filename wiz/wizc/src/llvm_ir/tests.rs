@@ -40,7 +40,7 @@ fn test_return_integer() {
     };
     let module_name = &mlfile.name;
     let context = Context::create();
-    let mut codegen = CodeGen::new(&context, module_name);
+    let mut codegen = CodeGen::new(&context, module_name, None);
 
     codegen.file(mlfile.clone());
 
@@ -76,7 +76,7 @@ fn test_return_integer_literal() {
     };
     let module_name = &mlfile.name;
     let context = Context::create();
-    let mut codegen = CodeGen::new(&context, module_name);
+    let mut codegen = CodeGen::new(&context, module_name, None);
 
     codegen.file(mlfile.clone());
 
@@ -123,7 +123,7 @@ fn test_return_floating_point() {
     };
     let module_name = &mlfile.name;
     let context = Context::create();
-    let mut codegen = CodeGen::new(&context, module_name);
+    let mut codegen = CodeGen::new(&context, module_name, None);
 
     codegen.file(mlfile.clone());
 
@@ -159,7 +159,7 @@ fn test_return_floating_point_literal() {
     };
     let module_name = &mlfile.name;
     let context = Context::create();
-    let mut codegen = CodeGen::new(&context, module_name);
+    let mut codegen = CodeGen::new(&context, module_name, None);
 
     codegen.file(mlfile.clone());
 
@@ -206,7 +206,7 @@ fn test_return_global_constant() {
     };
     let module_name = &mlfile.name;
     let context = Context::create();
-    let mut codegen = CodeGen::new(&context, module_name);
+    let mut codegen = CodeGen::new(&context, module_name, None);
 
     codegen.file(mlfile.clone());
 

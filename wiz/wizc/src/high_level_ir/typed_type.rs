@@ -78,6 +78,10 @@ impl TypedValueType {
         Self::Value(TypedNamedValueType::int64())
     }
 
+    pub fn size() -> Self {
+        Self::Value(TypedNamedValueType::size())
+    }
+
     pub fn uint8() -> Self {
         Self::Value(TypedNamedValueType::uint8())
     }
@@ -92,6 +96,10 @@ impl TypedValueType {
 
     pub fn uint64() -> Self {
         Self::Value(TypedNamedValueType::uint64())
+    }
+
+    pub fn usize() -> Self {
+        Self::Value(TypedNamedValueType::usize())
     }
 
     pub fn float() -> Self {
@@ -278,6 +286,10 @@ impl TypedNamedValueType {
         Self::builtin(constants::INT64)
     }
 
+    pub(crate) fn size() -> Self {
+        Self::builtin(constants::SIZE)
+    }
+
     pub(crate) fn uint8() -> Self {
         Self::builtin(constants::UINT8)
     }
@@ -292,6 +304,10 @@ impl TypedNamedValueType {
 
     pub(crate) fn uint64() -> Self {
         Self::builtin(constants::UINT64)
+    }
+
+    pub(crate) fn usize() -> Self {
+        Self::builtin(constants::USIZE)
     }
 
     pub(crate) fn float() -> Self {
@@ -364,6 +380,10 @@ impl TypedType {
         Self::Value(TypedValueType::int64())
     }
 
+    pub fn size() -> Self {
+        Self::Value(TypedValueType::size())
+    }
+
     pub fn uint8() -> Self {
         Self::Value(TypedValueType::uint8())
     }
@@ -378,6 +398,10 @@ impl TypedType {
 
     pub fn uint64() -> Self {
         Self::Value(TypedValueType::uint64())
+    }
+
+    pub fn usize() -> Self {
+        Self::Value(TypedValueType::usize())
     }
 
     pub fn float() -> Self {
@@ -409,7 +433,13 @@ impl TypedType {
     }
 
     pub fn signed_integer_types() -> Vec<TypedType> {
-        vec![Self::int8(), Self::int16(), Self::int32(), Self::int64()]
+        vec![
+            Self::int8(),
+            Self::int16(),
+            Self::int32(),
+            Self::int64(),
+            Self::size(),
+        ]
     }
 
     pub fn unsigned_integer_types() -> Vec<TypedType> {
@@ -418,6 +448,7 @@ impl TypedType {
             Self::uint16(),
             Self::uint32(),
             Self::uint64(),
+            Self::usize(),
         ]
     }
 
