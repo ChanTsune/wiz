@@ -1,5 +1,5 @@
-use wiz_session::Session;
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
+use wiz_session::Session;
 
 #[derive(Debug)]
 pub struct TypeChecker<'s> {
@@ -8,7 +8,7 @@ pub struct TypeChecker<'s> {
 
 impl<'s> TypeChecker<'s> {
     pub fn new(session: &'s mut Session) -> Self {
-        Self {session}
+        Self { session }
     }
 
     pub fn verify(&self, typed_source_set: &TypedSourceSet) {
