@@ -68,8 +68,8 @@ mod tests {
 
     #[test]
     fn test_timer() {
-        let session = super::Session::new();
-        session.timer("foo", || {
+        let mut session = super::Session::new();
+        session.timer("foo", |_| {
             println!("foo");
         });
     }
