@@ -6,14 +6,14 @@ use std::time::{Duration, Instant};
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Session {
     timers: BTreeMap<String, (Instant, Option<Duration>)>,
-    errors: Vec<String>
+    errors: Vec<String>,
 }
 
 impl Session {
     pub fn new() -> Session {
         Session {
             timers: Default::default(),
-            errors: Default::default()
+            errors: Default::default(),
         }
     }
 
@@ -83,9 +83,7 @@ mod tests {
                 f.write_str("")
             }
         }
-        impl Error for E {
-
-        }
+        impl Error for E {}
         let mut session = super::Session::new();
         session.emit_error(E {});
         assert_eq!(session.has_error(), true);
