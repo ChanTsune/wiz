@@ -53,6 +53,7 @@ pub mod typed_type;
 pub mod typed_type_constraint;
 pub mod typed_use;
 pub mod wlib;
+pub mod type_checker;
 
 pub struct Ast2HLIR;
 
