@@ -10,16 +10,10 @@ impl TypeChecker {
 
     pub fn verify(&self, typed_source_set: &TypedSourceSet) {
         match typed_source_set {
-            TypedSourceSet::File(f) => {
-                self.file(f)
-            }
-            TypedSourceSet::Dir { name, items } => {
-                items.iter().for_each(|i|self.verify(i))
-            }
+            TypedSourceSet::File(f) => self.file(f),
+            TypedSourceSet::Dir { name, items } => items.iter().for_each(|i| self.verify(i)),
         }
     }
 
-    fn file(&self, typed_file: &TypedFile) {
-
-    }
+    fn file(&self, typed_file: &TypedFile) {}
 }

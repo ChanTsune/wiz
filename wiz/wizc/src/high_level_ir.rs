@@ -43,6 +43,7 @@ use wiz_syntax::syntax::statement::{
 };
 use wiz_syntax::syntax::type_name::{TypeName, TypeParam, UserTypeName};
 
+pub mod type_checker;
 pub mod type_resolver;
 pub mod typed_annotation;
 pub mod typed_decl;
@@ -53,7 +54,6 @@ pub mod typed_type;
 pub mod typed_type_constraint;
 pub mod typed_use;
 pub mod wlib;
-pub mod type_checker;
 
 pub struct Ast2HLIR;
 
