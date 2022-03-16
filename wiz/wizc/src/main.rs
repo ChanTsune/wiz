@@ -14,6 +14,7 @@ use wiz_syntax::parser;
 use wiz_syntax::parser::wiz::{parse_from_file_path, read_package_from_path};
 use wiz_syntax::syntax::file::SourceSet;
 use wizc_cli::{BuildType, Config};
+use crate::high_level_ir::type_checker::TypeChecker;
 
 mod constants;
 mod ext;
@@ -43,10 +44,10 @@ fn main() -> result::Result<(), Box<dyn Error>> {
     let config = Config::from(&matches);
 
     let mut session = Session::new();
-    session.timer("compile", || run_compiler(config))
+    session.timer("compile", |s| run_compiler(s, config))
 }
 
-fn run_compiler(config: Config) -> result::Result<(), Box<dyn Error>> {
+fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box<dyn Error>> {
     let output = config.output();
     let out_dir = config.out_dir();
     let paths = config.paths();
@@ -144,6 +145,10 @@ fn run_compiler(config: Config) -> result::Result<(), Box<dyn Error>> {
     println!("===== resolve types for input source =====");
 
     let hlfiles = type_resolver.source_set(hlfiles)?;
+
+    let type_checker = TypeChecker::new(session);
+
+    type_checker.verify(&hlfiles);
 
     match build_type {
         BuildType::Library => {

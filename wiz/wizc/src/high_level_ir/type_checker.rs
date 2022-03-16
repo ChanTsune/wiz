@@ -1,11 +1,14 @@
+use wiz_session::Session;
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 
-#[derive(Debug, Clone)]
-pub struct TypeChecker;
+#[derive(Debug)]
+pub struct TypeChecker<'s> {
+    session: &'s mut Session,
+}
 
-impl TypeChecker {
-    pub fn new() -> Self {
-        Self {}
+impl<'s> TypeChecker<'s> {
+    pub fn new(session: &'s mut Session) -> Self {
+        Self {session}
     }
 
     pub fn verify(&self, typed_source_set: &TypedSourceSet) {
