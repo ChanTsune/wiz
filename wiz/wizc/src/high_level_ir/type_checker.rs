@@ -1,9 +1,11 @@
-use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
-use wiz_session::Session;
 use crate::high_level_ir::type_checker::error::CheckerError;
 use crate::high_level_ir::type_resolver::error::ResolverError;
-use crate::high_level_ir::typed_decl::{TypedDecl, TypedExtension, TypedFun, TypedProtocol, TypedStruct, TypedVar};
+use crate::high_level_ir::typed_decl::{
+    TypedDecl, TypedExtension, TypedFun, TypedProtocol, TypedStruct, TypedVar,
+};
+use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::TypedStmt;
+use wiz_session::Session;
 
 #[derive(Debug)]
 pub struct TypeChecker<'s> {
@@ -23,44 +25,30 @@ impl<'s> TypeChecker<'s> {
     }
 
     fn file(&mut self, typed_file: &TypedFile) {
-        typed_file.body.iter().for_each(|d|{
-            self.decl(d)
-        })
+        typed_file.body.iter().for_each(|d| self.decl(d))
     }
 
     fn decl(&mut self, decl: &TypedDecl) {
         match decl {
-            TypedDecl::Var(v) => {self.variable(v)}
-            TypedDecl::Fun(f) => {self.function(f)}
-            TypedDecl::Struct(s) => {self.struct_(s)}
+            TypedDecl::Var(v) => self.variable(v),
+            TypedDecl::Fun(f) => self.function(f),
+            TypedDecl::Struct(s) => self.struct_(s),
             TypedDecl::Class => todo!(),
             TypedDecl::Enum => todo!(),
-            TypedDecl::Protocol(p) => {self.protocol(p)}
-            TypedDecl::Extension(e) => {self.extension(e)}
+            TypedDecl::Protocol(p) => self.protocol(p),
+            TypedDecl::Extension(e) => self.extension(e),
         }
     }
 
-    fn variable(&mut self, typed_variable: &TypedVar) {
+    fn variable(&mut self, typed_variable: &TypedVar) {}
 
-    }
+    fn function(&mut self, typed_function: &TypedFun) {}
 
-    fn function(&mut self, typed_function: &TypedFun) {
+    fn struct_(&mut self, typed_struct: &TypedStruct) {}
 
-    }
+    fn protocol(&mut self, typed_protocol: &TypedProtocol) {}
 
-    fn struct_(&mut self, typed_struct: &TypedStruct) {
+    fn extension(&mut self, typed_extension: &TypedExtension) {}
 
-    }
-
-    fn protocol(&mut self, typed_protocol: &TypedProtocol) {
-
-    }
-
-    fn extension(&mut self, typed_extension: &TypedExtension) {
-
-    }
-
-    fn statement(&mut self, typed_statement: &TypedStmt) {
-
-    }
+    fn statement(&mut self, typed_statement: &TypedStmt) {}
 }
