@@ -23,7 +23,7 @@ impl<'s> TypeChecker<'s> {
     pub fn verify(&mut self, typed_source_set: &TypedSourceSet) {
         match typed_source_set {
             TypedSourceSet::File(f) => self.file(f),
-            TypedSourceSet::Dir { name, items } => items.iter().for_each(|i| self.verify(i)),
+            TypedSourceSet::Dir { name: _, items } => items.iter().for_each(|i| self.verify(i)),
         }
     }
 
