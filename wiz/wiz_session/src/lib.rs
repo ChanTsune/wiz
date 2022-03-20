@@ -1,9 +1,8 @@
 use std::collections::BTreeMap;
 use std::error::Error;
-use std::hash::Hash;
 use std::time::{Duration, Instant};
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Default)]
 pub struct Session {
     timers: BTreeMap<String, (Instant, Option<Duration>)>,
     errors: Vec<String>,
@@ -11,10 +10,7 @@ pub struct Session {
 
 impl Session {
     pub fn new() -> Session {
-        Session {
-            timers: Default::default(),
-            errors: Default::default(),
-        }
+        Session::default()
     }
 
     pub fn start(&mut self, id: &str) {
@@ -33,7 +29,7 @@ impl Session {
     pub fn get_duration(&self, id: &str) -> Option<Duration> {
         match self.timers.get(id) {
             None => None,
-            Some((_, duration)) => duration.clone(),
+            Some((_, duration)) => *duration,
         }
     }
 
