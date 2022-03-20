@@ -1,12 +1,14 @@
 mod error;
 
 use crate::high_level_ir::type_checker::error::CheckerError;
-use crate::high_level_ir::typed_decl::{TypedDecl, TypedExtension, TypedFun, TypedFunBody, TypedProtocol, TypedStruct, TypedVar};
+use crate::high_level_ir::typed_decl::{
+    TypedDecl, TypedExtension, TypedFun, TypedFunBody, TypedProtocol, TypedStruct, TypedVar,
+};
 use crate::high_level_ir::typed_expr::TypedExpr;
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
-use wiz_session::Session;
 use crate::high_level_ir::typed_type::TypedType;
+use wiz_session::Session;
 
 #[derive(Debug)]
 pub struct TypeChecker<'s> {
@@ -81,10 +83,10 @@ impl<'s> TypeChecker<'s> {
 
     fn statement(&mut self, typed_statement: &TypedStmt) {
         match typed_statement {
-            TypedStmt::Expr(e) => {self.expression(e)}
-            TypedStmt::Decl(d) => {self.decl(d)}
-            TypedStmt::Assignment(a) => {self.assignment_statement(a)}
-            TypedStmt::Loop(l) => {self.loop_statement(l)}
+            TypedStmt::Expr(e) => self.expression(e),
+            TypedStmt::Decl(d) => self.decl(d),
+            TypedStmt::Assignment(a) => self.assignment_statement(a),
+            TypedStmt::Loop(l) => self.loop_statement(l),
         }
     }
 
@@ -114,9 +116,15 @@ impl<'s> TypeChecker<'s> {
     fn loop_statement(&mut self, typed_loop_statement: &TypedLoopStmt) {
         match typed_loop_statement {
             TypedLoopStmt::While(w) => {
-                if !w.condition.type_().map(|t|t.is_boolean()).unwrap_or_else(||false) {
+                if !w
+                    .condition
+                    .type_()
+                    .map(|t| t.is_boolean())
+                    .unwrap_or_else(|| false)
+                {
                     self.session.emit_error(CheckerError::new(format!(
-                        "while condition must be boolean, but {:?}", w.condition.type_()
+                        "while condition must be boolean, but {:?}",
+                        w.condition.type_()
                     )))
                 }
                 self.block(&w.block);
@@ -129,9 +137,7 @@ impl<'s> TypeChecker<'s> {
     }
 
     fn block(&mut self, typed_block: &TypedBlock) {
-        typed_block.body.iter().for_each(|s|{
-            self.statement(s)
-        })
+        typed_block.body.iter().for_each(|s| self.statement(s))
     }
 
     fn expression(&mut self, typed_expr: &TypedExpr) {}
