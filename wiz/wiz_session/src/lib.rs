@@ -5,7 +5,7 @@ use std::time::{Duration, Instant};
 #[derive(Debug, Default)]
 pub struct Session {
     timers: BTreeMap<String, (Instant, Option<Duration>)>,
-    errors: Vec<String>,
+    errors: Vec<Box<dyn Error>>,
 }
 
 impl Session {
@@ -40,8 +40,8 @@ impl Session {
         r
     }
 
-    pub fn emit_error<E: Error>(&mut self, error: E) {
-        self.errors.push(error.to_string())
+    pub fn emit_error<E: 'static + Error>(&mut self, error: E) {
+        self.errors.push(Box::new(error))
     }
 
     pub fn has_error(&self) -> bool {
