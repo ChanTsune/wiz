@@ -4,7 +4,10 @@ use crate::high_level_ir::type_checker::error::CheckerError;
 use crate::high_level_ir::typed_decl::{
     TypedDecl, TypedExtension, TypedFun, TypedFunBody, TypedProtocol, TypedStruct, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{TypedArray, TypedBinOp, TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLambda, TypedLiteral, TypedName, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp};
+use crate::high_level_ir::typed_expr::{
+    TypedArray, TypedBinOp, TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLambda,
+    TypedLiteral, TypedName, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
+};
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
 use wiz_session::Session;
@@ -141,28 +144,31 @@ impl<'s> TypeChecker<'s> {
 
     fn expression(&mut self, typed_expr: &TypedExpr) {
         match typed_expr {
-            TypedExpr::Name(n) => {self.name(n)}
-            TypedExpr::Literal(l) => {self.literal(l)}
-            TypedExpr::BinOp(b) => {self.binary_operation(b)}
-            TypedExpr::UnaryOp(u) => {self.unary_operation(u)}
-            TypedExpr::Subscript(s) => {self.subscript(s)}
-            TypedExpr::Member(m) => {self.member(m)}
-            TypedExpr::Array(a) => {self.array(a)}
+            TypedExpr::Name(n) => self.name(n),
+            TypedExpr::Literal(l) => self.literal(l),
+            TypedExpr::BinOp(b) => self.binary_operation(b),
+            TypedExpr::UnaryOp(u) => self.unary_operation(u),
+            TypedExpr::Subscript(s) => self.subscript(s),
+            TypedExpr::Member(m) => self.member(m),
+            TypedExpr::Array(a) => self.array(a),
             TypedExpr::Tuple => todo!(),
             TypedExpr::Dict => todo!(),
             TypedExpr::StringBuilder => todo!(),
-            TypedExpr::Call(c) => {self.call(c)}
-            TypedExpr::If(i) => {self.if_(i)}
+            TypedExpr::Call(c) => self.call(c),
+            TypedExpr::If(i) => self.if_(i),
             TypedExpr::When => todo!(),
-            TypedExpr::Lambda(l) => {self.lambda(l)}
-            TypedExpr::Return(r) => {self.return_(r)}
-            TypedExpr::TypeCast(c) => {self.type_cast(c)}
+            TypedExpr::Lambda(l) => self.lambda(l),
+            TypedExpr::Return(r) => self.return_(r),
+            TypedExpr::TypeCast(c) => self.type_cast(c),
         }
     }
 
     fn name(&mut self, typed_name: &TypedName) {
         if let None = typed_name.type_ {
-            self.session.emit_error(CheckerError::new(format!("Can not resolve name {:?}", typed_name.name)))
+            self.session.emit_error(CheckerError::new(format!(
+                "Can not resolve name {:?}",
+                typed_name.name
+            )))
         }
     }
 
@@ -171,42 +177,68 @@ impl<'s> TypeChecker<'s> {
             TypedLiteral::Integer { value, type_ } => {
                 if let Some(typ) = type_ {
                     if !typ.is_integer() {
-                        self.session.emit_error(CheckerError::new(format!("Invalid literal type of {:?}", value)))
+                        self.session.emit_error(CheckerError::new(format!(
+                            "Invalid literal type of {:?}",
+                            value
+                        )))
                     }
                 } else {
-                    self.session.emit_error(CheckerError::new(format!("Can not resolve literal type of {:?}", value)))
+                    self.session.emit_error(CheckerError::new(format!(
+                        "Can not resolve literal type of {:?}",
+                        value
+                    )))
                 }
             }
             TypedLiteral::FloatingPoint { value, type_ } => {
                 if let Some(typ) = type_ {
                     if !typ.is_floating_point() {
-                        self.session.emit_error(CheckerError::new(format!("Invalid literal type of {:?}", value)))
+                        self.session.emit_error(CheckerError::new(format!(
+                            "Invalid literal type of {:?}",
+                            value
+                        )))
                     }
                 } else {
-                    self.session.emit_error(CheckerError::new(format!("Can not resolve literal type of {:?}", value)))
+                    self.session.emit_error(CheckerError::new(format!(
+                        "Can not resolve literal type of {:?}",
+                        value
+                    )))
                 }
             }
             TypedLiteral::String { value, type_ } => {
                 if let Some(typ) = type_ {
                     if !typ.is_string_ref() {
-                        self.session.emit_error(CheckerError::new(format!("Invalid literal type of {:?}", value)))
+                        self.session.emit_error(CheckerError::new(format!(
+                            "Invalid literal type of {:?}",
+                            value
+                        )))
                     }
                 } else {
-                    self.session.emit_error(CheckerError::new(format!("Can not resolve literal type of {:?}", value)))
+                    self.session.emit_error(CheckerError::new(format!(
+                        "Can not resolve literal type of {:?}",
+                        value
+                    )))
                 }
             }
             TypedLiteral::Boolean { value, type_ } => {
                 if let Some(typ) = type_ {
                     if !typ.is_boolean() {
-                        self.session.emit_error(CheckerError::new(format!("Invalid literal type of {:?}", value)))
+                        self.session.emit_error(CheckerError::new(format!(
+                            "Invalid literal type of {:?}",
+                            value
+                        )))
                     }
                 } else {
-                    self.session.emit_error(CheckerError::new(format!("Can not resolve literal type of {:?}", value)))
+                    self.session.emit_error(CheckerError::new(format!(
+                        "Can not resolve literal type of {:?}",
+                        value
+                    )))
                 }
             }
             TypedLiteral::NullLiteral { type_ } => {
                 if let None = type_ {
-                    self.session.emit_error(CheckerError::new(format!("Can not resolve literal type of null")))
+                    self.session.emit_error(CheckerError::new(format!(
+                        "Can not resolve literal type of null"
+                    )))
                 }
             }
         }
@@ -219,20 +251,17 @@ impl<'s> TypeChecker<'s> {
 
     fn unary_operation(&mut self, typed_unop: &TypedUnaryOp) {
         match typed_unop {
-            TypedUnaryOp::Prefix(p) => {
-                self.expression(&p.target)
-            }
-            TypedUnaryOp::Postfix(p) => {
-                self.expression(&p.target)
-            }
+            TypedUnaryOp::Prefix(p) => self.expression(&p.target),
+            TypedUnaryOp::Postfix(p) => self.expression(&p.target),
         }
     }
 
     fn subscript(&mut self, typed_subscript: &TypedSubscript) {
         self.expression(&*typed_subscript.target);
-        typed_subscript.indexes.iter().for_each(|i|{
-            self.expression(i)
-        })
+        typed_subscript
+            .indexes
+            .iter()
+            .for_each(|i| self.expression(i))
     }
 
     fn member(&mut self, typed_member: &TypedInstanceMember) {
@@ -240,28 +269,34 @@ impl<'s> TypeChecker<'s> {
     }
 
     fn array(&mut self, typed_array: &TypedArray) {
-        typed_array.elements.iter().for_each(|e|{
+        typed_array.elements.iter().for_each(|e| {
             self.expression(e);
             if typed_array.type_ != e.type_() {
-                self.session.emit_error(CheckerError::new(format!("TypeMissMatchError: Array element excepted {:?}, but {:?} found", typed_array.type_, e.type_())))
+                self.session.emit_error(CheckerError::new(format!(
+                    "TypeMissMatchError: Array element excepted {:?}, but {:?} found",
+                    typed_array.type_,
+                    e.type_()
+                )))
             }
         })
     }
 
     fn call(&mut self, typed_call: &TypedCall) {
-        typed_call.args.iter().for_each(|a|{
-            self.expression(&*a.arg)
-        })
+        typed_call
+            .args
+            .iter()
+            .for_each(|a| self.expression(&*a.arg))
     }
 
     fn if_(&mut self, typed_if: &TypedIf) {
         if typed_if.condition.type_().unwrap().is_boolean() {
-            self.session.emit_error(CheckerError::new(format!("if condition type must be boolean, but {:?} ware given", typed_if.condition.type_())))
+            self.session.emit_error(CheckerError::new(format!(
+                "if condition type must be boolean, but {:?} ware given",
+                typed_if.condition.type_()
+            )))
         }
         self.block(&typed_if.body);
-        typed_if.else_body.as_ref().map(|els|{
-            self.block(els)
-        });
+        typed_if.else_body.as_ref().map(|els| self.block(els));
     }
 
     fn lambda(&mut self, typed_lambda: &TypedLambda) {
@@ -269,9 +304,7 @@ impl<'s> TypeChecker<'s> {
     }
 
     fn return_(&mut self, typed_return: &TypedReturn) {
-        typed_return.value.as_ref().map(|v|{
-            self.expression(&*v)
-        });
+        typed_return.value.as_ref().map(|v| self.expression(&*v));
     }
 
     fn type_cast(&mut self, typed_type_cast: &TypedTypeCast) {
