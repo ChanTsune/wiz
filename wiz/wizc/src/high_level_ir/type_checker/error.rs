@@ -16,6 +16,4 @@ impl Display for CheckerError {
     }
 }
 
-impl Error for CheckerError {
-
-}
+impl Error for CheckerError {}

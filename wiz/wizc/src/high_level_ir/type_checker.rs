@@ -4,10 +4,10 @@ use crate::high_level_ir::type_checker::error::CheckerError;
 use crate::high_level_ir::typed_decl::{
     TypedDecl, TypedExtension, TypedFun, TypedProtocol, TypedStruct, TypedVar,
 };
+use crate::high_level_ir::typed_expr::TypedExpr;
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::TypedStmt;
 use wiz_session::Session;
-use crate::high_level_ir::typed_expr::TypedExpr;
 
 #[derive(Debug)]
 pub struct TypeChecker<'s> {
@@ -44,7 +44,11 @@ impl<'s> TypeChecker<'s> {
 
     fn variable(&mut self, typed_variable: &TypedVar) {
         if typed_variable.type_ != typed_variable.value.type_() {
-            self.session.emit_error(CheckerError::new(format!("TypeMissMatchError: left -> {:?}, right -> {:?}", typed_variable.type_, typed_variable.value.type_())));
+            self.session.emit_error(CheckerError::new(format!(
+                "TypeMissMatchError: left -> {:?}, right -> {:?}",
+                typed_variable.type_,
+                typed_variable.value.type_()
+            )));
         };
         self.expression(&typed_variable.value)
     }
@@ -59,7 +63,5 @@ impl<'s> TypeChecker<'s> {
 
     fn statement(&mut self, typed_statement: &TypedStmt) {}
 
-    fn expression(&mut self, typed_expr: &TypedExpr) {
-
-    }
+    fn expression(&mut self, typed_expr: &TypedExpr) {}
 }
