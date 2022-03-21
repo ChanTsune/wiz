@@ -77,11 +77,44 @@ impl<'s> TypeChecker<'s> {
         }
     }
 
-    fn struct_(&mut self, typed_struct: &TypedStruct) {}
+    fn struct_(&mut self, typed_struct: &TypedStruct) {
+        typed_struct.computed_properties.iter().for_each(|_|{
+
+        });
+        typed_struct.stored_properties.iter().for_each(|_|{
+
+        });
+        typed_struct.initializers.iter().for_each(|i|{
+            match &i.body {
+                TypedFunBody::Expr(e) => {self.expression(e)}
+                TypedFunBody::Block(b) => {self.block(b)}
+            }
+        });
+        typed_struct.member_functions.iter().for_each(|i|{
+            if let Some(body) = &i.body {
+                match body {
+                    TypedFunBody::Expr(e) => {self.expression(e)}
+                    TypedFunBody::Block(b) => {self.block(b)}
+                }
+            }
+        });
+    }
 
     fn protocol(&mut self, typed_protocol: &TypedProtocol) {}
 
-    fn extension(&mut self, typed_extension: &TypedExtension) {}
+    fn extension(&mut self, typed_extension: &TypedExtension) {
+        typed_extension.computed_properties.iter().for_each(|_|{
+
+        });
+        typed_extension.member_functions.iter().for_each(|i|{
+            if let Some(body) = &i.body {
+                match body {
+                    TypedFunBody::Expr(e) => {self.expression(e)}
+                    TypedFunBody::Block(b) => {self.block(b)}
+                }
+            }
+        })
+    }
 
     fn statement(&mut self, typed_statement: &TypedStmt) {
         match typed_statement {
