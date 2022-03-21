@@ -14,10 +14,38 @@ updates:
     schedule:
       interval: "daily"
   - package-ecosystem: "cargo"
+    directory: "/wiz/wiz_dev_utils"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "cargo"
+    directory: "/wiz/wiz_lexar"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "cargo"
+    directory: "/wiz/wiz_mir"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "cargo"
+    directory: "/wiz/wiz_mir_parser"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "cargo"
+    directory: "/wiz/wiz_mir_syntax"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "cargo"
+    directory: "/wiz/wiz_session"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "cargo"
     directory: "/wiz/wiz_syntax"
     schedule:
       interval: "daily"
   - package-ecosystem: "cargo"
     directory: "/wiz/wizc"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "cargo"
+    directory: "/wiz/wizc_cli"
     schedule:
       interval: "daily"
