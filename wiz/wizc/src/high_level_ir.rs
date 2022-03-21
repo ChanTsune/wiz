@@ -43,6 +43,7 @@ use wiz_syntax::syntax::statement::{
 };
 use wiz_syntax::syntax::type_name::{TypeName, TypeParam, UserTypeName};
 
+pub mod type_checker;
 pub mod type_resolver;
 pub mod typed_annotation;
 pub mod typed_decl;
