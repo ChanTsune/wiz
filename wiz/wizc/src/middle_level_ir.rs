@@ -16,6 +16,7 @@ use crate::high_level_ir::typed_stmt::{
 use crate::high_level_ir::typed_type::{
     TypedFunctionType, TypedPackage, TypedType, TypedTypeParam, TypedValueType,
 };
+use crate::middle_level_ir::context::HLIR2MLIRContext;
 use core::result;
 use std::collections::HashMap;
 use std::error::Error;
@@ -29,11 +30,10 @@ use wiz_mir::ml_decl::{MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, ML
 use wiz_mir::ml_file::MLFile;
 use wiz_mir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
 use wiz_mir::statement::{MLAssignmentStmt, MLLoopStmt, MLReturn, MLStmt};
-use crate::middle_level_ir::context::HLIR2MLIRContext;
 
+mod context;
 #[cfg(test)]
 mod tests;
-mod context;
 
 pub type Result<T> = result::Result<T, Box<dyn Error>>;
 

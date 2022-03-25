@@ -1,7 +1,7 @@
+use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use std::collections::HashMap;
 use wiz_mir::ml_decl::MLStruct;
 use wiz_mir::ml_type::MLValueType;
-use crate::high_level_ir::typed_annotation::TypedAnnotations;
 
 pub(crate) struct HLIR2MLIRContext {
     pub(crate) declaration_annotations: HashMap<String, TypedAnnotations>,
@@ -55,4 +55,3 @@ impl HLIR2MLIRContext {
         self.current_name_space.pop();
     }
 }
-

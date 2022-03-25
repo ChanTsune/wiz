@@ -89,7 +89,11 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
     }
 
     session.stop(id_parse_files);
-    println!("{}: {}ms", id_parse_files, session.get_duration(id_parse_files).unwrap().as_millis());
+    println!(
+        "{}: {}ms",
+        id_parse_files,
+        session.get_duration(id_parse_files).unwrap().as_millis()
+    );
 
     println!("=== load dependencies ===");
     let libraries = config.libraries();
