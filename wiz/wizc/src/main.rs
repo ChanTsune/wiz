@@ -57,7 +57,7 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
         .unwrap_or_else(|| env::current_dir().unwrap());
     let build_type = config.type_().unwrap_or_else(|| BuildType::Binary);
 
-    let mut mlir_out_dir = out_dir.join("mlir");
+    let mlir_out_dir = out_dir.join("mlir");
 
     let id_parse_files = "parse files";
     session.start(id_parse_files);
