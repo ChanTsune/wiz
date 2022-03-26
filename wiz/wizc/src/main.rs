@@ -204,15 +204,14 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
     let emit = config.emit().unwrap_or("llvm-ir");
 
     let output = if let Some(output) = output {
-        String::from(output)
+        PathBuf::from(output)
     } else {
         let mut output_path = Path::new(&mlfile.name).to_path_buf();
         output_path.set_extension("ll");
-        String::from(output_path.to_str().unwrap())
+        output_path
     };
 
-    let mut out_path = out_dir;
-    out_path.push(output);
+    let out_path = out_dir.join(output);
 
     println!("Output Path -> {:?}", out_path);
 
