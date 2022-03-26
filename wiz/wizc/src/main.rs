@@ -188,10 +188,8 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
     let (mlfile, _) = hlir2mlir(hlfiles, &std_mlir, h2m.annotations())?;
 
     println!("==== {} ====", mlfile.name);
-    mlir_out_dir.push(&mlfile.name);
-    let mut f = fs::File::create(&mlir_out_dir)?;
+    let mut f = fs::File::create(&mlir_out_dir.join(&mlfile.name))?;
     write!(f, "{}", mlfile.to_string())?;
-    mlir_out_dir.pop();
 
     let module_name = &mlfile.name;
     let context = Context::create();
