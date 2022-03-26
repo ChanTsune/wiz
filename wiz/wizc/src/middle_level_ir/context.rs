@@ -2,11 +2,13 @@ use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use std::collections::HashMap;
 use wiz_mir::ml_decl::MLStruct;
 use wiz_mir::ml_type::MLValueType;
+use crate::high_level_ir::typed_decl::TypedDecl;
 
 pub(crate) struct HLIR2MLIRContext {
     pub(crate) declaration_annotations: HashMap<String, TypedAnnotations>,
     pub(crate) structs: HashMap<MLValueType, MLStruct>,
     pub(crate) current_name_space: Vec<String>,
+    pub(crate) declarations: Vec<TypedDecl>,
 }
 
 impl HLIR2MLIRContext {
@@ -14,7 +16,8 @@ impl HLIR2MLIRContext {
         Self {
             declaration_annotations: Default::default(),
             structs: Default::default(),
-            current_name_space: vec![],
+            current_name_space: Default::default(),
+            declarations: Default::default(),
         }
     }
 
