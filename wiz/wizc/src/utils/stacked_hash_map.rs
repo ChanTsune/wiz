@@ -67,17 +67,6 @@ where
     }
 }
 
-impl<K, V, S> StackedHashMap<K, V, S>
-where
-    K: Hash + Eq,
-    V: Default,
-    S: BuildHasher + Default,
-{
-    pub(crate) fn push_default(&mut self) {
-        self.push(Default::default())
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use crate::utils::stacked_hash_map::StackedHashMap;
