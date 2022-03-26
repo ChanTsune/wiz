@@ -181,10 +181,8 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
     fs::create_dir_all(&mlir_out_dir)?;
     for m in std_mlir.iter() {
         println!("==== {} ====", m.name);
-        mlir_out_dir.push(m.name.clone());
-        let mut f = fs::File::create(&mlir_out_dir)?;
+        let mut f = fs::File::create(&mlir_out_dir.join(&m.name))?;
         write!(f, "{}", m.to_string())?;
-        mlir_out_dir.pop();
     }
 
     let (mlfile, _) = hlir2mlir(hlfiles, &std_mlir, h2m.annotations())?;
