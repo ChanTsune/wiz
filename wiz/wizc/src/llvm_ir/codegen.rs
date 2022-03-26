@@ -552,10 +552,8 @@ impl<'ctx> CodeGen<'ctx> {
             .unwrap();
         let target = match self.expr(*m.target) {
             AnyValueEnum::PointerValue(p) => p,
-            AnyValueEnum::StructValue(_) => {
-                eprintln!("never execution branch executed.");
-                panic!("struct member can not access directly.");
-            }
+            AnyValueEnum::StructValue(_) =>
+                panic!("never execution branch executed.\nstruct member can not access directly."),
             _ => panic!("never execution branch executed."),
         };
 
