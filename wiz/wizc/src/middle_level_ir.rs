@@ -62,7 +62,7 @@ pub struct HLIR2MLIR {
 impl HLIR2MLIR {
     pub fn new() -> Self {
         HLIR2MLIR {
-            context: HLIR2MLIRContext::new(),
+            context: Default::default(),
             module: MLIRModule::new(),
         }
     }
