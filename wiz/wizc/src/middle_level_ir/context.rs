@@ -13,15 +13,6 @@ pub(crate) struct HLIR2MLIRContext {
 }
 
 impl HLIR2MLIRContext {
-    pub(crate) fn new() -> Self {
-        Self {
-            declaration_annotations: Default::default(),
-            structs: Default::default(),
-            current_name_space: Default::default(),
-            declarations: Default::default(),
-        }
-    }
-
     pub(crate) fn set_declaration_annotations(&mut self, name: String, a: TypedAnnotations) {
         self.declaration_annotations.insert(name, a);
     }
