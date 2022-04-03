@@ -20,10 +20,6 @@ pub struct MLIRModule {
 }
 
 impl MLIRModule {
-    pub fn new() -> Self {
-        Self::default()
-    }
-
     pub fn create_function(
         &mut self,
         name: String,

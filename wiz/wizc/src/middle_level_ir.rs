@@ -63,7 +63,7 @@ impl HLIR2MLIR {
     pub fn new() -> Self {
         HLIR2MLIR {
             context: Default::default(),
-            module: MLIRModule::new(),
+            module: MLIRModule::default(),
         }
     }
 
