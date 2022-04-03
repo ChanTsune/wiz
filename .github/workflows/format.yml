@@ -8,7 +8,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: run format
-        run: cargo fmt --manifest-path wiz/Cargo.toml
+        run: cargo fmt --manifest-path wiz/Cargo.toml --all
       - name: Commit changes
         uses: EndBug/add-and-commit@v9
         with:
