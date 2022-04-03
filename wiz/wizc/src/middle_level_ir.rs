@@ -54,6 +54,7 @@ pub fn hlir2mlir(
     ))
 }
 
+#[derive(Default)]
 pub struct HLIR2MLIR {
     context: HLIR2MLIRContext,
     module: MLIRModule,
@@ -61,10 +62,7 @@ pub struct HLIR2MLIR {
 
 impl HLIR2MLIR {
     pub fn new() -> Self {
-        HLIR2MLIR {
-            context: Default::default(),
-            module: MLIRModule::default(),
-        }
+        Self::default()
     }
 
     pub(crate) fn annotations(self) -> HashMap<String, TypedAnnotations> {
