@@ -38,8 +38,8 @@ main() {
 
 build_install() {
     TMP="$(pwd)"
-    cd "wiz/$1"
-    cargo build --release
+    cd "wiz"
+    cargo build --bin "$1" --release
     cp "target/release/$1" "$BIN_DIR/$1"
     cd "$TMP"
 }
