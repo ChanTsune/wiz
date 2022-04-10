@@ -11,7 +11,7 @@ use crate::ml_type::MLValueType;
 use crate::statement::{MLAssignmentStmt, MLLoopStmt, MLReturn, MLStmt};
 use linked_hash_map::LinkedHashMap;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct MLIRModule {
     functions: LinkedHashMap<String, FunBuilder>,
     variables: LinkedHashMap<String, MLVar>,
@@ -20,15 +20,6 @@ pub struct MLIRModule {
 }
 
 impl MLIRModule {
-    pub fn new() -> Self {
-        Self {
-            functions: Default::default(),
-            variables: Default::default(),
-            structs: Default::default(),
-            current_function: None,
-        }
-    }
-
     pub fn create_function(
         &mut self,
         name: String,

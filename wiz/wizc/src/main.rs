@@ -57,9 +57,10 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
         .unwrap_or_else(|| env::current_dir().unwrap());
     let build_type = config.type_().unwrap_or_else(|| BuildType::Binary);
 
-    let mut mlir_out_dir = out_dir.join("mlir");
+    let mlir_out_dir = out_dir.join("mlir");
 
-    println!("=== parse files ===");
+    let id_parse_files = "parse files";
+    session.start(id_parse_files);
 
     let input_source = if input.is_dir() {
         read_package_from_path(input, config.name())?
@@ -86,6 +87,13 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
             }
         }
     }
+
+    session.stop(id_parse_files);
+    println!(
+        "{}: {}ms",
+        id_parse_files,
+        session.get_duration(id_parse_files).unwrap().as_millis()
+    );
 
     println!("=== load dependencies ===");
     let libraries = config.libraries();
@@ -173,19 +181,15 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
     fs::create_dir_all(&mlir_out_dir)?;
     for m in std_mlir.iter() {
         println!("==== {} ====", m.name);
-        mlir_out_dir.push(m.name.clone());
-        let mut f = fs::File::create(&mlir_out_dir)?;
+        let mut f = fs::File::create(&mlir_out_dir.join(&m.name))?;
         write!(f, "{}", m.to_string())?;
-        mlir_out_dir.pop();
     }
 
     let (mlfile, _) = hlir2mlir(hlfiles, &std_mlir, h2m.annotations())?;
 
     println!("==== {} ====", mlfile.name);
-    mlir_out_dir.push(&mlfile.name);
-    let mut f = fs::File::create(&mlir_out_dir)?;
+    let mut f = fs::File::create(&mlir_out_dir.join(&mlfile.name))?;
     write!(f, "{}", mlfile.to_string())?;
-    mlir_out_dir.pop();
 
     let module_name = &mlfile.name;
     let context = Context::create();
@@ -200,15 +204,14 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
     let emit = config.emit().unwrap_or("llvm-ir");
 
     let output = if let Some(output) = output {
-        String::from(output)
+        PathBuf::from(output)
     } else {
         let mut output_path = Path::new(&mlfile.name).to_path_buf();
         output_path.set_extension("ll");
-        String::from(output_path.to_str().unwrap())
+        output_path
     };
 
-    let mut out_path = out_dir;
-    out_path.push(output);
+    let out_path = out_dir.join(output);
 
     println!("Output Path -> {:?}", out_path);
 

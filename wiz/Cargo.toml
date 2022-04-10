@@ -1,0 +1,12 @@
+[workspace]
+
+members = [
+    "wiz",
+    "wiz_dev_utils",
+    "wiz_lexar",
+    "wiz_mir",
+    "wiz_session",
+    "wiz_syntax",
+    "wizc",
+    "wizc_cli",
+]

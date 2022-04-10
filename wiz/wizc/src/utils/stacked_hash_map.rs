@@ -2,7 +2,7 @@ use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
 use std::hash::{BuildHasher, Hash};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub(crate) struct StackedHashMap<K, V, S = RandomState> {
     map_stack: Vec<HashMap<K, V, S>>,
 }
@@ -54,27 +54,6 @@ where
 {
     pub(crate) fn into_map(self) -> HashMap<K, V, S> {
         self.map_stack.into_iter().flatten().collect()
-    }
-}
-
-impl<K, V, S> Default for StackedHashMap<K, V, S>
-where
-    K: Hash + Eq,
-    S: BuildHasher,
-{
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl<K, V, S> StackedHashMap<K, V, S>
-where
-    K: Hash + Eq,
-    V: Default,
-    S: BuildHasher + Default,
-{
-    pub(crate) fn push_default(&mut self) {
-        self.push(Default::default())
     }
 }
 

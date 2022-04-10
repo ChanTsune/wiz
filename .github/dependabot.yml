@@ -10,6 +10,10 @@ updates:
     schedule:
       interval: "daily"
   - package-ecosystem: "cargo"
+    directory: "/wiz"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "cargo"
     directory: "/wiz/wiz"
     schedule:
       interval: "daily"
