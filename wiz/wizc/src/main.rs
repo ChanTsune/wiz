@@ -8,7 +8,7 @@ use crate::middle_level_ir::{hlir2mlir, HLIR2MLIR};
 use inkwell::context::Context;
 use std::error::Error;
 use std::io::Write;
-use std::path::{PathBuf};
+use std::path::PathBuf;
 use std::{env, fs, result};
 use wiz_session::Session;
 use wiz_syntax::parser;
