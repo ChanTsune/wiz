@@ -75,15 +75,14 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
             .into_iter()
             .chain(paths.iter().map(PathBuf::from))
         {
-            p.extend([l, "Package.wiz"]);
-            if p.exists() {
-                p.pop();
-                println!("`{}` found at {}", l, p.display());
-                lib_paths.push(p);
+            let lib_path = p.join(l);
+            let package_manifest_path = lib_path.join("Package.wiz");
+            if package_manifest_path.exists() {
+                println!("`{}` found at {}", l, lib_path.display());
+                lib_paths.push(lib_path);
                 break;
             } else {
-                p.pop();
-                println!("`{}` Not found at {}", l, p.display());
+                println!("`{}` Not found at {}", l, lib_path.display());
             }
         }
     }
