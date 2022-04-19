@@ -205,7 +205,7 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
     let output = if let Some(output) = output {
         PathBuf::from(output)
     } else {
-        let mut output_path = Path::new(&mlfile.name).to_path_buf();
+        let mut output_path = PathBuf::from(&mlfile.name);
         output_path.set_extension("ll");
         output_path
     };
