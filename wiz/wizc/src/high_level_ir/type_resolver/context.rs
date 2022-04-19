@@ -40,9 +40,7 @@ impl NameSpace {
         Self::default()
     }
 
-    pub(crate) fn new<T>(name: Vec<T>) -> Self
-    where
-        T: ToString,
+    pub(crate) fn new<T: ToString>(name: Vec<T>) -> Self
     {
         Self {
             name_space: name.into_iter().map(|i| i.to_string()).collect(),
@@ -50,9 +48,7 @@ impl NameSpace {
         }
     }
 
-    pub(crate) fn get_child<T>(&self, mut ns: Vec<T>) -> Option<&NameSpace>
-    where
-        T: ToString,
+    pub(crate) fn get_child<T: ToString>(&self, mut ns: Vec<T>) -> Option<&NameSpace>
     {
         if ns.is_empty() {
             Some(self)
@@ -67,9 +63,7 @@ impl NameSpace {
         }
     }
 
-    pub(crate) fn get_child_mut<T>(&mut self, mut ns: Vec<T>) -> Option<&mut NameSpace>
-    where
-        T: ToString,
+    pub(crate) fn get_child_mut<T: ToString>(&mut self, mut ns: Vec<T>) -> Option<&mut NameSpace>
     {
         if ns.is_empty() {
             Some(self)
@@ -84,9 +78,7 @@ impl NameSpace {
         }
     }
 
-    pub(crate) fn set_child<T>(&mut self, mut ns: Vec<T>)
-    where
-        T: ToString,
+    pub(crate) fn set_child<T: ToString>(&mut self, mut ns: Vec<T>)
     {
         if !ns.is_empty() {
             let n = &ns.remove(0).to_string();
