@@ -4,7 +4,6 @@ pub mod result;
 #[cfg(test)]
 mod tests;
 
-use wiz_session::Session;
 use crate::high_level_ir::type_resolver::context::{ResolverContext, ResolverStruct};
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
@@ -27,6 +26,7 @@ use crate::high_level_ir::typed_type::{
     TypedValueType,
 };
 use crate::high_level_ir::typed_type_constraint::TypedTypeConstraint;
+use wiz_session::Session;
 
 #[derive(Debug, Clone)]
 pub(crate) struct TypeResolver<'s> {
@@ -36,7 +36,10 @@ pub(crate) struct TypeResolver<'s> {
 
 impl<'s> TypeResolver<'s> {
     pub fn new(session: &'s Session) -> Self {
-        Self { session, context: ResolverContext::new() }
+        Self {
+            session,
+            context: ResolverContext::new(),
+        }
     }
 
     pub(crate) fn global_use<T: ToString>(&mut self, name_space: &[T]) {

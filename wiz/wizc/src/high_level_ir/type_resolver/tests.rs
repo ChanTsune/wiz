@@ -1,4 +1,3 @@
-use wiz_session::Session;
 use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_decl::{
@@ -19,6 +18,7 @@ use crate::high_level_ir::typed_type::{
     TypedValueType,
 };
 use crate::high_level_ir::Ast2HLIR;
+use wiz_session::Session;
 use wiz_syntax::parser::wiz::parse_from_string;
 
 fn check(source: &str, typed_file: TypedFile) {
