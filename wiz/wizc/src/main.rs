@@ -119,7 +119,7 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
 
     println!("=== resolve type ===");
 
-    let mut type_resolver = TypeResolver::new();
+    let mut type_resolver = TypeResolver::new(session);
     type_resolver.global_use(&["core", "builtin", "*"]);
     type_resolver.global_use(&["std", "builtin", "*"]);
 

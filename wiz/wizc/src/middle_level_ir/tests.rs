@@ -9,6 +9,7 @@ use wiz_mir::ml_decl::{MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, ML
 use wiz_mir::ml_file::MLFile;
 use wiz_mir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
 use wiz_mir::statement::{MLAssignmentStmt, MLReturn, MLStmt};
+use wiz_session::Session;
 use wiz_syntax::parser::wiz::parse_from_string;
 
 fn check(source: &str, except: MLFile) {
@@ -19,7 +20,9 @@ fn check(source: &str, except: MLFile) {
     let mut file = ast2hlir.file(ast);
     file.name = String::from("test");
 
-    let mut resolver = TypeResolver::new();
+    let session = Session::new();
+
+    let mut resolver = TypeResolver::new(&session);
     let _ = resolver.detect_type(&file).unwrap();
     let _ = resolver.preload_file(file.clone()).unwrap();
     let hl_file = resolver.file(file).unwrap();
