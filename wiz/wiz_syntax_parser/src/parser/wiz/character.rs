@@ -1,5 +1,5 @@
 use crate::parser::wiz::lexical_structure::token;
-use crate::syntax::token::TokenSyntax;
+use wiz_syntax::syntax::token::TokenSyntax;
 use nom::bytes::complete::take_while_m_n;
 use nom::character::complete::char;
 use nom::combinator::map;
@@ -122,7 +122,7 @@ mod tests {
         alphabet, ampersand, backticks, carriage_return, comma, digit, dot, double_quote,
         form_feed, not_double_quote_or_back_slash, space, under_score, vertical_tab,
     };
-    use crate::syntax::token::TokenSyntax;
+    use wiz_syntax::syntax::token::TokenSyntax;
 
     #[test]
     fn test_alphabet() {

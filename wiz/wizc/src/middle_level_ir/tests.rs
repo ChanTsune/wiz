@@ -10,7 +10,7 @@ use wiz_mir::ml_file::MLFile;
 use wiz_mir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
 use wiz_mir::statement::{MLAssignmentStmt, MLReturn, MLStmt};
 use wiz_session::Session;
-use wiz_syntax::parser::wiz::parse_from_string;
+use wiz_syntax_parser::parser::wiz::parse_from_string;
 
 fn check(source: &str, except: MLFile) {
     let ast = parse_from_string(source).unwrap();

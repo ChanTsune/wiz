@@ -1,8 +1,8 @@
 use crate::parser::wiz::character::comma;
 use crate::parser::wiz::lexical_structure::{identifier, token, whitespace0};
-use crate::syntax::annotation::{Annotation, AnnotationsSyntax};
-use crate::syntax::token::TokenSyntax;
-use crate::syntax::Syntax;
+use wiz_syntax::syntax::annotation::{Annotation, AnnotationsSyntax};
+use wiz_syntax::syntax::token::TokenSyntax;
+use wiz_syntax::syntax::Syntax;
 use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
@@ -59,8 +59,8 @@ where
 mod tests {
     use crate::parser::tests::check;
     use crate::parser::wiz::annotation::annotations_syntax;
-    use crate::syntax::annotation::{Annotation, AnnotationsSyntax};
-    use crate::syntax::token::TokenSyntax;
+    use wiz_syntax::syntax::annotation::{Annotation, AnnotationsSyntax};
+    use wiz_syntax::syntax::token::TokenSyntax;
 
     #[test]
     fn test_annotations() {

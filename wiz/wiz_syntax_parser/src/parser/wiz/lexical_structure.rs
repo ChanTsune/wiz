@@ -1,8 +1,8 @@
 use crate::parser::wiz::character::{
     alphabet, backticks, carriage_return, digit, form_feed, space, under_score, vertical_tab,
 };
-use crate::syntax::token::TokenSyntax;
-use crate::syntax::trivia::{Trivia, TriviaPiece};
+use wiz_syntax::syntax::token::TokenSyntax;
+use wiz_syntax::syntax::trivia::{Trivia, TriviaPiece};
 use nom::branch::{alt, permutation};
 use nom::bytes::complete::{tag, take_until, take_while_m_n};
 use nom::character::complete::{crlf, newline, tab};
@@ -401,7 +401,7 @@ mod tests {
         doc_line_comment, form_feeds, identifier, line_comment, newlines, spaces, tabs,
         vertical_tabs, whitespace0, whitespace1,
     };
-    use crate::syntax::trivia::{Trivia, TriviaPiece};
+    use wiz_syntax::syntax::trivia::{Trivia, TriviaPiece};
     use nom::error;
     use nom::error::ErrorKind;
     use nom::Err;

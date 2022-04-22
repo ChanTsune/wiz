@@ -19,7 +19,7 @@ use crate::high_level_ir::typed_type::{
 };
 use crate::high_level_ir::Ast2HLIR;
 use wiz_session::Session;
-use wiz_syntax::parser::wiz::parse_from_string;
+use wiz_syntax_parser::parser::wiz::parse_from_string;
 
 fn check(source: &str, typed_file: TypedFile) {
     let ast = parse_from_string(source).unwrap();

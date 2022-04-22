@@ -15,8 +15,8 @@ use crate::parser::wiz::operators::{
 };
 use crate::parser::wiz::statement::stmt;
 use crate::parser::wiz::type_::{type_, type_arguments};
-use crate::syntax::block::BlockSyntax;
-use crate::syntax::expression::{
+use wiz_syntax::syntax::block::BlockSyntax;
+use wiz_syntax::syntax::expression::{
     ArgLabelSyntax, ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg,
     CallArgElementSyntax, CallArgListSyntax, CallExprSyntax, ElseSyntax, Expr, IfExprSyntax,
     LambdaSyntax, MemberSyntax, NameExprSyntax, ParenthesizedExprSyntax, PostfixSuffix,
@@ -24,12 +24,12 @@ use crate::syntax::expression::{
     SubscriptIndexElementSyntax, SubscriptIndexListSyntax, SubscriptSyntax, TypeCastSyntax,
     UnaryOperationSyntax,
 };
-use crate::syntax::literal::LiteralSyntax;
-use crate::syntax::statement::Stmt;
-use crate::syntax::token::TokenSyntax;
-use crate::syntax::trivia::Trivia;
-use crate::syntax::type_name::TypeName;
-use crate::syntax::Syntax;
+use wiz_syntax::syntax::literal::LiteralSyntax;
+use wiz_syntax::syntax::statement::Stmt;
+use wiz_syntax::syntax::token::TokenSyntax;
+use wiz_syntax::syntax::trivia::Trivia;
+use wiz_syntax::syntax::type_name::TypeName;
+use wiz_syntax::syntax::Syntax;
 use nom::branch::{alt, permutation};
 use nom::bytes::complete::{escaped_transform, take_until, take_while_m_n};
 use nom::character::complete::{char, digit1};
@@ -1270,24 +1270,24 @@ mod tests {
         postfix_suffix, primary_expr, raw_string_literal, return_expr, string_literal,
         value_arguments,
     };
-    use crate::syntax::block::BlockSyntax;
-    use crate::syntax::declaration::VarSyntax;
-    use crate::syntax::declaration::{DeclKind, DeclarationSyntax};
-    use crate::syntax::expression::{
+    use wiz_syntax::syntax::block::BlockSyntax;
+    use wiz_syntax::syntax::declaration::VarSyntax;
+    use wiz_syntax::syntax::declaration::{DeclKind, DeclarationSyntax};
+    use wiz_syntax::syntax::expression::{
         ArgLabelSyntax, ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg,
         CallArgElementSyntax, CallArgListSyntax, CallExprSyntax, ElseSyntax, Expr, IfExprSyntax,
         MemberSyntax, NameExprSyntax, PostfixSuffix, ReturnSyntax, SubscriptIndexElementSyntax,
         SubscriptIndexListSyntax,
     };
-    use crate::syntax::literal::LiteralSyntax;
-    use crate::syntax::name_space::NameSpaceSyntax;
-    use crate::syntax::statement::Stmt;
-    use crate::syntax::token::TokenSyntax;
-    use crate::syntax::trivia::{Trivia, TriviaPiece};
-    use crate::syntax::type_name::{
+    use wiz_syntax::syntax::literal::LiteralSyntax;
+    use wiz_syntax::syntax::name_space::NameSpaceSyntax;
+    use wiz_syntax::syntax::statement::Stmt;
+    use wiz_syntax::syntax::token::TokenSyntax;
+    use wiz_syntax::syntax::trivia::{Trivia, TriviaPiece};
+    use wiz_syntax::syntax::type_name::{
         SimpleTypeName, TypeArgumentElementSyntax, TypeArgumentListSyntax, TypeName,
     };
-    use crate::syntax::Syntax;
+    use wiz_syntax::syntax::Syntax;
 
     #[test]
     fn test_integer_literal() {
