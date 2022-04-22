@@ -1,13 +1,13 @@
 use crate::parser::wiz::character::comma;
 use crate::parser::wiz::lexical_structure::{identifier, token, whitespace0};
-use wiz_syntax::syntax::annotation::{Annotation, AnnotationsSyntax};
-use wiz_syntax::syntax::token::TokenSyntax;
-use wiz_syntax::syntax::Syntax;
 use nom::combinator::{map, opt};
 use nom::multi::many0;
 use nom::sequence::tuple;
 use nom::{AsChar, Compare, FindSubstring, IResult, InputIter, InputLength, InputTake, Slice};
 use std::ops::{Range, RangeFrom};
+use wiz_syntax::syntax::annotation::{Annotation, AnnotationsSyntax};
+use wiz_syntax::syntax::token::TokenSyntax;
+use wiz_syntax::syntax::Syntax;
 
 pub fn annotations_syntax<I>(s: I) -> IResult<I, AnnotationsSyntax>
 where

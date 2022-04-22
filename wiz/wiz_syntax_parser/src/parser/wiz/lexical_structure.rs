@@ -1,8 +1,6 @@
 use crate::parser::wiz::character::{
     alphabet, backticks, carriage_return, digit, form_feed, space, under_score, vertical_tab,
 };
-use wiz_syntax::syntax::token::TokenSyntax;
-use wiz_syntax::syntax::trivia::{Trivia, TriviaPiece};
 use nom::branch::{alt, permutation};
 use nom::bytes::complete::{tag, take_until, take_while_m_n};
 use nom::character::complete::{crlf, newline, tab};
@@ -13,6 +11,8 @@ use nom::multi::{many0, many1};
 use nom::sequence::tuple;
 use nom::{AsChar, Compare, FindSubstring, IResult, InputIter, InputLength, InputTake, Slice};
 use std::iter::FromIterator;
+use wiz_syntax::syntax::token::TokenSyntax;
+use wiz_syntax::syntax::trivia::{Trivia, TriviaPiece};
 
 pub fn token<T, Input, Error: ParseError<Input>>(
     tkn: T,
@@ -401,10 +401,10 @@ mod tests {
         doc_line_comment, form_feeds, identifier, line_comment, newlines, spaces, tabs,
         vertical_tabs, whitespace0, whitespace1,
     };
-    use wiz_syntax::syntax::trivia::{Trivia, TriviaPiece};
     use nom::error;
     use nom::error::ErrorKind;
     use nom::Err;
+    use wiz_syntax::syntax::trivia::{Trivia, TriviaPiece};
 
     #[test]
     fn test_identifier() {

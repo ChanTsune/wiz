@@ -1,7 +1,7 @@
 use crate::parser::wiz::lexical_structure::token;
-use wiz_syntax::syntax::token::TokenSyntax;
 use nom::bytes::complete::tag;
 use nom::{Compare, IResult, InputTake};
+use wiz_syntax::syntax::token::TokenSyntax;
 
 pub fn struct_keyword<I>(s: I) -> IResult<I, TokenSyntax>
 where

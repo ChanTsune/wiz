@@ -4,14 +4,6 @@ use crate::parser::wiz::keywords::{for_keyword, in_keyword, while_keyword};
 use crate::parser::wiz::lexical_structure::{identifier, token, whitespace0, whitespace1};
 use crate::parser::wiz::operators::{assignment_and_operator, assignment_operator};
 use crate::parser::Span;
-use wiz_syntax::syntax::expression::{Expr, NameExprSyntax, ParenthesizedExprSyntax};
-use wiz_syntax::syntax::file::FileSyntax;
-use wiz_syntax::syntax::statement::{
-    AssignmentAndOperatorSyntax, AssignmentStmt, AssignmentSyntax, ForLoopSyntax, LoopStmt, Stmt,
-    WhileLoopSyntax,
-};
-use wiz_syntax::syntax::token::TokenSyntax;
-use wiz_syntax::syntax::Syntax;
 use nom::branch::alt;
 use nom::combinator::map;
 use nom::multi::many0;
@@ -22,6 +14,14 @@ use nom::{
     InputTakeAtPosition, Offset, Slice,
 };
 use std::ops::{Range, RangeFrom};
+use wiz_syntax::syntax::expression::{Expr, NameExprSyntax, ParenthesizedExprSyntax};
+use wiz_syntax::syntax::file::FileSyntax;
+use wiz_syntax::syntax::statement::{
+    AssignmentAndOperatorSyntax, AssignmentStmt, AssignmentSyntax, ForLoopSyntax, LoopStmt, Stmt,
+    WhileLoopSyntax,
+};
+use wiz_syntax::syntax::token::TokenSyntax;
+use wiz_syntax::syntax::Syntax;
 
 pub fn decl_stmt<I>(s: I) -> IResult<I, Stmt>
 where

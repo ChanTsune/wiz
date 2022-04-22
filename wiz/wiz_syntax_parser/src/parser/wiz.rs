@@ -2,11 +2,11 @@ use crate::parser::error::ParseError;
 use crate::parser::result::Result;
 use crate::parser::wiz::statement::file;
 use crate::parser::Span;
-use wiz_syntax::syntax::file::{SourceSet, WizFile};
 use std::fs;
 use std::fs::{read_to_string, File};
 use std::io::Read;
 use std::path::Path;
+use wiz_syntax::syntax::file::{SourceSet, WizFile};
 use wiz_syntax::syntax::{get_line_offset, Location};
 
 pub mod annotation;

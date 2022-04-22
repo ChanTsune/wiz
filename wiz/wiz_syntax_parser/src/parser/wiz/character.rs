@@ -1,10 +1,10 @@
 use crate::parser::wiz::lexical_structure::token;
-use wiz_syntax::syntax::token::TokenSyntax;
 use nom::bytes::complete::take_while_m_n;
 use nom::character::complete::char;
 use nom::combinator::map;
 use nom::{AsChar, Compare, IResult, InputIter, InputLength, InputTake, Slice};
 use std::ops::RangeFrom;
+use wiz_syntax::syntax::token::TokenSyntax;
 
 pub fn not_double_quote_or_back_slash<I>(s: I) -> IResult<I, char>
 where

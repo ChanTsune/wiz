@@ -15,6 +15,18 @@ use crate::parser::wiz::operators::{
 };
 use crate::parser::wiz::statement::stmt;
 use crate::parser::wiz::type_::{type_, type_arguments};
+use nom::branch::{alt, permutation};
+use nom::bytes::complete::{escaped_transform, take_until, take_while_m_n};
+use nom::character::complete::{char, digit1};
+use nom::combinator::{map, opt, value};
+use nom::multi::many0;
+use nom::sequence::tuple;
+use nom::{
+    AsChar, Compare, ExtendInto, FindSubstring, IResult, InputIter, InputLength, InputTake,
+    InputTakeAtPosition, Offset, Slice,
+};
+use std::char::{decode_utf16, REPLACEMENT_CHARACTER};
+use std::ops::{Range, RangeFrom};
 use wiz_syntax::syntax::block::BlockSyntax;
 use wiz_syntax::syntax::expression::{
     ArgLabelSyntax, ArrayElementSyntax, ArraySyntax, BinaryOperationSyntax, CallArg,
@@ -30,18 +42,6 @@ use wiz_syntax::syntax::token::TokenSyntax;
 use wiz_syntax::syntax::trivia::Trivia;
 use wiz_syntax::syntax::type_name::TypeName;
 use wiz_syntax::syntax::Syntax;
-use nom::branch::{alt, permutation};
-use nom::bytes::complete::{escaped_transform, take_until, take_while_m_n};
-use nom::character::complete::{char, digit1};
-use nom::combinator::{map, opt, value};
-use nom::multi::many0;
-use nom::sequence::tuple;
-use nom::{
-    AsChar, Compare, ExtendInto, FindSubstring, IResult, InputIter, InputLength, InputTake,
-    InputTakeAtPosition, Offset, Slice,
-};
-use std::char::{decode_utf16, REPLACEMENT_CHARACTER};
-use std::ops::{Range, RangeFrom};
 
 pub fn integer_literal<I>(s: I) -> IResult<I, LiteralSyntax>
 where

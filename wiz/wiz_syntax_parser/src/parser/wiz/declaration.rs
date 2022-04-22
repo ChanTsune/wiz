@@ -8,6 +8,16 @@ use crate::parser::wiz::keywords::{
 use crate::parser::wiz::lexical_structure::{identifier, token, whitespace0, whitespace1};
 use crate::parser::wiz::statement::stmt;
 use crate::parser::wiz::type_::{type_, type_parameter, type_parameters};
+use nom::branch::alt;
+use nom::bytes::complete::tag;
+use nom::combinator::{map, opt};
+use nom::multi::{many0, many1};
+use nom::sequence::tuple;
+use nom::{
+    AsChar, Compare, ExtendInto, FindSubstring, IResult, InputIter, InputLength, InputTake,
+    InputTakeAtPosition, Offset, Slice,
+};
+use std::ops::{Range, RangeFrom};
 use wiz_syntax::syntax::block::BlockSyntax;
 use wiz_syntax::syntax::declaration::fun_syntax::{
     ArgDef, ArgDefElementSyntax, ArgDefListSyntax, ExprFunBodySyntax, FunBody, FunSyntax,
@@ -22,16 +32,6 @@ use wiz_syntax::syntax::declaration::{PackageNameElement, VarSyntax};
 use wiz_syntax::syntax::token::TokenSyntax;
 use wiz_syntax::syntax::type_name::{TypeConstraintElementSyntax, TypeConstraintsSyntax};
 use wiz_syntax::syntax::Syntax;
-use nom::branch::alt;
-use nom::bytes::complete::tag;
-use nom::combinator::{map, opt};
-use nom::multi::{many0, many1};
-use nom::sequence::tuple;
-use nom::{
-    AsChar, Compare, ExtendInto, FindSubstring, IResult, InputIter, InputLength, InputTake,
-    InputTakeAtPosition, Offset, Slice,
-};
-use std::ops::{Range, RangeFrom};
 
 pub fn decl<I>(s: I) -> IResult<I, DeclarationSyntax>
 where

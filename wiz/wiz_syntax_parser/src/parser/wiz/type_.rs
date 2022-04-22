@@ -1,5 +1,12 @@
 use crate::parser::wiz::character::{ampersand, comma};
 use crate::parser::wiz::lexical_structure::{identifier, token, whitespace0};
+use nom::branch::alt;
+use nom::character::complete::char;
+use nom::combinator::{map, opt};
+use nom::multi::{many0, many1};
+use nom::sequence::tuple;
+use nom::{AsChar, Compare, FindSubstring, IResult, InputIter, InputLength, InputTake, Slice};
+use std::ops::{Range, RangeFrom};
 use wiz_syntax::syntax::token::TokenSyntax;
 use wiz_syntax::syntax::type_name::{
     ArrayTypeSyntax, DecoratedTypeName, ParenthesizedTypeName, SimpleTypeName,
@@ -8,13 +15,6 @@ use wiz_syntax::syntax::type_name::{
     UserTypeName,
 };
 use wiz_syntax::syntax::Syntax;
-use nom::branch::alt;
-use nom::character::complete::char;
-use nom::combinator::{map, opt};
-use nom::multi::{many0, many1};
-use nom::sequence::tuple;
-use nom::{AsChar, Compare, FindSubstring, IResult, InputIter, InputLength, InputTake, Slice};
-use std::ops::{Range, RangeFrom};
 
 pub fn type_<I>(s: I) -> IResult<I, TypeName>
 where
