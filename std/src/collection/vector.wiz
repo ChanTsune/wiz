@@ -57,6 +57,10 @@ struct UInt8Vector {
         return t
     }
 
+    fun clear(&self): Unit {
+        self.length = 0
+    }
+
     fun shinkTo(&self, minSize: UInt64): Unit {
         self.ptr = realloc(self.ptr, minSize)
         self.capacity = minSize
