@@ -71,6 +71,15 @@ struct UInt8Vector {
         self.ptr[index] = element
     }
 
+    fun swap(&self, index: UInt64, element: UInt8): UInt8 {
+        if self.length <= index {
+            return element
+        }
+        val t = self.ptr[index]
+        self.ptr[index] = element
+        return t
+    }
+
     fun clear(&self): Unit {
         self.length = 0
     }
