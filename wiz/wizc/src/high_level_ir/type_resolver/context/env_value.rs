@@ -10,10 +10,7 @@ pub enum EnvValue {
 }
 
 impl EnvValue {
-    pub(crate) fn get<T>(&self, mut ns: Vec<T>) -> Option<&EnvValue>
-    where
-        T: ToString,
-    {
+    pub(crate) fn get<T: ToString>(&self, mut ns: Vec<T>) -> Option<&EnvValue> {
         if ns.is_empty() {
             Some(self)
         } else {
@@ -25,10 +22,7 @@ impl EnvValue {
         }
     }
 
-    pub(crate) fn get_mut<T>(&mut self, mut ns: Vec<T>) -> Option<&mut EnvValue>
-    where
-        T: ToString,
-    {
+    pub(crate) fn get_mut<T: ToString>(&mut self, mut ns: Vec<T>) -> Option<&mut EnvValue> {
         if ns.is_empty() {
             Some(self)
         } else {
