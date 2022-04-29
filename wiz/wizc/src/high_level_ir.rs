@@ -286,13 +286,7 @@ impl Ast2HLIR {
             let mut group = HashMap::new();
             for type_constraint in type_constraints {
                 let name = type_constraint.name.token();
-                let mut constraints = if group.contains_key(&name) {
-                    group.remove(&name).unwrap()
-                } else {
-                    vec![]
-                };
-                constraints.push(type_constraint.type_constraint);
-                group.insert(name, constraints);
+                group.entry(name).or_default().push(type_constraint.type_constraint);
             }
             group
                 .into_iter()
