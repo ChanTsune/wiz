@@ -1,11 +1,11 @@
 mod arena;
 pub mod context;
 pub mod error;
+mod name_environment;
 mod namespace;
 pub mod result;
 #[cfg(test)]
 mod tests;
-mod name_environment;
 
 use crate::high_level_ir::type_resolver::context::{ResolverContext, ResolverStruct};
 use crate::high_level_ir::type_resolver::error::ResolverError;

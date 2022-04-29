@@ -1,8 +1,8 @@
-use std::collections::HashMap;
 use crate::high_level_ir::type_resolver::context::{EnvValue, ResolverStruct};
 use crate::high_level_ir::type_resolver::namespace::NameSpace;
 use crate::high_level_ir::typed_type::TypedType;
 use crate::utils::stacked_hash_map::StackedHashMap;
+use std::collections::HashMap;
 
 #[derive(Debug, Default, Eq, PartialEq, Clone)]
 pub struct NameEnvironment {
