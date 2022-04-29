@@ -12,6 +12,7 @@ use crate::high_level_ir::typed_type::{
 };
 use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::{HashMap, HashSet};
+use crate::high_level_ir::type_resolver::arena::ResolverArena;
 
 #[derive(Debug, Default, Eq, PartialEq, Clone)]
 pub struct NameSpace {
@@ -28,8 +29,7 @@ pub struct NameEnvironment {
 pub struct ResolverContext {
     global_used_name_space: Vec<Vec<String>>,
     used_name_space: Vec<Vec<String>>,
-    name_space: NameSpace,
-    binary_operators: HashMap<(TypedBinaryOperator, TypedType, TypedType), TypedType>,
+    arena: ResolverArena,
     pub(crate) current_namespace: Vec<String>,
     current_type: Option<TypedType>,
     local_stack: StackedHashMap<String, EnvValue>,
@@ -221,27 +221,10 @@ impl NameEnvironment {
 
 impl ResolverContext {
     pub(crate) fn new() -> Self {
-        let mut ns = NameSpace::empty();
-
-        for t in TypedType::builtin_types() {
-            match &t {
-                TypedType::Value(v) => match v {
-                    TypedValueType::Value(v) => {
-                        ns.register_type(v.name.clone(), ResolverStruct::new(t.clone()));
-                    }
-                    TypedValueType::Array(_, _) => {}
-                    TypedValueType::Tuple(_) => {}
-                    TypedValueType::Pointer(_) => {}
-                    TypedValueType::Reference(_) => {}
-                },
-                _ => {}
-            };
-        }
         Self {
             global_used_name_space: Default::default(),
             used_name_space: Default::default(),
-            name_space: ns,
-            binary_operators: Default::default(),
+            arena: ResolverArena::default(),
             current_namespace: Default::default(),
             current_type: None,
             local_stack: StackedHashMap::new(),
@@ -250,7 +233,7 @@ impl ResolverContext {
 
     pub fn push_name_space(&mut self, name: String) {
         self.current_namespace.push(name);
-        self.name_space.set_child(self.current_namespace.clone());
+        self.arena.name_space.set_child(self.current_namespace.clone());
     }
 
     pub fn pop_name_space(&mut self) {
@@ -263,7 +246,7 @@ impl ResolverContext {
 
     pub fn get_namespace_mut(&mut self, ns: Vec<String>) -> Result<&mut NameSpace> {
         let msg = format!("NameSpace {:?} not exist", ns);
-        self.name_space
+        self.arena.name_space
             .get_child_mut(ns)
             .ok_or_else(|| ResolverError::from(msg))
     }
@@ -274,7 +257,7 @@ impl ResolverContext {
 
     pub fn get_namespace(&self, ns: Vec<String>) -> Result<&NameSpace> {
         let msg = format!("NameSpace {:?} not exist", ns);
-        self.name_space
+        self.arena.name_space
             .get_child(ns)
             .ok_or_else(|| ResolverError::from(msg))
     }
@@ -558,7 +541,7 @@ impl ResolverContext {
                     Ok(left)
                 } else {
                     let key = (kind, left, right);
-                    self.binary_operators
+                    self.arena.binary_operators
                         .get(&key)
                         .cloned()
                         .ok_or_else(|| ResolverError::from(format!("{:?} is not defined.", key)))

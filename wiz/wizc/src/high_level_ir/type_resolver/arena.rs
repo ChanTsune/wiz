@@ -1,0 +1,35 @@
+use std::collections::HashMap;
+use crate::high_level_ir::type_resolver::context::{NameSpace, ResolverStruct};
+use crate::high_level_ir::typed_expr::TypedBinaryOperator;
+use crate::high_level_ir::typed_type::{TypedType, TypedValueType};
+
+#[derive(Debug, Clone)]
+pub struct ResolverArena {
+    pub name_space: NameSpace,
+    pub binary_operators: HashMap<(TypedBinaryOperator, TypedType, TypedType), TypedType>,
+}
+
+impl Default for ResolverArena {
+    fn default() -> Self {
+        let mut ns = NameSpace::empty();
+
+        for t in TypedType::builtin_types() {
+            match &t {
+                TypedType::Value(v) => match v {
+                    TypedValueType::Value(v) => {
+                        ns.register_type(v.name.clone(), ResolverStruct::new(t.clone()));
+                    }
+                    TypedValueType::Array(_, _) => {}
+                    TypedValueType::Tuple(_) => {}
+                    TypedValueType::Pointer(_) => {}
+                    TypedValueType::Reference(_) => {}
+                },
+                _ => {}
+            };
+        }
+        Self {
+            name_space: ns,
+            binary_operators: Default::default()
+        }
+    }
+}
