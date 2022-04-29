@@ -3,7 +3,9 @@ mod resolver_struct;
 
 use crate::high_level_ir::type_resolver::arena::ResolverArena;
 pub(crate) use crate::high_level_ir::type_resolver::context::env_value::EnvValue;
-pub(crate) use crate::high_level_ir::type_resolver::context::resolver_struct::{ResolverStruct, StructKind};
+pub(crate) use crate::high_level_ir::type_resolver::context::resolver_struct::{
+    ResolverStruct, StructKind,
+};
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::name_environment::NameEnvironment;
 use crate::high_level_ir::type_resolver::namespace::NameSpace;
