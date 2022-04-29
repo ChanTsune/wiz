@@ -1,11 +1,11 @@
 mod config;
 
-use clap::{App, Arg};
+use clap::{Arg, Command};
 pub use config::build_type::BuildType;
 pub use config::Config;
 
-pub fn app(name: &str) -> App {
-    App::new(name)
+pub fn app(name: &str) -> Command {
+    Command::new(name)
         .arg(position("input").required(true))
         .arg(long("name").takes_value(true))
         .arg(
