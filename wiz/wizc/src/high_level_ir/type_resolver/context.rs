@@ -5,6 +5,7 @@ use crate::high_level_ir::type_resolver::arena::ResolverArena;
 pub(crate) use crate::high_level_ir::type_resolver::context::env_value::EnvValue;
 pub(crate) use crate::high_level_ir::type_resolver::context::resolver_struct::ResolverStruct;
 use crate::high_level_ir::type_resolver::error::ResolverError;
+use crate::high_level_ir::type_resolver::namespace::NameSpace;
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_expr::TypedBinaryOperator;
 use crate::high_level_ir::typed_type::{
@@ -13,7 +14,6 @@ use crate::high_level_ir::typed_type::{
 };
 use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::{HashMap, HashSet};
-use crate::high_level_ir::type_resolver::namespace::NameSpace;
 
 #[derive(Debug, Default, Eq, PartialEq, Clone)]
 pub struct NameEnvironment {

@@ -1,6 +1,6 @@
-use std::collections::{HashMap, HashSet};
 use crate::high_level_ir::type_resolver::context::{EnvValue, ResolverStruct};
 use crate::high_level_ir::typed_type::TypedType;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Default, Eq, PartialEq, Clone)]
 pub struct NameSpace {
