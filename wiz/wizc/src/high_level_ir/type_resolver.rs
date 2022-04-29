@@ -7,7 +7,7 @@ pub mod result;
 #[cfg(test)]
 mod tests;
 
-use crate::high_level_ir::type_resolver::context::{ResolverContext, ResolverStruct};
+use crate::high_level_ir::type_resolver::context::{ResolverContext, ResolverStruct, StructKind};
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_decl::{
@@ -77,7 +77,10 @@ impl<'s> TypeResolver<'s> {
                         name: s.name.clone(),
                         type_args: None,
                     }));
-                    ns.register_type(s.name.clone(), ResolverStruct::new(self_type.clone()));
+                    ns.register_type(
+                        s.name.clone(),
+                        ResolverStruct::new(self_type.clone(), StructKind::Struct)
+                    );
                     ns.register_value(s.name.clone(), TypedType::Type(Box::new(self_type)));
                 }
                 TypedDecl::Class => {}
@@ -88,7 +91,10 @@ impl<'s> TypeResolver<'s> {
                         name: p.name.clone(),
                         type_args: None,
                     }));
-                    ns.register_type(p.name.clone(), ResolverStruct::new(self_type.clone()));
+                    ns.register_type(
+                        p.name.clone(),
+                        ResolverStruct::new(self_type.clone(), StructKind::Protocol)
+                    );
                     ns.register_value(p.name.clone(), TypedType::Type(Box::new(self_type)));
                 }
                 _ => {}
@@ -172,7 +178,7 @@ impl<'s> TypeResolver<'s> {
                             name: type_param.name.clone(),
                             type_args: None,
                         },
-                    ))),
+                    )), StructKind::Struct),
                 )
             }
         }
@@ -471,7 +477,7 @@ impl<'s> TypeResolver<'s> {
                         name: type_param.name.clone(),
                         type_args: None,
                     },
-                )));
+                )), StructKind::Struct);
                 if let Some(tc) = &f.type_constraints {
                     let con = tc.iter().find(|t| t.type_.name() == type_param.name);
                     if let Some(con) = con {

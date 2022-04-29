@@ -1,4 +1,4 @@
-use crate::high_level_ir::type_resolver::context::ResolverStruct;
+use crate::high_level_ir::type_resolver::context::{ResolverStruct, StructKind};
 use crate::high_level_ir::type_resolver::namespace::NameSpace;
 use crate::high_level_ir::typed_expr::TypedBinaryOperator;
 use crate::high_level_ir::typed_type::{TypedType, TypedValueType};
@@ -18,7 +18,10 @@ impl Default for ResolverArena {
             match &t {
                 TypedType::Value(v) => match v {
                     TypedValueType::Value(v) => {
-                        ns.register_type(v.name.clone(), ResolverStruct::new(t.clone()));
+                        ns.register_type(
+                            v.name.clone(),
+                            ResolverStruct::new(t.clone(), StructKind::Struct)
+                        );
                     }
                     TypedValueType::Array(_, _) => {}
                     TypedValueType::Tuple(_) => {}
