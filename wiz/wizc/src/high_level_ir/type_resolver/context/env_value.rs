@@ -3,7 +3,7 @@ use crate::high_level_ir::typed_type::TypedType;
 use std::collections::HashSet;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
-pub(crate) enum EnvValue {
+pub enum EnvValue {
     NameSpace(NameSpace),
     Value(HashSet<TypedType>),
     Type(ResolverStruct),
