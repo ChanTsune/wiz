@@ -1,7 +1,7 @@
-use std::collections::HashMap;
 use crate::high_level_ir::type_resolver::context::{NameSpace, ResolverStruct};
 use crate::high_level_ir::typed_expr::TypedBinaryOperator;
 use crate::high_level_ir::typed_type::{TypedType, TypedValueType};
+use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 pub struct ResolverArena {
@@ -29,7 +29,7 @@ impl Default for ResolverArena {
         }
         Self {
             name_space: ns,
-            binary_operators: Default::default()
+            binary_operators: Default::default(),
         }
     }
 }

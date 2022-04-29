@@ -1,6 +1,7 @@
 mod env_value;
 mod resolver_struct;
 
+use crate::high_level_ir::type_resolver::arena::ResolverArena;
 pub(crate) use crate::high_level_ir::type_resolver::context::env_value::EnvValue;
 pub(crate) use crate::high_level_ir::type_resolver::context::resolver_struct::ResolverStruct;
 use crate::high_level_ir::type_resolver::error::ResolverError;
@@ -12,7 +13,6 @@ use crate::high_level_ir::typed_type::{
 };
 use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::{HashMap, HashSet};
-use crate::high_level_ir::type_resolver::arena::ResolverArena;
 
 #[derive(Debug, Default, Eq, PartialEq, Clone)]
 pub struct NameSpace {
@@ -233,7 +233,9 @@ impl ResolverContext {
 
     pub fn push_name_space(&mut self, name: String) {
         self.current_namespace.push(name);
-        self.arena.name_space.set_child(self.current_namespace.clone());
+        self.arena
+            .name_space
+            .set_child(self.current_namespace.clone());
     }
 
     pub fn pop_name_space(&mut self) {
@@ -246,7 +248,8 @@ impl ResolverContext {
 
     pub fn get_namespace_mut(&mut self, ns: Vec<String>) -> Result<&mut NameSpace> {
         let msg = format!("NameSpace {:?} not exist", ns);
-        self.arena.name_space
+        self.arena
+            .name_space
             .get_child_mut(ns)
             .ok_or_else(|| ResolverError::from(msg))
     }
@@ -257,7 +260,8 @@ impl ResolverContext {
 
     pub fn get_namespace(&self, ns: Vec<String>) -> Result<&NameSpace> {
         let msg = format!("NameSpace {:?} not exist", ns);
-        self.arena.name_space
+        self.arena
+            .name_space
             .get_child(ns)
             .ok_or_else(|| ResolverError::from(msg))
     }
@@ -541,7 +545,8 @@ impl ResolverContext {
                     Ok(left)
                 } else {
                     let key = (kind, left, right);
-                    self.arena.binary_operators
+                    self.arena
+                        .binary_operators
                         .get(&key)
                         .cloned()
                         .ok_or_else(|| ResolverError::from(format!("{:?} is not defined.", key)))
