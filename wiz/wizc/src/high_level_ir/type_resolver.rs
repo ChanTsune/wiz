@@ -79,7 +79,7 @@ impl<'s> TypeResolver<'s> {
                     }));
                     ns.register_type(
                         s.name.clone(),
-                        ResolverStruct::new(self_type.clone(), StructKind::Struct)
+                        ResolverStruct::new(self_type.clone(), StructKind::Struct),
                     );
                     ns.register_value(s.name.clone(), TypedType::Type(Box::new(self_type)));
                 }
@@ -93,7 +93,7 @@ impl<'s> TypeResolver<'s> {
                     }));
                     ns.register_type(
                         p.name.clone(),
-                        ResolverStruct::new(self_type.clone(), StructKind::Protocol)
+                        ResolverStruct::new(self_type.clone(), StructKind::Protocol),
                     );
                     ns.register_value(p.name.clone(), TypedType::Type(Box::new(self_type)));
                 }
@@ -172,13 +172,14 @@ impl<'s> TypeResolver<'s> {
             for type_param in type_params {
                 self.context.register_to_env(
                     type_param.name.clone(),
-                    ResolverStruct::new(TypedType::Value(TypedValueType::Value(
-                        TypedNamedValueType {
+                    ResolverStruct::new(
+                        TypedType::Value(TypedValueType::Value(TypedNamedValueType {
                             package: TypedPackage::Resolved(Package::global()),
                             name: type_param.name.clone(),
                             type_args: None,
-                        },
-                    )), StructKind::Struct),
+                        })),
+                        StructKind::Struct,
+                    ),
                 )
             }
         }
@@ -471,13 +472,14 @@ impl<'s> TypeResolver<'s> {
         self.context.push_local_stack();
         if let Some(type_params) = &f.type_params {
             for type_param in type_params {
-                let mut rs = ResolverStruct::new(TypedType::Value(TypedValueType::Value(
-                    TypedNamedValueType {
+                let mut rs = ResolverStruct::new(
+                    TypedType::Value(TypedValueType::Value(TypedNamedValueType {
                         package: TypedPackage::Resolved(Package::global()),
                         name: type_param.name.clone(),
                         type_args: None,
-                    },
-                )), StructKind::Struct);
+                    })),
+                    StructKind::Struct,
+                );
                 if let Some(tc) = &f.type_constraints {
                     let con = tc.iter().find(|t| t.type_.name() == type_param.name);
                     if let Some(con) = con {

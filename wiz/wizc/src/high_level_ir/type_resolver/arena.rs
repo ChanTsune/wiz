@@ -20,7 +20,7 @@ impl Default for ResolverArena {
                     TypedValueType::Value(v) => {
                         ns.register_type(
                             v.name.clone(),
-                            ResolverStruct::new(t.clone(), StructKind::Struct)
+                            ResolverStruct::new(t.clone(), StructKind::Struct),
                         );
                     }
                     TypedValueType::Array(_, _) => {}
