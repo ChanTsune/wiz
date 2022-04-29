@@ -12,7 +12,7 @@ use crate::check::check_command;
 use crate::init::init_command;
 use crate::new::new_command;
 use ansi_term::Color;
-use clap::{crate_version, Command, AppSettings, Arg};
+use clap::{crate_version, AppSettings, Arg, Command};
 use std::error::Error;
 use std::process::exit;
 
