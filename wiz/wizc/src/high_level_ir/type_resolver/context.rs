@@ -476,9 +476,7 @@ impl ResolverContext {
 
 #[cfg(test)]
 mod tests {
-    use crate::high_level_ir::type_resolver::context::{
-        EnvValue, NameSpace, ResolverContext, ResolverStruct,
-    };
+    use crate::high_level_ir::type_resolver::context::{EnvValue, NameSpace, ResolverContext, ResolverStruct, StructKind};
     use crate::high_level_ir::typed_type::TypedType;
 
     #[test]
@@ -535,7 +533,7 @@ mod tests {
             env.names.get("Int32"),
             Some(&(
                 vec![],
-                EnvValue::Type(ResolverStruct::new(TypedType::int32()))
+                EnvValue::Type(ResolverStruct::new(TypedType::int32(), StructKind::Struct))
             ))
         );
     }
