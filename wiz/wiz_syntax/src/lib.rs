@@ -5,8 +5,8 @@ pub struct NodeId(usize);
 
 impl NodeId {
     pub const MIN: Self = Self(usize::MIN);
-    pub const MAX : Self = Self(usize::MAX);
-    pub const ROOT : Self = Self::new(0);
+    pub const MAX: Self = Self(usize::MAX);
+    pub const ROOT: Self = Self::new(0);
     pub const DUMMY: Self = Self::MAX;
 
     pub const fn new(id: usize) -> Self {
@@ -20,7 +20,6 @@ pub struct NodeIdGenerator {
 }
 
 impl NodeIdGenerator {
-
     pub fn new(initial: NodeId) -> Self {
         Self { latest: initial.0 }
     }
