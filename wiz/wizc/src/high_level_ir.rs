@@ -194,9 +194,7 @@ impl Ast2HLIR {
             DeclKind::ExternC { .. } => TypedDecl::Class,
             DeclKind::Enum { .. } => TypedDecl::Enum,
             DeclKind::Extension(e) => TypedDecl::Extension(self.extension_syntax(e, annotation)),
-            DeclKind::Use(_) => {
-                panic!("Never execution branch executed!!")
-            }
+            DeclKind::Use(_) => unreachable!(),
         }
     }
 
@@ -283,16 +281,13 @@ impl Ast2HLIR {
             (_, _) => None,
         }
         .map(|type_constraints| {
-            let mut group = HashMap::new();
+            let mut group = HashMap::<_, Vec<_>>::new();
             for type_constraint in type_constraints {
                 let name = type_constraint.name.token();
-                let mut constraints = if group.contains_key(&name) {
-                    group.remove(&name).unwrap()
-                } else {
-                    vec![]
-                };
-                constraints.push(type_constraint.type_constraint);
-                group.insert(name, constraints);
+                group
+                    .entry(name)
+                    .or_default()
+                    .push(type_constraint.type_constraint);
             }
             group
                 .into_iter()

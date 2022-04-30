@@ -1,13 +1,5 @@
 use crate::parser::wiz::character::{ampersand, comma};
 use crate::parser::wiz::lexical_structure::{identifier, token, whitespace0};
-use crate::syntax::token::TokenSyntax;
-use crate::syntax::type_name::{
-    ArrayTypeSyntax, DecoratedTypeName, ParenthesizedTypeName, SimpleTypeName,
-    TypeArgumentElementSyntax, TypeArgumentListSyntax, TypeConstraintSyntax, TypeName,
-    TypeNameSpaceElementSyntax, TypeParam, TypeParameterElementSyntax, TypeParameterListSyntax,
-    UserTypeName,
-};
-use crate::syntax::Syntax;
 use nom::branch::alt;
 use nom::character::complete::char;
 use nom::combinator::{map, opt};
@@ -15,6 +7,14 @@ use nom::multi::{many0, many1};
 use nom::sequence::tuple;
 use nom::{AsChar, Compare, FindSubstring, IResult, InputIter, InputLength, InputTake, Slice};
 use std::ops::{Range, RangeFrom};
+use wiz_syntax::syntax::token::TokenSyntax;
+use wiz_syntax::syntax::type_name::{
+    ArrayTypeSyntax, DecoratedTypeName, ParenthesizedTypeName, SimpleTypeName,
+    TypeArgumentElementSyntax, TypeArgumentListSyntax, TypeConstraintSyntax, TypeName,
+    TypeNameSpaceElementSyntax, TypeParam, TypeParameterElementSyntax, TypeParameterListSyntax,
+    UserTypeName,
+};
+use wiz_syntax::syntax::Syntax;
 
 pub fn type_<I>(s: I) -> IResult<I, TypeName>
 where
@@ -352,14 +352,14 @@ mod tests {
     use crate::parser::wiz::type_::{
         array_type_syntax, decorated_type, type_parameter, type_parameters, user_type,
     };
-    use crate::syntax::token::TokenSyntax;
-    use crate::syntax::trivia::{Trivia, TriviaPiece};
-    use crate::syntax::type_name::{
+    use wiz_syntax::syntax::token::TokenSyntax;
+    use wiz_syntax::syntax::trivia::{Trivia, TriviaPiece};
+    use wiz_syntax::syntax::type_name::{
         ArrayTypeSyntax, DecoratedTypeName, SimpleTypeName, TypeConstraintSyntax, TypeName,
         TypeNameSpaceElementSyntax, TypeParam, TypeParameterElementSyntax, TypeParameterListSyntax,
         UserTypeName,
     };
-    use crate::syntax::Syntax;
+    use wiz_syntax::syntax::Syntax;
 
     #[test]
     fn test_name_spaced_type() {

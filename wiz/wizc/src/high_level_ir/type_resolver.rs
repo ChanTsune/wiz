@@ -1,10 +1,13 @@
+pub mod arena;
 pub mod context;
 pub mod error;
+mod name_environment;
+mod namespace;
 pub mod result;
 #[cfg(test)]
 mod tests;
 
-use crate::high_level_ir::type_resolver::context::{ResolverContext, ResolverStruct};
+use crate::high_level_ir::type_resolver::context::{ResolverContext, ResolverStruct, StructKind};
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_decl::{
@@ -26,15 +29,20 @@ use crate::high_level_ir::typed_type::{
     TypedValueType,
 };
 use crate::high_level_ir::typed_type_constraint::TypedTypeConstraint;
+use wiz_session::Session;
 
 #[derive(Debug, Clone)]
-pub(crate) struct TypeResolver {
-    context: ResolverContext,
+pub(crate) struct TypeResolver<'s> {
+    session: &'s Session,
+    pub(crate) context: ResolverContext,
 }
 
-impl TypeResolver {
-    pub fn new() -> Self {
-        Self::from(ResolverContext::new())
+impl<'s> TypeResolver<'s> {
+    pub fn new(session: &'s Session) -> Self {
+        Self {
+            session,
+            context: ResolverContext::new(),
+        }
     }
 
     pub(crate) fn global_use<T: ToString>(&mut self, name_space: &[T]) {
@@ -69,7 +77,10 @@ impl TypeResolver {
                         name: s.name.clone(),
                         type_args: None,
                     }));
-                    ns.register_type(s.name.clone(), ResolverStruct::new(self_type.clone()));
+                    ns.register_type(
+                        s.name.clone(),
+                        ResolverStruct::new(self_type.clone(), StructKind::Struct),
+                    );
                     ns.register_value(s.name.clone(), TypedType::Type(Box::new(self_type)));
                 }
                 TypedDecl::Class => {}
@@ -80,7 +91,10 @@ impl TypeResolver {
                         name: p.name.clone(),
                         type_args: None,
                     }));
-                    ns.register_type(p.name.clone(), ResolverStruct::new(self_type.clone()));
+                    ns.register_type(
+                        p.name.clone(),
+                        ResolverStruct::new(self_type.clone(), StructKind::Protocol),
+                    );
                     ns.register_value(p.name.clone(), TypedType::Type(Box::new(self_type)));
                 }
                 _ => {}
@@ -158,13 +172,14 @@ impl TypeResolver {
             for type_param in type_params {
                 self.context.register_to_env(
                     type_param.name.clone(),
-                    ResolverStruct::new(TypedType::Value(TypedValueType::Value(
-                        TypedNamedValueType {
+                    ResolverStruct::new(
+                        TypedType::Value(TypedValueType::Value(TypedNamedValueType {
                             package: TypedPackage::Resolved(Package::global()),
                             name: type_param.name.clone(),
                             type_args: None,
-                        },
-                    ))),
+                        })),
+                        StructKind::Struct,
+                    ),
                 )
             }
         }
@@ -457,13 +472,14 @@ impl TypeResolver {
         self.context.push_local_stack();
         if let Some(type_params) = &f.type_params {
             for type_param in type_params {
-                let mut rs = ResolverStruct::new(TypedType::Value(TypedValueType::Value(
-                    TypedNamedValueType {
+                let mut rs = ResolverStruct::new(
+                    TypedType::Value(TypedValueType::Value(TypedNamedValueType {
                         package: TypedPackage::Resolved(Package::global()),
                         name: type_param.name.clone(),
                         type_args: None,
-                    },
-                )));
+                    })),
+                    StructKind::Struct,
+                );
                 if let Some(tc) = &f.type_constraints {
                     let con = tc.iter().find(|t| t.type_.name() == type_param.name);
                     if let Some(con) = con {
@@ -1179,11 +1195,5 @@ impl TypeResolver {
             iterator: self.expr(iterator, None)?,
             block: self.typed_block(block)?,
         })
-    }
-}
-
-impl From<ResolverContext> for TypeResolver {
-    fn from(context: ResolverContext) -> Self {
-        Self { context }
     }
 }

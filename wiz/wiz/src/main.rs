@@ -12,22 +12,23 @@ use crate::check::check_command;
 use crate::init::init_command;
 use crate::new::new_command;
 use ansi_term::Color;
-use clap::{crate_version, App, AppSettings, Arg};
+use clap::{crate_version, Arg, Command};
 use std::error::Error;
 use std::process::exit;
 
 fn cli() -> Result<(), Box<dyn Error>> {
-    let app = App::new("wiz")
+    let app = Command::new("wiz")
         .version(crate_version!())
         .about("Wiz's package manager")
-        .setting(AppSettings::ArgRequiredElseHelp | AppSettings::AllowExternalSubcommands)
+        .arg_required_else_help(true)
+        .allow_external_subcommands(true)
         .subcommand(
-            App::new("new")
+            Command::new("new")
                 .about("Create a new wiz package at <path>")
                 .arg(Arg::new("path").required(true)),
         )
         .subcommand(
-            App::new("init")
+            Command::new("init")
                 .about("Create a new wiz package in an current directory")
                 .arg(
                     Arg::new("overwrite")
@@ -36,7 +37,7 @@ fn cli() -> Result<(), Box<dyn Error>> {
                 ),
         )
         .subcommand(
-            App::new("build")
+            Command::new("build")
                 .about("Compile the current package")
                 .arg(Arg::new("target-dir").help("Directory for all generated artifacts"))
                 .arg(
@@ -53,7 +54,7 @@ fn cli() -> Result<(), Box<dyn Error>> {
                 ),
         )
         .subcommand(
-            App::new("check")
+            Command::new("check")
                 .about("Check the current package")
                 .arg(
                     Arg::new("manifest")

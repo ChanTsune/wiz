@@ -4,14 +4,6 @@ use crate::parser::wiz::keywords::{for_keyword, in_keyword, while_keyword};
 use crate::parser::wiz::lexical_structure::{identifier, token, whitespace0, whitespace1};
 use crate::parser::wiz::operators::{assignment_and_operator, assignment_operator};
 use crate::parser::Span;
-use crate::syntax::expression::{Expr, NameExprSyntax, ParenthesizedExprSyntax};
-use crate::syntax::file::FileSyntax;
-use crate::syntax::statement::{
-    AssignmentAndOperatorSyntax, AssignmentStmt, AssignmentSyntax, ForLoopSyntax, LoopStmt, Stmt,
-    WhileLoopSyntax,
-};
-use crate::syntax::token::TokenSyntax;
-use crate::syntax::Syntax;
 use nom::branch::alt;
 use nom::combinator::map;
 use nom::multi::many0;
@@ -22,6 +14,14 @@ use nom::{
     InputTakeAtPosition, Offset, Slice,
 };
 use std::ops::{Range, RangeFrom};
+use wiz_syntax::syntax::expression::{Expr, NameExprSyntax, ParenthesizedExprSyntax};
+use wiz_syntax::syntax::file::FileSyntax;
+use wiz_syntax::syntax::statement::{
+    AssignmentAndOperatorSyntax, AssignmentStmt, AssignmentSyntax, ForLoopSyntax, LoopStmt, Stmt,
+    WhileLoopSyntax,
+};
+use wiz_syntax::syntax::token::TokenSyntax;
+use wiz_syntax::syntax::Syntax;
 
 pub fn decl_stmt<I>(s: I) -> IResult<I, Stmt>
 where
@@ -401,20 +401,20 @@ mod tests {
     use crate::parser::wiz::statement::{
         assignable_expr, assignment_stmt, directly_assignable_expr, file, stmt, while_stmt,
     };
-    use crate::syntax::block::BlockSyntax;
-    use crate::syntax::expression::{
+    use wiz_syntax::syntax::block::BlockSyntax;
+    use wiz_syntax::syntax::expression::{
         BinaryOperationSyntax, CallArgListSyntax, CallExprSyntax, Expr, MemberSyntax,
         NameExprSyntax, ParenthesizedExprSyntax,
     };
-    use crate::syntax::file::FileSyntax;
-    use crate::syntax::literal::LiteralSyntax;
-    use crate::syntax::statement::{
+    use wiz_syntax::syntax::file::FileSyntax;
+    use wiz_syntax::syntax::literal::LiteralSyntax;
+    use wiz_syntax::syntax::statement::{
         AssignmentAndOperatorSyntax, AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt,
         WhileLoopSyntax,
     };
-    use crate::syntax::token::TokenSyntax;
-    use crate::syntax::trivia::{Trivia, TriviaPiece};
-    use crate::syntax::Syntax;
+    use wiz_syntax::syntax::token::TokenSyntax;
+    use wiz_syntax::syntax::trivia::{Trivia, TriviaPiece};
+    use wiz_syntax::syntax::Syntax;
 
     #[test]
     fn test_call_expr_stmt() {

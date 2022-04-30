@@ -18,7 +18,8 @@ use crate::high_level_ir::typed_type::{
     TypedValueType,
 };
 use crate::high_level_ir::Ast2HLIR;
-use wiz_syntax::parser::wiz::parse_from_string;
+use wiz_session::Session;
+use wiz_syntax_parser::parser::wiz::parse_from_string;
 
 fn check(source: &str, typed_file: TypedFile) {
     let ast = parse_from_string(source).unwrap();
@@ -28,7 +29,9 @@ fn check(source: &str, typed_file: TypedFile) {
     let mut file = ast2hlir.file(ast);
     file.name = typed_file.name.clone();
 
-    let mut resolver = TypeResolver::new();
+    let session = Session::new();
+
+    let mut resolver = TypeResolver::new(&session);
     let _ = resolver.detect_type(&file).unwrap();
     let _ = resolver.preload_file(file.clone()).unwrap();
     let f = resolver.file(file);

@@ -1,9 +1,14 @@
 mod env_value;
 mod resolver_struct;
 
+use crate::high_level_ir::type_resolver::arena::ResolverArena;
 pub(crate) use crate::high_level_ir::type_resolver::context::env_value::EnvValue;
-pub(crate) use crate::high_level_ir::type_resolver::context::resolver_struct::ResolverStruct;
+pub(crate) use crate::high_level_ir::type_resolver::context::resolver_struct::{
+    ResolverStruct, StructKind,
+};
 use crate::high_level_ir::type_resolver::error::ResolverError;
+use crate::high_level_ir::type_resolver::name_environment::NameEnvironment;
+use crate::high_level_ir::type_resolver::namespace::NameSpace;
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_expr::TypedBinaryOperator;
 use crate::high_level_ir::typed_type::{
@@ -13,247 +18,22 @@ use crate::high_level_ir::typed_type::{
 use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::{HashMap, HashSet};
 
-#[derive(Debug, Default, Eq, PartialEq, Clone)]
-pub struct NameSpace {
-    name_space: Vec<String>,
-    values: HashMap<String, EnvValue>,
-}
-
-#[derive(Debug, Default, Eq, PartialEq, Clone)]
-pub struct NameEnvironment {
-    names: HashMap<String, (Vec<String>, EnvValue)>,
-}
-
 #[derive(Debug, Clone)]
 pub struct ResolverContext {
     global_used_name_space: Vec<Vec<String>>,
     used_name_space: Vec<Vec<String>>,
-    name_space: NameSpace,
-    binary_operators: HashMap<(TypedBinaryOperator, TypedType, TypedType), TypedType>,
+    pub(crate) arena: ResolverArena,
     pub(crate) current_namespace: Vec<String>,
     current_type: Option<TypedType>,
     local_stack: StackedHashMap<String, EnvValue>,
 }
 
-impl NameSpace {
-    pub(crate) fn empty() -> Self {
-        Self::default()
-    }
-
-    pub(crate) fn new<T>(name: Vec<T>) -> Self
-    where
-        T: ToString,
-    {
-        Self {
-            name_space: name.into_iter().map(|i| i.to_string()).collect(),
-            values: Default::default(),
-        }
-    }
-
-    pub(crate) fn get_child<T>(&self, mut ns: Vec<T>) -> Option<&NameSpace>
-    where
-        T: ToString,
-    {
-        if ns.is_empty() {
-            Some(self)
-        } else {
-            let n = ns.remove(0).to_string();
-            let m = self.values.get(&*n)?;
-            match m {
-                EnvValue::NameSpace(m) => m.get_child(ns),
-                EnvValue::Value(_) => None,
-                EnvValue::Type(_) => None,
-            }
-        }
-    }
-
-    pub(crate) fn get_child_mut<T>(&mut self, mut ns: Vec<T>) -> Option<&mut NameSpace>
-    where
-        T: ToString,
-    {
-        if ns.is_empty() {
-            Some(self)
-        } else {
-            let n = ns.remove(0).to_string();
-            let m = self.values.get_mut(&*n)?;
-            match m {
-                EnvValue::NameSpace(m) => m.get_child_mut(ns),
-                EnvValue::Value(_) => None,
-                EnvValue::Type(_) => panic!(),
-            }
-        }
-    }
-
-    pub(crate) fn set_child<T>(&mut self, mut ns: Vec<T>)
-    where
-        T: ToString,
-    {
-        if !ns.is_empty() {
-            let n = &ns.remove(0).to_string();
-            if !self.values.contains_key(n) {
-                let mut name = self.name_space.clone();
-                name.push(n.clone());
-                self.values
-                    .insert(n.clone(), EnvValue::from(NameSpace::new(name)));
-            };
-            match self.values.get_mut(n).unwrap() {
-                EnvValue::NameSpace(n) => n.set_child(ns),
-                EnvValue::Value(_) => panic!(),
-                EnvValue::Type(_) => panic!(),
-            };
-        }
-    }
-
-    pub(crate) fn get<T: ToString>(&self, mut ns: Vec<T>) -> Option<&EnvValue> {
-        let name = ns.remove(0).to_string();
-        let e = self.values.get(&name)?;
-        e.get(ns)
-    }
-
-    pub(crate) fn get_mut<T: ToString>(&mut self, mut ns: Vec<T>) -> Option<&mut EnvValue> {
-        let name = ns.remove(0).to_string();
-        let e = self.values.get_mut(&name)?;
-        e.get_mut(ns)
-    }
-
-    pub(crate) fn register_type(&mut self, name: String, s: ResolverStruct) {
-        self.values.insert(name, EnvValue::from(s));
-    }
-
-    pub(crate) fn get_type(&self, name: &str) -> Option<&ResolverStruct> {
-        self.values.get(name).map(|i| match i {
-            EnvValue::Type(r) => r,
-            _ => panic!(),
-        })
-    }
-
-    pub(crate) fn get_type_mut(&mut self, name: &str) -> Option<&mut ResolverStruct> {
-        self.values.get_mut(name).map(|i| match i {
-            EnvValue::Type(r) => r,
-            _ => panic!(),
-        })
-    }
-
-    pub(crate) fn register_value(&mut self, name: String, type_: TypedType) {
-        if let Some(e) = self.values.remove(&name) {
-            match e {
-                EnvValue::NameSpace(_) | EnvValue::Type(_) => {
-                    self.values.insert(name, e);
-                }
-                EnvValue::Value(mut v) => {
-                    v.insert(type_);
-                    self.values.insert(name, EnvValue::from(v));
-                }
-            };
-        } else {
-            self.values
-                .insert(name, EnvValue::from(HashSet::from([type_])));
-        }
-    }
-
-    pub(crate) fn register_values(&mut self, name: String, type_: HashSet<TypedType>) {
-        if let Some(e) = self.values.remove(&name) {
-            match e {
-                EnvValue::NameSpace(_) | EnvValue::Type(_) => {
-                    self.values.insert(name, e);
-                }
-                EnvValue::Value(mut v) => {
-                    v.extend(type_);
-                    self.values.insert(name, EnvValue::from(v));
-                }
-            };
-        } else {
-            self.values.insert(name, EnvValue::from(type_));
-        }
-    }
-
-    pub(crate) fn get_value(&self, name: &str) -> Option<&HashSet<TypedType>> {
-        match self.values.get(name) {
-            None => None,
-            Some(e) => match e {
-                EnvValue::NameSpace(_) => None,
-                EnvValue::Value(v) => Some(v),
-                EnvValue::Type(_) => None,
-            },
-        }
-    }
-}
-
-impl NameEnvironment {
-    fn new() -> Self {
-        Self::default()
-    }
-
-    fn use_values_from(&mut self, name_space: &NameSpace) {
-        self.names.extend(
-            name_space
-                .values
-                .iter()
-                .map(|(k, v)| (k.clone(), (name_space.name_space.clone(), v.clone()))),
-        );
-    }
-
-    fn use_values_from_local(&mut self, local_stack: &StackedHashMap<String, EnvValue>) {
-        self.names.extend(
-            local_stack
-                .clone()
-                .into_map()
-                .into_iter()
-                .map(|(k, v)| (k, (vec![], v))),
-        )
-    }
-
-    pub(crate) fn get_type(
-        &self,
-        mut name_space: Vec<String>,
-        type_name: &str,
-    ) -> Option<&ResolverStruct> {
-        if name_space.is_empty() {
-            match self.names.get(type_name) {
-                Some((_, EnvValue::Type(rs))) => Some(rs),
-                _ => None,
-            }
-        } else {
-            let n = name_space.remove(0);
-            match (name_space.is_empty(), self.names.get(&n)) {
-                (false, Some((_, EnvValue::NameSpace(ns)))) => match ns.get(name_space) {
-                    Some(EnvValue::NameSpace(ns)) => ns.get_type(type_name),
-                    _ => None,
-                },
-                (true, Some((_, EnvValue::NameSpace(ns)))) => ns.get_type(type_name),
-                (_, _) => None,
-            }
-        }
-    }
-
-    pub(crate) fn get_type_by_typed_type(&self, typ: TypedType) -> Option<&ResolverStruct> {
-        self.get_type(typ.package().into_resolved().names, &typ.name())
-    }
-}
-
 impl ResolverContext {
     pub(crate) fn new() -> Self {
-        let mut ns = NameSpace::empty();
-
-        for t in TypedType::builtin_types() {
-            match &t {
-                TypedType::Value(v) => match v {
-                    TypedValueType::Value(v) => {
-                        ns.register_type(v.name.clone(), ResolverStruct::new(t.clone()));
-                    }
-                    TypedValueType::Array(_, _) => {}
-                    TypedValueType::Tuple(_) => {}
-                    TypedValueType::Pointer(_) => {}
-                    TypedValueType::Reference(_) => {}
-                },
-                _ => {}
-            };
-        }
         Self {
             global_used_name_space: Default::default(),
             used_name_space: Default::default(),
-            name_space: ns,
-            binary_operators: Default::default(),
+            arena: ResolverArena::default(),
             current_namespace: Default::default(),
             current_type: None,
             local_stack: StackedHashMap::new(),
@@ -262,7 +42,9 @@ impl ResolverContext {
 
     pub fn push_name_space(&mut self, name: String) {
         self.current_namespace.push(name);
-        self.name_space.set_child(self.current_namespace.clone());
+        self.arena
+            .name_space
+            .set_child(self.current_namespace.clone());
     }
 
     pub fn pop_name_space(&mut self) {
@@ -275,7 +57,8 @@ impl ResolverContext {
 
     pub fn get_namespace_mut(&mut self, ns: Vec<String>) -> Result<&mut NameSpace> {
         let msg = format!("NameSpace {:?} not exist", ns);
-        self.name_space
+        self.arena
+            .name_space
             .get_child_mut(ns)
             .ok_or_else(|| ResolverError::from(msg))
     }
@@ -286,7 +69,8 @@ impl ResolverContext {
 
     pub fn get_namespace(&self, ns: Vec<String>) -> Result<&NameSpace> {
         let msg = format!("NameSpace {:?} not exist", ns);
-        self.name_space
+        self.arena
+            .name_space
             .get_child(ns)
             .ok_or_else(|| ResolverError::from(msg))
     }
@@ -570,7 +354,8 @@ impl ResolverContext {
                     Ok(left)
                 } else {
                     let key = (kind, left, right);
-                    self.binary_operators
+                    self.arena
+                        .binary_operators
                         .get(&key)
                         .cloned()
                         .ok_or_else(|| ResolverError::from(format!("{:?} is not defined.", key)))
@@ -693,9 +478,7 @@ impl ResolverContext {
 
 #[cfg(test)]
 mod tests {
-    use crate::high_level_ir::type_resolver::context::{
-        EnvValue, NameSpace, ResolverContext, ResolverStruct,
-    };
+    use super::{EnvValue, NameSpace, ResolverContext, ResolverStruct, StructKind};
     use crate::high_level_ir::typed_type::TypedType;
 
     #[test]
@@ -752,7 +535,7 @@ mod tests {
             env.names.get("Int32"),
             Some(&(
                 vec![],
-                EnvValue::Type(ResolverStruct::new(TypedType::int32()))
+                EnvValue::Type(ResolverStruct::new(TypedType::int32(), StructKind::Struct))
             ))
         );
     }

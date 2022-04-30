@@ -8,12 +8,12 @@ use crate::middle_level_ir::{hlir2mlir, HLIR2MLIR};
 use inkwell::context::Context;
 use std::error::Error;
 use std::io::Write;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::{env, fs, result};
 use wiz_session::Session;
-use wiz_syntax::parser;
-use wiz_syntax::parser::wiz::{parse_from_file_path, read_package_from_path};
 use wiz_syntax::syntax::file::SourceSet;
+use wiz_syntax_parser::parser;
+use wiz_syntax_parser::parser::wiz::{parse_from_file_path, read_package_from_path};
 use wizc_cli::{BuildType, Config};
 
 mod constants;
@@ -75,15 +75,14 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
             .into_iter()
             .chain(paths.iter().map(PathBuf::from))
         {
-            p.extend([l, "Package.wiz"]);
-            if p.exists() {
-                p.pop();
-                println!("`{}` found at {}", l, p.display());
-                lib_paths.push(p);
+            let lib_path = p.join(l);
+            let package_manifest_path = lib_path.join("Package.wiz");
+            if package_manifest_path.exists() {
+                println!("`{}` found at {}", l, lib_path.display());
+                lib_paths.push(lib_path);
                 break;
             } else {
-                p.pop();
-                println!("`{}` Not found at {}", l, p.display());
+                println!("`{}` Not found at {}", l, lib_path.display());
             }
         }
     }
@@ -120,7 +119,7 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
 
     println!("=== resolve type ===");
 
-    let mut type_resolver = TypeResolver::new();
+    let mut type_resolver = TypeResolver::new(session);
     type_resolver.global_use(&["core", "builtin", "*"]);
     type_resolver.global_use(&["std", "builtin", "*"]);
 
@@ -154,7 +153,7 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
 
     let hlfiles = type_resolver.source_set(hlfiles)?;
 
-    let mut type_checker = TypeChecker::new(session);
+    let mut type_checker = TypeChecker::new(session, &type_resolver.context.arena);
 
     type_checker.verify(&hlfiles);
 
@@ -206,7 +205,7 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
     let output = if let Some(output) = output {
         PathBuf::from(output)
     } else {
-        let mut output_path = Path::new(&mlfile.name).to_path_buf();
+        let mut output_path = PathBuf::from(&mlfile.name);
         output_path.set_extension("ll");
         output_path
     };

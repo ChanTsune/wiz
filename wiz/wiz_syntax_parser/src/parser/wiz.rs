@@ -1,12 +1,13 @@
 use crate::parser::error::ParseError;
 use crate::parser::result::Result;
 use crate::parser::wiz::statement::file;
-use crate::parser::{get_line_offset, Location, Span};
-use crate::syntax::file::{SourceSet, WizFile};
+use crate::parser::Span;
 use std::fs;
 use std::fs::{read_to_string, File};
 use std::io::Read;
 use std::path::Path;
+use wiz_syntax::syntax::file::{SourceSet, WizFile};
+use wiz_syntax::syntax::{get_line_offset, Location};
 
 pub mod annotation;
 pub mod character;
@@ -23,7 +24,7 @@ pub fn parse_from_string(src: &str) -> Result<WizFile> {
     match file(Span::from(src)) {
         Ok((s, f)) => {
             if !s.is_empty() {
-                let location = Location::from(&s);
+                let location = Location::new(s.location_offset(), s.location_line());
                 Err(ParseError::from(get_error_location_src(src, &location)))
             } else {
                 Ok(WizFile {
@@ -98,13 +99,13 @@ fn get_error_location_src(src: &str, location: &Location) -> String {
     let line_offset = get_line_offset(src, location);
     let error_line = src
         .lines()
-        .nth(location.line as usize - 1)
+        .nth(location.line() as usize - 1)
         .unwrap_or_default();
     format!(
         "{} | {}\n{}^",
-        location.line,
+        location.line(),
         error_line,
-        " ".repeat(location.line.to_string().len() + 3 + line_offset)
+        " ".repeat(location.line().to_string().len() + 3 + line_offset)
     )
 }
 

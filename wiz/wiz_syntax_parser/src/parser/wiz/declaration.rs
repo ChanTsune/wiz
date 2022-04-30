@@ -8,20 +8,6 @@ use crate::parser::wiz::keywords::{
 use crate::parser::wiz::lexical_structure::{identifier, token, whitespace0, whitespace1};
 use crate::parser::wiz::statement::stmt;
 use crate::parser::wiz::type_::{type_, type_parameter, type_parameters};
-use crate::syntax::block::BlockSyntax;
-use crate::syntax::declaration::fun_syntax::{
-    ArgDef, ArgDefElementSyntax, ArgDefListSyntax, ExprFunBodySyntax, FunBody, FunSyntax,
-    SelfArgDefSyntax, ValueArgDef,
-};
-use crate::syntax::declaration::{
-    AliasSyntax, DeclKind, DeclarationSyntax, DeinitializerSyntax, ExtensionSyntax,
-    InitializerSyntax, PackageName, ProtocolConformSyntax, StoredPropertySyntax, StructBodySyntax,
-    StructPropertySyntax, StructSyntax, TypeAnnotationSyntax, UseSyntax,
-};
-use crate::syntax::declaration::{PackageNameElement, VarSyntax};
-use crate::syntax::token::TokenSyntax;
-use crate::syntax::type_name::{TypeConstraintElementSyntax, TypeConstraintsSyntax};
-use crate::syntax::Syntax;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::combinator::{map, opt};
@@ -32,6 +18,20 @@ use nom::{
     InputTakeAtPosition, Offset, Slice,
 };
 use std::ops::{Range, RangeFrom};
+use wiz_syntax::syntax::block::BlockSyntax;
+use wiz_syntax::syntax::declaration::fun_syntax::{
+    ArgDef, ArgDefElementSyntax, ArgDefListSyntax, ExprFunBodySyntax, FunBody, FunSyntax,
+    SelfArgDefSyntax, ValueArgDef,
+};
+use wiz_syntax::syntax::declaration::{
+    AliasSyntax, DeclKind, DeclarationSyntax, DeinitializerSyntax, ExtensionSyntax,
+    InitializerSyntax, PackageName, ProtocolConformSyntax, StoredPropertySyntax, StructBodySyntax,
+    StructPropertySyntax, StructSyntax, TypeAnnotationSyntax, UseSyntax,
+};
+use wiz_syntax::syntax::declaration::{PackageNameElement, VarSyntax};
+use wiz_syntax::syntax::token::TokenSyntax;
+use wiz_syntax::syntax::type_name::{TypeConstraintElementSyntax, TypeConstraintsSyntax};
+use wiz_syntax::syntax::Syntax;
 
 pub fn decl<I>(s: I) -> IResult<I, DeclarationSyntax>
 where
@@ -870,26 +870,26 @@ mod tests {
         block, function_body, function_decl, member_function, package_name, stored_property,
         struct_syntax, type_constraints, use_syntax, var_decl,
     };
-    use crate::syntax::block::BlockSyntax;
-    use crate::syntax::declaration::fun_syntax::{
+    use wiz_syntax::syntax::block::BlockSyntax;
+    use wiz_syntax::syntax::declaration::fun_syntax::{
         ArgDef, ArgDefElementSyntax, ArgDefListSyntax, ExprFunBodySyntax, FunBody, FunSyntax,
         ValueArgDef,
     };
-    use crate::syntax::declaration::{
+    use wiz_syntax::syntax::declaration::{
         AliasSyntax, DeclKind, PackageName, StoredPropertySyntax, StructBodySyntax,
         StructPropertySyntax, StructSyntax, TypeAnnotationSyntax, UseSyntax,
     };
-    use crate::syntax::declaration::{PackageNameElement, VarSyntax};
-    use crate::syntax::expression::{BinaryOperationSyntax, Expr, NameExprSyntax};
-    use crate::syntax::literal::LiteralSyntax;
-    use crate::syntax::statement::Stmt;
-    use crate::syntax::token::TokenSyntax;
-    use crate::syntax::trivia::{Trivia, TriviaPiece};
-    use crate::syntax::type_name::{
+    use wiz_syntax::syntax::declaration::{PackageNameElement, VarSyntax};
+    use wiz_syntax::syntax::expression::{BinaryOperationSyntax, Expr, NameExprSyntax};
+    use wiz_syntax::syntax::literal::LiteralSyntax;
+    use wiz_syntax::syntax::statement::Stmt;
+    use wiz_syntax::syntax::token::TokenSyntax;
+    use wiz_syntax::syntax::trivia::{Trivia, TriviaPiece};
+    use wiz_syntax::syntax::type_name::{
         SimpleTypeName, TypeConstraintElementSyntax, TypeConstraintSyntax, TypeConstraintsSyntax,
         TypeName, TypeParam,
     };
-    use crate::syntax::Syntax;
+    use wiz_syntax::syntax::Syntax;
 
     #[test]
     fn test_stored_property() {

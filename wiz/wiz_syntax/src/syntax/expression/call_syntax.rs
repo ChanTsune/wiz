@@ -47,7 +47,7 @@ impl Syntax for CallExprSyntax {
 pub type CallArgListSyntax = ListSyntax<CallArg>;
 
 impl CallArgListSyntax {
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             open: TokenSyntax::from("("),
             elements: vec![],

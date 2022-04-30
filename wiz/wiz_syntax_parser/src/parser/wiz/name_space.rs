@@ -1,11 +1,11 @@
 use crate::parser::wiz::lexical_structure::{identifier, token};
-use crate::syntax::name_space::{NameSpaceElementSyntax, NameSpaceSyntax};
-use crate::syntax::token::TokenSyntax;
 use nom::combinator::map;
 use nom::multi::many1;
 use nom::sequence::tuple;
 use nom::{AsChar, Compare, IResult, InputIter, InputLength, InputTake, Slice};
 use std::ops::RangeFrom;
+use wiz_syntax::syntax::name_space::{NameSpaceElementSyntax, NameSpaceSyntax};
+use wiz_syntax::syntax::token::TokenSyntax;
 
 pub fn name_space<I>(s: I) -> IResult<I, NameSpaceSyntax>
 where
@@ -47,7 +47,7 @@ where
 #[cfg(test)]
 mod tests {
     use crate::parser::wiz::name_space::{name_space, name_space_element};
-    use crate::syntax::name_space::{NameSpaceElementSyntax, NameSpaceSyntax};
+    use wiz_syntax::syntax::name_space::{NameSpaceElementSyntax, NameSpaceSyntax};
 
     #[test]
     fn test_name_space_element() {

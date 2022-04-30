@@ -1,9 +1,9 @@
 use crate::parser::wiz::keywords::{as_keyword, in_keyword};
 use crate::parser::wiz::lexical_structure::token;
-use crate::syntax::token::TokenSyntax;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::{Compare, IResult, InputTake};
+use wiz_syntax::syntax::token::TokenSyntax;
 
 fn simple_member_access_operator<I>(s: I) -> IResult<I, I>
 where
@@ -155,7 +155,7 @@ mod tests {
         is_operator, member_access_operator, multiplicative_operator, postfix_operator,
         prefix_operator, range_operator,
     };
-    use crate::syntax::token::TokenSyntax;
+    use wiz_syntax::syntax::token::TokenSyntax;
 
     #[test]
     fn test_member_access_operator() {

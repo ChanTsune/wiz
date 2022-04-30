@@ -672,7 +672,7 @@ impl HLIR2MLIR {
                     TypedType::Value(TypedValueType::Array(e, _)) => {
                         self.type_(*e).into_value_type()
                     }
-                    _ => panic!("Never execution branch executed!!"),
+                    _ => unreachable!(),
                 },
             })
         } else {

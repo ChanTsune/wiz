@@ -57,6 +57,33 @@ struct UInt8Vector {
         return t
     }
 
+    fun get(&self, index: UInt64): UInt8 {
+        if self.length <= index {
+            return -1 as UInt8
+        }
+        return self.ptr[index]
+    }
+
+    fun set(&self, index: UInt64, element: UInt8): Unit {
+        if self.length <= index {
+            return
+        }
+        self.ptr[index] = element
+    }
+
+    fun swap(&self, index: UInt64, element: UInt8): UInt8 {
+        if self.length <= index {
+            return element
+        }
+        val t = self.ptr[index]
+        self.ptr[index] = element
+        return t
+    }
+
+    fun clear(&self): Unit {
+        self.length = 0
+    }
+
     fun shinkTo(&self, minSize: UInt64): Unit {
         self.ptr = realloc(self.ptr, minSize)
         self.capacity = minSize
