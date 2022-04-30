@@ -1,5 +1,6 @@
 use crate::syntax::trivia::Trivia;
 use std::fmt::Debug;
+use crate::NodeId;
 
 pub mod annotation;
 pub mod block;
@@ -20,6 +21,9 @@ pub trait Syntax: Debug + Eq + PartialEq + Clone {
     fn with_trailing_trivia(self, trivia: Trivia) -> Self;
     fn span(&self) -> Location {
         Location::default()
+    }
+    fn id(&self) -> NodeId {
+        NodeId::DUMMY
     }
 }
 
