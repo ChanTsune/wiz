@@ -194,9 +194,7 @@ impl Ast2HLIR {
             DeclKind::ExternC { .. } => TypedDecl::Class,
             DeclKind::Enum { .. } => TypedDecl::Enum,
             DeclKind::Extension(e) => TypedDecl::Extension(self.extension_syntax(e, annotation)),
-            DeclKind::Use(_) => {
-                panic!("Never execution branch executed!!")
-            }
+            DeclKind::Use(_) => unreachable!()
         }
     }
 

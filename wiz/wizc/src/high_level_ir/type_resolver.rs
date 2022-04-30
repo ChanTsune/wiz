@@ -1,4 +1,4 @@
-mod arena;
+pub mod arena;
 pub mod context;
 pub mod error;
 mod name_environment;
@@ -34,7 +34,7 @@ use wiz_session::Session;
 #[derive(Debug, Clone)]
 pub(crate) struct TypeResolver<'s> {
     session: &'s Session,
-    context: ResolverContext,
+    pub(crate) context: ResolverContext,
 }
 
 impl<'s> TypeResolver<'s> {

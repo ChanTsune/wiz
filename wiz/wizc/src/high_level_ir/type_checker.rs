@@ -11,15 +11,18 @@ use crate::high_level_ir::typed_expr::{
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
 use wiz_session::Session;
+use crate::high_level_ir::type_resolver::arena::ResolverArena;
+use crate::high_level_ir::type_resolver::context::StructKind;
 
 #[derive(Debug)]
 pub struct TypeChecker<'s> {
     session: &'s mut Session,
+    arena: &'s ResolverArena,
 }
 
 impl<'s> TypeChecker<'s> {
-    pub fn new(session: &'s mut Session) -> Self {
-        Self { session }
+    pub fn new(session: &'s mut Session, arena: &'s ResolverArena) -> Self {
+        Self { session, arena }
     }
 
     pub fn verify(&mut self, typed_source_set: &TypedSourceSet) {
@@ -78,6 +81,17 @@ impl<'s> TypeChecker<'s> {
     }
 
     fn struct_(&mut self, typed_struct: &TypedStruct) {
+        let struct_info = self.arena.get_struct_by(typed_struct.package.clone().into_resolved().names, &typed_struct.name);
+
+        if let Some(struct_info) = struct_info {
+            if struct_info.kind == StructKind::Struct {
+                struct_info.conformed_protocols.iter().for_each(|s| println!("{}: conform {} protocol", typed_struct.name, s))
+            } else {
+                unreachable!()
+            }
+        } else {
+            self.session.emit_error(CheckerError::new(format!("unknown identifier {}", typed_struct.name)));
+        };
         typed_struct.computed_properties.iter().for_each(|_| {});
         typed_struct.stored_properties.iter().for_each(|_| {});
         typed_struct

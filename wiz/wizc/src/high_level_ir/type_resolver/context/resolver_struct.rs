@@ -16,7 +16,7 @@ pub enum StructKind {
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct ResolverStruct {
     pub(crate) self_: TypedType,
-    kind: StructKind,
+    pub(crate) kind: StructKind,
     pub(crate) stored_properties: HashMap<String, TypedType>,
     pub(crate) computed_properties: HashMap<String, TypedType>,
     pub(crate) member_functions: HashMap<String, TypedType>,

@@ -22,7 +22,7 @@ use std::collections::{HashMap, HashSet};
 pub struct ResolverContext {
     global_used_name_space: Vec<Vec<String>>,
     used_name_space: Vec<Vec<String>>,
-    arena: ResolverArena,
+    pub(crate) arena: ResolverArena,
     pub(crate) current_namespace: Vec<String>,
     current_type: Option<TypedType>,
     local_stack: StackedHashMap<String, EnvValue>,

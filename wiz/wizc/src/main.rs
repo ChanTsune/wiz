@@ -153,7 +153,7 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
 
     let hlfiles = type_resolver.source_set(hlfiles)?;
 
-    let mut type_checker = TypeChecker::new(session);
+    let mut type_checker = TypeChecker::new(session, &type_resolver.context.arena);
 
     type_checker.verify(&hlfiles);
 
