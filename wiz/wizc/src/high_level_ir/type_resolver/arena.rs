@@ -39,7 +39,11 @@ impl Default for ResolverArena {
 }
 
 impl ResolverArena {
-    pub(crate) fn get_struct_by<T: ToString>(&self, name_space:Vec<T> ,name: &str) -> Option<&ResolverStruct>{
+    pub(crate) fn get_struct_by<T: ToString>(
+        &self,
+        name_space: Vec<T>,
+        name: &str,
+    ) -> Option<&ResolverStruct> {
         let n = self.name_space.get_child(name_space)?;
         n.get_type(name)
     }

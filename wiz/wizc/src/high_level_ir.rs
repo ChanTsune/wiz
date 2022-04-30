@@ -194,7 +194,7 @@ impl Ast2HLIR {
             DeclKind::ExternC { .. } => TypedDecl::Class,
             DeclKind::Enum { .. } => TypedDecl::Enum,
             DeclKind::Extension(e) => TypedDecl::Extension(self.extension_syntax(e, annotation)),
-            DeclKind::Use(_) => unreachable!()
+            DeclKind::Use(_) => unreachable!(),
         }
     }
 
