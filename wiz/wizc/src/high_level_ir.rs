@@ -1,3 +1,4 @@
+use crate::high_level_ir::node_id::TypedModuleId;
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedExtension, TypedFun, TypedFunBody,
@@ -42,9 +43,10 @@ use wiz_syntax::syntax::statement::{
     AssignmentStmt, ForLoopSyntax, LoopStmt, Stmt, WhileLoopSyntax,
 };
 use wiz_syntax::syntax::type_name::{TypeName, TypeParam, UserTypeName};
-use crate::high_level_ir::node_id::TypedModuleId;
 
+pub mod node_id;
 pub mod type_checker;
+pub mod type_id;
 pub mod type_resolver;
 pub mod typed_annotation;
 pub mod typed_decl;
@@ -55,8 +57,6 @@ pub mod typed_type;
 pub mod typed_type_constraint;
 pub mod typed_use;
 pub mod wlib;
-pub mod node_id;
-pub mod type_id;
 
 pub struct AstLowering;
 
@@ -75,7 +75,10 @@ impl AstLowering {
             SourceSet::File(f) => TypedSourceSet::File(self.file(f)),
             SourceSet::Dir { name, items } => TypedSourceSet::Dir {
                 name,
-                items: items.into_iter().map(|i| self.source_set(i, module_id)).collect(),
+                items: items
+                    .into_iter()
+                    .map(|i| self.source_set(i, module_id))
+                    .collect(),
             },
         }
     }

@@ -1,3 +1,4 @@
+use crate::high_level_ir::node_id::TypedModuleId;
 use crate::high_level_ir::type_checker::TypeChecker;
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::type_resolver::TypeResolver;
@@ -15,7 +16,6 @@ use wiz_syntax::syntax::file::SourceSet;
 use wiz_syntax_parser::parser;
 use wiz_syntax_parser::parser::wiz::{parse_from_file_path, read_package_from_path};
 use wizc_cli::{BuildType, Config};
-use crate::high_level_ir::node_id::TypedModuleId;
 
 mod constants;
 mod ext;
@@ -103,7 +103,11 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
             .into_iter()
             .map(|p| read_package_from_path(p.as_path(), None))
             .collect::<parser::result::Result<Vec<_>>>()?;
-        source_sets.into_iter().enumerate().map(|(i, s)| ast2hlir(s, TypedModuleId::new(i))).collect()
+        source_sets
+            .into_iter()
+            .enumerate()
+            .map(|(i, s)| ast2hlir(s, TypedModuleId::new(i)))
+            .collect()
     } else {
         config
             .libraries()
