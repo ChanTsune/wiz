@@ -2,7 +2,7 @@ use crate::high_level_ir::type_checker::TypeChecker;
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::wlib::WLib;
-use crate::high_level_ir::{ast2hlir, Ast2HLIR};
+use crate::high_level_ir::{ast2hlir, AstLowering};
 use crate::llvm_ir::codegen::CodeGen;
 use crate::middle_level_ir::{hlir2mlir, HLIR2MLIR};
 use inkwell::context::Context;
@@ -113,7 +113,7 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
 
     println!("=== convert to hlir ===");
 
-    let mut ast2hlir = Ast2HLIR::new();
+    let mut ast2hlir = AstLowering::new();
 
     let hlfiles = ast2hlir.source_set(input_source);
 

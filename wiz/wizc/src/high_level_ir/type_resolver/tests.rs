@@ -17,14 +17,14 @@ use crate::high_level_ir::typed_type::{
     Package, TypedArgType, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType,
     TypedValueType,
 };
-use crate::high_level_ir::Ast2HLIR;
+use crate::high_level_ir::AstLowering;
 use wiz_session::Session;
 use wiz_syntax_parser::parser::wiz::parse_from_string;
 
 fn check(source: &str, typed_file: TypedFile) {
     let ast = parse_from_string(source).unwrap();
 
-    let mut ast2hlir = Ast2HLIR::new();
+    let mut ast2hlir = AstLowering::new();
 
     let mut file = ast2hlir.file(ast);
     file.name = typed_file.name.clone();

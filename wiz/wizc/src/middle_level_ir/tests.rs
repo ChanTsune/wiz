@@ -1,6 +1,6 @@
 use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::typed_file::TypedSourceSet;
-use crate::high_level_ir::Ast2HLIR;
+use crate::high_level_ir::AstLowering;
 use crate::middle_level_ir::HLIR2MLIR;
 use wiz_mir::expr::{
     MLCall, MLCallArg, MLExpr, MLLiteral, MLMember, MLName, MLUnaryOp, MLUnaryOpKind,
@@ -15,7 +15,7 @@ use wiz_syntax_parser::parser::wiz::parse_from_string;
 fn check(source: &str, except: MLFile) {
     let ast = parse_from_string(source).unwrap();
 
-    let mut ast2hlir = Ast2HLIR::new();
+    let mut ast2hlir = AstLowering::new();
 
     let mut file = ast2hlir.file(ast);
     file.name = String::from("test");

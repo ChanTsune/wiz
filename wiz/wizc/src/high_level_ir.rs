@@ -55,14 +55,14 @@ pub mod typed_type_constraint;
 pub mod typed_use;
 pub mod wlib;
 
-pub struct Ast2HLIR;
+pub struct AstLowering;
 
 pub fn ast2hlir(s: SourceSet) -> TypedSourceSet {
-    let mut converter = Ast2HLIR::new();
+    let mut converter = AstLowering::new();
     converter.source_set(s)
 }
 
-impl Ast2HLIR {
+impl AstLowering {
     pub fn new() -> Self {
         Self {}
     }
