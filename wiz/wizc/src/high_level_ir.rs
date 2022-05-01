@@ -42,6 +42,7 @@ use wiz_syntax::syntax::statement::{
     AssignmentStmt, ForLoopSyntax, LoopStmt, Stmt, WhileLoopSyntax,
 };
 use wiz_syntax::syntax::type_name::{TypeName, TypeParam, UserTypeName};
+use crate::high_level_ir::node_id::TypedModuleId;
 
 pub mod type_checker;
 pub mod type_resolver;
@@ -54,12 +55,14 @@ pub mod typed_type;
 pub mod typed_type_constraint;
 pub mod typed_use;
 pub mod wlib;
+pub mod node_id;
+pub mod type_id;
 
 pub struct AstLowering;
 
-pub fn ast2hlir(s: SourceSet) -> TypedSourceSet {
+pub fn ast2hlir(s: SourceSet, module_id: TypedModuleId) -> TypedSourceSet {
     let mut converter = AstLowering::new();
-    converter.source_set(s)
+    converter.source_set(s, module_id)
 }
 
 impl AstLowering {
@@ -67,12 +70,12 @@ impl AstLowering {
         Self {}
     }
 
-    pub fn source_set(&mut self, s: SourceSet) -> TypedSourceSet {
+    pub fn source_set(&mut self, s: SourceSet, module_id: TypedModuleId) -> TypedSourceSet {
         match s {
             SourceSet::File(f) => TypedSourceSet::File(self.file(f)),
             SourceSet::Dir { name, items } => TypedSourceSet::Dir {
                 name,
-                items: items.into_iter().map(|i| self.source_set(i)).collect(),
+                items: items.into_iter().map(|i| self.source_set(i, module_id)).collect(),
             },
         }
     }

@@ -15,6 +15,7 @@ use wiz_syntax::syntax::file::SourceSet;
 use wiz_syntax_parser::parser;
 use wiz_syntax_parser::parser::wiz::{parse_from_file_path, read_package_from_path};
 use wizc_cli::{BuildType, Config};
+use crate::high_level_ir::node_id::TypedModuleId;
 
 mod constants;
 mod ext;
@@ -102,7 +103,7 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
             .into_iter()
             .map(|p| read_package_from_path(p.as_path(), None))
             .collect::<parser::result::Result<Vec<_>>>()?;
-        source_sets.into_iter().map(|s| ast2hlir(s)).collect()
+        source_sets.into_iter().enumerate().map(|(i, s)| ast2hlir(s, TypedModuleId::new(i))).collect()
     } else {
         config
             .libraries()
@@ -115,7 +116,7 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
 
     let mut ast2hlir = AstLowering::new();
 
-    let hlfiles = ast2hlir.source_set(input_source);
+    let hlfiles = ast2hlir.source_set(input_source, TypedModuleId::new(std_hlir.len()));
 
     println!("=== resolve type ===");
 
