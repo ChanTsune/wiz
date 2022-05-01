@@ -7,7 +7,7 @@ use std::collections::HashMap;
 #[derive(Debug, Clone)]
 pub struct ResolverArena {
     pub name_space: NameSpace,
-    pub binary_operators: HashMap<(TypedBinaryOperator, TypedType, TypedType), TypedType>,
+    binary_operators: HashMap<(TypedBinaryOperator, TypedType, TypedType), TypedType>,
 }
 
 impl Default for ResolverArena {
@@ -46,5 +46,9 @@ impl ResolverArena {
     ) -> Option<&ResolverStruct> {
         let n = self.name_space.get_child(name_space)?;
         n.get_type(name)
+    }
+
+    pub(crate) fn resolve_binary_operator(&self, key: &(TypedBinaryOperator, TypedType, TypedType)) -> Option<&TypedType> {
+        self.binary_operators.get(key)
     }
 }

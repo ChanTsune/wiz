@@ -355,8 +355,7 @@ impl ResolverContext {
                 } else {
                     let key = (kind, left, right);
                     self.arena
-                        .binary_operators
-                        .get(&key)
+                        .resolve_binary_operator(&key)
                         .cloned()
                         .ok_or_else(|| ResolverError::from(format!("{:?} is not defined.", key)))
                 }
