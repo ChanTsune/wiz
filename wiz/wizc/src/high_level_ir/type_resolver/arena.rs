@@ -6,7 +6,7 @@ use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 pub struct ResolverArena {
-    pub name_space: NameSpace,
+    name_space: NameSpace,
     binary_operators: HashMap<(TypedBinaryOperator, TypedType, TypedType), TypedType>,
 }
 
@@ -35,6 +35,20 @@ impl Default for ResolverArena {
             name_space: ns,
             binary_operators: Default::default(),
         }
+    }
+}
+
+impl ResolverArena {
+    pub(crate) fn register_namespace<T:ToString>(&mut self, namespace: &[T]) {
+        self.name_space.set_child(namespace.iter().map(T::to_string).collect())
+    }
+
+    pub(crate) fn get_namespace<T: ToString>(&self, namespace: &[T]) -> Option<&NameSpace> {
+        self.name_space.get_child(namespace.iter().map(T::to_string).collect())
+    }
+
+    pub(crate) fn get_namespace_mut<T: ToString>(&mut self, namespace: &[T]) -> Option<&mut NameSpace> {
+        self.name_space.get_child_mut(namespace.iter().map(T::to_string).collect())
     }
 }
 

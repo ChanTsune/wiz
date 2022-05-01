@@ -42,9 +42,7 @@ impl ResolverContext {
 
     pub fn push_name_space(&mut self, name: String) {
         self.current_namespace.push(name);
-        self.arena
-            .name_space
-            .set_child(self.current_namespace.clone());
+        self.arena.register_namespace(&self.current_namespace);
     }
 
     pub fn pop_name_space(&mut self) {
@@ -56,11 +54,8 @@ impl ResolverContext {
     }
 
     pub fn get_namespace_mut(&mut self, ns: Vec<String>) -> Result<&mut NameSpace> {
-        let msg = format!("NameSpace {:?} not exist", ns);
-        self.arena
-            .name_space
-            .get_child_mut(ns)
-            .ok_or_else(|| ResolverError::from(msg))
+        self.arena.get_namespace_mut(&ns)
+            .ok_or_else(|| ResolverError::from(format!("NameSpace {:?} not exist", ns)))
     }
 
     pub fn get_current_namespace(&self) -> Result<&NameSpace> {
@@ -68,11 +63,8 @@ impl ResolverContext {
     }
 
     pub fn get_namespace(&self, ns: Vec<String>) -> Result<&NameSpace> {
-        let msg = format!("NameSpace {:?} not exist", ns);
-        self.arena
-            .name_space
-            .get_child(ns)
-            .ok_or_else(|| ResolverError::from(msg))
+        self.arena.get_namespace(&ns)
+            .ok_or_else(|| ResolverError::from(format!("NameSpace {:?} not exist", ns)))
     }
 
     pub fn resolve_current_type(&self) -> Result<TypedType> {
