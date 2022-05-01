@@ -62,7 +62,10 @@ impl ResolverArena {
         n.get_type(name)
     }
 
-    pub(crate) fn resolve_binary_operator(&self, key: &(TypedBinaryOperator, TypedType, TypedType)) -> Option<&TypedType> {
+    pub(crate) fn resolve_binary_operator(
+        &self,
+        key: &(TypedBinaryOperator, TypedType, TypedType),
+    ) -> Option<&TypedType> {
         self.binary_operators.get(key)
     }
 }
