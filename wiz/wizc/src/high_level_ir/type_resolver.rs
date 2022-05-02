@@ -67,33 +67,16 @@ impl<'s> TypeResolver<'s> {
 
     pub fn detect_type(&mut self, f: &TypedFile) -> Result<()> {
         self.context.push_name_space(f.name.clone());
-        let current_namespace = self.context.current_namespace.clone();
-        let ns = self.context.get_current_namespace_mut()?;
+        let current_namespace = &self.context.current_namespace;
         for d in f.body.iter() {
             match d {
                 TypedDecl::Struct(s) => {
-                    let self_type = TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-                        package: TypedPackage::Resolved(Package::from(current_namespace.clone())),
-                        name: s.name.clone(),
-                        type_args: None,
-                    }));
-                    ns.register_type(
-                        s.name.clone(),
-                        ResolverStruct::new(self_type.clone(), StructKind::Struct),
-                    );
+                    self.context.arena.register_struct(current_namespace, &s.name);
                 }
                 TypedDecl::Class => {}
                 TypedDecl::Enum => {}
                 TypedDecl::Protocol(p) => {
-                    let self_type = TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-                        package: TypedPackage::Resolved(Package::from(current_namespace.clone())),
-                        name: p.name.clone(),
-                        type_args: None,
-                    }));
-                    ns.register_type(
-                        p.name.clone(),
-                        ResolverStruct::new(self_type.clone(), StructKind::Protocol),
-                    );
+                    self.context.arena.register_protocol(current_namespace, &p.name);
                 }
                 _ => {}
             }
