@@ -12,16 +12,16 @@ pub struct ResolverArena {
 
 impl Default for ResolverArena {
     fn default() -> Self {
-        let mut ns = NameSpace::empty();
+        let mut arena = Self {
+            name_space: NameSpace::empty(),
+            binary_operators: Default::default(),
+        };
 
         for t in TypedType::builtin_types() {
             match &t {
                 TypedType::Value(v) => match v {
                     TypedValueType::Value(v) => {
-                        ns.register_type(
-                            v.name.clone(),
-                            ResolverStruct::new(t.clone(), StructKind::Struct),
-                        );
+                        arena.register_struct(&t.package().into_resolved().names, &v.name);
                     }
                     TypedValueType::Array(_, _) => {}
                     TypedValueType::Tuple(_) => {}
@@ -31,10 +31,7 @@ impl Default for ResolverArena {
                 _ => {}
             };
         }
-        Self {
-            name_space: ns,
-            binary_operators: Default::default(),
-        }
+        arena
     }
 }
 
