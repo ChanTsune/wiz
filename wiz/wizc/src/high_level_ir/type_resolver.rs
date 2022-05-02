@@ -81,7 +81,6 @@ impl<'s> TypeResolver<'s> {
                         s.name.clone(),
                         ResolverStruct::new(self_type.clone(), StructKind::Struct),
                     );
-                    ns.register_value(s.name.clone(), TypedType::Type(Box::new(self_type)));
                 }
                 TypedDecl::Class => {}
                 TypedDecl::Enum => {}
@@ -95,7 +94,6 @@ impl<'s> TypeResolver<'s> {
                         p.name.clone(),
                         ResolverStruct::new(self_type.clone(), StructKind::Protocol),
                     );
-                    ns.register_value(p.name.clone(), TypedType::Type(Box::new(self_type)));
                 }
                 _ => {}
             }
