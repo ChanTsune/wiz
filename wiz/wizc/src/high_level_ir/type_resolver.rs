@@ -71,12 +71,16 @@ impl<'s> TypeResolver<'s> {
         for d in f.body.iter() {
             match d {
                 TypedDecl::Struct(s) => {
-                    self.context.arena.register_struct(current_namespace, &s.name);
+                    self.context
+                        .arena
+                        .register_struct(current_namespace, &s.name);
                 }
                 TypedDecl::Class => {}
                 TypedDecl::Enum => {}
                 TypedDecl::Protocol(p) => {
-                    self.context.arena.register_protocol(current_namespace, &p.name);
+                    self.context
+                        .arena
+                        .register_protocol(current_namespace, &p.name);
                 }
                 _ => {}
             }

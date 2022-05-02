@@ -1,7 +1,9 @@
 use crate::high_level_ir::type_resolver::context::{EnvValue, ResolverStruct, StructKind};
 use crate::high_level_ir::type_resolver::namespace::NameSpace;
 use crate::high_level_ir::typed_expr::TypedBinaryOperator;
-use crate::high_level_ir::typed_type::{Package, TypedNamedValueType, TypedPackage, TypedType, TypedValueType};
+use crate::high_level_ir::typed_type::{
+    Package, TypedNamedValueType, TypedPackage, TypedType, TypedValueType,
+};
 use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
@@ -56,22 +58,42 @@ impl ResolverArena {
 }
 
 impl ResolverArena {
-
-    pub(crate) fn register_struct<T: ToString>(&mut self, namespace: &[T], name: &str, /* type_parameters */) {
+    pub(crate) fn register_struct<T: ToString>(
+        &mut self,
+        namespace: &[T],
+        name: &str, /* type_parameters */
+    ) {
         self.register_type(namespace, name, StructKind::Struct)
     }
 
-    pub(crate) fn register_protocol<T: ToString>(&mut self, namespace: &[T], name: &str, /* type_parameters */) {
+    pub(crate) fn register_protocol<T: ToString>(
+        &mut self,
+        namespace: &[T],
+        name: &str, /* type_parameters */
+    ) {
         self.register_type(namespace, name, StructKind::Protocol)
     }
 
-    fn register_type<T: ToString>(&mut self, namespace: &[T], name: &str, kind: StructKind, /* type_parameters */) {
-        let s = ResolverStruct::new(TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-            package: TypedPackage::Resolved(Package::from(namespace.iter().map(T::to_string).collect::<Vec<_>>())),
-            name: name.to_string(),
-            type_args: None,
-        })), kind);
-        let child_ns = self.name_space.get_child_mut(namespace.iter().map(T::to_string).collect()).unwrap();
+    fn register_type<T: ToString>(
+        &mut self,
+        namespace: &[T],
+        name: &str,
+        kind: StructKind, /* type_parameters */
+    ) {
+        let s = ResolverStruct::new(
+            TypedType::Value(TypedValueType::Value(TypedNamedValueType {
+                package: TypedPackage::Resolved(Package::from(
+                    namespace.iter().map(T::to_string).collect::<Vec<_>>(),
+                )),
+                name: name.to_string(),
+                type_args: None,
+            })),
+            kind,
+        );
+        let child_ns = self
+            .name_space
+            .get_child_mut(namespace.iter().map(T::to_string).collect())
+            .unwrap();
         child_ns.register_type(name.to_string(), s);
     }
 
