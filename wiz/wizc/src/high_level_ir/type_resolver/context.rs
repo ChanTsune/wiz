@@ -201,10 +201,12 @@ impl ResolverContext {
                 }
                 TypedType::Value(v) => match v {
                     TypedValueType::Value(v) => {
-                        let ns = self.get_namespace_mut(v.package.clone().into_resolved().names)?;
-                        let rs = ns.get_type(&v.name).ok_or_else(|| {
-                            ResolverError::from(format!("Can not resolve type {:?}", t))
-                        })?;
+                        let rs = self
+                            .arena
+                            .get_struct_by(v.package.clone().into_resolved().names, &v.name)
+                            .ok_or_else(|| {
+                                ResolverError::from(format!("Can not resolve type {:?}", t))
+                            })?;
                         rs.static_functions.get(name).cloned().ok_or_else(|| {
                             ResolverError::from(format!(
                                 "{:?} not has static member named `{}`",
