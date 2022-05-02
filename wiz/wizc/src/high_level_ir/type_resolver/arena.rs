@@ -97,13 +97,39 @@ impl ResolverArena {
         child_ns.register_type(name.to_string(), s);
     }
 
-    pub(crate) fn get_struct_by<T: ToString>(
+    pub(crate) fn get_type<T: ToString>(
         &self,
-        name_space: Vec<T>,
+        name_space: &[T],
         name: &str,
     ) -> Option<&ResolverStruct> {
-        let n = self.name_space.get_child(name_space)?;
+        let n = self
+            .name_space
+            .get_child(name_space.iter().map(T::to_string).collect())?;
         n.get_type(name)
+    }
+
+    pub(crate) fn get_type_mut<T: ToString>(
+        &mut self,
+        name_space: &[T],
+        name: &str,
+    ) -> Option<&mut ResolverStruct> {
+        let n = self
+            .name_space
+            .get_child_mut(name_space.iter().map(T::to_string).collect())?;
+        n.get_type_mut(name)
+    }
+
+    pub(crate) fn register_value<T: ToString>(
+        &mut self,
+        namespace: &[T],
+        name: &str,
+        ty: TypedType,
+    ) {
+        let child_ns = self
+            .name_space
+            .get_child_mut(namespace.iter().map(T::to_string).collect())
+            .unwrap();
+        child_ns.register_value(name.to_string(), ty)
     }
 
     pub(crate) fn resolve_binary_operator(

@@ -81,8 +81,8 @@ impl<'s> TypeChecker<'s> {
     }
 
     fn struct_(&mut self, typed_struct: &TypedStruct) {
-        let struct_info = self.arena.get_struct_by(
-            typed_struct.package.clone().into_resolved().names,
+        let struct_info = self.arena.get_type(
+            &typed_struct.package.clone().into_resolved().names,
             &typed_struct.name,
         );
 

@@ -203,7 +203,7 @@ impl ResolverContext {
                     TypedValueType::Value(v) => {
                         let rs = self
                             .arena
-                            .get_struct_by(v.package.clone().into_resolved().names, &v.name)
+                            .get_type(&v.package.clone().into_resolved().names, &v.name)
                             .ok_or_else(|| {
                                 ResolverError::from(format!("Can not resolve type {:?}", t))
                             })?;
