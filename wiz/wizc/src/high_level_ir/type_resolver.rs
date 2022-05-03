@@ -2,7 +2,7 @@ pub mod arena;
 pub mod context;
 pub mod error;
 mod name_environment;
-mod namespace;
+mod name_space;
 pub mod result;
 #[cfg(test)]
 mod tests;
