@@ -51,8 +51,8 @@ impl NameSpace {
     pub(crate) fn set_child<T: ToString>(&mut self, mut ns: Vec<T>) {
         if !ns.is_empty() {
             let n = ns.remove(0).to_string();
-            let self_name_space_ref =  &self.name_space;
-            let entry = self.values.entry(n).or_insert_with_key(|key|{
+            let self_name_space_ref = &self.name_space;
+            let entry = self.values.entry(n).or_insert_with_key(|key| {
                 let mut name = self_name_space_ref.clone();
                 name.push(key.clone());
                 EnvValue::from(NameSpace::new(name))
