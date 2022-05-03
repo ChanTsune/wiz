@@ -2,7 +2,7 @@
 pub struct DeclarationId(usize);
 
 impl DeclarationId {
-    const DUMMY: Self = Self::new(usize::MAX);
+    pub const DUMMY: Self = Self::new(usize::MAX);
     pub const fn new(id: usize) -> Self {
         Self(id)
     }
