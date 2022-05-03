@@ -8,8 +8,8 @@ impl TypeId {
     }
 }
 
-#[derive(Debug)]
-struct TypeIdGenerator {
+#[derive(Debug, Clone)]
+pub struct TypeIdGenerator {
     latest: usize,
 }
 
