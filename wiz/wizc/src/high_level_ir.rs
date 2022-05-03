@@ -46,7 +46,7 @@ use wiz_syntax::syntax::type_name::{TypeName, TypeParam, UserTypeName};
 
 pub mod node_id;
 pub mod type_checker;
-pub mod type_id;
+pub mod declaration_id;
 pub mod type_resolver;
 pub mod typed_annotation;
 pub mod typed_decl;
