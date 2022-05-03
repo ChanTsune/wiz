@@ -72,7 +72,7 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
     let mut lib_paths = vec![];
 
     for l in get_builtin_lib() {
-        for mut p in get_find_paths()
+        for p in get_find_paths()
             .into_iter()
             .chain(paths.iter().map(PathBuf::from))
         {
