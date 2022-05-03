@@ -96,36 +96,23 @@ impl NameSpace {
     }
 
     pub(crate) fn register_value(&mut self, name: String, type_: TypedType) {
-        if let Some(e) = self.values.remove(&name) {
-            match e {
-                EnvValue::NameSpace(_) | EnvValue::Type(_) => {
-                    self.values.insert(name, e);
-                }
-                EnvValue::Value(mut v) => {
-                    v.insert(type_);
-                    self.values.insert(name, EnvValue::from(v));
-                }
-            };
-        } else {
-            self.values
-                .insert(name, EnvValue::from(HashSet::from([type_])));
-        }
+        let entry = self
+            .values
+            .entry(name)
+            .or_insert_with(|| EnvValue::from(HashSet::default()));
+        if let EnvValue::Value(v) = entry {
+            v.insert(type_);
+        };
     }
 
     pub(crate) fn register_values(&mut self, name: String, type_: HashSet<TypedType>) {
-        if let Some(e) = self.values.remove(&name) {
-            match e {
-                EnvValue::NameSpace(_) | EnvValue::Type(_) => {
-                    self.values.insert(name, e);
-                }
-                EnvValue::Value(mut v) => {
-                    v.extend(type_);
-                    self.values.insert(name, EnvValue::from(v));
-                }
-            };
-        } else {
-            self.values.insert(name, EnvValue::from(type_));
-        }
+        let entry = self
+            .values
+            .entry(name)
+            .or_insert_with(|| EnvValue::from(HashSet::default()));
+        if let EnvValue::Value(v) = entry {
+            v.extend(type_);
+        };
     }
 
     pub(crate) fn get_value(&self, name: &str) -> Option<&HashSet<TypedType>> {
