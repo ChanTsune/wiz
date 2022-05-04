@@ -25,7 +25,6 @@ impl Error for ArenaError {}
 #[derive(Debug, Clone)]
 pub struct ResolverArena {
     declaration_id_generator: DeclarationIdGenerator,
-    root_namespace: Namespace,
     declarations: HashMap<DeclarationId, Declaration>,
     name_space: NameSpace,
     binary_operators: HashMap<(TypedBinaryOperator, TypedType, TypedType), TypedType>,
@@ -41,7 +40,6 @@ impl Default for ResolverArena {
 
         let mut arena = Self {
             declaration_id_generator: DeclarationIdGenerator::new(0),
-            root_namespace: Namespace::root(),
             declarations,
             name_space: NameSpace::empty(),
             binary_operators: Default::default(),
