@@ -132,6 +132,7 @@ impl ResolverArena {
                     parents_name.push(n.name());
                     parents_name
                 } else {
+                    // NOTE: This will root namespace
                     vec![]
                 }
             }
