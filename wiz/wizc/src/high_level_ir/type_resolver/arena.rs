@@ -110,7 +110,11 @@ impl ResolverArena {
         Some(())
     }
 
-    pub(crate) fn register_namespace<T: ToString>(&mut self, namespace: &[T], name:&str) -> Option<()> {
+    pub(crate) fn register_namespace<T: ToString>(
+        &mut self,
+        namespace: &[T],
+        name: &str,
+    ) -> Option<()> {
         let parent_id = self.resolve_namespace_from_root(namespace)?;
         self.register(
             namespace,
@@ -292,7 +296,10 @@ mod tests {
 
         let parent_id = arena.resolve_namespace_from_root(&[child_namespace_name]);
         assert_eq!(
-            Declaration::Namespace(Namespace::new(grandchildren_namespace_name, parent_id.unwrap())),
+            Declaration::Namespace(Namespace::new(
+                grandchildren_namespace_name,
+                parent_id.unwrap()
+            )),
             *arena.declarations.get(&ns_id.unwrap()).unwrap()
         )
     }
@@ -310,6 +317,9 @@ mod tests {
         let ns_id = arena
             .resolve_namespace_from_root(&[child_namespace_name, grandchildren_namespace_name]);
 
-        assert_eq!(arena.resolve_fully_qualified_name(&ns_id.unwrap()), ["std", "collections"])
+        assert_eq!(
+            arena.resolve_fully_qualified_name(&ns_id.unwrap()),
+            ["std", "collections"]
+        )
     }
 }
