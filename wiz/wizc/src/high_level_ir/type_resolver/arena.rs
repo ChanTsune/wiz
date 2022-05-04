@@ -198,6 +198,7 @@ impl ResolverArena {
             })),
             kind,
         );
+        self.register(namespace, name, Declaration::Type(s.clone()));
         let child_ns = self
             .name_space
             .get_child_mut(namespace.iter().map(T::to_string).collect())
