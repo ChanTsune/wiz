@@ -28,4 +28,12 @@ impl Namespace {
     pub fn get_child(&self, name: &str) -> Option<DeclarationId> {
         self.children.get(name).copied()
     }
+
+    pub fn parent(&self) -> Option<DeclarationId> {
+        self.parent
+    }
+
+    pub fn name(&self) -> String {
+        self.name.clone()
+    }
 }

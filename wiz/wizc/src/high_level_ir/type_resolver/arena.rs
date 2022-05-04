@@ -119,6 +119,27 @@ impl ResolverArena {
         )
     }
 
+    pub(crate) fn resolve_fully_qualified_name(&self, id: &DeclarationId) -> Vec<String> {
+        let decl = self.declarations.get(id).unwrap();
+        match decl {
+            Declaration::Namespace(n) => {
+                if let Some(parent_id) = n.parent() {
+                    let mut parents_name = self.resolve_fully_qualified_name(&parent_id);
+                    parents_name.push(n.name());
+                    parents_name
+                } else {
+                    vec![]
+                }
+            }
+            Declaration::Type(t) => {
+                vec![t.name.clone()]
+            }
+            Declaration::Value(t) => {
+                vec![t.name()]
+            }
+        }
+    }
+
     pub(crate) fn create_namespace_all<T: ToString>(&mut self, namespace: &[T]) {
         self.name_space
             .set_child(namespace.iter().map(T::to_string).collect())
@@ -274,5 +295,21 @@ mod tests {
             Declaration::Namespace(Namespace::new(grandchildren_namespace_name, parent_id.unwrap())),
             *arena.declarations.get(&ns_id.unwrap()).unwrap()
         )
+    }
+
+    #[test]
+    fn resolve_fully_qualified_name() {
+        let mut arena = ResolverArena::default();
+        let root_namespace: [&str; 0] = [];
+        let child_namespace_name = "std";
+        let grandchildren_namespace_name = "collections";
+
+        arena.register_namespace(&root_namespace, child_namespace_name);
+        arena.register_namespace(&[child_namespace_name], grandchildren_namespace_name);
+
+        let ns_id = arena
+            .resolve_namespace_from_root(&[child_namespace_name, grandchildren_namespace_name]);
+
+        assert_eq!(arena.resolve_fully_qualified_name(&ns_id.unwrap()), ["std", "collections"])
     }
 }
