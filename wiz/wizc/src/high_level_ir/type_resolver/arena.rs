@@ -77,7 +77,10 @@ impl ResolverArena {
             let name = namespace.get(0).unwrap();
             let parent = self.declarations.get(&parent)?;
             if let Declaration::Namespace(parent) = parent {
-                self.resolve_namespace(*parent.get_child(&name.to_string())?.first().unwrap(), &namespace[1..])
+                self.resolve_namespace(
+                    *parent.get_child(&name.to_string())?.first().unwrap(),
+                    &namespace[1..],
+                )
             } else {
                 None
             }
