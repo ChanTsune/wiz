@@ -1,17 +1,22 @@
+use crate::high_level_ir::type_resolver::arena::ResolverArena;
 use crate::high_level_ir::type_resolver::context::{EnvValue, ResolverStruct};
 use crate::high_level_ir::type_resolver::name_space::NameSpace;
 use crate::high_level_ir::typed_type::TypedType;
 use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::HashMap;
 
-#[derive(Debug, Default, Eq, PartialEq, Clone)]
-pub struct NameEnvironment {
+#[derive(Debug, Clone)]
+pub struct NameEnvironment<'a> {
     pub names: HashMap<String, (Vec<String>, EnvValue)>,
+    arena: &'a ResolverArena,
 }
 
-impl NameEnvironment {
-    pub fn new() -> Self {
-        Self::default()
+impl<'a> NameEnvironment<'a> {
+    pub fn new(arena: &'a ResolverArena) -> Self {
+        Self {
+            names: Default::default(),
+            arena,
+        }
     }
 
     pub(crate) fn use_values_from(&mut self, name_space: &NameSpace) {

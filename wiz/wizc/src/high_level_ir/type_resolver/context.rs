@@ -117,7 +117,7 @@ impl ResolverContext {
     }
 
     pub(crate) fn get_current_name_environment(&self) -> NameEnvironment {
-        let mut env = NameEnvironment::new();
+        let mut env = NameEnvironment::new(&self.arena);
         env.use_values_from(self.get_namespace(vec![]).unwrap());
         env.use_values_from(self.get_current_namespace().unwrap());
         let used_ns = self
