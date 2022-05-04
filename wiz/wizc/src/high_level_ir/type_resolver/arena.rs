@@ -261,10 +261,7 @@ mod tests {
         let namespace_name: [&str; 0] = [];
 
         let ns_id = arena.resolve_namespace_from_root(&namespace_name);
-        assert_eq!(
-            Declaration::Namespace(Namespace::root()),
-            *arena.declarations.get(&ns_id.unwrap()).unwrap()
-        )
+        assert_eq!(DeclarationId::ROOT, ns_id.unwrap())
     }
 
     #[test]
