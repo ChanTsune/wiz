@@ -5,7 +5,7 @@ use std::collections::HashMap;
 pub struct Namespace {
     name: String,
     parent: Option<DeclarationId>,
-    children: HashMap<String, DeclarationId>,
+    children: HashMap<String, Vec<DeclarationId>>,
 }
 
 impl Namespace {
@@ -22,11 +22,12 @@ impl Namespace {
     }
 
     pub fn add_child(&mut self, name: &str, id: DeclarationId) {
-        self.children.insert(name.to_string(), id);
+        let entry = self.children.entry(name.to_string()).or_default();
+        entry.push(id);
     }
 
-    pub fn get_child(&self, name: &str) -> Option<DeclarationId> {
-        self.children.get(name).copied()
+    pub fn get_child(&self, name: &str) -> Option<Vec<DeclarationId>> {
+        self.children.get(name).cloned()
     }
 
     pub fn parent(&self) -> Option<DeclarationId> {
