@@ -15,7 +15,9 @@ pub enum StructKind {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct ResolverStruct {
-    pub(crate) self_: TypedType,
+    pub(crate) self_: TypedType, // TODO: remove this field
+    pub(crate) namespace: Vec<String>,
+    pub(crate) name: String,
     pub(crate) kind: StructKind,
     pub(crate) stored_properties: HashMap<String, TypedType>,
     pub(crate) computed_properties: HashMap<String, TypedType>,
@@ -28,6 +30,8 @@ pub struct ResolverStruct {
 impl ResolverStruct {
     pub fn new(self_: TypedType, kind: StructKind) -> Self {
         Self {
+            namespace: self_.package().into_resolved().names,
+            name: self_.name(),
             self_,
             kind,
             stored_properties: Default::default(),
@@ -35,7 +39,7 @@ impl ResolverStruct {
             member_functions: Default::default(),
             static_functions: Default::default(),
             conformed_protocols: Default::default(),
-            type_params: None,
+            type_params: None, // TODO: fill type params
         }
     }
 
