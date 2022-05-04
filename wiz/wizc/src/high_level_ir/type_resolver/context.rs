@@ -41,7 +41,8 @@ impl ResolverContext {
     }
 
     pub fn push_name_space(&mut self, name: String) {
-        self.arena.register_namespace(&self.current_namespace, &name);
+        self.arena
+            .register_namespace(&self.current_namespace, &name);
         self.current_namespace.push(name);
         self.arena.create_namespace_all(&self.current_namespace);
     }
