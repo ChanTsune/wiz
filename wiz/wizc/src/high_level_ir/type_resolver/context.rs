@@ -109,8 +109,8 @@ impl ResolverContext {
                     todo!()
                 }
                 EnvValue::Value(v) => ns.register_values(name, v),
-                EnvValue::Type(_) => {
-                    ns.values.insert(name, value);
+                EnvValue::Type(rs) => {
+                    ns.register_type(name, rs);
                 }
             };
         } else {
