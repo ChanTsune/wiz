@@ -83,7 +83,12 @@ impl NameSpace {
         })
     }
 
-    pub(crate) fn register_value(&mut self, name_space: Vec<String>, name: String, type_: TypedType) {
+    pub(crate) fn register_value(
+        &mut self,
+        name_space: Vec<String>,
+        name: String,
+        type_: TypedType,
+    ) {
         let entry = self
             .values
             .entry(name)

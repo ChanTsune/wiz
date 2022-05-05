@@ -294,7 +294,11 @@ impl ResolverArena {
             .name_space
             .get_child_mut(namespace.iter().map(T::to_string).collect())
             .unwrap();
-        child_ns.register_value(namespace.iter().map(T::to_string).collect(),name.to_string(), ty.clone());
+        child_ns.register_value(
+            namespace.iter().map(T::to_string).collect(),
+            name.to_string(),
+            ty.clone(),
+        );
         self.register(namespace, name, DeclarationItem::Value(ty));
     }
 

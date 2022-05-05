@@ -460,9 +460,12 @@ impl<'s> TypeResolver<'s> {
         };
         self.context.register_to_env(
             v.name.clone(),
-            (vec![], v.type_
-                .clone()
-                .ok_or_else(|| ResolverError::from("Cannot resolve variable type"))?),
+            (
+                vec![],
+                v.type_
+                    .clone()
+                    .ok_or_else(|| ResolverError::from("Cannot resolve variable type"))?,
+            ),
         );
         Ok(v)
     }
@@ -534,7 +537,7 @@ impl<'s> TypeResolver<'s> {
             .map(|a| {
                 let a = self.typed_arg_def(a)?;
                 self.context
-                    .register_to_env(a.name.clone(), (vec![],a.type_.clone()));
+                    .register_to_env(a.name.clone(), (vec![], a.type_.clone()));
                 Ok(a)
             })
             .collect::<Result<Vec<_>>>()?;
@@ -613,7 +616,8 @@ impl<'s> TypeResolver<'s> {
         self.context.push_local_stack();
 
         let self_type = self.context.resolve_current_type()?;
-        self.context.register_to_env("self".to_string(), (vec![], self_type));
+        self.context
+            .register_to_env("self".to_string(), (vec![], self_type));
 
         let result = TypedInitializer {
             args: i

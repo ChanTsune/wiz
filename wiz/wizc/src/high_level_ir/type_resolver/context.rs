@@ -97,7 +97,8 @@ impl ResolverContext {
                 EnvValue::NameSpace(_) => todo!(),
                 EnvValue::Value(v) => {
                     for t in v {
-                        self.arena.register_value(&self.current_namespace, &name, t.1)
+                        self.arena
+                            .register_value(&self.current_namespace, &name, t.1)
                     }
                 }
                 EnvValue::Type(_) => todo!(),
@@ -391,7 +392,7 @@ impl ResolverContext {
                             match t {
                                 EnvValue::NameSpace(_) => panic!(),
                                 EnvValue::Value(_) => panic!(),
-                                EnvValue::Type(t) => t.namespace.clone()
+                                EnvValue::Type(t) => t.namespace.clone(),
                             }
                         })),
                         name: type_.name.clone(),
