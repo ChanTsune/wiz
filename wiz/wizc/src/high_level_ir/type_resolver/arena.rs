@@ -290,16 +290,17 @@ impl ResolverArena {
         name: &str,
         ty: TypedType,
     ) {
+        let vec_namespace = namespace.iter().map(T::to_string).collect::<Vec<_>>();
         let child_ns = self
             .name_space
-            .get_child_mut(namespace.iter().map(T::to_string).collect())
+            .get_child_mut(vec_namespace.clone())
             .unwrap();
         child_ns.register_value(
-            namespace.iter().map(T::to_string).collect(),
+            vec_namespace.clone(),
             name.to_string(),
             ty.clone(),
         );
-        self.register(namespace, name, DeclarationItem::Value(ty));
+        self.register(namespace, name, DeclarationItem::Value((vec_namespace, ty)));
     }
 
     pub(crate) fn resolve_binary_operator(

@@ -73,8 +73,8 @@ impl<'a> NameEnvironment<'a> {
         self.get_type(typ.package().into_resolved().names, &typ.name())
     }
 
-    pub(crate) fn get_env_value(&self, name: &str) -> Option<&EnvValue> {
-        self.local_names.get(name)
+    pub(crate) fn get_env_value(&self, name: &str) -> Option<EnvValue> {
+        self.local_names.get(name).cloned()
     }
 
     pub(crate) fn add_env_value(&mut self, name: &str, v: EnvValue) {

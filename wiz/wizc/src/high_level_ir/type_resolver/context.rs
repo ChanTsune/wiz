@@ -278,7 +278,7 @@ impl ResolverContext {
                         ))
                     })
             }
-            EnvValue::Value(t_set) => Self::resolve_overload(t_set, type_annotation)
+            EnvValue::Value(t_set) => Self::resolve_overload(&t_set, type_annotation)
                 .map(|(ns, t)| {
                     let is_function = t.is_function_type();
                     (
