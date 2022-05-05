@@ -477,7 +477,7 @@ mod tests {
         let env = context.get_current_name_environment();
 
         assert_eq!(
-            env.get_type(vec![],"Int32"),
+            env.get_type(vec![], "Int32"),
             Some(&ResolverStruct::new(TypedType::int32(), StructKind::Struct)),
         );
     }
