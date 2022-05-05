@@ -15,7 +15,7 @@ impl NameSpace {
 
     pub(crate) fn new<T: ToString>(name: Vec<T>) -> Self {
         Self {
-            name_space: name.into_iter().map(|i| i.to_string()).collect(),
+            name_space: name.into_iter().map(T::to_string).collect(),
             values: Default::default(),
         }
     }
