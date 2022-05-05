@@ -65,12 +65,6 @@ impl NameSpace {
         }
     }
 
-    pub(crate) fn get<T: ToString>(&self, mut ns: Vec<T>) -> Option<&EnvValue> {
-        let name = ns.remove(0).to_string();
-        let e = self.values.get(&name)?;
-        e.get(ns)
-    }
-
     pub(crate) fn register_type(&mut self, name: String, s: ResolverStruct) {
         self.values.insert(name, EnvValue::from(s));
     }

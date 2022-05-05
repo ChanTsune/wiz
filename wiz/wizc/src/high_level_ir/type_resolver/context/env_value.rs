@@ -9,20 +9,6 @@ pub enum EnvValue {
     Type(ResolverStruct),
 }
 
-impl EnvValue {
-    pub(crate) fn get<T: ToString>(&self, mut ns: Vec<T>) -> Option<&EnvValue> {
-        if ns.is_empty() {
-            Some(self)
-        } else {
-            match self {
-                EnvValue::NameSpace(n) => n.get(ns),
-                EnvValue::Value(_) => None,
-                EnvValue::Type(_) => todo!(),
-            }
-        }
-    }
-}
-
 impl From<TypedType> for EnvValue {
     fn from(typed_type: TypedType) -> Self {
         Self::Value(HashSet::from([typed_type]))
