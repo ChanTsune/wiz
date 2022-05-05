@@ -24,10 +24,7 @@ impl<'a> NameEnvironment<'a> {
     }
 
     pub(crate) fn use_values_from(&mut self, name_space: &NameSpace) {
-        self.local_names.extend(
-            name_space
-                .values.clone(),
-        );
+        self.local_names.extend(name_space.values.clone());
     }
 
     /// use [namespace]::*;
@@ -54,11 +51,7 @@ impl<'a> NameEnvironment<'a> {
     }
 
     pub(crate) fn use_values_from_local(&mut self, local_stack: &StackedHashMap<String, EnvValue>) {
-        self.local_names.extend(
-            local_stack
-                .clone()
-                .into_map(),
-        )
+        self.local_names.extend(local_stack.clone().into_map())
     }
 
     pub(crate) fn get_type(

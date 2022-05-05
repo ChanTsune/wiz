@@ -381,12 +381,12 @@ impl ResolverContext {
         Ok(match type_.package {
             TypedPackage::Raw(p) => {
                 if p.names.is_empty() {
-                    let t =
-                        env.get_env_value(&type_.name)
-                            .ok_or(ResolverError::from(format!(
-                                "Can not resolve name `{}`",
-                                &type_.name
-                            )))?;
+                    let t = env
+                        .get_env_value(&type_.name)
+                        .ok_or(ResolverError::from(format!(
+                            "Can not resolve name `{}`",
+                            &type_.name
+                        )))?;
                     TypedNamedValueType {
                         package: TypedPackage::Resolved(Package::from({
                             match t {
