@@ -21,16 +21,6 @@ impl EnvValue {
             }
         }
     }
-
-    pub(crate) fn create_children<T: ToString>(&mut self, mut ns: Vec<T>) {
-        if !ns.is_empty() {
-            match self {
-                EnvValue::NameSpace(n) => n.set_child(ns),
-                EnvValue::Value(_) => panic!(),
-                EnvValue::Type(_) => panic!(),
-            }
-        }
-    }
 }
 
 impl From<TypedType> for EnvValue {
@@ -54,23 +44,5 @@ impl From<HashSet<TypedType>> for EnvValue {
 impl From<ResolverStruct> for EnvValue {
     fn from(s: ResolverStruct) -> Self {
         Self::Type(s)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::high_level_ir::type_resolver::context::{EnvValue, NameSpace};
-
-    #[test]
-    fn test_get() {
-        let mut env_value = EnvValue::from(NameSpace::empty());
-        env_value.create_children(vec!["child", "grand-child"]);
-        assert_eq!(
-            env_value.get(vec!["child", "grand-child"]),
-            Some(&EnvValue::from(NameSpace::new(vec![
-                "child",
-                "grand-child"
-            ])))
-        );
     }
 }
