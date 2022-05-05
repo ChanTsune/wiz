@@ -296,7 +296,8 @@ impl ResolverArena {
             .name_space
             .get_child_mut(namespace.iter().map(T::to_string).collect())
             .unwrap();
-        child_ns.register_value(name.to_string(), ty)
+        child_ns.register_value(name.to_string(), ty.clone());
+        self.register(namespace, name, Declaration::Value(ty));
     }
 
     pub(crate) fn resolve_binary_operator(
