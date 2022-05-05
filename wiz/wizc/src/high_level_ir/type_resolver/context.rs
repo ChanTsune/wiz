@@ -109,7 +109,7 @@ impl ResolverContext {
 
     pub(crate) fn get_current_name_environment(&self) -> NameEnvironment {
         let mut env = NameEnvironment::new(&self.arena);
-        let root_namespace_name:[&str; 0] = [];
+        let root_namespace_name: [&str; 0] = [];
         env.use_asterisk(&root_namespace_name);
         env.use_values_from(self.get_namespace(vec![]).unwrap());
 
@@ -122,7 +122,7 @@ impl ResolverContext {
             .map(|ns| (true, ns))
             .chain(self.used_name_space.iter().cloned().map(|ns| (false, ns)));
         for (is_global, mut u) in used_ns {
-            env.use_(&u[..u.len()-1], u.last().unwrap());
+            env.use_(&u[..u.len() - 1], u.last().unwrap());
             if u.last().is_some() && u.last().unwrap() == "*" {
                 let _ = u.pop();
                 if let Ok(n) = self.get_namespace(u.clone()) {
