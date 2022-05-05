@@ -1,6 +1,6 @@
 use crate::high_level_ir::declaration_id::{DeclarationId, DeclarationIdGenerator};
 use crate::high_level_ir::type_resolver::context::{ResolverStruct, StructKind};
-use crate::high_level_ir::type_resolver::declaration::Declaration;
+use crate::high_level_ir::type_resolver::declaration::DeclarationItem;
 use crate::high_level_ir::type_resolver::name_space::NameSpace;
 use crate::high_level_ir::type_resolver::namespace::Namespace;
 use crate::high_level_ir::typed_expr::TypedBinaryOperator;
@@ -25,7 +25,7 @@ impl Error for ArenaError {}
 #[derive(Debug, Clone)]
 pub struct ResolverArena {
     declaration_id_generator: DeclarationIdGenerator,
-    declarations: HashMap<DeclarationId, Declaration>,
+    declarations: HashMap<DeclarationId, DeclarationItem>,
     name_space: NameSpace,
     binary_operators: HashMap<(TypedBinaryOperator, TypedType, TypedType), TypedType>,
 }
@@ -35,7 +35,7 @@ impl Default for ResolverArena {
         let mut declarations = HashMap::new();
         declarations.insert(
             DeclarationId::ROOT,
-            Declaration::Namespace(Namespace::root()),
+            DeclarationItem::Namespace(Namespace::root()),
         );
 
         let mut arena = Self {
@@ -74,7 +74,7 @@ impl ResolverArena {
         } else {
             let name = namespace.get(0).unwrap();
             let parent = self.declarations.get(&parent)?;
-            if let Declaration::Namespace(parent) = parent {
+            if let DeclarationItem::Namespace(parent) = parent {
                 self.resolve_namespace(
                     *parent.get_child(&name.to_string())?.first().unwrap(),
                     &namespace[1..],
@@ -97,18 +97,18 @@ impl ResolverArena {
         &mut self,
         namespace: &[T],
         name: &str,
-        declaration: Declaration,
+        declaration: DeclarationItem,
     ) -> Option<()> {
         let target_namespace_id = self.resolve_namespace_from_root(namespace)?;
         let d = self.declarations.get_mut(&target_namespace_id)?;
         let id = match d {
-            Declaration::Namespace(n) => {
+            DeclarationItem::Namespace(n) => {
                 let id = self.declaration_id_generator.next();
                 n.add_child(name, id);
                 id
             }
-            Declaration::Type(_) => panic!("this is type"),
-            Declaration::Value(_) => panic!("this is value"),
+            DeclarationItem::Type(_) => panic!("this is type"),
+            DeclarationItem::Value(_) => panic!("this is value"),
         };
         self.declarations.insert(id, declaration);
         Some(())
@@ -123,14 +123,14 @@ impl ResolverArena {
         self.register(
             namespace,
             name,
-            Declaration::Namespace(Namespace::new(name, parent_id)),
+            DeclarationItem::Namespace(Namespace::new(name, parent_id)),
         )
     }
 
     pub(crate) fn resolve_fully_qualified_name(&self, id: &DeclarationId) -> Vec<String> {
         let decl = self.declarations.get(id).unwrap();
         match decl {
-            Declaration::Namespace(n) => {
+            DeclarationItem::Namespace(n) => {
                 if let Some(parent_id) = n.parent() {
                     let mut parents_name = self.resolve_fully_qualified_name(&parent_id);
                     parents_name.push(n.name());
@@ -140,10 +140,10 @@ impl ResolverArena {
                     vec![]
                 }
             }
-            Declaration::Type(t) => {
+            DeclarationItem::Type(t) => {
                 vec![t.name.clone()]
             }
-            Declaration::Value(t) => {
+            DeclarationItem::Value(t) => {
                 vec![t.name()]
             }
         }
@@ -172,11 +172,11 @@ impl ResolverArena {
             let name = item_name.get(0).unwrap();
             let parent = self.declarations.get(&parent_id)?;
             match parent {
-                Declaration::Namespace(parent) => self.resolve_declaration_id(
+                DeclarationItem::Namespace(parent) => self.resolve_declaration_id(
                     *parent.get_child(&name.to_string())?.first().unwrap(),
                     &item_name[1..],
                 ),
-                Declaration::Type(_) | Declaration::Value(_) => {
+                DeclarationItem::Type(_) | DeclarationItem::Value(_) => {
                     if item_name.len() == 1 {
                         Some(parent_id)
                     } else {
@@ -194,7 +194,7 @@ impl ResolverArena {
         self.resolve_declaration_id(DeclarationId::ROOT, fqn)
     }
 
-    pub(crate) fn get<T: ToString>(&self, namespace: &[T], name: &str) -> Option<&Declaration> {
+    pub(crate) fn get<T: ToString>(&self, namespace: &[T], name: &str) -> Option<&DeclarationItem> {
         let id = self.resolve_declaration_id_from_root(
             &namespace
                 .iter()
@@ -205,7 +205,7 @@ impl ResolverArena {
         self.get_by_id(&id)
     }
 
-    pub(crate) fn get_by_id(&self, id: &DeclarationId) -> Option<&Declaration> {
+    pub(crate) fn get_by_id(&self, id: &DeclarationId) -> Option<&DeclarationItem> {
         self.declarations.get(id)
     }
 
@@ -213,7 +213,7 @@ impl ResolverArena {
         &mut self,
         namespace: &[T],
         name: &str,
-    ) -> Option<&mut Declaration> {
+    ) -> Option<&mut DeclarationItem> {
         let id = self.resolve_declaration_id_from_root(
             &namespace
                 .iter()
@@ -256,7 +256,7 @@ impl ResolverArena {
             })),
             kind,
         );
-        self.register(namespace, name, Declaration::Type(s.clone()));
+        self.register(namespace, name, DeclarationItem::Type(s.clone()));
         let child_ns = self
             .name_space
             .get_child_mut(namespace.iter().map(T::to_string).collect())
@@ -297,7 +297,7 @@ impl ResolverArena {
             .get_child_mut(namespace.iter().map(T::to_string).collect())
             .unwrap();
         child_ns.register_value(name.to_string(), ty.clone());
-        self.register(namespace, name, Declaration::Value(ty));
+        self.register(namespace, name, DeclarationItem::Value(ty));
     }
 
     pub(crate) fn resolve_binary_operator(
@@ -312,7 +312,7 @@ impl ResolverArena {
 mod tests {
     use super::super::super::declaration_id::DeclarationId;
     use super::super::super::type_resolver::namespace::Namespace;
-    use super::super::declaration::Declaration;
+    use super::super::declaration::DeclarationItem;
     use super::ResolverArena;
 
     #[test]
@@ -335,7 +335,7 @@ mod tests {
 
         let ns_id = arena.resolve_namespace_from_root(&[child_namespace_name]);
         assert_eq!(
-            Declaration::Namespace(Namespace::new(child_namespace_name, DeclarationId::ROOT)),
+            DeclarationItem::Namespace(Namespace::new(child_namespace_name, DeclarationId::ROOT)),
             *arena.declarations.get(&ns_id.unwrap()).unwrap()
         )
     }
@@ -355,7 +355,7 @@ mod tests {
 
         let parent_id = arena.resolve_namespace_from_root(&[child_namespace_name]);
         assert_eq!(
-            Declaration::Namespace(Namespace::new(
+            DeclarationItem::Namespace(Namespace::new(
                 grandchildren_namespace_name,
                 parent_id.unwrap()
             )),

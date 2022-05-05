@@ -1,7 +1,7 @@
 use crate::high_level_ir::declaration_id::DeclarationId;
 use crate::high_level_ir::type_resolver::arena::ResolverArena;
 use crate::high_level_ir::type_resolver::context::{EnvValue, ResolverStruct};
-use crate::high_level_ir::type_resolver::declaration::Declaration;
+use crate::high_level_ir::type_resolver::declaration::DeclarationItem;
 use crate::high_level_ir::type_resolver::name_space::NameSpace;
 use crate::high_level_ir::typed_type::TypedType;
 use crate::utils::stacked_hash_map::StackedHashMap;
@@ -38,7 +38,7 @@ impl<'a> NameEnvironment<'a> {
     pub(crate) fn use_asterisk<T: ToString>(&mut self, namespace: &[T]) {
         let ns_id = self.arena.resolve_namespace_from_root(namespace).unwrap();
         let ns = self.arena.get_by_id(&ns_id).unwrap();
-        let ns = if let Declaration::Namespace(ns) = ns {
+        let ns = if let DeclarationItem::Namespace(ns) = ns {
             ns
         } else {
             panic!("{:?}", ns)
