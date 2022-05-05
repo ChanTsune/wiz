@@ -143,9 +143,7 @@ impl ResolverArena {
             DeclarationItem::Type(t) => {
                 vec![t.name.clone()]
             }
-            DeclarationItem::Value(t) => {
-                vec![t.name()]
-            }
+            DeclarationItem::Value(t) => todo!(),
         }
     }
 
