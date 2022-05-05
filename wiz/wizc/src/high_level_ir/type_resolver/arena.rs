@@ -158,14 +158,6 @@ impl ResolverArena {
         self.name_space
             .get_child(namespace.iter().map(T::to_string).collect())
     }
-
-    pub(crate) fn get_name_space_mut<T: ToString>(
-        &mut self,
-        namespace: &[T],
-    ) -> Option<&mut NameSpace> {
-        self.name_space
-            .get_child_mut(namespace.iter().map(T::to_string).collect())
-    }
 }
 
 impl ResolverArena {

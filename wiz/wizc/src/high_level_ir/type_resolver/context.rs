@@ -51,16 +51,6 @@ impl ResolverContext {
         self.current_namespace.pop();
     }
 
-    pub fn get_current_namespace_mut(&mut self) -> Result<&mut NameSpace> {
-        self.get_namespace_mut(self.current_namespace.clone())
-    }
-
-    pub fn get_namespace_mut(&mut self, ns: Vec<String>) -> Result<&mut NameSpace> {
-        self.arena
-            .get_name_space_mut(&ns)
-            .ok_or_else(|| ResolverError::from(format!("NameSpace {:?} not exist", ns)))
-    }
-
     pub fn get_current_namespace(&self) -> Result<&NameSpace> {
         self.get_namespace(self.current_namespace.clone())
     }
