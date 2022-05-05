@@ -22,18 +22,6 @@ impl EnvValue {
         }
     }
 
-    pub(crate) fn get_mut<T: ToString>(&mut self, mut ns: Vec<T>) -> Option<&mut EnvValue> {
-        if ns.is_empty() {
-            Some(self)
-        } else {
-            match self {
-                EnvValue::NameSpace(n) => n.get_mut(ns),
-                EnvValue::Value(_) => None,
-                EnvValue::Type(_) => todo!(),
-            }
-        }
-    }
-
     pub(crate) fn create_children<T: ToString>(&mut self, mut ns: Vec<T>) {
         if !ns.is_empty() {
             match self {

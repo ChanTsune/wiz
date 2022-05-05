@@ -15,7 +15,7 @@ impl NameSpace {
 
     pub(crate) fn new<T: ToString>(name: Vec<T>) -> Self {
         Self {
-            name_space: name.into_iter().map(T::to_string).collect(),
+            name_space: name.into_iter().map(|i|i.to_string()).collect(),
             values: Default::default(),
         }
     }
@@ -69,12 +69,6 @@ impl NameSpace {
         let name = ns.remove(0).to_string();
         let e = self.values.get(&name)?;
         e.get(ns)
-    }
-
-    pub(crate) fn get_mut<T: ToString>(&mut self, mut ns: Vec<T>) -> Option<&mut EnvValue> {
-        let name = ns.remove(0).to_string();
-        let e = self.values.get_mut(&name)?;
-        e.get_mut(ns)
     }
 
     pub(crate) fn register_type(&mut self, name: String, s: ResolverStruct) {
