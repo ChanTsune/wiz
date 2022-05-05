@@ -436,7 +436,7 @@ impl ResolverContext {
                                 },
                             }
                         }
-                        (ns, EnvValue::Value(t)) => panic!(),
+                        (_, EnvValue::Value(_)) => panic!(),
                         (_, _) => todo!(),
                     }
                 }

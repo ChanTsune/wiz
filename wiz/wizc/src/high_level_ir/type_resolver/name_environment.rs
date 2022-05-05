@@ -9,7 +9,7 @@ use crate::high_level_ir::type_resolver::declaration::Declaration;
 
 #[derive(Debug, Clone)]
 pub struct NameEnvironment<'a> {
-    names: HashMap<String, (Vec<String>, EnvValue)>,
+    local_names: HashMap<String, (Vec<String>, EnvValue)>,
     used_namespaces: Vec<Vec<String>>,
     values: HashMap<String, Vec<DeclarationId>>,
     arena: &'a ResolverArena,
@@ -18,7 +18,7 @@ pub struct NameEnvironment<'a> {
 impl<'a> NameEnvironment<'a> {
     pub fn new(arena: &'a ResolverArena) -> Self {
         Self {
-            names: Default::default(),
+            local_names: Default::default(),
             used_namespaces: Default::default(),
             values: Default::default(),
             arena,
@@ -26,7 +26,7 @@ impl<'a> NameEnvironment<'a> {
     }
 
     pub(crate) fn use_values_from(&mut self, name_space: &NameSpace) {
-        self.names.extend(
+        self.local_names.extend(
             name_space
                 .values
                 .iter()
@@ -54,7 +54,7 @@ impl<'a> NameEnvironment<'a> {
     }
 
     pub(crate) fn use_values_from_local(&mut self, local_stack: &StackedHashMap<String, EnvValue>) {
-        self.names.extend(
+        self.local_names.extend(
             local_stack
                 .clone()
                 .into_map()
@@ -76,10 +76,10 @@ impl<'a> NameEnvironment<'a> {
     }
 
     pub(crate) fn get_env_value(&self, name: &str) -> Option<&(Vec<String>, EnvValue)> {
-        self.names.get(name)
+        self.local_names.get(name)
     }
 
     pub(crate) fn add_env_value(&mut self, name: &str, v: (Vec<String>, EnvValue)) {
-        self.names.insert(name.to_string(), v);
+        self.local_names.insert(name.to_string(), v);
     }
 }
