@@ -6,5 +6,5 @@ use crate::high_level_ir::typed_type::TypedType;
 pub enum DeclarationItem {
     Namespace(Namespace),
     Type(ResolverStruct),
-    Value((Vec<String> /* namespace */,TypedType)),
+    Value((Vec<String> /* namespace */, TypedType)),
 }

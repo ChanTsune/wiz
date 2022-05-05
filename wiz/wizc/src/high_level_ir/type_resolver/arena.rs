@@ -295,11 +295,7 @@ impl ResolverArena {
             .name_space
             .get_child_mut(vec_namespace.clone())
             .unwrap();
-        child_ns.register_value(
-            vec_namespace.clone(),
-            name.to_string(),
-            ty.clone(),
-        );
+        child_ns.register_value(vec_namespace.clone(), name.to_string(), ty.clone());
         self.register(namespace, name, DeclarationItem::Value((vec_namespace, ty)));
     }
 
