@@ -64,4 +64,8 @@ impl<'a> NameEnvironment<'a> {
     pub(crate) fn get_type_by_typed_type(&self, typ: TypedType) -> Option<&ResolverStruct> {
         self.get_type(typ.package().into_resolved().names, &typ.name())
     }
+
+    pub(crate) fn get_env_value(&self, name: &str) -> Option<&(Vec<String>, EnvValue)> {
+        self.names.get(name)
+    }
 }
