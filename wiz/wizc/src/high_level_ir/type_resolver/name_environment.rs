@@ -1,11 +1,11 @@
+use crate::high_level_ir::declaration_id::DeclarationId;
 use crate::high_level_ir::type_resolver::arena::ResolverArena;
 use crate::high_level_ir::type_resolver::context::{EnvValue, ResolverStruct};
+use crate::high_level_ir::type_resolver::declaration::Declaration;
 use crate::high_level_ir::type_resolver::name_space::NameSpace;
 use crate::high_level_ir::typed_type::TypedType;
 use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::HashMap;
-use crate::high_level_ir::declaration_id::DeclarationId;
-use crate::high_level_ir::type_resolver::declaration::Declaration;
 
 #[derive(Debug, Clone)]
 pub struct NameEnvironment<'a> {
@@ -38,12 +38,16 @@ impl<'a> NameEnvironment<'a> {
     pub(crate) fn use_asterisk<T: ToString>(&mut self, namespace: &[T]) {
         let ns_id = self.arena.resolve_namespace_from_root(namespace).unwrap();
         let ns = self.arena.get_by_id(&ns_id).unwrap();
-        let ns = if let Declaration::Namespace(ns) = ns { ns } else { panic!("{:?}", ns) };
+        let ns = if let Declaration::Namespace(ns) = ns {
+            ns
+        } else {
+            panic!("{:?}", ns)
+        };
         self.values.extend(ns.children().clone());
     }
 
     /// use [namespace]::[name];
-    pub(crate) fn use_<T: ToString>(&mut self, namespace:&[T], name: &str) {
+    pub(crate) fn use_<T: ToString>(&mut self, namespace: &[T], name: &str) {
         if name == "*" {
             self.use_asterisk(namespace);
         } else {

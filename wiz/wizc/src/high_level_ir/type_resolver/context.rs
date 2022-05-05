@@ -103,16 +103,29 @@ impl ResolverContext {
     {
         let value = EnvValue::from(value);
         if self.local_stack.stack_is_empty() {
-            let ns = self.get_current_namespace_mut().unwrap();
-            match value {
-                EnvValue::NameSpace(n) => {
-                    todo!()
-                }
-                EnvValue::Value(v) => ns.register_values(name, v),
-                EnvValue::Type(rs) => {
-                    ns.register_type(name, rs);
-                }
+            {
+                let ns = self.get_current_namespace_mut().unwrap();
+                match value.clone() {
+                    EnvValue::NameSpace(_) => {
+                        todo!()
+                    }
+                    EnvValue::Value(v) => ns.register_values(name.clone(), v),
+                    EnvValue::Type(_) => todo!(),
+                };
             };
+            {
+                match value.clone() {
+                    EnvValue::NameSpace(_) => {
+                        todo!()
+                    }
+                    EnvValue::Value(v) => {
+                        for t in v.clone() {
+                            self.arena.register_value(&self.current_namespace, &name, t)
+                        }
+                    }
+                    EnvValue::Type(_) => todo!(),
+                };
+            }
         } else {
             self.local_stack.insert(name, value);
         }

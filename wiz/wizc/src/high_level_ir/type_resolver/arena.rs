@@ -85,7 +85,10 @@ impl ResolverArena {
         }
     }
 
-    pub(crate) fn resolve_namespace_from_root<T: ToString>(&self, namespace: &[T]) -> Option<DeclarationId> {
+    pub(crate) fn resolve_namespace_from_root<T: ToString>(
+        &self,
+        namespace: &[T],
+    ) -> Option<DeclarationId> {
         self.resolve_namespace(DeclarationId::ROOT, namespace)
     }
 
@@ -177,12 +180,10 @@ impl ResolverArena {
             let name = item_name.get(0).unwrap();
             let parent = self.declarations.get(&parent_id)?;
             match parent {
-                Declaration::Namespace(parent) => {
-                    self.resolve_declaration_id(
-                        *parent.get_child(&name.to_string())?.first().unwrap(),
-                        &item_name[1..],
-                    )
-                }
+                Declaration::Namespace(parent) => self.resolve_declaration_id(
+                    *parent.get_child(&name.to_string())?.first().unwrap(),
+                    &item_name[1..],
+                ),
                 Declaration::Type(_) | Declaration::Value(_) => {
                     if item_name.len() == 1 {
                         Some(parent_id)
@@ -194,7 +195,10 @@ impl ResolverArena {
         }
     }
 
-    pub(crate) fn resolve_declaration_id_from_root<T: ToString>(&self, fqn: &[T]) -> Option<DeclarationId> {
+    pub(crate) fn resolve_declaration_id_from_root<T: ToString>(
+        &self,
+        fqn: &[T],
+    ) -> Option<DeclarationId> {
         self.resolve_declaration_id(DeclarationId::ROOT, fqn)
     }
 
