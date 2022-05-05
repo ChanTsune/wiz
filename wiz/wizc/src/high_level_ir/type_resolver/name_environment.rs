@@ -10,7 +10,6 @@ use std::collections::HashMap;
 #[derive(Debug, Clone)]
 pub struct NameEnvironment<'a> {
     local_names: HashMap<String, (Vec<String>, EnvValue)>,
-    used_namespaces: Vec<Vec<String>>,
     values: HashMap<String, Vec<DeclarationId>>,
     arena: &'a ResolverArena,
 }
@@ -19,7 +18,6 @@ impl<'a> NameEnvironment<'a> {
     pub fn new(arena: &'a ResolverArena) -> Self {
         Self {
             local_names: Default::default(),
-            used_namespaces: Default::default(),
             values: Default::default(),
             arena,
         }

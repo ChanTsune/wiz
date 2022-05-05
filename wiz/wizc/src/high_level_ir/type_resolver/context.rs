@@ -380,14 +380,20 @@ impl ResolverContext {
         Ok(match type_.package {
             TypedPackage::Raw(p) => {
                 if p.names.is_empty() {
-                    let (ns, t) =
+                    let (_, t) =
                         env.get_env_value(&type_.name)
                             .ok_or(ResolverError::from(format!(
                                 "Can not resolve name `{}`",
                                 &type_.name
                             )))?;
                     TypedNamedValueType {
-                        package: TypedPackage::Resolved(Package::from(ns.clone())),
+                        package: TypedPackage::Resolved(Package::from({
+                            match t {
+                                EnvValue::NameSpace(_) => panic!(),
+                                EnvValue::Value(_) => panic!(),
+                                EnvValue::Type(t) => t.namespace.clone()
+                            }
+                        })),
                         name: type_.name.clone(),
                         type_args: match type_.type_args.clone() {
                             None => None,

@@ -93,16 +93,6 @@ impl NameSpace {
         };
     }
 
-    pub(crate) fn register_values(&mut self, name: String, type_: HashSet<TypedType>) {
-        let entry = self
-            .values
-            .entry(name)
-            .or_insert_with(|| EnvValue::from(HashSet::default()));
-        if let EnvValue::Value(v) = entry {
-            v.extend(type_);
-        };
-    }
-
     pub(crate) fn get_value(&self, name: &str) -> Option<&HashSet<TypedType>> {
         match self.values.get(name) {
             None => None,
