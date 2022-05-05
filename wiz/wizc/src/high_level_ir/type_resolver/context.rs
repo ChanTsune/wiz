@@ -97,7 +97,7 @@ impl ResolverContext {
                 EnvValue::NameSpace(_) => todo!(),
                 EnvValue::Value(v) => {
                     for t in v {
-                        self.arena.register_value(&self.current_namespace, &name, t)
+                        self.arena.register_value(&self.current_namespace, &name, t.1)
                     }
                 }
                 EnvValue::Type(_) => todo!(),
@@ -259,12 +259,12 @@ impl ResolverContext {
                     .get_value(&n)
                     .ok_or_else(|| ResolverError::from(format!("Cannot resolve name {:?}", n)))?;
                 Self::resolve_overload(t_set, type_annotation)
-                    .map(|t| {
+                    .map(|(ns, t)| {
                         let is_function = t.is_function_type();
                         (
                             t,
                             if is_function {
-                                TypedPackage::Resolved(Package::from(ns.name_space.clone()))
+                                TypedPackage::Resolved(Package::from(ns))
                             } else {
                                 TypedPackage::Resolved(Package::global())
                             },
@@ -277,8 +277,8 @@ impl ResolverContext {
                         ))
                     })
             }
-            (ns, EnvValue::Value(t_set)) => Self::resolve_overload(t_set, type_annotation)
-                .map(|t| {
+            (_, EnvValue::Value(t_set)) => Self::resolve_overload(t_set, type_annotation)
+                .map(|(ns, t)| {
                     let is_function = t.is_function_type();
                     (
                         t,
@@ -303,14 +303,14 @@ impl ResolverContext {
     }
 
     fn resolve_overload(
-        type_set: &HashSet<TypedType>,
+        type_set: &HashSet<(Vec<String>, TypedType)>,
         type_annotation: Option<TypedType>,
-    ) -> Option<TypedType> {
+    ) -> Option<(Vec<String>, TypedType)> {
         for t in type_set {
             if type_set.len() == 1 {
                 return Some(t.clone());
             } else if let Some(TypedType::Function(annotation)) = &type_annotation {
-                if let TypedType::Function(typ) = t {
+                if let (_, TypedType::Function(typ)) = t {
                     if annotation.arguments == typ.arguments {
                         return Some(t.clone());
                     }

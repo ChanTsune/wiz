@@ -5,12 +5,12 @@ use std::collections::HashSet;
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum EnvValue {
     NameSpace(NameSpace),
-    Value(HashSet<TypedType>),
+    Value(HashSet<(Vec<String>, TypedType)>),
     Type(ResolverStruct),
 }
 
-impl From<TypedType> for EnvValue {
-    fn from(typed_type: TypedType) -> Self {
+impl From<(Vec<String>, TypedType)> for EnvValue {
+    fn from(typed_type: (Vec<String>, TypedType)) -> Self {
         Self::Value(HashSet::from([typed_type]))
     }
 }
@@ -21,8 +21,8 @@ impl From<NameSpace> for EnvValue {
     }
 }
 
-impl From<HashSet<TypedType>> for EnvValue {
-    fn from(typed_type: HashSet<TypedType>) -> Self {
+impl From<HashSet<(Vec<String>, TypedType)>> for EnvValue {
+    fn from(typed_type: HashSet<(Vec<String>, TypedType)>) -> Self {
         Self::Value(typed_type)
     }
 }

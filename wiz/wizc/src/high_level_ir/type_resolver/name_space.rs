@@ -83,17 +83,17 @@ impl NameSpace {
         })
     }
 
-    pub(crate) fn register_value(&mut self, name: String, type_: TypedType) {
+    pub(crate) fn register_value(&mut self, name_space: Vec<String>, name: String, type_: TypedType) {
         let entry = self
             .values
             .entry(name)
             .or_insert_with(|| EnvValue::from(HashSet::default()));
         if let EnvValue::Value(v) = entry {
-            v.insert(type_);
+            v.insert((name_space, type_));
         };
     }
 
-    pub(crate) fn get_value(&self, name: &str) -> Option<&HashSet<TypedType>> {
+    pub(crate) fn get_value(&self, name: &str) -> Option<&HashSet<(Vec<String>, TypedType)>> {
         match self.values.get(name) {
             None => None,
             Some(e) => match e {
