@@ -37,4 +37,8 @@ impl Namespace {
     pub fn name(&self) -> String {
         self.name.clone()
     }
+
+    pub fn children(&self) -> &HashMap<String, Vec<DeclarationId>> {
+        &self.children
+    }
 }

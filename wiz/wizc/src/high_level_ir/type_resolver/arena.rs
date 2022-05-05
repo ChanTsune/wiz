@@ -85,7 +85,7 @@ impl ResolverArena {
         }
     }
 
-    fn resolve_namespace_from_root<T: ToString>(&self, namespace: &[T]) -> Option<DeclarationId> {
+    pub(crate) fn resolve_namespace_from_root<T: ToString>(&self, namespace: &[T]) -> Option<DeclarationId> {
         self.resolve_namespace(DeclarationId::ROOT, namespace)
     }
 
@@ -151,12 +151,12 @@ impl ResolverArena {
             .set_child(namespace.iter().map(T::to_string).collect())
     }
 
-    pub(crate) fn get_namespace<T: ToString>(&self, namespace: &[T]) -> Option<&NameSpace> {
+    pub(crate) fn get_name_space<T: ToString>(&self, namespace: &[T]) -> Option<&NameSpace> {
         self.name_space
             .get_child(namespace.iter().map(T::to_string).collect())
     }
 
-    pub(crate) fn get_namespace_mut<T: ToString>(
+    pub(crate) fn get_name_space_mut<T: ToString>(
         &mut self,
         namespace: &[T],
     ) -> Option<&mut NameSpace> {
@@ -166,6 +166,68 @@ impl ResolverArena {
 }
 
 impl ResolverArena {
+    fn resolve_declaration_id<T: ToString>(
+        &self,
+        parent_id: DeclarationId,
+        item_name: &[T],
+    ) -> Option<DeclarationId> {
+        if item_name.is_empty() {
+            Some(parent_id)
+        } else {
+            let name = item_name.get(0).unwrap();
+            let parent = self.declarations.get(&parent_id)?;
+            match parent {
+                Declaration::Namespace(parent) => {
+                    self.resolve_declaration_id(
+                        *parent.get_child(&name.to_string())?.first().unwrap(),
+                        &item_name[1..],
+                    )
+                }
+                Declaration::Type(_) | Declaration::Value(_) => {
+                    if item_name.len() == 1 {
+                        Some(parent_id)
+                    } else {
+                        None
+                    }
+                }
+            }
+        }
+    }
+
+    pub(crate) fn resolve_declaration_id_from_root<T: ToString>(&self, fqn: &[T]) -> Option<DeclarationId> {
+        self.resolve_declaration_id(DeclarationId::ROOT, fqn)
+    }
+
+    pub(crate) fn get<T: ToString>(&self, namespace: &[T], name: &str) -> Option<&Declaration> {
+        let id = self.resolve_declaration_id_from_root(
+            &namespace
+                .iter()
+                .map(T::to_string)
+                .chain([name.to_string()])
+                .collect::<Vec<_>>(),
+        )?;
+        self.get_by_id(&id)
+    }
+
+    pub(crate) fn get_by_id(&self, id: &DeclarationId) -> Option<&Declaration> {
+        self.declarations.get(id)
+    }
+
+    pub(crate) fn get_mut<T: ToString>(
+        &mut self,
+        namespace: &[T],
+        name: &str,
+    ) -> Option<&mut Declaration> {
+        let id = self.resolve_declaration_id_from_root(
+            &namespace
+                .iter()
+                .map(T::to_string)
+                .chain([name.to_string()])
+                .collect::<Vec<_>>(),
+        )?;
+        self.declarations.get_mut(&id)
+    }
+
     pub(crate) fn register_struct<T: ToString>(
         &mut self,
         namespace: &[T],

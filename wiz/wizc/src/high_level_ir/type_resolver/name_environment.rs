@@ -43,22 +43,7 @@ impl<'a> NameEnvironment<'a> {
         mut name_space: Vec<String>,
         type_name: &str,
     ) -> Option<&ResolverStruct> {
-        if name_space.is_empty() {
-            match self.names.get(type_name) {
-                Some((_, EnvValue::Type(rs))) => Some(rs),
-                _ => None,
-            }
-        } else {
-            let n = name_space.remove(0);
-            match (name_space.is_empty(), self.names.get(&n)) {
-                (false, Some((_, EnvValue::NameSpace(ns)))) => match ns.get(name_space) {
-                    Some(EnvValue::NameSpace(ns)) => ns.get_type(type_name),
-                    _ => None,
-                },
-                (true, Some((_, EnvValue::NameSpace(ns)))) => ns.get_type(type_name),
-                (_, _) => None,
-            }
-        }
+        self.arena.get_type(&name_space, type_name)
     }
 
     pub(crate) fn get_type_by_typed_type(&self, typ: TypedType) -> Option<&ResolverStruct> {

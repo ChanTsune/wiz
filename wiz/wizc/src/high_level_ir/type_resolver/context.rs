@@ -57,7 +57,7 @@ impl ResolverContext {
 
     pub fn get_namespace_mut(&mut self, ns: Vec<String>) -> Result<&mut NameSpace> {
         self.arena
-            .get_namespace_mut(&ns)
+            .get_name_space_mut(&ns)
             .ok_or_else(|| ResolverError::from(format!("NameSpace {:?} not exist", ns)))
     }
 
@@ -67,7 +67,7 @@ impl ResolverContext {
 
     pub fn get_namespace(&self, ns: Vec<String>) -> Result<&NameSpace> {
         self.arena
-            .get_namespace(&ns)
+            .get_name_space(&ns)
             .ok_or_else(|| ResolverError::from(format!("NameSpace {:?} not exist", ns)))
     }
 
