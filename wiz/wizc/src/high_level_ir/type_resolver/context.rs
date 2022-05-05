@@ -253,8 +253,7 @@ impl ResolverContext {
         };
         let env = self.get_current_name_environment();
         let env_value = env
-            .names
-            .get(&name)
+            .get_env_value(&name)
             .ok_or_else(|| ResolverError::from(format!("Cannot resolve name => {:?}", name)))?;
         match env_value {
             (_, EnvValue::NameSpace(child)) => {
@@ -388,8 +387,7 @@ impl ResolverContext {
             TypedPackage::Raw(p) => {
                 if p.names.is_empty() {
                     let (ns, t) =
-                        env.names
-                            .get(&type_.name)
+                        env.get_env_value(&type_.name)
                             .ok_or(ResolverError::from(format!(
                                 "Can not resolve name `{}`",
                                 &type_.name
@@ -409,7 +407,7 @@ impl ResolverContext {
                 } else {
                     let mut name_space = p.names;
                     let name = name_space.remove(0);
-                    let env_value = env.names.get(&name).ok_or_else(|| {
+                    let env_value = env.get_env_value(&name).ok_or_else(|| {
                         ResolverError::from(format!("Cannot resolve name => {:?}", name))
                     })?;
                     match env_value {
