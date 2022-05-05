@@ -466,50 +466,6 @@ mod tests {
     use crate::high_level_ir::typed_type::TypedType;
 
     #[test]
-    fn test_name_space() {
-        let mut name_space = NameSpace::empty();
-        name_space
-            .values
-            .insert(String::from("Int64"), EnvValue::from(TypedType::int64()));
-        name_space.set_child(vec!["builtin"]);
-        assert_eq!(
-            name_space.get_child_mut(vec!["builtin"]),
-            Some(&mut NameSpace::new(vec!["builtin"]))
-        );
-    }
-
-    #[test]
-    fn test_name_space_child_name_space() {
-        let mut name_space = NameSpace::empty();
-        name_space.set_child(vec!["child"]);
-        let ns = name_space.get_child_mut(vec!["child"]).unwrap();
-        assert_eq!(ns.name_space, vec!["child"]);
-    }
-
-    #[test]
-    fn test_name_space_grandchild_name_space() {
-        let mut name_space = NameSpace::empty();
-        name_space.set_child(vec!["child", "grandchild"]);
-        let ns = name_space
-            .get_child_mut(vec!["child", "grandchild"])
-            .unwrap();
-        assert_eq!(ns.name_space, vec!["child", "grandchild"]);
-    }
-
-    #[test]
-    fn test_name_space_grate_grandchild_name_space() {
-        let mut name_space = NameSpace::empty();
-        name_space.set_child(vec!["child", "grandchild", "grate-grandchild"]);
-        let ns = name_space
-            .get_child_mut(vec!["child", "grandchild", "grate-grandchild"])
-            .unwrap();
-        assert_eq!(
-            ns.name_space,
-            vec!["child", "grandchild", "grate-grandchild"]
-        );
-    }
-
-    #[test]
     fn test_context_name_environment() {
         let mut context = ResolverContext::new();
 
