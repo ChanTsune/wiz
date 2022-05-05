@@ -139,12 +139,12 @@ impl ResolverContext {
             } else {
                 if let Ok(n) = self.get_namespace(u.clone()) {
                     let name = u.pop().unwrap();
-                    env.names.insert(name, (u, EnvValue::from(n.clone())));
+                    env.add_env_value(&name, (u, EnvValue::from(n.clone())));
                 } else {
                     let name = u.pop().unwrap();
                     let s = self.get_namespace(u.clone()).unwrap();
                     if let Some(t) = s.values.get(&name) {
-                        env.names.insert(name, (u, t.clone()));
+                        env.add_env_value(&name, (u, t.clone()));
                     } else if !is_global {
                         panic!("Can not find name {:?}", name)
                     };
@@ -527,7 +527,7 @@ mod tests {
         let env = context.get_current_name_environment();
 
         assert_eq!(
-            env.names.get("Int32"),
+            env.get_env_value("Int32"),
             Some(&(
                 vec![],
                 EnvValue::Type(ResolverStruct::new(TypedType::int32(), StructKind::Struct))

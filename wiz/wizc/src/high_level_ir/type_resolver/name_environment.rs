@@ -7,7 +7,7 @@ use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 pub struct NameEnvironment<'a> {
-    pub names: HashMap<String, (Vec<String>, EnvValue)>,
+    names: HashMap<String, (Vec<String>, EnvValue)>,
     arena: &'a ResolverArena,
 }
 
@@ -67,5 +67,9 @@ impl<'a> NameEnvironment<'a> {
 
     pub(crate) fn get_env_value(&self, name: &str) -> Option<&(Vec<String>, EnvValue)> {
         self.names.get(name)
+    }
+
+    pub(crate) fn add_env_value(&mut self, name: &str, v: (Vec<String>, EnvValue)) {
+        self.names.insert(name.to_string(), v);
     }
 }
