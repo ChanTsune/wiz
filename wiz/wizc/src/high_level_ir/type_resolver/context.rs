@@ -133,12 +133,12 @@ impl ResolverContext {
             } else {
                 if let Ok(n) = self.get_namespace(u.clone()) {
                     let name = u.pop().unwrap();
-                    env.add_env_value(&name, (u, EnvValue::from(n.clone())));
+                    env.add_env_value(&name, EnvValue::from(n.clone()));
                 } else {
                     let name = u.pop().unwrap();
                     let s = self.get_namespace(u.clone()).unwrap();
                     if let Some(t) = s.values.get(&name) {
-                        env.add_env_value(&name, (u, t.clone()));
+                        env.add_env_value(&name, t.clone());
                     } else if !is_global {
                         panic!("Can not find name {:?}", name)
                     };
@@ -250,7 +250,7 @@ impl ResolverContext {
             .get_env_value(&name)
             .ok_or_else(|| ResolverError::from(format!("Cannot resolve name => {:?}", name)))?;
         match env_value {
-            (_, EnvValue::NameSpace(child)) => {
+            EnvValue::NameSpace(child) => {
                 let n = n.unwrap();
                 let ns = child.get_child(name_space.clone()).ok_or_else(|| {
                     ResolverError::from(format!("Cannot resolve namespace {:?}", name_space))
@@ -277,7 +277,7 @@ impl ResolverContext {
                         ))
                     })
             }
-            (_, EnvValue::Value(t_set)) => Self::resolve_overload(t_set, type_annotation)
+            EnvValue::Value(t_set) => Self::resolve_overload(t_set, type_annotation)
                 .map(|(ns, t)| {
                     let is_function = t.is_function_type();
                     (
@@ -295,7 +295,7 @@ impl ResolverContext {
                         name
                     ))
                 }),
-            (_, EnvValue::Type(rs)) => Ok((
+            EnvValue::Type(rs) => Ok((
                 TypedType::Type(Box::new(rs.self_.clone())),
                 TypedPackage::Resolved(Package::global()),
             )),
@@ -380,7 +380,7 @@ impl ResolverContext {
         Ok(match type_.package {
             TypedPackage::Raw(p) => {
                 if p.names.is_empty() {
-                    let (_, t) =
+                    let t =
                         env.get_env_value(&type_.name)
                             .ok_or(ResolverError::from(format!(
                                 "Can not resolve name `{}`",
@@ -411,7 +411,7 @@ impl ResolverContext {
                         ResolverError::from(format!("Cannot resolve name => {:?}", name))
                     })?;
                     match env_value {
-                        (_, EnvValue::NameSpace(child)) => {
+                        EnvValue::NameSpace(child) => {
                             let ns = child.get_child(name_space.clone()).ok_or_else(|| {
                                 ResolverError::from(format!(
                                     "Cannot resolve namespace {:?}",
@@ -436,8 +436,7 @@ impl ResolverContext {
                                 },
                             }
                         }
-                        (_, EnvValue::Value(_)) => panic!(),
-                        (_, _) => todo!(),
+                        _ => panic!(),
                     }
                 }
             }

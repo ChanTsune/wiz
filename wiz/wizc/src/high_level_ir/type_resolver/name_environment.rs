@@ -9,7 +9,7 @@ use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 pub struct NameEnvironment<'a> {
-    local_names: HashMap<String, (Vec<String>, EnvValue)>,
+    local_names: HashMap<String, EnvValue>,
     values: HashMap<String, Vec<DeclarationId>>,
     arena: &'a ResolverArena,
 }
@@ -26,9 +26,7 @@ impl<'a> NameEnvironment<'a> {
     pub(crate) fn use_values_from(&mut self, name_space: &NameSpace) {
         self.local_names.extend(
             name_space
-                .values
-                .iter()
-                .map(|(k, v)| (k.clone(), (name_space.name_space.clone(), v.clone()))),
+                .values.clone(),
         );
     }
 
@@ -59,9 +57,7 @@ impl<'a> NameEnvironment<'a> {
         self.local_names.extend(
             local_stack
                 .clone()
-                .into_map()
-                .into_iter()
-                .map(|(k, v)| (k, (vec![], v))),
+                .into_map(),
         )
     }
 
@@ -71,7 +67,7 @@ impl<'a> NameEnvironment<'a> {
         type_name: &str,
     ) -> Option<&ResolverStruct> {
         let maybe_type_parameter = match self.local_names.get(type_name) {
-            Some((_, EnvValue::Type(rs))) => Some(rs),
+            Some(EnvValue::Type(rs)) => Some(rs),
             _ => None,
         };
         match maybe_type_parameter {
@@ -84,11 +80,11 @@ impl<'a> NameEnvironment<'a> {
         self.get_type(typ.package().into_resolved().names, &typ.name())
     }
 
-    pub(crate) fn get_env_value(&self, name: &str) -> Option<&(Vec<String>, EnvValue)> {
+    pub(crate) fn get_env_value(&self, name: &str) -> Option<&EnvValue> {
         self.local_names.get(name)
     }
 
-    pub(crate) fn add_env_value(&mut self, name: &str, v: (Vec<String>, EnvValue)) {
+    pub(crate) fn add_env_value(&mut self, name: &str, v: EnvValue) {
         self.local_names.insert(name.to_string(), v);
     }
 }
