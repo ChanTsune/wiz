@@ -135,23 +135,4 @@ impl<'a> NameEnvironment<'a> {
             None
         }
     }
-
-    pub(crate) fn get_env_value(&self, name: &str) -> Option<EnvValue> {
-        let maybe_local_value = self.local_names.get(name);
-        let n = match maybe_local_value {
-            None => {
-                let ids = self.values.get(name)?;
-                let ids = ids.iter().map(|i| i.clone()).collect::<Vec<_>>();
-                let id = ids.first()?;
-                let item = self.arena.get_by_id(id)?;
-                match item {
-                    DeclarationItem::Namespace(name) => Some(EnvValue::from(name.clone())),
-                    DeclarationItem::Type(t) => Some(EnvValue::from(t.clone())),
-                    DeclarationItem::Value(v) => Some(EnvValue::from(v.clone())),
-                }
-            }
-            Some(m) => Some(m.clone()),
-        };
-        n
-    }
 }
