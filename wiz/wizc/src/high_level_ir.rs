@@ -220,7 +220,7 @@ impl AstLowering {
         match a {
             ArgDef::Value(a) => TypedArgDef {
                 label: match a.label {
-                    None => a.name.token().clone(),
+                    None => a.name.token(),
                     Some(label) => label.token(),
                 },
                 name: a.name.token(),
@@ -307,7 +307,7 @@ impl AstLowering {
                     )))),
                     constraints: v
                         .into_iter()
-                        .filter_map(|i| i)
+                        .flatten()
                         .map(|s| self.type_(s.constraint))
                         .collect(),
                 })

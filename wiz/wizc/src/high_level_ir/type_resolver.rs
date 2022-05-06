@@ -58,8 +58,7 @@ impl<'s> TypeResolver<'s> {
                 self.context.push_name_space(name.clone());
                 items
                     .iter()
-                    .map(|i| self.detect_type_from_source_set(i))
-                    .collect::<Result<_>>()?;
+                    .try_for_each(|i| self.detect_type_from_source_set(i))?;
                 self.context.pop_name_space();
                 Ok(())
             }
@@ -135,7 +134,7 @@ impl<'s> TypeResolver<'s> {
                 let fun = self.preload_fun(f)?;
                 self.context.arena.register_value(
                     &self.context.current_namespace,
-                    &fun.name.clone(),
+                    &fun.name,
                     fun.type_().unwrap(),
                 );
             }
@@ -349,7 +348,7 @@ impl<'s> TypeResolver<'s> {
             name: name.clone(),
             type_args: None,
         }));
-        self.context.set_current_type(this_type.clone());
+        self.context.set_current_type(this_type);
         for computed_property in computed_properties.into_iter() {
             let type_ = self.context.full_type_name(computed_property.type_)?;
             let rs = self

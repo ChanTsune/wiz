@@ -108,7 +108,7 @@ impl ResolverContext {
             .cloned()
             .map(|ns| (true, ns))
             .chain(self.used_name_space.iter().cloned().map(|ns| (false, ns)));
-        for (is_global, mut u) in used_ns {
+        for (is_global, u) in used_ns {
             env.use_(&u);
         }
         env.use_values_from_local(&self.local_stack);
@@ -140,7 +140,7 @@ impl ResolverContext {
                         .ok_or_else(|| {
                             ResolverError::from(format!("Can not resolve type {:?}", t))
                         })?;
-                    rs.get_instance_member_type(&name).cloned().ok_or_else(|| {
+                    rs.get_instance_member_type(name).cloned().ok_or_else(|| {
                         ResolverError::from(format!("{:?} not has member named `{}`", t, name))
                     })
                 }
@@ -207,7 +207,7 @@ impl ResolverContext {
         type_annotation: Option<TypedType>,
     ) -> Result<(TypedType, TypedPackage)> {
         let env = self.get_current_name_environment();
-        let env_value = env.get_env_item(&name_space, &name).ok_or_else(|| {
+        let env_value = env.get_env_item(&name_space, name).ok_or_else(|| {
             ResolverError::from(format!("Cannot resolve name =>{:?} {:?}", name_space, name))
         })?;
         match env_value {
@@ -218,7 +218,7 @@ impl ResolverContext {
                     (
                         t,
                         if is_function {
-                            TypedPackage::Resolved(Package::from(ns.clone()))
+                            TypedPackage::Resolved(Package::from(ns))
                         } else {
                             TypedPackage::Resolved(Package::global())
                         },
@@ -231,7 +231,7 @@ impl ResolverContext {
                     ))
                 }),
             EnvValue::Type(rs) => Ok((
-                TypedType::Type(Box::new(rs.self_.clone())),
+                TypedType::Type(Box::new(rs.self_)),
                 TypedPackage::Resolved(Package::global()),
             )),
         }
@@ -322,7 +322,7 @@ impl ResolverContext {
                 })?;
                 match env_value {
                     EnvValue::Type(rs) => TypedNamedValueType {
-                        package: TypedPackage::Resolved(Package::from(rs.namespace.clone())),
+                        package: TypedPackage::Resolved(Package::from(rs.namespace)),
                         name: type_.name.clone(),
                         type_args: match type_.type_args.clone() {
                             None => None,

@@ -263,7 +263,7 @@ impl ResolverArena {
             })),
             kind,
         );
-        self.register(namespace, name, DeclarationItem::Type(s.clone()));
+        self.register(namespace, name, DeclarationItem::Type(s));
     }
 
     pub(crate) fn get_type<T: ToString>(

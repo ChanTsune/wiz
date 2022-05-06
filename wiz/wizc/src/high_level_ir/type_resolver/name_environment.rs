@@ -106,7 +106,7 @@ impl<'a> NameEnvironment<'a> {
             }
         } else {
             let ids = self.values.get(&namespace[0].to_string())?;
-            let ids = ids.iter().map(|i| *i).collect::<Vec<_>>();
+            let ids = ids.iter().copied().collect::<Vec<_>>();
             let parent_id = ids.first()?;
             let id = self.arena.resolve_namespace(*parent_id, &namespace[1..])?;
             let item = self.arena.get_by_id(&id)?;
