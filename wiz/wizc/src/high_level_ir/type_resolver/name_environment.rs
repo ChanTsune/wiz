@@ -154,8 +154,4 @@ impl<'a> NameEnvironment<'a> {
         };
         n
     }
-
-    pub(crate) fn add_env_value(&mut self, name: &str, v: EnvValue) {
-        self.local_names.insert(name.to_string(), v);
-    }
 }
