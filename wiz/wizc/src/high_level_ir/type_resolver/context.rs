@@ -368,7 +368,7 @@ impl ResolverContext {
 
 #[cfg(test)]
 mod tests {
-    use super::{EnvValue, NameSpace, ResolverContext, ResolverStruct, StructKind};
+    use super::{ResolverContext, ResolverStruct, StructKind};
     use crate::high_level_ir::typed_type::TypedType;
 
     #[test]
