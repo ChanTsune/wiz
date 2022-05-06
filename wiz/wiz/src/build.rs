@@ -45,7 +45,7 @@ pub(crate) fn build_command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn
     )?;
 
     let mut args = vec![ws.cws.to_str().unwrap()];
-    args.extend(["--out-dir", &target_dir.to_str().unwrap()]);
+    args.extend(["--out-dir", target_dir.to_str().unwrap()]);
 
     args.extend(["--name", ws.cws.file_name().unwrap().to_str().unwrap()]);
     args.extend(["--type", "bin"]);

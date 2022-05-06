@@ -3,7 +3,7 @@ use crate::core::manifest;
 use crate::core::manifest::Manifest;
 use std::env;
 use std::error::Error;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 #[derive(Debug, Clone)]
 pub struct ResolvedDependencyTree {
@@ -14,7 +14,7 @@ pub struct ResolvedDependencyTree {
 }
 
 pub fn resolve_manifest_dependencies(
-    manifest_path: &PathBuf,
+    manifest_path: &Path,
     manifest: &Manifest,
 ) -> Result<ResolvedDependencyTree, Box<dyn Error>> {
     let home_dir = PathBuf::from(env!("HOME"));
