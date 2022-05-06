@@ -123,7 +123,7 @@ impl ResolverContext {
             .map(|ns| (true, ns))
             .chain(self.used_name_space.iter().cloned().map(|ns| (false, ns)));
         for (is_global, mut u) in used_ns {
-            env.use_(&u[..u.len() - 1], u.last().unwrap());
+            env.use_(&u);
             if u.last().is_some() && u.last().unwrap() == "*" {
                 let _ = u.pop();
                 if let Ok(n) = self.get_namespace(u.clone()) {

@@ -64,7 +64,7 @@ impl Default for ResolverArena {
 }
 
 impl ResolverArena {
-    fn resolve_namespace<T: ToString>(
+    pub(crate) fn resolve_namespace<T: ToString>(
         &self,
         parent: DeclarationId,
         namespace: &[T],
