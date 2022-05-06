@@ -218,9 +218,9 @@ impl ResolverContext {
         type_annotation: Option<TypedType>,
     ) -> Result<(TypedType, TypedPackage)> {
         let env = self.get_current_name_environment();
-        let env_value = env
-            .get_env_item(&name_space, &name)
-            .ok_or_else(|| ResolverError::from(format!("Cannot resolve name =>{:?} {:?}", name_space, name)))?;
+        let env_value = env.get_env_item(&name_space, &name).ok_or_else(|| {
+            ResolverError::from(format!("Cannot resolve name =>{:?} {:?}", name_space, name))
+        })?;
         match env_value {
             EnvValue::NameSpace(_) => unreachable!(),
             EnvValue::Value(t_set) => Self::resolve_overload(&t_set, type_annotation)
@@ -325,28 +325,27 @@ impl ResolverContext {
         let env = self.get_current_name_environment();
         Ok(match type_.package {
             TypedPackage::Raw(ref p) => {
-                    let env_value = env.get_env_item(&p.names, &type_.name).ok_or_else(|| {
-                        ResolverError::from(format!("Cannot resolve name => {:?}{}", &p.names, &type_.name))
-                    })?;
-                    match env_value {
-                        EnvValue::Type(rs) => {
-                            TypedNamedValueType {
-                                package: TypedPackage::Resolved(Package::from(
-                                    rs.namespace.clone(),
-                                )),
-                                name: type_.name.clone(),
-                                type_args: match type_.type_args.clone() {
-                                    None => None,
-                                    Some(v) => Some(
-                                        v.into_iter()
-                                            .map(|i| self.full_type_name(i))
-                                            .collect::<Result<Vec<_>>>()?,
-                                    ),
-                                },
-                            }
-                        }
-                        _ => panic!(),
-                    }
+                let env_value = env.get_env_item(&p.names, &type_.name).ok_or_else(|| {
+                    ResolverError::from(format!(
+                        "Cannot resolve name => {:?}{}",
+                        &p.names, &type_.name
+                    ))
+                })?;
+                match env_value {
+                    EnvValue::Type(rs) => TypedNamedValueType {
+                        package: TypedPackage::Resolved(Package::from(rs.namespace.clone())),
+                        name: type_.name.clone(),
+                        type_args: match type_.type_args.clone() {
+                            None => None,
+                            Some(v) => Some(
+                                v.into_iter()
+                                    .map(|i| self.full_type_name(i))
+                                    .collect::<Result<Vec<_>>>()?,
+                            ),
+                        },
+                    },
+                    _ => panic!(),
+                }
             }
             TypedPackage::Resolved(_) => type_,
         })

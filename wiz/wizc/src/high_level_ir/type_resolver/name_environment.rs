@@ -78,13 +78,17 @@ impl<'a> NameEnvironment<'a> {
         self.get_type(typ.package().into_resolved().names, &typ.name())
     }
 
-    pub(crate) fn get_env_item<T: ToString>(&self, namespace: &[T], name: &str) -> Option<EnvValue> {
+    pub(crate) fn get_env_item<T: ToString>(
+        &self,
+        namespace: &[T],
+        name: &str,
+    ) -> Option<EnvValue> {
         if namespace.is_empty() {
             let maybe_local_value = self.local_names.get(name).cloned();
             match maybe_local_value {
                 None => {
                     let ids = self.values.get(name)?;
-                    let ids = ids.iter().map(|i|i).collect::<Vec<_>>();
+                    let ids = ids.iter().map(|i| i).collect::<Vec<_>>();
                     let items = self.arena.get_by_ids(&ids)?;
                     if items.len() != 0 {
                         if let DeclarationItem::Type(t) = items.first().unwrap() {
@@ -98,16 +102,16 @@ impl<'a> NameEnvironment<'a> {
                                     None?
                                 }
                             }
-                            return Some(EnvValue::from(values))
+                            return Some(EnvValue::from(values));
                         }
                     };
                     None
                 }
-                Some(t) => Some(t)
+                Some(t) => Some(t),
             }
         } else {
             let ids = self.values.get(&namespace[0].to_string())?;
-            let ids = ids.iter().map(|i|i.clone()).collect::<Vec<_>>();
+            let ids = ids.iter().map(|i| i.clone()).collect::<Vec<_>>();
             let parent_id = ids.first()?;
             let id = self.arena.resolve_namespace(*parent_id, &namespace[1..])?;
             let item = self.arena.get_by_id(&id)?;
@@ -116,7 +120,7 @@ impl<'a> NameEnvironment<'a> {
                 DeclarationItem::Type(_) => panic!(),
                 DeclarationItem::Value(_) => panic!(),
             }?;
-            let child = child.iter().map(|i|i).collect::<Vec<_>>();
+            let child = child.iter().map(|i| i).collect::<Vec<_>>();
             let items = self.arena.get_by_ids(&child)?;
             if items.len() != 0 {
                 if let DeclarationItem::Type(t) = items.first().unwrap() {
@@ -130,7 +134,7 @@ impl<'a> NameEnvironment<'a> {
                             None?
                         }
                     }
-                    return Some(EnvValue::from(values))
+                    return Some(EnvValue::from(values));
                 }
             };
             None
@@ -142,7 +146,7 @@ impl<'a> NameEnvironment<'a> {
         let n = match maybe_local_value {
             None => {
                 let ids = self.values.get(name)?;
-                let ids = ids.iter().map(|i|i.clone()).collect::<Vec<_>>();
+                let ids = ids.iter().map(|i| i.clone()).collect::<Vec<_>>();
                 let id = ids.first()?;
                 let item = self.arena.get_by_id(id)?;
                 match item {
