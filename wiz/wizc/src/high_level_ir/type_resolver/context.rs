@@ -202,7 +202,7 @@ impl ResolverContext {
 
     pub fn resolve_name_type(
         &mut self,
-        mut name_space: Vec<String>,
+        name_space: Vec<String>,
         name: String,
         type_annotation: Option<TypedType>,
     ) -> Result<(TypedType, TypedPackage)> {
