@@ -203,7 +203,7 @@ impl ResolverContext {
     pub fn resolve_name_type(
         &mut self,
         name_space: Vec<String>,
-        name: String,
+        name: &str,
         type_annotation: Option<TypedType>,
     ) -> Result<(TypedType, TypedPackage)> {
         let env = self.get_current_name_environment();

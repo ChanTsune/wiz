@@ -48,7 +48,7 @@ impl<'s> TypeResolver<'s> {
 
     pub(crate) fn global_use<T: ToString>(&mut self, name_space: &[T]) {
         self.context
-            .global_use_name_space(name_space.into_iter().map(|n| n.to_string()).collect())
+            .global_use_name_space(name_space.iter().map(T::to_string).collect())
     }
 
     pub fn detect_type_from_source_set(&mut self, s: &TypedSourceSet) -> Result<()> {
@@ -705,7 +705,7 @@ impl<'s> TypeResolver<'s> {
             name: p.name.clone(),
             type_args: None,
         }));
-        self.context.set_current_type(this_type.clone());
+        self.context.set_current_type(this_type);
         let result = TypedProtocol {
             annotations: p.annotations,
             package: TypedPackage::Resolved(Package::from(self.context.current_namespace.clone())),
@@ -783,7 +783,7 @@ impl<'s> TypeResolver<'s> {
             } else {
                 self.context.resolve_name_type(
                     n.package.into_raw().names,
-                    n.name.clone(),
+                    &n.name,
                     type_annotation,
                 )?
             }
