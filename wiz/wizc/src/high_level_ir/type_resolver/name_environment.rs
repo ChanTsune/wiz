@@ -42,10 +42,13 @@ impl<'a> NameEnvironment<'a> {
     /// use [namespace]::[name];
     pub(crate) fn use_<T: ToString>(&mut self, fqn: &[T]) {
         if fqn.last().map(T::to_string) == Some("*".to_string()) {
-            self.use_asterisk(&fqn[..fqn.len() -1]);
+            self.use_asterisk(&fqn[..fqn.len() - 1]);
         } else {
             let item = self.arena.resolve_declaration_id_from_root(fqn).unwrap();
-            let entry = self.values.entry(fqn.last().unwrap().to_string()).or_default();
+            let entry = self
+                .values
+                .entry(fqn.last().unwrap().to_string())
+                .or_default();
             entry.push(item)
         }
     }
