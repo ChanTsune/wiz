@@ -200,8 +200,7 @@ impl HLIR2MLIR {
                     .map(|i| self.source_set(i))
                     .collect::<Result<Vec<_>>>()?
                     .into_iter()
-                    .map(|i| i.body)
-                    .flatten()
+                    .flat_map(|i| i.body)
                     .collect();
                 self.context.pop_name_space();
                 name
@@ -888,7 +887,7 @@ impl HLIR2MLIR {
 
     fn block(&mut self, b: TypedBlock) -> MLBlock {
         MLBlock {
-            body: b.body.into_iter().map(|s| self.stmt(s)).flatten().collect(),
+            body: b.body.into_iter().flat_map(|s| self.stmt(s)).collect(),
         }
     }
 
