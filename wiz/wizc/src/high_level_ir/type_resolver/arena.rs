@@ -103,6 +103,10 @@ impl ResolverArena {
         let d = self.declarations.get_mut(&target_namespace_id)?;
         let id = match d {
             DeclarationItem::Namespace(n) => {
+                let is_namespace = matches!(declaration, DeclarationItem::Namespace(_));
+                if is_namespace && n.get_child(name).is_some() {
+                    return None;
+                }
                 let id = self.declaration_id_generator.next();
                 n.add_child(name, id);
                 id
@@ -309,6 +313,8 @@ impl ResolverArena {
 
 #[cfg(test)]
 mod tests {
+    use crate::high_level_ir::type_resolver::context::{ResolverStruct, StructKind};
+    use crate::high_level_ir::typed_type::{Package, TypedNamedValueType, TypedPackage, TypedType, TypedValueType};
     use super::super::super::declaration_id::DeclarationId;
     use super::super::super::type_resolver::namespace::Namespace;
     use super::super::declaration::DeclarationItem;
@@ -360,6 +366,32 @@ mod tests {
             )),
             *arena.declarations.get(&ns_id.unwrap()).unwrap()
         )
+    }
+
+    #[test]
+    fn register() {
+        let mut arena = ResolverArena::default();
+        let root_namespace: [&str; 0] = [];
+        let child_namespace_name = "std";
+        let grandchildren_namespace_name = "collections";
+        let type_name = "type";
+
+        arena.register_namespace(&root_namespace, child_namespace_name);
+        arena.register_namespace(&[child_namespace_name], grandchildren_namespace_name);
+        arena.register_struct(&[child_namespace_name, grandchildren_namespace_name], type_name);
+        arena.register_namespace(&root_namespace, child_namespace_name);
+
+        let item = arena.get(&[child_namespace_name, grandchildren_namespace_name], type_name);
+        assert_eq!(
+            item, Some(&DeclarationItem::Type(ResolverStruct::new(
+                TypedType::Value(TypedValueType::Value(TypedNamedValueType {
+                    package: TypedPackage::Resolved(Package::from(vec![child_namespace_name, grandchildren_namespace_name])),
+                    name: type_name.to_string(),
+                    type_args: None,
+                })),
+                StructKind::Struct,
+            )))
+        );
     }
 
     #[test]
