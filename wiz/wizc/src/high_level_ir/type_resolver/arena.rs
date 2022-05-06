@@ -313,12 +313,14 @@ impl ResolverArena {
 
 #[cfg(test)]
 mod tests {
-    use crate::high_level_ir::type_resolver::context::{ResolverStruct, StructKind};
-    use crate::high_level_ir::typed_type::{Package, TypedNamedValueType, TypedPackage, TypedType, TypedValueType};
     use super::super::super::declaration_id::DeclarationId;
     use super::super::super::type_resolver::namespace::Namespace;
     use super::super::declaration::DeclarationItem;
     use super::ResolverArena;
+    use crate::high_level_ir::type_resolver::context::{ResolverStruct, StructKind};
+    use crate::high_level_ir::typed_type::{
+        Package, TypedNamedValueType, TypedPackage, TypedType, TypedValueType,
+    };
 
     #[test]
     fn resolve_root_namespace() {
@@ -378,14 +380,24 @@ mod tests {
 
         arena.register_namespace(&root_namespace, child_namespace_name);
         arena.register_namespace(&[child_namespace_name], grandchildren_namespace_name);
-        arena.register_struct(&[child_namespace_name, grandchildren_namespace_name], type_name);
+        arena.register_struct(
+            &[child_namespace_name, grandchildren_namespace_name],
+            type_name,
+        );
         arena.register_namespace(&root_namespace, child_namespace_name);
 
-        let item = arena.get(&[child_namespace_name, grandchildren_namespace_name], type_name);
+        let item = arena.get(
+            &[child_namespace_name, grandchildren_namespace_name],
+            type_name,
+        );
         assert_eq!(
-            item, Some(&DeclarationItem::Type(ResolverStruct::new(
+            item,
+            Some(&DeclarationItem::Type(ResolverStruct::new(
                 TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-                    package: TypedPackage::Resolved(Package::from(vec![child_namespace_name, grandchildren_namespace_name])),
+                    package: TypedPackage::Resolved(Package::from(vec![
+                        child_namespace_name,
+                        grandchildren_namespace_name
+                    ])),
                     name: type_name.to_string(),
                     type_args: None,
                 })),
