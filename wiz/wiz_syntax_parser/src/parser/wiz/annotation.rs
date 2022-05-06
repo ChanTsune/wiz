@@ -47,7 +47,7 @@ where
             }
 
             AnnotationsSyntax {
-                open: TokenSyntax::from(open),
+                open,
                 elements: annotations,
                 close: close.with_leading_trivia(tws),
             }

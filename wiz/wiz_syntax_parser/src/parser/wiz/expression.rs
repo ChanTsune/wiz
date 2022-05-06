@@ -732,7 +732,7 @@ where
                 todo!("will execute line?")
             }
             None => PostfixSuffix::CallSuffix {
-                args: args,
+                args,
                 tailing_lambda: tl,
             },
         },

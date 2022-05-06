@@ -57,7 +57,7 @@ pub fn parse_from_file_path(path: &Path) -> Result<WizFile> {
 
 pub fn read_package_from_path(path: &Path, name: Option<&str>) -> Result<SourceSet> {
     let dir = fs::read_dir(path)?;
-    for item in dir.into_iter() {
+    for item in dir {
         let dir_entry = item.unwrap();
         if dir_entry.file_name().to_str().unwrap() == "src" {
             return Ok(SourceSet::Dir {

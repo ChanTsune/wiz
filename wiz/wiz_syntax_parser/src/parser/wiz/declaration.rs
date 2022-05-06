@@ -146,7 +146,7 @@ where
                 body: body.with_leading_trivia(ws),
             },
             None => StructSyntax {
-                struct_keyword: TokenSyntax::from(struct_keyword),
+                struct_keyword,
                 name: TokenSyntax::from(name).with_leading_trivia(nws),
                 type_params: params.map(|(ws, p)| p.with_leading_trivia(ws)),
                 body: Default::default(),
@@ -263,7 +263,7 @@ where
             type_annotation_syntax,
         )),
         |(var, ws, name, tws, typ)| StoredPropertySyntax {
-            mutability_keyword: TokenSyntax::from(var),
+            mutability_keyword: var,
             name: TokenSyntax::from(name).with_leading_trivia(ws),
             type_: typ.with_leading_trivia(tws),
         },
@@ -505,7 +505,7 @@ where
                     Some((label, lws)) => ValueArgDef {
                         label: Some(TokenSyntax::from(label)),
                         name: TokenSyntax::from(name).with_leading_trivia(lws),
-                        colon: TokenSyntax::from(colon).with_leading_trivia(cws),
+                        colon: colon.with_leading_trivia(cws),
                         type_name: typ.with_leading_trivia(ws),
                     },
                 })
