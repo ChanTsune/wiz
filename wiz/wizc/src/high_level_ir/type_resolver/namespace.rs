@@ -1,11 +1,11 @@
 use crate::high_level_ir::declaration_id::DeclarationId;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Default, Clone, Eq, PartialEq)]
 pub struct Namespace {
     name: String,
     parent: Option<DeclarationId>,
-    children: HashMap<String, Vec<DeclarationId>>,
+    children: HashMap<String, HashSet<DeclarationId>>,
 }
 
 impl Namespace {
@@ -23,10 +23,10 @@ impl Namespace {
 
     pub fn add_child(&mut self, name: &str, id: DeclarationId) {
         let entry = self.children.entry(name.to_string()).or_default();
-        entry.push(id);
+        entry.insert(id);
     }
 
-    pub fn get_child(&self, name: &str) -> Option<Vec<DeclarationId>> {
+    pub fn get_child(&self, name: &str) -> Option<HashSet<DeclarationId>> {
         self.children.get(name).cloned()
     }
 
@@ -38,7 +38,7 @@ impl Namespace {
         self.name.clone()
     }
 
-    pub fn children(&self) -> &HashMap<String, Vec<DeclarationId>> {
+    pub fn children(&self) -> &HashMap<String, HashSet<DeclarationId>> {
         &self.children
     }
 }

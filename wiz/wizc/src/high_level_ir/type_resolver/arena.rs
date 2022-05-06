@@ -76,7 +76,7 @@ impl ResolverArena {
             let parent = self.declarations.get(&parent)?;
             if let DeclarationItem::Namespace(parent) = parent {
                 self.resolve_namespace(
-                    *parent.get_child(&name.to_string())?.first().unwrap(),
+                    *parent.get_child(&name.to_string())?.into_iter().collect::<Vec<_>>().first().unwrap(),
                     &namespace[1..],
                 )
             } else {
@@ -175,7 +175,7 @@ impl ResolverArena {
             let parent = self.declarations.get(&parent_id)?;
             match parent {
                 DeclarationItem::Namespace(parent) => self.resolve_declaration_id(
-                    *parent.get_child(&name.to_string())?.first().unwrap(),
+                    *parent.get_child(&name.to_string())?.into_iter().collect::<Vec<_>>().first().unwrap(),
                     &item_name[1..],
                 ),
                 DeclarationItem::Type(_) | DeclarationItem::Value(_) => {

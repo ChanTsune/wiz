@@ -5,12 +5,12 @@ use crate::high_level_ir::type_resolver::declaration::DeclarationItem;
 use crate::high_level_ir::type_resolver::name_space::NameSpace;
 use crate::high_level_ir::typed_type::TypedType;
 use crate::utils::stacked_hash_map::StackedHashMap;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Clone)]
 pub struct NameEnvironment<'a> {
     local_names: HashMap<String, EnvValue>,
-    values: HashMap<String, Vec<DeclarationId>>,
+    values: HashMap<String, HashSet<DeclarationId>>,
     arena: &'a ResolverArena,
 }
 
@@ -28,8 +28,8 @@ impl<'a> NameEnvironment<'a> {
     }
 
     /// use [namespace]::*;
-    pub(crate) fn use_asterisk<T: ToString>(&mut self, namespace: &[T]) {
-        let ns_id = self.arena.resolve_namespace_from_root(namespace).unwrap();
+    pub(crate) fn use_asterisk<T: ToString>(&mut self, namespace: &[T]) -> Option<()> {
+        let ns_id = self.arena.resolve_namespace_from_root(namespace)?;
         let ns = self.arena.get_by_id(&ns_id).unwrap();
         let ns = if let DeclarationItem::Namespace(ns) = ns {
             ns
@@ -37,6 +37,7 @@ impl<'a> NameEnvironment<'a> {
             panic!("{:?}", ns)
         };
         self.values.extend(ns.children().clone());
+        Some(())
     }
 
     /// use [namespace]::[name];
@@ -49,7 +50,7 @@ impl<'a> NameEnvironment<'a> {
                 .values
                 .entry(fqn.last().unwrap().to_string())
                 .or_default();
-            entry.push(item)
+            entry.insert(item);
         }
     }
 
