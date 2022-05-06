@@ -1,10 +1,11 @@
-use crate::high_level_ir::type_resolver::context::{NameSpace, ResolverStruct};
+use crate::high_level_ir::type_resolver::context::{ResolverStruct};
 use crate::high_level_ir::typed_type::TypedType;
 use std::collections::HashSet;
+use crate::high_level_ir::type_resolver::namespace::Namespace;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum EnvValue {
-    NameSpace(NameSpace),
+    NameSpace(Namespace),
     Value(HashSet<(Vec<String>, TypedType)>),
     Type(ResolverStruct),
 }
@@ -15,8 +16,8 @@ impl From<(Vec<String>, TypedType)> for EnvValue {
     }
 }
 
-impl From<NameSpace> for EnvValue {
-    fn from(ns: NameSpace) -> Self {
+impl From<Namespace> for EnvValue {
+    fn from(ns: Namespace) -> Self {
         Self::NameSpace(ns)
     }
 }

@@ -27,23 +27,9 @@ impl NameSpace {
             let n = ns.remove(0).to_string();
             let m = self.values.get(&*n)?;
             match m {
-                EnvValue::NameSpace(m) => m.get_child(ns),
+                EnvValue::NameSpace(m) => panic!(),
                 EnvValue::Value(_) => None,
                 EnvValue::Type(_) => None,
-            }
-        }
-    }
-
-    pub(crate) fn get_child_mut<T: ToString>(&mut self, mut ns: Vec<T>) -> Option<&mut NameSpace> {
-        if ns.is_empty() {
-            Some(self)
-        } else {
-            let n = ns.remove(0).to_string();
-            let m = self.values.get_mut(&*n)?;
-            match m {
-                EnvValue::NameSpace(m) => m.get_child_mut(ns),
-                EnvValue::Value(_) => None,
-                EnvValue::Type(_) => panic!(),
             }
         }
     }
@@ -55,10 +41,10 @@ impl NameSpace {
             let entry = self.values.entry(n).or_insert_with_key(|key| {
                 let mut name = self_name_space_ref.clone();
                 name.push(key.clone());
-                EnvValue::from(NameSpace::new(name))
+                panic!()
             });
             match entry {
-                EnvValue::NameSpace(n) => n.set_child(ns),
+                EnvValue::NameSpace(n) => panic!(),
                 EnvValue::Value(_) => panic!(),
                 EnvValue::Type(_) => panic!(),
             };

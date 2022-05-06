@@ -277,11 +277,6 @@ impl ResolverArena {
             kind,
         );
         self.register(namespace, name, DeclarationItem::Type(s.clone()));
-        let child_ns = self
-            .name_space
-            .get_child_mut(namespace.iter().map(T::to_string).collect())
-            .unwrap();
-        child_ns.register_type(name.to_string(), s);
     }
 
     pub(crate) fn get_type<T: ToString>(
@@ -289,10 +284,11 @@ impl ResolverArena {
         name_space: &[T],
         name: &str,
     ) -> Option<&ResolverStruct> {
-        let n = self
-            .name_space
-            .get_child(name_space.iter().map(T::to_string).collect())?;
-        n.get_type(name)
+        match self.get(name_space, name)? {
+            DeclarationItem::Namespace(n) => panic!("N:{:?}", n),
+            DeclarationItem::Type(t) => Some(t),
+            DeclarationItem::Value(v) => panic!("V:{:?}", v),
+        }
     }
 
     pub(crate) fn get_type_mut<T: ToString>(
@@ -300,10 +296,11 @@ impl ResolverArena {
         name_space: &[T],
         name: &str,
     ) -> Option<&mut ResolverStruct> {
-        let n = self
-            .name_space
-            .get_child_mut(name_space.iter().map(T::to_string).collect())?;
-        n.get_type_mut(name)
+        match self.get_mut(name_space, name)? {
+            DeclarationItem::Namespace(n) => panic!("N:{:?}", n),
+            DeclarationItem::Type(t) => Some(t),
+            DeclarationItem::Value(v) => panic!("V:{:?}", v),
+        }
     }
 
     pub(crate) fn register_value<T: ToString>(
@@ -313,11 +310,6 @@ impl ResolverArena {
         ty: TypedType,
     ) {
         let vec_namespace = namespace.iter().map(T::to_string).collect::<Vec<_>>();
-        let child_ns = self
-            .name_space
-            .get_child_mut(vec_namespace.clone())
-            .unwrap();
-        child_ns.register_value(vec_namespace.clone(), name.to_string(), ty.clone());
         self.register(namespace, name, DeclarationItem::Value((vec_namespace, ty)));
     }
 
