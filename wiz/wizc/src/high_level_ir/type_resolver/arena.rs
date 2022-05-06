@@ -1,7 +1,6 @@
 use crate::high_level_ir::declaration_id::{DeclarationId, DeclarationIdGenerator};
 use crate::high_level_ir::type_resolver::context::{ResolverStruct, StructKind};
 use crate::high_level_ir::type_resolver::declaration::DeclarationItem;
-use crate::high_level_ir::type_resolver::name_space::NameSpace;
 use crate::high_level_ir::type_resolver::namespace::Namespace;
 use crate::high_level_ir::typed_expr::TypedBinaryOperator;
 use crate::high_level_ir::typed_type::{
@@ -26,7 +25,6 @@ impl Error for ArenaError {}
 pub struct ResolverArena {
     declaration_id_generator: DeclarationIdGenerator,
     declarations: HashMap<DeclarationId, DeclarationItem>,
-    name_space: NameSpace,
     binary_operators: HashMap<(TypedBinaryOperator, TypedType, TypedType), TypedType>,
 }
 
@@ -41,7 +39,6 @@ impl Default for ResolverArena {
         let mut arena = Self {
             declaration_id_generator: DeclarationIdGenerator::new(0),
             declarations,
-            name_space: NameSpace::empty(),
             binary_operators: Default::default(),
         };
 
@@ -154,16 +151,6 @@ impl ResolverArena {
             }
             DeclarationItem::Value(t) => todo!(),
         }
-    }
-
-    pub(crate) fn create_namespace_all<T: ToString>(&mut self, namespace: &[T]) {
-        self.name_space
-            .set_child(namespace.iter().map(T::to_string).collect())
-    }
-
-    pub(crate) fn get_name_space<T: ToString>(&self, namespace: &[T]) -> Option<&NameSpace> {
-        self.name_space
-            .get_child(namespace.iter().map(T::to_string).collect())
     }
 }
 

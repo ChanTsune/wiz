@@ -2,7 +2,6 @@ use crate::high_level_ir::declaration_id::DeclarationId;
 use crate::high_level_ir::type_resolver::arena::ResolverArena;
 use crate::high_level_ir::type_resolver::context::{EnvValue, ResolverStruct};
 use crate::high_level_ir::type_resolver::declaration::DeclarationItem;
-use crate::high_level_ir::type_resolver::name_space::NameSpace;
 use crate::high_level_ir::typed_type::TypedType;
 use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::{HashMap, HashSet};
@@ -21,10 +20,6 @@ impl<'a> NameEnvironment<'a> {
             values: Default::default(),
             arena,
         }
-    }
-
-    pub(crate) fn use_values_from(&mut self, name_space: &NameSpace) {
-        self.local_names.extend(name_space.values.clone());
     }
 
     /// use [namespace]::*;

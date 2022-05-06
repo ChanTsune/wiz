@@ -8,7 +8,6 @@ pub(crate) use crate::high_level_ir::type_resolver::context::resolver_struct::{
 };
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::name_environment::NameEnvironment;
-use crate::high_level_ir::type_resolver::name_space::NameSpace;
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_expr::TypedBinaryOperator;
 use crate::high_level_ir::typed_type::{
@@ -48,16 +47,6 @@ impl ResolverContext {
 
     pub fn pop_name_space(&mut self) {
         self.current_namespace.pop();
-    }
-
-    pub fn get_current_namespace(&self) -> Result<&NameSpace> {
-        self.get_namespace(self.current_namespace.clone())
-    }
-
-    pub fn get_namespace(&self, ns: Vec<String>) -> Result<&NameSpace> {
-        self.arena
-            .get_name_space(&ns)
-            .ok_or_else(|| ResolverError::from(format!("NameSpace {:?} not exist", ns)))
     }
 
     pub fn resolve_current_type(&self) -> Result<TypedType> {
