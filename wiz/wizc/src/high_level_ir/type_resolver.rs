@@ -579,12 +579,12 @@ impl<'s> TypeResolver<'s> {
             computed_properties, // TODO
             member_functions,
         } = s;
-        let current_namespace = &self.context.current_namespace;
-        let this_type = TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-            package: TypedPackage::Resolved(Package::from(current_namespace)),
-            name: name.clone(),
-            type_args: None,
-        }));
+        let rs = self
+            .context
+            .arena
+            .get_type(&self.context.current_namespace, &name)
+            .unwrap();
+        let this_type = rs.self_.clone();
         self.context.set_current_type(this_type);
         let initializers = initializers
             .into_iter()
@@ -700,13 +700,12 @@ impl<'s> TypeResolver<'s> {
     }
 
     fn typed_protocol(&mut self, p: TypedProtocol) -> Result<TypedProtocol> {
-        let current_namespace = &self.context.current_namespace;
-        let this_type = TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-            package: TypedPackage::Resolved(Package::from(current_namespace)),
-            name: p.name.clone(),
-            type_args: None,
-        }));
-        self.context.set_current_type(this_type);
+        let rs = self
+            .context
+            .arena
+            .get_type(&self.context.current_namespace, &p.name)
+            .unwrap();
+        self.context.set_current_type(rs.self_.clone());
         let result = TypedProtocol {
             annotations: p.annotations,
             package: TypedPackage::Resolved(Package::from(&self.context.current_namespace)),
