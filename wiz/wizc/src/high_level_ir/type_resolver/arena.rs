@@ -193,7 +193,11 @@ impl ResolverArena {
         self.resolve_declaration_id(DeclarationId::ROOT, fqn)
     }
 
-    pub(crate) fn get<T: ToString>(&self, namespace: &[T], name: &str) -> Option<&DeclarationItemKind> {
+    pub(crate) fn get<T: ToString>(
+        &self,
+        namespace: &[T],
+        name: &str,
+    ) -> Option<&DeclarationItemKind> {
         let id = self.resolve_declaration_id_from_root(
             &namespace
                 .iter()
@@ -295,7 +299,11 @@ impl ResolverArena {
         ty: TypedType,
     ) {
         let vec_namespace = namespace.iter().map(T::to_string).collect::<Vec<_>>();
-        self.register(namespace, name, DeclarationItemKind::Value((vec_namespace, ty)));
+        self.register(
+            namespace,
+            name,
+            DeclarationItemKind::Value((vec_namespace, ty)),
+        );
     }
 
     pub(crate) fn resolve_binary_operator(
@@ -337,7 +345,10 @@ mod tests {
 
         let ns_id = arena.resolve_namespace_from_root(&[child_namespace_name]);
         assert_eq!(
-            DeclarationItemKind::Namespace(Namespace::new(child_namespace_name, DeclarationId::ROOT)),
+            DeclarationItemKind::Namespace(Namespace::new(
+                child_namespace_name,
+                DeclarationId::ROOT
+            )),
             *arena.declarations.get(&ns_id.unwrap()).unwrap()
         )
     }
