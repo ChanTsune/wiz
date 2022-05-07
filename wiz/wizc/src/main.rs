@@ -95,26 +95,27 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
         session.get_duration(id_parse_files).unwrap().as_millis()
     );
 
-    println!("=== load dependencies ===");
-    let libraries = config.libraries();
+    let std_hlir = session.timer("load dependencies", |_| {
+        let libraries = config.libraries();
 
-    let std_hlir: Vec<_> = if libraries.is_empty() {
-        let source_sets = lib_paths
-            .into_iter()
-            .map(|p| read_package_from_path(p.as_path(), None))
-            .collect::<parser::result::Result<Vec<_>>>()?;
-        source_sets
-            .into_iter()
-            .enumerate()
-            .map(|(i, s)| ast2hlir(s, TypedModuleId::new(i)))
-            .collect()
-    } else {
-        config
-            .libraries()
-            .iter()
-            .map(|p| WLib::read_from(p).typed_ir)
-            .collect()
-    };
+        let std_hlir: parser::result::Result<Vec<_>> = if libraries.is_empty() {
+            let source_sets = lib_paths
+                .iter()
+                .map(|p| read_package_from_path(p, None))
+                .collect::<parser::result::Result<Vec<_>>>()?;
+            Ok(source_sets
+                .into_iter()
+                .enumerate()
+                .map(|(i, s)| ast2hlir(s, TypedModuleId::new(i)))
+                .collect())
+        } else {
+            Ok(libraries
+                .iter()
+                .map(|p| WLib::read_from(p).typed_ir)
+                .collect())
+        };
+        std_hlir
+    })?;
 
     println!("=== convert to hlir ===");
 
