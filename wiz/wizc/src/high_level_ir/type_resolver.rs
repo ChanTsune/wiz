@@ -32,7 +32,7 @@ use crate::high_level_ir::typed_type::{
 use crate::high_level_ir::typed_type_constraint::TypedTypeConstraint;
 use wiz_session::Session;
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub(crate) struct TypeResolver<'s> {
     session: &'s Session,
     pub(crate) context: ResolverContext,
