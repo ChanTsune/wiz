@@ -109,11 +109,10 @@ impl ResolverContext {
         let used_ns = self
             .global_used_name_space
             .iter()
-            .cloned()
             .map(|ns| (true, ns))
-            .chain(self.used_name_space.iter().cloned().map(|ns| (false, ns)));
+            .chain(self.used_name_space.iter().map(|ns| (false, ns)));
         for (is_global, u) in used_ns {
-            env.use_(&u);
+            env.use_(u);
         }
         env.use_values_from_local(&self.local_stack);
         env
