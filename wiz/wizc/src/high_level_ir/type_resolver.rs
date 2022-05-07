@@ -154,7 +154,6 @@ impl<'s> TypeResolver<'s> {
     }
 
     pub fn preload_fun(&mut self, f: TypedFun) -> Result<TypedFun> {
-        let c_name_space = self.context.current_namespace.clone();
         self.context.push_local_stack();
         if let Some(type_params) = &f.type_params {
             for type_param in type_params {
@@ -184,7 +183,7 @@ impl<'s> TypeResolver<'s> {
         let return_type = self.typed_function_return_type(&f.name, &f.return_type, &f.body)?;
         let fun = TypedFun {
             annotations: f.annotations,
-            package: TypedPackage::Resolved(Package::from(c_name_space)),
+            package: TypedPackage::Resolved(Package::from(&self.context.current_namespace)),
             modifiers: f.modifiers,
             name: f.name,
             type_params: f.type_params,
@@ -208,7 +207,7 @@ impl<'s> TypeResolver<'s> {
             computed_properties,
             member_functions,
         } = s;
-        let current_namespace = self.context.current_namespace.clone();
+        let current_namespace = &self.context.current_namespace;
         let this_type = TypedType::Value(TypedValueType::Value(TypedNamedValueType {
             package: TypedPackage::Resolved(Package::from(current_namespace)),
             name: name.clone(),
@@ -342,7 +341,7 @@ impl<'s> TypeResolver<'s> {
             computed_properties,
             member_functions,
         } = p;
-        let current_namespace = self.context.current_namespace.clone();
+        let current_namespace = &self.context.current_namespace;
         let this_type = TypedType::Value(TypedValueType::Value(TypedNamedValueType {
             package: TypedPackage::Resolved(Package::from(current_namespace)),
             name: name.clone(),
@@ -503,7 +502,6 @@ impl<'s> TypeResolver<'s> {
     }
 
     pub fn typed_fun(&mut self, f: TypedFun) -> Result<TypedFun> {
-        let c_name_space = self.context.current_namespace.clone();
         self.context.push_local_stack();
         if let Some(type_params) = &f.type_params {
             for type_param in type_params {
@@ -542,7 +540,7 @@ impl<'s> TypeResolver<'s> {
         let return_type = self.typed_function_return_type(&f.name, &f.return_type, &f.body)?;
         let fun = TypedFun {
             annotations: f.annotations,
-            package: TypedPackage::Resolved(Package::from(c_name_space)),
+            package: TypedPackage::Resolved(Package::from(&self.context.current_namespace)),
             modifiers: f.modifiers,
             name: f.name,
             type_params: f.type_params,
@@ -577,7 +575,7 @@ impl<'s> TypeResolver<'s> {
             computed_properties, // TODO
             member_functions,
         } = s;
-        let current_namespace = self.context.current_namespace.clone();
+        let current_namespace = &self.context.current_namespace;
         let this_type = TypedType::Value(TypedValueType::Value(TypedNamedValueType {
             package: TypedPackage::Resolved(Package::from(current_namespace)),
             name: name.clone(),
@@ -600,7 +598,7 @@ impl<'s> TypeResolver<'s> {
         self.context.clear_current_type();
         Ok(TypedStruct {
             annotations,
-            package: TypedPackage::Resolved(Package::from(self.context.current_namespace.clone())),
+            package: TypedPackage::Resolved(Package::from(&self.context.current_namespace)),
             name,
             type_params,
             initializers,
@@ -698,7 +696,7 @@ impl<'s> TypeResolver<'s> {
     }
 
     fn typed_protocol(&mut self, p: TypedProtocol) -> Result<TypedProtocol> {
-        let current_namespace = self.context.current_namespace.clone();
+        let current_namespace = &self.context.current_namespace;
         let this_type = TypedType::Value(TypedValueType::Value(TypedNamedValueType {
             package: TypedPackage::Resolved(Package::from(current_namespace)),
             name: p.name.clone(),
@@ -707,7 +705,7 @@ impl<'s> TypeResolver<'s> {
         self.context.set_current_type(this_type);
         let result = TypedProtocol {
             annotations: p.annotations,
-            package: TypedPackage::Resolved(Package::from(self.context.current_namespace.clone())),
+            package: TypedPackage::Resolved(Package::from(&self.context.current_namespace)),
             name: p.name,
             type_params: p.type_params, // TODO type params
             member_functions: p

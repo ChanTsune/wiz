@@ -369,10 +369,10 @@ impl AstLowering {
                 } = *n;
                 TypedType::Value(TypedValueType::Value(TypedNamedValueType {
                     package: TypedPackage::Raw(Package::from(
-                        name_space
-                            .into_iter()
+                        &name_space
+                            .iter()
                             .map(|i| i.simple_type.name.token())
-                            .collect::<Vec<String>>(),
+                            .collect::<Vec<_>>(),
                     )),
                     name: type_name.name.token(),
                     type_args: type_name.type_args.map(|v| {
@@ -674,9 +674,9 @@ impl AstLowering {
             package: match name_space {
                 None => TypedPackage::Raw(Package::new()),
                 Some(name_space) => TypedPackage::Raw(Package::from(
-                    name_space
+                    &name_space
                         .elements
-                        .into_iter()
+                        .iter()
                         .map(|e| e.name.token())
                         .collect::<Vec<_>>(),
                 )),

@@ -236,11 +236,16 @@ impl Package {
     }
 }
 
-impl<T> From<Vec<T>> for Package
-where
-    T: ToString,
-{
-    fn from(names: Vec<T>) -> Self {
+impl<T: ToString> From<&[T]> for Package {
+    fn from(names: &[T]) -> Self {
+        Self {
+            names: names.iter().map(T::to_string).collect(),
+        }
+    }
+}
+
+impl<T: ToString> From<&Vec<T>> for Package {
+    fn from(names: &Vec<T>) -> Self {
         Self {
             names: names.iter().map(T::to_string).collect(),
         }

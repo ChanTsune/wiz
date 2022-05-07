@@ -256,7 +256,7 @@ impl ResolverArena {
         let s = ResolverStruct::new(
             TypedType::Value(TypedValueType::Value(TypedNamedValueType {
                 package: TypedPackage::Resolved(Package::from(
-                    namespace.iter().map(T::to_string).collect::<Vec<_>>(),
+                    namespace,
                 )),
                 name: name.to_string(),
                 type_args: None,
@@ -391,7 +391,7 @@ mod tests {
             item,
             Some(&DeclarationItem::Type(ResolverStruct::new(
                 TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-                    package: TypedPackage::Resolved(Package::from(vec![
+                    package: TypedPackage::Resolved(Package::from(&vec![
                         child_namespace_name,
                         grandchildren_namespace_name
                     ])),

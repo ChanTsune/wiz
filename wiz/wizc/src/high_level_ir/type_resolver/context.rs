@@ -218,7 +218,7 @@ impl ResolverContext {
                     (
                         t,
                         if is_function {
-                            TypedPackage::Resolved(Package::from(ns))
+                            TypedPackage::Resolved(Package::from(&ns))
                         } else {
                             TypedPackage::Resolved(Package::global())
                         },
@@ -322,7 +322,7 @@ impl ResolverContext {
                 })?;
                 match env_value {
                     EnvValue::Type(rs) => TypedNamedValueType {
-                        package: TypedPackage::Resolved(Package::from(rs.namespace)),
+                        package: TypedPackage::Resolved(Package::from(&rs.namespace)),
                         name: type_.name.clone(),
                         type_args: match type_.type_args.clone() {
                             None => None,
