@@ -34,8 +34,8 @@ fn get_find_paths() -> Vec<PathBuf> {
     vec![get_builtin_find_path()]
 }
 
-fn get_builtin_lib() -> Vec<&'static str> {
-    vec!["core", "std"]
+fn get_builtin_lib() -> &'static [&'static str] {
+    &["core", "std"]
 }
 
 fn main() -> result::Result<(), Box<dyn Error>> {
@@ -69,21 +69,20 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
         SourceSet::File(parse_from_file_path(input)?)
     };
 
+    let find_paths: Vec<_> = get_find_paths().into_iter().chain(paths).collect();
+
     let mut lib_paths = vec![];
 
-    for l in get_builtin_lib() {
-        for p in get_find_paths()
-            .into_iter()
-            .chain(paths.iter().map(PathBuf::from))
-        {
-            let lib_path = p.join(l);
+    for lib_name in get_builtin_lib() {
+        for p in find_paths.iter() {
+            let lib_path = p.join(lib_name);
             let package_manifest_path = lib_path.join("Package.wiz");
             if package_manifest_path.exists() {
-                println!("`{}` found at {}", l, lib_path.display());
+                println!("`{}` found at {}", lib_name, lib_path.display());
                 lib_paths.push(lib_path);
                 break;
             } else {
-                println!("`{}` Not found at {}", l, lib_path.display());
+                println!("`{}` Not found at {}", lib_name, lib_path.display());
             }
         }
     }
