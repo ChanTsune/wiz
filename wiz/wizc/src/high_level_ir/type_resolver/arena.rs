@@ -255,9 +255,7 @@ impl ResolverArena {
     ) {
         let s = ResolverStruct::new(
             TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-                package: TypedPackage::Resolved(Package::from(
-                    namespace,
-                )),
+                package: TypedPackage::Resolved(Package::from(namespace)),
                 name: name.to_string(),
                 type_args: None,
             })),

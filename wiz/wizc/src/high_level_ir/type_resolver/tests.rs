@@ -483,7 +483,7 @@ fn test_struct_member_function() {
                                         type_: Some(TypedType::Value(TypedValueType::Value(
                                             TypedNamedValueType {
                                                 package: TypedPackage::Resolved(Package::from(
-                                                   &vec!["test"],
+                                                    &vec!["test"],
                                                 )),
                                                 name: "A".to_string(),
                                                 type_args: None,
