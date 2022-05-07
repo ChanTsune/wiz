@@ -1092,7 +1092,7 @@ impl<'s> TypeResolver<'s> {
                     arguments: args
                         .iter()
                         .map(|a| TypedArgType {
-                            label: a.label.clone().unwrap_or("_".to_string()),
+                            label: a.label.clone().unwrap_or_else(||"_".to_string()),
                             typ: a.arg.type_().unwrap(),
                         })
                         .collect(),
