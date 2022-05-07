@@ -56,7 +56,7 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
     let out_dir = out_dir
         .map(PathBuf::from)
         .unwrap_or_else(|| env::current_dir().unwrap());
-    let build_type = config.type_().unwrap_or_else(|| BuildType::Binary);
+    let build_type = config.type_().unwrap_or(BuildType::Binary);
 
     let mlir_out_dir = out_dir.join("mlir");
 
