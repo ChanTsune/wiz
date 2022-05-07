@@ -115,7 +115,7 @@ impl<'a> NameEnvironment<'a> {
                 DeclarationItem::Type(_) => panic!(),
                 DeclarationItem::Value(_) => panic!(),
             }?;
-            let child = child.iter().map(|i| i).collect::<Vec<_>>();
+            let child = child.iter().collect::<Vec<_>>();
             let items = self.arena.get_by_ids(&child)?;
             if !items.is_empty() {
                 if let DeclarationItem::Type(t) = items.first().unwrap() {
