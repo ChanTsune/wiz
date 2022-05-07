@@ -1,8 +1,9 @@
+use crate::high_level_ir::node_id::TypedModuleId;
 use crate::high_level_ir::type_checker::TypeChecker;
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::wlib::WLib;
-use crate::high_level_ir::{ast2hlir, Ast2HLIR};
+use crate::high_level_ir::{ast2hlir, AstLowering};
 use crate::llvm_ir::codegen::CodeGen;
 use crate::middle_level_ir::{hlir2mlir, HLIR2MLIR};
 use inkwell::context::Context;
@@ -71,7 +72,7 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
     let mut lib_paths = vec![];
 
     for l in get_builtin_lib() {
-        for mut p in get_find_paths()
+        for p in get_find_paths()
             .into_iter()
             .chain(paths.iter().map(PathBuf::from))
         {
@@ -102,7 +103,11 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
             .into_iter()
             .map(|p| read_package_from_path(p.as_path(), None))
             .collect::<parser::result::Result<Vec<_>>>()?;
-        source_sets.into_iter().map(|s| ast2hlir(s)).collect()
+        source_sets
+            .into_iter()
+            .enumerate()
+            .map(|(i, s)| ast2hlir(s, TypedModuleId::new(i)))
+            .collect()
     } else {
         config
             .libraries()
@@ -113,9 +118,9 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
 
     println!("=== convert to hlir ===");
 
-    let mut ast2hlir = Ast2HLIR::new();
+    let mut ast2hlir = AstLowering::new();
 
-    let hlfiles = ast2hlir.source_set(input_source);
+    let hlfiles = ast2hlir.source_set(input_source, TypedModuleId::new(std_hlir.len()));
 
     println!("=== resolve type ===");
 
@@ -153,7 +158,7 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
 
     let hlfiles = type_resolver.source_set(hlfiles)?;
 
-    let mut type_checker = TypeChecker::new(session, &type_resolver.context.arena);
+    let mut type_checker = TypeChecker::new(session, &type_resolver.context.arena());
 
     type_checker.verify(&hlfiles);
 

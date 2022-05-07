@@ -1,3 +1,4 @@
+use crate::high_level_ir::node_id::TypedModuleId;
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedExtension, TypedFun, TypedFunBody,
@@ -43,6 +44,8 @@ use wiz_syntax::syntax::statement::{
 };
 use wiz_syntax::syntax::type_name::{TypeName, TypeParam, UserTypeName};
 
+pub mod declaration_id;
+pub mod node_id;
 pub mod type_checker;
 pub mod type_resolver;
 pub mod typed_annotation;
@@ -55,24 +58,27 @@ pub mod typed_type_constraint;
 pub mod typed_use;
 pub mod wlib;
 
-pub struct Ast2HLIR;
+pub struct AstLowering;
 
-pub fn ast2hlir(s: SourceSet) -> TypedSourceSet {
-    let mut converter = Ast2HLIR::new();
-    converter.source_set(s)
+pub fn ast2hlir(s: SourceSet, module_id: TypedModuleId) -> TypedSourceSet {
+    let mut converter = AstLowering::new();
+    converter.source_set(s, module_id)
 }
 
-impl Ast2HLIR {
+impl AstLowering {
     pub fn new() -> Self {
         Self {}
     }
 
-    pub fn source_set(&mut self, s: SourceSet) -> TypedSourceSet {
+    pub fn source_set(&mut self, s: SourceSet, module_id: TypedModuleId) -> TypedSourceSet {
         match s {
             SourceSet::File(f) => TypedSourceSet::File(self.file(f)),
             SourceSet::Dir { name, items } => TypedSourceSet::Dir {
                 name,
-                items: items.into_iter().map(|i| self.source_set(i)).collect(),
+                items: items
+                    .into_iter()
+                    .map(|i| self.source_set(i, module_id))
+                    .collect(),
             },
         }
     }
@@ -214,7 +220,7 @@ impl Ast2HLIR {
         match a {
             ArgDef::Value(a) => TypedArgDef {
                 label: match a.label {
-                    None => a.name.token().clone(),
+                    None => a.name.token(),
                     Some(label) => label.token(),
                 },
                 name: a.name.token(),
@@ -301,7 +307,7 @@ impl Ast2HLIR {
                     )))),
                     constraints: v
                         .into_iter()
-                        .filter_map(|i| i)
+                        .flatten()
                         .map(|s| self.type_(s.constraint))
                         .collect(),
                 })
@@ -363,10 +369,10 @@ impl Ast2HLIR {
                 } = *n;
                 TypedType::Value(TypedValueType::Value(TypedNamedValueType {
                     package: TypedPackage::Raw(Package::from(
-                        name_space
-                            .into_iter()
+                        &name_space
+                            .iter()
                             .map(|i| i.simple_type.name.token())
-                            .collect::<Vec<String>>(),
+                            .collect::<Vec<_>>(),
                     )),
                     name: type_name.name.token(),
                     type_args: type_name.type_args.map(|v| {
@@ -668,9 +674,9 @@ impl Ast2HLIR {
             package: match name_space {
                 None => TypedPackage::Raw(Package::new()),
                 Some(name_space) => TypedPackage::Raw(Package::from(
-                    name_space
+                    &name_space
                         .elements
-                        .into_iter()
+                        .iter()
                         .map(|e| e.name.token())
                         .collect::<Vec<_>>(),
                 )),

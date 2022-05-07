@@ -11,12 +11,8 @@ pub struct MLBlock {
 
 impl MLBlock {
     pub fn r#type(&self) -> MLType {
-        if let Some(stmt) = self.body.last() {
-            if let MLStmt::Expr(expr) = stmt {
-                expr.type_()
-            } else {
-                MLType::Value(MLValueType::Primitive(MLPrimitiveType::Unit))
-            }
+        if let Some(MLStmt::Expr(expr)) = self.body.last() {
+            expr.type_()
         } else {
             MLType::Value(MLValueType::Primitive(MLPrimitiveType::Unit))
         }

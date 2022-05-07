@@ -54,8 +54,8 @@ impl<'ctx> MLContext<'ctx> {
         self.struct_environment.insert(s.name.clone(), s);
     }
 
-    pub fn get_struct(&self, name: &String) -> Option<MLStruct> {
-        self.struct_environment.get(name).cloned()
+    pub fn get_struct(&self, name: &String) -> Option<&MLStruct> {
+        self.struct_environment.get(name)
     }
 }
 
@@ -106,7 +106,7 @@ impl<'ctx> CodeGen<'ctx> {
         self.ml_context.local_environments.insert(name, value);
     }
 
-    fn get_struct_field_index_by_name(&self, m: MLType, n: String) -> Option<u32> {
+    fn get_struct_field_index_by_name(&self, m: &MLType, n: &str) -> Option<u32> {
         match m {
             MLType::Value(m) => match m {
                 MLValueType::Struct(type_name) => match self.ml_context.get_struct(&type_name) {
@@ -548,7 +548,7 @@ impl<'ctx> CodeGen<'ctx> {
 
     pub fn member(&mut self, m: MLMember) -> AnyValueEnum<'ctx> {
         let field_index = self
-            .get_struct_field_index_by_name(m.target.type_(), m.name)
+            .get_struct_field_index_by_name(&m.target.type_(), &m.name)
             .unwrap();
         let target = match self.expr(*m.target) {
             AnyValueEnum::PointerValue(p) => p,

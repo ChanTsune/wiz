@@ -1,5 +1,6 @@
 pub mod arena;
 pub mod context;
+mod declaration;
 pub mod error;
 mod name_environment;
 mod namespace;
@@ -47,7 +48,7 @@ impl<'s> TypeResolver<'s> {
 
     pub(crate) fn global_use<T: ToString>(&mut self, name_space: &[T]) {
         self.context
-            .global_use_name_space(name_space.into_iter().map(|n| n.to_string()).collect())
+            .global_use_name_space(name_space.iter().map(T::to_string).collect())
     }
 
     pub fn detect_type_from_source_set(&mut self, s: &TypedSourceSet) -> Result<()> {
@@ -57,8 +58,7 @@ impl<'s> TypeResolver<'s> {
                 self.context.push_name_space(name.clone());
                 items
                     .iter()
-                    .map(|i| self.detect_type_from_source_set(i))
-                    .collect::<Result<_>>()?;
+                    .try_for_each(|i| self.detect_type_from_source_set(i))?;
                 self.context.pop_name_space();
                 Ok(())
             }
@@ -67,35 +67,20 @@ impl<'s> TypeResolver<'s> {
 
     pub fn detect_type(&mut self, f: &TypedFile) -> Result<()> {
         self.context.push_name_space(f.name.clone());
-        let current_namespace = self.context.current_namespace.clone();
-        let ns = self.context.get_current_namespace_mut()?;
+        let current_namespace = &self.context.current_namespace;
         for d in f.body.iter() {
             match d {
                 TypedDecl::Struct(s) => {
-                    let self_type = TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-                        package: TypedPackage::Resolved(Package::from(current_namespace.clone())),
-                        name: s.name.clone(),
-                        type_args: None,
-                    }));
-                    ns.register_type(
-                        s.name.clone(),
-                        ResolverStruct::new(self_type.clone(), StructKind::Struct),
-                    );
-                    ns.register_value(s.name.clone(), TypedType::Type(Box::new(self_type)));
+                    self.context
+                        .arena
+                        .register_struct(current_namespace, &s.name);
                 }
                 TypedDecl::Class => {}
                 TypedDecl::Enum => {}
                 TypedDecl::Protocol(p) => {
-                    let self_type = TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-                        package: TypedPackage::Resolved(Package::from(current_namespace.clone())),
-                        name: p.name.clone(),
-                        type_args: None,
-                    }));
-                    ns.register_type(
-                        p.name.clone(),
-                        ResolverStruct::new(self_type.clone(), StructKind::Protocol),
-                    );
-                    ns.register_value(p.name.clone(), TypedType::Type(Box::new(self_type)));
+                    self.context
+                        .arena
+                        .register_protocol(current_namespace, &p.name);
                 }
                 _ => {}
             }
@@ -138,17 +123,20 @@ impl<'s> TypeResolver<'s> {
         match d {
             TypedDecl::Var(v) => {
                 let v = self.typed_var(v)?;
-                let namespace = self.context.get_current_namespace_mut()?;
-                namespace.register_value(
-                    v.name,
+                self.context.arena.register_value(
+                    &self.context.current_namespace,
+                    &v.name,
                     v.type_
                         .ok_or_else(|| ResolverError::from("Cannot resolve variable type"))?,
                 );
             }
             TypedDecl::Fun(f) => {
                 let fun = self.preload_fun(f)?;
-                let namespace = self.context.get_current_namespace_mut()?;
-                namespace.register_value(fun.name.clone(), fun.type_().unwrap());
+                self.context.arena.register_value(
+                    &self.context.current_namespace,
+                    &fun.name,
+                    fun.type_().unwrap(),
+                );
             }
             TypedDecl::Struct(s) => {
                 let _ = self.preload_struct(s)?;
@@ -166,7 +154,6 @@ impl<'s> TypeResolver<'s> {
     }
 
     pub fn preload_fun(&mut self, f: TypedFun) -> Result<TypedFun> {
-        let c_name_space = self.context.current_namespace.clone();
         self.context.push_local_stack();
         if let Some(type_params) = &f.type_params {
             for type_param in type_params {
@@ -189,14 +176,14 @@ impl<'s> TypeResolver<'s> {
             .map(|a| {
                 let a = self.typed_arg_def(a)?;
                 self.context
-                    .register_to_env(a.name.clone(), a.type_.clone());
+                    .register_to_env(a.name.clone(), (vec![], a.type_.clone()));
                 Ok(a)
             })
             .collect::<Result<Vec<_>>>()?;
         let return_type = self.typed_function_return_type(&f.name, &f.return_type, &f.body)?;
         let fun = TypedFun {
             annotations: f.annotations,
-            package: TypedPackage::Resolved(Package::from(c_name_space)),
+            package: TypedPackage::Resolved(Package::from(&self.context.current_namespace)),
             modifiers: f.modifiers,
             name: f.name,
             type_params: f.type_params,
@@ -220,37 +207,57 @@ impl<'s> TypeResolver<'s> {
             computed_properties,
             member_functions,
         } = s;
-        let current_namespace = self.context.current_namespace.clone();
-        let this_type = TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-            package: TypedPackage::Resolved(Package::from(current_namespace)),
-            name: name.clone(),
-            type_args: None,
-        }));
+        let rs = self
+            .context
+            .arena
+            .get_type(&self.context.current_namespace, &name)
+            .ok_or_else(|| {
+                ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
+            })?;
+        let this_type = rs.self_.clone();
         self.context.set_current_type(this_type.clone());
         for stored_property in stored_properties.into_iter() {
             let type_ = self.context.full_type_name(stored_property.type_)?;
-            let ns = self.context.get_current_namespace_mut()?;
-            let rs = ns.get_type_mut(&name).ok_or_else(|| {
-                ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
-            })?;
+            let rs = self
+                .context
+                .arena
+                .get_type_mut(&self.context.current_namespace, &name)
+                .ok_or_else(|| {
+                    ResolverError::from(format!(
+                        "Struct {:?} not exist. Maybe before preload",
+                        name
+                    ))
+                })?;
             rs.stored_properties.insert(stored_property.name, type_);
         }
         for computed_property in computed_properties.into_iter() {
             let type_ = self.context.full_type_name(computed_property.type_)?;
-            let ns = self.context.get_current_namespace_mut()?;
-            let rs = ns.get_type_mut(&name).ok_or_else(|| {
-                ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
-            })?;
+            let rs = self
+                .context
+                .arena
+                .get_type_mut(&self.context.current_namespace, &name)
+                .ok_or_else(|| {
+                    ResolverError::from(format!(
+                        "Struct {:?} not exist. Maybe before preload",
+                        name
+                    ))
+                })?;
             rs.computed_properties.insert(computed_property.name, type_);
         }
         for member_function in member_functions.into_iter() {
             let type_ = self
                 .context
                 .full_type_name(member_function.type_().unwrap())?;
-            let ns = self.context.get_current_namespace_mut()?;
-            let rs = ns.get_type_mut(&name).ok_or_else(|| {
-                ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
-            })?;
+            let rs = self
+                .context
+                .arena
+                .get_type_mut(&self.context.current_namespace, &name)
+                .ok_or_else(|| {
+                    ResolverError::from(format!(
+                        "Struct {:?} not exist. Maybe before preload",
+                        name
+                    ))
+                })?;
             rs.member_functions.insert(member_function.name, type_);
         }
         for ini in initializers.iter() {
@@ -260,10 +267,16 @@ impl<'s> TypeResolver<'s> {
                         arguments: ini.args.iter().map(|a| a.to_arg_type()).collect(),
                         return_type: this_type.clone(),
                     })))?;
-            let ns = self.context.get_current_namespace_mut()?;
-            let rs = ns.get_type_mut(&name).ok_or_else(|| {
-                ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
-            })?;
+            let rs = self
+                .context
+                .arena
+                .get_type_mut(&self.context.current_namespace, &name)
+                .ok_or_else(|| {
+                    ResolverError::from(format!(
+                        "Struct {:?} not exist. Maybe before preload",
+                        name
+                    ))
+                })?;
             rs.static_functions.insert(String::from("init"), type_);
         }
         self.context.clear_current_type();
@@ -283,30 +296,38 @@ impl<'s> TypeResolver<'s> {
         self.context.set_current_type(this_type.clone());
         for computed_property in computed_properties {
             let type_ = self.context.full_type_name(computed_property.type_)?;
-            let ns = self
+            let rs = self
                 .context
-                .get_namespace_mut(this_type.package().into_resolved().names)?;
-            let rs = ns.get_type_mut(&this_type.name()).ok_or_else(|| {
-                ResolverError::from(format!(
-                    "Struct {:?} not exist. Maybe before preload",
-                    this_type
-                ))
-            })?;
+                .arena
+                .get_type_mut(
+                    &this_type.package().into_resolved().names,
+                    &this_type.name(),
+                )
+                .ok_or_else(|| {
+                    ResolverError::from(format!(
+                        "Struct {:?} not exist. Maybe before preload",
+                        this_type
+                    ))
+                })?;
             rs.computed_properties.insert(computed_property.name, type_);
         }
         for member_function in member_functions {
             let type_ = self
                 .context
                 .full_type_name(member_function.type_().unwrap())?;
-            let ns = self
+            let rs = self
                 .context
-                .get_namespace_mut(this_type.package().into_resolved().names)?;
-            let rs = ns.get_type_mut(&this_type.name()).ok_or_else(|| {
-                ResolverError::from(format!(
-                    "Struct {:?} not exist. Maybe before preload",
-                    this_type
-                ))
-            })?;
+                .arena
+                .get_type_mut(
+                    &this_type.package().into_resolved().names,
+                    &this_type.name(),
+                )
+                .ok_or_else(|| {
+                    ResolverError::from(format!(
+                        "Struct {:?} not exist. Maybe before preload",
+                        this_type
+                    ))
+                })?;
             rs.member_functions.insert(member_function.name, type_);
         }
         self.context.clear_current_type();
@@ -322,29 +343,43 @@ impl<'s> TypeResolver<'s> {
             computed_properties,
             member_functions,
         } = p;
-        let current_namespace = self.context.current_namespace.clone();
-        let this_type = TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-            package: TypedPackage::Resolved(Package::from(current_namespace)),
-            name: name.clone(),
-            type_args: None,
-        }));
-        self.context.set_current_type(this_type.clone());
-        for computed_property in computed_properties.into_iter() {
-            let type_ = self.context.full_type_name(computed_property.type_)?;
-            let ns = self.context.get_current_namespace_mut()?;
-            let rs = ns.get_type_mut(&name).ok_or_else(|| {
+        let rs = self
+            .context
+            .arena
+            .get_type(&self.context.current_namespace, &name)
+            .ok_or_else(|| {
                 ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
             })?;
+        let this_type = rs.self_.clone();
+        self.context.set_current_type(this_type);
+        for computed_property in computed_properties.into_iter() {
+            let type_ = self.context.full_type_name(computed_property.type_)?;
+            let rs = self
+                .context
+                .arena
+                .get_type_mut(&self.context.current_namespace, &name)
+                .ok_or_else(|| {
+                    ResolverError::from(format!(
+                        "Struct {:?} not exist. Maybe before preload",
+                        name
+                    ))
+                })?;
             rs.computed_properties.insert(computed_property.name, type_);
         }
         for member_function in member_functions.into_iter() {
             let type_ = self
                 .context
                 .full_type_name(member_function.type_().unwrap())?;
-            let ns = self.context.get_current_namespace_mut()?;
-            let rs = ns.get_type_mut(&name).ok_or_else(|| {
-                ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
-            })?;
+            let rs = self
+                .context
+                .arena
+                .get_type_mut(&self.context.current_namespace, &name)
+                .ok_or_else(|| {
+                    ResolverError::from(format!(
+                        "Struct {:?} not exist. Maybe before preload",
+                        name
+                    ))
+                })?;
             rs.member_functions.insert(member_function.name, type_);
         }
         self.context.clear_current_type();
@@ -426,9 +461,12 @@ impl<'s> TypeResolver<'s> {
         };
         self.context.register_to_env(
             v.name.clone(),
-            v.type_
-                .clone()
-                .ok_or_else(|| ResolverError::from("Cannot resolve variable type"))?,
+            (
+                vec![],
+                v.type_
+                    .clone()
+                    .ok_or_else(|| ResolverError::from("Cannot resolve variable type"))?,
+            ),
         );
         Ok(v)
     }
@@ -468,7 +506,6 @@ impl<'s> TypeResolver<'s> {
     }
 
     pub fn typed_fun(&mut self, f: TypedFun) -> Result<TypedFun> {
-        let c_name_space = self.context.current_namespace.clone();
         self.context.push_local_stack();
         if let Some(type_params) = &f.type_params {
             for type_param in type_params {
@@ -500,14 +537,14 @@ impl<'s> TypeResolver<'s> {
             .map(|a| {
                 let a = self.typed_arg_def(a)?;
                 self.context
-                    .register_to_env(a.name.clone(), a.type_.clone());
+                    .register_to_env(a.name.clone(), (vec![], a.type_.clone()));
                 Ok(a)
             })
             .collect::<Result<Vec<_>>>()?;
         let return_type = self.typed_function_return_type(&f.name, &f.return_type, &f.body)?;
         let fun = TypedFun {
             annotations: f.annotations,
-            package: TypedPackage::Resolved(Package::from(c_name_space)),
+            package: TypedPackage::Resolved(Package::from(&self.context.current_namespace)),
             modifiers: f.modifiers,
             name: f.name,
             type_params: f.type_params,
@@ -522,13 +559,13 @@ impl<'s> TypeResolver<'s> {
             },
             return_type: Some(return_type),
         };
-        let fun_name = fun.name.clone();
-        let fun_type = fun.type_();
-        let result = Ok(fun);
         self.context.pop_local_stack();
-        let ns = self.context.get_current_namespace_mut()?;
-        ns.register_value(fun_name, fun_type.unwrap());
-        result
+        self.context.arena.register_value(
+            &self.context.current_namespace,
+            &fun.name,
+            fun.type_().unwrap(),
+        );
+        Ok(fun)
     }
 
     pub fn typed_struct(&mut self, s: TypedStruct) -> Result<TypedStruct> {
@@ -542,12 +579,12 @@ impl<'s> TypeResolver<'s> {
             computed_properties, // TODO
             member_functions,
         } = s;
-        let current_namespace = self.context.current_namespace.clone();
-        let this_type = TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-            package: TypedPackage::Resolved(Package::from(current_namespace)),
-            name: name.clone(),
-            type_args: None,
-        }));
+        let rs = self
+            .context
+            .arena
+            .get_type(&self.context.current_namespace, &name)
+            .unwrap();
+        let this_type = rs.self_.clone();
         self.context.set_current_type(this_type);
         let initializers = initializers
             .into_iter()
@@ -565,7 +602,7 @@ impl<'s> TypeResolver<'s> {
         self.context.clear_current_type();
         Ok(TypedStruct {
             annotations,
-            package: TypedPackage::Resolved(Package::from(self.context.current_namespace.clone())),
+            package: TypedPackage::Resolved(Package::from(&self.context.current_namespace)),
             name,
             type_params,
             initializers,
@@ -579,7 +616,8 @@ impl<'s> TypeResolver<'s> {
         self.context.push_local_stack();
 
         let self_type = self.context.resolve_current_type()?;
-        self.context.register_to_env("self".to_string(), self_type);
+        self.context
+            .register_to_env("self".to_string(), (vec![], self_type));
 
         let result = TypedInitializer {
             args: i
@@ -588,7 +626,7 @@ impl<'s> TypeResolver<'s> {
                 .map(|a| {
                     let a = self.typed_arg_def(a)?;
                     self.context
-                        .register_to_env(a.name.clone(), a.type_.clone());
+                        .register_to_env(a.name.clone(), (vec![], a.type_.clone()));
                     Ok(a)
                 })
                 .collect::<Result<Vec<_>>>()?,
@@ -614,7 +652,7 @@ impl<'s> TypeResolver<'s> {
             .map(|a| {
                 let a = self.typed_arg_def(a)?;
                 self.context
-                    .register_to_env(a.name.clone(), a.type_.clone());
+                    .register_to_env(a.name.clone(), (vec![], a.type_.clone()));
                 Ok(a)
             })
             .collect::<Result<Vec<_>>>()?;
@@ -662,16 +700,15 @@ impl<'s> TypeResolver<'s> {
     }
 
     fn typed_protocol(&mut self, p: TypedProtocol) -> Result<TypedProtocol> {
-        let current_namespace = self.context.current_namespace.clone();
-        let this_type = TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-            package: TypedPackage::Resolved(Package::from(current_namespace)),
-            name: p.name.clone(),
-            type_args: None,
-        }));
-        self.context.set_current_type(this_type.clone());
+        let rs = self
+            .context
+            .arena
+            .get_type(&self.context.current_namespace, &p.name)
+            .unwrap();
+        self.context.set_current_type(rs.self_.clone());
         let result = TypedProtocol {
             annotations: p.annotations,
-            package: TypedPackage::Resolved(Package::from(self.context.current_namespace.clone())),
+            package: TypedPackage::Resolved(Package::from(&self.context.current_namespace)),
             name: p.name,
             type_params: p.type_params, // TODO type params
             member_functions: p
@@ -746,7 +783,7 @@ impl<'s> TypeResolver<'s> {
             } else {
                 self.context.resolve_name_type(
                     n.package.into_raw().names,
-                    n.name.clone(),
+                    &n.name,
                     type_annotation,
                 )?
             }
@@ -1056,7 +1093,7 @@ impl<'s> TypeResolver<'s> {
                     arguments: args
                         .iter()
                         .map(|a| TypedArgType {
-                            label: a.label.clone().unwrap_or("_".to_string()),
+                            label: a.label.clone().unwrap_or_else(|| "_".to_string()),
                             typ: a.arg.type_().unwrap(),
                         })
                         .collect(),
