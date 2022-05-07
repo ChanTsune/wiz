@@ -123,43 +123,45 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
         ast2hlir.source_set(input_source, TypedModuleId::new(std_hlir.len()))
     });
 
-    println!("=== resolve type ===");
+    let (std_hlir, hlfiles, arena) = session.timer::<Result<_>, _>("resolve type", |session| {
+        let mut type_resolver = TypeResolver::new(session);
+        type_resolver.global_use(&["core", "builtin", "*"]);
+        type_resolver.global_use(&["std", "builtin", "*"]);
 
-    let mut type_resolver = TypeResolver::new(session);
-    type_resolver.global_use(&["core", "builtin", "*"]);
-    type_resolver.global_use(&["std", "builtin", "*"]);
+        println!("===== detect types =====");
+        // detect types
+        for s in std_hlir.iter() {
+            type_resolver.detect_type_from_source_set(s)?;
+        }
 
-    println!("===== detect types =====");
-    // detect types
-    for s in std_hlir.iter() {
-        type_resolver.detect_type_from_source_set(s)?;
-    }
+        type_resolver.detect_type_from_source_set(&hlfiles)?;
 
-    type_resolver.detect_type_from_source_set(&hlfiles)?;
+        println!("===== preload decls =====");
+        // preload decls
+        for hlir in std_hlir.iter() {
+            type_resolver.preload_source_set(hlir.clone())?;
+        }
 
-    println!("===== preload decls =====");
-    // preload decls
-    for hlir in std_hlir.iter() {
-        type_resolver.preload_source_set(hlir.clone())?;
-    }
+        println!("===== preload decls for input source =====");
 
-    println!("===== preload decls for input source =====");
+        type_resolver.preload_source_set(hlfiles.clone())?;
 
-    type_resolver.preload_source_set(hlfiles.clone())?;
+        println!("===== resolve types =====");
+        // resolve types
 
-    println!("===== resolve types =====");
-    // resolve types
+        let std_hlir: Vec<_> = std_hlir
+            .into_iter()
+            .map(|s| type_resolver.source_set(s))
+            .collect::<Result<_>>()?;
 
-    let std_hlir: Vec<_> = std_hlir
-        .into_iter()
-        .map(|s| type_resolver.source_set(s))
-        .collect::<Result<_>>()?;
+        println!("===== resolve types for input source =====");
 
-    println!("===== resolve types for input source =====");
+        let hlfiles = type_resolver.source_set(hlfiles)?;
 
-    let hlfiles = type_resolver.source_set(hlfiles)?;
+        Ok((std_hlir, hlfiles, type_resolver.context.arena))
+    })?;
 
-    let mut type_checker = TypeChecker::new(session, &type_resolver.context.arena());
+    let mut type_checker = TypeChecker::new(session, &arena);
 
     type_checker.verify(&hlfiles);
 
