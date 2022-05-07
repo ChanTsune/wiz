@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use wiz_mir::ml_decl::MLStruct;
 use wiz_mir::ml_type::MLValueType;
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub(crate) struct HLIR2MLIRContext {
     pub(crate) declaration_annotations: HashMap<String, TypedAnnotations>,
     pub(crate) structs: HashMap<MLValueType, MLStruct>,
