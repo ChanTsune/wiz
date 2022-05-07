@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedAnnotations {
     annotations: Vec<String>,
 }
@@ -13,15 +13,7 @@ impl TypedAnnotations {
 
 impl TypedAnnotations {
     pub(crate) fn new() -> Self {
-        Self {
-            annotations: vec![],
-        }
-    }
-}
-
-impl Default for TypedAnnotations {
-    fn default() -> Self {
-        Self::new()
+        Self::default()
     }
 }
 
