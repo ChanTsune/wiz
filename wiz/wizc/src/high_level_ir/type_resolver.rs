@@ -343,12 +343,14 @@ impl<'s> TypeResolver<'s> {
             computed_properties,
             member_functions,
         } = p;
-        let current_namespace = &self.context.current_namespace;
-        let this_type = TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-            package: TypedPackage::Resolved(Package::from(current_namespace)),
-            name: name.clone(),
-            type_args: None,
-        }));
+        let rs = self
+            .context
+            .arena
+            .get_type(&self.context.current_namespace, &name)
+            .ok_or_else(|| {
+                ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
+            })?;
+        let this_type = rs.self_.clone();
         self.context.set_current_type(this_type);
         for computed_property in computed_properties.into_iter() {
             let type_ = self.context.full_type_name(computed_property.type_)?;
