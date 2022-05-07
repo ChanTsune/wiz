@@ -24,7 +24,7 @@ pub struct ResolverStruct {
     pub(crate) member_functions: HashMap<String, TypedType>,
     pub(crate) static_functions: HashMap<String, TypedType>,
     pub(crate) conformed_protocols: HashSet<String>,
-    pub(crate) type_params: Option<HashMap<String, ResolverTypeParam>>,
+    pub(crate) type_parameters: Option<HashMap<String, ResolverTypeParam>>,
 }
 
 impl ResolverStruct {
@@ -39,7 +39,7 @@ impl ResolverStruct {
             member_functions: Default::default(),
             static_functions: Default::default(),
             conformed_protocols: Default::default(),
-            type_params: None, // TODO: fill type params
+            type_parameters: None, // TODO: fill type params
         }
     }
 
@@ -56,6 +56,6 @@ impl ResolverStruct {
     }
 
     pub fn is_generic(&self) -> bool {
-        self.type_params != None
+        self.type_parameters != None
     }
 }
