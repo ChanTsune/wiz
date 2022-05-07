@@ -54,8 +54,8 @@ impl<'ctx> MLContext<'ctx> {
         self.struct_environment.insert(s.name.clone(), s);
     }
 
-    pub fn get_struct(&self, name: &String) -> Option<MLStruct> {
-        self.struct_environment.get(name).cloned()
+    pub fn get_struct(&self, name: &String) -> Option<&MLStruct> {
+        self.struct_environment.get(name)
     }
 }
 
