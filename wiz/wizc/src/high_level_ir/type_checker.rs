@@ -215,7 +215,7 @@ impl<'s> TypeChecker<'s> {
     }
 
     fn name(&mut self, typed_name: &TypedName) {
-        if let None = typed_name.type_ {
+        if typed_name.type_.is_none() {
             self.session.emit_error(CheckerError::new(format!(
                 "Can not resolve name {:?}",
                 typed_name.name
@@ -286,7 +286,7 @@ impl<'s> TypeChecker<'s> {
                 }
             }
             TypedLiteral::NullLiteral { type_ } => {
-                if let None = type_ {
+                if type_.is_none() {
                     self.session.emit_error(CheckerError::new(format!(
                         "Can not resolve literal type of null"
                     )))
