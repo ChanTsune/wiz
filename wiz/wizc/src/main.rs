@@ -117,11 +117,11 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
         std_hlir
     })?;
 
-    println!("=== convert to hlir ===");
+    let hlfiles = session.timer("convert to hlir", |_| {
+        let mut ast2hlir = AstLowering::new();
 
-    let mut ast2hlir = AstLowering::new();
-
-    let hlfiles = ast2hlir.source_set(input_source, TypedModuleId::new(std_hlir.len()));
+        ast2hlir.source_set(input_source, TypedModuleId::new(std_hlir.len()))
+    });
 
     println!("=== resolve type ===");
 
