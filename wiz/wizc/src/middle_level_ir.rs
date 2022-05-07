@@ -86,9 +86,7 @@ impl<'arena> HLIR2MLIR<'arena> {
     fn load_dependencies_file(&mut self, f: &MLFile) -> Result<()> {
         f.body
             .iter()
-            .map(|d| self.load_dependencies_decl(d))
-            .collect::<Result<Vec<_>>>()?;
-        Ok(())
+            .try_for_each(|d| self.load_dependencies_decl(d))
     }
 
     fn load_dependencies_decl(&mut self, d: &MLDecl) -> Result<()> {
