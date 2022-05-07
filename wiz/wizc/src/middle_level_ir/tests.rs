@@ -20,14 +20,14 @@ fn check(source: &str, except: MLFile) {
     let mut file = ast2hlir.file(ast);
     file.name = String::from("test");
 
-    let session = Session::new();
+    let mut session = Session::new();
 
-    let mut resolver = TypeResolver::new(&session);
+    let mut resolver = TypeResolver::new(&mut session);
     let _ = resolver.detect_type(&file).unwrap();
     let _ = resolver.preload_file(file.clone()).unwrap();
     let hl_file = resolver.file(file).unwrap();
 
-    let mut hlir2mlir = HLIR2MLIR::new();
+    let mut hlir2mlir = HLIR2MLIR::new(resolver.context.arena());
 
     let f = hlir2mlir.convert_from_source_set(TypedSourceSet::File(hl_file));
 

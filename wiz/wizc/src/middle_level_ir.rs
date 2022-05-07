@@ -1,4 +1,5 @@
 use crate::constants;
+use crate::high_level_ir::type_resolver::arena::ResolverArena;
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedExtension, TypedFun, TypedFunBody, TypedMemberFunction,
@@ -37,12 +38,13 @@ mod tests;
 
 pub type Result<T> = result::Result<T, Box<dyn Error>>;
 
-pub fn hlir2mlir(
+pub fn hlir2mlir<'arena>(
     target: TypedSourceSet,
-    dependencies: &[MLFile],
+    dependencies: &'arena [MLFile],
     annotations: HashMap<String, TypedAnnotations>,
+    arena: &'arena ResolverArena,
 ) -> Result<(MLFile, HashMap<String, TypedAnnotations>)> {
-    let mut converter = HLIR2MLIR::new();
+    let mut converter = HLIR2MLIR::new(arena);
     converter.load_dependencies(dependencies)?;
     converter
         .context
@@ -54,15 +56,20 @@ pub fn hlir2mlir(
     ))
 }
 
-#[derive(Default)]
-pub struct HLIR2MLIR {
+#[derive(Debug)]
+pub struct HLIR2MLIR<'arena> {
+    arena: &'arena ResolverArena,
     context: HLIR2MLIRContext,
     module: MLIRModule,
 }
 
-impl HLIR2MLIR {
-    pub fn new() -> Self {
-        Self::default()
+impl<'arena> HLIR2MLIR<'arena> {
+    pub fn new(arena: &'arena ResolverArena) -> Self {
+        Self {
+            arena,
+            context: Default::default(),
+            module: Default::default(),
+        }
     }
 
     pub(crate) fn annotations(self) -> HashMap<String, TypedAnnotations> {

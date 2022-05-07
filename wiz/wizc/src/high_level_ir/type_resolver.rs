@@ -34,12 +34,12 @@ use wiz_session::Session;
 
 #[derive(Debug)]
 pub(crate) struct TypeResolver<'s> {
-    session: &'s Session,
+    session: &'s mut Session,
     pub(crate) context: ResolverContext,
 }
 
 impl<'s> TypeResolver<'s> {
-    pub fn new(session: &'s Session) -> Self {
+    pub fn new(session: &'s mut Session) -> Self {
         Self {
             session,
             context: ResolverContext::new(),

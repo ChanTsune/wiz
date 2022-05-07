@@ -29,9 +29,9 @@ fn check(source: &str, typed_file: TypedFile) {
     let mut file = ast2hlir.file(ast);
     file.name = typed_file.name.clone();
 
-    let session = Session::new();
+    let mut session = Session::new();
 
-    let mut resolver = TypeResolver::new(&session);
+    let mut resolver = TypeResolver::new(&mut session);
     let _ = resolver.detect_type(&file).unwrap();
     let _ = resolver.preload_file(file.clone()).unwrap();
     let f = resolver.file(file);
