@@ -160,10 +160,10 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
         Ok((std_hlir, hlfiles, type_resolver.context.arena))
     })?;
 
-    let mut type_checker = TypeChecker::new(session, &arena);
-
-    type_checker.verify(&hlfiles);
-
+    session.timer("type check", |session| {
+        let mut type_checker = TypeChecker::new(session, &arena);
+        type_checker.verify(&hlfiles);
+    });
     match build_type {
         BuildType::Library => {
             let wlib = WLib::new(hlfiles.clone());
