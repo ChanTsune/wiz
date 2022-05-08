@@ -285,17 +285,17 @@ impl<'arena> HLIR2MLIR<'arena> {
         } = d;
         match kind {
             TypedDeclKind::Var(v) => {
-                let v = self.global_var(v.clone(), &v.package);
+                let v = self.global_var(v.clone(), &package);
                 self.module.add_global_var(v);
             }
             TypedDeclKind::Fun(f) => {
                 if !f.is_generic() {
-                    let f = FunBuilder::from(self.fun(f, annotations, None));
+                    let f = FunBuilder::from(self.fun(f, annotations, package,None));
                     self.module._add_function(f);
                 }
             }
             TypedDeclKind::Struct(s) => {
-                let (st, fns) = self.struct_(s);
+                let (st, fns) = self.struct_(s, package);
                 self.module.add_struct(st);
                 for f in fns {
                     self.module._add_function(FunBuilder::from(f));
@@ -343,10 +343,10 @@ impl<'arena> HLIR2MLIR<'arena> {
         &mut self,
         f: TypedFun,
         annotations: TypedAnnotations,
+        package: TypedPackage,
         type_arguments: Option<HashMap<TypedTypeParam, TypedType>>,
     ) -> MLFun {
         let TypedFun {
-            package,
             name,
             type_params,
             type_constraints: _,
@@ -376,9 +376,8 @@ impl<'arena> HLIR2MLIR<'arena> {
         }
     }
 
-    fn struct_(&mut self, s: TypedStruct) -> (MLStruct, Vec<MLFun>) {
+    fn struct_(&mut self, s: TypedStruct, package: TypedPackage) -> (MLStruct, Vec<MLFun>) {
         let TypedStruct {
-            package,
             name,
             type_params,
             initializers,

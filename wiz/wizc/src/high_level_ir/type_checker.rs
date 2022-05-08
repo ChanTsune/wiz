@@ -13,6 +13,7 @@ use crate::high_level_ir::typed_expr::{
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
 use wiz_session::Session;
+use crate::high_level_ir::typed_type::TypedPackage;
 
 #[derive(Debug)]
 pub struct TypeChecker<'s> {
@@ -40,7 +41,7 @@ impl<'s> TypeChecker<'s> {
         match decl {
             TypedDeclKind::Var(v) => self.variable(v),
             TypedDeclKind::Fun(f) => self.function(f),
-            TypedDeclKind::Struct(s) => self.struct_(s),
+            TypedDeclKind::Struct(s) => self.struct_(s, package),
             TypedDeclKind::Class => todo!(),
             TypedDeclKind::Enum => todo!(),
             TypedDeclKind::Protocol(p) => self.protocol(p),
@@ -92,9 +93,9 @@ impl<'s> TypeChecker<'s> {
         }
     }
 
-    fn struct_(&mut self, typed_struct: &TypedStruct) {
+    fn struct_(&mut self, typed_struct: &TypedStruct, package: &TypedPackage) {
         let struct_info = self.arena.get_type(
-            &typed_struct.package.clone().into_resolved().names,
+            &package.clone().into_resolved().names,
             &typed_struct.name,
         );
 

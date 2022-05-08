@@ -28,7 +28,6 @@ pub enum TypedDeclKind {
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedVar {
-    pub(crate) package: TypedPackage,
     pub(crate) is_mut: bool,
     pub(crate) name: String,
     pub(crate) type_: Option<TypedType>,
@@ -37,7 +36,6 @@ pub struct TypedVar {
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedFun {
-    pub(crate) package: TypedPackage,
     pub(crate) name: String,
     pub(crate) type_params: Option<Vec<TypedTypeParam>>,
     pub(crate) type_constraints: Option<Vec<TypedTypeConstraint>>,
@@ -70,7 +68,6 @@ pub enum TypedFunBody {
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedStruct {
-    pub(crate) package: TypedPackage,
     pub(crate) name: String,
     pub(crate) type_params: Option<Vec<TypedTypeParam>>,
     pub(crate) initializers: Vec<TypedInitializer>,
@@ -116,7 +113,6 @@ pub struct TypedExtension {
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedProtocol {
-    pub(crate) package: TypedPackage,
     pub(crate) name: String,
     pub(crate) type_params: Option<Vec<TypedTypeParam>>,
     pub(crate) computed_properties: Vec<TypedComputedProperty>,

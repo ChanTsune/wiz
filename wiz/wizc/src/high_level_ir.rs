@@ -212,7 +212,6 @@ impl AstLowering {
     pub fn var_syntax(&self, v: VarSyntax) -> TypedVar {
         let expr = self.expr(v.value);
         TypedVar {
-            package: TypedPackage::Raw(Package::new()),
             is_mut: v.mutability_keyword.token() == "var",
             name: v.name.token(),
             type_: v.type_annotation.map(|t| self.type_(t.type_)),
@@ -321,7 +320,6 @@ impl AstLowering {
         let body = body.map(|b| self.fun_body(b));
 
         TypedFun {
-            package: TypedPackage::Raw(Package::new()),
             name: name.token(),
             type_params: type_params.map(|v| {
                 v.elements
@@ -422,7 +420,6 @@ impl AstLowering {
             };
         }
         TypedStruct {
-            package: TypedPackage::Raw(Package::new()),
             name: s.name.token(),
             type_params: s.type_params.map(|v| {
                 v.elements
@@ -590,7 +587,6 @@ impl AstLowering {
             };
         }
         TypedProtocol {
-            package: TypedPackage::Raw(Package::new()),
             name: p.name.token(),
             type_params: p.type_params.map(|v| {
                 v.elements

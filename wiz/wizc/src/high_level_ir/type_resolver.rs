@@ -183,7 +183,6 @@ impl<'s> TypeResolver<'s> {
             .collect::<Result<Vec<_>>>()?;
         let return_type = self.typed_function_return_type(&f.name, &f.return_type, &f.body)?;
         let fun = TypedFun {
-            package: TypedPackage::Resolved(Package::from(&self.context.current_namespace)),
             name: f.name,
             type_params: f.type_params,
             type_constraints: f.type_constraints,
@@ -197,7 +196,6 @@ impl<'s> TypeResolver<'s> {
 
     pub fn preload_struct(&mut self, s: TypedStruct) -> Result<()> {
         let TypedStruct {
-            package: _,
             name,
             type_params: _,
             initializers,
@@ -333,7 +331,6 @@ impl<'s> TypeResolver<'s> {
 
     pub fn preload_protocol(&mut self, p: TypedProtocol) -> Result<()> {
         let TypedProtocol {
-            package: _,
             name,
             type_params: _,
             computed_properties,
@@ -422,7 +419,7 @@ impl<'s> TypeResolver<'s> {
     pub fn decl(&mut self, d: TypedDecl) -> Result<TypedDecl> {
         Ok(TypedDecl {
             annotations: d.annotations,
-            package: d.package,
+            package: TypedPackage::Resolved(Package::from(&self.context.current_namespace)),
             modifiers: d.modifiers,
             kind: self.decl_kind(d.kind, true)?,
         })
@@ -442,7 +439,6 @@ impl<'s> TypeResolver<'s> {
 
     pub fn typed_var(&mut self, t: TypedVar, is_toplevel: bool) -> Result<TypedVar> {
         let TypedVar {
-            package,
             is_mut,
             name,
             type_,
@@ -456,11 +452,6 @@ impl<'s> TypeResolver<'s> {
             },
         )?;
         let v = TypedVar {
-            package: TypedPackage::Resolved(if is_toplevel {
-                Package::from(&self.context.current_namespace)
-            } else {
-                Package::new()
-            }),
             is_mut,
             name,
             type_: value.type_(),
@@ -552,7 +543,6 @@ impl<'s> TypeResolver<'s> {
             .collect::<Result<Vec<_>>>()?;
         let return_type = self.typed_function_return_type(&f.name, &f.return_type, &f.body)?;
         let fun = TypedFun {
-            package: TypedPackage::Resolved(Package::from(&self.context.current_namespace)),
             name: f.name,
             type_params: f.type_params,
             type_constraints: match f.type_constraints {
@@ -577,7 +567,6 @@ impl<'s> TypeResolver<'s> {
 
     pub fn typed_struct(&mut self, s: TypedStruct) -> Result<TypedStruct> {
         let TypedStruct {
-            package: _,
             name,
             type_params,
             initializers,
@@ -607,7 +596,6 @@ impl<'s> TypeResolver<'s> {
             .collect::<Result<Vec<_>>>()?;
         self.context.clear_current_type();
         Ok(TypedStruct {
-            package: TypedPackage::Resolved(Package::from(&self.context.current_namespace)),
             name,
             type_params,
             initializers,
@@ -711,7 +699,6 @@ impl<'s> TypeResolver<'s> {
             .unwrap();
         self.context.set_current_type(rs.self_.clone());
         let result = TypedProtocol {
-            package: TypedPackage::Resolved(Package::from(&self.context.current_namespace)),
             name: p.name,
             type_params: p.type_params, // TODO type params
             member_functions: p
@@ -719,7 +706,7 @@ impl<'s> TypeResolver<'s> {
                 .into_iter()
                 .map(|m| self.typed_member_function(m))
                 .collect::<Result<_>>()?,
-            computed_properties: vec![],
+            computed_properties: p.computed_properties,
         };
         self.context.clear_current_type();
         Ok(result)
