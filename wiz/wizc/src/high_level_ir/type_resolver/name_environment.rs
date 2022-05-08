@@ -26,7 +26,7 @@ impl<'a> NameEnvironment<'a> {
     pub(crate) fn use_asterisk<T: ToString>(&mut self, namespace: &[T]) -> Option<()> {
         let ns_id = self.arena.resolve_namespace_from_root(namespace)?;
         let ns = self.arena.get_by_id(&ns_id).unwrap();
-        let ns = if let DeclarationItemKind::Namespace(ns) = ns {
+        let ns = if let DeclarationItemKind::Namespace(ns) = &ns.kind {
             ns
         } else {
             panic!("{:?}", ns)
@@ -86,12 +86,12 @@ impl<'a> NameEnvironment<'a> {
                     let ids = ids.iter().collect::<Vec<_>>();
                     let items = self.arena.get_by_ids(&ids)?;
                     if !items.is_empty() {
-                        if let DeclarationItemKind::Type(t) = items.first().unwrap() {
+                        if let DeclarationItemKind::Type(t) = &items.first().unwrap().kind {
                             return Some(EnvValue::from(t.clone()));
                         } else {
                             let mut values = HashSet::new();
                             for item in items {
-                                if let DeclarationItemKind::Value(v) = item {
+                                if let DeclarationItemKind::Value(v) = &item.kind {
                                     values.insert(v.clone());
                                 } else {
                                     None?
@@ -110,7 +110,7 @@ impl<'a> NameEnvironment<'a> {
             let parent_id = ids.first()?;
             let id = self.arena.resolve_namespace(*parent_id, &namespace[1..])?;
             let item = self.arena.get_by_id(&id)?;
-            let child = match item {
+            let child = match &item.kind {
                 DeclarationItemKind::Namespace(ns) => ns.get_child(name),
                 DeclarationItemKind::Type(_) => panic!(),
                 DeclarationItemKind::Value(_) => panic!(),
@@ -118,12 +118,12 @@ impl<'a> NameEnvironment<'a> {
             let child = child.iter().collect::<Vec<_>>();
             let items = self.arena.get_by_ids(&child)?;
             if !items.is_empty() {
-                if let DeclarationItemKind::Type(t) = items.first().unwrap() {
+                if let DeclarationItemKind::Type(t) = &items.first().unwrap().kind {
                     return Some(EnvValue::from(t.clone()));
                 } else {
                     let mut values = HashSet::new();
                     for item in items {
-                        if let DeclarationItemKind::Value(v) = item {
+                        if let DeclarationItemKind::Value(v) = &item.kind {
                             values.insert(v.clone());
                         } else {
                             None?
