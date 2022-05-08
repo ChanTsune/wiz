@@ -1,7 +1,10 @@
 use crate::constants;
 use crate::high_level_ir::type_resolver::arena::ResolverArena;
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
-use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedMemberFunction, TypedProtocol, TypedStruct, TypedVar};
+use crate::high_level_ir::typed_decl::{
+    TypedArgDef, TypedDecl, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody,
+    TypedMemberFunction, TypedProtocol, TypedStruct, TypedVar,
+};
 use crate::high_level_ir::typed_expr::{
     TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
     TypedInstanceMember, TypedLiteral, TypedName, TypedPrefixUnaryOperator, TypedReturn,
@@ -275,7 +278,10 @@ impl<'arena> HLIR2MLIR<'arena> {
 
     fn decl(&mut self, d: TypedDecl) -> Result<()> {
         let TypedDecl {
-            annotations, package, modifiers, kind
+            annotations,
+            package,
+            modifiers,
+            kind,
         } = d;
         match kind {
             TypedDeclKind::Var(v) => {

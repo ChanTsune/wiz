@@ -1,6 +1,10 @@
 use crate::high_level_ir::node_id::TypedModuleId;
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
-use crate::high_level_ir::typed_decl::{TypedArgDef, TypedComputedProperty, TypedDecl, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedInitializer, TypedMemberFunction, TypedProtocol, TypedStoredProperty, TypedStruct, TypedVar};
+use crate::high_level_ir::typed_decl::{
+    TypedArgDef, TypedComputedProperty, TypedDecl, TypedDeclKind, TypedExtension, TypedFun,
+    TypedFunBody, TypedInitializer, TypedMemberFunction, TypedProtocol, TypedStoredProperty,
+    TypedStruct, TypedVar,
+};
 use crate::high_level_ir::typed_expr::{
     TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
     TypedInstanceMember, TypedLambda, TypedLiteral, TypedName, TypedPostfixUnaryOp,
@@ -182,7 +186,7 @@ impl AstLowering {
             annotations: Default::default(),
             package: TypedPackage::Raw(Package::new()),
             modifiers: vec![],
-            kind:         match d {
+            kind: match d {
                 DeclKind::Var(v) => TypedDeclKind::Var(self.var_syntax(v, annotation)),
                 DeclKind::Fun(f) => TypedDeclKind::Fun(self.fun_syntax(f, annotation)),
                 DeclKind::Struct(s) => match &*s.struct_keyword.token() {
@@ -203,7 +207,7 @@ impl AstLowering {
                     TypedDeclKind::Extension(self.extension_syntax(e, annotation))
                 }
                 DeclKind::Use(_) => unreachable!(),
-            }
+            },
         }
     }
 

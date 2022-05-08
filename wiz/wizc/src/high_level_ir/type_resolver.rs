@@ -11,7 +11,11 @@ mod tests;
 use crate::high_level_ir::type_resolver::context::{ResolverContext, ResolverStruct, StructKind};
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
-use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedInitializer, TypedMemberFunction, TypedProtocol, TypedStoredProperty, TypedStruct, TypedVar};
+use crate::high_level_ir::typed_decl::{
+    TypedArgDef, TypedDecl, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody,
+    TypedInitializer, TypedMemberFunction, TypedProtocol, TypedStoredProperty, TypedStruct,
+    TypedVar,
+};
 use crate::high_level_ir::typed_expr::{
     TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember,
     TypedLiteral, TypedName, TypedPostfixUnaryOp, TypedPrefixUnaryOp, TypedPrefixUnaryOperator,
@@ -425,11 +429,11 @@ impl<'s> TypeResolver<'s> {
             annotations: d.annotations,
             package: d.package,
             modifiers: d.modifiers,
-            kind: self.decl_kind(d.kind)?
+            kind: self.decl_kind(d.kind)?,
         })
     }
 
-    fn decl_kind(&mut self, d:TypedDeclKind) -> Result<TypedDeclKind> {
+    fn decl_kind(&mut self, d: TypedDeclKind) -> Result<TypedDeclKind> {
         Ok(match d {
             TypedDeclKind::Var(v) => TypedDeclKind::Var(self.typed_var(v)?),
             TypedDeclKind::Fun(f) => TypedDeclKind::Fun(self.typed_fun(f)?),
