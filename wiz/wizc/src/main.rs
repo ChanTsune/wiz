@@ -39,7 +39,7 @@ fn get_builtin_lib() -> &'static [&'static str] {
 }
 
 fn main() -> result::Result<(), Box<dyn Error>> {
-    println!("Args {:?}", env::args());
+    println!("{:?}", env::args());
     let app = wizc_cli::app("wizc");
     let matches = app.get_matches();
     let config = Config::from(&matches);
