@@ -1,7 +1,7 @@
 use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_decl::{
-    TypedArgDef, TypedDecl, TypedFun, TypedFunBody, TypedInitializer, TypedMemberFunction,
+    TypedArgDef, TypedDeclKind, TypedFun, TypedFunBody, TypedInitializer, TypedMemberFunction,
     TypedStoredProperty, TypedStruct, TypedVar,
 };
 use crate::high_level_ir::typed_expr::{
@@ -69,7 +69,7 @@ fn test_unsafe_pointer() {
             name: "test".to_string(),
             uses: vec![],
             body: vec![
-                TypedDecl::Struct(TypedStruct {
+                TypedDeclKind::Struct(TypedStruct {
                     annotations: TypedAnnotations::new(),
                     package: TypedPackage::Resolved(Package::from(&vec!["test"])),
                     name: "A".to_string(),
@@ -119,7 +119,7 @@ fn test_unsafe_pointer() {
                     computed_properties: vec![],
                     member_functions: vec![],
                 }),
-                TypedDecl::Fun(TypedFun {
+                TypedDeclKind::Fun(TypedFun {
                     annotations: TypedAnnotations::new(),
                     package: TypedPackage::Resolved(Package::from(&vec!["test"])),
                     modifiers: vec![],
@@ -136,7 +136,7 @@ fn test_unsafe_pointer() {
                         })),
                     }],
                     body: Option::Some(TypedFunBody::Block(TypedBlock {
-                        body: vec![TypedStmt::Decl(TypedDecl::Var(TypedVar {
+                        body: vec![TypedStmt::Decl(TypedDeclKind::Var(TypedVar {
                             annotations: TypedAnnotations::new(),
                             package: TypedPackage::Resolved(Package::new()),
                             is_mut: false,
@@ -187,7 +187,7 @@ fn test_struct_stored_property() {
             name: "test".to_string(),
             uses: vec![],
             body: vec![
-                TypedDecl::Struct(TypedStruct {
+                TypedDeclKind::Struct(TypedStruct {
                     annotations: TypedAnnotations::new(),
                     package: TypedPackage::Resolved(Package::from(&vec!["test"])),
                     name: "A".to_string(),
@@ -237,7 +237,7 @@ fn test_struct_stored_property() {
                     computed_properties: vec![],
                     member_functions: vec![],
                 }),
-                TypedDecl::Fun(TypedFun {
+                TypedDeclKind::Fun(TypedFun {
                     annotations: TypedAnnotations::new(),
                     package: TypedPackage::Resolved(Package::from(&vec!["test"])),
                     modifiers: vec![],
@@ -254,7 +254,7 @@ fn test_struct_stored_property() {
                         })),
                     }],
                     body: Option::Some(TypedFunBody::Block(TypedBlock {
-                        body: vec![TypedStmt::Decl(TypedDecl::Var(TypedVar {
+                        body: vec![TypedStmt::Decl(TypedDeclKind::Var(TypedVar {
                             annotations: TypedAnnotations::new(),
                             package: TypedPackage::Resolved(Package::new()),
                             is_mut: false,
@@ -305,7 +305,7 @@ fn test_struct_init() {
             name: "test".to_string(),
             uses: vec![],
             body: vec![
-                TypedDecl::Struct(TypedStruct {
+                TypedDeclKind::Struct(TypedStruct {
                     annotations: TypedAnnotations::new(),
                     package: TypedPackage::Resolved(Package::from(&vec!["test"])),
                     name: "A".to_string(),
@@ -355,7 +355,7 @@ fn test_struct_init() {
                     computed_properties: vec![],
                     member_functions: vec![],
                 }),
-                TypedDecl::Fun(TypedFun {
+                TypedDeclKind::Fun(TypedFun {
                     annotations: TypedAnnotations::new(),
                     package: TypedPackage::Resolved(Package::from(&vec!["test"])),
                     modifiers: vec![],
@@ -372,7 +372,7 @@ fn test_struct_init() {
                         })),
                     }],
                     body: Option::Some(TypedFunBody::Block(TypedBlock {
-                        body: vec![TypedStmt::Decl(TypedDecl::Var(TypedVar {
+                        body: vec![TypedStmt::Decl(TypedDeclKind::Var(TypedVar {
                             annotations: TypedAnnotations::new(),
                             package: TypedPackage::Resolved(Package::new()),
                             is_mut: false,
@@ -462,7 +462,7 @@ fn test_struct_member_function() {
         TypedFile {
             name: "test".to_string(),
             uses: vec![],
-            body: vec![TypedDecl::Struct(TypedStruct {
+            body: vec![TypedDeclKind::Struct(TypedStruct {
                 annotations: TypedAnnotations::new(),
                 package: TypedPackage::Resolved(Package::from(&vec!["test"])),
                 name: "A".to_string(),
@@ -577,7 +577,7 @@ fn test_struct_member_function_call() {
             name: "test".to_string(),
             uses: vec![],
             body: vec![
-                TypedDecl::Struct(TypedStruct {
+                TypedDeclKind::Struct(TypedStruct {
                     annotations: TypedAnnotations::new(),
                     package: TypedPackage::Resolved(Package::from(&vec!["test"])),
                     name: "A".to_string(),
@@ -666,7 +666,7 @@ fn test_struct_member_function_call() {
                         return_type: Some(TypedType::int64()),
                     }],
                 }),
-                TypedDecl::Fun(TypedFun {
+                TypedDeclKind::Fun(TypedFun {
                     annotations: TypedAnnotations::new(),
                     package: TypedPackage::Resolved(Package::from(&vec!["test"])),
                     modifiers: vec![],
@@ -739,7 +739,7 @@ fn test_expr_function_with_no_arg() {
         TypedFile {
             name: "test".to_string(),
             uses: vec![],
-            body: vec![TypedDecl::Fun(TypedFun {
+            body: vec![TypedDeclKind::Fun(TypedFun {
                 annotations: TypedAnnotations::new(),
                 package: TypedPackage::Resolved(Package::from(&vec!["test"])),
                 modifiers: vec![],
@@ -770,7 +770,7 @@ fn test_expr_function_with_arg() {
         TypedFile {
             name: "test".to_string(),
             uses: vec![],
-            body: vec![TypedDecl::Fun(TypedFun {
+            body: vec![TypedDeclKind::Fun(TypedFun {
                 annotations: TypedAnnotations::new(),
                 package: TypedPackage::Resolved(Package::from(&vec!["test"])),
                 modifiers: vec![],
@@ -809,7 +809,7 @@ fn test_function_call() {
             name: "test".to_string(),
             uses: vec![],
             body: vec![
-                TypedDecl::Fun(TypedFun {
+                TypedDeclKind::Fun(TypedFun {
                     annotations: TypedAnnotations::new(),
                     package: TypedPackage::Resolved(Package::from(&vec!["test"])),
                     modifiers: vec![],
@@ -825,7 +825,7 @@ fn test_function_call() {
                     ))),
                     return_type: Some(TypedType::int64()),
                 }),
-                TypedDecl::Fun(TypedFun {
+                TypedDeclKind::Fun(TypedFun {
                     annotations: TypedAnnotations::new(),
                     package: TypedPackage::Resolved(Package::from(&vec!["test"])),
                     modifiers: vec![],
@@ -868,7 +868,7 @@ fn test_return_integer_literal() {
         TypedFile {
             name: "test".to_string(),
             uses: vec![],
-            body: vec![TypedDecl::Fun(TypedFun {
+            body: vec![TypedDeclKind::Fun(TypedFun {
                 annotations: TypedAnnotations::new(),
                 package: TypedPackage::Resolved(Package::from(&vec!["test"])),
                 modifiers: vec![],
@@ -903,7 +903,7 @@ fn test_return_floating_point_literal() {
         TypedFile {
             name: "test".to_string(),
             uses: vec![],
-            body: vec![TypedDecl::Fun(TypedFun {
+            body: vec![TypedDeclKind::Fun(TypedFun {
                 annotations: TypedAnnotations::new(),
                 package: TypedPackage::Resolved(Package::from(&vec!["test"])),
                 modifiers: vec![],
@@ -940,7 +940,7 @@ fn test_binop() {
         TypedFile {
             name: "test".to_string(),
             uses: vec![],
-            body: vec![TypedDecl::Fun(TypedFun {
+            body: vec![TypedDeclKind::Fun(TypedFun {
                 annotations: TypedAnnotations::new(),
                 package: TypedPackage::Resolved(Package::from(&vec!["test"])),
                 modifiers: vec![],
@@ -979,7 +979,7 @@ fn test_subscript() {
         TypedFile {
             name: "test".to_string(),
             uses: vec![],
-            body: vec![TypedDecl::Fun(TypedFun {
+            body: vec![TypedDeclKind::Fun(TypedFun {
                 annotations: TypedAnnotations::new(),
                 package: TypedPackage::Resolved(Package::from(&vec!["test"])),
                 modifiers: vec![],
@@ -1023,7 +1023,7 @@ fn test_if_else() {
         TypedFile {
             name: "test".to_string(),
             uses: vec![],
-            body: vec![TypedDecl::Fun(TypedFun {
+            body: vec![TypedDeclKind::Fun(TypedFun {
                 annotations: TypedAnnotations::new(),
                 package: TypedPackage::Resolved(Package::from(&vec!["test"])),
                 modifiers: vec![],
@@ -1093,7 +1093,7 @@ fn test_if() {
         TypedFile {
             name: "test".to_string(),
             uses: vec![],
-            body: vec![TypedDecl::Fun(TypedFun {
+            body: vec![TypedDeclKind::Fun(TypedFun {
                 annotations: TypedAnnotations::new(),
                 package: TypedPackage::Resolved(Package::from(&vec!["test"])),
                 modifiers: vec![],
@@ -1122,7 +1122,7 @@ fn test_if() {
                             type_: Some(TypedType::bool()),
                         })),
                         body: TypedBlock {
-                            body: vec![TypedStmt::Decl(TypedDecl::Var(TypedVar {
+                            body: vec![TypedStmt::Decl(TypedDeclKind::Var(TypedVar {
                                 annotations: TypedAnnotations::new(),
                                 package: TypedPackage::Resolved(Package::new()),
                                 is_mut: false,
@@ -1158,7 +1158,7 @@ fn test_reference_dereference() {
         TypedFile {
             name: "test".to_string(),
             uses: vec![],
-            body: vec![TypedDecl::Fun(TypedFun {
+            body: vec![TypedDeclKind::Fun(TypedFun {
                 annotations: Default::default(),
                 package: TypedPackage::Resolved(Package::from(&vec!["test"])),
                 modifiers: vec![],
@@ -1168,7 +1168,7 @@ fn test_reference_dereference() {
                 arg_defs: vec![],
                 body: Some(TypedFunBody::Block(TypedBlock {
                     body: vec![
-                        TypedStmt::Decl(TypedDecl::Var(TypedVar {
+                        TypedStmt::Decl(TypedDeclKind::Var(TypedVar {
                             annotations: Default::default(),
                             package: TypedPackage::Resolved(Package::new()),
                             is_mut: false,
@@ -1179,7 +1179,7 @@ fn test_reference_dereference() {
                                 type_: Some(TypedType::int64()),
                             }),
                         })),
-                        TypedStmt::Decl(TypedDecl::Var(TypedVar {
+                        TypedStmt::Decl(TypedDeclKind::Var(TypedVar {
                             annotations: Default::default(),
                             package: TypedPackage::Resolved(Package::new()),
                             is_mut: false,
@@ -1200,7 +1200,7 @@ fn test_reference_dereference() {
                                 )))),
                             })),
                         })),
-                        TypedStmt::Decl(TypedDecl::Var(TypedVar {
+                        TypedStmt::Decl(TypedDeclKind::Var(TypedVar {
                             annotations: Default::default(),
                             package: TypedPackage::Resolved(Package::new()),
                             is_mut: false,
@@ -1237,7 +1237,7 @@ fn test_toplevel_var() {
         TypedFile {
             name: "tests".to_string(),
             uses: vec![],
-            body: vec![TypedDecl::Var(TypedVar {
+            body: vec![TypedDeclKind::Var(TypedVar {
                 annotations: Default::default(),
                 package: TypedPackage::Resolved(Package::global()),
                 is_mut: false,
@@ -1269,7 +1269,7 @@ fn test_function_overload_by_arguments() {
             name: "test".to_string(),
             uses: vec![],
             body: vec![
-                TypedDecl::Fun(TypedFun {
+                TypedDeclKind::Fun(TypedFun {
                     annotations: TypedAnnotations::new(),
                     package: TypedPackage::Resolved(Package::from(&vec!["test"])),
                     modifiers: vec![],
@@ -1284,7 +1284,7 @@ fn test_function_overload_by_arguments() {
                     body: Option::from(TypedFunBody::Block(TypedBlock { body: vec![] })),
                     return_type: Some(TypedType::unit()),
                 }),
-                TypedDecl::Fun(TypedFun {
+                TypedDeclKind::Fun(TypedFun {
                     annotations: TypedAnnotations::new(),
                     package: TypedPackage::Resolved(Package::from(&vec!["test"])),
                     modifiers: vec![],
@@ -1299,7 +1299,7 @@ fn test_function_overload_by_arguments() {
                     body: Option::from(TypedFunBody::Block(TypedBlock { body: vec![] })),
                     return_type: Some(TypedType::unit()),
                 }),
-                TypedDecl::Fun(TypedFun {
+                TypedDeclKind::Fun(TypedFun {
                     annotations: TypedAnnotations::new(),
                     package: TypedPackage::Resolved(Package::from(&vec!["test"])),
                     modifiers: vec![],

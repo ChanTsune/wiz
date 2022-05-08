@@ -1,4 +1,4 @@
-use crate::high_level_ir::typed_decl::TypedDecl;
+use crate::high_level_ir::typed_decl::TypedDeclKind;
 use crate::high_level_ir::typed_expr::TypedExpr;
 use crate::high_level_ir::typed_type::TypedType;
 use serde::{Deserialize, Serialize};
@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub enum TypedStmt {
     Expr(TypedExpr),
-    Decl(TypedDecl),
+    Decl(TypedDeclKind),
     Assignment(TypedAssignmentStmt),
     Loop(TypedLoopStmt),
 }

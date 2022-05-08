@@ -12,7 +12,7 @@ use crate::high_level_ir::type_resolver::context::{ResolverContext, ResolverStru
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_decl::{
-    TypedArgDef, TypedDecl, TypedExtension, TypedFun, TypedFunBody, TypedInitializer,
+    TypedArgDef, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedInitializer,
     TypedMemberFunction, TypedProtocol, TypedStoredProperty, TypedStruct, TypedVar,
 };
 use crate::high_level_ir::typed_expr::{
@@ -70,14 +70,14 @@ impl<'s> TypeResolver<'s> {
         let current_namespace = &self.context.current_namespace;
         for d in f.body.iter() {
             match d {
-                TypedDecl::Struct(s) => {
+                TypedDeclKind::Struct(s) => {
                     self.context
                         .arena
                         .register_struct(current_namespace, &s.name);
                 }
-                TypedDecl::Class => {}
-                TypedDecl::Enum => {}
-                TypedDecl::Protocol(p) => {
+                TypedDeclKind::Class => {}
+                TypedDeclKind::Enum => {}
+                TypedDeclKind::Protocol(p) => {
                     self.context
                         .arena
                         .register_protocol(current_namespace, &p.name);
@@ -119,9 +119,9 @@ impl<'s> TypeResolver<'s> {
         Ok(())
     }
 
-    fn preload_decl(&mut self, d: TypedDecl) -> Result<()> {
+    fn preload_decl(&mut self, d: TypedDeclKind) -> Result<()> {
         match d {
-            TypedDecl::Var(v) => {
+            TypedDeclKind::Var(v) => {
                 let v = self.typed_var(v)?;
                 self.context.arena.register_value(
                     &self.context.current_namespace,
@@ -130,7 +130,7 @@ impl<'s> TypeResolver<'s> {
                         .ok_or_else(|| ResolverError::from("Cannot resolve variable type"))?,
                 );
             }
-            TypedDecl::Fun(f) => {
+            TypedDeclKind::Fun(f) => {
                 let fun = self.preload_fun(f)?;
                 self.context.arena.register_value(
                     &self.context.current_namespace,
@@ -138,15 +138,15 @@ impl<'s> TypeResolver<'s> {
                     fun.type_().unwrap(),
                 );
             }
-            TypedDecl::Struct(s) => {
+            TypedDeclKind::Struct(s) => {
                 let _ = self.preload_struct(s)?;
             }
-            TypedDecl::Class => todo!(),
-            TypedDecl::Enum => todo!(),
-            TypedDecl::Protocol(p) => {
+            TypedDeclKind::Class => todo!(),
+            TypedDeclKind::Enum => todo!(),
+            TypedDeclKind::Protocol(p) => {
                 let _ = self.preload_protocol(p)?;
             }
-            TypedDecl::Extension(e) => {
+            TypedDeclKind::Extension(e) => {
                 let _ = self.preload_extension(e)?;
             }
         }
@@ -414,7 +414,7 @@ impl<'s> TypeResolver<'s> {
                 .body
                 .into_iter()
                 .map(|s| self.decl(s))
-                .collect::<Result<Vec<TypedDecl>>>()?,
+                .collect::<Result<Vec<TypedDeclKind>>>()?,
         });
         for u in f.uses.into_iter() {
             self.context.unuse_name_space(u.package.names);
@@ -423,15 +423,15 @@ impl<'s> TypeResolver<'s> {
         result
     }
 
-    pub fn decl(&mut self, d: TypedDecl) -> Result<TypedDecl> {
+    pub fn decl(&mut self, d: TypedDeclKind) -> Result<TypedDeclKind> {
         Ok(match d {
-            TypedDecl::Var(v) => TypedDecl::Var(self.typed_var(v)?),
-            TypedDecl::Fun(f) => TypedDecl::Fun(self.typed_fun(f)?),
-            TypedDecl::Struct(s) => TypedDecl::Struct(self.typed_struct(s)?),
-            TypedDecl::Class => TypedDecl::Class,
-            TypedDecl::Enum => TypedDecl::Enum,
-            TypedDecl::Protocol(p) => TypedDecl::Protocol(self.typed_protocol(p)?),
-            TypedDecl::Extension(e) => TypedDecl::Extension(self.typed_extension(e)?),
+            TypedDeclKind::Var(v) => TypedDeclKind::Var(self.typed_var(v)?),
+            TypedDeclKind::Fun(f) => TypedDeclKind::Fun(self.typed_fun(f)?),
+            TypedDeclKind::Struct(s) => TypedDeclKind::Struct(self.typed_struct(s)?),
+            TypedDeclKind::Class => TypedDeclKind::Class,
+            TypedDeclKind::Enum => TypedDeclKind::Enum,
+            TypedDeclKind::Protocol(p) => TypedDeclKind::Protocol(self.typed_protocol(p)?),
+            TypedDeclKind::Extension(e) => TypedDeclKind::Extension(self.typed_extension(e)?),
         })
     }
 

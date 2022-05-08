@@ -1,4 +1,4 @@
-use crate::high_level_ir::typed_decl::TypedDecl;
+use crate::high_level_ir::typed_decl::TypedDeclKind;
 use crate::high_level_ir::typed_use::TypedUse;
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
@@ -37,7 +37,7 @@ impl PartialOrd for TypedSourceSet {
 pub struct TypedFile {
     pub(crate) name: String,
     pub(crate) uses: Vec<TypedUse>,
-    pub(crate) body: Vec<TypedDecl>,
+    pub(crate) body: Vec<TypedDeclKind>,
 }
 
 impl Ord for TypedFile {

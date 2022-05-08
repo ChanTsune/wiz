@@ -1,7 +1,7 @@
 use crate::high_level_ir::node_id::TypedModuleId;
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_decl::{
-    TypedArgDef, TypedComputedProperty, TypedDecl, TypedExtension, TypedFun, TypedFunBody,
+    TypedArgDef, TypedComputedProperty, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody,
     TypedInitializer, TypedMemberFunction, TypedProtocol, TypedStoredProperty, TypedStruct,
     TypedVar,
 };
@@ -106,7 +106,7 @@ impl AstLowering {
         }
     }
 
-    pub fn file_syntax(&mut self, f: FileSyntax) -> Vec<TypedDecl> {
+    pub fn file_syntax(&mut self, f: FileSyntax) -> Vec<TypedDeclKind> {
         f.body
             .into_iter()
             .map(|d| self.decl(d.kind, d.annotations))
@@ -181,25 +181,25 @@ impl AstLowering {
         }
     }
 
-    pub fn decl(&self, d: DeclKind, annotation: Option<AnnotationsSyntax>) -> TypedDecl {
+    pub fn decl(&self, d: DeclKind, annotation: Option<AnnotationsSyntax>) -> TypedDeclKind {
         match d {
-            DeclKind::Var(v) => TypedDecl::Var(self.var_syntax(v, annotation)),
-            DeclKind::Fun(f) => TypedDecl::Fun(self.fun_syntax(f, annotation)),
+            DeclKind::Var(v) => TypedDeclKind::Var(self.var_syntax(v, annotation)),
+            DeclKind::Fun(f) => TypedDeclKind::Fun(self.fun_syntax(f, annotation)),
             DeclKind::Struct(s) => match &*s.struct_keyword.token() {
                 "struct" => {
                     let struct_ = self.struct_syntax(s, annotation);
                     let struct_ = self.default_init_if_needed(struct_);
-                    TypedDecl::Struct(struct_)
+                    TypedDeclKind::Struct(struct_)
                 }
                 "protocol" => {
                     let protocol = self.protocol_syntax(s, annotation);
-                    TypedDecl::Protocol(protocol)
+                    TypedDeclKind::Protocol(protocol)
                 }
                 kw => panic!("Unknown keyword `{}`", kw),
             },
-            DeclKind::ExternC { .. } => TypedDecl::Class,
-            DeclKind::Enum { .. } => TypedDecl::Enum,
-            DeclKind::Extension(e) => TypedDecl::Extension(self.extension_syntax(e, annotation)),
+            DeclKind::ExternC { .. } => TypedDeclKind::Class,
+            DeclKind::Enum { .. } => TypedDeclKind::Enum,
+            DeclKind::Extension(e) => TypedDeclKind::Extension(self.extension_syntax(e, annotation)),
             DeclKind::Use(_) => unreachable!(),
         }
     }

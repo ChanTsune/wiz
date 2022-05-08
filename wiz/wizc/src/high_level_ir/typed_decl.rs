@@ -8,7 +8,7 @@ use crate::high_level_ir::typed_type_constraint::TypedTypeConstraint;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
-pub enum TypedDecl {
+pub enum TypedDeclKind {
     Var(TypedVar),
     Fun(TypedFun),
     Struct(TypedStruct),

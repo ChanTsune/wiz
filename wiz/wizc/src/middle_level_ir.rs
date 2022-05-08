@@ -2,7 +2,7 @@ use crate::constants;
 use crate::high_level_ir::type_resolver::arena::ResolverArena;
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_decl::{
-    TypedArgDef, TypedDecl, TypedExtension, TypedFun, TypedFunBody, TypedMemberFunction,
+    TypedArgDef, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedMemberFunction,
     TypedProtocol, TypedStruct, TypedVar,
 };
 use crate::high_level_ir::typed_expr::{
@@ -220,19 +220,19 @@ impl<'arena> HLIR2MLIR<'arena> {
         match s {
             TypedStmt::Expr(e) => vec![MLStmt::Expr(self.expr(e))],
             TypedStmt::Decl(d) => match d {
-                TypedDecl::Var(v) => {
+                TypedDeclKind::Var(v) => {
                     vec![MLStmt::Var(self.var(v))]
                 }
-                TypedDecl::Fun(_) => todo!("local function"),
-                TypedDecl::Struct(_) => todo!("local struct"),
-                TypedDecl::Class => {
+                TypedDeclKind::Fun(_) => todo!("local function"),
+                TypedDeclKind::Struct(_) => todo!("local struct"),
+                TypedDeclKind::Class => {
                     todo!()
                 }
-                TypedDecl::Enum => {
+                TypedDeclKind::Enum => {
                     todo!()
                 }
-                TypedDecl::Protocol(_) => todo!("local protocol"),
-                TypedDecl::Extension(_) => todo!("local extension"),
+                TypedDeclKind::Protocol(_) => todo!("local protocol"),
+                TypedDeclKind::Extension(_) => todo!("local extension"),
             },
             TypedStmt::Assignment(a) => vec![MLStmt::Assignment(self.assignment(a))],
             TypedStmt::Loop(l) => vec![MLStmt::Loop(self.loop_stmt(l))],
@@ -277,34 +277,34 @@ impl<'arena> HLIR2MLIR<'arena> {
         }
     }
 
-    fn decl(&mut self, d: TypedDecl) -> Result<()> {
+    fn decl(&mut self, d: TypedDeclKind) -> Result<()> {
         match d {
-            TypedDecl::Var(v) => {
+            TypedDeclKind::Var(v) => {
                 let v = self.var(v);
                 self.module.add_global_var(v);
             }
-            TypedDecl::Fun(f) => {
+            TypedDeclKind::Fun(f) => {
                 if !f.is_generic() {
                     let f = FunBuilder::from(self.fun(f, None));
                     self.module._add_function(f);
                 }
             }
-            TypedDecl::Struct(s) => {
+            TypedDeclKind::Struct(s) => {
                 let (st, fns) = self.struct_(s);
                 self.module.add_struct(st);
                 for f in fns {
                     self.module._add_function(FunBuilder::from(f));
                 }
             }
-            TypedDecl::Class => todo!(),
-            TypedDecl::Enum => todo!(),
-            TypedDecl::Protocol(p) => {
+            TypedDeclKind::Class => todo!(),
+            TypedDeclKind::Enum => todo!(),
+            TypedDeclKind::Protocol(p) => {
                 let functions = self.protocol(p);
                 for f in functions {
                     self.module._add_function(FunBuilder::from(f));
                 }
             }
-            TypedDecl::Extension(e) => {
+            TypedDeclKind::Extension(e) => {
                 let functions = self.extension(e);
                 for f in functions {
                     self.module._add_function(FunBuilder::from(f));
