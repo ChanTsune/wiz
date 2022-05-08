@@ -38,7 +38,6 @@ pub struct TypedVar {
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedFun {
     pub(crate) package: TypedPackage,
-    pub(crate) modifiers: Vec<String>,
     pub(crate) name: String,
     pub(crate) type_params: Option<Vec<TypedTypeParam>>,
     pub(crate) type_constraints: Option<Vec<TypedTypeConstraint>>,

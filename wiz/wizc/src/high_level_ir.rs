@@ -322,7 +322,6 @@ impl AstLowering {
 
         TypedFun {
             package: TypedPackage::Raw(Package::new()),
-            modifiers: vec![],
             name: name.token(),
             type_params: type_params.map(|v| {
                 v.elements

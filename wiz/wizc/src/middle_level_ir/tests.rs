@@ -67,7 +67,6 @@ fn test_struct() {
                     }],
                 }),
                 MLDecl::Fun(MLFun {
-                    modifiers: vec![],
                     name: "test::A::init##a#Int64".to_string(),
                     arg_defs: vec![MLArgDef {
                         name: "a".to_string(),
@@ -77,7 +76,6 @@ fn test_struct() {
                     body: None,
                 }),
                 MLDecl::Fun(MLFun {
-                    modifiers: vec![],
                     name: "test::A::init##a#Int64".to_string(),
                     arg_defs: vec![MLArgDef {
                         name: "a".to_string(),
@@ -154,7 +152,6 @@ fn test_struct_init() {
                     }],
                 }),
                 MLDecl::Fun(MLFun {
-                    modifiers: vec![],
                     name: "test::A::init##a#Int64".to_string(),
                     arg_defs: vec![MLArgDef {
                         name: "a".to_string(),
@@ -164,14 +161,12 @@ fn test_struct_init() {
                     body: None,
                 }),
                 MLDecl::Fun(MLFun {
-                    modifiers: vec![],
                     name: "test::initA".to_string(),
                     arg_defs: vec![],
                     return_type: MLValueType::Struct(String::from("test::A")),
                     body: None,
                 }),
                 MLDecl::Fun(MLFun {
-                    modifiers: vec![],
                     name: "test::A::init##a#Int64".to_string(),
                     arg_defs: vec![MLArgDef {
                         name: "a".to_string(),
@@ -220,7 +215,6 @@ fn test_struct_init() {
                     }),
                 }),
                 MLDecl::Fun(MLFun {
-                    modifiers: vec![],
                     name: "test::initA".to_string(),
                     arg_defs: vec![],
                     return_type: MLValueType::Struct(String::from("test::A")),
@@ -284,7 +278,6 @@ fn test_method_call() {
                     }],
                 }),
                 MLDecl::Fun(MLFun {
-                    modifiers: vec![],
                     name: "test::A::init##a#Int64".to_string(),
                     arg_defs: vec![MLArgDef {
                         name: "a".to_string(),
@@ -294,7 +287,6 @@ fn test_method_call() {
                     body: None,
                 }),
                 MLDecl::Fun(MLFun {
-                    modifiers: vec![],
                     name: "test::A::b##_#test::A".to_string(),
                     arg_defs: vec![MLArgDef {
                         name: "self".to_string(),
@@ -304,7 +296,6 @@ fn test_method_call() {
                     body: None,
                 }),
                 MLDecl::Fun(MLFun {
-                    modifiers: vec![],
                     name: "test::A::c##_#test::A".to_string(),
                     arg_defs: vec![MLArgDef {
                         name: "self".to_string(),
@@ -314,14 +305,12 @@ fn test_method_call() {
                     body: None,
                 }),
                 MLDecl::Fun(MLFun {
-                    modifiers: vec![],
                     name: "test::sample".to_string(),
                     arg_defs: vec![],
                     return_type: MLValueType::Primitive(MLPrimitiveType::Unit),
                     body: None,
                 }),
                 MLDecl::Fun(MLFun {
-                    modifiers: vec![],
                     name: "test::A::init##a#Int64".to_string(),
                     arg_defs: vec![MLArgDef {
                         name: "a".to_string(),
@@ -370,7 +359,6 @@ fn test_method_call() {
                     }),
                 }),
                 MLDecl::Fun(MLFun {
-                    modifiers: vec![],
                     name: "test::A::b##_#test::A".to_string(),
                     arg_defs: vec![MLArgDef {
                         name: "self".to_string(),
@@ -387,7 +375,6 @@ fn test_method_call() {
                     }),
                 }),
                 MLDecl::Fun(MLFun {
-                    modifiers: vec![],
                     name: "test::A::c##_#test::A".to_string(),
                     arg_defs: vec![MLArgDef {
                         name: "self".to_string(),
@@ -418,7 +405,6 @@ fn test_method_call() {
                     }),
                 }),
                 MLDecl::Fun(MLFun {
-                    modifiers: vec![],
                     name: "test::sample".to_string(),
                     arg_defs: vec![],
                     return_type: MLValueType::Primitive(MLPrimitiveType::Unit),
@@ -487,14 +473,12 @@ fn test_return_integer_literal() {
             name: "test".to_string(),
             body: vec![
                 MLDecl::Fun(MLFun {
-                    modifiers: vec![],
                     name: "test::integer".to_string(),
                     arg_defs: vec![],
                     return_type: MLValueType::Primitive(MLPrimitiveType::Int64),
                     body: None,
                 }),
                 MLDecl::Fun(MLFun {
-                    modifiers: vec![],
                     name: "test::integer".to_string(),
                     arg_defs: vec![],
                     return_type: MLValueType::Primitive(MLPrimitiveType::Int64),
@@ -529,7 +513,6 @@ fn test_reference_dereference() {
             name: "test".to_string(),
             body: vec![
                 MLDecl::Fun(MLFun {
-                    modifiers: vec![],
                     name: "test::reference_dereference##_#&Int64".to_string(),
                     arg_defs: vec![MLArgDef {
                         name: "p".to_string(),
@@ -541,14 +524,12 @@ fn test_reference_dereference() {
                     body: None,
                 }),
                 MLDecl::Fun(MLFun {
-                    modifiers: vec![],
                     name: "main".to_string(),
                     arg_defs: vec![],
                     return_type: MLValueType::Primitive(MLPrimitiveType::Unit),
                     body: None,
                 }),
                 MLDecl::Fun(MLFun {
-                    modifiers: vec![],
                     name: "test::reference_dereference##_#&Int64".to_string(),
                     arg_defs: vec![MLArgDef {
                         name: "p".to_string(),
@@ -575,7 +556,6 @@ fn test_reference_dereference() {
                     }),
                 }),
                 MLDecl::Fun(MLFun {
-                    modifiers: vec![],
                     name: "main".to_string(),
                     arg_defs: vec![],
                     return_type: MLValueType::Primitive(MLPrimitiveType::Unit),

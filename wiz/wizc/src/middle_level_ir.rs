@@ -337,7 +337,6 @@ impl<'arena> HLIR2MLIR<'arena> {
     ) -> MLFun {
         let TypedFun {
             package,
-            modifiers,
             name,
             type_params,
             type_constraints: _,
@@ -360,7 +359,6 @@ impl<'arena> HLIR2MLIR<'arena> {
             .set_declaration_annotations(mangled_name.clone(), annotations);
         let args = arg_defs.into_iter().map(|a| self.arg_def(a)).collect();
         MLFun {
-            modifiers,
             name: mangled_name,
             arg_defs: args,
             return_type: self.type_(return_type.unwrap()).into_value_type(),
@@ -414,7 +412,6 @@ impl<'arena> HLIR2MLIR<'arena> {
                     }))),
                 })));
                 MLFun {
-                    modifiers: vec![],
                     name: self.package_name_mangling(&package, &name)
                         + "::init"
                         + &*if i.args.is_empty() {
@@ -441,7 +438,6 @@ impl<'arena> HLIR2MLIR<'arena> {
                 let fun_arg_label_type_mangled_name = self.fun_arg_label_type_name_mangling(&args);
                 let args = args.into_iter().map(|a| self.arg_def(a)).collect();
                 MLFun {
-                    modifiers: vec![],
                     name: self.package_name_mangling(&package, &name)
                         + "::"
                         + &fname
@@ -479,7 +475,6 @@ impl<'arena> HLIR2MLIR<'arena> {
                 let fun_arg_label_type_mangled_name = self.fun_arg_label_type_name_mangling(&args);
                 let args = args.into_iter().map(|a| self.arg_def(a)).collect();
                 MLFun {
-                    modifiers: vec![],
                     name: self.package_name_mangling(&name.package(), &name.name())
                         + "::"
                         + &fname

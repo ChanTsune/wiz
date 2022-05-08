@@ -184,7 +184,6 @@ impl<'s> TypeResolver<'s> {
         let return_type = self.typed_function_return_type(&f.name, &f.return_type, &f.body)?;
         let fun = TypedFun {
             package: TypedPackage::Resolved(Package::from(&self.context.current_namespace)),
-            modifiers: f.modifiers,
             name: f.name,
             type_params: f.type_params,
             type_constraints: f.type_constraints,
@@ -548,7 +547,6 @@ impl<'s> TypeResolver<'s> {
         let return_type = self.typed_function_return_type(&f.name, &f.return_type, &f.body)?;
         let fun = TypedFun {
             package: TypedPackage::Resolved(Package::from(&self.context.current_namespace)),
-            modifiers: f.modifiers,
             name: f.name,
             type_params: f.type_params,
             type_constraints: match f.type_constraints {

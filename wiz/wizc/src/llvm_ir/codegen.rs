@@ -921,7 +921,6 @@ impl<'ctx> CodeGen<'ctx> {
 
     pub fn fun(&mut self, f: MLFun) -> AnyValueEnum<'ctx> {
         let MLFun {
-            modifiers,
             name,
             arg_defs,
             return_type,

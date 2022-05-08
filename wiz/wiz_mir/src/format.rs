@@ -64,7 +64,6 @@ mod tests {
     #[test]
     fn test_format_indent_level() {
         let fun = MLFun {
-            modifiers: vec![],
             name: "f".to_string(),
             arg_defs: vec![],
             return_type: MLValueType::Primitive(MLPrimitiveType::Noting),

@@ -132,7 +132,6 @@ fn test_unsafe_pointer() {
                     modifiers: vec![],
                     kind: TypedDeclKind::Fun(TypedFun {
                         package: TypedPackage::Resolved(Package::from(&vec!["test"])),
-                        modifiers: vec![],
                         name: "function".to_string(),
                         type_params: None,
                         type_constraints: None,
@@ -257,7 +256,6 @@ fn test_struct_stored_property() {
                     modifiers: vec![],
                     kind: TypedDeclKind::Fun(TypedFun {
                         package: TypedPackage::Resolved(Package::from(&vec!["test"])),
-                        modifiers: vec![],
                         name: "function".to_string(),
                         type_params: None,
                         type_constraints: None,
@@ -382,7 +380,6 @@ fn test_struct_init() {
                     modifiers: vec![],
                     kind: TypedDeclKind::Fun(TypedFun {
                         package: TypedPackage::Resolved(Package::from(&vec!["test"])),
-                        modifiers: vec![],
                         name: "function".to_string(),
                         type_params: None,
                         type_constraints: None,
@@ -712,7 +709,6 @@ fn test_struct_member_function_call() {
                     modifiers: vec![],
                     kind: TypedDeclKind::Fun(TypedFun {
                         package: TypedPackage::Resolved(Package::from(&vec!["test"])),
-                        modifiers: vec![],
                         name: "function".to_string(),
                         type_params: None,
                         type_constraints: None,
@@ -789,7 +785,6 @@ fn test_expr_function_with_no_arg() {
                 modifiers: vec![],
                 kind: TypedDeclKind::Fun(TypedFun {
                     package: TypedPackage::Resolved(Package::from(&vec!["test"])),
-                    modifiers: vec![],
                     name: "function".to_string(),
                     type_params: None,
                     type_constraints: None,
@@ -824,7 +819,6 @@ fn test_expr_function_with_arg() {
                 modifiers: vec![],
                 kind: TypedDeclKind::Fun(TypedFun {
                     package: TypedPackage::Resolved(Package::from(&vec!["test"])),
-                    modifiers: vec![],
                     name: "function".to_string(),
                     type_params: None,
                     type_constraints: None,
@@ -867,7 +861,6 @@ fn test_function_call() {
                     modifiers: vec![],
                     kind: TypedDeclKind::Fun(TypedFun {
                         package: TypedPackage::Resolved(Package::from(&vec!["test"])),
-                        modifiers: vec![],
                         name: "target_function".to_string(),
                         type_params: None,
                         type_constraints: None,
@@ -887,7 +880,6 @@ fn test_function_call() {
                     modifiers: vec![],
                     kind: TypedDeclKind::Fun(TypedFun {
                         package: TypedPackage::Resolved(Package::from(&vec!["test"])),
-                        modifiers: vec![],
                         name: "main".to_string(),
                         type_params: None,
                         type_constraints: None,
@@ -934,14 +926,13 @@ fn test_return_integer_literal() {
                 modifiers: vec![],
                 kind: TypedDeclKind::Fun(TypedFun {
                     package: TypedPackage::Resolved(Package::from(&vec!["test"])),
-                    modifiers: vec![],
                     name: "sample".to_string(),
                     type_params: None,
                     type_constraints: None,
                     arg_defs: vec![],
                     body: Option::from(TypedFunBody::Block(TypedBlock {
                         body: vec![TypedStmt::Expr(TypedExpr::Return(TypedReturn {
-                            value: Option::Some(Box::new(TypedExpr::Literal(
+                            value: Some(Box::new(TypedExpr::Literal(
                                 TypedLiteral::Integer {
                                     value: "1".to_string(),
                                     type_: Some(TypedType::int64()),
@@ -975,14 +966,13 @@ fn test_return_floating_point_literal() {
                 modifiers: vec![],
                 kind: TypedDeclKind::Fun(TypedFun {
                     package: TypedPackage::Resolved(Package::from(&vec!["test"])),
-                    modifiers: vec![],
                     name: "sample".to_string(),
                     type_params: None,
                     type_constraints: None,
                     arg_defs: vec![],
                     body: Option::from(TypedFunBody::Block(TypedBlock {
                         body: vec![TypedStmt::Expr(TypedExpr::Return(TypedReturn {
-                            value: Option::Some(Box::new(TypedExpr::Literal(
+                            value: Some(Box::new(TypedExpr::Literal(
                                 TypedLiteral::FloatingPoint {
                                     value: "0.5".to_string(),
                                     type_: Some(TypedType::double()),
@@ -1016,7 +1006,6 @@ fn test_binop() {
                 modifiers: vec![],
                 kind: TypedDeclKind::Fun(TypedFun {
                     package: TypedPackage::Resolved(Package::from(&vec!["test"])),
-                    modifiers: vec![],
                     name: "sample".to_string(),
                     type_params: None,
                     type_constraints: None,
@@ -1059,7 +1048,6 @@ fn test_subscript() {
                 modifiers: vec![],
                 kind: TypedDeclKind::Fun(TypedFun {
                     package: TypedPackage::Resolved(Package::from(&vec!["test"])),
-                    modifiers: vec![],
                     name: "get_first".to_string(),
                     type_params: None,
                     type_constraints: None,
@@ -1107,7 +1095,6 @@ fn test_if_else() {
                 modifiers: vec![],
                 kind: TypedDeclKind::Fun(TypedFun {
                     package: TypedPackage::Resolved(Package::from(&vec!["test"])),
-                    modifiers: vec![],
                     name: "test_if".to_string(),
                     type_params: None,
                     type_constraints: None,
@@ -1116,7 +1103,7 @@ fn test_if_else() {
                         name: "i".to_string(),
                         type_: TypedType::int64(),
                     }],
-                    body: Option::from(TypedFunBody::Block(TypedBlock {
+                    body: Some(TypedFunBody::Block(TypedBlock {
                         body: vec![TypedStmt::Expr(TypedExpr::Return(TypedReturn {
                             value: Some(Box::new(TypedExpr::If(TypedIf {
                                 condition: Box::new(TypedExpr::BinOp(TypedBinOp {
@@ -1181,7 +1168,6 @@ fn test_if() {
                 modifiers: vec![],
                 kind: TypedDeclKind::Fun(TypedFun {
                     package: TypedPackage::Resolved(Package::from(&vec!["test"])),
-                    modifiers: vec![],
                     name: "test_if".to_string(),
                     type_params: None,
                     type_constraints: None,
@@ -1190,7 +1176,7 @@ fn test_if() {
                         name: "i".to_string(),
                         type_: TypedType::int64(),
                     }],
-                    body: Option::from(TypedFunBody::Block(TypedBlock {
+                    body: Some(TypedFunBody::Block(TypedBlock {
                         body: vec![TypedStmt::Expr(TypedExpr::If(TypedIf {
                             condition: Box::new(TypedExpr::BinOp(TypedBinOp {
                                 left: Box::new(TypedExpr::Name(TypedName {
@@ -1249,7 +1235,6 @@ fn test_reference_dereference() {
                 modifiers: vec![],
                 kind: TypedDeclKind::Fun(TypedFun {
                     package: TypedPackage::Resolved(Package::from(&vec!["test"])),
-                    modifiers: vec![],
                     name: "test_reference_dereference".to_string(),
                     type_params: None,
                     type_constraints: None,
@@ -1371,7 +1356,6 @@ fn test_function_overload_by_arguments() {
                     modifiers: vec![],
                     kind: TypedDeclKind::Fun(TypedFun {
                         package: TypedPackage::Resolved(Package::from(&vec!["test"])),
-                        modifiers: vec![],
                         name: "sample".to_string(),
                         type_params: None,
                         type_constraints: None,
@@ -1390,7 +1374,6 @@ fn test_function_overload_by_arguments() {
                     modifiers: vec![],
                     kind: TypedDeclKind::Fun(TypedFun {
                         package: TypedPackage::Resolved(Package::from(&vec!["test"])),
-                        modifiers: vec![],
                         name: "sample".to_string(),
                         type_params: None,
                         type_constraints: None,
@@ -1409,7 +1392,6 @@ fn test_function_overload_by_arguments() {
                     modifiers: vec![],
                     kind: TypedDeclKind::Fun(TypedFun {
                         package: TypedPackage::Resolved(Package::from(&vec!["test"])),
-                        modifiers: vec![],
                         name: "call".to_string(),
                         type_params: None,
                         type_constraints: None,

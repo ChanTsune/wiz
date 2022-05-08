@@ -13,7 +13,6 @@ fn test_return_integer() {
     let mlfile = MLFile {
         name: "name".to_string(),
         body: vec![MLDecl::Fun(MLFun {
-            modifiers: vec![],
             name: "test".to_string(),
             arg_defs: vec![],
             return_type: MLValueType::Primitive(MLPrimitiveType::UInt8),
@@ -60,7 +59,6 @@ fn test_return_integer_literal() {
     let mlfile = MLFile {
         name: "name".to_string(),
         body: vec![MLDecl::Fun(MLFun {
-            modifiers: vec![],
             name: "test".to_string(),
             arg_defs: vec![],
             return_type: MLValueType::Primitive(MLPrimitiveType::UInt8),
@@ -96,7 +94,6 @@ fn test_return_floating_point() {
     let mlfile = MLFile {
         name: "name".to_string(),
         body: vec![MLDecl::Fun(MLFun {
-            modifiers: vec![],
             name: "test".to_string(),
             arg_defs: vec![],
             return_type: MLValueType::Primitive(MLPrimitiveType::Double),
@@ -143,7 +140,6 @@ fn test_return_floating_point_literal() {
     let mlfile = MLFile {
         name: "name".to_string(),
         body: vec![MLDecl::Fun(MLFun {
-            modifiers: vec![],
             name: "test".to_string(),
             arg_defs: vec![],
             return_type: MLValueType::Primitive(MLPrimitiveType::Double),
@@ -189,7 +185,6 @@ fn test_return_global_constant() {
                 }),
             }),
             MLDecl::Fun(MLFun {
-                modifiers: vec![],
                 name: "test".to_string(),
                 arg_defs: vec![],
                 return_type: MLValueType::Primitive(MLPrimitiveType::UInt8),

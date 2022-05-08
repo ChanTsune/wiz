@@ -5,7 +5,6 @@ use crate::statement::MLStmt;
 
 #[derive(Debug, Clone)]
 pub struct FunBuilder {
-    modifiers: Vec<String>,
     name: String,
     arg_defs: Vec<MLArgDef>,
     return_type: MLValueType,
@@ -16,7 +15,6 @@ pub struct FunBuilder {
 impl FunBuilder {
     pub fn new(name: String, arg_defs: Vec<MLArgDef>, return_type: MLValueType) -> Self {
         Self {
-            modifiers: vec![],
             name,
             arg_defs,
             return_type,
@@ -36,7 +34,6 @@ impl FunBuilder {
 
     pub fn build(&self) -> (MLFun, Option<MLFun>) {
         let f = MLFun {
-            modifiers: self.modifiers.clone(),
             name: self.name.clone(),
             arg_defs: self.arg_defs.clone(),
             return_type: self.return_type.clone(),
@@ -53,7 +50,6 @@ impl FunBuilder {
         } else {
             (
                 MLFun {
-                    modifiers: f.modifiers.clone(),
                     name: f.name.clone(),
                     arg_defs: f.arg_defs.clone(),
                     return_type: f.return_type.clone(),
@@ -72,7 +68,6 @@ impl From<MLFun> for FunBuilder {
             Some(b) => (b.body, false),
         };
         Self {
-            modifiers: f.modifiers,
             name: f.name,
             arg_defs: f.arg_defs,
             return_type: f.return_type,
