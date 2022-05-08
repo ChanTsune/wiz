@@ -12,8 +12,8 @@ use crate::high_level_ir::typed_expr::{
 };
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
-use wiz_session::Session;
 use crate::high_level_ir::typed_type::TypedPackage;
+use wiz_session::Session;
 
 #[derive(Debug)]
 pub struct TypeChecker<'s> {
@@ -34,7 +34,10 @@ impl<'s> TypeChecker<'s> {
     }
 
     fn file(&mut self, typed_file: &TypedFile) {
-        typed_file.body.iter().for_each(|d| self.decl(&d.kind, &d.package))
+        typed_file
+            .body
+            .iter()
+            .for_each(|d| self.decl(&d.kind, &d.package))
     }
 
     fn decl(&mut self, decl: &TypedDeclKind, package: &TypedPackage) {
@@ -94,10 +97,9 @@ impl<'s> TypeChecker<'s> {
     }
 
     fn struct_(&mut self, typed_struct: &TypedStruct, package: &TypedPackage) {
-        let struct_info = self.arena.get_type(
-            &package.clone().into_resolved().names,
-            &typed_struct.name,
-        );
+        let struct_info = self
+            .arena
+            .get_type(&package.clone().into_resolved().names, &typed_struct.name);
 
         if let Some(struct_info) = struct_info {
             if struct_info.kind == StructKind::Struct {
