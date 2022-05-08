@@ -419,7 +419,7 @@ impl<'s> TypeResolver<'s> {
     pub fn decl(&mut self, d: TypedDecl) -> Result<TypedDecl> {
         Ok(TypedDecl {
             annotations: d.annotations,
-            package: TypedPackage::Resolved(Package::from(&self.context.current_namespace)),
+            package: Package::from(&self.context.current_namespace),
             modifiers: d.modifiers,
             kind: self.decl_kind(d.kind, true)?,
         })

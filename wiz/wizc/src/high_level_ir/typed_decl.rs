@@ -2,7 +2,7 @@ use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_expr::TypedExpr;
 use crate::high_level_ir::typed_stmt::TypedBlock;
 use crate::high_level_ir::typed_type::{
-    TypedArgType, TypedFunctionType, TypedPackage, TypedType, TypedTypeParam,
+    Package, TypedArgType, TypedFunctionType, TypedType, TypedTypeParam,
 };
 use crate::high_level_ir::typed_type_constraint::TypedTypeConstraint;
 use serde::{Deserialize, Serialize};
@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedDecl {
     pub(crate) annotations: TypedAnnotations,
-    pub(crate) package: TypedPackage,
+    pub(crate) package: Package,
     pub(crate) modifiers: Vec<String>,
     pub(crate) kind: TypedDeclKind,
 }

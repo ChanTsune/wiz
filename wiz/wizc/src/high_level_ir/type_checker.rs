@@ -12,7 +12,7 @@ use crate::high_level_ir::typed_expr::{
 };
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
-use crate::high_level_ir::typed_type::TypedPackage;
+use crate::high_level_ir::typed_type::Package;
 use wiz_session::Session;
 
 #[derive(Debug)]
@@ -40,7 +40,7 @@ impl<'s> TypeChecker<'s> {
             .for_each(|d| self.decl(&d.kind, &d.package))
     }
 
-    fn decl(&mut self, decl: &TypedDeclKind, package: &TypedPackage) {
+    fn decl(&mut self, decl: &TypedDeclKind, package: &Package) {
         match decl {
             TypedDeclKind::Var(v) => self.variable(v),
             TypedDeclKind::Fun(f) => self.function(f),
@@ -96,10 +96,8 @@ impl<'s> TypeChecker<'s> {
         }
     }
 
-    fn struct_(&mut self, typed_struct: &TypedStruct, package: &TypedPackage) {
-        let struct_info = self
-            .arena
-            .get_type(&package.clone().into_resolved().names, &typed_struct.name);
+    fn struct_(&mut self, typed_struct: &TypedStruct, package: &Package) {
+        let struct_info = self.arena.get_type(&package.names, &typed_struct.name);
 
         if let Some(struct_info) = struct_info {
             if struct_info.kind == StructKind::Struct {

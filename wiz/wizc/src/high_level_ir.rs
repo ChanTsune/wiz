@@ -184,7 +184,7 @@ impl AstLowering {
     pub fn decl(&self, d: DeclKind, annotation: Option<AnnotationsSyntax>) -> TypedDecl {
         TypedDecl {
             annotations: self.annotations(annotation),
-            package: TypedPackage::Raw(Package::new()),
+            package: Package::new(),
             modifiers: vec![],
             kind: match d {
                 DeclKind::Var(v) => TypedDeclKind::Var(self.var_syntax(v)),

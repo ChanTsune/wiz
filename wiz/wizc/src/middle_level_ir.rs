@@ -15,7 +15,7 @@ use crate::high_level_ir::typed_stmt::{
     TypedAssignmentAndOperator, TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt,
 };
 use crate::high_level_ir::typed_type::{
-    TypedFunctionType, TypedPackage, TypedType, TypedTypeParam, TypedValueType,
+    Package, TypedFunctionType, TypedPackage, TypedType, TypedTypeParam, TypedValueType,
 };
 use crate::middle_level_ir::context::HLIR2MLIRContext;
 use core::result;
@@ -285,7 +285,7 @@ impl<'arena> HLIR2MLIR<'arena> {
         } = d;
         match kind {
             TypedDeclKind::Var(v) => {
-                let v = self.global_var(v.clone(), &package);
+                let v = self.global_var(v, &package);
                 self.module.add_global_var(v);
             }
             TypedDeclKind::Fun(f) => {
@@ -319,11 +319,11 @@ impl<'arena> HLIR2MLIR<'arena> {
         Ok(())
     }
 
-    fn global_var(&mut self, v: TypedVar, package: &TypedPackage) -> MLVar {
+    fn global_var(&mut self, v: TypedVar, package: &Package) -> MLVar {
         let expr = self.expr(v.value);
         MLVar {
             is_mute: v.is_mut,
-            name: self.package_name_mangling(package, &v.name),
+            name: self.package_name_mangling_(package, &v.name),
             type_: self.type_(v.type_.unwrap()),
             value: expr,
         }
@@ -343,7 +343,7 @@ impl<'arena> HLIR2MLIR<'arena> {
         &mut self,
         f: TypedFun,
         annotations: TypedAnnotations,
-        package: TypedPackage,
+        package: Package,
         type_arguments: Option<HashMap<TypedTypeParam, TypedType>>,
     ) -> MLFun {
         let TypedFun {
@@ -354,7 +354,7 @@ impl<'arena> HLIR2MLIR<'arena> {
             body,
             return_type,
         } = f;
-        let package_mangled_name = self.package_name_mangling(&package, &name);
+        let package_mangled_name = self.package_name_mangling_(&package, &name);
         let mangled_name = if annotations.has_annotate("no_mangle") {
             name
         } else {
@@ -376,7 +376,7 @@ impl<'arena> HLIR2MLIR<'arena> {
         }
     }
 
-    fn struct_(&mut self, s: TypedStruct, package: TypedPackage) -> (MLStruct, Vec<MLFun>) {
+    fn struct_(&mut self, s: TypedStruct, package: Package) -> (MLStruct, Vec<MLFun>) {
         let TypedStruct {
             name,
             type_params,
@@ -386,7 +386,7 @@ impl<'arena> HLIR2MLIR<'arena> {
             member_functions,
         } = s;
         let struct_ = MLStruct {
-            name: self.package_name_mangling(&package, &name),
+            name: self.package_name_mangling_(&package, &name),
             fields: stored_properties
                 .into_iter()
                 .map(|p| MLField {
@@ -421,7 +421,7 @@ impl<'arena> HLIR2MLIR<'arena> {
                     }))),
                 })));
                 MLFun {
-                    name: self.package_name_mangling(&package, &name)
+                    name: self.package_name_mangling_(&package, &name)
                         + "::init"
                         + &*if i.args.is_empty() {
                             String::new()
@@ -447,7 +447,7 @@ impl<'arena> HLIR2MLIR<'arena> {
                 let fun_arg_label_type_mangled_name = self.fun_arg_label_type_name_mangling(&args);
                 let args = args.into_iter().map(|a| self.arg_def(a)).collect();
                 MLFun {
-                    name: self.package_name_mangling(&package, &name)
+                    name: self.package_name_mangling_(&package, &name)
                         + "::"
                         + &fname
                         + &*if fun_arg_label_type_mangled_name.is_empty() {
@@ -896,13 +896,17 @@ impl<'arena> HLIR2MLIR<'arena> {
         }
     }
 
+    fn package_name_mangling_(&self, package: &Package, name: &str) -> String {
+        if package.is_global() || name == "main" {
+            String::from(name)
+        } else {
+            package.to_string() + "::" + name
+        }
+    }
+
     fn package_name_mangling(&self, package: &TypedPackage, name: &str) -> String {
         if let TypedPackage::Resolved(pkg) = package {
-            if pkg.is_global() || name == "main" {
-                String::from(name)
-            } else {
-                pkg.to_string() + "::" + name
-            }
+            self.package_name_mangling_(pkg, name)
         } else {
             panic!("pkg name mangling failed => {:?}, {}", package, name)
         }
