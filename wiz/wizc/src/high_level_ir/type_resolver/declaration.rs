@@ -13,7 +13,7 @@ impl DeclarationItem {
     pub(crate) fn new(kind: DeclarationItemKind) -> Self {
         Self {
             annotations: Default::default(),
-            kind
+            kind,
         }
     }
 }

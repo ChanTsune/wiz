@@ -129,7 +129,9 @@ impl ResolverArena {
         self.register(
             namespace,
             name,
-            DeclarationItem::new(DeclarationItemKind::Namespace(Namespace::new(name, parent_id))),
+            DeclarationItem::new(DeclarationItemKind::Namespace(Namespace::new(
+                name, parent_id,
+            ))),
         )
     }
 
@@ -193,11 +195,7 @@ impl ResolverArena {
         self.resolve_declaration_id(DeclarationId::ROOT, fqn)
     }
 
-    pub(crate) fn get<T: ToString>(
-        &self,
-        namespace: &[T],
-        name: &str,
-    ) -> Option<&DeclarationItem> {
+    pub(crate) fn get<T: ToString>(&self, namespace: &[T], name: &str) -> Option<&DeclarationItem> {
         let id = self.resolve_declaration_id_from_root(
             &namespace
                 .iter()
@@ -265,7 +263,11 @@ impl ResolverArena {
             })),
             kind,
         );
-        self.register(namespace, name, DeclarationItem::new(DeclarationItemKind::Type(s)));
+        self.register(
+            namespace,
+            name,
+            DeclarationItem::new(DeclarationItemKind::Type(s)),
+        );
     }
 
     pub(crate) fn get_type<T: ToString>(
@@ -399,17 +401,19 @@ mod tests {
         );
         assert_eq!(
             item,
-            Some(&DeclarationItem::new(DeclarationItemKind::Type(ResolverStruct::new(
-                TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-                    package: TypedPackage::Resolved(Package::from(&vec![
-                        child_namespace_name,
-                        grandchildren_namespace_name
-                    ])),
-                    name: type_name.to_string(),
-                    type_args: None,
-                })),
-                StructKind::Struct,
-            ))))
+            Some(&DeclarationItem::new(DeclarationItemKind::Type(
+                ResolverStruct::new(
+                    TypedType::Value(TypedValueType::Value(TypedNamedValueType {
+                        package: TypedPackage::Resolved(Package::from(&vec![
+                            child_namespace_name,
+                            grandchildren_namespace_name
+                        ])),
+                        name: type_name.to_string(),
+                        type_args: None,
+                    })),
+                    StructKind::Struct,
+                )
+            )))
         );
     }
 
