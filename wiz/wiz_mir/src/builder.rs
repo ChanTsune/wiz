@@ -85,14 +85,12 @@ impl MLIRModule {
             name,
             body: self
                 .structs
-                .clone()
-                .into_iter()
-                .map(|(_, v)| MLDecl::Struct(v))
+                .iter()
+                .map(|(_, v)| MLDecl::Struct(v.clone()))
                 .chain(
                     self.variables
-                        .clone()
-                        .into_iter()
-                        .map(|(_, v)| MLDecl::Var(v)),
+                        .iter()
+                        .map(|(_, v)| MLDecl::Var(v.clone())),
                 )
                 .chain(forward_declarations)
                 .chain(declarations.into_iter().flatten())
