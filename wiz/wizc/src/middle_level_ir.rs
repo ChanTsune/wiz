@@ -335,7 +335,7 @@ impl<'arena> HLIR2MLIR<'arena> {
             modifiers,
             name,
             type_params,
-            type_constraints,
+            type_constraints: _,
             arg_defs,
             body,
             return_type,
