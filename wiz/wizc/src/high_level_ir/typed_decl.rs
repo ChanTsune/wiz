@@ -8,6 +8,14 @@ use crate::high_level_ir::typed_type_constraint::TypedTypeConstraint;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
+pub struct TypedDecl {
+    pub(crate) annotations: TypedAnnotations,
+    pub(crate) package: TypedPackage,
+    pub(crate) modifiers: Vec<String>,
+    pub(crate) kind: TypedDeclKind,
+}
+
+#[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub enum TypedDeclKind {
     Var(TypedVar),
     Fun(TypedFun),

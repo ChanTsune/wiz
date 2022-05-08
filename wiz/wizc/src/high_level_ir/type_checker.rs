@@ -33,7 +33,7 @@ impl<'s> TypeChecker<'s> {
     }
 
     fn file(&mut self, typed_file: &TypedFile) {
-        typed_file.body.iter().for_each(|d| self.decl(d))
+        typed_file.body.iter().for_each(|d| self.decl(&d.kind))
     }
 
     fn decl(&mut self, decl: &TypedDeclKind) {

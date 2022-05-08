@@ -11,10 +11,7 @@ mod tests;
 use crate::high_level_ir::type_resolver::context::{ResolverContext, ResolverStruct, StructKind};
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
-use crate::high_level_ir::typed_decl::{
-    TypedArgDef, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedInitializer,
-    TypedMemberFunction, TypedProtocol, TypedStoredProperty, TypedStruct, TypedVar,
-};
+use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedInitializer, TypedMemberFunction, TypedProtocol, TypedStoredProperty, TypedStruct, TypedVar};
 use crate::high_level_ir::typed_expr::{
     TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember,
     TypedLiteral, TypedName, TypedPostfixUnaryOp, TypedPrefixUnaryOp, TypedPrefixUnaryOperator,
@@ -69,7 +66,7 @@ impl<'s> TypeResolver<'s> {
         self.context.push_name_space(f.name.clone());
         let current_namespace = &self.context.current_namespace;
         for d in f.body.iter() {
-            match d {
+            match &d.kind {
                 TypedDeclKind::Struct(s) => {
                     self.context
                         .arena
@@ -110,7 +107,7 @@ impl<'s> TypeResolver<'s> {
             self.context.use_name_space(u.package.names.clone());
         }
         for d in f.body {
-            self.preload_decl(d)?;
+            self.preload_decl(d.kind)?;
         }
         for u in f.uses.iter() {
             self.context.use_name_space(u.package.names.clone());
@@ -414,7 +411,7 @@ impl<'s> TypeResolver<'s> {
                 .body
                 .into_iter()
                 .map(|s| self.decl(s))
-                .collect::<Result<Vec<TypedDeclKind>>>()?,
+                .collect::<Result<Vec<_>>>()?,
         });
         for u in f.uses.into_iter() {
             self.context.unuse_name_space(u.package.names);
@@ -423,7 +420,16 @@ impl<'s> TypeResolver<'s> {
         result
     }
 
-    pub fn decl(&mut self, d: TypedDeclKind) -> Result<TypedDeclKind> {
+    pub fn decl(&mut self, d: TypedDecl) -> Result<TypedDecl> {
+        Ok(TypedDecl {
+            annotations: d.annotations,
+            package: d.package,
+            modifiers: d.modifiers,
+            kind: self.decl_kind(d.kind)?
+        })
+    }
+
+    fn decl_kind(&mut self, d:TypedDeclKind) -> Result<TypedDeclKind> {
         Ok(match d {
             TypedDeclKind::Var(v) => TypedDeclKind::Var(self.typed_var(v)?),
             TypedDeclKind::Fun(f) => TypedDeclKind::Fun(self.typed_fun(f)?),
@@ -1167,7 +1173,7 @@ impl<'s> TypeResolver<'s> {
     pub fn stmt(&mut self, s: TypedStmt) -> Result<TypedStmt> {
         Ok(match s {
             TypedStmt::Expr(e) => TypedStmt::Expr(self.expr(e, None)?),
-            TypedStmt::Decl(d) => TypedStmt::Decl(self.decl(d)?),
+            TypedStmt::Decl(d) => TypedStmt::Decl(self.decl_kind(d)?),
             TypedStmt::Assignment(a) => TypedStmt::Assignment(self.assignment_stmt(a)?),
             TypedStmt::Loop(l) => TypedStmt::Loop(self.typed_loop_stmt(l)?),
         })

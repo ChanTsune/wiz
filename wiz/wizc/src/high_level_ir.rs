@@ -1,10 +1,6 @@
 use crate::high_level_ir::node_id::TypedModuleId;
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
-use crate::high_level_ir::typed_decl::{
-    TypedArgDef, TypedComputedProperty, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody,
-    TypedInitializer, TypedMemberFunction, TypedProtocol, TypedStoredProperty, TypedStruct,
-    TypedVar,
-};
+use crate::high_level_ir::typed_decl::{TypedArgDef, TypedComputedProperty, TypedDecl, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedInitializer, TypedMemberFunction, TypedProtocol, TypedStoredProperty, TypedStruct, TypedVar};
 use crate::high_level_ir::typed_expr::{
     TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
     TypedInstanceMember, TypedLambda, TypedLiteral, TypedName, TypedPostfixUnaryOp,
@@ -106,7 +102,7 @@ impl AstLowering {
         }
     }
 
-    pub fn file_syntax(&mut self, f: FileSyntax) -> Vec<TypedDeclKind> {
+    pub fn file_syntax(&mut self, f: FileSyntax) -> Vec<TypedDecl> {
         f.body
             .into_iter()
             .map(|d| self.decl(d.kind, d.annotations))
@@ -127,7 +123,7 @@ impl AstLowering {
 
     pub fn stmt(&self, s: Stmt) -> TypedStmt {
         match s {
-            Stmt::Decl(decl) => TypedStmt::Decl(self.decl(decl.kind, decl.annotations)),
+            Stmt::Decl(decl) => TypedStmt::Decl(self.decl(decl.kind, decl.annotations).kind),
             Stmt::Expr(expr) => TypedStmt::Expr(self.expr(expr)),
             Stmt::Assignment(a) => TypedStmt::Assignment(self.assignment(a)),
             Stmt::Loop(l) => TypedStmt::Loop(self.loop_stmt(l)),
@@ -181,28 +177,33 @@ impl AstLowering {
         }
     }
 
-    pub fn decl(&self, d: DeclKind, annotation: Option<AnnotationsSyntax>) -> TypedDeclKind {
-        match d {
-            DeclKind::Var(v) => TypedDeclKind::Var(self.var_syntax(v, annotation)),
-            DeclKind::Fun(f) => TypedDeclKind::Fun(self.fun_syntax(f, annotation)),
-            DeclKind::Struct(s) => match &*s.struct_keyword.token() {
-                "struct" => {
-                    let struct_ = self.struct_syntax(s, annotation);
-                    let struct_ = self.default_init_if_needed(struct_);
-                    TypedDeclKind::Struct(struct_)
+    pub fn decl(&self, d: DeclKind, annotation: Option<AnnotationsSyntax>) -> TypedDecl {
+        TypedDecl {
+            annotations: Default::default(),
+            package: TypedPackage::Raw(Package::new()),
+            modifiers: vec![],
+            kind:         match d {
+                DeclKind::Var(v) => TypedDeclKind::Var(self.var_syntax(v, annotation)),
+                DeclKind::Fun(f) => TypedDeclKind::Fun(self.fun_syntax(f, annotation)),
+                DeclKind::Struct(s) => match &*s.struct_keyword.token() {
+                    "struct" => {
+                        let struct_ = self.struct_syntax(s, annotation);
+                        let struct_ = self.default_init_if_needed(struct_);
+                        TypedDeclKind::Struct(struct_)
+                    }
+                    "protocol" => {
+                        let protocol = self.protocol_syntax(s, annotation);
+                        TypedDeclKind::Protocol(protocol)
+                    }
+                    kw => panic!("Unknown keyword `{}`", kw),
+                },
+                DeclKind::ExternC { .. } => TypedDeclKind::Class,
+                DeclKind::Enum { .. } => TypedDeclKind::Enum,
+                DeclKind::Extension(e) => {
+                    TypedDeclKind::Extension(self.extension_syntax(e, annotation))
                 }
-                "protocol" => {
-                    let protocol = self.protocol_syntax(s, annotation);
-                    TypedDeclKind::Protocol(protocol)
-                }
-                kw => panic!("Unknown keyword `{}`", kw),
-            },
-            DeclKind::ExternC { .. } => TypedDeclKind::Class,
-            DeclKind::Enum { .. } => TypedDeclKind::Enum,
-            DeclKind::Extension(e) => {
-                TypedDeclKind::Extension(self.extension_syntax(e, annotation))
+                DeclKind::Use(_) => unreachable!(),
             }
-            DeclKind::Use(_) => unreachable!(),
         }
     }
 

@@ -1,10 +1,7 @@
 use crate::constants;
 use crate::high_level_ir::type_resolver::arena::ResolverArena;
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
-use crate::high_level_ir::typed_decl::{
-    TypedArgDef, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedMemberFunction,
-    TypedProtocol, TypedStruct, TypedVar,
-};
+use crate::high_level_ir::typed_decl::{TypedArgDef, TypedDecl, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedMemberFunction, TypedProtocol, TypedStruct, TypedVar};
 use crate::high_level_ir::typed_expr::{
     TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
     TypedInstanceMember, TypedLiteral, TypedName, TypedPrefixUnaryOperator, TypedReturn,
@@ -21,7 +18,6 @@ use crate::middle_level_ir::context::HLIR2MLIRContext;
 use core::result;
 use std::collections::HashMap;
 use std::error::Error;
-use std::iter::Map;
 use wiz_mir::builder::{FunBuilder, MLIRModule};
 use wiz_mir::expr::{
     MLArray, MLBinOp, MLBinOpKind, MLBlock, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLMember,
@@ -277,8 +273,11 @@ impl<'arena> HLIR2MLIR<'arena> {
         }
     }
 
-    fn decl(&mut self, d: TypedDeclKind) -> Result<()> {
-        match d {
+    fn decl(&mut self, d: TypedDecl) -> Result<()> {
+        let TypedDecl {
+            annotations, package, modifiers, kind
+        } = d;
+        match kind {
             TypedDeclKind::Var(v) => {
                 let v = self.var(v);
                 self.module.add_global_var(v);
