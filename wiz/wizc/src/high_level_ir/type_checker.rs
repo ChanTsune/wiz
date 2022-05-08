@@ -33,14 +33,26 @@ impl<'s> TypeChecker<'s> {
     }
 
     fn file(&mut self, typed_file: &TypedFile) {
-        typed_file.body.iter().for_each(|d| self.decl(&d.kind))
+        typed_file.body.iter().for_each(|d| self.decl(&d.kind, &d.package))
     }
 
-    fn decl(&mut self, decl: &TypedDeclKind) {
+    fn decl(&mut self, decl: &TypedDeclKind, package: &TypedPackage) {
         match decl {
             TypedDeclKind::Var(v) => self.variable(v),
             TypedDeclKind::Fun(f) => self.function(f),
             TypedDeclKind::Struct(s) => self.struct_(s),
+            TypedDeclKind::Class => todo!(),
+            TypedDeclKind::Enum => todo!(),
+            TypedDeclKind::Protocol(p) => self.protocol(p),
+            TypedDeclKind::Extension(e) => self.extension(e),
+        }
+    }
+
+    fn decl_kind(&mut self, decl: &TypedDeclKind) {
+        match decl {
+            TypedDeclKind::Var(v) => self.variable(v),
+            TypedDeclKind::Fun(f) => self.function(f),
+            TypedDeclKind::Struct(_) => todo!(),
             TypedDeclKind::Class => todo!(),
             TypedDeclKind::Enum => todo!(),
             TypedDeclKind::Protocol(p) => self.protocol(p),
@@ -137,7 +149,7 @@ impl<'s> TypeChecker<'s> {
     fn statement(&mut self, typed_statement: &TypedStmt) {
         match typed_statement {
             TypedStmt::Expr(e) => self.expression(e),
-            TypedStmt::Decl(d) => self.decl(d),
+            TypedStmt::Decl(d) => self.decl_kind(d),
             TypedStmt::Assignment(a) => self.assignment_statement(a),
             TypedStmt::Loop(l) => self.loop_statement(l),
         }
