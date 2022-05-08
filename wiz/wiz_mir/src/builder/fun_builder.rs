@@ -43,7 +43,9 @@ impl FunBuilder {
             body: if self.declare {
                 None
             } else {
-                Some(MLFunBody { body: self.stmts.clone() })
+                Some(MLFunBody {
+                    body: self.stmts.clone(),
+                })
             },
         };
         if self.declare {
