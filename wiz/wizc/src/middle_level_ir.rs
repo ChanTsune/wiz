@@ -327,7 +327,7 @@ impl<'arena> HLIR2MLIR<'arena> {
     fn fun(
         &mut self,
         f: TypedFun,
-        type_arguments: Option<Map<TypedTypeParam, TypedType>>,
+        type_arguments: Option<HashMap<TypedTypeParam, TypedType>>,
     ) -> MLFun {
         let TypedFun {
             annotations,
