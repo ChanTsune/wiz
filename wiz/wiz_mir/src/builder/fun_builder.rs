@@ -34,16 +34,16 @@ impl FunBuilder {
         Ok(self.stmts.push(statement))
     }
 
-    pub fn build(self) -> (MLFun, Option<MLFun>) {
+    pub fn build(&self) -> (MLFun, Option<MLFun>) {
         let f = MLFun {
-            modifiers: self.modifiers,
-            name: self.name,
-            arg_defs: self.arg_defs,
-            return_type: self.return_type,
+            modifiers: self.modifiers.clone(),
+            name: self.name.clone(),
+            arg_defs: self.arg_defs.clone(),
+            return_type: self.return_type.clone(),
             body: if self.declare {
                 None
             } else {
-                Some(MLFunBody { body: self.stmts })
+                Some(MLFunBody { body: self.stmts.clone() })
             },
         };
         if self.declare {

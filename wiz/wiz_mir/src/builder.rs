@@ -75,8 +75,7 @@ impl MLIRModule {
     pub fn to_mlir_file(&self, name: String) -> MLFile {
         let (forward_declarations, declarations): (Vec<_>, Vec<_>) = self
             .functions
-            .clone()
-            .into_iter()
+            .iter()
             .map(|(_, v)| {
                 let (declare, define) = v.build();
                 (MLDecl::Fun(declare), define.map(MLDecl::Fun))
