@@ -932,12 +932,10 @@ fn test_return_integer_literal() {
                     arg_defs: vec![],
                     body: Option::from(TypedFunBody::Block(TypedBlock {
                         body: vec![TypedStmt::Expr(TypedExpr::Return(TypedReturn {
-                            value: Some(Box::new(TypedExpr::Literal(
-                                TypedLiteral::Integer {
-                                    value: "1".to_string(),
-                                    type_: Some(TypedType::int64()),
-                                },
-                            ))),
+                            value: Some(Box::new(TypedExpr::Literal(TypedLiteral::Integer {
+                                value: "1".to_string(),
+                                type_: Some(TypedType::int64()),
+                            }))),
                         }))],
                     })),
                     return_type: Some(TypedType::int64()),
