@@ -183,20 +183,20 @@ impl AstLowering {
 
     pub fn decl(&self, d: DeclKind, annotation: Option<AnnotationsSyntax>) -> TypedDecl {
         TypedDecl {
-            annotations: Default::default(),
+            annotations: self.annotations(annotation),
             package: TypedPackage::Raw(Package::new()),
             modifiers: vec![],
             kind: match d {
-                DeclKind::Var(v) => TypedDeclKind::Var(self.var_syntax(v, annotation)),
-                DeclKind::Fun(f) => TypedDeclKind::Fun(self.fun_syntax(f, annotation)),
+                DeclKind::Var(v) => TypedDeclKind::Var(self.var_syntax(v)),
+                DeclKind::Fun(f) => TypedDeclKind::Fun(self.fun_syntax(f)),
                 DeclKind::Struct(s) => match &*s.struct_keyword.token() {
                     "struct" => {
-                        let struct_ = self.struct_syntax(s, annotation);
+                        let struct_ = self.struct_syntax(s);
                         let struct_ = self.default_init_if_needed(struct_);
                         TypedDeclKind::Struct(struct_)
                     }
                     "protocol" => {
-                        let protocol = self.protocol_syntax(s, annotation);
+                        let protocol = self.protocol_syntax(s);
                         TypedDeclKind::Protocol(protocol)
                     }
                     kw => panic!("Unknown keyword `{}`", kw),
@@ -204,17 +204,16 @@ impl AstLowering {
                 DeclKind::ExternC { .. } => TypedDeclKind::Class,
                 DeclKind::Enum { .. } => TypedDeclKind::Enum,
                 DeclKind::Extension(e) => {
-                    TypedDeclKind::Extension(self.extension_syntax(e, annotation))
+                    TypedDeclKind::Extension(self.extension_syntax(e))
                 }
                 DeclKind::Use(_) => unreachable!(),
             },
         }
     }
 
-    pub fn var_syntax(&self, v: VarSyntax, annotation: Option<AnnotationsSyntax>) -> TypedVar {
+    pub fn var_syntax(&self, v: VarSyntax) -> TypedVar {
         let expr = self.expr(v.value);
         TypedVar {
-            annotations: self.annotations(annotation),
             package: TypedPackage::Raw(Package::new()),
             is_mut: v.mutability_keyword.token() == "var",
             name: v.name.token(),
@@ -255,7 +254,7 @@ impl AstLowering {
         }
     }
 
-    pub fn fun_syntax(&self, f: FunSyntax, annotations: Option<AnnotationsSyntax>) -> TypedFun {
+    pub fn fun_syntax(&self, f: FunSyntax) -> TypedFun {
         let FunSyntax {
             fun_keyword: _,
             name,
@@ -324,7 +323,6 @@ impl AstLowering {
         let body = body.map(|b| self.fun_body(b));
 
         TypedFun {
-            annotations: self.annotations(annotations),
             package: TypedPackage::Raw(Package::new()),
             modifiers: vec![],
             name: name.token(),
@@ -407,7 +405,6 @@ impl AstLowering {
     pub fn struct_syntax(
         &self,
         s: StructSyntax,
-        annotations: Option<AnnotationsSyntax>,
     ) -> TypedStruct {
         let mut stored_properties: Vec<TypedStoredProperty> = vec![];
         let mut computed_properties: Vec<TypedComputedProperty> = vec![];
@@ -431,7 +428,6 @@ impl AstLowering {
             };
         }
         TypedStruct {
-            annotations: self.annotations(annotations),
             package: TypedPackage::Raw(Package::new()),
             name: s.name.token(),
             type_params: s.type_params.map(|v| {
@@ -560,7 +556,6 @@ impl AstLowering {
     fn extension_syntax(
         &self,
         e: ExtensionSyntax,
-        annotations: Option<AnnotationsSyntax>,
     ) -> TypedExtension {
         let mut computed_properties = vec![];
         let mut member_functions = vec![];
@@ -576,7 +571,6 @@ impl AstLowering {
             }
         }
         TypedExtension {
-            annotations: self.annotations(annotations),
             name: self.type_(e.name),
             protocol: e.protocol_extension.map(|tps| self.type_(tps.protocol)),
             computed_properties,
@@ -587,7 +581,6 @@ impl AstLowering {
     fn protocol_syntax(
         &self,
         p: StructSyntax,
-        annotations: Option<AnnotationsSyntax>,
     ) -> TypedProtocol {
         let mut computed_properties: Vec<TypedComputedProperty> = vec![];
         let mut member_functions: Vec<TypedMemberFunction> = vec![];
@@ -609,7 +602,6 @@ impl AstLowering {
             };
         }
         TypedProtocol {
-            annotations: self.annotations(annotations),
             package: TypedPackage::Raw(Package::new()),
             name: p.name.token(),
             type_params: p.type_params.map(|v| {

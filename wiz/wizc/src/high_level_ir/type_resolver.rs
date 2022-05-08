@@ -183,7 +183,6 @@ impl<'s> TypeResolver<'s> {
             .collect::<Result<Vec<_>>>()?;
         let return_type = self.typed_function_return_type(&f.name, &f.return_type, &f.body)?;
         let fun = TypedFun {
-            annotations: f.annotations,
             package: TypedPackage::Resolved(Package::from(&self.context.current_namespace)),
             modifiers: f.modifiers,
             name: f.name,
@@ -199,7 +198,6 @@ impl<'s> TypeResolver<'s> {
 
     pub fn preload_struct(&mut self, s: TypedStruct) -> Result<()> {
         let TypedStruct {
-            annotations: _,
             package: _,
             name,
             type_params: _,
@@ -287,7 +285,6 @@ impl<'s> TypeResolver<'s> {
 
     pub fn preload_extension(&mut self, e: TypedExtension) -> Result<()> {
         let TypedExtension {
-            annotations,
             name,
             protocol,
             computed_properties,
@@ -337,7 +334,6 @@ impl<'s> TypeResolver<'s> {
 
     pub fn preload_protocol(&mut self, p: TypedProtocol) -> Result<()> {
         let TypedProtocol {
-            annotations: _,
             package: _,
             name,
             type_params: _,
@@ -447,7 +443,6 @@ impl<'s> TypeResolver<'s> {
 
     pub fn typed_var(&mut self, t: TypedVar) -> Result<TypedVar> {
         let TypedVar {
-            annotations,
             package,
             is_mut,
             name,
@@ -462,7 +457,6 @@ impl<'s> TypeResolver<'s> {
             },
         )?;
         let v = TypedVar {
-            annotations,
             package: TypedPackage::Resolved(Package::new()),
             is_mut,
             name,
@@ -553,7 +547,6 @@ impl<'s> TypeResolver<'s> {
             .collect::<Result<Vec<_>>>()?;
         let return_type = self.typed_function_return_type(&f.name, &f.return_type, &f.body)?;
         let fun = TypedFun {
-            annotations: f.annotations,
             package: TypedPackage::Resolved(Package::from(&self.context.current_namespace)),
             modifiers: f.modifiers,
             name: f.name,
@@ -580,7 +573,6 @@ impl<'s> TypeResolver<'s> {
 
     pub fn typed_struct(&mut self, s: TypedStruct) -> Result<TypedStruct> {
         let TypedStruct {
-            annotations,
             package: _,
             name,
             type_params,
@@ -611,7 +603,6 @@ impl<'s> TypeResolver<'s> {
             .collect::<Result<Vec<_>>>()?;
         self.context.clear_current_type();
         Ok(TypedStruct {
-            annotations,
             package: TypedPackage::Resolved(Package::from(&self.context.current_namespace)),
             name,
             type_params,
@@ -692,7 +683,6 @@ impl<'s> TypeResolver<'s> {
         let this_type = self.context.full_type_name(e.name)?;
         self.context.set_current_type(this_type.clone());
         let result = Ok(TypedExtension {
-            annotations: e.annotations,
             name: this_type,
             protocol: match e.protocol {
                 Some(p) => Some(self.context.full_type_name(p)?),
@@ -717,7 +707,6 @@ impl<'s> TypeResolver<'s> {
             .unwrap();
         self.context.set_current_type(rs.self_.clone());
         let result = TypedProtocol {
-            annotations: p.annotations,
             package: TypedPackage::Resolved(Package::from(&self.context.current_namespace)),
             name: p.name,
             type_params: p.type_params, // TODO type params

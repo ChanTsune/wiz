@@ -28,7 +28,6 @@ pub enum TypedDeclKind {
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedVar {
-    pub(crate) annotations: TypedAnnotations,
     pub(crate) package: TypedPackage,
     pub(crate) is_mut: bool,
     pub(crate) name: String,
@@ -38,7 +37,6 @@ pub struct TypedVar {
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedFun {
-    pub(crate) annotations: TypedAnnotations,
     pub(crate) package: TypedPackage,
     pub(crate) modifiers: Vec<String>,
     pub(crate) name: String,
@@ -73,7 +71,6 @@ pub enum TypedFunBody {
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedStruct {
-    pub(crate) annotations: TypedAnnotations,
     pub(crate) package: TypedPackage,
     pub(crate) name: String,
     pub(crate) type_params: Option<Vec<TypedTypeParam>>,
@@ -112,7 +109,6 @@ pub struct TypedMemberFunction {
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedExtension {
-    pub(crate) annotations: TypedAnnotations,
     pub(crate) name: TypedType,
     pub(crate) protocol: Option<TypedType>,
     pub(crate) computed_properties: Vec<TypedComputedProperty>,
@@ -121,7 +117,6 @@ pub struct TypedExtension {
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedProtocol {
-    pub(crate) annotations: TypedAnnotations,
     pub(crate) package: TypedPackage,
     pub(crate) name: String,
     pub(crate) type_params: Option<Vec<TypedTypeParam>>,

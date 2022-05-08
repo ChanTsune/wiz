@@ -1,4 +1,4 @@
-use crate::high_level_ir::typed_decl::{TypedDecl, TypedDeclKind};
+use crate::high_level_ir::typed_decl::{TypedDecl};
 use crate::high_level_ir::typed_use::TypedUse;
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;

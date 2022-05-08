@@ -290,7 +290,7 @@ impl<'arena> HLIR2MLIR<'arena> {
             }
             TypedDeclKind::Fun(f) => {
                 if !f.is_generic() {
-                    let f = FunBuilder::from(self.fun(f, None));
+                    let f = FunBuilder::from(self.fun(f, annotations,None));
                     self.module._add_function(f);
                 }
             }
@@ -332,10 +332,10 @@ impl<'arena> HLIR2MLIR<'arena> {
     fn fun(
         &mut self,
         f: TypedFun,
+        annotations: TypedAnnotations,
         type_arguments: Option<HashMap<TypedTypeParam, TypedType>>,
     ) -> MLFun {
         let TypedFun {
-            annotations,
             package,
             modifiers,
             name,
@@ -370,7 +370,6 @@ impl<'arena> HLIR2MLIR<'arena> {
 
     fn struct_(&mut self, s: TypedStruct) -> (MLStruct, Vec<MLFun>) {
         let TypedStruct {
-            annotations,
             package,
             name,
             type_params,
@@ -462,7 +461,6 @@ impl<'arena> HLIR2MLIR<'arena> {
 
     fn extension(&mut self, e: TypedExtension) -> Vec<MLFun> {
         let TypedExtension {
-            annotations,
             name,
             protocol,
             computed_properties,
