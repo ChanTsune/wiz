@@ -1317,7 +1317,7 @@ fn test_toplevel_var() {
                 package: TypedPackage::Raw(Package::new()),
                 modifiers: vec![],
                 kind: TypedDeclKind::Var(TypedVar {
-                    package: TypedPackage::Resolved(Package::global()),
+                    package: TypedPackage::Resolved(Package::from(&vec!["tests"])),
                     is_mut: false,
                     name: "i".to_string(),
                     type_: Some(TypedType::int32()),
