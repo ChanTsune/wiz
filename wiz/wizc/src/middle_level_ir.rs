@@ -22,7 +22,7 @@ use core::result;
 use std::collections::HashMap;
 use std::error::Error;
 use std::iter::Map;
-use wiz_mir::builder::{BuilderError, FunBuilder, MLIRModule};
+use wiz_mir::builder::{FunBuilder, MLIRModule};
 use wiz_mir::expr::{
     MLArray, MLBinOp, MLBinOpKind, MLBlock, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLMember,
     MLName, MLSubscript, MLTypeCast, MLUnaryOp, MLUnaryOpKind,
@@ -213,10 +213,7 @@ impl<'arena> HLIR2MLIR<'arena> {
     }
 
     fn file(&mut self, f: TypedFile) -> Result<()> {
-        for d in f.body.into_iter() {
-            self.decl(d)?;
-        }
-        Ok(())
+        f.body.into_iter().try_for_each(|d| self.decl(d))
     }
 
     fn stmt(&mut self, s: TypedStmt) -> Vec<MLStmt> {
@@ -280,7 +277,7 @@ impl<'arena> HLIR2MLIR<'arena> {
         }
     }
 
-    fn decl(&mut self, d: TypedDecl) -> result::Result<(), BuilderError> {
+    fn decl(&mut self, d: TypedDecl) -> Result<()> {
         match d {
             TypedDecl::Var(v) => {
                 let v = self.var(v);
