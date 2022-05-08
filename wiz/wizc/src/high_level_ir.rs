@@ -199,7 +199,9 @@ impl AstLowering {
             },
             DeclKind::ExternC { .. } => TypedDeclKind::Class,
             DeclKind::Enum { .. } => TypedDeclKind::Enum,
-            DeclKind::Extension(e) => TypedDeclKind::Extension(self.extension_syntax(e, annotation)),
+            DeclKind::Extension(e) => {
+                TypedDeclKind::Extension(self.extension_syntax(e, annotation))
+            }
             DeclKind::Use(_) => unreachable!(),
         }
     }
