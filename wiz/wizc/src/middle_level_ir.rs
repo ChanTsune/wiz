@@ -198,7 +198,6 @@ impl<'arena> HLIR2MLIR<'arena> {
                 name
             }
             TypedSourceSet::Dir { name, mut items } => {
-                self.context.push_name_space(name.clone());
                 items.sort();
                 let _: Vec<_> = items
                     .into_iter()
@@ -207,7 +206,6 @@ impl<'arena> HLIR2MLIR<'arena> {
                     .into_iter()
                     .flat_map(|i| i.body)
                     .collect();
-                self.context.pop_name_space();
                 name
             }
         };
@@ -215,11 +213,9 @@ impl<'arena> HLIR2MLIR<'arena> {
     }
 
     fn file(&mut self, f: TypedFile) -> Result<()> {
-        self.context.push_name_space(f.name.clone());
         for d in f.body.into_iter() {
             self.decl(d)?;
         }
-        self.context.pop_name_space();
         Ok(())
     }
 

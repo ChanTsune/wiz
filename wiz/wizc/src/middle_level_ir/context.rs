@@ -7,7 +7,6 @@ use wiz_mir::ml_type::MLValueType;
 pub(crate) struct HLIR2MLIRContext {
     pub(crate) declaration_annotations: HashMap<String, TypedAnnotations>,
     pub(crate) structs: HashMap<MLValueType, MLStruct>,
-    pub(crate) current_name_space: Vec<String>,
 }
 
 impl HLIR2MLIRContext {
@@ -38,13 +37,5 @@ impl HLIR2MLIRContext {
 
     pub(crate) fn add_struct(&mut self, typ: MLValueType, struct_: MLStruct) {
         self.structs.insert(typ, struct_);
-    }
-
-    pub(crate) fn push_name_space(&mut self, name: String) {
-        self.current_name_space.push(name)
-    }
-
-    pub(crate) fn pop_name_space(&mut self) {
-        self.current_name_space.pop();
     }
 }

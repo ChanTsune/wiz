@@ -197,6 +197,7 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
     let mut f = fs::File::create(mlir_out_dir.join(&mlfile.name))?;
     write!(f, "{}", mlfile.to_string())?;
 
+    println!("==== codegen ====");
     let module_name = &mlfile.name;
     let context = Context::create();
     let mut codegen = CodeGen::new(&context, module_name, config.target_triple());
