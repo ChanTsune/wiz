@@ -123,7 +123,7 @@ impl<'s> TypeResolver<'s> {
     fn preload_decl(&mut self, d: TypedDeclKind) -> Result<()> {
         match d {
             TypedDeclKind::Var(v) => {
-                let v = self.typed_var(v)?;
+                let v = self.typed_var(v, true)?;
                 self.context.arena.register_value(
                     &self.context.current_namespace,
                     &v.name,
@@ -424,13 +424,13 @@ impl<'s> TypeResolver<'s> {
             annotations: d.annotations,
             package: d.package,
             modifiers: d.modifiers,
-            kind: self.decl_kind(d.kind)?,
+            kind: self.decl_kind(d.kind, true)?,
         })
     }
 
-    fn decl_kind(&mut self, d: TypedDeclKind) -> Result<TypedDeclKind> {
+    fn decl_kind(&mut self, d: TypedDeclKind, is_toplevel: bool) -> Result<TypedDeclKind> {
         Ok(match d {
-            TypedDeclKind::Var(v) => TypedDeclKind::Var(self.typed_var(v)?),
+            TypedDeclKind::Var(v) => TypedDeclKind::Var(self.typed_var(v, is_toplevel)?),
             TypedDeclKind::Fun(f) => TypedDeclKind::Fun(self.typed_fun(f)?),
             TypedDeclKind::Struct(s) => TypedDeclKind::Struct(self.typed_struct(s)?),
             TypedDeclKind::Class => TypedDeclKind::Class,
@@ -440,7 +440,7 @@ impl<'s> TypeResolver<'s> {
         })
     }
 
-    pub fn typed_var(&mut self, t: TypedVar) -> Result<TypedVar> {
+    pub fn typed_var(&mut self, t: TypedVar, is_toplevel: bool) -> Result<TypedVar> {
         let TypedVar {
             package,
             is_mut,
@@ -456,21 +456,23 @@ impl<'s> TypeResolver<'s> {
             },
         )?;
         let v = TypedVar {
-            package: TypedPackage::Resolved(Package::new()),
+            package: TypedPackage::Resolved(if is_toplevel { Package::from(&self.context.current_namespace)} else { Package::new() }),
             is_mut,
             name,
             type_: value.type_(),
             value,
         };
-        self.context.register_to_env(
-            v.name.clone(),
-            (
-                vec![],
-                v.type_
-                    .clone()
-                    .ok_or_else(|| ResolverError::from("Cannot resolve variable type"))?,
-            ),
-        );
+        if !is_toplevel {
+            self.context.register_to_env(
+                v.name.clone(),
+                (
+                    vec![],
+                    v.type_
+                        .clone()
+                        .ok_or_else(|| ResolverError::from("Cannot resolve variable type"))?,
+                ),
+            );
+        }
         Ok(v)
     }
 
@@ -1164,7 +1166,7 @@ impl<'s> TypeResolver<'s> {
     pub fn stmt(&mut self, s: TypedStmt) -> Result<TypedStmt> {
         Ok(match s {
             TypedStmt::Expr(e) => TypedStmt::Expr(self.expr(e, None)?),
-            TypedStmt::Decl(d) => TypedStmt::Decl(self.decl_kind(d)?),
+            TypedStmt::Decl(d) => TypedStmt::Decl(self.decl_kind(d, false)?),
             TypedStmt::Assignment(a) => TypedStmt::Assignment(self.assignment_stmt(a)?),
             TypedStmt::Loop(l) => TypedStmt::Loop(self.typed_loop_stmt(l)?),
         })

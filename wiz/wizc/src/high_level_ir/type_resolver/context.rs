@@ -217,14 +217,9 @@ impl ResolverContext {
             EnvValue::NameSpace(_) => unreachable!(),
             EnvValue::Value(t_set) => Self::resolve_overload(&t_set, type_annotation)
                 .map(|(ns, t)| {
-                    let is_function = t.is_function_type();
                     (
                         t,
-                        if is_function {
-                            TypedPackage::Resolved(Package::from(&ns))
-                        } else {
-                            TypedPackage::Resolved(Package::global())
-                        },
+                        TypedPackage::Resolved(Package::from(&ns)),
                     )
                 })
                 .ok_or_else(|| {

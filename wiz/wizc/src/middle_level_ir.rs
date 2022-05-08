@@ -285,7 +285,7 @@ impl<'arena> HLIR2MLIR<'arena> {
         } = d;
         match kind {
             TypedDeclKind::Var(v) => {
-                let v = self.var(v);
+                let v = self.global_var(v.clone(), &v.package);
                 self.module.add_global_var(v);
             }
             TypedDeclKind::Fun(f) => {
@@ -317,6 +317,16 @@ impl<'arena> HLIR2MLIR<'arena> {
             }
         };
         Ok(())
+    }
+
+    fn global_var(&mut self, v: TypedVar, package: &TypedPackage) -> MLVar {
+        let expr = self.expr(v.value);
+        MLVar {
+            is_mute: v.is_mut,
+            name: self.package_name_mangling(package, &v.name),
+            type_: self.type_(v.type_.unwrap()),
+            value: expr,
+        }
     }
 
     fn var(&mut self, v: TypedVar) -> MLVar {
