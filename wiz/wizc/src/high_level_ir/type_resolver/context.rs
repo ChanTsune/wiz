@@ -362,6 +362,7 @@ impl ResolverContext {
 #[cfg(test)]
 mod tests {
     use super::{ResolverContext, ResolverStruct, StructKind};
+    use crate::constants::INT32;
     use crate::high_level_ir::typed_type::TypedType;
 
     #[test]
@@ -371,7 +372,7 @@ mod tests {
         let env = context.get_current_name_environment();
 
         assert_eq!(
-            env.get_type(vec![], "Int32"),
+            env.get_type(vec![], INT32),
             Some(&ResolverStruct::new(TypedType::int32(), StructKind::Struct)),
         );
     }
