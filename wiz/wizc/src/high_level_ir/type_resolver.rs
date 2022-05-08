@@ -456,7 +456,11 @@ impl<'s> TypeResolver<'s> {
             },
         )?;
         let v = TypedVar {
-            package: TypedPackage::Resolved(if is_toplevel { Package::from(&self.context.current_namespace)} else { Package::new() }),
+            package: TypedPackage::Resolved(if is_toplevel {
+                Package::from(&self.context.current_namespace)
+            } else {
+                Package::new()
+            }),
             is_mut,
             name,
             type_: value.type_(),

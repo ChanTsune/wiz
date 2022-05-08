@@ -216,12 +216,7 @@ impl ResolverContext {
         match env_value {
             EnvValue::NameSpace(_) => unreachable!(),
             EnvValue::Value(t_set) => Self::resolve_overload(&t_set, type_annotation)
-                .map(|(ns, t)| {
-                    (
-                        t,
-                        TypedPackage::Resolved(Package::from(&ns)),
-                    )
-                })
+                .map(|(ns, t)| (t, TypedPackage::Resolved(Package::from(&ns))))
                 .ok_or_else(|| {
                     ResolverError::from(format!(
                         "Dose not match any overloaded function `{}`",
