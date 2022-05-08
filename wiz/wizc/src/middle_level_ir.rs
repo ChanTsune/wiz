@@ -290,7 +290,7 @@ impl<'arena> HLIR2MLIR<'arena> {
             }
             TypedDeclKind::Fun(f) => {
                 if !f.is_generic() {
-                    let f = FunBuilder::from(self.fun(f, annotations,None));
+                    let f = FunBuilder::from(self.fun(f, annotations, None));
                     self.module._add_function(f);
                 }
             }

@@ -203,9 +203,7 @@ impl AstLowering {
                 },
                 DeclKind::ExternC { .. } => TypedDeclKind::Class,
                 DeclKind::Enum { .. } => TypedDeclKind::Enum,
-                DeclKind::Extension(e) => {
-                    TypedDeclKind::Extension(self.extension_syntax(e))
-                }
+                DeclKind::Extension(e) => TypedDeclKind::Extension(self.extension_syntax(e)),
                 DeclKind::Use(_) => unreachable!(),
             },
         }
@@ -402,10 +400,7 @@ impl AstLowering {
         }
     }
 
-    pub fn struct_syntax(
-        &self,
-        s: StructSyntax,
-    ) -> TypedStruct {
+    pub fn struct_syntax(&self, s: StructSyntax) -> TypedStruct {
         let mut stored_properties: Vec<TypedStoredProperty> = vec![];
         let mut computed_properties: Vec<TypedComputedProperty> = vec![];
         let mut initializers: Vec<TypedInitializer> = vec![];
@@ -553,10 +548,7 @@ impl AstLowering {
         }
     }
 
-    fn extension_syntax(
-        &self,
-        e: ExtensionSyntax,
-    ) -> TypedExtension {
+    fn extension_syntax(&self, e: ExtensionSyntax) -> TypedExtension {
         let mut computed_properties = vec![];
         let mut member_functions = vec![];
         for prop in e.body.properties {
@@ -578,10 +570,7 @@ impl AstLowering {
         }
     }
 
-    fn protocol_syntax(
-        &self,
-        p: StructSyntax,
-    ) -> TypedProtocol {
+    fn protocol_syntax(&self, p: StructSyntax) -> TypedProtocol {
         let mut computed_properties: Vec<TypedComputedProperty> = vec![];
         let mut member_functions: Vec<TypedMemberFunction> = vec![];
         for p in p.body.properties {
