@@ -29,7 +29,8 @@ impl FunBuilder {
 
     pub fn build_stmt(&mut self, statement: MLStmt) -> BResult<()> {
         self.declare = false;
-        Ok(self.stmts.push(statement))
+        self.stmts.push(statement);
+        Ok(())
     }
 
     pub fn build(&self) -> (MLFun, Option<MLFun>) {
