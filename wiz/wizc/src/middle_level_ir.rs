@@ -526,10 +526,10 @@ impl<'arena> HLIR2MLIR<'arena> {
     }
 
     fn name(&self, n: TypedName) -> MLName {
-        let mut mangled_name = if self
+        let has_no_mangle = self
             .context
-            .declaration_has_annotation(&n.name, "no_mangle")
-        {
+            .declaration_has_annotation(&n.name, "no_mangle");
+        let mut mangled_name = if has_no_mangle {
             n.name
         } else {
             self.package_name_mangling(&n.package, &*n.name)
