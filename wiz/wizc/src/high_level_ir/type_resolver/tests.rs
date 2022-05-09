@@ -170,7 +170,7 @@ fn test_unsafe_pointer() {
                                         is_safe: false,
                                         type_: Some(TypedType::unsafe_pointer(TypedType::uint8())),
                                     }),
-                                })
+                                }),
                             })],
                         })),
                         return_type: Some(TypedType::unit()),
@@ -296,7 +296,7 @@ fn test_struct_stored_property() {
                                         is_safe: false,
                                         type_: Some(TypedType::int64()),
                                     }),
-                                })
+                                }),
                             })],
                         })),
                         return_type: Some(TypedType::unit()),
@@ -438,36 +438,40 @@ fn test_struct_init() {
                                                         typ: TypedType::int64(),
                                                     }],
                                                     return_type: TypedType::Value(
-                                                        TypedValueType::Value(TypedNamedValueType {
-                                                            package: TypedPackage::Resolved(
-                                                                Package::from(&vec!["test"]),
-                                                            ),
-                                                            name: "A".to_string(),
-                                                            type_args: None,
-                                                        }),
+                                                        TypedValueType::Value(
+                                                            TypedNamedValueType {
+                                                                package: TypedPackage::Resolved(
+                                                                    Package::from(&vec!["test"]),
+                                                                ),
+                                                                name: "A".to_string(),
+                                                                type_args: None,
+                                                            },
+                                                        ),
                                                     ),
                                                 },
                                             ))),
                                         })),
                                         args: vec![TypedCallArg {
                                             label: Some(String::from("a")),
-                                            arg: Box::new(TypedExpr::Literal(TypedLiteral::Integer {
-                                                value: "1".to_string(),
-                                                type_: Some(TypedType::int64()),
-                                            })),
+                                            arg: Box::new(TypedExpr::Literal(
+                                                TypedLiteral::Integer {
+                                                    value: "1".to_string(),
+                                                    type_: Some(TypedType::int64()),
+                                                },
+                                            )),
                                             is_vararg: false,
                                         }],
                                         type_: Some(TypedType::Value(TypedValueType::Value(
                                             TypedNamedValueType {
-                                                package: TypedPackage::Resolved(Package::from(&vec![
-                                                    "test",
-                                                ])),
+                                                package: TypedPackage::Resolved(Package::from(
+                                                    &vec!["test"],
+                                                )),
                                                 name: "A".to_string(),
                                                 type_args: None,
                                             },
                                         ))),
                                     }),
-                                })
+                                }),
                             })],
                         })),
                         return_type: Some(TypedType::unit()),
@@ -1196,7 +1200,7 @@ fn test_if() {
                                             value: "1".to_string(),
                                             type_: Some(TypedType::int64()),
                                         }),
-                                    })
+                                    }),
                                 })],
                             },
                             type_: Some(TypedType::noting()),
@@ -1247,7 +1251,7 @@ fn test_reference_dereference() {
                                         value: "1".to_string(),
                                         type_: Some(TypedType::int64()),
                                     }),
-                                })
+                                }),
                             }),
                             TypedStmt::Decl(TypedDecl {
                                 annotations: Default::default(),
@@ -1256,9 +1260,9 @@ fn test_reference_dereference() {
                                 kind: TypedDeclKind::Var(TypedVar {
                                     is_mut: false,
                                     name: "b".to_string(),
-                                    type_: Some(TypedType::Value(TypedValueType::Reference(Box::new(
-                                        TypedType::int64(),
-                                    )))),
+                                    type_: Some(TypedType::Value(TypedValueType::Reference(
+                                        Box::new(TypedType::int64()),
+                                    ))),
                                     value: TypedExpr::UnaryOp(TypedUnaryOp::Prefix(
                                         TypedPrefixUnaryOp {
                                             target: Box::new(TypedExpr::Name(TypedName {
@@ -1268,12 +1272,14 @@ fn test_reference_dereference() {
                                                 type_arguments: None,
                                             })),
                                             operator: TypedPrefixUnaryOperator::Reference,
-                                            type_: Some(TypedType::Value(TypedValueType::Reference(
-                                                Box::new(TypedType::int64()),
-                                            ))),
+                                            type_: Some(TypedType::Value(
+                                                TypedValueType::Reference(Box::new(
+                                                    TypedType::int64(),
+                                                )),
+                                            )),
                                         },
                                     )),
-                                })
+                                }),
                             }),
                             TypedStmt::Decl(TypedDecl {
                                 annotations: Default::default(),
@@ -1299,7 +1305,7 @@ fn test_reference_dereference() {
                                             type_: Some(TypedType::int64()),
                                         },
                                     )),
-                                })
+                                }),
                             }),
                         ],
                     })),

@@ -72,16 +72,20 @@ impl<'s> TypeResolver<'s> {
         for d in f.body.iter() {
             match &d.kind {
                 TypedDeclKind::Struct(s) => {
-                    self.context
-                        .arena
-                        .register_struct(current_namespace, &s.name, d.annotations.clone());
+                    self.context.arena.register_struct(
+                        current_namespace,
+                        &s.name,
+                        d.annotations.clone(),
+                    );
                 }
                 TypedDeclKind::Class => {}
                 TypedDeclKind::Enum => {}
                 TypedDeclKind::Protocol(p) => {
-                    self.context
-                        .arena
-                        .register_protocol(current_namespace, &p.name, d.annotations.clone());
+                    self.context.arena.register_protocol(
+                        current_namespace,
+                        &p.name,
+                        d.annotations.clone(),
+                    );
                 }
                 _ => {}
             }
@@ -129,7 +133,7 @@ impl<'s> TypeResolver<'s> {
                     &v.name,
                     v.type_
                         .ok_or_else(|| ResolverError::from("Cannot resolve variable type"))?,
-                    d.annotations
+                    d.annotations,
                 );
             }
             TypedDeclKind::Fun(f) => {
@@ -138,7 +142,7 @@ impl<'s> TypeResolver<'s> {
                     &self.context.current_namespace,
                     &fun.name,
                     fun.type_().unwrap(),
-                    d.annotations
+                    d.annotations,
                 );
             }
             TypedDeclKind::Struct(s) => {
@@ -1147,9 +1151,9 @@ impl<'s> TypeResolver<'s> {
                         v.name.clone(),
                         (
                             vec![],
-                            v.type_
-                                .clone()
-                                .ok_or_else(|| ResolverError::from("Cannot resolve variable type"))?,
+                            v.type_.clone().ok_or_else(|| {
+                                ResolverError::from("Cannot resolve variable type")
+                            })?,
                         ),
                     )
                 };
