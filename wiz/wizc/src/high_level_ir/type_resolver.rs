@@ -210,7 +210,7 @@ impl<'s> TypeResolver<'s> {
             .ok_or_else(|| {
                 ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
             })?;
-        let this_type = rs.self_.clone();
+        let this_type = rs.self_type();
         self.context.set_current_type(this_type.clone());
         for stored_property in stored_properties.into_iter() {
             let type_ = self.context.full_type_name(stored_property.type_)?;
@@ -343,7 +343,7 @@ impl<'s> TypeResolver<'s> {
             .ok_or_else(|| {
                 ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
             })?;
-        let this_type = rs.self_.clone();
+        let this_type = rs.self_type();
         self.context.set_current_type(this_type);
         for computed_property in computed_properties.into_iter() {
             let type_ = self.context.full_type_name(computed_property.type_)?;
@@ -579,7 +579,7 @@ impl<'s> TypeResolver<'s> {
             .arena
             .get_type(&self.context.current_namespace, &name)
             .unwrap();
-        let this_type = rs.self_.clone();
+        let this_type = rs.self_type();
         self.context.set_current_type(this_type);
         let initializers = initializers
             .into_iter()
@@ -697,7 +697,7 @@ impl<'s> TypeResolver<'s> {
             .arena
             .get_type(&self.context.current_namespace, &p.name)
             .unwrap();
-        self.context.set_current_type(rs.self_.clone());
+        self.context.set_current_type(rs.self_type());
         let result = TypedProtocol {
             name: p.name,
             type_params: p.type_params, // TODO type params

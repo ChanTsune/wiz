@@ -15,7 +15,7 @@ pub enum StructKind {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct ResolverStruct {
-    pub(crate) self_: TypedType, // TODO: remove this field
+    self_: TypedType, // TODO: remove this field
     pub(crate) namespace: Vec<String>,
     pub(crate) name: String,
     pub(crate) kind: StructKind,
@@ -53,6 +53,10 @@ impl ResolverStruct {
         } else {
             None
         }
+    }
+
+    pub(crate) fn self_type(&self) -> TypedType {
+        self.self_.clone()
     }
 
     pub fn is_generic(&self) -> bool {
