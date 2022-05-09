@@ -45,7 +45,7 @@ impl ResolverContext {
 
     pub fn push_name_space(&mut self, name: String) {
         self.arena
-            .register_namespace(&self.current_namespace, &name);
+            .register_namespace(&self.current_namespace, &name, Default::default());
         self.current_namespace.push(name);
     }
 
@@ -90,7 +90,7 @@ impl ResolverContext {
                 EnvValue::Value(v) => {
                     for t in v {
                         self.arena
-                            .register_value(&self.current_namespace, &name, t.1)
+                            .register_value(&self.current_namespace, &name, t.1, Default::default())
                     }
                 }
                 EnvValue::Type(_) => todo!(),

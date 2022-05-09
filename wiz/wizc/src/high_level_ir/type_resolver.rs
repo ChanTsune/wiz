@@ -74,14 +74,14 @@ impl<'s> TypeResolver<'s> {
                 TypedDeclKind::Struct(s) => {
                     self.context
                         .arena
-                        .register_struct(current_namespace, &s.name);
+                        .register_struct(current_namespace, &s.name, d.annotations.clone());
                 }
                 TypedDeclKind::Class => {}
                 TypedDeclKind::Enum => {}
                 TypedDeclKind::Protocol(p) => {
                     self.context
                         .arena
-                        .register_protocol(current_namespace, &p.name);
+                        .register_protocol(current_namespace, &p.name, d.annotations.clone());
                 }
                 _ => {}
             }
@@ -111,7 +111,7 @@ impl<'s> TypeResolver<'s> {
             self.context.use_name_space(u.package.names.clone());
         }
         for d in f.body {
-            self.preload_decl(d.kind)?;
+            self.preload_decl(d)?;
         }
         for u in f.uses.iter() {
             self.context.use_name_space(u.package.names.clone());
@@ -120,15 +120,16 @@ impl<'s> TypeResolver<'s> {
         Ok(())
     }
 
-    fn preload_decl(&mut self, d: TypedDeclKind) -> Result<()> {
-        match d {
+    fn preload_decl(&mut self, d: TypedDecl) -> Result<()> {
+        match d.kind {
             TypedDeclKind::Var(v) => {
-                let v = self.typed_var(v, true)?;
+                let v = self.typed_var(v)?;
                 self.context.arena.register_value(
                     &self.context.current_namespace,
                     &v.name,
                     v.type_
                         .ok_or_else(|| ResolverError::from("Cannot resolve variable type"))?,
+                    d.annotations
                 );
             }
             TypedDeclKind::Fun(f) => {
@@ -137,6 +138,7 @@ impl<'s> TypeResolver<'s> {
                     &self.context.current_namespace,
                     &fun.name,
                     fun.type_().unwrap(),
+                    d.annotations
                 );
             }
             TypedDeclKind::Struct(s) => {
@@ -421,23 +423,19 @@ impl<'s> TypeResolver<'s> {
             annotations: d.annotations,
             package: Package::from(&self.context.current_namespace),
             modifiers: d.modifiers,
-            kind: self.decl_kind(d.kind, true)?,
+            kind: match d.kind {
+                TypedDeclKind::Var(v) => TypedDeclKind::Var(self.typed_var(v)?),
+                TypedDeclKind::Fun(f) => TypedDeclKind::Fun(self.typed_fun(f)?),
+                TypedDeclKind::Struct(s) => TypedDeclKind::Struct(self.typed_struct(s)?),
+                TypedDeclKind::Class => TypedDeclKind::Class,
+                TypedDeclKind::Enum => TypedDeclKind::Enum,
+                TypedDeclKind::Protocol(p) => TypedDeclKind::Protocol(self.typed_protocol(p)?),
+                TypedDeclKind::Extension(e) => TypedDeclKind::Extension(self.typed_extension(e)?),
+            },
         })
     }
 
-    fn decl_kind(&mut self, d: TypedDeclKind, is_toplevel: bool) -> Result<TypedDeclKind> {
-        Ok(match d {
-            TypedDeclKind::Var(v) => TypedDeclKind::Var(self.typed_var(v, is_toplevel)?),
-            TypedDeclKind::Fun(f) => TypedDeclKind::Fun(self.typed_fun(f)?),
-            TypedDeclKind::Struct(s) => TypedDeclKind::Struct(self.typed_struct(s)?),
-            TypedDeclKind::Class => TypedDeclKind::Class,
-            TypedDeclKind::Enum => TypedDeclKind::Enum,
-            TypedDeclKind::Protocol(p) => TypedDeclKind::Protocol(self.typed_protocol(p)?),
-            TypedDeclKind::Extension(e) => TypedDeclKind::Extension(self.typed_extension(e)?),
-        })
-    }
-
-    pub fn typed_var(&mut self, t: TypedVar, is_toplevel: bool) -> Result<TypedVar> {
+    pub fn typed_var(&mut self, t: TypedVar) -> Result<TypedVar> {
         let TypedVar {
             is_mut,
             name,
@@ -457,17 +455,6 @@ impl<'s> TypeResolver<'s> {
             type_: value.type_(),
             value,
         };
-        if !is_toplevel {
-            self.context.register_to_env(
-                v.name.clone(),
-                (
-                    vec![],
-                    v.type_
-                        .clone()
-                        .ok_or_else(|| ResolverError::from("Cannot resolve variable type"))?,
-                ),
-            );
-        }
         Ok(v)
     }
 
@@ -557,11 +544,6 @@ impl<'s> TypeResolver<'s> {
             return_type: Some(return_type),
         };
         self.context.pop_local_stack();
-        self.context.arena.register_value(
-            &self.context.current_namespace,
-            &fun.name,
-            fun.type_().unwrap(),
-        );
         Ok(fun)
     }
 
@@ -1157,7 +1139,22 @@ impl<'s> TypeResolver<'s> {
     pub fn stmt(&mut self, s: TypedStmt) -> Result<TypedStmt> {
         Ok(match s {
             TypedStmt::Expr(e) => TypedStmt::Expr(self.expr(e, None)?),
-            TypedStmt::Decl(d) => TypedStmt::Decl(self.decl_kind(d, false)?),
+            TypedStmt::Decl(d) => TypedStmt::Decl({
+                let mut d = self.decl(d)?;
+                if let TypedDeclKind::Var(v) = &d.kind {
+                    d.package = Package::new();
+                    self.context.register_to_env(
+                        v.name.clone(),
+                        (
+                            vec![],
+                            v.type_
+                                .clone()
+                                .ok_or_else(|| ResolverError::from("Cannot resolve variable type"))?,
+                        ),
+                    )
+                };
+                d
+            }),
             TypedStmt::Assignment(a) => TypedStmt::Assignment(self.assignment_stmt(a)?),
             TypedStmt::Loop(l) => TypedStmt::Loop(self.typed_loop_stmt(l)?),
         })

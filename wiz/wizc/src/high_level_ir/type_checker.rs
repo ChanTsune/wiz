@@ -150,7 +150,7 @@ impl<'s> TypeChecker<'s> {
     fn statement(&mut self, typed_statement: &TypedStmt) {
         match typed_statement {
             TypedStmt::Expr(e) => self.expression(e),
-            TypedStmt::Decl(d) => self.decl_kind(d),
+            TypedStmt::Decl(d) => self.decl(&d.kind, &d.package),
             TypedStmt::Assignment(a) => self.assignment_statement(a),
             TypedStmt::Loop(l) => self.loop_statement(l),
         }

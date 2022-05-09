@@ -218,7 +218,7 @@ impl<'arena> HLIR2MLIR<'arena> {
     fn stmt(&mut self, s: TypedStmt) -> Vec<MLStmt> {
         match s {
             TypedStmt::Expr(e) => vec![MLStmt::Expr(self.expr(e))],
-            TypedStmt::Decl(d) => match d {
+            TypedStmt::Decl(d) => match d.kind {
                 TypedDeclKind::Var(v) => {
                     vec![MLStmt::Var(self.var(v))]
                 }
@@ -527,9 +527,11 @@ impl<'arena> HLIR2MLIR<'arena> {
 
     fn name(&self, n: TypedName) -> MLName {
         let package = n.package.clone().into_resolved();
-        let has_no_mangle = self
-            .context
-            .declaration_has_annotation(&n.name, "no_mangle");
+        let has_no_mangle = if let Some(i) = self.arena.get(&package.names, &n.name) {
+            i.has_annotation("no_mangle")
+        } else {
+            false
+        };
         let mut mangled_name = if has_no_mangle {
             n.name
         } else {

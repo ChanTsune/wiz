@@ -9,6 +9,7 @@ use crate::high_level_ir::typed_type::{
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
+use crate::high_level_ir::typed_annotation::TypedAnnotations;
 
 #[derive(Debug, Clone)]
 pub struct ArenaError(String);
@@ -33,7 +34,7 @@ impl Default for ResolverArena {
         let mut declarations = HashMap::new();
         declarations.insert(
             DeclarationId::ROOT,
-            DeclarationItem::new(DeclarationItemKind::Namespace(Namespace::root())),
+            DeclarationItem::new(Default::default(), DeclarationItemKind::Namespace(Namespace::root())),
         );
 
         let mut arena = Self {
@@ -46,7 +47,7 @@ impl Default for ResolverArena {
             match &t {
                 TypedType::Value(v) => match v {
                     TypedValueType::Value(v) => {
-                        arena.register_struct(&t.package().into_resolved().names, &v.name);
+                        arena.register_struct(&t.package().into_resolved().names, &v.name, Default::default());
                     }
                     TypedValueType::Array(_, _) => {}
                     TypedValueType::Tuple(_) => {}
@@ -124,12 +125,13 @@ impl ResolverArena {
         &mut self,
         namespace: &[T],
         name: &str,
+        annotation: TypedAnnotations,
     ) -> Option<()> {
         let parent_id = self.resolve_namespace_from_root(namespace)?;
         self.register(
             namespace,
             name,
-            DeclarationItem::new(DeclarationItemKind::Namespace(Namespace::new(
+            DeclarationItem::new(annotation,DeclarationItemKind::Namespace(Namespace::new(
                 name, parent_id,
             ))),
         )
@@ -237,22 +239,25 @@ impl ResolverArena {
         &mut self,
         namespace: &[T],
         name: &str, /* type_parameters */
+        annotation: TypedAnnotations,
     ) {
-        self.register_type(namespace, name, StructKind::Struct)
+        self.register_type(namespace, name, annotation,StructKind::Struct)
     }
 
     pub(crate) fn register_protocol<T: ToString>(
         &mut self,
         namespace: &[T],
         name: &str, /* type_parameters */
+        annotation: TypedAnnotations,
     ) {
-        self.register_type(namespace, name, StructKind::Protocol)
+        self.register_type(namespace, name, annotation,StructKind::Protocol)
     }
 
     fn register_type<T: ToString>(
         &mut self,
         namespace: &[T],
         name: &str,
+        annotation: TypedAnnotations,
         kind: StructKind, /* type_parameters */
     ) {
         let s = ResolverStruct::new(
@@ -266,7 +271,7 @@ impl ResolverArena {
         self.register(
             namespace,
             name,
-            DeclarationItem::new(DeclarationItemKind::Type(s)),
+            DeclarationItem::new(annotation,DeclarationItemKind::Type(s)),
         );
     }
 
@@ -299,12 +304,13 @@ impl ResolverArena {
         namespace: &[T],
         name: &str,
         ty: TypedType,
+        annotation: TypedAnnotations,
     ) {
         let vec_namespace = namespace.iter().map(T::to_string).collect::<Vec<_>>();
         self.register(
             namespace,
             name,
-            DeclarationItem::new(DeclarationItemKind::Value((vec_namespace, ty))),
+            DeclarationItem::new(annotation,DeclarationItemKind::Value((vec_namespace, ty))),
         );
     }
 
@@ -344,11 +350,11 @@ mod tests {
         let root_namespace: [&str; 0] = [];
         let child_namespace_name = "std";
 
-        arena.register_namespace(&root_namespace, child_namespace_name);
+        arena.register_namespace(&root_namespace, child_namespace_name, Default::default());
 
         let ns_id = arena.resolve_namespace_from_root(&[child_namespace_name]);
         assert_eq!(
-            DeclarationItem::new(DeclarationItemKind::Namespace(Namespace::new(
+            DeclarationItem::new(Default::default(),DeclarationItemKind::Namespace(Namespace::new(
                 child_namespace_name,
                 DeclarationId::ROOT
             ))),
@@ -363,15 +369,15 @@ mod tests {
         let child_namespace_name = "std";
         let grandchildren_namespace_name = "collections";
 
-        arena.register_namespace(&root_namespace, child_namespace_name);
-        arena.register_namespace(&[child_namespace_name], grandchildren_namespace_name);
+        arena.register_namespace(&root_namespace, child_namespace_name, Default::default());
+        arena.register_namespace(&[child_namespace_name], grandchildren_namespace_name, Default::default());
 
         let ns_id = arena
             .resolve_namespace_from_root(&[child_namespace_name, grandchildren_namespace_name]);
 
         let parent_id = arena.resolve_namespace_from_root(&[child_namespace_name]);
         assert_eq!(
-            DeclarationItem::new(DeclarationItemKind::Namespace(Namespace::new(
+            DeclarationItem::new(Default::default(),DeclarationItemKind::Namespace(Namespace::new(
                 grandchildren_namespace_name,
                 parent_id.unwrap()
             ))),
@@ -387,13 +393,14 @@ mod tests {
         let grandchildren_namespace_name = "collections";
         let type_name = "type";
 
-        arena.register_namespace(&root_namespace, child_namespace_name);
-        arena.register_namespace(&[child_namespace_name], grandchildren_namespace_name);
+        arena.register_namespace(&root_namespace, child_namespace_name, Default::default());
+        arena.register_namespace(&[child_namespace_name], grandchildren_namespace_name, Default::default());
         arena.register_struct(
             &[child_namespace_name, grandchildren_namespace_name],
             type_name,
+            Default::default()
         );
-        arena.register_namespace(&root_namespace, child_namespace_name);
+        arena.register_namespace(&root_namespace, child_namespace_name, Default::default());
 
         let item = arena.get(
             &[child_namespace_name, grandchildren_namespace_name],
@@ -401,7 +408,7 @@ mod tests {
         );
         assert_eq!(
             item,
-            Some(&DeclarationItem::new(DeclarationItemKind::Type(
+            Some(&DeclarationItem::new(Default::default(),DeclarationItemKind::Type(
                 ResolverStruct::new(
                     TypedType::Value(TypedValueType::Value(TypedNamedValueType {
                         package: TypedPackage::Resolved(Package::from(&vec![
@@ -424,8 +431,8 @@ mod tests {
         let child_namespace_name = "std";
         let grandchildren_namespace_name = "collections";
 
-        arena.register_namespace(&root_namespace, child_namespace_name);
-        arena.register_namespace(&[child_namespace_name], grandchildren_namespace_name);
+        arena.register_namespace(&root_namespace, child_namespace_name, Default::default());
+        arena.register_namespace(&[child_namespace_name], grandchildren_namespace_name, Default::default());
 
         let ns_id = arena
             .resolve_namespace_from_root(&[child_namespace_name, grandchildren_namespace_name]);

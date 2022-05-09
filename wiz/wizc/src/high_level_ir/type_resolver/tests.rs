@@ -143,30 +143,35 @@ fn test_unsafe_pointer() {
                             })),
                         }],
                         body: Some(TypedFunBody::Block(TypedBlock {
-                            body: vec![TypedStmt::Decl(TypedDeclKind::Var(TypedVar {
-                                is_mut: false,
-                                name: "a".to_string(),
-                                type_: Some(TypedType::unsafe_pointer(TypedType::uint8())),
-                                value: TypedExpr::Member(TypedInstanceMember {
-                                    target: Box::new(TypedExpr::Name(TypedName {
-                                        package: TypedPackage::Resolved(Package::new()),
-                                        name: "a".to_string(),
-                                        type_: Some(TypedType::Value(TypedValueType::Value(
-                                            TypedNamedValueType {
-                                                package: TypedPackage::Resolved(Package::from(
-                                                    &vec!["test"],
-                                                )),
-                                                name: "A".to_string(),
-                                                type_args: None,
-                                            },
-                                        ))),
-                                        type_arguments: None,
-                                    })),
+                            body: vec![TypedStmt::Decl(TypedDecl {
+                                annotations: Default::default(),
+                                package: Package::new(),
+                                modifiers: vec![],
+                                kind: TypedDeclKind::Var(TypedVar {
+                                    is_mut: false,
                                     name: "a".to_string(),
-                                    is_safe: false,
                                     type_: Some(TypedType::unsafe_pointer(TypedType::uint8())),
-                                }),
-                            }))],
+                                    value: TypedExpr::Member(TypedInstanceMember {
+                                        target: Box::new(TypedExpr::Name(TypedName {
+                                            package: TypedPackage::Resolved(Package::new()),
+                                            name: "a".to_string(),
+                                            type_: Some(TypedType::Value(TypedValueType::Value(
+                                                TypedNamedValueType {
+                                                    package: TypedPackage::Resolved(Package::from(
+                                                        &vec!["test"],
+                                                    )),
+                                                    name: "A".to_string(),
+                                                    type_args: None,
+                                                },
+                                            ))),
+                                            type_arguments: None,
+                                        })),
+                                        name: "a".to_string(),
+                                        is_safe: false,
+                                        type_: Some(TypedType::unsafe_pointer(TypedType::uint8())),
+                                    }),
+                                })
+                            })],
                         })),
                         return_type: Some(TypedType::unit()),
                     }),
@@ -264,30 +269,35 @@ fn test_struct_stored_property() {
                             })),
                         }],
                         body: Some(TypedFunBody::Block(TypedBlock {
-                            body: vec![TypedStmt::Decl(TypedDeclKind::Var(TypedVar {
-                                is_mut: false,
-                                name: "a".to_string(),
-                                type_: Some(TypedType::int64()),
-                                value: TypedExpr::Member(TypedInstanceMember {
-                                    target: Box::new(TypedExpr::Name(TypedName {
-                                        package: TypedPackage::Resolved(Package::new()),
-                                        name: "a".to_string(),
-                                        type_: Some(TypedType::Value(TypedValueType::Value(
-                                            TypedNamedValueType {
-                                                package: TypedPackage::Resolved(Package::from(
-                                                    &vec!["test"],
-                                                )),
-                                                name: "A".to_string(),
-                                                type_args: None,
-                                            },
-                                        ))),
-                                        type_arguments: None,
-                                    })),
+                            body: vec![TypedStmt::Decl(TypedDecl {
+                                annotations: Default::default(),
+                                package: Package::new(),
+                                modifiers: vec![],
+                                kind: TypedDeclKind::Var(TypedVar {
+                                    is_mut: false,
                                     name: "a".to_string(),
-                                    is_safe: false,
                                     type_: Some(TypedType::int64()),
-                                }),
-                            }))],
+                                    value: TypedExpr::Member(TypedInstanceMember {
+                                        target: Box::new(TypedExpr::Name(TypedName {
+                                            package: TypedPackage::Resolved(Package::new()),
+                                            name: "a".to_string(),
+                                            type_: Some(TypedType::Value(TypedValueType::Value(
+                                                TypedNamedValueType {
+                                                    package: TypedPackage::Resolved(Package::from(
+                                                        &vec!["test"],
+                                                    )),
+                                                    name: "A".to_string(),
+                                                    type_args: None,
+                                                },
+                                            ))),
+                                            type_arguments: None,
+                                        })),
+                                        name: "a".to_string(),
+                                        is_safe: false,
+                                        type_: Some(TypedType::int64()),
+                                    }),
+                                })
+                            })],
                         })),
                         return_type: Some(TypedType::unit()),
                     }),
@@ -385,64 +395,13 @@ fn test_struct_init() {
                             })),
                         }],
                         body: Some(TypedFunBody::Block(TypedBlock {
-                            body: vec![TypedStmt::Decl(TypedDeclKind::Var(TypedVar {
-                                is_mut: false,
-                                name: "a".to_string(),
-                                type_: Some(TypedType::Value(TypedValueType::Value(
-                                    TypedNamedValueType {
-                                        package: TypedPackage::Resolved(Package::from(&vec![
-                                            "test",
-                                        ])),
-                                        name: "A".to_string(),
-                                        type_args: None,
-                                    },
-                                ))),
-                                value: TypedExpr::Call(TypedCall {
-                                    target: Box::new(TypedExpr::Member(TypedInstanceMember {
-                                        target: Box::new(TypedExpr::Name(TypedName {
-                                            package: TypedPackage::Resolved(Package::new()),
-                                            name: "A".to_string(),
-                                            type_: Some(TypedType::Type(Box::new(
-                                                TypedType::Value(TypedValueType::Value(
-                                                    TypedNamedValueType {
-                                                        package: TypedPackage::Resolved(
-                                                            Package::from(&vec!["test"]),
-                                                        ),
-                                                        name: "A".to_string(),
-                                                        type_args: None,
-                                                    },
-                                                )),
-                                            ))),
-                                            type_arguments: None,
-                                        })),
-                                        name: "init".to_string(),
-                                        is_safe: false,
-                                        type_: Some(TypedType::Function(Box::new(
-                                            TypedFunctionType {
-                                                arguments: vec![TypedArgType {
-                                                    label: "a".to_string(),
-                                                    typ: TypedType::int64(),
-                                                }],
-                                                return_type: TypedType::Value(
-                                                    TypedValueType::Value(TypedNamedValueType {
-                                                        package: TypedPackage::Resolved(
-                                                            Package::from(&vec!["test"]),
-                                                        ),
-                                                        name: "A".to_string(),
-                                                        type_args: None,
-                                                    }),
-                                                ),
-                                            },
-                                        ))),
-                                    })),
-                                    args: vec![TypedCallArg {
-                                        label: Some(String::from("a")),
-                                        arg: Box::new(TypedExpr::Literal(TypedLiteral::Integer {
-                                            value: "1".to_string(),
-                                            type_: Some(TypedType::int64()),
-                                        })),
-                                        is_vararg: false,
-                                    }],
+                            body: vec![TypedStmt::Decl(TypedDecl {
+                                annotations: Default::default(),
+                                package: Package::new(),
+                                modifiers: vec![],
+                                kind: TypedDeclKind::Var(TypedVar {
+                                    is_mut: false,
+                                    name: "a".to_string(),
                                     type_: Some(TypedType::Value(TypedValueType::Value(
                                         TypedNamedValueType {
                                             package: TypedPackage::Resolved(Package::from(&vec![
@@ -452,8 +411,64 @@ fn test_struct_init() {
                                             type_args: None,
                                         },
                                     ))),
-                                }),
-                            }))],
+                                    value: TypedExpr::Call(TypedCall {
+                                        target: Box::new(TypedExpr::Member(TypedInstanceMember {
+                                            target: Box::new(TypedExpr::Name(TypedName {
+                                                package: TypedPackage::Resolved(Package::new()),
+                                                name: "A".to_string(),
+                                                type_: Some(TypedType::Type(Box::new(
+                                                    TypedType::Value(TypedValueType::Value(
+                                                        TypedNamedValueType {
+                                                            package: TypedPackage::Resolved(
+                                                                Package::from(&vec!["test"]),
+                                                            ),
+                                                            name: "A".to_string(),
+                                                            type_args: None,
+                                                        },
+                                                    )),
+                                                ))),
+                                                type_arguments: None,
+                                            })),
+                                            name: "init".to_string(),
+                                            is_safe: false,
+                                            type_: Some(TypedType::Function(Box::new(
+                                                TypedFunctionType {
+                                                    arguments: vec![TypedArgType {
+                                                        label: "a".to_string(),
+                                                        typ: TypedType::int64(),
+                                                    }],
+                                                    return_type: TypedType::Value(
+                                                        TypedValueType::Value(TypedNamedValueType {
+                                                            package: TypedPackage::Resolved(
+                                                                Package::from(&vec!["test"]),
+                                                            ),
+                                                            name: "A".to_string(),
+                                                            type_args: None,
+                                                        }),
+                                                    ),
+                                                },
+                                            ))),
+                                        })),
+                                        args: vec![TypedCallArg {
+                                            label: Some(String::from("a")),
+                                            arg: Box::new(TypedExpr::Literal(TypedLiteral::Integer {
+                                                value: "1".to_string(),
+                                                type_: Some(TypedType::int64()),
+                                            })),
+                                            is_vararg: false,
+                                        }],
+                                        type_: Some(TypedType::Value(TypedValueType::Value(
+                                            TypedNamedValueType {
+                                                package: TypedPackage::Resolved(Package::from(&vec![
+                                                    "test",
+                                                ])),
+                                                name: "A".to_string(),
+                                                type_args: None,
+                                            },
+                                        ))),
+                                    }),
+                                })
+                            })],
                         })),
                         return_type: Some(TypedType::unit()),
                     }),
@@ -1169,15 +1184,20 @@ fn test_if() {
                                 type_: Some(TypedType::bool()),
                             })),
                             body: TypedBlock {
-                                body: vec![TypedStmt::Decl(TypedDeclKind::Var(TypedVar {
-                                    is_mut: false,
-                                    name: "p".to_string(),
-                                    type_: Some(TypedType::int64()),
-                                    value: TypedExpr::Literal(TypedLiteral::Integer {
-                                        value: "1".to_string(),
+                                body: vec![TypedStmt::Decl(TypedDecl {
+                                    annotations: Default::default(),
+                                    package: Package::new(),
+                                    modifiers: vec![],
+                                    kind: TypedDeclKind::Var(TypedVar {
+                                        is_mut: false,
+                                        name: "p".to_string(),
                                         type_: Some(TypedType::int64()),
-                                    }),
-                                }))],
+                                        value: TypedExpr::Literal(TypedLiteral::Integer {
+                                            value: "1".to_string(),
+                                            type_: Some(TypedType::int64()),
+                                        }),
+                                    })
+                                })],
                             },
                             type_: Some(TypedType::noting()),
                             else_body: None,
@@ -1215,57 +1235,72 @@ fn test_reference_dereference() {
                     arg_defs: vec![],
                     body: Some(TypedFunBody::Block(TypedBlock {
                         body: vec![
-                            TypedStmt::Decl(TypedDeclKind::Var(TypedVar {
-                                is_mut: false,
-                                name: "a".to_string(),
-                                type_: Some(TypedType::int64()),
-                                value: TypedExpr::Literal(TypedLiteral::Integer {
-                                    value: "1".to_string(),
+                            TypedStmt::Decl(TypedDecl {
+                                annotations: Default::default(),
+                                package: Package::new(),
+                                modifiers: vec![],
+                                kind: TypedDeclKind::Var(TypedVar {
+                                    is_mut: false,
+                                    name: "a".to_string(),
                                     type_: Some(TypedType::int64()),
-                                }),
-                            })),
-                            TypedStmt::Decl(TypedDeclKind::Var(TypedVar {
-                                is_mut: false,
-                                name: "b".to_string(),
-                                type_: Some(TypedType::Value(TypedValueType::Reference(Box::new(
-                                    TypedType::int64(),
-                                )))),
-                                value: TypedExpr::UnaryOp(TypedUnaryOp::Prefix(
-                                    TypedPrefixUnaryOp {
-                                        target: Box::new(TypedExpr::Name(TypedName {
-                                            package: TypedPackage::Resolved(Package::new()),
-                                            name: "a".to_string(),
-                                            type_: Some(TypedType::int64()),
-                                            type_arguments: None,
-                                        })),
-                                        operator: TypedPrefixUnaryOperator::Reference,
-                                        type_: Some(TypedType::Value(TypedValueType::Reference(
-                                            Box::new(TypedType::int64()),
-                                        ))),
-                                    },
-                                )),
-                            })),
-                            TypedStmt::Decl(TypedDeclKind::Var(TypedVar {
-                                is_mut: false,
-                                name: "c".to_string(),
-                                type_: Some(TypedType::int64()),
-                                value: TypedExpr::UnaryOp(TypedUnaryOp::Prefix(
-                                    TypedPrefixUnaryOp {
-                                        target: Box::new(TypedExpr::Name(TypedName {
-                                            package: TypedPackage::Resolved(Package::new()),
-                                            name: "b".to_string(),
-                                            type_: Some(TypedType::Value(
-                                                TypedValueType::Reference(Box::new(
-                                                    TypedType::int64(),
-                                                )),
-                                            )),
-                                            type_arguments: None,
-                                        })),
-                                        operator: TypedPrefixUnaryOperator::Dereference,
+                                    value: TypedExpr::Literal(TypedLiteral::Integer {
+                                        value: "1".to_string(),
                                         type_: Some(TypedType::int64()),
-                                    },
-                                )),
-                            })),
+                                    }),
+                                })
+                            }),
+                            TypedStmt::Decl(TypedDecl {
+                                annotations: Default::default(),
+                                package: Package::new(),
+                                modifiers: vec![],
+                                kind: TypedDeclKind::Var(TypedVar {
+                                    is_mut: false,
+                                    name: "b".to_string(),
+                                    type_: Some(TypedType::Value(TypedValueType::Reference(Box::new(
+                                        TypedType::int64(),
+                                    )))),
+                                    value: TypedExpr::UnaryOp(TypedUnaryOp::Prefix(
+                                        TypedPrefixUnaryOp {
+                                            target: Box::new(TypedExpr::Name(TypedName {
+                                                package: TypedPackage::Resolved(Package::new()),
+                                                name: "a".to_string(),
+                                                type_: Some(TypedType::int64()),
+                                                type_arguments: None,
+                                            })),
+                                            operator: TypedPrefixUnaryOperator::Reference,
+                                            type_: Some(TypedType::Value(TypedValueType::Reference(
+                                                Box::new(TypedType::int64()),
+                                            ))),
+                                        },
+                                    )),
+                                })
+                            }),
+                            TypedStmt::Decl(TypedDecl {
+                                annotations: Default::default(),
+                                package: Package::new(),
+                                modifiers: vec![],
+                                kind: TypedDeclKind::Var(TypedVar {
+                                    is_mut: false,
+                                    name: "c".to_string(),
+                                    type_: Some(TypedType::int64()),
+                                    value: TypedExpr::UnaryOp(TypedUnaryOp::Prefix(
+                                        TypedPrefixUnaryOp {
+                                            target: Box::new(TypedExpr::Name(TypedName {
+                                                package: TypedPackage::Resolved(Package::new()),
+                                                name: "b".to_string(),
+                                                type_: Some(TypedType::Value(
+                                                    TypedValueType::Reference(Box::new(
+                                                        TypedType::int64(),
+                                                    )),
+                                                )),
+                                                type_arguments: None,
+                                            })),
+                                            operator: TypedPrefixUnaryOperator::Dereference,
+                                            type_: Some(TypedType::int64()),
+                                        },
+                                    )),
+                                })
+                            }),
                         ],
                     })),
                     return_type: Some(TypedType::unit()),

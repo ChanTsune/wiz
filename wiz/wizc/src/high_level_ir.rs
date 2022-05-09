@@ -127,7 +127,7 @@ impl AstLowering {
 
     pub fn stmt(&self, s: Stmt) -> TypedStmt {
         match s {
-            Stmt::Decl(decl) => TypedStmt::Decl(self.decl(decl.kind, decl.annotations).kind),
+            Stmt::Decl(decl) => TypedStmt::Decl(self.decl(decl.kind, decl.annotations)),
             Stmt::Expr(expr) => TypedStmt::Expr(self.expr(expr)),
             Stmt::Assignment(a) => TypedStmt::Assignment(self.assignment(a)),
             Stmt::Loop(l) => TypedStmt::Loop(self.loop_stmt(l)),
