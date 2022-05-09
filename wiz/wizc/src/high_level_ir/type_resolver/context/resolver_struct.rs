@@ -56,6 +56,6 @@ impl ResolverStruct {
     }
 
     pub fn is_generic(&self) -> bool {
-        self.type_parameters != None
+        self.type_parameters.is_some()
     }
 }
