@@ -15,8 +15,8 @@ use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::path::Path;
 use wiz_mir::expr::{
-    MLArray, MLBinOp, MLBinOpKind, MLBlock, MLCall, MLExpr, MLIf, MLLiteral, MLMember, MLName,
-    MLSubscript, MLTypeCast, MLUnaryOp, MLUnaryOpKind,
+    MLArray, MLBinOp, MLBinOpKind, MLBlock, MLCall, MLExpr, MLIf, MLLiteral, MLLiteralKind,
+    MLMember, MLName, MLSubscript, MLTypeCast, MLUnaryOp, MLUnaryOpKind,
 };
 use wiz_mir::ml_decl::{MLDecl, MLFun, MLStruct, MLVar};
 use wiz_mir::ml_file::MLFile;
@@ -162,10 +162,10 @@ impl<'ctx> CodeGen<'ctx> {
     }
 
     pub fn literal(&self, l: MLLiteral) -> AnyValueEnum<'ctx> {
-        match l {
-            MLLiteral::Integer { value, type_ } => {
+        match l.kind {
+            MLLiteralKind::Integer(value) => {
                 let i: u64 = value.parse().unwrap();
-                let int_type = match type_ {
+                let int_type = match l.type_ {
                     MLValueType::Primitive(name) => match name {
                         MLPrimitiveType::Int8 | MLPrimitiveType::UInt8 => self.context.i8_type(),
                         MLPrimitiveType::Int16 | MLPrimitiveType::UInt16 => self.context.i16_type(),
@@ -183,9 +183,9 @@ impl<'ctx> CodeGen<'ctx> {
                 };
                 int_type.const_int(i, false).as_any_value_enum()
             }
-            MLLiteral::FloatingPoint { value, type_ } => {
+            MLLiteralKind::FloatingPoint(value) => {
                 let f: f64 = value.parse().unwrap();
-                let float_type = match type_ {
+                let float_type = match l.type_ {
                     MLValueType::Primitive(name) => match name {
                         MLPrimitiveType::Float => self.context.f32_type(),
                         MLPrimitiveType::Double => self.context.f64_type(),
@@ -195,7 +195,7 @@ impl<'ctx> CodeGen<'ctx> {
                 };
                 float_type.const_float(f).as_any_value_enum()
             }
-            MLLiteral::String { value, type_: _ } => unsafe {
+            MLLiteralKind::String(value) => unsafe {
                 let str = self
                     .builder
                     .build_global_string(value.as_ref(), value.as_str());
@@ -205,21 +205,21 @@ impl<'ctx> CodeGen<'ctx> {
                         .build_bitcast(str.as_pointer_value(), i8_ptr_type, value.as_str());
                 str.as_any_value_enum()
             },
-            MLLiteral::Boolean { value, type_: _ } => {
+            MLLiteralKind::Boolean(value) => {
                 let b: bool = value.parse().unwrap();
                 let bool_type = self.context.bool_type();
                 bool_type
                     .const_int(if b { 1 } else { 0 }, false)
                     .as_any_value_enum()
             }
-            MLLiteral::Null { type_ } => {
-                let ty = self.ml_type_to_type(type_);
+            MLLiteralKind::Null => {
+                let ty = self.ml_type_to_type(l.type_);
                 let ty = BasicTypeEnum::try_from(ty).unwrap();
                 let ptr_ty = ty.ptr_type(AddressSpace::Generic);
                 ptr_ty.const_null().as_any_value_enum()
             }
-            MLLiteral::Struct { type_ } => {
-                let struct_type = self.module.get_struct_type(&*match type_ {
+            MLLiteralKind::Struct => {
+                let struct_type = self.module.get_struct_type(&*match l.type_ {
                     MLValueType::Struct(name) => name,
                     p => panic!("Invalid Struct Literal {:?}", p),
                 });

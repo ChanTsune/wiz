@@ -23,8 +23,8 @@ use std::collections::HashMap;
 use std::error::Error;
 use wiz_mir::builder::{FunBuilder, MLIRModule};
 use wiz_mir::expr::{
-    MLArray, MLBinOp, MLBinOpKind, MLBlock, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLMember,
-    MLName, MLSubscript, MLTypeCast, MLUnaryOp, MLUnaryOpKind,
+    MLArray, MLBinOp, MLBinOpKind, MLBlock, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral,
+    MLLiteralKind, MLMember, MLName, MLSubscript, MLTypeCast, MLUnaryOp, MLUnaryOpKind,
 };
 use wiz_mir::ml_decl::{MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar};
 use wiz_mir::ml_file::MLFile;
@@ -408,7 +408,8 @@ impl<'arena> HLIR2MLIR<'arena> {
                     MLStmt::Var(MLVar {
                         is_mute: true,
                         name: String::from("self"),
-                        value: MLExpr::Literal(MLLiteral::Struct {
+                        value: MLExpr::Literal(MLLiteral {
+                            kind: MLLiteralKind::Struct,
                             type_: type_.clone().into_value_type(),
                         }),
                         type_: type_.clone(),
@@ -555,27 +556,29 @@ impl<'arena> HLIR2MLIR<'arena> {
     }
 
     fn literal(&self, l: TypedLiteral) -> MLLiteral {
-        match l {
-            TypedLiteral::Integer { value, type_ } => MLLiteral::Integer {
-                value,
-                type_: self.type_(type_.unwrap()).into_value_type(),
-            },
-            TypedLiteral::FloatingPoint { value, type_ } => MLLiteral::FloatingPoint {
-                value,
-                type_: self.type_(type_.unwrap()).into_value_type(),
-            },
-            TypedLiteral::String { value, type_ } => MLLiteral::String {
-                value,
-                type_: self.type_(type_.unwrap()).into_value_type(),
-            },
-            TypedLiteral::Boolean { value, type_ } => MLLiteral::Boolean {
-                value,
-                type_: self.type_(type_.unwrap()).into_value_type(),
-            },
-            TypedLiteral::NullLiteral { type_ } => MLLiteral::Null {
-                type_: self.type_(type_.unwrap()).into_value_type(),
-            },
-        }
+        let (kind, type_) = match l {
+            TypedLiteral::Integer { value, type_ } => (
+                MLLiteralKind::Integer(value),
+                self.type_(type_.unwrap()).into_value_type(),
+            ),
+            TypedLiteral::FloatingPoint { value, type_ } => (
+                MLLiteralKind::FloatingPoint(value),
+                self.type_(type_.unwrap()).into_value_type(),
+            ),
+            TypedLiteral::String { value, type_ } => (
+                MLLiteralKind::String(value),
+                self.type_(type_.unwrap()).into_value_type(),
+            ),
+            TypedLiteral::Boolean { value, type_ } => (
+                MLLiteralKind::Boolean(value),
+                self.type_(type_.unwrap()).into_value_type(),
+            ),
+            TypedLiteral::NullLiteral { type_ } => (
+                MLLiteralKind::Null,
+                self.type_(type_.unwrap()).into_value_type(),
+            ),
+        };
+        MLLiteral { kind, type_ }
     }
 
     fn binop(&mut self, b: TypedBinOp) -> MLBinOp {

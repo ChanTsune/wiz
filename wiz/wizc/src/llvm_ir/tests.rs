@@ -1,7 +1,7 @@
 use crate::llvm_ir::codegen::CodeGen;
 use inkwell::context::Context;
 use inkwell::execution_engine::JitFunction;
-use wiz_mir::expr::{MLExpr, MLLiteral, MLName};
+use wiz_mir::expr::{MLExpr, MLLiteral, MLLiteralKind, MLName};
 use wiz_mir::ml_decl::{MLDecl, MLFun, MLFunBody, MLVar};
 use wiz_mir::ml_file::MLFile;
 use wiz_mir::ml_type::{MLPrimitiveType, MLType, MLValueType};
@@ -22,8 +22,8 @@ fn test_return_integer() {
                         is_mute: false,
                         name: "i".to_string(),
                         type_: MLType::Value(MLValueType::Primitive(MLPrimitiveType::UInt8)),
-                        value: MLExpr::Literal(MLLiteral::Integer {
-                            value: "5".to_string(),
+                        value: MLExpr::Literal(MLLiteral {
+                            kind: MLLiteralKind::Integer("5".to_string()),
                             type_: MLValueType::Primitive(MLPrimitiveType::UInt8),
                         }),
                     }),
@@ -64,8 +64,8 @@ fn test_return_integer_literal() {
             return_type: MLValueType::Primitive(MLPrimitiveType::UInt8),
             body: Some(MLFunBody {
                 body: vec![MLStmt::Expr(MLExpr::Return(MLReturn {
-                    value: Some(Box::new(MLExpr::Literal(MLLiteral::Integer {
-                        value: "5".to_string(),
+                    value: Some(Box::new(MLExpr::Literal(MLLiteral {
+                        kind: MLLiteralKind::Integer("5".to_string()),
                         type_: MLValueType::Primitive(MLPrimitiveType::UInt8),
                     }))),
                 }))],
@@ -103,8 +103,8 @@ fn test_return_floating_point() {
                         is_mute: false,
                         name: "d".to_string(),
                         type_: MLType::Value(MLValueType::Primitive(MLPrimitiveType::Double)),
-                        value: MLExpr::Literal(MLLiteral::FloatingPoint {
-                            value: "5.1".to_string(),
+                        value: MLExpr::Literal(MLLiteral {
+                            kind: MLLiteralKind::FloatingPoint("5.1".to_string()),
                             type_: MLValueType::Primitive(MLPrimitiveType::Double),
                         }),
                     }),
@@ -145,8 +145,8 @@ fn test_return_floating_point_literal() {
             return_type: MLValueType::Primitive(MLPrimitiveType::Double),
             body: Some(MLFunBody {
                 body: vec![MLStmt::Expr(MLExpr::Return(MLReturn {
-                    value: Some(Box::new(MLExpr::Literal(MLLiteral::FloatingPoint {
-                        value: "5.1".to_string(),
+                    value: Some(Box::new(MLExpr::Literal(MLLiteral {
+                        kind: MLLiteralKind::FloatingPoint("5.1".to_string()),
                         type_: MLValueType::Primitive(MLPrimitiveType::Double),
                     }))),
                 }))],
@@ -179,8 +179,8 @@ fn test_return_global_constant() {
                 is_mute: false,
                 name: "i".to_string(),
                 type_: MLType::Value(MLValueType::Primitive(MLPrimitiveType::UInt8)),
-                value: MLExpr::Literal(MLLiteral::Integer {
-                    value: "5".to_string(),
+                value: MLExpr::Literal(MLLiteral {
+                    kind: MLLiteralKind::Integer("5".to_string()),
                     type_: MLValueType::Primitive(MLPrimitiveType::UInt8),
                 }),
             }),

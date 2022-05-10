@@ -54,7 +54,7 @@ impl<'a> Write for Formatter<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::expr::{MLExpr, MLLiteral};
+    use crate::expr::{MLExpr, MLLiteral, MLLiteralKind};
     use crate::format::Formatter;
     use crate::ml_decl::{MLFun, MLFunBody};
     use crate::ml_node::MLNode;
@@ -68,8 +68,8 @@ mod tests {
             arg_defs: vec![],
             return_type: MLValueType::Primitive(MLPrimitiveType::Noting),
             body: Some(MLFunBody {
-                body: vec![MLStmt::Expr(MLExpr::Literal(MLLiteral::Integer {
-                    value: "0".to_string(),
+                body: vec![MLStmt::Expr(MLExpr::Literal(MLLiteral {
+                    kind: MLLiteralKind::Integer("0".to_string()),
                     type_: MLValueType::Primitive(MLPrimitiveType::Int8),
                 }))],
             }),

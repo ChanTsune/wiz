@@ -3,7 +3,7 @@ use crate::high_level_ir::typed_file::TypedSourceSet;
 use crate::high_level_ir::AstLowering;
 use crate::middle_level_ir::HLIR2MLIR;
 use wiz_mir::expr::{
-    MLCall, MLCallArg, MLExpr, MLLiteral, MLMember, MLName, MLUnaryOp, MLUnaryOpKind,
+    MLCall, MLCallArg, MLExpr, MLLiteral, MLLiteralKind, MLMember, MLName, MLUnaryOp, MLUnaryOpKind,
 };
 use wiz_mir::ml_decl::{MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar};
 use wiz_mir::ml_file::MLFile;
@@ -88,7 +88,8 @@ fn test_struct() {
                                 is_mute: true,
                                 name: "self".to_string(),
                                 type_: MLType::Value(MLValueType::Struct(String::from("test::A"))),
-                                value: MLExpr::Literal(MLLiteral::Struct {
+                                value: MLExpr::Literal(MLLiteral {
+                                    kind: MLLiteralKind::Struct,
                                     type_: MLValueType::Struct(String::from("test::A")),
                                 }),
                             }),
@@ -179,7 +180,8 @@ fn test_struct_init() {
                                 is_mute: true,
                                 name: "self".to_string(),
                                 type_: MLType::Value(MLValueType::Struct(String::from("test::A"))),
-                                value: MLExpr::Literal(MLLiteral::Struct {
+                                value: MLExpr::Literal(MLLiteral {
+                                    kind: MLLiteralKind::Struct,
                                     type_: MLValueType::Struct(String::from("test::A")),
                                 }),
                             }),
@@ -231,8 +233,8 @@ fn test_struct_init() {
                                     }),
                                 },
                                 args: vec![MLCallArg {
-                                    arg: MLExpr::Literal(MLLiteral::Integer {
-                                        value: "1".to_string(),
+                                    arg: MLExpr::Literal(MLLiteral {
+                                        kind: MLLiteralKind::Integer("1".to_string()),
                                         type_: MLValueType::Primitive(MLPrimitiveType::Int64),
                                     }),
                                 }],
@@ -323,7 +325,8 @@ fn test_method_call() {
                                 is_mute: true,
                                 name: "self".to_string(),
                                 type_: MLType::Value(MLValueType::Struct("test::A".to_string())),
-                                value: MLExpr::Literal(MLLiteral::Struct {
+                                value: MLExpr::Literal(MLLiteral {
+                                    kind: MLLiteralKind::Struct,
                                     type_: MLValueType::Struct("test::A".to_string()),
                                 }),
                             }),
@@ -367,8 +370,8 @@ fn test_method_call() {
                     return_type: MLValueType::Primitive(MLPrimitiveType::Int64),
                     body: Some(MLFunBody {
                         body: vec![MLStmt::Expr(MLExpr::Return(MLReturn {
-                            value: Some(Box::new(MLExpr::Literal(MLLiteral::Integer {
-                                value: "1".to_string(),
+                            value: Some(Box::new(MLExpr::Literal(MLLiteral {
+                                kind: MLLiteralKind::Integer("1".to_string()),
                                 type_: MLValueType::Primitive(MLPrimitiveType::Int64),
                             }))),
                         }))],
@@ -425,8 +428,8 @@ fn test_method_call() {
                                         }),
                                     },
                                     args: vec![MLCallArg {
-                                        arg: MLExpr::Literal(MLLiteral::Integer {
-                                            value: "1".to_string(),
+                                        arg: MLExpr::Literal(MLLiteral {
+                                            kind: MLLiteralKind::Integer("1".to_string()),
                                             type_: MLValueType::Primitive(MLPrimitiveType::Int64),
                                         }),
                                     }],
@@ -484,8 +487,8 @@ fn test_return_integer_literal() {
                     return_type: MLValueType::Primitive(MLPrimitiveType::Int64),
                     body: Some(MLFunBody {
                         body: vec![MLStmt::Expr(MLExpr::Return(MLReturn {
-                            value: Some(Box::new(MLExpr::Literal(MLLiteral::Integer {
-                                value: "1".to_string(),
+                            value: Some(Box::new(MLExpr::Literal(MLLiteral {
+                                kind: MLLiteralKind::Integer("1".to_string()),
                                 type_: MLValueType::Primitive(MLPrimitiveType::Int64),
                             }))),
                         }))],
@@ -567,8 +570,8 @@ fn test_reference_dereference() {
                                 type_: MLType::Value(MLValueType::Primitive(
                                     MLPrimitiveType::Int64,
                                 )),
-                                value: MLExpr::Literal(MLLiteral::Integer {
-                                    value: "1".to_string(),
+                                value: MLExpr::Literal(MLLiteral {
+                                    kind: MLLiteralKind::Integer("1".to_string()),
                                     type_: MLValueType::Primitive(MLPrimitiveType::Int64),
                                 }),
                             }),
