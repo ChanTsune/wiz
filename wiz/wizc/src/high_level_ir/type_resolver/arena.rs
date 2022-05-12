@@ -356,21 +356,13 @@ mod tests {
     fn resolve_child_namespace() {
         let mut arena = ResolverArena::default();
         let root_namespace: [&str; 0] = [];
-        let child_namespace_name = "std";
+        let std_namespace_name = "std";
 
-        arena.register_namespace(&root_namespace, child_namespace_name, Default::default());
+        let std_namespace_id = arena.register_namespace(&root_namespace, std_namespace_name, Default::default());
 
-        let ns_id = arena.resolve_namespace_from_root(&[child_namespace_name]);
-        assert_eq!(
-            DeclarationItem::new(
-                Default::default(),
-                DeclarationItemKind::Namespace(Namespace::new(
-                    child_namespace_name,
-                    DeclarationId::ROOT
-                ))
-            ),
-            *arena.declarations.get(&ns_id.unwrap()).unwrap()
-        )
+        let ns_id = arena.resolve_namespace_from_root(&[std_namespace_name]);
+
+        assert_eq!(std_namespace_id.unwrap(), ns_id.unwrap());
     }
 
     #[test]
@@ -380,8 +372,8 @@ mod tests {
         let child_namespace_name = "std";
         let grandchildren_namespace_name = "collections";
 
-        arena.register_namespace(&root_namespace, child_namespace_name, Default::default());
-        arena.register_namespace(
+        arena.register_namespace(&root_namespace, child_namespace_name, Default::default()).unwrap();
+        let std_collections_id = arena.register_namespace(
             &[child_namespace_name],
             grandchildren_namespace_name,
             Default::default(),
@@ -390,17 +382,7 @@ mod tests {
         let ns_id = arena
             .resolve_namespace_from_root(&[child_namespace_name, grandchildren_namespace_name]);
 
-        let parent_id = arena.resolve_namespace_from_root(&[child_namespace_name]);
-        assert_eq!(
-            DeclarationItem::new(
-                Default::default(),
-                DeclarationItemKind::Namespace(Namespace::new(
-                    grandchildren_namespace_name,
-                    parent_id.unwrap()
-                ))
-            ),
-            *arena.declarations.get(&ns_id.unwrap()).unwrap()
-        )
+        assert_eq!(std_collections_id, ns_id);
     }
 
     #[test]
@@ -445,6 +427,28 @@ mod tests {
                 ))
             ))
         );
+    }
+
+    #[test]
+    fn get() {
+        let mut arena = ResolverArena::default();
+        let root_namespace: [&str; 0] = [];
+        let std_namespace_name = "std";
+
+        arena.register_namespace(&root_namespace, std_namespace_name, Default::default()).unwrap();
+
+        let std_namespace = arena.get(&root_namespace, std_namespace_name);
+
+        assert_eq!(
+            DeclarationItem::new(
+                Default::default(),
+                DeclarationItemKind::Namespace(Namespace::new(
+                    std_namespace_name,
+                    DeclarationId::ROOT
+                ))
+            ),
+            *std_namespace.unwrap()
+        )
     }
 
     #[test]
