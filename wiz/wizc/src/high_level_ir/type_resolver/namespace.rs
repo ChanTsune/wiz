@@ -20,5 +20,4 @@ impl Namespace {
     pub fn parent(&self) -> Option<DeclarationId> {
         self.parent
     }
-
 }
