@@ -36,6 +36,7 @@ impl Default for ResolverArena {
             DeclarationId::ROOT,
             DeclarationItem::new(
                 Default::default(),
+                "",
                 DeclarationItemKind::Namespace(Namespace::root()),
             ),
         );
@@ -140,7 +141,8 @@ impl ResolverArena {
             name,
             DeclarationItem::new(
                 annotation,
-                DeclarationItemKind::Namespace(Namespace::new(name, parent_id)),
+                name,
+                DeclarationItemKind::Namespace(Namespace::new(parent_id)),
             ),
         )
     }
@@ -151,17 +153,16 @@ impl ResolverArena {
             DeclarationItemKind::Namespace(n) => {
                 if let Some(parent_id) = n.parent() {
                     let mut parents_name = self.resolve_fully_qualified_name(&parent_id);
-                    parents_name.push(n.name());
+                    parents_name.push(decl.name.clone());
                     parents_name
                 } else {
                     // NOTE: This will root namespace
                     vec![]
                 }
             }
-            DeclarationItemKind::Type(t) => {
-                vec![t.name.clone()]
+            DeclarationItemKind::Type(_)|DeclarationItemKind::Value(_) => {
+                vec![decl.name.clone()]
             }
-            DeclarationItemKind::Value(t) => todo!(),
         }
     }
 }
@@ -279,7 +280,7 @@ impl ResolverArena {
         self.register(
             namespace,
             name,
-            DeclarationItem::new(annotation, DeclarationItemKind::Type(s)),
+            DeclarationItem::new(annotation, name,DeclarationItemKind::Type(s)),
         )
     }
 
@@ -318,7 +319,7 @@ impl ResolverArena {
         self.register(
             namespace,
             name,
-            DeclarationItem::new(annotation, DeclarationItemKind::Value((vec_namespace, ty))),
+            DeclarationItem::new(annotation, name,DeclarationItemKind::Value((vec_namespace, ty))),
         );
     }
 
@@ -417,6 +418,7 @@ mod tests {
             item,
             Some(&DeclarationItem::new(
                 Default::default(),
+                type_name,
                 DeclarationItemKind::Type(ResolverStruct::new(
                     TypedType::Value(TypedValueType::Value(TypedNamedValueType {
                         package: TypedPackage::Resolved(Package::from(&vec![
@@ -447,8 +449,8 @@ mod tests {
         assert_eq!(
             DeclarationItem::new(
                 Default::default(),
+                std_namespace_name,
                 DeclarationItemKind::Namespace(Namespace::new(
-                    std_namespace_name,
                     DeclarationId::ROOT
                 ))
             ),

@@ -6,12 +6,13 @@ use crate::high_level_ir::typed_type::TypedType;
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct DeclarationItem {
     pub(crate) annotations: TypedAnnotations,
+    pub(crate) name: String,
     pub(crate) kind: DeclarationItemKind,
 }
 
 impl DeclarationItem {
-    pub(crate) fn new(annotations: TypedAnnotations, kind: DeclarationItemKind) -> Self {
-        Self { annotations, kind }
+    pub(crate) fn new(annotations: TypedAnnotations, name: &str, kind: DeclarationItemKind) -> Self {
+        Self { annotations, name: name.to_string(), kind }
     }
 
     pub(crate) fn has_annotation(&self, annotation: &str) -> bool {

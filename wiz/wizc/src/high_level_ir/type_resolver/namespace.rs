@@ -3,7 +3,6 @@ use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Default, Clone, Eq, PartialEq)]
 pub struct Namespace {
-    name: String,
     parent: Option<DeclarationId>,
     children: HashMap<String, HashSet<DeclarationId>>,
 }
@@ -13,9 +12,8 @@ impl Namespace {
         Self::default()
     }
 
-    pub fn new(name: &str, parent: DeclarationId) -> Self {
+    pub fn new(parent: DeclarationId) -> Self {
         Self {
-            name: name.to_string(),
             parent: Some(parent),
             children: HashMap::new(),
         }
@@ -32,10 +30,6 @@ impl Namespace {
 
     pub fn parent(&self) -> Option<DeclarationId> {
         self.parent
-    }
-
-    pub fn name(&self) -> String {
-        self.name.clone()
     }
 
     pub fn children(&self) -> &HashMap<String, HashSet<DeclarationId>> {
