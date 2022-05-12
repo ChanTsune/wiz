@@ -399,7 +399,7 @@ mod tests {
         let root_namespace: [&str; 0] = [];
         let child_namespace_name = "std";
         let grandchildren_namespace_name = "collections";
-        let type_name = "type";
+        let type_name = "Type";
 
         arena.register_namespace(&root_namespace, child_namespace_name, Default::default());
         arena.register_namespace(
