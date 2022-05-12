@@ -108,7 +108,7 @@ impl ResolverArena {
         namespace: &[T],
         name: &str,
         declaration: DeclarationItem,
-    ) -> Option<()> {
+    ) -> Option<DeclarationId> {
         let target_namespace_id = self.resolve_namespace_from_root(namespace)?;
         let d = self.declarations.get_mut(&target_namespace_id)?;
         let id = match &mut d.kind {
@@ -125,7 +125,7 @@ impl ResolverArena {
             DeclarationItemKind::Value(_) => panic!("this is value"),
         };
         self.declarations.insert(id, declaration);
-        Some(())
+        Some(id)
     }
 
     pub(crate) fn register_namespace<T: ToString>(
@@ -133,7 +133,7 @@ impl ResolverArena {
         namespace: &[T],
         name: &str,
         annotation: TypedAnnotations,
-    ) -> Option<()> {
+    ) -> Option<DeclarationId> {
         let parent_id = self.resolve_namespace_from_root(namespace)?;
         self.register(
             namespace,
