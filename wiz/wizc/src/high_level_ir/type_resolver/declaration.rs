@@ -1,3 +1,5 @@
+use std::collections::{HashMap, HashSet};
+use crate::high_level_ir::declaration_id::DeclarationId;
 use crate::high_level_ir::type_resolver::context::ResolverStruct;
 use crate::high_level_ir::type_resolver::namespace::Namespace;
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
@@ -8,6 +10,7 @@ pub struct DeclarationItem {
     pub(crate) annotations: TypedAnnotations,
     pub(crate) name: String,
     pub(crate) kind: DeclarationItemKind,
+    children: HashMap<String, HashSet<DeclarationId>>,
 }
 
 impl DeclarationItem {
@@ -20,12 +23,27 @@ impl DeclarationItem {
             annotations,
             name: name.to_string(),
             kind,
+            children: Default::default(),
         }
     }
 
     pub(crate) fn has_annotation(&self, annotation: &str) -> bool {
         self.annotations.has_annotate(annotation)
     }
+
+    pub fn add_child(&mut self, name: &str, id: DeclarationId) {
+        let entry = self.children.entry(name.to_string()).or_default();
+        entry.insert(id);
+    }
+
+    pub fn get_child(&self, name: &str) -> Option<HashSet<DeclarationId>> {
+        self.children.get(name).cloned()
+    }
+
+    pub fn children(&self) -> &HashMap<String, HashSet<DeclarationId>> {
+        &self.children
+    }
+
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]

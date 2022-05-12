@@ -26,11 +26,6 @@ impl<'a> NameEnvironment<'a> {
     pub(crate) fn use_asterisk<T: ToString>(&mut self, namespace: &[T]) -> Option<()> {
         let ns_id = self.arena.resolve_namespace_from_root(namespace)?;
         let ns = self.arena.get_by_id(&ns_id).unwrap();
-        let ns = if let DeclarationItemKind::Namespace(ns) = &ns.kind {
-            ns
-        } else {
-            panic!("{:?}", ns)
-        };
         self.values.extend(ns.children().clone());
         Some(())
     }
@@ -110,11 +105,7 @@ impl<'a> NameEnvironment<'a> {
             let parent_id = ids.first()?;
             let id = self.arena.resolve_namespace(*parent_id, &namespace[1..])?;
             let item = self.arena.get_by_id(&id)?;
-            let child = match &item.kind {
-                DeclarationItemKind::Namespace(ns) => ns.get_child(name),
-                DeclarationItemKind::Type(_) => panic!(),
-                DeclarationItemKind::Value(_) => panic!(),
-            }?;
+            let child = item.get_child(name)?;
             let child = child.iter().collect::<Vec<_>>();
             let items = self.arena.get_by_ids(&child)?;
             if !items.is_empty() {
