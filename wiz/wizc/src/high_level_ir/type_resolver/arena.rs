@@ -248,7 +248,7 @@ impl ResolverArena {
         namespace: &[T],
         name: &str, /* type_parameters */
         annotation: TypedAnnotations,
-    ) {
+    ) -> Option<DeclarationId> {
         self.register_type(namespace, name, annotation, StructKind::Struct)
     }
 
@@ -257,7 +257,7 @@ impl ResolverArena {
         namespace: &[T],
         name: &str, /* type_parameters */
         annotation: TypedAnnotations,
-    ) {
+    ) -> Option<DeclarationId> {
         self.register_type(namespace, name, annotation, StructKind::Protocol)
     }
 
@@ -267,7 +267,7 @@ impl ResolverArena {
         name: &str,
         annotation: TypedAnnotations,
         kind: StructKind, /* type_parameters */
-    ) {
+    ) -> Option<DeclarationId> {
         let s = ResolverStruct::new(
             TypedType::Value(TypedValueType::Value(TypedNamedValueType {
                 package: TypedPackage::Resolved(Package::from(namespace)),
@@ -280,7 +280,7 @@ impl ResolverArena {
             namespace,
             name,
             DeclarationItem::new(annotation, DeclarationItemKind::Type(s)),
-        );
+        )
     }
 
     pub(crate) fn get_type<T: ToString>(
