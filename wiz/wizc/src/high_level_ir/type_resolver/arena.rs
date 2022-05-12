@@ -160,7 +160,7 @@ impl ResolverArena {
                     vec![]
                 }
             }
-            DeclarationItemKind::Type(_)|DeclarationItemKind::Value(_) => {
+            DeclarationItemKind::Type(_) | DeclarationItemKind::Value(_) => {
                 vec![decl.name.clone()]
             }
         }
@@ -280,7 +280,7 @@ impl ResolverArena {
         self.register(
             namespace,
             name,
-            DeclarationItem::new(annotation, name,DeclarationItemKind::Type(s)),
+            DeclarationItem::new(annotation, name, DeclarationItemKind::Type(s)),
         )
     }
 
@@ -319,7 +319,11 @@ impl ResolverArena {
         self.register(
             namespace,
             name,
-            DeclarationItem::new(annotation, name,DeclarationItemKind::Value((vec_namespace, ty))),
+            DeclarationItem::new(
+                annotation,
+                name,
+                DeclarationItemKind::Value((vec_namespace, ty)),
+            ),
         );
     }
 
@@ -450,9 +454,7 @@ mod tests {
             DeclarationItem::new(
                 Default::default(),
                 std_namespace_name,
-                DeclarationItemKind::Namespace(Namespace::new(
-                    DeclarationId::ROOT
-                ))
+                DeclarationItemKind::Namespace(Namespace::new(DeclarationId::ROOT))
             ),
             *std_namespace.unwrap()
         )

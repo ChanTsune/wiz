@@ -11,8 +11,16 @@ pub struct DeclarationItem {
 }
 
 impl DeclarationItem {
-    pub(crate) fn new(annotations: TypedAnnotations, name: &str, kind: DeclarationItemKind) -> Self {
-        Self { annotations, name: name.to_string(), kind }
+    pub(crate) fn new(
+        annotations: TypedAnnotations,
+        name: &str,
+        kind: DeclarationItemKind,
+    ) -> Self {
+        Self {
+            annotations,
+            name: name.to_string(),
+            kind,
+        }
     }
 
     pub(crate) fn has_annotation(&self, annotation: &str) -> bool {
