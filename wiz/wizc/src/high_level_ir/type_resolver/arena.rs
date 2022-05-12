@@ -358,7 +358,8 @@ mod tests {
         let root_namespace: [&str; 0] = [];
         let std_namespace_name = "std";
 
-        let std_namespace_id = arena.register_namespace(&root_namespace, std_namespace_name, Default::default());
+        let std_namespace_id =
+            arena.register_namespace(&root_namespace, std_namespace_name, Default::default());
 
         let ns_id = arena.resolve_namespace_from_root(&[std_namespace_name]);
 
@@ -372,7 +373,9 @@ mod tests {
         let child_namespace_name = "std";
         let grandchildren_namespace_name = "collections";
 
-        arena.register_namespace(&root_namespace, child_namespace_name, Default::default()).unwrap();
+        arena
+            .register_namespace(&root_namespace, child_namespace_name, Default::default())
+            .unwrap();
         let std_collections_id = arena.register_namespace(
             &[child_namespace_name],
             grandchildren_namespace_name,
@@ -435,7 +438,9 @@ mod tests {
         let root_namespace: [&str; 0] = [];
         let std_namespace_name = "std";
 
-        arena.register_namespace(&root_namespace, std_namespace_name, Default::default()).unwrap();
+        arena
+            .register_namespace(&root_namespace, std_namespace_name, Default::default())
+            .unwrap();
 
         let std_namespace = arena.get(&root_namespace, std_namespace_name);
 
