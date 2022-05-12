@@ -23,7 +23,6 @@ use crate::high_level_ir::typed_type_constraint::TypedTypeConstraint;
 use crate::high_level_ir::typed_use::TypedUse;
 use crate::utils::path_string_to_page_name;
 use std::collections::HashMap;
-use std::option::Option::Some;
 use wiz_syntax::syntax::annotation::AnnotationsSyntax;
 use wiz_syntax::syntax::block::BlockSyntax;
 use wiz_syntax::syntax::declaration::fun_syntax::{ArgDef, FunBody, FunSyntax};
