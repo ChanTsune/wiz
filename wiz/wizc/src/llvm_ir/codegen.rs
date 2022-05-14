@@ -106,22 +106,10 @@ impl<'ctx> CodeGen<'ctx> {
         self.ml_context.local_environments.insert(name, value);
     }
 
-    fn get_struct_field_index_by_name(&self, m: &MLType, n: &str) -> Option<u32> {
+    fn get_struct_by_ml_type(&self, m: &MLType) -> Option<&MLStruct> {
         match m {
             MLType::Value(m) => match m {
-                MLValueType::Struct(type_name) => match self.ml_context.get_struct(&type_name) {
-                    None => {
-                        eprintln!("Type {:?} dose not defined.", type_name);
-                        None
-                    }
-                    Some(s) => match s.fields.iter().position(|f| f.name == n) {
-                        None => {
-                            eprintln!("field '{:?}' dose not found in {:?}", n, type_name);
-                            None
-                        }
-                        Some(i) => Some(i as u32),
-                    },
-                },
+                MLValueType::Struct(type_name) => self.ml_context.get_struct(&type_name),
                 p => {
                     eprintln!("Invalid type '{:?}'", p);
                     None
@@ -131,6 +119,22 @@ impl<'ctx> CodeGen<'ctx> {
                 eprintln!("Invalid type '{:?}'", f);
                 None
             }
+        }
+    }
+
+    fn get_struct_field_index_by_name(&self, m: &MLType, n: &str) -> Option<u32> {
+        match self.get_struct_by_ml_type(m) {
+            None => {
+                eprintln!("Type {:?} dose not defined.", m);
+                None
+            }
+            Some(s) => match s.fields.iter().position(|f| f.name == n) {
+                None => {
+                    eprintln!("field '{:?}' dose not found in {:?}", n, m);
+                    None
+                }
+                Some(i) => Some(i as u32),
+            },
         }
     }
 
