@@ -227,9 +227,10 @@ impl<'ctx> CodeGen<'ctx> {
                 let s = if fields.is_empty() {
                     struct_type.const_zero()
                 } else {
-                    let f = fields.into_iter().map(|(_, e)|{
-                        BasicValueEnum::try_from(self.expr(e)).unwrap()
-                    }).collect::<Vec<_>>();
+                    let f = fields
+                        .into_iter()
+                        .map(|(_, e)| BasicValueEnum::try_from(self.expr(e)).unwrap())
+                        .collect::<Vec<_>>();
                     struct_type.const_named_struct(&f)
                 };
                 s.as_any_value_enum()
