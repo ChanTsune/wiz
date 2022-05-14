@@ -527,34 +527,57 @@ impl<'arena> HLIR2MLIR<'arena> {
     }
 
     fn name(&self, n: TypedName) -> MLExpr {
-        let package = n.package.clone().into_resolved();
-        let has_no_mangle = if let Some(i) = self.arena.get(&package.names, &n.name) {
-            i.has_annotation("no_mangle")
-        } else {
-            false
-        };
-        let mut mangled_name = if has_no_mangle {
-            n.name
-        } else {
-            self.package_name_mangling_(&package, &*n.name)
-        };
-        if let Some(type_arguments) = n.type_arguments {
-            mangled_name += format!(
-                "<{}>",
-                type_arguments
-                    .into_iter()
-                    .map(|t| t.to_string())
-                    .collect::<Vec<_>>()
-                    .join(",")
-            )
-            .as_str()
-        }
-        if let TypedType::Type(_) = n.type_.as_ref().unwrap() {
+        if let TypedType::Type(t) = n.type_.as_ref().unwrap() {
+            let package = t.package().into_resolved();
+            let name = t.name();
+            let has_no_mangle = if let Some(i) = self.arena.get(&package.names, &name) {
+                i.has_annotation("no_mangle")
+            } else {
+                false
+            };
+            let mut mangled_name = if has_no_mangle {
+                name
+            } else {
+                self.package_name_mangling_(&package, &name)
+            };
+            if let Some(type_arguments) = n.type_arguments {
+                mangled_name += format!(
+                    "<{}>",
+                    type_arguments
+                        .into_iter()
+                        .map(|t| t.to_string())
+                        .collect::<Vec<_>>()
+                        .join(",")
+                )
+                    .as_str()
+            };
             MLExpr::Literal(MLLiteral {
                 kind: MLLiteralKind::Struct(vec![]),
                 type_: MLValueType::Struct(mangled_name),
             })
         } else {
+            let package = n.package.clone().into_resolved();
+            let has_no_mangle = if let Some(i) = self.arena.get(&package.names, &n.name) {
+                i.has_annotation("no_mangle")
+            } else {
+                false
+            };
+            let mut mangled_name = if has_no_mangle {
+                n.name
+            } else {
+                self.package_name_mangling_(&package, &*n.name)
+            };
+            if let Some(type_arguments) = n.type_arguments {
+                mangled_name += format!(
+                    "<{}>",
+                    type_arguments
+                        .into_iter()
+                        .map(|t| t.to_string())
+                        .collect::<Vec<_>>()
+                        .join(",")
+                )
+                    .as_str()
+            };
             MLExpr::Name(MLName {
                 name: mangled_name,
                 type_: self.type_(n.type_.unwrap()),
