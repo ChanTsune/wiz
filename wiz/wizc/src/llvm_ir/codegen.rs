@@ -218,7 +218,7 @@ impl<'ctx> CodeGen<'ctx> {
                 let ptr_ty = ty.ptr_type(AddressSpace::Generic);
                 ptr_ty.const_null().as_any_value_enum()
             }
-            MLLiteralKind::Struct => {
+            MLLiteralKind::Struct(fields) => {
                 let struct_type = self.module.get_struct_type(&*match l.type_ {
                     MLValueType::Struct(name) => name,
                     p => panic!("Invalid Struct Literal {:?}", p),

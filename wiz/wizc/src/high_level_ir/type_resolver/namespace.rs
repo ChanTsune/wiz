@@ -1,5 +1,4 @@
 use crate::high_level_ir::declaration_id::DeclarationId;
-use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Default, Clone, Eq, PartialEq)]
 pub struct Namespace {

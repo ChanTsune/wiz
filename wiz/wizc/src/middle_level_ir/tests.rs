@@ -2,6 +2,7 @@ use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::typed_file::TypedSourceSet;
 use crate::high_level_ir::AstLowering;
 use crate::middle_level_ir::HLIR2MLIR;
+use std::collections::HashMap;
 use wiz_mir::expr::{
     MLCall, MLCallArg, MLExpr, MLLiteral, MLLiteralKind, MLMember, MLName, MLUnaryOp, MLUnaryOpKind,
 };
@@ -89,7 +90,7 @@ fn test_struct() {
                                 name: "self".to_string(),
                                 type_: MLType::Value(MLValueType::Struct(String::from("test::A"))),
                                 value: MLExpr::Literal(MLLiteral {
-                                    kind: MLLiteralKind::Struct,
+                                    kind: MLLiteralKind::Struct(HashMap::new()),
                                     type_: MLValueType::Struct(String::from("test::A")),
                                 }),
                             }),
@@ -181,7 +182,7 @@ fn test_struct_init() {
                                 name: "self".to_string(),
                                 type_: MLType::Value(MLValueType::Struct(String::from("test::A"))),
                                 value: MLExpr::Literal(MLLiteral {
-                                    kind: MLLiteralKind::Struct,
+                                    kind: MLLiteralKind::Struct(HashMap::new()),
                                     type_: MLValueType::Struct(String::from("test::A")),
                                 }),
                             }),
@@ -326,7 +327,7 @@ fn test_method_call() {
                                 name: "self".to_string(),
                                 type_: MLType::Value(MLValueType::Struct("test::A".to_string())),
                                 value: MLExpr::Literal(MLLiteral {
-                                    kind: MLLiteralKind::Struct,
+                                    kind: MLLiteralKind::Struct(HashMap::new()),
                                     type_: MLValueType::Struct("test::A".to_string()),
                                 }),
                             }),

@@ -1,6 +1,8 @@
+use crate::expr::MLExpr;
 use crate::format::Formatter;
 use crate::ml_node::MLNode;
 use crate::ml_type::MLValueType;
+use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Write;
 
@@ -11,7 +13,7 @@ pub enum MLLiteralKind {
     String(String),
     Boolean(String),
     Null,
-    Struct,
+    Struct(HashMap<String, MLExpr>),
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -32,9 +34,15 @@ impl MLNode for MLLiteral {
             }
             MLLiteralKind::Boolean(value) => f.write_str(value),
             MLLiteralKind::Null => Err(Default::default()),
-            MLLiteralKind::Struct => {
+            MLLiteralKind::Struct(fields) => {
                 self.type_.fmt(f)?;
-                f.write_str(" { }")
+                f.write_char('(')?;
+                for field in fields {
+                    f.write_str(field.0)?;
+                    f.write_char(':')?;
+                    field.1.fmt(f)?;
+                }
+                f.write_char(')')
             }
         }
     }
