@@ -106,23 +106,17 @@ impl<'ctx> CodeGen<'ctx> {
         self.ml_context.local_environments.insert(name, value);
     }
 
-    fn get_struct_by_ml_type(&self, m: &MLType) -> Option<&MLStruct> {
+    fn get_struct_by_ml_type(&self, m: &MLValueType) -> Option<&MLStruct> {
         match m {
-            MLType::Value(m) => match m {
-                MLValueType::Struct(type_name) => self.ml_context.get_struct(&type_name),
-                p => {
-                    eprintln!("Invalid type '{:?}'", p);
-                    None
-                }
-            },
-            MLType::Function(f) => {
-                eprintln!("Invalid type '{:?}'", f);
+            MLValueType::Struct(type_name) => self.ml_context.get_struct(&type_name),
+            p => {
+                eprintln!("Invalid type '{:?}'", p);
                 None
             }
         }
     }
 
-    fn get_struct_field_index_by_name(&self, m: &MLType, n: &str) -> Option<u32> {
+    fn get_struct_field_index_by_name(&self, m: &MLValueType, n: &str) -> Option<u32> {
         match self.get_struct_by_ml_type(m) {
             None => {
                 eprintln!("Type {:?} dose not defined.", m);
@@ -228,16 +222,26 @@ impl<'ctx> CodeGen<'ctx> {
                     p => panic!("Invalid Struct Literal {:?}", p),
                 });
                 let struct_type = struct_type.unwrap();
-                let s = if fields.is_empty() {
-                    struct_type.const_zero()
-                } else {
+                if fields.iter().all(|(_, y)|y.is_primitive_literal()) {
                     let f = fields
                         .into_iter()
                         .map(|(_, e)| BasicValueEnum::try_from(self.expr(e)).unwrap())
                         .collect::<Vec<_>>();
-                    struct_type.const_named_struct(&f)
-                };
-                s.as_any_value_enum()
+                    struct_type.const_named_struct(&f).as_any_value_enum()
+                } else {
+                    let s = struct_type.const_zero();
+                    let s = self.builder.build_alloca(s.get_type(), "s_tmp");
+                    for (name, expr) in fields.into_iter() {
+                        let idx = self.get_struct_field_index_by_name(&l.type_, &name);
+                        let f_idx = self.builder.build_struct_gep(s, idx.unwrap(), &name).unwrap();
+                        let expr_type = expr.type_().into_value_type();
+                        let expr = self.expr(expr);
+                        let expr = self.load_if_pointer_value(expr, &expr_type);
+                        let expr = BasicValueEnum::try_from(expr).unwrap();
+                        self.builder.build_store(f_idx, expr);
+                    }
+                    s.as_any_value_enum()
+                }
             }
         }
     }
@@ -561,7 +565,7 @@ impl<'ctx> CodeGen<'ctx> {
 
     pub fn member(&mut self, m: MLMember) -> AnyValueEnum<'ctx> {
         let field_index = self
-            .get_struct_field_index_by_name(&m.target.type_(), &m.name)
+            .get_struct_field_index_by_name(&m.target.type_().into_value_type(), &m.name)
             .unwrap();
         let target = match self.expr(*m.target) {
             AnyValueEnum::PointerValue(p) => p,
