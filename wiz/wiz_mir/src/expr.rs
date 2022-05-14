@@ -119,7 +119,7 @@ impl MLExpr {
 
     pub fn is_primitive_literal(&self) -> bool {
         if let MLExpr::Literal(MLLiteral { kind, .. }) = &self {
-            return !matches!(kind, MLLiteralKind::Struct(_))
+            return !matches!(kind, MLLiteralKind::Struct(_));
         }
         false
     }

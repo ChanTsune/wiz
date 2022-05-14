@@ -222,7 +222,7 @@ impl<'ctx> CodeGen<'ctx> {
                     p => panic!("Invalid Struct Literal {:?}", p),
                 });
                 let struct_type = struct_type.unwrap();
-                if fields.iter().all(|(_, y)|y.is_primitive_literal()) {
+                if fields.iter().all(|(_, y)| y.is_primitive_literal()) {
                     let f = fields
                         .into_iter()
                         .map(|(_, e)| BasicValueEnum::try_from(self.expr(e)).unwrap())
@@ -233,7 +233,10 @@ impl<'ctx> CodeGen<'ctx> {
                     let s = self.builder.build_alloca(s.get_type(), "s_tmp");
                     for (name, expr) in fields.into_iter() {
                         let idx = self.get_struct_field_index_by_name(&l.type_, &name);
-                        let f_idx = self.builder.build_struct_gep(s, idx.unwrap(), &name).unwrap();
+                        let f_idx = self
+                            .builder
+                            .build_struct_gep(s, idx.unwrap(), &name)
+                            .unwrap();
                         let expr_type = expr.type_().into_value_type();
                         let expr = self.expr(expr);
                         let expr = self.load_if_pointer_value(expr, &expr_type);
