@@ -213,6 +213,11 @@ impl ResolverContext {
         name: &str,
         type_annotation: Option<TypedType>,
     ) -> Result<(TypedType, TypedPackage)> {
+        if name_space.is_empty() && name == "Self" {
+            let self_type = self.resolve_current_type()?;
+            let package = self_type.package();
+            return Ok((TypedType::Type(Box::new(self_type)), package));
+        }
         let env = self.get_current_name_environment();
         let env_value = env.get_env_item(&name_space, name).ok_or_else(|| {
             ResolverError::from(format!("Cannot resolve name =>{:?} {:?}", name_space, name))
