@@ -232,7 +232,10 @@ impl<'ctx> CodeGen<'ctx> {
                         .map(|(_, e)| {
                             let e_type = e.type_();
                             let e = self.expr(e);
-                            BasicValueEnum::try_from(self.load_if_pointer_value(e, &e_type.into_value_type())).unwrap()
+                            BasicValueEnum::try_from(
+                                self.load_if_pointer_value(e, &e_type.into_value_type()),
+                            )
+                            .unwrap()
                         })
                         .collect::<Vec<_>>();
                     struct_type.const_named_struct(&f)
