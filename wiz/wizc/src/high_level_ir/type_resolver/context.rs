@@ -229,7 +229,7 @@ impl ResolverContext {
                 }),
             EnvValue::Type(rs) => Ok((
                 TypedType::Type(Box::new(rs.self_type())),
-                TypedPackage::Resolved(Package::global()),
+                rs.self_type().package(),
             )),
         }
     }
