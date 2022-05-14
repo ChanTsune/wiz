@@ -161,7 +161,7 @@ impl<'ctx> CodeGen<'ctx> {
         }
     }
 
-    pub fn literal(&self, l: MLLiteral) -> AnyValueEnum<'ctx> {
+    pub fn literal(&mut self, l: MLLiteral) -> AnyValueEnum<'ctx> {
         match l.kind {
             MLLiteralKind::Integer(value) => {
                 let i: u64 = value.parse().unwrap();
@@ -224,7 +224,15 @@ impl<'ctx> CodeGen<'ctx> {
                     p => panic!("Invalid Struct Literal {:?}", p),
                 });
                 let struct_type = struct_type.unwrap();
-                struct_type.const_zero().as_any_value_enum()
+                let s = if fields.is_empty() {
+                    struct_type.const_zero()
+                } else {
+                    let f = fields.into_iter().map(|(_, e)|{
+                        BasicValueEnum::try_from(self.expr(e)).unwrap()
+                    }).collect::<Vec<_>>();
+                    struct_type.const_named_struct(&f)
+                };
+                s.as_any_value_enum()
             }
         }
     }
