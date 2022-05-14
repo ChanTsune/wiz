@@ -100,7 +100,7 @@ struct UInt8Vector {
 }
 
 extension UInt8Vector: Clonable {
-    fun clone(&self): UInt8Vector {
+    fun clone(&self): Self {
         var c = UInt8Vector.init()
         c.ptr = malloc(self.length)
         memcpy(c.ptr, self.ptr, self.length)
