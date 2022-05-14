@@ -507,7 +507,7 @@ impl<'arena> HLIR2MLIR<'arena> {
 
     fn expr(&mut self, e: TypedExpr) -> MLExpr {
         match e {
-            TypedExpr::Name(name) => MLExpr::Name(self.name(name)),
+            TypedExpr::Name(name) => self.name(name),
             TypedExpr::Literal(l) => MLExpr::Literal(self.literal(l)),
             TypedExpr::BinOp(b) => MLExpr::PrimitiveBinOp(self.binop(b)),
             TypedExpr::UnaryOp(u) => MLExpr::PrimitiveUnaryOp(self.unary_op(u)),
@@ -517,7 +517,7 @@ impl<'arena> HLIR2MLIR<'arena> {
             TypedExpr::Tuple => todo!(),
             TypedExpr::Dict => todo!(),
             TypedExpr::StringBuilder => todo!(),
-            TypedExpr::Call(c) => MLExpr::Call(self.call(c)),
+            TypedExpr::Call(c) => self.call(c),
             TypedExpr::If(i) => MLExpr::If(self.if_expr(i)),
             TypedExpr::When => todo!(),
             TypedExpr::Lambda(l) => todo!(),
@@ -526,7 +526,7 @@ impl<'arena> HLIR2MLIR<'arena> {
         }
     }
 
-    fn name(&self, n: TypedName) -> MLName {
+    fn name(&self, n: TypedName) -> MLExpr {
         let package = n.package.clone().into_resolved();
         let has_no_mangle = if let Some(i) = self.arena.get(&package.names, &n.name) {
             i.has_annotation("no_mangle")
@@ -549,9 +549,16 @@ impl<'arena> HLIR2MLIR<'arena> {
             )
             .as_str()
         }
-        MLName {
-            name: mangled_name,
-            type_: self.type_(n.type_.unwrap()),
+        if let TypedType::Type(_) = n.type_.as_ref().unwrap() {
+            MLExpr::Literal(MLLiteral {
+                kind: MLLiteralKind::Struct(vec![]),
+                type_: MLValueType::Struct(mangled_name),
+            })
+        } else {
+            MLExpr::Name(MLName {
+                name: mangled_name,
+                type_: self.type_(n.type_.unwrap()),
+            })
         }
     }
 
@@ -729,7 +736,7 @@ impl<'arena> HLIR2MLIR<'arena> {
         }
     }
 
-    fn call(&mut self, c: TypedCall) -> MLCall {
+    fn call(&mut self, c: TypedCall) -> MLExpr {
         let TypedCall {
             target,
             mut args,
@@ -840,9 +847,22 @@ impl<'arena> HLIR2MLIR<'arena> {
                     type_,
                 }
             }
+            MLExpr::Literal(MLLiteral {
+                kind: MLLiteralKind::Struct(mut s),
+                type_,
+            }) => {
+                for arg in args.into_iter() {
+                    let v = self.expr(*arg.arg);
+                    s.push((arg.label.unwrap(), v));
+                }
+                return MLExpr::Literal(MLLiteral {
+                    kind: MLLiteralKind::Struct(s),
+                    type_,
+                });
+            }
             a => panic!("{:?}", a),
         };
-        MLCall {
+        MLExpr::Call(MLCall {
             target,
             args: args
                 .into_iter()
@@ -851,7 +871,7 @@ impl<'arena> HLIR2MLIR<'arena> {
                 })
                 .collect(),
             type_: self.type_(type_.unwrap()).into_value_type(),
-        }
+        })
     }
 
     fn if_expr(&mut self, i: TypedIf) -> MLIf {

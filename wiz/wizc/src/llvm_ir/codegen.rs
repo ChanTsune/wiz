@@ -229,7 +229,11 @@ impl<'ctx> CodeGen<'ctx> {
                 } else {
                     let f = fields
                         .into_iter()
-                        .map(|(_, e)| BasicValueEnum::try_from(self.expr(e)).unwrap())
+                        .map(|(_, e)| {
+                            let e_type = e.type_();
+                            let e = self.expr(e);
+                            BasicValueEnum::try_from(self.load_if_pointer_value(e, &e_type.into_value_type())).unwrap()
+                        })
                         .collect::<Vec<_>>();
                     struct_type.const_named_struct(&f)
                 };

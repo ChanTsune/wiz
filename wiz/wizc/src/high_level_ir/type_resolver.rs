@@ -1052,6 +1052,29 @@ impl<'s> TypeResolver<'s> {
                                 .collect::<Result<Vec<_>>>()?,
                         ))
                     }
+                } else if let TypedType::Type(t) = target.type_().unwrap() {
+                    let rs = self
+                        .context
+                        .arena
+                        .get_type(&t.package().into_resolved().names, &t.name())
+                        .unwrap();
+                    if rs.stored_properties.len() != c.args.len() {
+                        Err(ResolverError::from(format!(
+                            "`{}` required {} arguments, but {} were given.",
+                            t.name(),
+                            rs.stored_properties.len(),
+                            c.args.len()
+                        )))
+                    } else {
+                        Ok((
+                            target,
+                            c.args
+                                .into_iter()
+                                .zip(rs.stored_properties.clone().into_iter().map(|(_, t)| t))
+                                .map(|(c, annotation)| self.typed_call_arg(c, Some(annotation)))
+                                .collect::<Result<Vec<_>>>()?,
+                        ))
+                    }
                 } else {
                     Err(ResolverError::from(format!(
                         "{:?} is not callable.",
@@ -1081,7 +1104,7 @@ impl<'s> TypeResolver<'s> {
         }?;
         let c_type = match target.type_().unwrap() {
             TypedType::Value(v) => Err(ResolverError::from(format!("{:?} is not callable.", v))),
-            TypedType::Type(t) => Err(ResolverError::from(format!("{:?} is not callable.", t))),
+            TypedType::Type(t) => Ok(*t),
             TypedType::Self_ => Err(ResolverError::from("Self is not callable.")),
             TypedType::Function(f) => Ok(f.return_type),
         }?;
