@@ -549,7 +549,7 @@ impl<'arena> HLIR2MLIR<'arena> {
                         .collect::<Vec<_>>()
                         .join(",")
                 )
-                    .as_str()
+                .as_str()
             };
             MLExpr::Literal(MLLiteral {
                 kind: MLLiteralKind::Struct(vec![]),
@@ -576,7 +576,7 @@ impl<'arena> HLIR2MLIR<'arena> {
                         .collect::<Vec<_>>()
                         .join(",")
                 )
-                    .as_str()
+                .as_str()
             };
             MLExpr::Name(MLName {
                 name: mangled_name,
