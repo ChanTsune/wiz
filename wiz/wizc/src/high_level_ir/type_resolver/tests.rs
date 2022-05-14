@@ -414,7 +414,9 @@ fn test_struct_init() {
                                     value: TypedExpr::Call(TypedCall {
                                         target: Box::new(TypedExpr::Member(TypedInstanceMember {
                                             target: Box::new(TypedExpr::Name(TypedName {
-                                                package: TypedPackage::Resolved(Package::from(&vec!["test"])),
+                                                package: TypedPackage::Resolved(Package::from(
+                                                    &vec!["test"],
+                                                )),
                                                 name: "A".to_string(),
                                                 type_: Some(TypedType::Type(Box::new(
                                                     TypedType::Value(TypedValueType::Value(
