@@ -409,7 +409,7 @@ impl<'arena> HLIR2MLIR<'arena> {
                         is_mute: true,
                         name: String::from("self"),
                         value: MLExpr::Literal(MLLiteral {
-                            kind: MLLiteralKind::Struct(HashMap::new()),
+                            kind: MLLiteralKind::Struct(vec![]),
                             type_: type_.clone().into_value_type(),
                         }),
                         type_: type_.clone(),

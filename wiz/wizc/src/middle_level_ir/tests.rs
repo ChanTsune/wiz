@@ -90,7 +90,7 @@ fn test_struct() {
                                 name: "self".to_string(),
                                 type_: MLType::Value(MLValueType::Struct(String::from("test::A"))),
                                 value: MLExpr::Literal(MLLiteral {
-                                    kind: MLLiteralKind::Struct(HashMap::new()),
+                                    kind: MLLiteralKind::Struct(vec![]),
                                     type_: MLValueType::Struct(String::from("test::A")),
                                 }),
                             }),
@@ -182,7 +182,7 @@ fn test_struct_init() {
                                 name: "self".to_string(),
                                 type_: MLType::Value(MLValueType::Struct(String::from("test::A"))),
                                 value: MLExpr::Literal(MLLiteral {
-                                    kind: MLLiteralKind::Struct(HashMap::new()),
+                                    kind: MLLiteralKind::Struct(vec![]),
                                     type_: MLValueType::Struct(String::from("test::A")),
                                 }),
                             }),
@@ -327,7 +327,7 @@ fn test_method_call() {
                                 name: "self".to_string(),
                                 type_: MLType::Value(MLValueType::Struct("test::A".to_string())),
                                 value: MLExpr::Literal(MLLiteral {
-                                    kind: MLLiteralKind::Struct(HashMap::new()),
+                                    kind: MLLiteralKind::Struct(vec![]),
                                     type_: MLValueType::Struct("test::A".to_string()),
                                 }),
                             }),
