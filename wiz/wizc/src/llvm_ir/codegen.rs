@@ -219,7 +219,7 @@ impl<'ctx> CodeGen<'ctx> {
                 ptr_ty.const_null().as_any_value_enum()
             }
             MLLiteralKind::Struct(fields) => {
-                let struct_type = self.module.get_struct_type(&*match l.type_ {
+                let struct_type = self.module.get_struct_type(match &l.type_ {
                     MLValueType::Struct(name) => name,
                     p => panic!("Invalid Struct Literal {:?}", p),
                 });
