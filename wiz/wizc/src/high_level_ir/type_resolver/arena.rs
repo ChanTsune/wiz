@@ -178,24 +178,15 @@ impl ResolverArena {
         } else {
             let name = item_name.get(0).unwrap();
             let parent = self.declarations.get(&parent_id)?;
-            match &parent.kind {
-                DeclarationItemKind::Namespace(_) => self.resolve_declaration_id(
-                    *parent
-                        .get_child(&name.to_string())?
-                        .into_iter()
-                        .collect::<Vec<_>>()
-                        .first()
-                        .unwrap(),
-                    &item_name[1..],
-                ),
-                DeclarationItemKind::Type(_) | DeclarationItemKind::Value(_) => {
-                    if item_name.len() == 1 {
-                        Some(parent_id)
-                    } else {
-                        None
-                    }
-                }
-            }
+            self.resolve_declaration_id(
+                *parent
+                    .get_child(&name.to_string())?
+                    .into_iter()
+                    .collect::<Vec<_>>()
+                    .first()
+                    .unwrap(),
+                &item_name[1..],
+            )
         }
     }
 
