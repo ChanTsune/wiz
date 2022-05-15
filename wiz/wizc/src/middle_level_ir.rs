@@ -40,19 +40,11 @@ pub type Result<T> = result::Result<T, Box<dyn Error>>;
 pub fn hlir2mlir<'arena>(
     target: TypedSourceSet,
     dependencies: &'arena [MLFile],
-    annotations: HashMap<String, TypedAnnotations>,
     arena: &'arena ResolverArena,
-) -> Result<(MLFile, HashMap<String, TypedAnnotations>)> {
+) -> Result<MLFile> {
     let mut converter = HLIR2MLIR::new(arena);
     converter.load_dependencies(dependencies)?;
-    converter
-        .context
-        .declaration_annotations
-        .extend(annotations);
-    Ok((
-        converter.convert_from_source_set(target),
-        converter.context.declaration_annotations,
-    ))
+    Ok(converter.convert_from_source_set(target))
 }
 
 #[derive(Debug)]
@@ -69,10 +61,6 @@ impl<'arena> HLIR2MLIR<'arena> {
             context: Default::default(),
             module: Default::default(),
         }
-    }
-
-    pub(crate) fn annotations(self) -> HashMap<String, TypedAnnotations> {
-        self.context.declaration_annotations
     }
 
     pub fn load_dependencies(&mut self, dependencies: &[MLFile]) -> Result<()> {
@@ -365,8 +353,6 @@ impl<'arena> HLIR2MLIR<'arena> {
                 package_mangled_name + "##" + &*fun_arg_label_type_mangled_name
             }
         };
-        self.context
-            .set_declaration_annotations(mangled_name.clone(), annotations);
         let args = arg_defs.into_iter().map(|a| self.arg_def(a)).collect();
         MLFun {
             name: mangled_name,
