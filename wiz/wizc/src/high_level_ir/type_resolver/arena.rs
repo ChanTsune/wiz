@@ -38,7 +38,7 @@ impl Default for ResolverArena {
                 Default::default(),
                 "",
                 DeclarationItemKind::Namespace(Namespace::root()),
-                None
+                None,
             ),
         );
 
@@ -273,7 +273,12 @@ impl ResolverArena {
         self.register(
             namespace,
             name,
-            DeclarationItem::new(annotation, name, DeclarationItemKind::Type(s), Some(parent_id)),
+            DeclarationItem::new(
+                annotation,
+                name,
+                DeclarationItemKind::Type(s),
+                Some(parent_id),
+            ),
         )
     }
 
@@ -317,7 +322,7 @@ impl ResolverArena {
                 annotation,
                 name,
                 DeclarationItemKind::Value((vec_namespace, ty)),
-                Some(parent_id)
+                Some(parent_id),
             ),
         )
     }
