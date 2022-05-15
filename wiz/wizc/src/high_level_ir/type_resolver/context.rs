@@ -258,7 +258,7 @@ impl ResolverContext {
 
     fn full_value_type_name(&self, type_: TypedValueType) -> Result<TypedValueType> {
         Ok(match type_ {
-            TypedValueType::Value(t) => TypedValueType::Value(self.full_named_value_type_name(t)?),
+            TypedValueType::Value(t) => TypedValueType::Value(self.full_named_value_type_name(&t)?),
             TypedValueType::Array(a, n) => {
                 TypedValueType::Array(Box::new(self.full_type_name(*a)?), n)
             }
@@ -276,7 +276,7 @@ impl ResolverContext {
 
     fn full_named_value_type_name(
         &self,
-        type_: TypedNamedValueType,
+        type_: &TypedNamedValueType,
     ) -> Result<TypedNamedValueType> {
         let env = self.get_current_name_environment();
         Ok(match type_.package {
@@ -303,7 +303,7 @@ impl ResolverContext {
                     _ => panic!(),
                 }
             }
-            TypedPackage::Resolved(_) => type_,
+            TypedPackage::Resolved(_) => type_.clone(),
         })
     }
 
