@@ -227,7 +227,8 @@ impl<'s> TypeResolver<'s> {
                         name
                     ))
                 })?;
-            rs.stored_properties.insert(stored_property.name.clone(), type_);
+            rs.stored_properties
+                .insert(stored_property.name.clone(), type_);
         }
         for computed_property in computed_properties.into_iter() {
             let type_ = self.context.full_type_name(&computed_property.type_)?;
@@ -241,7 +242,8 @@ impl<'s> TypeResolver<'s> {
                         name
                     ))
                 })?;
-            rs.computed_properties.insert(computed_property.name.clone(), type_);
+            rs.computed_properties
+                .insert(computed_property.name.clone(), type_);
         }
 
         let mut type_namespace = self.context.current_namespace.clone();
@@ -267,7 +269,8 @@ impl<'s> TypeResolver<'s> {
                         name
                     ))
                 })?;
-            rs.member_functions.insert(member_function.name.clone(), type_);
+            rs.member_functions
+                .insert(member_function.name.clone(), type_);
         }
         self.context.clear_current_type();
 
@@ -298,7 +301,8 @@ impl<'s> TypeResolver<'s> {
                         this_type
                     ))
                 })?;
-            rs.computed_properties.insert(computed_property.name.clone(), type_);
+            rs.computed_properties
+                .insert(computed_property.name.clone(), type_);
         }
         for member_function in member_functions {
             let type_ = self
@@ -317,7 +321,8 @@ impl<'s> TypeResolver<'s> {
                         this_type
                     ))
                 })?;
-            rs.member_functions.insert(member_function.name.clone(), type_);
+            rs.member_functions
+                .insert(member_function.name.clone(), type_);
         }
         self.context.clear_current_type();
         Ok(())
@@ -351,7 +356,8 @@ impl<'s> TypeResolver<'s> {
                         name
                     ))
                 })?;
-            rs.computed_properties.insert(computed_property.name.clone(), type_);
+            rs.computed_properties
+                .insert(computed_property.name.clone(), type_);
         }
         for member_function in member_functions.into_iter() {
             let type_ = self
@@ -367,7 +373,8 @@ impl<'s> TypeResolver<'s> {
                         name
                     ))
                 })?;
-            rs.member_functions.insert(member_function.name.clone(), type_);
+            rs.member_functions
+                .insert(member_function.name.clone(), type_);
         }
         self.context.clear_current_type();
 
