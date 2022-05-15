@@ -1,4 +1,3 @@
-use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use std::collections::HashMap;
 use wiz_mir::ml_decl::MLStruct;
 use wiz_mir::ml_type::MLValueType;
