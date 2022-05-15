@@ -540,6 +540,24 @@ impl<'arena> HLIR2MLIR<'arena> {
                 )
                 .as_str()
             };
+            if !has_no_mangle {
+                if let Some(TypedType::Function(fun_type)) = &n.type_ {
+                    if !fun_type.arguments.is_empty() {
+                        mangled_name += "##";
+                        mangled_name += &*self.fun_arg_label_type_name_mangling(
+                            &fun_type
+                                .arguments
+                                .iter()
+                                .map(|a| TypedArgDef {
+                                    label: a.label.to_string(),
+                                    name: "".to_string(),
+                                    type_: a.typ.clone(),
+                                })
+                                .collect(),
+                        )
+                    }
+                }
+            }
             MLExpr::Name(MLName {
                 name: mangled_name,
                 type_: self.type_(n.type_.unwrap()),
@@ -757,8 +775,25 @@ impl<'arena> HLIR2MLIR<'arena> {
                                     is_vararg: false,
                                 },
                             );
+                            let mut mangled_name = target_type.name() + "::" + &*name;
+                            if let Some(TypedType::Function(fun_type)) = &type_ {
+                                if !fun_type.arguments.is_empty() {
+                                    mangled_name += "##";
+                                    mangled_name += &*self.fun_arg_label_type_name_mangling(
+                                        &fun_type
+                                            .arguments
+                                            .iter()
+                                            .map(|a| TypedArgDef {
+                                                label: a.label.to_string(),
+                                                name: "".to_string(),
+                                                type_: a.typ.clone(),
+                                            })
+                                            .collect(),
+                                    )
+                                }
+                            }
                             MLExpr::Name(MLName {
-                                name: target_type.name() + "::" + &*name,
+                                name: mangled_name,
                                 type_: self.type_(type_.unwrap()),
                             })
                         }
@@ -803,35 +838,7 @@ impl<'arena> HLIR2MLIR<'arena> {
             t => self.expr(t),
         };
         let target = match target {
-            MLExpr::Name(MLName { name, type_ }) => {
-                let fun_arg_label_type_mangled_name =
-                    if self.context.declaration_has_annotation(&name, "no_mangle") {
-                        name
-                    } else {
-                        if args.is_empty() {
-                            name
-                        } else {
-                            name + "##"
-                                + &*self.fun_arg_label_type_name_mangling(
-                                    &args
-                                        .iter()
-                                        .map(|a| TypedArgDef {
-                                            label: match &a.label {
-                                                None => "_".to_string(),
-                                                Some(l) => l.to_string(),
-                                            },
-                                            name: "".to_string(),
-                                            type_: a.arg.type_().unwrap(),
-                                        })
-                                        .collect(),
-                                )
-                        }
-                    };
-                MLName {
-                    name: fun_arg_label_type_mangled_name,
-                    type_,
-                }
-            }
+            MLExpr::Name(name) => name,
             MLExpr::Literal(MLLiteral {
                 kind: MLLiteralKind::Struct(mut s),
                 type_,
