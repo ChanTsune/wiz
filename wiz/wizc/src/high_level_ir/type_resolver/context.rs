@@ -164,7 +164,10 @@ impl ResolverContext {
                     todo!()
                 }
             },
-            TypedType::Type(v) => Err(ResolverError::from(format!("{:?} has no member {}", v, name))),
+            TypedType::Type(v) => Err(ResolverError::from(format!(
+                "{:?} has no member {}",
+                v, name
+            ))),
             _ => todo!("dose not impl"),
         }
     }
