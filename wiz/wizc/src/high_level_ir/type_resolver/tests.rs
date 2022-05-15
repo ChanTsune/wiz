@@ -314,7 +314,7 @@ fn test_struct_init() {
             val a: Int64
         }
         fun function(_ a: A) {
-            val a = A.init(a:1)
+            val a = A(a:1)
         }
         ";
 
@@ -412,46 +412,23 @@ fn test_struct_init() {
                                         },
                                     ))),
                                     value: TypedExpr::Call(TypedCall {
-                                        target: Box::new(TypedExpr::Member(TypedInstanceMember {
-                                            target: Box::new(TypedExpr::Name(TypedName {
-                                                package: TypedPackage::Resolved(Package::from(
-                                                    &vec!["test"],
-                                                )),
-                                                name: "A".to_string(),
-                                                type_: Some(TypedType::Type(Box::new(
-                                                    TypedType::Value(TypedValueType::Value(
-                                                        TypedNamedValueType {
-                                                            package: TypedPackage::Resolved(
-                                                                Package::from(&vec!["test"]),
-                                                            ),
-                                                            name: "A".to_string(),
-                                                            type_args: None,
-                                                        },
-                                                    )),
-                                                ))),
-                                                type_arguments: None,
-                                            })),
-                                            name: "init".to_string(),
-                                            is_safe: false,
-                                            type_: Some(TypedType::Function(Box::new(
-                                                TypedFunctionType {
-                                                    arguments: vec![TypedArgType {
-                                                        label: "a".to_string(),
-                                                        typ: TypedType::int64(),
-                                                    }],
-                                                    return_type: TypedType::Value(
-                                                        TypedValueType::Value(
-                                                            TypedNamedValueType {
-                                                                package: TypedPackage::Resolved(
-                                                                    Package::from(&vec!["test"]),
-                                                                ),
-                                                                name: "A".to_string(),
-                                                                type_args: None,
-                                                            },
+                                        target: Box::new(TypedExpr::Name(TypedName {
+                                            package: TypedPackage::Resolved(Package::from(&vec![
+                                                "test",
+                                            ])),
+                                            name: "A".to_string(),
+                                            type_: Some(TypedType::Type(Box::new(
+                                                TypedType::Value(TypedValueType::Value(
+                                                    TypedNamedValueType {
+                                                        package: TypedPackage::Resolved(
+                                                            Package::from(&vec!["test"]),
                                                         ),
-                                                    ),
-                                                },
+                                                        name: "A".to_string(),
+                                                        type_args: None,
+                                                    },
+                                                )),
                                             ))),
+                                            type_arguments: None,
                                         })),
                                         args: vec![TypedCallArg {
                                             label: Some(String::from("a")),

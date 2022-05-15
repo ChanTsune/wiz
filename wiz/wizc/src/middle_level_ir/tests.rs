@@ -136,7 +136,7 @@ fn test_struct_init() {
         val a: Int64
     }
     fun initA(): A {
-        return A.init(a: 1)
+        return A(a: 1)
     }
     ";
 
@@ -222,22 +222,14 @@ fn test_struct_init() {
                     return_type: MLValueType::Struct(String::from("test::A")),
                     body: Some(MLFunBody {
                         body: vec![MLStmt::Expr(MLExpr::Return(MLReturn {
-                            value: Some(Box::from(MLExpr::Call(MLCall {
-                                target: MLName {
-                                    name: "test::A::init##a#Int64".to_string(),
-                                    type_: MLType::Function(MLFunctionType {
-                                        arguments: vec![MLValueType::Primitive(
-                                            MLPrimitiveType::Int64,
-                                        )],
-                                        return_type: MLValueType::Struct(String::from("test::A")),
-                                    }),
-                                },
-                                args: vec![MLCallArg {
-                                    arg: MLExpr::Literal(MLLiteral {
+                            value: Some(Box::from(MLExpr::Literal(MLLiteral {
+                                kind: MLLiteralKind::Struct(vec![(
+                                    "a".to_string(),
+                                    MLExpr::Literal(MLLiteral {
                                         kind: MLLiteralKind::Integer("1".to_string()),
                                         type_: MLValueType::Primitive(MLPrimitiveType::Int64),
                                     }),
-                                }],
+                                )]),
                                 type_: MLValueType::Struct(String::from("test::A")),
                             }))),
                         }))],
@@ -263,7 +255,7 @@ fn test_method_call() {
         }
     }
     fun sample() {
-      val p = A.init(1)
+      val p = A(a: 1)
       p.c()
     }
     ";
@@ -417,22 +409,14 @@ fn test_method_call() {
                                 is_mute: false,
                                 name: "p".to_string(),
                                 type_: MLType::Value(MLValueType::Struct("test::A".to_string())),
-                                value: MLExpr::Call(MLCall {
-                                    target: MLName {
-                                        name: "test::A::init##_#Int64".to_string(),
-                                        type_: MLType::Function(MLFunctionType {
-                                            arguments: vec![MLValueType::Primitive(
-                                                MLPrimitiveType::Int64,
-                                            )],
-                                            return_type: MLValueType::Struct("test::A".to_string()),
-                                        }),
-                                    },
-                                    args: vec![MLCallArg {
-                                        arg: MLExpr::Literal(MLLiteral {
+                                value: MLExpr::Literal(MLLiteral {
+                                    kind: MLLiteralKind::Struct(vec![(
+                                        "a".to_string(),
+                                        MLExpr::Literal(MLLiteral {
                                             kind: MLLiteralKind::Integer("1".to_string()),
                                             type_: MLValueType::Primitive(MLPrimitiveType::Int64),
                                         }),
-                                    }],
+                                    )]),
                                     type_: MLValueType::Struct("test::A".to_string()),
                                 }),
                             }),
