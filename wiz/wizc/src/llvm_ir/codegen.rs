@@ -108,7 +108,7 @@ impl<'ctx> CodeGen<'ctx> {
 
     fn get_struct_by_ml_type(&self, m: &MLValueType) -> Option<&MLStruct> {
         match m {
-            MLValueType::Struct(type_name) => self.ml_context.get_struct(&type_name),
+            MLValueType::Struct(type_name) => self.ml_context.get_struct(type_name),
             p => {
                 eprintln!("Invalid type '{:?}'", p);
                 None
