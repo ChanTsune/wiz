@@ -94,7 +94,7 @@ impl ResolverContext {
                             &name,
                             t.1,
                             Default::default(),
-                        )
+                        );
                     }
                 }
                 EnvValue::Type(_) => todo!(),

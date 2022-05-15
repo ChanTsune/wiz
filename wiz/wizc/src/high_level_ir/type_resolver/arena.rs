@@ -314,7 +314,7 @@ impl ResolverArena {
         name: &str,
         ty: TypedType,
         annotation: TypedAnnotations,
-    ) {
+    ) -> Option<DeclarationId> {
         let vec_namespace = namespace.iter().map(T::to_string).collect::<Vec<_>>();
         self.register(
             namespace,
@@ -324,7 +324,7 @@ impl ResolverArena {
                 name,
                 DeclarationItemKind::Value((vec_namespace, ty)),
             ),
-        );
+        )
     }
 
     pub(crate) fn resolve_binary_operator(
