@@ -246,10 +246,15 @@ impl<'s> TypeResolver<'s> {
                 })?;
             rs.computed_properties.insert(computed_property.name, type_);
         }
+
+        let mut type_namespace = self.context.current_namespace.clone();
+        type_namespace.push(this_type.name());
+
         for member_function in member_functions.into_iter() {
             let type_ = self
                 .context
                 .full_type_name(member_function.type_().unwrap())?;
+            self.context.arena.register_value(&type_namespace, &member_function.name, type_.clone(), Default::default());
             let rs = self
                 .context
                 .arena
