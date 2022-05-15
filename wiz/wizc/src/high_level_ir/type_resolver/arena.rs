@@ -331,11 +331,8 @@ mod tests {
     use super::super::super::type_resolver::namespace::Namespace;
     use super::super::declaration::DeclarationItemKind;
     use super::ResolverArena;
-    use crate::high_level_ir::type_resolver::context::{ResolverStruct, StructKind};
     use crate::high_level_ir::type_resolver::declaration::DeclarationItem;
-    use crate::high_level_ir::typed_type::{
-        Package, TypedNamedValueType, TypedPackage, TypedType, TypedValueType,
-    };
+    use crate::high_level_ir::typed_type::{TypedArgType, TypedFunctionType, TypedType};
 
     #[test]
     fn resolve_root_namespace() {
@@ -390,6 +387,68 @@ mod tests {
         let child_namespace_name = "std";
         let grandchildren_namespace_name = "collections";
         let type_name = "Type";
+        let member_function_name = "member_function";
+
+        arena.register_namespace(&root_namespace, child_namespace_name, Default::default());
+        arena.register_namespace(
+            &[child_namespace_name],
+            grandchildren_namespace_name,
+            Default::default(),
+        );
+        let type_id = arena.register_struct(
+            &[child_namespace_name, grandchildren_namespace_name],
+            type_name,
+            Default::default(),
+        );
+
+        let member_function_id = arena.register_value(
+            &[
+                child_namespace_name,
+                grandchildren_namespace_name,
+                type_name,
+            ],
+            member_function_name,
+            TypedType::Function(Box::new(TypedFunctionType {
+                arguments: vec![TypedArgType {
+                    label: "self".to_string(),
+                    typ: TypedType::Self_,
+                }],
+                return_type: TypedType::Self_,
+            })),
+            Default::default(),
+        );
+
+        assert_eq!(
+            type_id.unwrap(),
+            arena
+                .resolve_declaration_id_from_root(&[
+                    child_namespace_name,
+                    grandchildren_namespace_name,
+                    type_name
+                ])
+                .unwrap()
+        );
+
+        assert_eq!(
+            member_function_id.unwrap(),
+            arena
+                .resolve_declaration_id_from_root(&[
+                    child_namespace_name,
+                    grandchildren_namespace_name,
+                    type_name,
+                    member_function_name
+                ])
+                .unwrap()
+        );
+    }
+
+    #[test]
+    fn register_duplicate_namespace() {
+        let mut arena = ResolverArena::default();
+        let root_namespace: [&str; 0] = [];
+        let child_namespace_name = "std";
+        let grandchildren_namespace_name = "collections";
+        let type_name = "Type";
 
         arena.register_namespace(&root_namespace, child_namespace_name, Default::default());
         arena.register_namespace(
@@ -402,30 +461,10 @@ mod tests {
             type_name,
             Default::default(),
         );
-        arena.register_namespace(&root_namespace, child_namespace_name, Default::default());
+        let none =
+            arena.register_namespace(&root_namespace, child_namespace_name, Default::default());
 
-        let item = arena.get(
-            &[child_namespace_name, grandchildren_namespace_name],
-            type_name,
-        );
-        assert_eq!(
-            item,
-            Some(&DeclarationItem::new(
-                Default::default(),
-                type_name,
-                DeclarationItemKind::Type(ResolverStruct::new(
-                    TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-                        package: TypedPackage::Resolved(Package::from(&vec![
-                            child_namespace_name,
-                            grandchildren_namespace_name
-                        ])),
-                        name: type_name.to_string(),
-                        type_args: None,
-                    })),
-                    StructKind::Struct,
-                ))
-            ))
-        );
+        assert_eq!(none, None);
     }
 
     #[test]
