@@ -34,12 +34,7 @@ impl Default for ResolverArena {
         let mut declarations = HashMap::new();
         declarations.insert(
             DeclarationId::ROOT,
-            DeclarationItem::new(
-                Default::default(),
-                "",
-                DeclarationItemKind::Namespace,
-                None,
-            ),
+            DeclarationItem::new(Default::default(), "", DeclarationItemKind::Namespace, None),
         );
 
         let mut arena = Self {
