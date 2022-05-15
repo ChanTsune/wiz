@@ -757,16 +757,8 @@ impl<'arena> HLIR2MLIR<'arena> {
                     TypedType::Self_ => panic!("never execution branch"),
                     TypedType::Value(v) => {
                         let target_type = self.value_type(v);
-                        let is_stored = self.context.struct_has_field(&target_type, &name);
-                        if is_stored {
-                            let target = self.expr(*target);
-                            let type_ = self.type_(type_.unwrap());
-                            MLExpr::Member(MLMember {
-                                target: Box::new(target),
-                                name,
-                                type_,
-                            })
-                        } else {
+                        let type_ = type_.unwrap();
+                        if let TypedType::Function(fun_type) = &type_ {
                             args.insert(
                                 0,
                                 TypedCallArg {
@@ -776,26 +768,37 @@ impl<'arena> HLIR2MLIR<'arena> {
                                 },
                             );
                             let mut mangled_name = target_type.name() + "::" + &*name;
-                            if let Some(TypedType::Function(fun_type)) = &type_ {
-                                if !fun_type.arguments.is_empty() {
-                                    mangled_name += "##";
-                                    mangled_name += &*self.fun_arg_label_type_name_mangling(
-                                        &fun_type
-                                            .arguments
-                                            .iter()
-                                            .map(|a| TypedArgDef {
-                                                label: a.label.to_string(),
-                                                name: "".to_string(),
-                                                type_: a.typ.clone(),
-                                            })
-                                            .collect(),
-                                    )
-                                }
+                            if !fun_type.arguments.is_empty() {
+                                mangled_name += "##";
+                                mangled_name += &*self.fun_arg_label_type_name_mangling(
+                                    &fun_type
+                                        .arguments
+                                        .iter()
+                                        .map(|a| TypedArgDef {
+                                            label: a.label.to_string(),
+                                            name: "".to_string(),
+                                            type_: a.typ.clone(),
+                                        })
+                                        .collect(),
+                                )
                             }
                             MLExpr::Name(MLName {
                                 name: mangled_name,
-                                type_: self.type_(type_.unwrap()),
+                                type_: self.type_(type_),
                             })
+                        } else {
+                            let is_stored = self.context.struct_has_field(&target_type, &name);
+                            if is_stored {
+                                let target = self.expr(*target);
+                                let type_ = self.type_(type_);
+                                MLExpr::Member(MLMember {
+                                    target: Box::new(target),
+                                    name,
+                                    type_,
+                                })
+                            } else {
+                                panic!("struct has no member {}", name)
+                            }
                         }
                     }
                     TypedType::Function(_) => {
