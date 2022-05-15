@@ -138,12 +138,12 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
         println!("===== preload decls =====");
         // preload decls
         for hlir in std_hlir.iter() {
-            type_resolver.preload_source_set(hlir.clone())?;
+            type_resolver.preload_source_set(hlir)?;
         }
 
         println!("===== preload decls for input source =====");
 
-        type_resolver.preload_source_set(hlfiles.clone())?;
+        type_resolver.preload_source_set(&hlfiles)?;
 
         println!("===== resolve types =====");
         // resolve types

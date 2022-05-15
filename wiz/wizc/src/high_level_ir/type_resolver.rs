@@ -93,11 +93,11 @@ impl<'s> TypeResolver<'s> {
         Ok(())
     }
 
-    pub fn preload_source_set(&mut self, s: TypedSourceSet) -> Result<()> {
+    pub fn preload_source_set(&mut self, s: &TypedSourceSet) -> Result<()> {
         match s {
             TypedSourceSet::File(f) => self.preload_file(f),
             TypedSourceSet::Dir { name, items } => {
-                self.context.push_name_space(name);
+                self.context.push_name_space(name.clone());
                 items
                     .into_iter()
                     .try_for_each(|i| self.preload_source_set(i))?;
@@ -107,12 +107,12 @@ impl<'s> TypeResolver<'s> {
         }
     }
 
-    pub fn preload_file(&mut self, f: TypedFile) -> Result<()> {
+    pub fn preload_file(&mut self, f: &TypedFile) -> Result<()> {
         self.context.push_name_space(f.name.clone());
         for u in f.uses.iter() {
             self.context.use_name_space(u.package.names.clone());
         }
-        for d in f.body {
+        for d in f.body.iter() {
             self.preload_decl(d)?;
         }
         for u in f.uses.iter() {
@@ -122,16 +122,16 @@ impl<'s> TypeResolver<'s> {
         Ok(())
     }
 
-    fn preload_decl(&mut self, d: TypedDecl) -> Result<()> {
-        match d.kind {
+    fn preload_decl(&mut self, d: &TypedDecl) -> Result<()> {
+        match &d.kind {
             TypedDeclKind::Var(v) => {
-                let v = self.typed_var(v)?;
+                let v = self.typed_var(v.clone())?;
                 self.context.arena.register_value(
                     &self.context.current_namespace,
                     &v.name,
                     v.type_
                         .ok_or_else(|| ResolverError::from("Cannot resolve variable type"))?,
-                    d.annotations,
+                    d.annotations.clone(),
                 );
             }
             TypedDeclKind::Fun(f) => {
@@ -140,7 +140,7 @@ impl<'s> TypeResolver<'s> {
                     &self.context.current_namespace,
                     &fun.name,
                     fun.type_().unwrap(),
-                    d.annotations,
+                    d.annotations.clone(),
                 );
             }
             TypedDeclKind::Struct(s) => {
@@ -158,7 +158,7 @@ impl<'s> TypeResolver<'s> {
         Ok(())
     }
 
-    fn preload_fun(&mut self, f: TypedFun) -> Result<TypedFun> {
+    fn preload_fun(&mut self, f: &TypedFun) -> Result<TypedFun> {
         self.context.push_local_stack();
         if let Some(type_params) = &f.type_params {
             for type_param in type_params {
@@ -177,9 +177,9 @@ impl<'s> TypeResolver<'s> {
         }
         let arg_defs = f
             .arg_defs
-            .into_iter()
+            .iter()
             .map(|a| {
-                let a = self.typed_arg_def(a)?;
+                let a = self.typed_arg_def(a.clone())?;
                 self.context
                     .register_to_env(a.name.clone(), (vec![], a.type_.clone()));
                 Ok(a)
@@ -187,9 +187,9 @@ impl<'s> TypeResolver<'s> {
             .collect::<Result<Vec<_>>>()?;
         let return_type = self.typed_function_return_type(&f.name, &f.return_type, &f.body)?;
         let fun = TypedFun {
-            name: f.name,
-            type_params: f.type_params,
-            type_constraints: f.type_constraints,
+            name: f.name.clone(),
+            type_params: f.type_params.clone(),
+            type_constraints: f.type_constraints.clone(),
             arg_defs,
             body: None,
             return_type: Some(return_type),
@@ -198,7 +198,7 @@ impl<'s> TypeResolver<'s> {
         Ok(fun)
     }
 
-    fn preload_struct(&mut self, s: TypedStruct) -> Result<()> {
+    fn preload_struct(&mut self, s: &TypedStruct) -> Result<()> {
         let TypedStruct {
             name,
             type_params: _,
@@ -227,7 +227,7 @@ impl<'s> TypeResolver<'s> {
                         name
                     ))
                 })?;
-            rs.stored_properties.insert(stored_property.name, type_);
+            rs.stored_properties.insert(stored_property.name.clone(), type_);
         }
         for computed_property in computed_properties.into_iter() {
             let type_ = self.context.full_type_name(&computed_property.type_)?;
@@ -241,7 +241,7 @@ impl<'s> TypeResolver<'s> {
                         name
                     ))
                 })?;
-            rs.computed_properties.insert(computed_property.name, type_);
+            rs.computed_properties.insert(computed_property.name.clone(), type_);
         }
 
         let mut type_namespace = self.context.current_namespace.clone();
@@ -267,14 +267,14 @@ impl<'s> TypeResolver<'s> {
                         name
                     ))
                 })?;
-            rs.member_functions.insert(member_function.name, type_);
+            rs.member_functions.insert(member_function.name.clone(), type_);
         }
         self.context.clear_current_type();
 
         Ok(())
     }
 
-    fn preload_extension(&mut self, e: TypedExtension) -> Result<()> {
+    fn preload_extension(&mut self, e: &TypedExtension) -> Result<()> {
         let TypedExtension {
             name,
             protocol,
@@ -298,7 +298,7 @@ impl<'s> TypeResolver<'s> {
                         this_type
                     ))
                 })?;
-            rs.computed_properties.insert(computed_property.name, type_);
+            rs.computed_properties.insert(computed_property.name.clone(), type_);
         }
         for member_function in member_functions {
             let type_ = self
@@ -317,13 +317,13 @@ impl<'s> TypeResolver<'s> {
                         this_type
                     ))
                 })?;
-            rs.member_functions.insert(member_function.name, type_);
+            rs.member_functions.insert(member_function.name.clone(), type_);
         }
         self.context.clear_current_type();
         Ok(())
     }
 
-    fn preload_protocol(&mut self, p: TypedProtocol) -> Result<()> {
+    fn preload_protocol(&mut self, p: &TypedProtocol) -> Result<()> {
         let TypedProtocol {
             name,
             type_params: _,
@@ -351,7 +351,7 @@ impl<'s> TypeResolver<'s> {
                         name
                     ))
                 })?;
-            rs.computed_properties.insert(computed_property.name, type_);
+            rs.computed_properties.insert(computed_property.name.clone(), type_);
         }
         for member_function in member_functions.into_iter() {
             let type_ = self
@@ -367,7 +367,7 @@ impl<'s> TypeResolver<'s> {
                         name
                     ))
                 })?;
-            rs.member_functions.insert(member_function.name, type_);
+            rs.member_functions.insert(member_function.name.clone(), type_);
         }
         self.context.clear_current_type();
 
