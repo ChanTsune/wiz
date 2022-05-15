@@ -21,7 +21,6 @@ pub struct ResolverStruct {
     pub(crate) stored_properties: HashMap<String, TypedType>,
     pub(crate) computed_properties: HashMap<String, TypedType>,
     pub(crate) member_functions: HashMap<String, TypedType>,
-    pub(crate) static_functions: HashMap<String, TypedType>,
     pub(crate) conformed_protocols: HashSet<String>,
     pub(crate) type_parameters: Option<HashMap<String, ResolverTypeParam>>,
 }
@@ -35,7 +34,6 @@ impl ResolverStruct {
             stored_properties: Default::default(),
             computed_properties: Default::default(),
             member_functions: Default::default(),
-            static_functions: Default::default(),
             conformed_protocols: Default::default(),
             type_parameters: None, // TODO: fill type params
         }

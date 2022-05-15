@@ -116,13 +116,6 @@ impl<'s> TypeChecker<'s> {
         };
         typed_struct.computed_properties.iter().for_each(|_| {});
         typed_struct.stored_properties.iter().for_each(|_| {});
-        typed_struct
-            .initializers
-            .iter()
-            .for_each(|i| match &i.body {
-                TypedFunBody::Expr(e) => self.expression(e),
-                TypedFunBody::Block(b) => self.block(b),
-            });
         typed_struct.member_functions.iter().for_each(|i| {
             if let Some(body) = &i.body {
                 match body {

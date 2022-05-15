@@ -164,45 +164,7 @@ impl ResolverContext {
                     todo!()
                 }
             },
-            TypedType::Type(v) => match &**v {
-                TypedType::Self_ => {
-                    todo!()
-                }
-                TypedType::Value(v) => match v {
-                    TypedValueType::Value(v) => {
-                        let rs = self
-                            .arena
-                            .get_type(&v.package.clone().into_resolved().names, &v.name)
-                            .ok_or_else(|| {
-                                ResolverError::from(format!("Can not resolve type {:?}", t))
-                            })?;
-                        rs.static_functions.get(name).cloned().ok_or_else(|| {
-                            ResolverError::from(format!(
-                                "{:?} not has static member named `{}`",
-                                t, name
-                            ))
-                        })
-                    }
-                    TypedValueType::Array(_, _) => {
-                        todo!()
-                    }
-                    TypedValueType::Tuple(_) => {
-                        todo!()
-                    }
-                    TypedValueType::Pointer(_) => {
-                        todo!()
-                    }
-                    TypedValueType::Reference(_) => {
-                        todo!()
-                    }
-                },
-                TypedType::Function(_) => {
-                    todo!()
-                }
-                TypedType::Type(_) => {
-                    todo!()
-                }
-            },
+            TypedType::Type(v) => Err(ResolverError::from(format!("{:?} has no member {}", v, name))),
             _ => todo!("dose not impl"),
         }
     }

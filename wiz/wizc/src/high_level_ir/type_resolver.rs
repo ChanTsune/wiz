@@ -13,8 +13,7 @@ use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_decl::{
     TypedArgDef, TypedDecl, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody,
-    TypedInitializer, TypedMemberFunction, TypedProtocol, TypedStoredProperty, TypedStruct,
-    TypedVar,
+    TypedMemberFunction, TypedProtocol, TypedStoredProperty, TypedStruct, TypedVar,
 };
 use crate::high_level_ir::typed_expr::{
     TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember,
@@ -204,7 +203,6 @@ impl<'s> TypeResolver<'s> {
         let TypedStruct {
             name,
             type_params: _,
-            initializers,
             stored_properties,
             computed_properties,
             member_functions,
@@ -271,25 +269,6 @@ impl<'s> TypeResolver<'s> {
                     ))
                 })?;
             rs.member_functions.insert(member_function.name, type_);
-        }
-        for ini in initializers.iter() {
-            let type_ =
-                self.context
-                    .full_type_name(TypedType::Function(Box::new(TypedFunctionType {
-                        arguments: ini.args.iter().map(|a| a.to_arg_type()).collect(),
-                        return_type: this_type.clone(),
-                    })))?;
-            let rs = self
-                .context
-                .arena
-                .get_type_mut(&self.context.current_namespace, &name)
-                .ok_or_else(|| {
-                    ResolverError::from(format!(
-                        "Struct {:?} not exist. Maybe before preload",
-                        name
-                    ))
-                })?;
-            rs.static_functions.insert(String::from("init"), type_);
         }
         self.context.clear_current_type();
 
@@ -565,7 +544,6 @@ impl<'s> TypeResolver<'s> {
         let TypedStruct {
             name,
             type_params,
-            initializers,
             stored_properties,
             computed_properties, // TODO
             member_functions,
@@ -577,10 +555,6 @@ impl<'s> TypeResolver<'s> {
             .unwrap();
         let this_type = rs.self_type();
         self.context.set_current_type(this_type);
-        let initializers = initializers
-            .into_iter()
-            .map(|i| self.typed_initializer(i))
-            .collect::<Result<Vec<_>>>()?;
         let stored_properties = stored_properties
             .into_iter()
             .map(|s| self.typed_stored_property(s))
@@ -594,35 +568,10 @@ impl<'s> TypeResolver<'s> {
         Ok(TypedStruct {
             name,
             type_params,
-            initializers,
             stored_properties,
             computed_properties,
             member_functions,
         })
-    }
-
-    fn typed_initializer(&mut self, i: TypedInitializer) -> Result<TypedInitializer> {
-        self.context.push_local_stack();
-
-        let self_type = self.context.resolve_current_type()?;
-        self.context
-            .register_to_env("self".to_string(), (vec![], self_type));
-
-        let result = TypedInitializer {
-            args: i
-                .args
-                .into_iter()
-                .map(|a| {
-                    let a = self.typed_arg_def(a)?;
-                    self.context
-                        .register_to_env(a.name.clone(), (vec![], a.type_.clone()));
-                    Ok(a)
-                })
-                .collect::<Result<Vec<_>>>()?,
-            body: self.typed_fun_body(i.body)?,
-        };
-        self.context.pop_local_stack();
-        Ok(result)
     }
 
     fn typed_stored_property(&mut self, s: TypedStoredProperty) -> Result<TypedStoredProperty> {

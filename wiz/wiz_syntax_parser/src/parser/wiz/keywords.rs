@@ -87,13 +87,6 @@ where
     token("return")(s)
 }
 
-pub fn init_keyword<I>(s: I) -> IResult<I, TokenSyntax>
-where
-    I: InputTake + Compare<&'static str> + ToString,
-{
-    token("init")(s)
-}
-
 pub fn deinit_keyword<I>(s: I) -> IResult<I, TokenSyntax>
 where
     I: InputTake + Compare<&'static str> + ToString,
@@ -155,9 +148,9 @@ mod tests {
     use crate::parser::tests::check;
     use crate::parser::wiz::keywords::{
         as_keyword, deinit_keyword, else_keyword, extension_keyword, extern_keyword, false_keyword,
-        for_keyword, fun_keyword, if_keyword, in_keyword, init_keyword, protocol_keyword,
-        return_keyword, self_keyword, struct_keyword, true_keyword, use_keyword, val_keyword,
-        var_keyword, where_keyword, while_keyword,
+        for_keyword, fun_keyword, if_keyword, in_keyword, protocol_keyword, return_keyword,
+        self_keyword, struct_keyword, true_keyword, use_keyword, val_keyword, var_keyword,
+        where_keyword, while_keyword,
     };
     use wiz_syntax::syntax::token::TokenSyntax;
 
@@ -223,11 +216,6 @@ mod tests {
     #[test]
     fn test_return_keyword() {
         check("return", return_keyword, TokenSyntax::from("return"));
-    }
-
-    #[test]
-    fn test_init_keyword() {
-        check("init", init_keyword, TokenSyntax::from("init"));
     }
 
     #[test]

@@ -380,7 +380,6 @@ impl<'arena> HLIR2MLIR<'arena> {
         let TypedStruct {
             name,
             type_params,
-            initializers,
             stored_properties,
             computed_properties,
             member_functions,
@@ -398,43 +397,6 @@ impl<'arena> HLIR2MLIR<'arena> {
         let value_type = MLValueType::Struct(struct_.name.clone());
         self.context.add_struct(value_type.clone(), struct_.clone());
 
-        let init: Vec<MLFun> = initializers
-            .into_iter()
-            .map(|i| {
-                let type_ = MLType::Value(value_type.clone());
-                let mut body = self.fun_body(i.body).body;
-                body.insert(
-                    0,
-                    MLStmt::Var(MLVar {
-                        is_mute: true,
-                        name: String::from("self"),
-                        value: MLExpr::Literal(MLLiteral {
-                            kind: MLLiteralKind::Struct(vec![]),
-                            type_: type_.clone().into_value_type(),
-                        }),
-                        type_: type_.clone(),
-                    }),
-                );
-                body.push(MLStmt::Expr(MLExpr::Return(MLReturn {
-                    value: Some(Box::new(MLExpr::Name(MLName {
-                        name: String::from("self"),
-                        type_: type_.clone(),
-                    }))),
-                })));
-                MLFun {
-                    name: self.package_name_mangling_(&package, &name)
-                        + "::init"
-                        + &*if i.args.is_empty() {
-                            String::new()
-                        } else {
-                            String::from("##") + &*self.fun_arg_label_type_name_mangling(&i.args)
-                        },
-                    arg_defs: i.args.into_iter().map(|a| self.arg_def(a)).collect(),
-                    return_type: type_.into_value_type(),
-                    body: Some(MLFunBody { body }),
-                }
-            })
-            .collect();
         let members: Vec<MLFun> = member_functions
             .into_iter()
             .map(|mf| {
@@ -462,7 +424,7 @@ impl<'arena> HLIR2MLIR<'arena> {
                 }
             })
             .collect();
-        (struct_, init.into_iter().chain(members).collect())
+        (struct_, members)
     }
 
     fn extension(&mut self, e: TypedExtension) -> Vec<MLFun> {

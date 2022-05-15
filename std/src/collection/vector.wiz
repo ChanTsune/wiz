@@ -3,12 +3,6 @@ struct UInt8Vector {
     var length: UInt64
     var capacity: UInt64
 
-    init() {
-        self.capacity = 0
-        self.ptr = malloc(0)
-        self.length = 0
-    }
-
     fun new(): Self {
         val ptr = malloc(0)
         val capacity: UInt64 = 0
