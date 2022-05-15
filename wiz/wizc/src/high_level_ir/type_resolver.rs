@@ -216,7 +216,7 @@ impl<'s> TypeResolver<'s> {
         let this_type = rs.self_type();
         self.context.set_current_type(this_type.clone());
         for stored_property in stored_properties.into_iter() {
-            let type_ = self.context.full_type_name(stored_property.type_)?;
+            let type_ = self.context.full_type_name(&stored_property.type_)?;
             let rs = self
                 .context
                 .arena
@@ -230,7 +230,7 @@ impl<'s> TypeResolver<'s> {
             rs.stored_properties.insert(stored_property.name, type_);
         }
         for computed_property in computed_properties.into_iter() {
-            let type_ = self.context.full_type_name(computed_property.type_)?;
+            let type_ = self.context.full_type_name(&computed_property.type_)?;
             let rs = self
                 .context
                 .arena
@@ -250,7 +250,7 @@ impl<'s> TypeResolver<'s> {
         for member_function in member_functions.into_iter() {
             let type_ = self
                 .context
-                .full_type_name(member_function.type_().unwrap())?;
+                .full_type_name(&member_function.type_().unwrap())?;
             self.context.arena.register_value(
                 &type_namespace,
                 &member_function.name,
@@ -281,10 +281,10 @@ impl<'s> TypeResolver<'s> {
             computed_properties,
             member_functions,
         } = e;
-        let this_type = self.context.full_type_name(name)?;
+        let this_type = self.context.full_type_name(&name)?;
         self.context.set_current_type(this_type.clone());
         for computed_property in computed_properties {
-            let type_ = self.context.full_type_name(computed_property.type_)?;
+            let type_ = self.context.full_type_name(&computed_property.type_)?;
             let rs = self
                 .context
                 .arena
@@ -303,7 +303,7 @@ impl<'s> TypeResolver<'s> {
         for member_function in member_functions {
             let type_ = self
                 .context
-                .full_type_name(member_function.type_().unwrap())?;
+                .full_type_name(&member_function.type_().unwrap())?;
             let rs = self
                 .context
                 .arena
@@ -340,7 +340,7 @@ impl<'s> TypeResolver<'s> {
         let this_type = rs.self_type();
         self.context.set_current_type(this_type);
         for computed_property in computed_properties.into_iter() {
-            let type_ = self.context.full_type_name(computed_property.type_)?;
+            let type_ = self.context.full_type_name(&computed_property.type_)?;
             let rs = self
                 .context
                 .arena
@@ -356,7 +356,7 @@ impl<'s> TypeResolver<'s> {
         for member_function in member_functions.into_iter() {
             let type_ = self
                 .context
-                .full_type_name(member_function.type_().unwrap())?;
+                .full_type_name(&member_function.type_().unwrap())?;
             let rs = self
                 .context
                 .arena
@@ -437,7 +437,7 @@ impl<'s> TypeResolver<'s> {
         let value = self.expr(
             value,
             match type_ {
-                Some(type_) => Some(self.context.full_type_name(type_)?),
+                Some(type_) => Some(self.context.full_type_name(&type_)?),
                 None => None,
             },
         )?;
@@ -472,7 +472,7 @@ impl<'s> TypeResolver<'s> {
                     })
                 }
             },
-            Some(b) => self.context.full_type_name(b.clone()),
+            Some(b) => self.context.full_type_name(b),
         }
     }
 
@@ -480,7 +480,7 @@ impl<'s> TypeResolver<'s> {
         Ok(TypedArgDef {
             label: a.label,
             name: a.name,
-            type_: self.context.full_type_name(a.type_)?,
+            type_: self.context.full_type_name(&a.type_)?,
         })
     }
 
@@ -500,7 +500,7 @@ impl<'s> TypeResolver<'s> {
                     let con = tc.iter().find(|t| t.type_.name() == type_param.name);
                     if let Some(con) = con {
                         for c in con.constraints.iter() {
-                            let c = self.context.full_type_name(c.clone())?;
+                            let c = self.context.full_type_name(c)?;
                             let ne = self.context.get_current_name_environment();
                             let crs = ne.get_type_by_typed_type(c).unwrap();
                             rs.member_functions.extend(crs.member_functions.clone());
@@ -577,7 +577,7 @@ impl<'s> TypeResolver<'s> {
         let TypedStoredProperty { name, type_ } = s;
         Ok(TypedStoredProperty {
             name,
-            type_: self.context.full_type_name(type_)?,
+            type_: self.context.full_type_name(&type_)?,
         })
     }
 
@@ -616,11 +616,11 @@ impl<'s> TypeResolver<'s> {
     }
 
     fn typed_extension(&mut self, e: TypedExtension) -> Result<TypedExtension> {
-        let this_type = self.context.full_type_name(e.name)?;
+        let this_type = self.context.full_type_name(&e.name)?;
         self.context.set_current_type(this_type.clone());
         let result = Ok(TypedExtension {
             name: this_type,
-            protocol: match e.protocol {
+            protocol: match &e.protocol {
                 Some(p) => Some(self.context.full_type_name(p)?),
                 None => None,
             },
@@ -671,13 +671,13 @@ impl<'s> TypeResolver<'s> {
         type_constraints: Vec<TypedTypeConstraint>,
     ) -> Result<Vec<TypedTypeConstraint>> {
         type_constraints
-            .into_iter()
+            .iter()
             .map(|t| {
                 Ok(TypedTypeConstraint {
-                    type_: self.context.full_type_name(t.type_)?,
+                    type_: self.context.full_type_name(&t.type_)?,
                     constraints: t
                         .constraints
-                        .into_iter()
+                        .iter()
                         .map(|c| self.context.full_type_name(c))
                         .collect::<Result<_>>()?,
                 })
@@ -729,7 +729,7 @@ impl<'s> TypeResolver<'s> {
             type_arguments: match n.type_arguments {
                 None => None,
                 Some(t) => Some(
-                    t.into_iter()
+                    t.iter()
                         .map(|ta| self.context.full_type_name(ta))
                         .collect::<Result<_>>()?,
                 ),
@@ -1117,7 +1117,7 @@ impl<'s> TypeResolver<'s> {
         Ok(TypedTypeCast {
             target: Box::new(self.expr(*t.target, None)?),
             is_safe: t.is_safe,
-            type_: Some(self.context.full_type_name(t.type_.unwrap())?),
+            type_: Some(self.context.full_type_name(&t.type_.unwrap())?),
         })
     }
 

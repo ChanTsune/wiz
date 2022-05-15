@@ -256,20 +256,20 @@ impl ResolverContext {
         }
     }
 
-    fn full_value_type_name(&self, type_: TypedValueType) -> Result<TypedValueType> {
+    fn full_value_type_name(&self, type_: &TypedValueType) -> Result<TypedValueType> {
         Ok(match type_ {
-            TypedValueType::Value(t) => TypedValueType::Value(self.full_named_value_type_name(&t)?),
+            TypedValueType::Value(t) => TypedValueType::Value(self.full_named_value_type_name(t)?),
             TypedValueType::Array(a, n) => {
-                TypedValueType::Array(Box::new(self.full_type_name(*a)?), n)
+                TypedValueType::Array(Box::new(self.full_type_name(a)?), *n)
             }
             TypedValueType::Tuple(_) => {
                 todo!()
             }
             TypedValueType::Pointer(t) => {
-                TypedValueType::Pointer(Box::new(self.full_type_name(*t)?))
+                TypedValueType::Pointer(Box::new(self.full_type_name(t)?))
             }
             TypedValueType::Reference(t) => {
-                TypedValueType::Reference(Box::new(self.full_type_name(*t)?))
+                TypedValueType::Reference(Box::new(self.full_type_name(t)?))
             }
         })
     }
@@ -291,10 +291,10 @@ impl ResolverContext {
                     EnvValue::Type(rs) => TypedNamedValueType {
                         package: TypedPackage::Resolved(Package::from(&rs.namespace)),
                         name: type_.name.clone(),
-                        type_args: match type_.type_args.clone() {
+                        type_args: match &type_.type_args {
                             None => None,
                             Some(v) => Some(
-                                v.into_iter()
+                                v.iter()
                                     .map(|i| self.full_type_name(i))
                                     .collect::<Result<Vec<_>>>()?,
                             ),
@@ -307,26 +307,26 @@ impl ResolverContext {
         })
     }
 
-    pub fn full_type_name(&self, typ: TypedType) -> Result<TypedType> {
+    pub fn full_type_name(&self, typ: &TypedType) -> Result<TypedType> {
         if typ.is_self() {
             self.resolve_current_type()
         } else {
             Ok(match typ {
                 TypedType::Value(v) => TypedType::Value(self.full_value_type_name(v)?),
-                TypedType::Type(v) => TypedType::Type(Box::new(self.full_type_name(*v)?)),
+                TypedType::Type(v) => TypedType::Type(Box::new(self.full_type_name(v)?)),
                 TypedType::Self_ => self.resolve_current_type()?,
                 TypedType::Function(f) => TypedType::Function(Box::new(TypedFunctionType {
                     arguments: f
                         .arguments
-                        .into_iter()
+                        .iter()
                         .map(|a| {
                             Ok(TypedArgType {
-                                label: a.label,
-                                typ: self.full_type_name(a.typ)?,
+                                label: a.label.clone(),
+                                typ: self.full_type_name(&a.typ)?,
                             })
                         })
                         .collect::<Result<Vec<_>>>()?,
-                    return_type: self.full_type_name(f.return_type)?,
+                    return_type: self.full_type_name(&f.return_type)?,
                 })),
             })
         }
