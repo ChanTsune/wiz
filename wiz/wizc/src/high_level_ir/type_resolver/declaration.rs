@@ -47,6 +47,10 @@ impl DeclarationItem {
         &self.children
     }
 
+    pub fn parent(&self) -> Option<DeclarationId> {
+        self.parent
+    }
+
     pub fn is_namespace(&self) -> bool {
         matches!(self.kind, DeclarationItemKind::Namespace(_))
     }

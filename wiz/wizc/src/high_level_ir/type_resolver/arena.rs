@@ -150,20 +150,13 @@ impl ResolverArena {
 
     pub(crate) fn resolve_fully_qualified_name(&self, id: &DeclarationId) -> Vec<String> {
         let decl = self.declarations.get(id).unwrap();
-        match &decl.kind {
-            DeclarationItemKind::Namespace(n) => {
-                if let Some(parent_id) = n.parent() {
-                    let mut parents_name = self.resolve_fully_qualified_name(&parent_id);
-                    parents_name.push(decl.name.clone());
-                    parents_name
-                } else {
-                    // NOTE: This will root namespace
-                    vec![]
-                }
-            }
-            DeclarationItemKind::Type(_) | DeclarationItemKind::Value(_) => {
-                vec![decl.name.clone()]
-            }
+        if let Some(parent_id) = decl.parent() {
+            let mut parents_name = self.resolve_fully_qualified_name(&parent_id);
+            parents_name.push(decl.name.clone());
+            parents_name
+        } else {
+            // NOTE: This will root namespace
+            vec![]
         }
     }
 }
