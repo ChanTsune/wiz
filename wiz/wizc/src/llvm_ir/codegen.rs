@@ -682,7 +682,7 @@ impl<'ctx> CodeGen<'ctx> {
                     let n = self.name_expr(name);
                     BasicValueEnum::try_from(self.load_if_pointer_value(n, &n_type)).unwrap()
                 }
-                MLExpr::PrimitiveSubscript(_) | MLExpr::Member(_) => {
+                MLExpr::PrimitiveSubscript(_) | MLExpr::Member(_) | MLExpr::Literal(_) => {
                     let s_type = e.type_().into_value_type();
                     let s = self.expr(*e);
                     let s = self.load_if_pointer_value(s, &s_type);
