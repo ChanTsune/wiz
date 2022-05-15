@@ -113,7 +113,7 @@ impl ResolverArena {
         let target_namespace_id = self.resolve_namespace_from_root(namespace)?;
         let d = self.declarations.get_mut(&target_namespace_id)?;
         let id = match &mut d.kind {
-            DeclarationItemKind::Namespace(_) => {
+            DeclarationItemKind::Namespace(_) | DeclarationItemKind::Type(_) => {
                 let is_namespace = matches!(declaration.kind, DeclarationItemKind::Namespace(_));
                 if is_namespace && d.get_child(name).is_some() {
                     return None;
@@ -122,7 +122,6 @@ impl ResolverArena {
                 d.add_child(name, id);
                 id
             }
-            DeclarationItemKind::Type(_) => panic!("this is type"),
             DeclarationItemKind::Value(_) => panic!("this is value"),
         };
         self.declarations.insert(id, declaration);
