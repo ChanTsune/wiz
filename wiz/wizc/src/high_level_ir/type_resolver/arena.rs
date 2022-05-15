@@ -38,6 +38,7 @@ impl Default for ResolverArena {
                 Default::default(),
                 "",
                 DeclarationItemKind::Namespace(Namespace::root()),
+                None
             ),
         );
 
@@ -142,6 +143,7 @@ impl ResolverArena {
                 annotation,
                 name,
                 DeclarationItemKind::Namespace(Namespace::new(parent_id)),
+                Some(parent_id),
             ),
         )
     }
@@ -259,6 +261,7 @@ impl ResolverArena {
         annotation: TypedAnnotations,
         kind: StructKind, /* type_parameters */
     ) -> Option<DeclarationId> {
+        let parent_id = self.resolve_namespace_from_root(namespace)?;
         let s = ResolverStruct::new(
             TypedType::Value(TypedValueType::Value(TypedNamedValueType {
                 package: TypedPackage::Resolved(Package::from(namespace)),
@@ -270,7 +273,7 @@ impl ResolverArena {
         self.register(
             namespace,
             name,
-            DeclarationItem::new(annotation, name, DeclarationItemKind::Type(s)),
+            DeclarationItem::new(annotation, name, DeclarationItemKind::Type(s), Some(parent_id)),
         )
     }
 
@@ -306,6 +309,7 @@ impl ResolverArena {
         annotation: TypedAnnotations,
     ) -> Option<DeclarationId> {
         let vec_namespace = namespace.iter().map(T::to_string).collect::<Vec<_>>();
+        let parent_id = self.resolve_namespace_from_root(namespace)?;
         self.register(
             namespace,
             name,
@@ -313,6 +317,7 @@ impl ResolverArena {
                 annotation,
                 name,
                 DeclarationItemKind::Value((vec_namespace, ty)),
+                Some(parent_id)
             ),
         )
     }
@@ -483,7 +488,8 @@ mod tests {
             DeclarationItem::new(
                 Default::default(),
                 std_namespace_name,
-                DeclarationItemKind::Namespace(Namespace::new(DeclarationId::ROOT))
+                DeclarationItemKind::Namespace(Namespace::new(DeclarationId::ROOT)),
+                Some(DeclarationId::ROOT),
             ),
             *std_namespace.unwrap()
         )

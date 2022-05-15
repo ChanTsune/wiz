@@ -10,6 +10,7 @@ pub struct DeclarationItem {
     pub(crate) annotations: TypedAnnotations,
     pub(crate) name: String,
     pub(crate) kind: DeclarationItemKind,
+    parent: Option<DeclarationId>,
     children: HashMap<String, HashSet<DeclarationId>>,
 }
 
@@ -18,12 +19,14 @@ impl DeclarationItem {
         annotations: TypedAnnotations,
         name: &str,
         kind: DeclarationItemKind,
+        parent: Option<DeclarationId>,
     ) -> Self {
         Self {
             annotations,
             name: name.to_string(),
             kind,
             children: Default::default(),
+            parent,
         }
     }
 
@@ -42,6 +45,18 @@ impl DeclarationItem {
 
     pub fn children(&self) -> &HashMap<String, HashSet<DeclarationId>> {
         &self.children
+    }
+
+    pub fn is_namespace(&self) -> bool {
+        matches!(self.kind, DeclarationItemKind::Namespace(_))
+    }
+
+    pub fn is_type(&self) -> bool {
+        matches!(self.kind, DeclarationItemKind::Type(_))
+    }
+
+    pub fn is_value(&self) -> bool {
+        matches!(self.kind, DeclarationItemKind::Value(_))
     }
 }
 
