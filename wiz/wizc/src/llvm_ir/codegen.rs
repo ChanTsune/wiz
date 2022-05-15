@@ -688,7 +688,7 @@ impl<'ctx> CodeGen<'ctx> {
                     let s = self.load_if_pointer_value(s, &s_type);
                     Some(BasicValueEnum::try_from(s).unwrap())
                 }
-                _ => Some(BasicValueEnum::try_from(self.expr(*e)).unwrap()),
+                e => Some(BasicValueEnum::try_from(self.expr(e)).unwrap()),
             },
             None => None,
         };
