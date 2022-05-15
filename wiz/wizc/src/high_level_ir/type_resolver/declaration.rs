@@ -1,6 +1,5 @@
 use crate::high_level_ir::declaration_id::DeclarationId;
 use crate::high_level_ir::type_resolver::context::ResolverStruct;
-use crate::high_level_ir::type_resolver::namespace::Namespace;
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_type::TypedType;
 use std::collections::{HashMap, HashSet};

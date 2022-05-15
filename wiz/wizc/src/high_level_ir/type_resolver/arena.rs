@@ -1,7 +1,6 @@
 use crate::high_level_ir::declaration_id::{DeclarationId, DeclarationIdGenerator};
 use crate::high_level_ir::type_resolver::context::{ResolverStruct, StructKind};
 use crate::high_level_ir::type_resolver::declaration::{DeclarationItem, DeclarationItemKind};
-use crate::high_level_ir::type_resolver::namespace::Namespace;
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_expr::TypedBinaryOperator;
 use crate::high_level_ir::typed_type::{
@@ -330,7 +329,6 @@ impl ResolverArena {
 #[cfg(test)]
 mod tests {
     use super::super::super::declaration_id::DeclarationId;
-    use super::super::super::type_resolver::namespace::Namespace;
     use super::super::declaration::DeclarationItemKind;
     use super::ResolverArena;
     use crate::high_level_ir::type_resolver::declaration::DeclarationItem;
