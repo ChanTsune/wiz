@@ -108,11 +108,8 @@ struct UInt8Vector {
 
 extension UInt8Vector: Clonable {
     fun clone(&self): Self {
-        var c = UInt8Vector.init()
-        c.ptr = malloc(self.length)
-        memcpy(c.ptr, self.ptr, self.length)
-        c.length = self.length
-        c.capacity = self.capacity
-        return c
+        val ptr = malloc(self.length)
+        memcpy(ptr, self.ptr, self.length)
+        return Self(ptr: ptr, length: self.length, capacity: self.capacity)
     }
 }
