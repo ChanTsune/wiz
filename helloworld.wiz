@@ -52,7 +52,7 @@ fun while_loop() {
 
 fun vector_methods() {
 
-    val vector = UInt8Vector.init()
+    val vector = UInt8Vector::new()
 
     vector.push(element:72 as UInt8)
     vector.push(element:101 as UInt8)
