@@ -254,7 +254,12 @@ impl<'s> TypeResolver<'s> {
             let type_ = self
                 .context
                 .full_type_name(member_function.type_().unwrap())?;
-            self.context.arena.register_value(&type_namespace, &member_function.name, type_.clone(), Default::default());
+            self.context.arena.register_value(
+                &type_namespace,
+                &member_function.name,
+                type_.clone(),
+                Default::default(),
+            );
             let rs = self
                 .context
                 .arena
