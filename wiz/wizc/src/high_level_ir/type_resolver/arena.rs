@@ -167,7 +167,7 @@ impl ResolverArena {
 }
 
 impl ResolverArena {
-    fn resolve_declaration_id<T: ToString>(
+    pub(crate) fn resolve_declaration_id<T: ToString>(
         &self,
         parent_id: DeclarationId,
         item_name: &[T],
