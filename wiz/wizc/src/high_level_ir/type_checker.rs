@@ -52,18 +52,6 @@ impl<'s> TypeChecker<'s> {
         }
     }
 
-    fn decl_kind(&mut self, decl: &TypedDeclKind) {
-        match decl {
-            TypedDeclKind::Var(v) => self.variable(v),
-            TypedDeclKind::Fun(f) => self.function(f),
-            TypedDeclKind::Struct(_) => todo!(),
-            TypedDeclKind::Class => todo!(),
-            TypedDeclKind::Enum => todo!(),
-            TypedDeclKind::Protocol(p) => self.protocol(p),
-            TypedDeclKind::Extension(e) => self.extension(e),
-        }
-    }
-
     fn variable(&mut self, typed_variable: &TypedVar) {
         if typed_variable.type_ != typed_variable.value.type_() {
             self.session.emit_error(CheckerError::new(format!(
