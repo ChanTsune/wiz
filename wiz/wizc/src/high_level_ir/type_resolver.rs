@@ -100,8 +100,7 @@ impl<'s> TypeResolver<'s> {
                 self.context.push_name_space(name);
                 items
                     .into_iter()
-                    .map(|i| self.preload_source_set(i))
-                    .collect::<Result<Vec<_>>>()?;
+                    .try_for_each(|i| self.preload_source_set(i))?;
                 self.context.pop_name_space();
                 Ok(())
             }
