@@ -676,20 +676,20 @@ impl<'ctx> CodeGen<'ctx> {
 
     pub fn return_expr(&mut self, r: MLReturn) -> AnyValueEnum<'ctx> {
         let v = match r.value {
-            Some(e) => match *e {
+            Some(e) => Some(match *e {
                 MLExpr::Name(name) => {
                     let n_type = name.type_.clone().into_value_type();
                     let n = self.name_expr(name);
-                    Some(BasicValueEnum::try_from(self.load_if_pointer_value(n, &n_type)).unwrap())
+                    BasicValueEnum::try_from(self.load_if_pointer_value(n, &n_type)).unwrap()
                 }
                 MLExpr::PrimitiveSubscript(_) | MLExpr::Member(_) => {
                     let s_type = e.type_().into_value_type();
                     let s = self.expr(*e);
                     let s = self.load_if_pointer_value(s, &s_type);
-                    Some(BasicValueEnum::try_from(s).unwrap())
+                    BasicValueEnum::try_from(s).unwrap()
                 }
-                e => Some(BasicValueEnum::try_from(self.expr(e)).unwrap()),
-            },
+                e => BasicValueEnum::try_from(self.expr(e)).unwrap(),
+            }),
             None => None,
         };
 
