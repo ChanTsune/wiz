@@ -37,7 +37,7 @@ impl Default for ResolverArena {
             DeclarationItem::new(
                 Default::default(),
                 "",
-                DeclarationItemKind::Namespace(Namespace::root()),
+                DeclarationItemKind::Namespace,
                 None,
             ),
         );
@@ -81,7 +81,7 @@ impl ResolverArena {
         } else {
             let name = namespace.get(0).unwrap();
             let parent = self.declarations.get(&parent)?;
-            if let DeclarationItemKind::Namespace(_) = &parent.kind {
+            if parent.is_namespace() {
                 self.resolve_namespace(
                     *parent
                         .get_child(&name.to_string())?
@@ -114,9 +114,8 @@ impl ResolverArena {
         let target_namespace_id = self.resolve_namespace_from_root(namespace)?;
         let d = self.declarations.get_mut(&target_namespace_id)?;
         let id = match &mut d.kind {
-            DeclarationItemKind::Namespace(_) | DeclarationItemKind::Type(_) => {
-                let is_namespace = matches!(declaration.kind, DeclarationItemKind::Namespace(_));
-                if is_namespace && d.get_child(name).is_some() {
+            DeclarationItemKind::Namespace | DeclarationItemKind::Type(_) => {
+                if declaration.is_namespace() && d.get_child(name).is_some() {
                     return None;
                 }
                 let id = self.declaration_id_generator.next();
@@ -142,7 +141,7 @@ impl ResolverArena {
             DeclarationItem::new(
                 annotation,
                 name,
-                DeclarationItemKind::Namespace(Namespace::new(parent_id)),
+                DeclarationItemKind::Namespace,
                 Some(parent_id),
             ),
         )
@@ -281,7 +280,7 @@ impl ResolverArena {
         name: &str,
     ) -> Option<&ResolverStruct> {
         match &self.get(name_space, name)?.kind {
-            DeclarationItemKind::Namespace(n) => panic!("N:{:?}", n),
+            DeclarationItemKind::Namespace => panic!("this is namespace"),
             DeclarationItemKind::Type(t) => Some(t),
             DeclarationItemKind::Value(v) => panic!("V:{:?}", v),
         }
@@ -293,7 +292,7 @@ impl ResolverArena {
         name: &str,
     ) -> Option<&mut ResolverStruct> {
         match &mut self.get_mut(name_space, name)?.kind {
-            DeclarationItemKind::Namespace(n) => panic!("N:{:?}", n),
+            DeclarationItemKind::Namespace => panic!("this is namespace"),
             DeclarationItemKind::Type(t) => Some(t),
             DeclarationItemKind::Value(v) => panic!("V:{:?}", v),
         }
@@ -486,7 +485,7 @@ mod tests {
             DeclarationItem::new(
                 Default::default(),
                 std_namespace_name,
-                DeclarationItemKind::Namespace(Namespace::new(DeclarationId::ROOT)),
+                DeclarationItemKind::Namespace,
                 Some(DeclarationId::ROOT),
             ),
             *std_namespace.unwrap()

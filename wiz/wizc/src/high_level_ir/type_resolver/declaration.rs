@@ -52,7 +52,7 @@ impl DeclarationItem {
     }
 
     pub fn is_namespace(&self) -> bool {
-        matches!(self.kind, DeclarationItemKind::Namespace(_))
+        matches!(self.kind, DeclarationItemKind::Namespace)
     }
 
     pub fn is_type(&self) -> bool {
@@ -66,7 +66,7 @@ impl DeclarationItem {
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum DeclarationItemKind {
-    Namespace(Namespace),
+    Namespace,
     Type(ResolverStruct),
     Value((Vec<String> /* namespace */, TypedType)),
 }
