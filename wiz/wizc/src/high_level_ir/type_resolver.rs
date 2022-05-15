@@ -158,7 +158,7 @@ impl<'s> TypeResolver<'s> {
         Ok(())
     }
 
-    pub fn preload_fun(&mut self, f: TypedFun) -> Result<TypedFun> {
+    fn preload_fun(&mut self, f: TypedFun) -> Result<TypedFun> {
         self.context.push_local_stack();
         if let Some(type_params) = &f.type_params {
             for type_param in type_params {
@@ -198,7 +198,7 @@ impl<'s> TypeResolver<'s> {
         Ok(fun)
     }
 
-    pub fn preload_struct(&mut self, s: TypedStruct) -> Result<()> {
+    fn preload_struct(&mut self, s: TypedStruct) -> Result<()> {
         let TypedStruct {
             name,
             type_params: _,
@@ -274,7 +274,7 @@ impl<'s> TypeResolver<'s> {
         Ok(())
     }
 
-    pub fn preload_extension(&mut self, e: TypedExtension) -> Result<()> {
+    fn preload_extension(&mut self, e: TypedExtension) -> Result<()> {
         let TypedExtension {
             name,
             protocol,
@@ -323,7 +323,7 @@ impl<'s> TypeResolver<'s> {
         Ok(())
     }
 
-    pub fn preload_protocol(&mut self, p: TypedProtocol) -> Result<()> {
+    fn preload_protocol(&mut self, p: TypedProtocol) -> Result<()> {
         let TypedProtocol {
             name,
             type_params: _,
