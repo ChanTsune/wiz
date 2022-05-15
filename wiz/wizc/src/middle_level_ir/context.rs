@@ -9,7 +9,6 @@ pub(crate) struct HLIR2MLIRContext {
 }
 
 impl HLIR2MLIRContext {
-
     pub(crate) fn get_struct(&self, typ: &MLValueType) -> &MLStruct {
         self.structs.get(typ).unwrap_or_else(|| panic!("{:?}", typ))
     }
