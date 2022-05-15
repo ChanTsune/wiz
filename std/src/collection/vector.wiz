@@ -9,6 +9,13 @@ struct UInt8Vector {
         self.length = 0
     }
 
+    fun new(): Self {
+        val ptr = malloc(0)
+        val capacity: UInt64 = 0
+        val length: UInt64 = 0
+        return Self(ptr: ptr, length: length, capacity: capacity)
+    }
+
     fun isEmpty(&self): Bool {
         return self.length == 0
     }
