@@ -24,7 +24,7 @@ fn check(source: &str, except: MLFile) {
 
     let mut resolver = TypeResolver::new(&mut session);
     let _ = resolver.detect_type(&file).unwrap();
-    let _ = resolver.preload_file(file.clone()).unwrap();
+    let _ = resolver.preload_file(&file).unwrap();
     let hl_file = resolver.file(file).unwrap();
 
     let mut hlir2mlir = HLIR2MLIR::new(resolver.context.arena());

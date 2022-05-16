@@ -30,7 +30,7 @@ fn check(source: &str, typed_file: TypedFile) {
 
     let mut resolver = TypeResolver::new(&mut session);
     let _ = resolver.detect_type(&file).unwrap();
-    let _ = resolver.preload_file(file.clone()).unwrap();
+    let _ = resolver.preload_file(&file).unwrap();
     let f = resolver.file(file);
 
     assert_eq!(f, Ok(typed_file));
