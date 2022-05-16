@@ -107,17 +107,11 @@ impl ResolverArena {
     ) -> Option<DeclarationId> {
         let target_namespace_id = self.resolve_namespace_from_root(namespace)?;
         let d = self.declarations.get_mut(&target_namespace_id)?;
-        let id = match &mut d.kind {
-            DeclarationItemKind::Namespace | DeclarationItemKind::Type(_) => {
-                if declaration.is_namespace() && d.get_child(name).is_some() {
-                    return None;
-                }
-                let id = self.declaration_id_generator.next();
-                d.add_child(name, id);
-                id
-            }
-            DeclarationItemKind::Value(_) => panic!("this is value"),
-        };
+        if declaration.is_namespace() && d.get_child(name).is_some() {
+            return None;
+        }
+        let id = self.declaration_id_generator.next();
+        d.add_child(name, id);
         self.declarations.insert(id, declaration);
         Some(id)
     }
@@ -229,6 +223,15 @@ impl ResolverArena {
         annotation: TypedAnnotations,
     ) -> Option<DeclarationId> {
         self.register_type(namespace, name, annotation, StructKind::Struct)
+    }
+
+    pub(crate) fn register_type_parameter<T: ToString>(
+        &mut self,
+        namespace: &[T],
+        name: &str, /* type_parameters */
+        annotation: TypedAnnotations,
+    ) -> Option<DeclarationId> {
+        self.register_type(namespace, name, annotation, StructKind::TypeParameter)
     }
 
     pub(crate) fn register_protocol<T: ToString>(

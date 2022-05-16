@@ -11,6 +11,7 @@ pub(crate) struct ResolverTypeParam {
 pub enum StructKind {
     Struct,
     Protocol,
+    TypeParameter
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
