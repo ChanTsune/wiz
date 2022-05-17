@@ -9,6 +9,7 @@ pub(crate) use crate::high_level_ir::type_resolver::context::resolver_struct::{
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::name_environment::NameEnvironment;
 use crate::high_level_ir::type_resolver::result::Result;
+use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_expr::TypedBinaryOperator;
 use crate::high_level_ir::typed_type::{
     Package, TypedArgType, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType,
@@ -330,6 +331,36 @@ impl ResolverContext {
                 })),
             })
         }
+    }
+
+    pub(crate) fn register_struct(&mut self, name: &str, annotation: TypedAnnotations) {
+        self.arena
+            .register_struct(&self.current_namespace, name, annotation);
+    }
+
+    pub(crate) fn register_protocol(&mut self, name: &str, annotation: TypedAnnotations) {
+        self.arena
+            .register_protocol(&self.current_namespace, name, annotation);
+    }
+
+    pub(crate) fn register_type_parameter(&mut self, name: &str, annotation: TypedAnnotations) {
+        self.arena
+            .register_type_parameter(&self.current_namespace, name, annotation);
+    }
+
+    pub(crate) fn register_value(
+        &mut self,
+        name: &str,
+        ty: TypedType,
+        annotation: TypedAnnotations,
+    ) {
+        self.arena
+            .register_value(&self.current_namespace, name, ty, annotation);
+    }
+
+    pub(crate) fn register_namespace(&mut self, name: &str, annotation: TypedAnnotations) {
+        self.arena
+            .register_namespace(&self.current_namespace, name, annotation);
     }
 }
 

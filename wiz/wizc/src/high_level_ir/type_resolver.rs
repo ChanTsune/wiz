@@ -67,24 +67,16 @@ impl<'s> TypeResolver<'s> {
 
     pub fn detect_type(&mut self, f: &TypedFile) -> Result<()> {
         self.context.push_name_space(f.name.clone());
-        let current_namespace = &self.context.current_namespace;
         for d in f.body.iter() {
             match &d.kind {
                 TypedDeclKind::Struct(s) => {
-                    self.context.arena.register_struct(
-                        current_namespace,
-                        &s.name,
-                        d.annotations.clone(),
-                    );
+                    self.context.register_struct(&s.name, d.annotations.clone());
                 }
                 TypedDeclKind::Class => {}
                 TypedDeclKind::Enum => {}
                 TypedDeclKind::Protocol(p) => {
-                    self.context.arena.register_protocol(
-                        current_namespace,
-                        &p.name,
-                        d.annotations.clone(),
-                    );
+                    self.context
+                        .register_protocol(&p.name, d.annotations.clone());
                 }
                 _ => {}
             }
@@ -126,8 +118,7 @@ impl<'s> TypeResolver<'s> {
         match &d.kind {
             TypedDeclKind::Var(v) => {
                 let v = self.typed_var(v.clone())?;
-                self.context.arena.register_value(
-                    &self.context.current_namespace,
+                self.context.register_value(
                     &v.name,
                     v.type_
                         .ok_or_else(|| ResolverError::from("Cannot resolve variable type"))?,
@@ -136,12 +127,8 @@ impl<'s> TypeResolver<'s> {
             }
             TypedDeclKind::Fun(f) => {
                 let fun = self.preload_fun(f)?;
-                self.context.arena.register_value(
-                    &self.context.current_namespace,
-                    &fun.name,
-                    fun.type_().unwrap(),
-                    d.annotations.clone(),
-                );
+                self.context
+                    .register_value(&fun.name, fun.type_().unwrap(), d.annotations.clone());
             }
             TypedDeclKind::Struct(s) => {
                 let _ = self.preload_struct(s)?;
