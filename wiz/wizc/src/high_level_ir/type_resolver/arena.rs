@@ -106,7 +106,16 @@ impl ResolverArena {
         declaration: DeclarationItem,
     ) -> Option<DeclarationId> {
         let target_namespace_id = self.resolve_namespace_from_root(namespace)?;
-        let d = self.declarations.get_mut(&target_namespace_id)?;
+        self.register_to(&target_namespace_id, name, declaration)
+    }
+
+    fn register_to(
+        &mut self,
+        namespace: &DeclarationId,
+        name: &str,
+        declaration: DeclarationItem,
+    ) -> Option<DeclarationId> {
+        let d = self.declarations.get_mut(namespace)?;
         if !declaration.is_value() && d.get_child(name).is_some() {
             return None;
         }
