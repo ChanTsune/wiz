@@ -107,7 +107,7 @@ impl ResolverArena {
     ) -> Option<DeclarationId> {
         let target_namespace_id = self.resolve_namespace_from_root(namespace)?;
         let d = self.declarations.get_mut(&target_namespace_id)?;
-        if declaration.is_namespace() && d.get_child(name).is_some() {
+        if !declaration.is_value() && d.get_child(name).is_some() {
             return None;
         }
         let id = self.declaration_id_generator.next();
