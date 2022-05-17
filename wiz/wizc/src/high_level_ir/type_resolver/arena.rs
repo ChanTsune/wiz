@@ -202,6 +202,10 @@ impl ResolverArena {
         self.declarations.get(id)
     }
 
+    pub(crate) fn get_mut_by_id(&mut self, id: &DeclarationId) -> Option<&mut DeclarationItem> {
+        self.declarations.get_mut(id)
+    }
+
     pub(crate) fn get_by_ids(&self, ids: &[&DeclarationId]) -> Option<Vec<&DeclarationItem>> {
         let mut items = vec![];
         for id in ids {
