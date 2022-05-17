@@ -193,74 +193,43 @@ impl<'s> TypeResolver<'s> {
             computed_properties,
             member_functions,
         } = s;
-        let rs = self
-            .context
-            .arena
-            .get_type(&self.context.current_namespace, &name)
-            .ok_or_else(|| {
-                ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
-            })?;
+        self.context.push_name_space(name.clone());
+        let rs = self.context.current_type().ok_or_else(|| {
+            ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
+        })?;
         let this_type = rs.self_type();
         self.context.set_current_type(this_type.clone());
         for stored_property in stored_properties.into_iter() {
             let type_ = self.context.full_type_name(&stored_property.type_)?;
-            let rs = self
-                .context
-                .arena
-                .get_type_mut(&self.context.current_namespace, &name)
-                .ok_or_else(|| {
-                    ResolverError::from(format!(
-                        "Struct {:?} not exist. Maybe before preload",
-                        name
-                    ))
-                })?;
+            let rs = self.context.current_type_mut().ok_or_else(|| {
+                ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
+            })?;
             rs.stored_properties
                 .insert(stored_property.name.clone(), type_);
         }
         for computed_property in computed_properties.into_iter() {
             let type_ = self.context.full_type_name(&computed_property.type_)?;
-            let rs = self
-                .context
-                .arena
-                .get_type_mut(&self.context.current_namespace, &name)
-                .ok_or_else(|| {
-                    ResolverError::from(format!(
-                        "Struct {:?} not exist. Maybe before preload",
-                        name
-                    ))
-                })?;
+            let rs = self.context.current_type_mut().ok_or_else(|| {
+                ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
+            })?;
             rs.computed_properties
                 .insert(computed_property.name.clone(), type_);
         }
-
-        let mut type_namespace = self.context.current_namespace.clone();
-        type_namespace.push(this_type.name());
 
         for member_function in member_functions.into_iter() {
             let type_ = self
                 .context
                 .full_type_name(&member_function.type_().unwrap())?;
-            self.context.arena.register_value(
-                &type_namespace,
-                &member_function.name,
-                type_.clone(),
-                Default::default(),
-            );
-            let rs = self
-                .context
-                .arena
-                .get_type_mut(&self.context.current_namespace, &name)
-                .ok_or_else(|| {
-                    ResolverError::from(format!(
-                        "Struct {:?} not exist. Maybe before preload",
-                        name
-                    ))
-                })?;
+            self.context
+                .register_value(&member_function.name, type_.clone(), Default::default());
+            let rs = self.context.current_type_mut().ok_or_else(|| {
+                ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
+            })?;
             rs.member_functions
                 .insert(member_function.name.clone(), type_);
         }
         self.context.clear_current_type();
-
+        self.context.pop_name_space();
         Ok(())
     }
 
@@ -322,27 +291,17 @@ impl<'s> TypeResolver<'s> {
             computed_properties,
             member_functions,
         } = p;
-        let rs = self
-            .context
-            .arena
-            .get_type(&self.context.current_namespace, &name)
-            .ok_or_else(|| {
-                ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
-            })?;
+        self.context.push_name_space(name.clone());
+        let rs = self.context.current_type().ok_or_else(|| {
+            ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
+        })?;
         let this_type = rs.self_type();
         self.context.set_current_type(this_type);
         for computed_property in computed_properties.into_iter() {
             let type_ = self.context.full_type_name(&computed_property.type_)?;
-            let rs = self
-                .context
-                .arena
-                .get_type_mut(&self.context.current_namespace, &name)
-                .ok_or_else(|| {
-                    ResolverError::from(format!(
-                        "Struct {:?} not exist. Maybe before preload",
-                        name
-                    ))
-                })?;
+            let rs = self.context.current_type_mut().ok_or_else(|| {
+                ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
+            })?;
             rs.computed_properties
                 .insert(computed_property.name.clone(), type_);
         }
@@ -350,21 +309,14 @@ impl<'s> TypeResolver<'s> {
             let type_ = self
                 .context
                 .full_type_name(&member_function.type_().unwrap())?;
-            let rs = self
-                .context
-                .arena
-                .get_type_mut(&self.context.current_namespace, &name)
-                .ok_or_else(|| {
-                    ResolverError::from(format!(
-                        "Struct {:?} not exist. Maybe before preload",
-                        name
-                    ))
-                })?;
+            let rs = self.context.current_type_mut().ok_or_else(|| {
+                ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
+            })?;
             rs.member_functions
                 .insert(member_function.name.clone(), type_);
         }
         self.context.clear_current_type();
-
+        self.context.pop_name_space();
         Ok(())
     }
 
@@ -407,7 +359,7 @@ impl<'s> TypeResolver<'s> {
     pub fn decl(&mut self, d: TypedDecl) -> Result<TypedDecl> {
         Ok(TypedDecl {
             annotations: d.annotations,
-            package: Package::from(&self.context.current_namespace),
+            package: Package::from(&self.context.current_namespace()),
             modifiers: d.modifiers,
             kind: match d.kind {
                 TypedDeclKind::Var(v) => TypedDeclKind::Var(self.typed_var(v)?),
@@ -541,11 +493,8 @@ impl<'s> TypeResolver<'s> {
             computed_properties, // TODO
             member_functions,
         } = s;
-        let rs = self
-            .context
-            .arena
-            .get_type(&self.context.current_namespace, &name)
-            .unwrap();
+        self.context.push_name_space(name.clone());
+        let rs = self.context.current_type().unwrap();
         let this_type = rs.self_type();
         self.context.set_current_type(this_type);
         let stored_properties = stored_properties
@@ -558,6 +507,7 @@ impl<'s> TypeResolver<'s> {
             .map(|m| self.typed_member_function(m))
             .collect::<Result<Vec<_>>>()?;
         self.context.clear_current_type();
+        self.context.pop_name_space();
         Ok(TypedStruct {
             name,
             type_params,
@@ -630,11 +580,8 @@ impl<'s> TypeResolver<'s> {
     }
 
     fn typed_protocol(&mut self, p: TypedProtocol) -> Result<TypedProtocol> {
-        let rs = self
-            .context
-            .arena
-            .get_type(&self.context.current_namespace, &p.name)
-            .unwrap();
+        self.context.push_name_space(p.name.clone());
+        let rs = self.context.current_type().unwrap();
         self.context.set_current_type(rs.self_type());
         let result = TypedProtocol {
             name: p.name,
@@ -647,6 +594,7 @@ impl<'s> TypeResolver<'s> {
             computed_properties: p.computed_properties,
         };
         self.context.clear_current_type();
+        self.context.pop_name_space();
         Ok(result)
     }
 

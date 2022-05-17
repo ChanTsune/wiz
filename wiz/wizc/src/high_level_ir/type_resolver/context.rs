@@ -1,11 +1,13 @@
 mod env_value;
 mod resolver_struct;
 
+use crate::high_level_ir::declaration_id::DeclarationId;
 use crate::high_level_ir::type_resolver::arena::ResolverArena;
 pub(crate) use crate::high_level_ir::type_resolver::context::env_value::EnvValue;
 pub(crate) use crate::high_level_ir::type_resolver::context::resolver_struct::{
     ResolverStruct, StructKind,
 };
+use crate::high_level_ir::type_resolver::declaration::DeclarationItemKind;
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::name_environment::NameEnvironment;
 use crate::high_level_ir::type_resolver::result::Result;
@@ -23,8 +25,8 @@ pub struct ResolverContext {
     global_used_name_space: Vec<Vec<String>>,
     used_name_space: Vec<Vec<String>>,
     pub(crate) arena: ResolverArena,
-    pub(crate) current_namespace: Vec<String>,
     current_type: Option<TypedType>,
+    current_namespace_id: DeclarationId,
     local_stack: StackedHashMap<String, EnvValue>,
 }
 
@@ -34,8 +36,8 @@ impl ResolverContext {
             global_used_name_space: Default::default(),
             used_name_space: Default::default(),
             arena: ResolverArena::default(),
-            current_namespace: Default::default(),
             current_type: None,
+            current_namespace_id: DeclarationId::ROOT,
             local_stack: StackedHashMap::new(),
         }
     }
@@ -44,14 +46,57 @@ impl ResolverContext {
         &self.arena
     }
 
-    pub fn push_name_space(&mut self, name: String) {
+    pub(crate) fn current_namespace(&self) -> Vec<String> {
         self.arena
-            .register_namespace(&self.current_namespace, &name, Default::default());
-        self.current_namespace.push(name);
+            .resolve_fully_qualified_name(&self.current_namespace_id)
+    }
+
+    pub fn push_name_space(&mut self, name: String) {
+        let id = self.register_namespace(&name, Default::default());
+        if let Some(id) = id {
+            self.current_namespace_id = id;
+        } else {
+            let c = self.arena.get_by_id(&self.current_namespace_id).unwrap();
+            let ids = c.get_child(&name).unwrap();
+            let ids = ids.iter().copied().collect::<Vec<_>>();
+            let id = ids.first().unwrap();
+            self.current_namespace_id = *id;
+        }
     }
 
     pub fn pop_name_space(&mut self) {
-        self.current_namespace.pop();
+        let ns = self.arena.get_by_id(&self.current_namespace_id).unwrap();
+        self.current_namespace_id = ns.parent().unwrap_or(DeclarationId::ROOT);
+    }
+
+    pub(crate) fn current_type(&self) -> Option<&ResolverStruct> {
+        match &self.arena.get_by_id(&self.current_namespace_id)?.kind {
+            DeclarationItemKind::Namespace => None,
+            DeclarationItemKind::Type(rs) => Some(rs),
+            DeclarationItemKind::Value(_) => None,
+        }
+    }
+
+    pub(crate) fn current_type_mut(&mut self) -> Option<&mut ResolverStruct> {
+        match &mut self.arena.get_mut_by_id(&self.current_namespace_id)?.kind {
+            DeclarationItemKind::Namespace => None,
+            DeclarationItemKind::Type(rs) => Some(rs),
+            DeclarationItemKind::Value(_) => None,
+        }
+    }
+
+    pub(crate) fn current_module_id(&self) -> Option<DeclarationId> {
+        self._current_module_id(self.current_namespace_id)
+    }
+
+    fn _current_module_id(&self, id: DeclarationId) -> Option<DeclarationId> {
+        let item = self.arena.get_by_id(&id)?;
+        match &item.kind {
+            DeclarationItemKind::Namespace => Some(id),
+            DeclarationItemKind::Type(_) | DeclarationItemKind::Value(_) => {
+                self._current_module_id(item.parent().unwrap())
+            }
+        }
     }
 
     pub fn resolve_current_type(&self) -> Result<TypedType> {
@@ -110,7 +155,8 @@ impl ResolverContext {
         let root_namespace_name: [&str; 0] = [];
         env.use_asterisk(&root_namespace_name);
 
-        env.use_asterisk(&self.current_namespace);
+        let module_id = self.current_module_id().unwrap();
+        env.use_asterisk(&self.arena.resolve_fully_qualified_name(&module_id));
         let used_ns = self
             .global_used_name_space
             .iter()
@@ -333,19 +379,31 @@ impl ResolverContext {
         }
     }
 
-    pub(crate) fn register_struct(&mut self, name: &str, annotation: TypedAnnotations) {
+    pub(crate) fn register_struct(
+        &mut self,
+        name: &str,
+        annotation: TypedAnnotations,
+    ) -> Option<DeclarationId> {
         self.arena
-            .register_struct(&self.current_namespace, name, annotation);
+            .register_struct(&self.current_namespace_id, name, annotation)
     }
 
-    pub(crate) fn register_protocol(&mut self, name: &str, annotation: TypedAnnotations) {
+    pub(crate) fn register_protocol(
+        &mut self,
+        name: &str,
+        annotation: TypedAnnotations,
+    ) -> Option<DeclarationId> {
         self.arena
-            .register_protocol(&self.current_namespace, name, annotation);
+            .register_protocol(&self.current_namespace_id, name, annotation)
     }
 
-    pub(crate) fn register_type_parameter(&mut self, name: &str, annotation: TypedAnnotations) {
+    pub(crate) fn register_type_parameter(
+        &mut self,
+        name: &str,
+        annotation: TypedAnnotations,
+    ) -> Option<DeclarationId> {
         self.arena
-            .register_type_parameter(&self.current_namespace, name, annotation);
+            .register_type_parameter(&self.current_namespace_id, name, annotation)
     }
 
     pub(crate) fn register_value(
@@ -353,14 +411,18 @@ impl ResolverContext {
         name: &str,
         ty: TypedType,
         annotation: TypedAnnotations,
-    ) {
+    ) -> Option<DeclarationId> {
         self.arena
-            .register_value(&self.current_namespace, name, ty, annotation);
+            .register_value(&self.current_namespace_id, name, ty, annotation)
     }
 
-    pub(crate) fn register_namespace(&mut self, name: &str, annotation: TypedAnnotations) {
+    pub(crate) fn register_namespace(
+        &mut self,
+        name: &str,
+        annotation: TypedAnnotations,
+    ) -> Option<DeclarationId> {
         self.arena
-            .register_namespace(&self.current_namespace, name, annotation);
+            .register_namespace(&self.current_namespace_id, name, annotation)
     }
 }
 
