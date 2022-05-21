@@ -153,20 +153,12 @@ impl<'s> TypeResolver<'s> {
     }
 
     fn preload_fun(&mut self, f: &TypedFun) -> Result<TypedFun> {
+        self.context.push_name_space(&f.name);
         self.context.push_local_stack();
         if let Some(type_params) = &f.type_params {
             for type_param in type_params {
-                self.context.register_to_env(
-                    type_param.name.clone(),
-                    ResolverStruct::new(
-                        TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-                            package: TypedPackage::Resolved(Package::global()),
-                            name: type_param.name.clone(),
-                            type_args: None,
-                        })),
-                        StructKind::Struct,
-                    ),
-                )
+                self.context
+                    .register_type_parameter(&type_param.name, Default::default());
             }
         }
         let arg_defs = f
@@ -189,6 +181,7 @@ impl<'s> TypeResolver<'s> {
             return_type: Some(return_type),
         };
         self.context.pop_local_stack();
+        self.context.pop_name_space();
         Ok(fun)
     }
 
@@ -438,17 +431,11 @@ impl<'s> TypeResolver<'s> {
     }
 
     pub fn typed_fun(&mut self, f: TypedFun) -> Result<TypedFun> {
+        self.context.push_name_space(&f.name);
         self.context.push_local_stack();
         if let Some(type_params) = &f.type_params {
             for type_param in type_params {
-                let mut rs = ResolverStruct::new(
-                    TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-                        package: TypedPackage::Resolved(Package::global()),
-                        name: type_param.name.clone(),
-                        type_args: None,
-                    })),
-                    StructKind::Struct,
-                );
+                let vec_current_namespace = self.context.current_namespace();
                 if let Some(tc) = &f.type_constraints {
                     let con = tc.iter().find(|t| t.type_.name() == type_param.name);
                     if let Some(con) = con {
@@ -456,11 +443,16 @@ impl<'s> TypeResolver<'s> {
                             let c = self.context.full_type_name(c)?;
                             let ne = self.context.get_current_name_environment();
                             let crs = ne.get_type_by_typed_type(c).unwrap();
-                            rs.member_functions.extend(crs.member_functions.clone());
+                            let members = crs.member_functions.clone();
+                            let rs = self
+                                .context
+                                .arena
+                                .get_type_mut(&vec_current_namespace, &type_param.name)
+                                .unwrap();
+                            rs.member_functions.extend(members);
                         }
                     }
                 };
-                self.context.register_to_env(type_param.name.clone(), rs)
             }
         }
         let arg_defs = f
@@ -489,6 +481,7 @@ impl<'s> TypeResolver<'s> {
             return_type: Some(return_type),
         };
         self.context.pop_local_stack();
+        self.context.pop_name_space();
         Ok(fun)
     }
 

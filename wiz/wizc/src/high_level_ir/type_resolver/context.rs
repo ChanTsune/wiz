@@ -146,8 +146,17 @@ impl ResolverContext {
         env.use_asterisk(&root_namespace_name);
 
         let module_id = self.current_module_id().unwrap();
-        let module_name = self.arena.resolve_fully_qualified_name(&module_id);
-        env.use_asterisk(&module_name);
+
+        if self.current_namespace_id != module_id {
+            let module_name = self.arena.resolve_fully_qualified_name(&module_id);
+            env.use_asterisk(&module_name);
+        }
+
+        let namespace_name = self
+            .arena
+            .resolve_fully_qualified_name(&self.current_namespace_id);
+        env.use_asterisk(&namespace_name);
+
         let used_ns = self
             .global_used_name_space
             .iter()
