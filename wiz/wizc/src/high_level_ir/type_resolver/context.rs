@@ -133,7 +133,7 @@ impl ResolverContext {
     }
 
     pub(crate) fn get_current_name_environment(&self) -> NameEnvironment {
-        let mut env = NameEnvironment::new(&self.arena);
+        let mut env = NameEnvironment::new(&self.arena, &self.local_stack);
         let root_namespace_name: [&str; 0] = [];
         env.use_asterisk(&root_namespace_name);
 
@@ -157,7 +157,6 @@ impl ResolverContext {
         for (is_global, u) in used_ns {
             env.use_(u);
         }
-        env.use_values_from_local(&self.local_stack);
         env
     }
 

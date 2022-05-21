@@ -7,16 +7,19 @@ use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Clone)]
-pub struct NameEnvironment<'a> {
-    local_stack: HashMap<String, EnvValue>,
+pub(crate) struct NameEnvironment<'a> {
+    local_stack: &'a StackedHashMap<String, EnvValue>,
     values: HashMap<String, HashSet<DeclarationId>>,
     arena: &'a ResolverArena,
 }
 
 impl<'a> NameEnvironment<'a> {
-    pub fn new(arena: &'a ResolverArena) -> Self {
+    pub fn new(
+        arena: &'a ResolverArena,
+        local_stack: &'a StackedHashMap<String, EnvValue>,
+    ) -> Self {
         Self {
-            local_stack: Default::default(),
+            local_stack,
             values: Default::default(),
             arena,
         }
@@ -42,10 +45,6 @@ impl<'a> NameEnvironment<'a> {
                 .or_default();
             entry.insert(item);
         }
-    }
-
-    pub(crate) fn use_values_from_local(&mut self, local_stack: &StackedHashMap<String, EnvValue>) {
-        self.local_stack.extend(local_stack.clone().into_map())
     }
 
     pub(crate) fn get_type(
