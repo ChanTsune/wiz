@@ -117,7 +117,7 @@ impl AstLowering {
                 a.elements
                     .into_iter()
                     .map(|a| a.element.token())
-                    .collect::<Vec<String>>(),
+                    .collect::<Vec<_>>(),
             ),
         }
     }
