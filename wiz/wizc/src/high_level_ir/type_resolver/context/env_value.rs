@@ -1,11 +1,9 @@
 use crate::high_level_ir::type_resolver::context::ResolverStruct;
-use crate::high_level_ir::type_resolver::namespace::Namespace;
 use crate::high_level_ir::typed_type::TypedType;
 use std::collections::HashSet;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum EnvValue {
-    NameSpace(Namespace),
     Value(HashSet<(Vec<String>, TypedType)>),
     Type(ResolverStruct),
 }

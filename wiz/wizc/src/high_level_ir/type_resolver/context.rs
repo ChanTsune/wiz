@@ -227,7 +227,6 @@ impl ResolverContext {
             ResolverError::from(format!("Cannot resolve name =>{:?} {:?}", name_space, name))
         })?;
         match env_value {
-            EnvValue::NameSpace(_) => unreachable!(),
             EnvValue::Value(t_set) => Self::resolve_overload(&t_set, type_annotation)
                 .map(|(ns, t)| (t, TypedPackage::Resolved(Package::from(&ns))))
                 .ok_or_else(|| {

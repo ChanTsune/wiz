@@ -3,7 +3,6 @@ pub mod context;
 mod declaration;
 pub mod error;
 mod name_environment;
-mod namespace;
 pub mod result;
 #[cfg(test)]
 mod tests;
