@@ -52,16 +52,11 @@ impl ResolverContext {
     }
 
     pub fn push_name_space(&mut self, name: String) {
-        let id = self.register_namespace(&name, Default::default());
-        if let Some(id) = id {
-            self.current_namespace_id = id;
-        } else {
-            let c = self.arena.get_by_id(&self.current_namespace_id).unwrap();
-            let ids = c.get_child(&name).unwrap();
-            let ids = ids.iter().copied().collect::<Vec<_>>();
-            let id = ids.first().unwrap();
-            self.current_namespace_id = *id;
-        }
+        let c = self.arena.get_by_id(&self.current_namespace_id).unwrap();
+        let ids = c.get_child(&name).unwrap();
+        let ids = ids.iter().copied().collect::<Vec<_>>();
+        let id = ids.first().unwrap();
+        self.current_namespace_id = *id;
     }
 
     pub fn pop_name_space(&mut self) {
