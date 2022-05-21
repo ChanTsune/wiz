@@ -1,3 +1,4 @@
+use std::borrow::Borrow;
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
 use std::hash::{BuildHasher, Hash};
@@ -33,7 +34,11 @@ where
         self.map_stack[last_index].insert(k, v)
     }
 
-    pub(crate) fn get(&self, k: &K) -> Option<&V> {
+    pub(crate) fn get<Q: ?Sized>(&self, k: &Q) -> Option<&V>
+    where
+        K: Borrow<Q>,
+        Q: Hash + Eq,
+    {
         for env in self.map_stack.iter().rev() {
             if let Some(t) = env.get(k) {
                 return Some(t);

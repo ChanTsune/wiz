@@ -25,6 +25,10 @@ fun pointer_dereference(_ p: *Int64): Int64 {
     return *p
 }
 
+fun newA(a: Int64, b: Int64): A {
+    return A(a: a, b: b)
+}
+
 fun one_dimention_array() {
     val a = [128, 256]
     println(a[0])
@@ -32,7 +36,7 @@ fun one_dimention_array() {
 
 
 fun while_loop() {
-    var s = A.init(a: 1, b: 0)
+    var s = newA(a: 1, b: 0)
     val b = 2
     while !(s.a >= 15) {
         println(s.a)
@@ -52,7 +56,7 @@ fun while_loop() {
 
 fun vector_methods() {
 
-    val vector = UInt8Vector.init()
+    val vector = UInt8Vector::new()
 
     vector.push(element:72 as UInt8)
     vector.push(element:101 as UInt8)

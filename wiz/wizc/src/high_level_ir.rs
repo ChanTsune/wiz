@@ -1,9 +1,8 @@
 use crate::high_level_ir::node_id::TypedModuleId;
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_decl::{
-    TypedArgDef, TypedComputedProperty, TypedDecl, TypedExtension, TypedFun, TypedFunBody,
-    TypedInitializer, TypedMemberFunction, TypedProtocol, TypedStoredProperty, TypedStruct,
-    TypedVar,
+    TypedArgDef, TypedComputedProperty, TypedDecl, TypedDeclKind, TypedExtension, TypedFun,
+    TypedFunBody, TypedMemberFunction, TypedProtocol, TypedStoredProperty, TypedStruct, TypedVar,
 };
 use crate::high_level_ir::typed_expr::{
     TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
@@ -23,13 +22,11 @@ use crate::high_level_ir::typed_type_constraint::TypedTypeConstraint;
 use crate::high_level_ir::typed_use::TypedUse;
 use crate::utils::path_string_to_page_name;
 use std::collections::HashMap;
-use std::option::Option::Some;
 use wiz_syntax::syntax::annotation::AnnotationsSyntax;
 use wiz_syntax::syntax::block::BlockSyntax;
 use wiz_syntax::syntax::declaration::fun_syntax::{ArgDef, FunBody, FunSyntax};
 use wiz_syntax::syntax::declaration::{
-    DeclKind, InitializerSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax,
-    UseSyntax,
+    DeclKind, StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax,
 };
 use wiz_syntax::syntax::declaration::{ExtensionSyntax, VarSyntax};
 use wiz_syntax::syntax::expression::{
@@ -115,12 +112,12 @@ impl AstLowering {
 
     pub(crate) fn annotations(&self, a: Option<AnnotationsSyntax>) -> TypedAnnotations {
         match a {
-            None => TypedAnnotations::new(),
+            None => TypedAnnotations::default(),
             Some(a) => TypedAnnotations::from(
                 a.elements
                     .into_iter()
                     .map(|a| a.element.token())
-                    .collect::<Vec<String>>(),
+                    .collect::<Vec<_>>(),
             ),
         }
     }
@@ -182,33 +179,35 @@ impl AstLowering {
     }
 
     pub fn decl(&self, d: DeclKind, annotation: Option<AnnotationsSyntax>) -> TypedDecl {
-        match d {
-            DeclKind::Var(v) => TypedDecl::Var(self.var_syntax(v, annotation)),
-            DeclKind::Fun(f) => TypedDecl::Fun(self.fun_syntax(f, annotation)),
-            DeclKind::Struct(s) => match &*s.struct_keyword.token() {
-                "struct" => {
-                    let struct_ = self.struct_syntax(s, annotation);
-                    let struct_ = self.default_init_if_needed(struct_);
-                    TypedDecl::Struct(struct_)
-                }
-                "protocol" => {
-                    let protocol = self.protocol_syntax(s, annotation);
-                    TypedDecl::Protocol(protocol)
-                }
-                kw => panic!("Unknown keyword `{}`", kw),
+        TypedDecl {
+            annotations: self.annotations(annotation),
+            package: Package::new(),
+            modifiers: vec![],
+            kind: match d {
+                DeclKind::Var(v) => TypedDeclKind::Var(self.var_syntax(v)),
+                DeclKind::Fun(f) => TypedDeclKind::Fun(self.fun_syntax(f)),
+                DeclKind::Struct(s) => match &*s.struct_keyword.token() {
+                    "struct" => {
+                        let struct_ = self.struct_syntax(s);
+                        TypedDeclKind::Struct(struct_)
+                    }
+                    "protocol" => {
+                        let protocol = self.protocol_syntax(s);
+                        TypedDeclKind::Protocol(protocol)
+                    }
+                    kw => panic!("Unknown keyword `{}`", kw),
+                },
+                DeclKind::ExternC { .. } => TypedDeclKind::Class,
+                DeclKind::Enum { .. } => TypedDeclKind::Enum,
+                DeclKind::Extension(e) => TypedDeclKind::Extension(self.extension_syntax(e)),
+                DeclKind::Use(_) => unreachable!(),
             },
-            DeclKind::ExternC { .. } => TypedDecl::Class,
-            DeclKind::Enum { .. } => TypedDecl::Enum,
-            DeclKind::Extension(e) => TypedDecl::Extension(self.extension_syntax(e, annotation)),
-            DeclKind::Use(_) => unreachable!(),
         }
     }
 
-    pub fn var_syntax(&self, v: VarSyntax, annotation: Option<AnnotationsSyntax>) -> TypedVar {
+    pub fn var_syntax(&self, v: VarSyntax) -> TypedVar {
         let expr = self.expr(v.value);
         TypedVar {
-            annotations: self.annotations(annotation),
-            package: TypedPackage::Raw(Package::new()),
             is_mut: v.mutability_keyword.token() == "var",
             name: v.name.token(),
             type_: v.type_annotation.map(|t| self.type_(t.type_)),
@@ -248,7 +247,7 @@ impl AstLowering {
         }
     }
 
-    pub fn fun_syntax(&self, f: FunSyntax, annotations: Option<AnnotationsSyntax>) -> TypedFun {
+    pub fn fun_syntax(&self, f: FunSyntax) -> TypedFun {
         let FunSyntax {
             fun_keyword: _,
             name,
@@ -317,9 +316,6 @@ impl AstLowering {
         let body = body.map(|b| self.fun_body(b));
 
         TypedFun {
-            annotations: self.annotations(annotations),
-            package: TypedPackage::Raw(Package::new()),
-            modifiers: vec![],
             name: name.token(),
             type_params: type_params.map(|v| {
                 v.elements
@@ -397,14 +393,9 @@ impl AstLowering {
         }
     }
 
-    pub fn struct_syntax(
-        &self,
-        s: StructSyntax,
-        annotations: Option<AnnotationsSyntax>,
-    ) -> TypedStruct {
+    pub fn struct_syntax(&self, s: StructSyntax) -> TypedStruct {
         let mut stored_properties: Vec<TypedStoredProperty> = vec![];
         let mut computed_properties: Vec<TypedComputedProperty> = vec![];
-        let mut initializers: Vec<TypedInitializer> = vec![];
         let mut member_functions: Vec<TypedMemberFunction> = vec![];
         for p in s.body.properties {
             match p {
@@ -412,9 +403,6 @@ impl AstLowering {
                     stored_properties.push(self.stored_property_syntax(v));
                 }
                 StructPropertySyntax::ComputedProperty => {}
-                StructPropertySyntax::Init(init) => {
-                    initializers.push(self.initializer_syntax(init))
-                }
                 StructPropertySyntax::Method(method) => {
                     member_functions.push(self.member_function(method))
                 }
@@ -424,8 +412,6 @@ impl AstLowering {
             };
         }
         TypedStruct {
-            annotations: self.annotations(annotations),
-            package: TypedPackage::Raw(Package::new()),
             name: s.name.token(),
             type_params: s.type_params.map(|v| {
                 v.elements
@@ -433,76 +419,16 @@ impl AstLowering {
                     .map(|tp| self.type_param(tp.element))
                     .collect()
             }),
-            initializers,
             stored_properties,
             computed_properties,
             member_functions,
         }
     }
 
-    fn default_init_if_needed(&self, mut s: TypedStruct) -> TypedStruct {
-        let args: Vec<TypedArgDef> = s
-            .stored_properties
-            .iter()
-            .map(|p| TypedArgDef {
-                label: p.name.clone(),
-                name: p.name.clone(),
-                type_: p.type_.clone(),
-            })
-            .collect();
-        if s.initializers.is_empty() {
-            s.initializers.push(TypedInitializer {
-                args,
-                body: TypedFunBody::Block(TypedBlock {
-                    body: s
-                        .stored_properties
-                        .iter()
-                        .map(|p| {
-                            TypedStmt::Assignment(TypedAssignmentStmt::Assignment(
-                                TypedAssignment {
-                                    target: TypedExpr::Member(TypedInstanceMember {
-                                        target: Box::new(TypedExpr::Name(TypedName {
-                                            package: TypedPackage::Raw(Package::new()),
-                                            name: "self".to_string(),
-                                            type_: None,
-                                            type_arguments: None,
-                                        })),
-                                        name: p.name.clone(),
-                                        is_safe: false,
-                                        type_: None,
-                                    }),
-                                    value: TypedExpr::Name(TypedName {
-                                        package: TypedPackage::Raw(Package::new()),
-                                        name: p.name.clone(),
-                                        type_: None,
-                                        type_arguments: None,
-                                    }),
-                                },
-                            ))
-                        })
-                        .collect(),
-                }),
-            })
-        }
-        s
-    }
-
     pub fn stored_property_syntax(&self, p: StoredPropertySyntax) -> TypedStoredProperty {
         TypedStoredProperty {
             name: p.name.token(),
             type_: self.type_(p.type_.type_),
-        }
-    }
-
-    pub fn initializer_syntax(&self, init: InitializerSyntax) -> TypedInitializer {
-        TypedInitializer {
-            args: init
-                .args
-                .elements
-                .into_iter()
-                .map(|a| self.arg_def(a.element))
-                .collect(),
-            body: self.fun_body(init.body),
         }
     }
 
@@ -550,11 +476,7 @@ impl AstLowering {
         }
     }
 
-    fn extension_syntax(
-        &self,
-        e: ExtensionSyntax,
-        annotations: Option<AnnotationsSyntax>,
-    ) -> TypedExtension {
+    fn extension_syntax(&self, e: ExtensionSyntax) -> TypedExtension {
         let mut computed_properties = vec![];
         let mut member_functions = vec![];
         for prop in e.body.properties {
@@ -563,13 +485,11 @@ impl AstLowering {
                     panic!("Stored property not allowed here.")
                 }
                 StructPropertySyntax::ComputedProperty => todo!(),
-                StructPropertySyntax::Init(_) => panic!("Init is not allowed here."),
                 StructPropertySyntax::Deinit(_) => panic!("Deinit is not allowed here."),
                 StructPropertySyntax::Method(m) => member_functions.push(self.member_function(m)),
             }
         }
         TypedExtension {
-            annotations: self.annotations(annotations),
             name: self.type_(e.name),
             protocol: e.protocol_extension.map(|tps| self.type_(tps.protocol)),
             computed_properties,
@@ -577,11 +497,7 @@ impl AstLowering {
         }
     }
 
-    fn protocol_syntax(
-        &self,
-        p: StructSyntax,
-        annotations: Option<AnnotationsSyntax>,
-    ) -> TypedProtocol {
+    fn protocol_syntax(&self, p: StructSyntax) -> TypedProtocol {
         let mut computed_properties: Vec<TypedComputedProperty> = vec![];
         let mut member_functions: Vec<TypedMemberFunction> = vec![];
         for p in p.body.properties {
@@ -590,9 +506,6 @@ impl AstLowering {
                     panic!("protocol is not allowed stored property {:?}", v)
                 }
                 StructPropertySyntax::ComputedProperty => {}
-                StructPropertySyntax::Init(init) => {
-                    panic!("protocol is not allowed init {:?}", init)
-                }
                 StructPropertySyntax::Method(method) => {
                     member_functions.push(self.member_function(method))
                 }
@@ -602,8 +515,6 @@ impl AstLowering {
             };
         }
         TypedProtocol {
-            annotations: self.annotations(annotations),
-            package: TypedPackage::Raw(Package::new()),
             name: p.name.token(),
             type_params: p.type_params.map(|v| {
                 v.elements

@@ -6,7 +6,6 @@ use std::collections::BTreeSet;
 use std::env;
 use std::error::Error;
 use std::fs::create_dir_all;
-use std::option::Option::Some;
 use std::path::PathBuf;
 
 pub(crate) fn build_command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn Error>> {

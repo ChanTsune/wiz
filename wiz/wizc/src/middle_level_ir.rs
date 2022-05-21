@@ -1,8 +1,9 @@
 use crate::constants;
+use crate::high_level_ir::type_resolver::arena::ResolverArena;
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_decl::{
-    TypedArgDef, TypedDecl, TypedExtension, TypedFun, TypedFunBody, TypedMemberFunction,
-    TypedProtocol, TypedStruct, TypedVar,
+    TypedArgDef, TypedDecl, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody,
+    TypedMemberFunction, TypedProtocol, TypedStruct, TypedVar,
 };
 use crate::high_level_ir::typed_expr::{
     TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
@@ -14,17 +15,16 @@ use crate::high_level_ir::typed_stmt::{
     TypedAssignmentAndOperator, TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt,
 };
 use crate::high_level_ir::typed_type::{
-    TypedFunctionType, TypedPackage, TypedType, TypedTypeParam, TypedValueType,
+    Package, TypedFunctionType, TypedPackage, TypedType, TypedTypeParam, TypedValueType,
 };
 use crate::middle_level_ir::context::HLIR2MLIRContext;
 use core::result;
 use std::collections::HashMap;
 use std::error::Error;
-use std::iter::Map;
-use wiz_mir::builder::{BuilderError, FunBuilder, MLIRModule};
+use wiz_mir::builder::{FunBuilder, MLIRModule};
 use wiz_mir::expr::{
-    MLArray, MLBinOp, MLBinOpKind, MLBlock, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral, MLMember,
-    MLName, MLSubscript, MLTypeCast, MLUnaryOp, MLUnaryOpKind,
+    MLArray, MLBinOp, MLBinOpKind, MLBlock, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral,
+    MLLiteralKind, MLMember, MLName, MLSubscript, MLTypeCast, MLUnaryOp, MLUnaryOpKind,
 };
 use wiz_mir::ml_decl::{MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar};
 use wiz_mir::ml_file::MLFile;
@@ -37,36 +37,30 @@ mod tests;
 
 pub type Result<T> = result::Result<T, Box<dyn Error>>;
 
-pub fn hlir2mlir(
+pub fn hlir2mlir<'arena>(
     target: TypedSourceSet,
-    dependencies: &[MLFile],
-    annotations: HashMap<String, TypedAnnotations>,
-) -> Result<(MLFile, HashMap<String, TypedAnnotations>)> {
-    let mut converter = HLIR2MLIR::new();
+    dependencies: &'arena [MLFile],
+    arena: &'arena ResolverArena,
+) -> Result<MLFile> {
+    let mut converter = HLIR2MLIR::new(arena);
     converter.load_dependencies(dependencies)?;
-    converter
-        .context
-        .declaration_annotations
-        .extend(annotations);
-    Ok((
-        converter.convert_from_source_set(target),
-        converter.context.declaration_annotations,
-    ))
+    Ok(converter.convert_from_source_set(target))
 }
 
-#[derive(Default)]
-pub struct HLIR2MLIR {
+#[derive(Debug)]
+pub struct HLIR2MLIR<'arena> {
+    arena: &'arena ResolverArena,
     context: HLIR2MLIRContext,
     module: MLIRModule,
 }
 
-impl HLIR2MLIR {
-    pub fn new() -> Self {
-        Self::default()
-    }
-
-    pub(crate) fn annotations(self) -> HashMap<String, TypedAnnotations> {
-        self.context.declaration_annotations
+impl<'arena> HLIR2MLIR<'arena> {
+    pub fn new(arena: &'arena ResolverArena) -> Self {
+        Self {
+            arena,
+            context: Default::default(),
+            module: Default::default(),
+        }
     }
 
     pub fn load_dependencies(&mut self, dependencies: &[MLFile]) -> Result<()> {
@@ -79,9 +73,7 @@ impl HLIR2MLIR {
     fn load_dependencies_file(&mut self, f: &MLFile) -> Result<()> {
         f.body
             .iter()
-            .map(|d| self.load_dependencies_decl(d))
-            .collect::<Result<Vec<_>>>()?;
-        Ok(())
+            .try_for_each(|d| self.load_dependencies_decl(d))
     }
 
     fn load_dependencies_decl(&mut self, d: &MLDecl) -> Result<()> {
@@ -193,7 +185,6 @@ impl HLIR2MLIR {
                 name
             }
             TypedSourceSet::Dir { name, mut items } => {
-                self.context.push_name_space(name.clone());
                 items.sort();
                 let _: Vec<_> = items
                     .into_iter()
@@ -202,7 +193,6 @@ impl HLIR2MLIR {
                     .into_iter()
                     .flat_map(|i| i.body)
                     .collect();
-                self.context.pop_name_space();
                 name
             }
         };
@@ -210,31 +200,26 @@ impl HLIR2MLIR {
     }
 
     fn file(&mut self, f: TypedFile) -> Result<()> {
-        self.context.push_name_space(f.name.clone());
-        for d in f.body.into_iter() {
-            self.decl(d)?;
-        }
-        self.context.pop_name_space();
-        Ok(())
+        f.body.into_iter().try_for_each(|d| self.decl(d))
     }
 
     fn stmt(&mut self, s: TypedStmt) -> Vec<MLStmt> {
         match s {
             TypedStmt::Expr(e) => vec![MLStmt::Expr(self.expr(e))],
-            TypedStmt::Decl(d) => match d {
-                TypedDecl::Var(v) => {
+            TypedStmt::Decl(d) => match d.kind {
+                TypedDeclKind::Var(v) => {
                     vec![MLStmt::Var(self.var(v))]
                 }
-                TypedDecl::Fun(_) => todo!("local function"),
-                TypedDecl::Struct(_) => todo!("local struct"),
-                TypedDecl::Class => {
+                TypedDeclKind::Fun(_) => todo!("local function"),
+                TypedDeclKind::Struct(_) => todo!("local struct"),
+                TypedDeclKind::Class => {
                     todo!()
                 }
-                TypedDecl::Enum => {
+                TypedDeclKind::Enum => {
                     todo!()
                 }
-                TypedDecl::Protocol(_) => todo!("local protocol"),
-                TypedDecl::Extension(_) => todo!("local extension"),
+                TypedDeclKind::Protocol(_) => todo!("local protocol"),
+                TypedDeclKind::Extension(_) => todo!("local extension"),
             },
             TypedStmt::Assignment(a) => vec![MLStmt::Assignment(self.assignment(a))],
             TypedStmt::Loop(l) => vec![MLStmt::Loop(self.loop_stmt(l))],
@@ -279,34 +264,40 @@ impl HLIR2MLIR {
         }
     }
 
-    fn decl(&mut self, d: TypedDecl) -> result::Result<(), BuilderError> {
-        match d {
-            TypedDecl::Var(v) => {
-                let v = self.var(v);
+    fn decl(&mut self, d: TypedDecl) -> Result<()> {
+        let TypedDecl {
+            annotations,
+            package,
+            modifiers,
+            kind,
+        } = d;
+        match kind {
+            TypedDeclKind::Var(v) => {
+                let v = self.global_var(v, &package);
                 self.module.add_global_var(v);
             }
-            TypedDecl::Fun(f) => {
+            TypedDeclKind::Fun(f) => {
                 if !f.is_generic() {
-                    let f = FunBuilder::from(self.fun(f, None));
+                    let f = FunBuilder::from(self.fun(f, annotations, package, None));
                     self.module._add_function(f);
                 }
             }
-            TypedDecl::Struct(s) => {
-                let (st, fns) = self.struct_(s);
+            TypedDeclKind::Struct(s) => {
+                let (st, fns) = self.struct_(s, package);
                 self.module.add_struct(st);
                 for f in fns {
                     self.module._add_function(FunBuilder::from(f));
                 }
             }
-            TypedDecl::Class => todo!(),
-            TypedDecl::Enum => todo!(),
-            TypedDecl::Protocol(p) => {
+            TypedDeclKind::Class => todo!(),
+            TypedDeclKind::Enum => todo!(),
+            TypedDeclKind::Protocol(p) => {
                 let functions = self.protocol(p);
                 for f in functions {
                     self.module._add_function(FunBuilder::from(f));
                 }
             }
-            TypedDecl::Extension(e) => {
+            TypedDeclKind::Extension(e) => {
                 let functions = self.extension(e);
                 for f in functions {
                     self.module._add_function(FunBuilder::from(f));
@@ -314,6 +305,16 @@ impl HLIR2MLIR {
             }
         };
         Ok(())
+    }
+
+    fn global_var(&mut self, v: TypedVar, package: &Package) -> MLVar {
+        let expr = self.expr(v.value);
+        MLVar {
+            is_mute: v.is_mut,
+            name: self.package_name_mangling_(package, &v.name),
+            type_: self.type_(v.type_.unwrap()),
+            value: expr,
+        }
     }
 
     fn var(&mut self, v: TypedVar) -> MLVar {
@@ -329,20 +330,19 @@ impl HLIR2MLIR {
     fn fun(
         &mut self,
         f: TypedFun,
-        type_arguments: Option<Map<TypedTypeParam, TypedType>>,
+        annotations: TypedAnnotations,
+        package: Package,
+        type_arguments: Option<HashMap<TypedTypeParam, TypedType>>,
     ) -> MLFun {
         let TypedFun {
-            annotations,
-            package,
-            modifiers,
             name,
             type_params,
-            type_constraints,
+            type_constraints: _,
             arg_defs,
             body,
             return_type,
         } = f;
-        let package_mangled_name = self.package_name_mangling(&package, &name);
+        let package_mangled_name = self.package_name_mangling_(&package, &name);
         let mangled_name = if annotations.has_annotate("no_mangle") {
             name
         } else {
@@ -353,11 +353,8 @@ impl HLIR2MLIR {
                 package_mangled_name + "##" + &*fun_arg_label_type_mangled_name
             }
         };
-        self.context
-            .set_declaration_annotations(mangled_name.clone(), annotations);
         let args = arg_defs.into_iter().map(|a| self.arg_def(a)).collect();
         MLFun {
-            modifiers,
             name: mangled_name,
             arg_defs: args,
             return_type: self.type_(return_type.unwrap()).into_value_type(),
@@ -365,19 +362,16 @@ impl HLIR2MLIR {
         }
     }
 
-    fn struct_(&mut self, s: TypedStruct) -> (MLStruct, Vec<MLFun>) {
+    fn struct_(&mut self, s: TypedStruct, package: Package) -> (MLStruct, Vec<MLFun>) {
         let TypedStruct {
-            annotations,
-            package,
             name,
             type_params,
-            initializers,
             stored_properties,
             computed_properties,
             member_functions,
         } = s;
         let struct_ = MLStruct {
-            name: self.package_name_mangling(&package, &name),
+            name: self.package_name_mangling_(&package, &name),
             fields: stored_properties
                 .into_iter()
                 .map(|p| MLField {
@@ -389,43 +383,6 @@ impl HLIR2MLIR {
         let value_type = MLValueType::Struct(struct_.name.clone());
         self.context.add_struct(value_type.clone(), struct_.clone());
 
-        let init: Vec<MLFun> = initializers
-            .into_iter()
-            .map(|i| {
-                let type_ = MLType::Value(value_type.clone());
-                let mut body = self.fun_body(i.body).body;
-                body.insert(
-                    0,
-                    MLStmt::Var(MLVar {
-                        is_mute: true,
-                        name: String::from("self"),
-                        value: MLExpr::Literal(MLLiteral::Struct {
-                            type_: type_.clone().into_value_type(),
-                        }),
-                        type_: type_.clone(),
-                    }),
-                );
-                body.push(MLStmt::Expr(MLExpr::Return(MLReturn {
-                    value: Some(Box::new(MLExpr::Name(MLName {
-                        name: String::from("self"),
-                        type_: type_.clone(),
-                    }))),
-                })));
-                MLFun {
-                    modifiers: vec![],
-                    name: self.package_name_mangling(&package, &name)
-                        + "::init"
-                        + &*if i.args.is_empty() {
-                            String::new()
-                        } else {
-                            String::from("##") + &*self.fun_arg_label_type_name_mangling(&i.args)
-                        },
-                    arg_defs: i.args.into_iter().map(|a| self.arg_def(a)).collect(),
-                    return_type: type_.into_value_type(),
-                    body: Some(MLFunBody { body }),
-                }
-            })
-            .collect();
         let members: Vec<MLFun> = member_functions
             .into_iter()
             .map(|mf| {
@@ -439,8 +396,7 @@ impl HLIR2MLIR {
                 let fun_arg_label_type_mangled_name = self.fun_arg_label_type_name_mangling(&args);
                 let args = args.into_iter().map(|a| self.arg_def(a)).collect();
                 MLFun {
-                    modifiers: vec![],
-                    name: self.package_name_mangling(&package, &name)
+                    name: self.package_name_mangling_(&package, &name)
                         + "::"
                         + &fname
                         + &*if fun_arg_label_type_mangled_name.is_empty() {
@@ -454,12 +410,11 @@ impl HLIR2MLIR {
                 }
             })
             .collect();
-        (struct_, init.into_iter().chain(members).collect())
+        (struct_, members)
     }
 
     fn extension(&mut self, e: TypedExtension) -> Vec<MLFun> {
         let TypedExtension {
-            annotations,
             name,
             protocol,
             computed_properties,
@@ -478,7 +433,6 @@ impl HLIR2MLIR {
                 let fun_arg_label_type_mangled_name = self.fun_arg_label_type_name_mangling(&args);
                 let args = args.into_iter().map(|a| self.arg_def(a)).collect();
                 MLFun {
-                    modifiers: vec![],
                     name: self.package_name_mangling(&name.package(), &name.name())
                         + "::"
                         + &fname
@@ -501,7 +455,7 @@ impl HLIR2MLIR {
 
     fn expr(&mut self, e: TypedExpr) -> MLExpr {
         match e {
-            TypedExpr::Name(name) => MLExpr::Name(self.name(name)),
+            TypedExpr::Name(name) => self.name(name),
             TypedExpr::Literal(l) => MLExpr::Literal(self.literal(l)),
             TypedExpr::BinOp(b) => MLExpr::PrimitiveBinOp(self.binop(b)),
             TypedExpr::UnaryOp(u) => MLExpr::PrimitiveUnaryOp(self.unary_op(u)),
@@ -511,7 +465,7 @@ impl HLIR2MLIR {
             TypedExpr::Tuple => todo!(),
             TypedExpr::Dict => todo!(),
             TypedExpr::StringBuilder => todo!(),
-            TypedExpr::Call(c) => MLExpr::Call(self.call(c)),
+            TypedExpr::Call(c) => self.call(c),
             TypedExpr::If(i) => MLExpr::If(self.if_expr(i)),
             TypedExpr::When => todo!(),
             TypedExpr::Lambda(l) => todo!(),
@@ -520,54 +474,107 @@ impl HLIR2MLIR {
         }
     }
 
-    fn name(&self, n: TypedName) -> MLName {
-        let mut mangled_name = if self
-            .context
-            .declaration_has_annotation(&n.name, "no_mangle")
-        {
-            n.name
+    fn name(&self, n: TypedName) -> MLExpr {
+        if let TypedType::Type(t) = n.type_.as_ref().unwrap() {
+            let package = t.package().into_resolved();
+            let name = t.name();
+            let has_no_mangle = if let Some(i) = self.arena.get(&package.names, &name) {
+                i.has_annotation("no_mangle")
+            } else {
+                false
+            };
+            let mut mangled_name = if has_no_mangle {
+                name
+            } else {
+                self.package_name_mangling_(&package, &name)
+            };
+            if let Some(type_arguments) = n.type_arguments {
+                mangled_name += format!(
+                    "<{}>",
+                    type_arguments
+                        .into_iter()
+                        .map(|t| t.to_string())
+                        .collect::<Vec<_>>()
+                        .join(",")
+                )
+                .as_str()
+            };
+            MLExpr::Literal(MLLiteral {
+                kind: MLLiteralKind::Struct(vec![]),
+                type_: MLValueType::Struct(mangled_name),
+            })
         } else {
-            self.package_name_mangling(&n.package, &*n.name)
-        };
-        if let Some(type_arguments) = n.type_arguments {
-            mangled_name += format!(
-                "<{}>",
-                type_arguments
-                    .into_iter()
-                    .map(|t| t.to_string())
-                    .collect::<Vec<_>>()
-                    .join(",")
-            )
-            .as_str()
-        }
-        MLName {
-            name: mangled_name,
-            type_: self.type_(n.type_.unwrap()),
+            let package = n.package.clone().into_resolved();
+            let has_no_mangle = if let Some(i) = self.arena.get(&package.names, &n.name) {
+                i.has_annotation("no_mangle")
+            } else {
+                false
+            };
+            let mut mangled_name = if has_no_mangle {
+                n.name
+            } else {
+                self.package_name_mangling_(&package, &*n.name)
+            };
+            if let Some(type_arguments) = n.type_arguments {
+                mangled_name += format!(
+                    "<{}>",
+                    type_arguments
+                        .into_iter()
+                        .map(|t| t.to_string())
+                        .collect::<Vec<_>>()
+                        .join(",")
+                )
+                .as_str()
+            };
+            if !has_no_mangle {
+                if let Some(TypedType::Function(fun_type)) = &n.type_ {
+                    if !fun_type.arguments.is_empty() {
+                        mangled_name += "##";
+                        mangled_name += &*self.fun_arg_label_type_name_mangling(
+                            &fun_type
+                                .arguments
+                                .iter()
+                                .map(|a| TypedArgDef {
+                                    label: a.label.to_string(),
+                                    name: "".to_string(),
+                                    type_: a.typ.clone(),
+                                })
+                                .collect(),
+                        )
+                    }
+                }
+            }
+            MLExpr::Name(MLName {
+                name: mangled_name,
+                type_: self.type_(n.type_.unwrap()),
+            })
         }
     }
 
     fn literal(&self, l: TypedLiteral) -> MLLiteral {
-        match l {
-            TypedLiteral::Integer { value, type_ } => MLLiteral::Integer {
-                value,
-                type_: self.type_(type_.unwrap()).into_value_type(),
-            },
-            TypedLiteral::FloatingPoint { value, type_ } => MLLiteral::FloatingPoint {
-                value,
-                type_: self.type_(type_.unwrap()).into_value_type(),
-            },
-            TypedLiteral::String { value, type_ } => MLLiteral::String {
-                value,
-                type_: self.type_(type_.unwrap()).into_value_type(),
-            },
-            TypedLiteral::Boolean { value, type_ } => MLLiteral::Boolean {
-                value,
-                type_: self.type_(type_.unwrap()).into_value_type(),
-            },
-            TypedLiteral::NullLiteral { type_ } => MLLiteral::Null {
-                type_: self.type_(type_.unwrap()).into_value_type(),
-            },
-        }
+        let (kind, type_) = match l {
+            TypedLiteral::Integer { value, type_ } => (
+                MLLiteralKind::Integer(value),
+                self.type_(type_.unwrap()).into_value_type(),
+            ),
+            TypedLiteral::FloatingPoint { value, type_ } => (
+                MLLiteralKind::FloatingPoint(value),
+                self.type_(type_.unwrap()).into_value_type(),
+            ),
+            TypedLiteral::String { value, type_ } => (
+                MLLiteralKind::String(value),
+                self.type_(type_.unwrap()).into_value_type(),
+            ),
+            TypedLiteral::Boolean { value, type_ } => (
+                MLLiteralKind::Boolean(value),
+                self.type_(type_.unwrap()).into_value_type(),
+            ),
+            TypedLiteral::NullLiteral { type_ } => (
+                MLLiteralKind::Null,
+                self.type_(type_.unwrap()).into_value_type(),
+            ),
+        };
+        MLLiteral { kind, type_ }
     }
 
     fn binop(&mut self, b: TypedBinOp) -> MLBinOp {
@@ -718,7 +725,7 @@ impl HLIR2MLIR {
         }
     }
 
-    fn call(&mut self, c: TypedCall) -> MLCall {
+    fn call(&mut self, c: TypedCall) -> MLExpr {
         let TypedCall {
             target,
             mut args,
@@ -736,16 +743,8 @@ impl HLIR2MLIR {
                     TypedType::Self_ => panic!("never execution branch"),
                     TypedType::Value(v) => {
                         let target_type = self.value_type(v);
-                        let is_stored = self.context.struct_has_field(&target_type, &name);
-                        if is_stored {
-                            let target = self.expr(*target);
-                            let type_ = self.type_(type_.unwrap());
-                            MLExpr::Member(MLMember {
-                                target: Box::new(target),
-                                name,
-                                type_,
-                            })
-                        } else {
+                        let type_ = type_.unwrap();
+                        if let TypedType::Function(fun_type) = &type_ {
                             args.insert(
                                 0,
                                 TypedCallArg {
@@ -754,10 +753,38 @@ impl HLIR2MLIR {
                                     is_vararg: false,
                                 },
                             );
+                            let mut mangled_name = target_type.name() + "::" + &*name;
+                            if !fun_type.arguments.is_empty() {
+                                mangled_name += "##";
+                                mangled_name += &*self.fun_arg_label_type_name_mangling(
+                                    &fun_type
+                                        .arguments
+                                        .iter()
+                                        .map(|a| TypedArgDef {
+                                            label: a.label.to_string(),
+                                            name: "".to_string(),
+                                            type_: a.typ.clone(),
+                                        })
+                                        .collect(),
+                                )
+                            }
                             MLExpr::Name(MLName {
-                                name: target_type.name() + "::" + &*name,
-                                type_: self.type_(type_.unwrap()),
+                                name: mangled_name,
+                                type_: self.type_(type_),
                             })
+                        } else {
+                            let is_stored = self.context.struct_has_field(&target_type, &name);
+                            if is_stored {
+                                let target = self.expr(*target);
+                                let type_ = self.type_(type_);
+                                MLExpr::Member(MLMember {
+                                    target: Box::new(target),
+                                    name,
+                                    type_,
+                                })
+                            } else {
+                                panic!("struct has no member {}", name)
+                            }
                         }
                     }
                     TypedType::Function(_) => {
@@ -800,38 +827,23 @@ impl HLIR2MLIR {
             t => self.expr(t),
         };
         let target = match target {
-            MLExpr::Name(MLName { name, type_ }) => {
-                let fun_arg_label_type_mangled_name =
-                    if self.context.declaration_has_annotation(&name, "no_mangle") {
-                        name
-                    } else {
-                        if args.is_empty() {
-                            name
-                        } else {
-                            name + "##"
-                                + &*self.fun_arg_label_type_name_mangling(
-                                    &args
-                                        .iter()
-                                        .map(|a| TypedArgDef {
-                                            label: match &a.label {
-                                                None => "_".to_string(),
-                                                Some(l) => l.to_string(),
-                                            },
-                                            name: "".to_string(),
-                                            type_: a.arg.type_().unwrap(),
-                                        })
-                                        .collect(),
-                                )
-                        }
-                    };
-                MLName {
-                    name: fun_arg_label_type_mangled_name,
-                    type_,
+            MLExpr::Name(name) => name,
+            MLExpr::Literal(MLLiteral {
+                kind: MLLiteralKind::Struct(mut s),
+                type_,
+            }) => {
+                for arg in args.into_iter() {
+                    let v = self.expr(*arg.arg);
+                    s.push((arg.label.unwrap(), v));
                 }
+                return MLExpr::Literal(MLLiteral {
+                    kind: MLLiteralKind::Struct(s),
+                    type_,
+                });
             }
             a => panic!("{:?}", a),
         };
-        MLCall {
+        MLExpr::Call(MLCall {
             target,
             args: args
                 .into_iter()
@@ -840,7 +852,7 @@ impl HLIR2MLIR {
                 })
                 .collect(),
             type_: self.type_(type_.unwrap()).into_value_type(),
-        }
+        })
     }
 
     fn if_expr(&mut self, i: TypedIf) -> MLIf {
@@ -891,13 +903,17 @@ impl HLIR2MLIR {
         }
     }
 
+    fn package_name_mangling_(&self, package: &Package, name: &str) -> String {
+        if package.is_global() || name == "main" {
+            String::from(name)
+        } else {
+            package.to_string() + "::" + name
+        }
+    }
+
     fn package_name_mangling(&self, package: &TypedPackage, name: &str) -> String {
         if let TypedPackage::Resolved(pkg) = package {
-            if pkg.is_global() || name == "main" {
-                String::from(name)
-            } else {
-                pkg.to_string() + "::" + name
-            }
+            self.package_name_mangling_(pkg, name)
         } else {
             panic!("pkg name mangling failed => {:?}, {}", package, name)
         }

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedAnnotations {
     annotations: Vec<String>,
 }
@@ -8,20 +8,6 @@ pub struct TypedAnnotations {
 impl TypedAnnotations {
     pub(crate) fn has_annotate<T: ToString>(&self, a: T) -> bool {
         self.annotations.contains(&a.to_string())
-    }
-}
-
-impl TypedAnnotations {
-    pub(crate) fn new() -> Self {
-        Self {
-            annotations: vec![],
-        }
-    }
-}
-
-impl Default for TypedAnnotations {
-    fn default() -> Self {
-        Self::new()
     }
 }
 

@@ -23,7 +23,6 @@ pub struct MLVar {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MLFun {
-    pub modifiers: Vec<String>,
     pub name: String,
     pub arg_defs: Vec<MLArgDef>,
     pub return_type: MLValueType,
@@ -77,10 +76,6 @@ impl MLNode for MLVar {
 
 impl MLNode for MLFun {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        for modifier in self.modifiers.iter() {
-            f.write_str(modifier)?;
-            f.write_char(' ')?;
-        }
         f.write_str("fun ")?;
         f.write_str(&*self.name)?;
         f.write_char('(')?;

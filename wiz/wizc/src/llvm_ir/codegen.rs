@@ -15,8 +15,8 @@ use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::path::Path;
 use wiz_mir::expr::{
-    MLArray, MLBinOp, MLBinOpKind, MLBlock, MLCall, MLExpr, MLIf, MLLiteral, MLMember, MLName,
-    MLSubscript, MLTypeCast, MLUnaryOp, MLUnaryOpKind,
+    MLArray, MLBinOp, MLBinOpKind, MLBlock, MLCall, MLExpr, MLIf, MLLiteral, MLLiteralKind,
+    MLMember, MLName, MLSubscript, MLTypeCast, MLUnaryOp, MLUnaryOpKind,
 };
 use wiz_mir::ml_decl::{MLDecl, MLFun, MLStruct, MLVar};
 use wiz_mir::ml_file::MLFile;
@@ -54,7 +54,7 @@ impl<'ctx> MLContext<'ctx> {
         self.struct_environment.insert(s.name.clone(), s);
     }
 
-    pub fn get_struct(&self, name: &String) -> Option<&MLStruct> {
+    pub fn get_struct(&self, name: &str) -> Option<&MLStruct> {
         self.struct_environment.get(name)
     }
 }
@@ -92,7 +92,7 @@ impl<'ctx> CodeGen<'ctx> {
         }
     }
 
-    fn get_from_environment(&self, name: &String) -> Option<AnyValueEnum<'ctx>> {
+    fn get_from_environment(&self, name: &str) -> Option<AnyValueEnum<'ctx>> {
         match self.ml_context.local_environments.get(name) {
             Some(v) => Some(*v),
             None => self
@@ -106,31 +106,29 @@ impl<'ctx> CodeGen<'ctx> {
         self.ml_context.local_environments.insert(name, value);
     }
 
-    fn get_struct_field_index_by_name(&self, m: &MLType, n: &str) -> Option<u32> {
+    fn get_struct_by_ml_type(&self, m: &MLValueType) -> Option<&MLStruct> {
         match m {
-            MLType::Value(m) => match m {
-                MLValueType::Struct(type_name) => match self.ml_context.get_struct(&type_name) {
-                    None => {
-                        eprintln!("Type {:?} dose not defined.", type_name);
-                        None
-                    }
-                    Some(s) => match s.fields.iter().position(|f| f.name == n) {
-                        None => {
-                            eprintln!("field '{:?}' dose not found in {:?}", n, type_name);
-                            None
-                        }
-                        Some(i) => Some(i as u32),
-                    },
-                },
-                p => {
-                    eprintln!("Invalid type '{:?}'", p);
-                    None
-                }
-            },
-            MLType::Function(f) => {
-                eprintln!("Invalid type '{:?}'", f);
+            MLValueType::Struct(type_name) => self.ml_context.get_struct(type_name),
+            p => {
+                eprintln!("Invalid type '{:?}'", p);
                 None
             }
+        }
+    }
+
+    fn get_struct_field_index_by_name(&self, m: &MLValueType, n: &str) -> Option<u32> {
+        match self.get_struct_by_ml_type(m) {
+            None => {
+                eprintln!("Type {:?} dose not defined.", m);
+                None
+            }
+            Some(s) => match s.fields.iter().position(|f| f.name == n) {
+                None => {
+                    eprintln!("field '{:?}' dose not found in {:?}", n, m);
+                    None
+                }
+                Some(i) => Some(i as u32),
+            },
         }
     }
 
@@ -153,19 +151,15 @@ impl<'ctx> CodeGen<'ctx> {
     }
 
     pub fn name_expr(&self, n: MLName) -> AnyValueEnum<'ctx> {
-        match self.get_from_environment(&n.name) {
-            None => {
-                panic!("Can not resolve name `{}`", n.name)
-            }
-            Some(n) => n,
-        }
+        self.get_from_environment(&n.name)
+            .unwrap_or_else(|| panic!("Can not resolve name `{}`", n.name))
     }
 
-    pub fn literal(&self, l: MLLiteral) -> AnyValueEnum<'ctx> {
-        match l {
-            MLLiteral::Integer { value, type_ } => {
+    pub fn literal(&mut self, l: MLLiteral) -> AnyValueEnum<'ctx> {
+        match l.kind {
+            MLLiteralKind::Integer(value) => {
                 let i: u64 = value.parse().unwrap();
-                let int_type = match type_ {
+                let int_type = match l.type_ {
                     MLValueType::Primitive(name) => match name {
                         MLPrimitiveType::Int8 | MLPrimitiveType::UInt8 => self.context.i8_type(),
                         MLPrimitiveType::Int16 | MLPrimitiveType::UInt16 => self.context.i16_type(),
@@ -183,9 +177,9 @@ impl<'ctx> CodeGen<'ctx> {
                 };
                 int_type.const_int(i, false).as_any_value_enum()
             }
-            MLLiteral::FloatingPoint { value, type_ } => {
+            MLLiteralKind::FloatingPoint(value) => {
                 let f: f64 = value.parse().unwrap();
-                let float_type = match type_ {
+                let float_type = match l.type_ {
                     MLValueType::Primitive(name) => match name {
                         MLPrimitiveType::Float => self.context.f32_type(),
                         MLPrimitiveType::Double => self.context.f64_type(),
@@ -195,7 +189,7 @@ impl<'ctx> CodeGen<'ctx> {
                 };
                 float_type.const_float(f).as_any_value_enum()
             }
-            MLLiteral::String { value, type_: _ } => unsafe {
+            MLLiteralKind::String(value) => unsafe {
                 let str = self
                     .builder
                     .build_global_string(value.as_ref(), value.as_str());
@@ -205,26 +199,48 @@ impl<'ctx> CodeGen<'ctx> {
                         .build_bitcast(str.as_pointer_value(), i8_ptr_type, value.as_str());
                 str.as_any_value_enum()
             },
-            MLLiteral::Boolean { value, type_: _ } => {
+            MLLiteralKind::Boolean(value) => {
                 let b: bool = value.parse().unwrap();
                 let bool_type = self.context.bool_type();
                 bool_type
                     .const_int(if b { 1 } else { 0 }, false)
                     .as_any_value_enum()
             }
-            MLLiteral::Null { type_ } => {
-                let ty = self.ml_type_to_type(type_);
+            MLLiteralKind::Null => {
+                let ty = self.ml_type_to_type(l.type_);
                 let ty = BasicTypeEnum::try_from(ty).unwrap();
                 let ptr_ty = ty.ptr_type(AddressSpace::Generic);
                 ptr_ty.const_null().as_any_value_enum()
             }
-            MLLiteral::Struct { type_ } => {
-                let struct_type = self.module.get_struct_type(&*match type_ {
+            MLLiteralKind::Struct(fields) => {
+                let struct_type = self.module.get_struct_type(match &l.type_ {
                     MLValueType::Struct(name) => name,
                     p => panic!("Invalid Struct Literal {:?}", p),
                 });
                 let struct_type = struct_type.unwrap();
-                struct_type.const_zero().as_any_value_enum()
+                if fields.iter().all(|(_, y)| y.is_primitive_literal()) {
+                    let f = fields
+                        .into_iter()
+                        .map(|(_, e)| BasicValueEnum::try_from(self.expr(e)).unwrap())
+                        .collect::<Vec<_>>();
+                    struct_type.const_named_struct(&f).as_any_value_enum()
+                } else {
+                    let s = struct_type.const_zero();
+                    let s = self.builder.build_alloca(s.get_type(), "s_tmp");
+                    for (name, expr) in fields.into_iter() {
+                        let idx = self.get_struct_field_index_by_name(&l.type_, &name);
+                        let f_idx = self
+                            .builder
+                            .build_struct_gep(s, idx.unwrap(), &name)
+                            .unwrap();
+                        let expr_type = expr.type_().into_value_type();
+                        let expr = self.expr(expr);
+                        let expr = self.load_if_pointer_value(expr, &expr_type);
+                        let expr = BasicValueEnum::try_from(expr).unwrap();
+                        self.builder.build_store(f_idx, expr);
+                    }
+                    s.as_any_value_enum()
+                }
             }
         }
     }
@@ -548,7 +564,7 @@ impl<'ctx> CodeGen<'ctx> {
 
     pub fn member(&mut self, m: MLMember) -> AnyValueEnum<'ctx> {
         let field_index = self
-            .get_struct_field_index_by_name(&m.target.type_(), &m.name)
+            .get_struct_field_index_by_name(&m.target.type_().into_value_type(), &m.name)
             .unwrap();
         let target = match self.expr(*m.target) {
             AnyValueEnum::PointerValue(p) => p,
@@ -656,20 +672,20 @@ impl<'ctx> CodeGen<'ctx> {
 
     pub fn return_expr(&mut self, r: MLReturn) -> AnyValueEnum<'ctx> {
         let v = match r.value {
-            Some(e) => match *e {
+            Some(e) => Some(match *e {
                 MLExpr::Name(name) => {
                     let n_type = name.type_.clone().into_value_type();
                     let n = self.name_expr(name);
-                    Some(BasicValueEnum::try_from(self.load_if_pointer_value(n, &n_type)).unwrap())
+                    BasicValueEnum::try_from(self.load_if_pointer_value(n, &n_type)).unwrap()
                 }
-                MLExpr::PrimitiveSubscript(_) | MLExpr::Member(_) => {
+                MLExpr::PrimitiveSubscript(_) | MLExpr::Member(_) | MLExpr::Literal(_) => {
                     let s_type = e.type_().into_value_type();
                     let s = self.expr(*e);
                     let s = self.load_if_pointer_value(s, &s_type);
-                    Some(BasicValueEnum::try_from(s).unwrap())
+                    BasicValueEnum::try_from(s).unwrap()
                 }
-                _ => Some(BasicValueEnum::try_from(self.expr(*e)).unwrap()),
-            },
+                e => BasicValueEnum::try_from(self.expr(e)).unwrap(),
+            }),
             None => None,
         };
 
@@ -921,7 +937,6 @@ impl<'ctx> CodeGen<'ctx> {
 
     pub fn fun(&mut self, f: MLFun) -> AnyValueEnum<'ctx> {
         let MLFun {
-            modifiers,
             name,
             arg_defs,
             return_type,

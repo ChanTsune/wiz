@@ -1,4 +1,4 @@
-use crate::syntax::declaration::fun_syntax::{ArgDefListSyntax, FunBody, FunSyntax};
+use crate::syntax::declaration::fun_syntax::{FunBody, FunSyntax};
 use crate::syntax::declaration::TypeAnnotationSyntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
@@ -33,7 +33,6 @@ impl Syntax for StructBodySyntax {
 pub enum StructPropertySyntax {
     StoredProperty(StoredPropertySyntax),
     ComputedProperty,
-    Init(InitializerSyntax),
     Deinit(DeinitializerSyntax),
     Method(FunSyntax),
 }
@@ -45,9 +44,6 @@ impl Syntax for StructPropertySyntax {
                 StructPropertySyntax::StoredProperty(s.with_leading_trivia(trivia))
             }
             StructPropertySyntax::ComputedProperty => StructPropertySyntax::ComputedProperty,
-            StructPropertySyntax::Init(i) => {
-                StructPropertySyntax::Init(i.with_leading_trivia(trivia))
-            }
             StructPropertySyntax::Deinit(d) => {
                 StructPropertySyntax::Deinit(d.with_leading_trivia(trivia))
             }
@@ -63,9 +59,6 @@ impl Syntax for StructPropertySyntax {
                 StructPropertySyntax::StoredProperty(s.with_trailing_trivia(trivia))
             }
             StructPropertySyntax::ComputedProperty => StructPropertySyntax::ComputedProperty,
-            StructPropertySyntax::Init(i) => {
-                StructPropertySyntax::Init(i.with_trailing_trivia(trivia))
-            }
             StructPropertySyntax::Deinit(d) => {
                 StructPropertySyntax::Deinit(d.with_trailing_trivia(trivia))
             }
@@ -97,31 +90,6 @@ impl Syntax for StoredPropertySyntax {
             mutability_keyword: self.mutability_keyword,
             name: self.name,
             type_: self.type_.with_trailing_trivia(trivia),
-        }
-    }
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct InitializerSyntax {
-    pub init_keyword: TokenSyntax,
-    pub args: ArgDefListSyntax,
-    pub body: FunBody,
-}
-
-impl Syntax for InitializerSyntax {
-    fn with_leading_trivia(self, trivia: Trivia) -> Self {
-        Self {
-            init_keyword: self.init_keyword.with_leading_trivia(trivia),
-            args: self.args,
-            body: self.body,
-        }
-    }
-
-    fn with_trailing_trivia(self, trivia: Trivia) -> Self {
-        Self {
-            init_keyword: self.init_keyword,
-            args: self.args,
-            body: self.body.with_trailing_trivia(trivia),
         }
     }
 }

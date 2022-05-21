@@ -4,7 +4,7 @@ use crate::high_level_ir::type_checker::error::CheckerError;
 use crate::high_level_ir::type_resolver::arena::ResolverArena;
 use crate::high_level_ir::type_resolver::context::StructKind;
 use crate::high_level_ir::typed_decl::{
-    TypedDecl, TypedExtension, TypedFun, TypedFunBody, TypedProtocol, TypedStruct, TypedVar,
+    TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedProtocol, TypedStruct, TypedVar,
 };
 use crate::high_level_ir::typed_expr::{
     TypedArray, TypedBinOp, TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLambda,
@@ -12,6 +12,7 @@ use crate::high_level_ir::typed_expr::{
 };
 use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
 use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
+use crate::high_level_ir::typed_type::Package;
 use wiz_session::Session;
 
 #[derive(Debug)]
@@ -33,18 +34,21 @@ impl<'s> TypeChecker<'s> {
     }
 
     fn file(&mut self, typed_file: &TypedFile) {
-        typed_file.body.iter().for_each(|d| self.decl(d))
+        typed_file
+            .body
+            .iter()
+            .for_each(|d| self.decl(&d.kind, &d.package))
     }
 
-    fn decl(&mut self, decl: &TypedDecl) {
+    fn decl(&mut self, decl: &TypedDeclKind, package: &Package) {
         match decl {
-            TypedDecl::Var(v) => self.variable(v),
-            TypedDecl::Fun(f) => self.function(f),
-            TypedDecl::Struct(s) => self.struct_(s),
-            TypedDecl::Class => todo!(),
-            TypedDecl::Enum => todo!(),
-            TypedDecl::Protocol(p) => self.protocol(p),
-            TypedDecl::Extension(e) => self.extension(e),
+            TypedDeclKind::Var(v) => self.variable(v),
+            TypedDeclKind::Fun(f) => self.function(f),
+            TypedDeclKind::Struct(s) => self.struct_(s, package),
+            TypedDeclKind::Class => todo!(),
+            TypedDeclKind::Enum => todo!(),
+            TypedDeclKind::Protocol(p) => self.protocol(p),
+            TypedDeclKind::Extension(e) => self.extension(e),
         }
     }
 
@@ -80,11 +84,8 @@ impl<'s> TypeChecker<'s> {
         }
     }
 
-    fn struct_(&mut self, typed_struct: &TypedStruct) {
-        let struct_info = self.arena.get_type(
-            &typed_struct.package.clone().into_resolved().names,
-            &typed_struct.name,
-        );
+    fn struct_(&mut self, typed_struct: &TypedStruct, package: &Package) {
+        let struct_info = self.arena.get_type(&package.names, &typed_struct.name);
 
         if let Some(struct_info) = struct_info {
             if struct_info.kind == StructKind::Struct {
@@ -103,13 +104,6 @@ impl<'s> TypeChecker<'s> {
         };
         typed_struct.computed_properties.iter().for_each(|_| {});
         typed_struct.stored_properties.iter().for_each(|_| {});
-        typed_struct
-            .initializers
-            .iter()
-            .for_each(|i| match &i.body {
-                TypedFunBody::Expr(e) => self.expression(e),
-                TypedFunBody::Block(b) => self.block(b),
-            });
         typed_struct.member_functions.iter().for_each(|i| {
             if let Some(body) = &i.body {
                 match body {
@@ -137,7 +131,7 @@ impl<'s> TypeChecker<'s> {
     fn statement(&mut self, typed_statement: &TypedStmt) {
         match typed_statement {
             TypedStmt::Expr(e) => self.expression(e),
-            TypedStmt::Decl(d) => self.decl(d),
+            TypedStmt::Decl(d) => self.decl(&d.kind, &d.package),
             TypedStmt::Assignment(a) => self.assignment_statement(a),
             TypedStmt::Loop(l) => self.loop_statement(l),
         }

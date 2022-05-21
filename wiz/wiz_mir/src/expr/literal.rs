@@ -1,3 +1,4 @@
+use crate::expr::MLExpr;
 use crate::format::Formatter;
 use crate::ml_node::MLNode;
 use crate::ml_type::MLValueType;
@@ -5,30 +6,42 @@ use std::fmt;
 use std::fmt::Write;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
-pub enum MLLiteral {
-    Integer { value: String, type_: MLValueType },
-    FloatingPoint { value: String, type_: MLValueType },
-    String { value: String, type_: MLValueType },
-    Boolean { value: String, type_: MLValueType },
-    Null { type_: MLValueType },
-    Struct { type_: MLValueType },
+pub enum MLLiteralKind {
+    Integer(String),
+    FloatingPoint(String),
+    String(String),
+    Boolean(String),
+    Null,
+    Struct(Vec<(String, MLExpr)>),
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct MLLiteral {
+    pub kind: MLLiteralKind,
+    pub type_: MLValueType,
 }
 
 impl MLNode for MLLiteral {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        match self {
-            MLLiteral::Integer { value, type_: _ } => f.write_str(value),
-            MLLiteral::FloatingPoint { value, type_: _ } => f.write_str(value),
-            MLLiteral::String { value, type_: _ } => {
+        match &self.kind {
+            MLLiteralKind::Integer(value) => f.write_str(value),
+            MLLiteralKind::FloatingPoint(value) => f.write_str(value),
+            MLLiteralKind::String(value) => {
                 f.write_char('"')?;
                 f.write_str(value)?;
                 f.write_char('"')
             }
-            MLLiteral::Boolean { value, type_: _ } => f.write_str(value),
-            MLLiteral::Null { type_: _ } => fmt::Result::Err(Default::default()),
-            MLLiteral::Struct { type_ } => {
-                type_.fmt(f)?;
-                f.write_str(" { }")
+            MLLiteralKind::Boolean(value) => f.write_str(value),
+            MLLiteralKind::Null => Err(Default::default()),
+            MLLiteralKind::Struct(fields) => {
+                self.type_.fmt(f)?;
+                f.write_char('(')?;
+                for field in fields {
+                    f.write_str(&field.0)?;
+                    f.write_char(':')?;
+                    field.1.fmt(f)?;
+                }
+                f.write_char(')')
             }
         }
     }

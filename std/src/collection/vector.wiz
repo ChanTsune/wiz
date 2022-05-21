@@ -3,10 +3,11 @@ struct UInt8Vector {
     var length: UInt64
     var capacity: UInt64
 
-    init() {
-        self.capacity = 0
-        self.ptr = malloc(0)
-        self.length = 0
+    fun new(): Self {
+        val ptr = malloc(0)
+        val capacity: UInt64 = 0
+        val length: UInt64 = 0
+        return Self(ptr: ptr, length: length, capacity: capacity)
     }
 
     fun isEmpty(&self): Bool {
@@ -100,12 +101,9 @@ struct UInt8Vector {
 }
 
 extension UInt8Vector: Clonable {
-    fun clone(&self): UInt8Vector {
-        var c = UInt8Vector.init()
-        c.ptr = malloc(self.length)
-        memcpy(c.ptr, self.ptr, self.length)
-        c.length = self.length
-        c.capacity = self.capacity
-        return c
+    fun clone(&self): Self {
+        val ptr = malloc(self.length)
+        memcpy(ptr, self.ptr, self.length)
+        return Self(ptr: ptr, length: self.length, capacity: self.capacity)
     }
 }

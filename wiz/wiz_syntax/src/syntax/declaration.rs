@@ -2,8 +2,7 @@ use crate::syntax::annotation::AnnotationsSyntax;
 pub use crate::syntax::declaration::extension_syntax::{ExtensionSyntax, ProtocolConformSyntax};
 use crate::syntax::declaration::fun_syntax::FunSyntax;
 pub use crate::syntax::declaration::properties_syntax::{
-    DeinitializerSyntax, InitializerSyntax, StoredPropertySyntax, StructBodySyntax,
-    StructPropertySyntax,
+    DeinitializerSyntax, StoredPropertySyntax, StructBodySyntax, StructPropertySyntax,
 };
 pub use crate::syntax::declaration::struct_syntax::StructSyntax;
 pub use crate::syntax::declaration::use_syntax::{

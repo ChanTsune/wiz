@@ -7,16 +7,19 @@ use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Clone)]
-pub struct NameEnvironment<'a> {
-    local_names: HashMap<String, EnvValue>,
+pub(crate) struct NameEnvironment<'a> {
+    local_stack: &'a StackedHashMap<String, EnvValue>,
     values: HashMap<String, HashSet<DeclarationId>>,
     arena: &'a ResolverArena,
 }
 
 impl<'a> NameEnvironment<'a> {
-    pub fn new(arena: &'a ResolverArena) -> Self {
+    pub fn new(
+        arena: &'a ResolverArena,
+        local_stack: &'a StackedHashMap<String, EnvValue>,
+    ) -> Self {
         Self {
-            local_names: Default::default(),
+            local_stack,
             values: Default::default(),
             arena,
         }
@@ -26,11 +29,6 @@ impl<'a> NameEnvironment<'a> {
     pub(crate) fn use_asterisk<T: ToString>(&mut self, namespace: &[T]) -> Option<()> {
         let ns_id = self.arena.resolve_namespace_from_root(namespace)?;
         let ns = self.arena.get_by_id(&ns_id).unwrap();
-        let ns = if let DeclarationItemKind::Namespace(ns) = ns {
-            ns
-        } else {
-            panic!("{:?}", ns)
-        };
         self.values.extend(ns.children().clone());
         Some(())
     }
@@ -49,16 +47,12 @@ impl<'a> NameEnvironment<'a> {
         }
     }
 
-    pub(crate) fn use_values_from_local(&mut self, local_stack: &StackedHashMap<String, EnvValue>) {
-        self.local_names.extend(local_stack.clone().into_map())
-    }
-
     pub(crate) fn get_type(
         &self,
         name_space: Vec<String>,
         type_name: &str,
     ) -> Option<&ResolverStruct> {
-        let maybe_type_parameter = match self.local_names.get(type_name) {
+        let maybe_type_parameter = match self.local_stack.get(type_name) {
             Some(EnvValue::Type(rs)) => Some(rs),
             _ => None,
         };
@@ -79,19 +73,19 @@ impl<'a> NameEnvironment<'a> {
         name: &str,
     ) -> Option<EnvValue> {
         if namespace.is_empty() {
-            let maybe_local_value = self.local_names.get(name).cloned();
+            let maybe_local_value = self.local_stack.get(name).cloned();
             match maybe_local_value {
                 None => {
                     let ids = self.values.get(name)?;
                     let ids = ids.iter().collect::<Vec<_>>();
                     let items = self.arena.get_by_ids(&ids)?;
                     if !items.is_empty() {
-                        if let DeclarationItemKind::Type(t) = items.first().unwrap() {
+                        if let DeclarationItemKind::Type(t) = &items.first().unwrap().kind {
                             return Some(EnvValue::from(t.clone()));
                         } else {
                             let mut values = HashSet::new();
                             for item in items {
-                                if let DeclarationItemKind::Value(v) = item {
+                                if let DeclarationItemKind::Value(v) = &item.kind {
                                     values.insert(v.clone());
                                 } else {
                                     None?
@@ -108,22 +102,20 @@ impl<'a> NameEnvironment<'a> {
             let ids = self.values.get(&namespace[0].to_string())?;
             let ids = ids.iter().copied().collect::<Vec<_>>();
             let parent_id = ids.first()?;
-            let id = self.arena.resolve_namespace(*parent_id, &namespace[1..])?;
+            let id = self
+                .arena
+                .resolve_declaration_id(*parent_id, &namespace[1..])?;
             let item = self.arena.get_by_id(&id)?;
-            let child = match item {
-                DeclarationItemKind::Namespace(ns) => ns.get_child(name),
-                DeclarationItemKind::Type(_) => panic!(),
-                DeclarationItemKind::Value(_) => panic!(),
-            }?;
+            let child = item.get_child(name)?;
             let child = child.iter().collect::<Vec<_>>();
             let items = self.arena.get_by_ids(&child)?;
             if !items.is_empty() {
-                if let DeclarationItemKind::Type(t) = items.first().unwrap() {
+                if let DeclarationItemKind::Type(t) = &items.first().unwrap().kind {
                     return Some(EnvValue::from(t.clone()));
                 } else {
                     let mut values = HashSet::new();
                     for item in items {
-                        if let DeclarationItemKind::Value(v) = item {
+                        if let DeclarationItemKind::Value(v) = &item.kind {
                             values.insert(v.clone());
                         } else {
                             None?

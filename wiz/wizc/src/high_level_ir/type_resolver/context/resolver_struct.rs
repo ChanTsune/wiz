@@ -11,18 +11,17 @@ pub(crate) struct ResolverTypeParam {
 pub enum StructKind {
     Struct,
     Protocol,
+    TypeParameter,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct ResolverStruct {
-    pub(crate) self_: TypedType, // TODO: remove this field
+    self_: TypedType, // TODO: remove this field
     pub(crate) namespace: Vec<String>,
-    pub(crate) name: String,
     pub(crate) kind: StructKind,
     pub(crate) stored_properties: HashMap<String, TypedType>,
     pub(crate) computed_properties: HashMap<String, TypedType>,
     pub(crate) member_functions: HashMap<String, TypedType>,
-    pub(crate) static_functions: HashMap<String, TypedType>,
     pub(crate) conformed_protocols: HashSet<String>,
     pub(crate) type_parameters: Option<HashMap<String, ResolverTypeParam>>,
 }
@@ -31,13 +30,11 @@ impl ResolverStruct {
     pub fn new(self_: TypedType, kind: StructKind) -> Self {
         Self {
             namespace: self_.package().into_resolved().names,
-            name: self_.name(),
             self_,
             kind,
             stored_properties: Default::default(),
             computed_properties: Default::default(),
             member_functions: Default::default(),
-            static_functions: Default::default(),
             conformed_protocols: Default::default(),
             type_parameters: None, // TODO: fill type params
         }
@@ -55,7 +52,11 @@ impl ResolverStruct {
         }
     }
 
+    pub(crate) fn self_type(&self) -> TypedType {
+        self.self_.clone()
+    }
+
     pub fn is_generic(&self) -> bool {
-        self.type_parameters != None
+        self.type_parameters.is_some()
     }
 }

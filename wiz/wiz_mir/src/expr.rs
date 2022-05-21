@@ -8,7 +8,7 @@ pub use self::array::MLArray;
 pub use self::block::MLBlock;
 pub use self::call::{MLCall, MLCallArg};
 pub use self::if_expr::MLIf;
-pub use self::literal::MLLiteral;
+pub use self::literal::{MLLiteral, MLLiteralKind};
 use crate::format::Formatter;
 use crate::ml_node::MLNode;
 use crate::ml_type::{MLType, MLValueType};
@@ -102,7 +102,7 @@ impl MLExpr {
     pub fn type_(&self) -> MLType {
         match self {
             MLExpr::Name(n) => n.type_.clone(),
-            MLExpr::Literal(l) => MLType::Value(l.type_()),
+            MLExpr::Literal(l) => MLType::Value(l.type_.clone()),
             MLExpr::Call(c) => MLType::Value(c.type_.clone()),
             MLExpr::PrimitiveBinOp(b) => MLType::Value(b.type_.clone()),
             MLExpr::PrimitiveUnaryOp(b) => MLType::Value(b.type_.clone()),
@@ -116,18 +116,12 @@ impl MLExpr {
             MLExpr::Block(b) => b.r#type(),
         }
     }
-}
 
-impl MLLiteral {
-    pub fn type_(&self) -> MLValueType {
-        match self {
-            MLLiteral::Integer { value: _, type_ } => type_.clone(),
-            MLLiteral::FloatingPoint { value: _, type_ } => type_.clone(),
-            MLLiteral::String { value: _, type_ } => type_.clone(),
-            MLLiteral::Boolean { value: _, type_ } => type_.clone(),
-            MLLiteral::Null { type_ } => type_.clone(),
-            MLLiteral::Struct { type_ } => type_.clone(),
+    pub fn is_primitive_literal(&self) -> bool {
+        if let MLExpr::Literal(MLLiteral { kind, .. }) = &self {
+            return !matches!(kind, MLLiteralKind::Struct(_));
         }
+        false
     }
 }
 

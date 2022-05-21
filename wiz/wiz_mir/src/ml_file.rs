@@ -81,7 +81,6 @@ mod tests {
         let ml_file = MLFile {
             name: "test".to_string(),
             body: vec![MLDecl::Fun(MLFun {
-                modifiers: vec![],
                 name: "a".to_string(),
                 arg_defs: vec![MLArgDef {
                     name: "b".to_string(),
@@ -99,7 +98,6 @@ mod tests {
         let ml_file = MLFile {
             name: "test".to_string(),
             body: vec![MLDecl::Fun(MLFun {
-                modifiers: vec![],
                 name: "a".to_string(),
                 arg_defs: vec![
                     MLArgDef {
@@ -126,7 +124,6 @@ mod tests {
         let ml_file = MLFile {
             name: "test".to_string(),
             body: vec![MLDecl::Fun(MLFun {
-                modifiers: vec![],
                 name: "a".to_string(),
                 arg_defs: vec![MLArgDef {
                     name: "b".to_string(),
