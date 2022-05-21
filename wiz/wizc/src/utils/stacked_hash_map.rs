@@ -36,8 +36,8 @@ where
 
     pub(crate) fn get<Q: ?Sized>(&self, k: &Q) -> Option<&V>
     where
-    K: Borrow<Q>,
-    Q: Hash + Eq,
+        K: Borrow<Q>,
+        Q: Hash + Eq,
     {
         for env in self.map_stack.iter().rev() {
             if let Some(t) = env.get(k) {
