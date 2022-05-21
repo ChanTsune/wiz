@@ -16,12 +16,6 @@ impl From<(Vec<String>, TypedType)> for EnvValue {
     }
 }
 
-impl From<Namespace> for EnvValue {
-    fn from(ns: Namespace) -> Self {
-        Self::NameSpace(ns)
-    }
-}
-
 impl From<HashSet<(Vec<String>, TypedType)>> for EnvValue {
     fn from(typed_type: HashSet<(Vec<String>, TypedType)>) -> Self {
         Self::Value(typed_type)
