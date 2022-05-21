@@ -54,7 +54,7 @@ impl<'ctx> MLContext<'ctx> {
         self.struct_environment.insert(s.name.clone(), s);
     }
 
-    pub fn get_struct(&self, name: &String) -> Option<&MLStruct> {
+    pub fn get_struct(&self, name: &str) -> Option<&MLStruct> {
         self.struct_environment.get(name)
     }
 }
@@ -92,7 +92,7 @@ impl<'ctx> CodeGen<'ctx> {
         }
     }
 
-    fn get_from_environment(&self, name: &String) -> Option<AnyValueEnum<'ctx>> {
+    fn get_from_environment(&self, name: &str) -> Option<AnyValueEnum<'ctx>> {
         match self.ml_context.local_environments.get(name) {
             Some(v) => Some(*v),
             None => self
