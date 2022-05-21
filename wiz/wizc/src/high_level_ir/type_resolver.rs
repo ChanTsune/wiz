@@ -8,7 +8,7 @@ pub mod result;
 #[cfg(test)]
 mod tests;
 
-use crate::high_level_ir::type_resolver::context::{ResolverContext, ResolverStruct, StructKind};
+use crate::high_level_ir::type_resolver::context::ResolverContext;
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::typed_decl::{
@@ -26,8 +26,7 @@ use crate::high_level_ir::typed_stmt::{
     TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
 };
 use crate::high_level_ir::typed_type::{
-    Package, TypedArgType, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType,
-    TypedValueType,
+    Package, TypedArgType, TypedFunctionType, TypedType, TypedValueType,
 };
 use crate::high_level_ir::typed_type_constraint::TypedTypeConstraint;
 use wiz_session::Session;
