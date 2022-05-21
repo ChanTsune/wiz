@@ -126,15 +126,7 @@ impl ResolverContext {
     {
         let value = EnvValue::from(value);
         if self.local_stack.stack_is_empty() {
-            match value {
-                EnvValue::NameSpace(_) => todo!(),
-                EnvValue::Value(v) => {
-                    for t in v {
-                        self.register_value(&name, t.1, Default::default());
-                    }
-                }
-                EnvValue::Type(_) => todo!(),
-            };
+            panic!("illegal function call {}:{:?}", name, value);
         } else {
             self.local_stack.insert(name, value);
         }
