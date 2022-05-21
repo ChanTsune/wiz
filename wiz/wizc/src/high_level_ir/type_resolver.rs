@@ -128,9 +128,14 @@ impl<'s> TypeResolver<'s> {
                 );
             }
             TypedDeclKind::Fun(f) => {
+                let id = self
+                    .context
+                    .register_value(&f.name, TypedType::noting(), d.annotations.clone())
+                    .unwrap();
                 let fun = self.preload_fun(f)?;
                 self.context
-                    .register_value(&fun.name, fun.type_().unwrap(), d.annotations.clone());
+                    .update_value(&id, fun.type_().unwrap())
+                    .unwrap();
             }
             TypedDeclKind::Struct(s) => {
                 let _ = self.preload_struct(s)?;

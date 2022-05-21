@@ -407,6 +407,16 @@ impl ResolverContext {
             .register_value(&self.current_namespace_id, name, ty, annotation)
     }
 
+    pub(crate) fn update_value(&mut self, id: &DeclarationId, ty: TypedType) -> Option<()> {
+        let item = self.arena.get_mut_by_id(id)?;
+        if let DeclarationItemKind::Value((ns, _)) = &item.kind {
+            item.kind = DeclarationItemKind::Value((ns.clone(), ty));
+            Some(())
+        } else {
+            None
+        }
+    }
+
     pub(crate) fn register_namespace(
         &mut self,
         name: &str,
