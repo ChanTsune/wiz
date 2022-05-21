@@ -112,7 +112,7 @@ impl AstLowering {
 
     pub(crate) fn annotations(&self, a: Option<AnnotationsSyntax>) -> TypedAnnotations {
         match a {
-            None => TypedAnnotations::new(),
+            None => TypedAnnotations::default(),
             Some(a) => TypedAnnotations::from(
                 a.elements
                     .into_iter()

@@ -11,12 +11,6 @@ impl TypedAnnotations {
     }
 }
 
-impl TypedAnnotations {
-    pub(crate) fn new() -> Self {
-        Self::default()
-    }
-}
-
 impl From<Vec<String>> for TypedAnnotations {
     fn from(annotations: Vec<String>) -> Self {
         Self { annotations }
