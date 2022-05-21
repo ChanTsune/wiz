@@ -90,9 +90,7 @@ impl<'s> TypeResolver<'s> {
             TypedSourceSet::File(f) => self.preload_file(f),
             TypedSourceSet::Dir { name, items } => {
                 self.context.push_name_space(name);
-                items
-                    .iter()
-                    .try_for_each(|i| self.preload_source_set(i))?;
+                items.iter().try_for_each(|i| self.preload_source_set(i))?;
                 self.context.pop_name_space();
                 Ok(())
             }
