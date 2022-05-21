@@ -91,7 +91,7 @@ impl<'s> TypeResolver<'s> {
             TypedSourceSet::Dir { name, items } => {
                 self.context.push_name_space(name);
                 items
-                    .into_iter()
+                    .iter()
                     .try_for_each(|i| self.preload_source_set(i))?;
                 self.context.pop_name_space();
                 Ok(())
@@ -196,8 +196,8 @@ impl<'s> TypeResolver<'s> {
             ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
         })?;
         let this_type = rs.self_type();
-        self.context.set_current_type(this_type.clone());
-        for stored_property in stored_properties.into_iter() {
+        self.context.set_current_type(this_type);
+        for stored_property in stored_properties.iter() {
             let type_ = self.context.full_type_name(&stored_property.type_)?;
             let rs = self.context.current_type_mut().ok_or_else(|| {
                 ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
@@ -205,7 +205,7 @@ impl<'s> TypeResolver<'s> {
             rs.stored_properties
                 .insert(stored_property.name.clone(), type_);
         }
-        for computed_property in computed_properties.into_iter() {
+        for computed_property in computed_properties.iter() {
             let type_ = self.context.full_type_name(&computed_property.type_)?;
             let rs = self.context.current_type_mut().ok_or_else(|| {
                 ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
@@ -214,7 +214,7 @@ impl<'s> TypeResolver<'s> {
                 .insert(computed_property.name.clone(), type_);
         }
 
-        for member_function in member_functions.into_iter() {
+        for member_function in member_functions.iter() {
             let type_ = self
                 .context
                 .full_type_name(&member_function.type_().unwrap())?;
@@ -238,7 +238,7 @@ impl<'s> TypeResolver<'s> {
             computed_properties,
             member_functions,
         } = e;
-        let this_type = self.context.full_type_name(&name)?;
+        let this_type = self.context.full_type_name(name)?;
         self.context.set_current_type(this_type.clone());
         for computed_property in computed_properties {
             let type_ = self.context.full_type_name(&computed_property.type_)?;
@@ -295,7 +295,7 @@ impl<'s> TypeResolver<'s> {
         })?;
         let this_type = rs.self_type();
         self.context.set_current_type(this_type);
-        for computed_property in computed_properties.into_iter() {
+        for computed_property in computed_properties.iter() {
             let type_ = self.context.full_type_name(&computed_property.type_)?;
             let rs = self.context.current_type_mut().ok_or_else(|| {
                 ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
@@ -303,7 +303,7 @@ impl<'s> TypeResolver<'s> {
             rs.computed_properties
                 .insert(computed_property.name.clone(), type_);
         }
-        for member_function in member_functions.into_iter() {
+        for member_function in member_functions.iter() {
             let type_ = self
                 .context
                 .full_type_name(&member_function.type_().unwrap())?;

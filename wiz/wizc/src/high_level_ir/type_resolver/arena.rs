@@ -299,7 +299,7 @@ impl ResolverArena {
         ty: TypedType,
         annotation: TypedAnnotations,
     ) -> Option<DeclarationId> {
-        let vec_namespace = self.resolve_fully_qualified_name(&namespace);
+        let vec_namespace = self.resolve_fully_qualified_name(namespace);
         self.register(
             namespace,
             name,
