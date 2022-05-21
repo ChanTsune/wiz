@@ -51,9 +51,9 @@ impl ResolverContext {
             .resolve_fully_qualified_name(&self.current_namespace_id)
     }
 
-    pub fn push_name_space(&mut self, name: String) {
+    pub fn push_name_space(&mut self, name: &str) {
         let c = self.arena.get_by_id(&self.current_namespace_id).unwrap();
-        let ids = c.get_child(&name).unwrap();
+        let ids = c.get_child(name).unwrap();
         let ids = ids.iter().copied().collect::<Vec<_>>();
         let id = ids.first().unwrap();
         self.current_namespace_id = *id;

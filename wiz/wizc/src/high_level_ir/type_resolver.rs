@@ -55,8 +55,8 @@ impl<'s> TypeResolver<'s> {
         match s {
             TypedSourceSet::File(f) => self.detect_type(f),
             TypedSourceSet::Dir { name, items } => {
-                self.context.register_namespace(&name, Default::default());
-                self.context.push_name_space(name.clone());
+                self.context.register_namespace(name, Default::default());
+                self.context.push_name_space(name);
                 items
                     .iter()
                     .try_for_each(|i| self.detect_type_from_source_set(i))?;
@@ -68,7 +68,7 @@ impl<'s> TypeResolver<'s> {
 
     pub fn detect_type(&mut self, f: &TypedFile) -> Result<()> {
         self.context.register_namespace(&f.name, Default::default());
-        self.context.push_name_space(f.name.clone());
+        self.context.push_name_space(&f.name);
         for d in f.body.iter() {
             match &d.kind {
                 TypedDeclKind::Struct(s) => {
@@ -91,7 +91,7 @@ impl<'s> TypeResolver<'s> {
         match s {
             TypedSourceSet::File(f) => self.preload_file(f),
             TypedSourceSet::Dir { name, items } => {
-                self.context.push_name_space(name.clone());
+                self.context.push_name_space(name);
                 items
                     .into_iter()
                     .try_for_each(|i| self.preload_source_set(i))?;
@@ -102,7 +102,7 @@ impl<'s> TypeResolver<'s> {
     }
 
     pub fn preload_file(&mut self, f: &TypedFile) -> Result<()> {
-        self.context.push_name_space(f.name.clone());
+        self.context.push_name_space(&f.name);
         for u in f.uses.iter() {
             self.context.use_name_space(u.package.names.clone());
         }
@@ -195,7 +195,7 @@ impl<'s> TypeResolver<'s> {
             computed_properties,
             member_functions,
         } = s;
-        self.context.push_name_space(name.clone());
+        self.context.push_name_space(name);
         let rs = self.context.current_type().ok_or_else(|| {
             ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
         })?;
@@ -293,7 +293,7 @@ impl<'s> TypeResolver<'s> {
             computed_properties,
             member_functions,
         } = p;
-        self.context.push_name_space(name.clone());
+        self.context.push_name_space(name);
         let rs = self.context.current_type().ok_or_else(|| {
             ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
         })?;
@@ -326,7 +326,7 @@ impl<'s> TypeResolver<'s> {
         Ok(match s {
             TypedSourceSet::File(f) => TypedSourceSet::File(self.file(f)?),
             TypedSourceSet::Dir { name, items } => {
-                self.context.push_name_space(name.clone());
+                self.context.push_name_space(&name);
                 let items = items
                     .into_iter()
                     .map(|i| self.source_set(i))
@@ -338,7 +338,7 @@ impl<'s> TypeResolver<'s> {
     }
 
     pub fn file(&mut self, f: TypedFile) -> Result<TypedFile> {
-        self.context.push_name_space(f.name.clone());
+        self.context.push_name_space(&f.name);
         for u in f.uses.iter() {
             self.context.use_name_space(u.package.names.clone());
         }
@@ -495,7 +495,7 @@ impl<'s> TypeResolver<'s> {
             computed_properties, // TODO
             member_functions,
         } = s;
-        self.context.push_name_space(name.clone());
+        self.context.push_name_space(&name);
         let rs = self.context.current_type().unwrap();
         let this_type = rs.self_type();
         self.context.set_current_type(this_type);
@@ -582,7 +582,7 @@ impl<'s> TypeResolver<'s> {
     }
 
     fn typed_protocol(&mut self, p: TypedProtocol) -> Result<TypedProtocol> {
-        self.context.push_name_space(p.name.clone());
+        self.context.push_name_space(&p.name);
         let rs = self.context.current_type().unwrap();
         self.context.set_current_type(rs.self_type());
         let result = TypedProtocol {
