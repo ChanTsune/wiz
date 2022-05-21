@@ -135,11 +135,7 @@ impl ResolverContext {
                 EnvValue::NameSpace(_) => todo!(),
                 EnvValue::Value(v) => {
                     for t in v {
-                        self.register_value(
-                            &name,
-                            t.1,
-                            Default::default(),
-                        );
+                        self.register_value(&name, t.1, Default::default());
                     }
                 }
                 EnvValue::Type(_) => todo!(),
