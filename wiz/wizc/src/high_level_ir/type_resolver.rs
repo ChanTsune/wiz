@@ -55,6 +55,7 @@ impl<'s> TypeResolver<'s> {
         match s {
             TypedSourceSet::File(f) => self.detect_type(f),
             TypedSourceSet::Dir { name, items } => {
+                self.context.register_namespace(&name, Default::default());
                 self.context.push_name_space(name.clone());
                 items
                     .iter()
@@ -66,6 +67,7 @@ impl<'s> TypeResolver<'s> {
     }
 
     pub fn detect_type(&mut self, f: &TypedFile) -> Result<()> {
+        self.context.register_namespace(&f.name, Default::default());
         self.context.push_name_space(f.name.clone());
         for d in f.body.iter() {
             match &d.kind {
