@@ -135,8 +135,7 @@ impl ResolverContext {
                 EnvValue::NameSpace(_) => todo!(),
                 EnvValue::Value(v) => {
                     for t in v {
-                        self.arena.register_value(
-                            &self.current_namespace,
+                        self.register_value(
                             &name,
                             t.1,
                             Default::default(),
