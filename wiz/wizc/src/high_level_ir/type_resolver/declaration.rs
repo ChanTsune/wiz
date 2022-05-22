@@ -67,5 +67,5 @@ impl DeclarationItem {
 pub enum DeclarationItemKind {
     Namespace,
     Type(ResolverStruct),
-    Value((Vec<String> /* namespace */, TypedType)),
+    Value(TypedType),
 }

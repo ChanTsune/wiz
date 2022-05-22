@@ -227,7 +227,13 @@ impl ResolverContext {
         })?;
         match env_value {
             EnvValue::Value(t_set) => Self::resolve_overload(&t_set, type_annotation)
-                .map(|(ns, t)| (t, TypedPackage::Resolved(Package::from(&ns))))
+                .map(|(id, t)| (t, TypedPackage::Resolved({
+                    if id != DeclarationId::DUMMY {
+                        Package::from(&self.arena.resolve_fully_qualified_name(&id))
+                    } else {
+                        Package::new()
+                    }
+                })))
                 .ok_or_else(|| {
                     ResolverError::from(format!(
                         "Dose not match any overloaded function `{}`",
@@ -245,9 +251,9 @@ impl ResolverContext {
     }
 
     fn resolve_overload(
-        type_set: &HashSet<(Vec<String>, TypedType)>,
+        type_set: &HashSet<(DeclarationId, TypedType)>,
         type_annotation: Option<TypedType>,
-    ) -> Option<(Vec<String>, TypedType)> {
+    ) -> Option<(DeclarationId, TypedType)> {
         for t in type_set {
             if type_set.len() == 1 {
                 return Some(t.clone());
@@ -414,8 +420,8 @@ impl ResolverContext {
 
     pub(crate) fn update_value(&mut self, id: &DeclarationId, ty: TypedType) -> Option<()> {
         let item = self.arena.get_mut_by_id(id)?;
-        if let DeclarationItemKind::Value((ns, _)) = &item.kind {
-            item.kind = DeclarationItemKind::Value((ns.clone(), ty));
+        if let DeclarationItemKind::Value(_) = &item.kind {
+            item.kind = DeclarationItemKind::Value(ty);
             Some(())
         } else {
             None

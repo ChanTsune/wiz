@@ -4,18 +4,18 @@ use std::collections::HashSet;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum EnvValue {
-    Value(HashSet<(Vec<String>, TypedType)>),
+    Value(HashSet<(DeclarationId, TypedType)>),
     Type(DeclarationId),
 }
 
-impl From<(Vec<String>, TypedType)> for EnvValue {
-    fn from(typed_type: (Vec<String>, TypedType)) -> Self {
+impl From<(DeclarationId, TypedType)> for EnvValue {
+    fn from(typed_type: (DeclarationId, TypedType)) -> Self {
         Self::Value(HashSet::from([typed_type]))
     }
 }
 
-impl From<HashSet<(Vec<String>, TypedType)>> for EnvValue {
-    fn from(typed_type: HashSet<(Vec<String>, TypedType)>) -> Self {
+impl From<HashSet<(DeclarationId, TypedType)>> for EnvValue {
+    fn from(typed_type: HashSet<(DeclarationId, TypedType)>) -> Self {
         Self::Value(typed_type)
     }
 }

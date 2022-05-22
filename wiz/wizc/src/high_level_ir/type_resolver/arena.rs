@@ -313,7 +313,7 @@ impl ResolverArena {
             DeclarationItem::new(
                 annotation,
                 name,
-                DeclarationItemKind::Value((vec_namespace, ty)),
+                DeclarationItemKind::Value(ty),
                 Some(*namespace),
             ),
         )

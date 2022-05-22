@@ -29,6 +29,7 @@ use crate::high_level_ir::typed_type::{
 };
 use crate::high_level_ir::typed_type_constraint::TypedTypeConstraint;
 use wiz_session::Session;
+use crate::high_level_ir::declaration_id::DeclarationId;
 
 #[derive(Debug)]
 pub(crate) struct TypeResolver<'s> {
@@ -163,7 +164,7 @@ impl<'s> TypeResolver<'s> {
             .map(|a| {
                 let a = self.typed_arg_def(a.clone())?;
                 self.context
-                    .register_to_env(a.name.clone(), (vec![], a.type_.clone()));
+                    .register_to_env(a.name.clone(), (DeclarationId::DUMMY, a.type_.clone()));
                 Ok(a)
             })
             .collect::<Result<Vec<_>>>()?;
@@ -457,7 +458,7 @@ impl<'s> TypeResolver<'s> {
             .map(|a| {
                 let a = self.typed_arg_def(a)?;
                 self.context
-                    .register_to_env(a.name.clone(), (vec![], a.type_.clone()));
+                    .register_to_env(a.name.clone(), (DeclarationId::DUMMY, a.type_.clone()));
                 Ok(a)
             })
             .collect::<Result<Vec<_>>>()?;
@@ -529,7 +530,7 @@ impl<'s> TypeResolver<'s> {
             .map(|a| {
                 let a = self.typed_arg_def(a)?;
                 self.context
-                    .register_to_env(a.name.clone(), (vec![], a.type_.clone()));
+                    .register_to_env(a.name.clone(), (DeclarationId::DUMMY, a.type_.clone()));
                 Ok(a)
             })
             .collect::<Result<Vec<_>>>()?;
@@ -1069,7 +1070,7 @@ impl<'s> TypeResolver<'s> {
                     self.context.register_to_env(
                         v.name.clone(),
                         (
-                            vec![],
+                            DeclarationId::DUMMY,
                             v.type_.clone().ok_or_else(|| {
                                 ResolverError::from("Cannot resolve variable type")
                             })?,
