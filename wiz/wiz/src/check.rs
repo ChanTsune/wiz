@@ -5,7 +5,9 @@ use std::env;
 use std::error::Error;
 use std::path::PathBuf;
 
-pub(crate) fn check_command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn Error>> {
+pub(crate) const COMMAND_NAME: &str = "check";
+
+pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn Error>> {
     let manifest_path = options.value_of("manifest-path");
     let manifest_path = if let Some(manifest_path) = manifest_path {
         PathBuf::from(manifest_path).parent().unwrap().to_path_buf()
