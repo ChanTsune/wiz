@@ -1,10 +1,12 @@
 use crate::constant::MANIFEST_FILE_NAME;
 use crate::core::manifest::{Manifest, PackageInfo};
+use crate::core::workspace::{construct_workspace_from, Workspace};
 use std::collections::BTreeMap;
+use std::env;
 use std::error::Error;
 use std::fs::{create_dir_all, File};
 use std::io::{BufWriter, Write};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 pub mod dep;
 pub mod error;
@@ -12,9 +14,9 @@ pub mod manifest;
 pub mod workspace;
 
 pub(crate) fn create_project(path: &Path, project_name: &str) -> Result<(), Box<dyn Error>> {
-    let mut path = path.join(MANIFEST_FILE_NAME);
+    let manifest_path = path.join(MANIFEST_FILE_NAME);
     manifest::write(
-        &path,
+        &manifest_path,
         &Manifest {
             package: PackageInfo {
                 name: project_name.to_string(),
@@ -28,12 +30,12 @@ pub(crate) fn create_project(path: &Path, project_name: &str) -> Result<(), Box<
             },
         },
     )?;
-    path.pop();
 
-    path.push("src");
-    create_dir_all(&path)?;
-    path.push("main.wiz");
-    let mut main_wiz = BufWriter::new(File::create(&path)?);
+    let src_dir = path.join("src");
+    create_dir_all(&src_dir)?;
+
+    let main_wiz_path = src_dir.join("main.wiz");
+    let mut main_wiz = BufWriter::new(File::create(&main_wiz_path)?);
     writeln!(
         main_wiz,
         r#"
@@ -42,4 +44,13 @@ fun main() {{
 }}"#
     )?;
     Ok(())
+}
+
+pub(crate) fn load_project(path: Option<&str>) -> Result<Workspace, Box<dyn Error>> {
+    let manifest_path = if let Some(manifest_path) = path {
+        PathBuf::from(manifest_path).parent().unwrap().to_path_buf()
+    } else {
+        env::current_dir()?
+    };
+    construct_workspace_from(&manifest_path)
 }

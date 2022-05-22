@@ -5,7 +5,9 @@ use clap::ArgMatches;
 use std::env::current_dir;
 use std::error::Error;
 
-pub(crate) fn init_command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn Error>> {
+pub(crate) const COMMAND_NAME: &str = "init";
+
+pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn Error>> {
     let current = current_dir()?;
     let project_name = current.iter().last();
     if !options.is_present("overwrite") && current.read_dir()?.next().is_some() {

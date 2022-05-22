@@ -1,4 +1,5 @@
 use crate::constant::MANIFEST_FILE_NAME;
+use crate::core::error::CliError;
 use crate::core::manifest;
 use crate::core::manifest::Manifest;
 use std::env;
@@ -38,7 +39,10 @@ pub fn resolve_manifest_dependencies(
             }
         }
         if !resolved {
-            println!("Could not find dependency {} {}", name, version);
+            return Err(Box::new(CliError::from(format!(
+                "Could not find dependency {} {}",
+                name, version
+            ))));
         }
     }
     Ok(ResolvedDependencyTree {

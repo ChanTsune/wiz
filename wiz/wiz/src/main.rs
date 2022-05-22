@@ -6,11 +6,8 @@ mod external_subcommand;
 mod init;
 mod new;
 mod subcommand;
+mod test;
 
-use crate::build::build_command;
-use crate::check::check_command;
-use crate::init::init_command;
-use crate::new::new_command;
 use ansi_term::Color;
 use clap::{crate_version, Arg, Command};
 use std::error::Error;
@@ -23,12 +20,12 @@ fn cli() -> Result<(), Box<dyn Error>> {
         .arg_required_else_help(true)
         .allow_external_subcommands(true)
         .subcommand(
-            Command::new("new")
+            Command::new(new::COMMAND_NAME)
                 .about("Create a new wiz package at <path>")
                 .arg(Arg::new("path").required(true)),
         )
         .subcommand(
-            Command::new("init")
+            Command::new(init::COMMAND_NAME)
                 .about("Create a new wiz package in an current directory")
                 .arg(
                     Arg::new("overwrite")
@@ -37,7 +34,7 @@ fn cli() -> Result<(), Box<dyn Error>> {
                 ),
         )
         .subcommand(
-            Command::new("build")
+            Command::new(build::COMMAND_NAME)
                 .about("Compile the current package")
                 .arg(Arg::new("target-dir").help("Directory for all generated artifacts"))
                 .arg(
@@ -54,7 +51,7 @@ fn cli() -> Result<(), Box<dyn Error>> {
                 ),
         )
         .subcommand(
-            Command::new("check")
+            Command::new(check::COMMAND_NAME)
                 .about("Check the current package")
                 .arg(
                     Arg::new("manifest")
@@ -68,6 +65,14 @@ fn cli() -> Result<(), Box<dyn Error>> {
                         .help("Path to the manifest file"),
                 ),
         )
+        .subcommand(
+            Command::new(test::COMMAND_NAME).about("Run the tests").arg(
+                Arg::new("manifest-path")
+                    .long("manifest-path")
+                    .takes_value(true)
+                    .help("Path to the manifest file"),
+            ),
+        )
         .arg(
             Arg::new("quite")
                 .short('q')
@@ -77,23 +82,14 @@ fn cli() -> Result<(), Box<dyn Error>> {
         );
     let matches = app.get_matches();
     match matches.subcommand() {
-        Some((cmd, option)) if cmd == "new" => {
-            new_command(cmd, option)?;
-        }
-        Some((cmd, option)) if cmd == "init" => {
-            init_command(cmd, option)?;
-        }
-        Some((cmd, option)) if cmd == "build" => {
-            build_command(cmd, option)?;
-        }
-        Some((cmd, option)) if cmd == "check" => {
-            check_command(cmd, option)?;
-        }
-        Some((cmd, option)) => {
-            external_subcommand::try_execute(cmd, option)?;
-        }
+        Some((new::COMMAND_NAME, option)) => new::command(new::COMMAND_NAME, option),
+        Some((init::COMMAND_NAME, option)) => init::command(init::COMMAND_NAME, option),
+        Some((build::COMMAND_NAME, option)) => build::command(build::COMMAND_NAME, option),
+        Some((check::COMMAND_NAME, option)) => check::command(check::COMMAND_NAME, option),
+        Some((test::COMMAND_NAME, option)) => test::command(test::COMMAND_NAME, option),
+        Some((cmd, option)) => external_subcommand::try_execute(cmd, option),
         _ => panic!(),
-    }
+    }?;
     Ok(())
 }
 

@@ -1,6 +1,7 @@
 use crate::core::dep::{resolve_manifest_dependencies, ResolvedDependencyTree};
 use crate::core::error::CliError;
-use crate::core::workspace::{construct_workspace_from, Workspace};
+use crate::core::load_project;
+use crate::core::workspace::Workspace;
 use clap::ArgMatches;
 use std::collections::BTreeSet;
 use std::env;
@@ -8,17 +9,14 @@ use std::error::Error;
 use std::fs::create_dir_all;
 use std::path::PathBuf;
 
-pub(crate) fn build_command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn Error>> {
+pub(crate) const COMMAND_NAME: &str = "build";
+
+pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn Error>> {
     let manifest_path = options.value_of("manifest-path");
-    let manifest_path = if let Some(manifest_path) = manifest_path {
-        PathBuf::from(manifest_path).parent().unwrap().to_path_buf()
-    } else {
-        env::current_dir()?
-    };
 
-    let ws = construct_workspace_from(&manifest_path)?;
+    let ws = load_project(manifest_path)?;
 
-    let resolved_dependencies = resolve_manifest_dependencies(&manifest_path, &ws.get_manifest()?)?;
+    let resolved_dependencies = resolve_manifest_dependencies(&ws.cws, &ws.get_manifest()?)?;
 
     println!("{:?}", resolved_dependencies);
 
