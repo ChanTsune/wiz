@@ -227,13 +227,18 @@ impl ResolverContext {
         })?;
         match env_value {
             EnvValue::Value(t_set) => Self::resolve_overload(&t_set, type_annotation)
-                .map(|(id, t)| (t, TypedPackage::Resolved({
-                    if id != DeclarationId::DUMMY {
-                        Package::from(&self.arena.resolve_fully_qualified_name(&id))
-                    } else {
-                        Package::new()
-                    }
-                })))
+                .map(|(id, t)| {
+                    (
+                        t,
+                        TypedPackage::Resolved({
+                            if id != DeclarationId::DUMMY {
+                                Package::from(&self.arena.resolve_fully_qualified_name(&id))
+                            } else {
+                                Package::new()
+                            }
+                        }),
+                    )
+                })
                 .ok_or_else(|| {
                     ResolverError::from(format!(
                         "Dose not match any overloaded function `{}`",
