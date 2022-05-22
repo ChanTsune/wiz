@@ -10,7 +10,6 @@ mod subcommand;
 use crate::build::build_command;
 use crate::check::check_command;
 use crate::init::init_command;
-use crate::new::new_command;
 use ansi_term::Color;
 use clap::{crate_version, Arg, Command};
 use std::error::Error;
@@ -23,7 +22,7 @@ fn cli() -> Result<(), Box<dyn Error>> {
         .arg_required_else_help(true)
         .allow_external_subcommands(true)
         .subcommand(
-            Command::new("new")
+            Command::new(new::COMMAND_NAME)
                 .about("Create a new wiz package at <path>")
                 .arg(Arg::new("path").required(true)),
         )
@@ -77,8 +76,8 @@ fn cli() -> Result<(), Box<dyn Error>> {
         );
     let matches = app.get_matches();
     match matches.subcommand() {
-        Some((cmd, option)) if cmd == "new" => {
-            new_command(cmd, option)?;
+        Some((cmd, option)) if cmd == new::COMMAND_NAME => {
+            new::command(cmd, option)?;
         }
         Some((cmd, option)) if cmd == "init" => {
             init_command(cmd, option)?;
