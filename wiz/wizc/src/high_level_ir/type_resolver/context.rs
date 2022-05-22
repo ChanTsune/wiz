@@ -234,10 +234,13 @@ impl ResolverContext {
                         name
                     ))
                 }),
-            EnvValue::Type(rs) => Ok((
-                TypedType::Type(Box::new(rs.self_type())),
-                rs.self_type().package(),
-            )),
+            EnvValue::Type(id) => {
+                let rs = self.arena.get_type_by_id(&id).unwrap();
+                Ok((
+                    TypedType::Type(Box::new(rs.self_type())),
+                    rs.self_type().package(),
+                ))
+            },
         }
     }
 
@@ -325,17 +328,20 @@ impl ResolverContext {
                     ))
                 })?;
                 match env_value {
-                    EnvValue::Type(rs) => TypedNamedValueType {
-                        package: TypedPackage::Resolved(Package::from(&rs.namespace)),
-                        name: type_.name.clone(),
-                        type_args: match &type_.type_args {
-                            None => None,
-                            Some(v) => Some(
-                                v.iter()
-                                    .map(|i| self.full_type_name(i))
-                                    .collect::<Result<Vec<_>>>()?,
-                            ),
-                        },
+                    EnvValue::Type(id) => {
+                        let rs = self.arena.get_type_by_id(&id).unwrap();
+                        TypedNamedValueType {
+                            package: TypedPackage::Resolved(Package::from(&rs.namespace)),
+                            name: type_.name.clone(),
+                            type_args: match &type_.type_args {
+                                None => None,
+                                Some(v) => Some(
+                                    v.iter()
+                                        .map(|i| self.full_type_name(i))
+                                        .collect::<Result<Vec<_>>>()?,
+                                ),
+                            },
+                        }
                     },
                     _ => panic!(),
                 }

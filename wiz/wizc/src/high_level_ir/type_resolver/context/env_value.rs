@@ -1,11 +1,11 @@
-use crate::high_level_ir::type_resolver::context::ResolverStruct;
 use crate::high_level_ir::typed_type::TypedType;
 use std::collections::HashSet;
+use crate::high_level_ir::declaration_id::DeclarationId;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum EnvValue {
     Value(HashSet<(Vec<String>, TypedType)>),
-    Type(ResolverStruct),
+    Type(DeclarationId),
 }
 
 impl From<(Vec<String>, TypedType)> for EnvValue {
@@ -20,8 +20,8 @@ impl From<HashSet<(Vec<String>, TypedType)>> for EnvValue {
     }
 }
 
-impl From<ResolverStruct> for EnvValue {
-    fn from(s: ResolverStruct) -> Self {
+impl From<DeclarationId> for EnvValue {
+    fn from(s: DeclarationId) -> Self {
         Self::Type(s)
     }
 }

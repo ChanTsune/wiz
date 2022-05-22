@@ -213,6 +213,13 @@ impl ResolverArena {
         self.declarations.get_mut(&id)
     }
 
+    pub(crate) fn get_type_by_id(&self, id: &DeclarationId) -> Option<&ResolverStruct> {
+        match &self.get_by_id(id)?.kind {
+            DeclarationItemKind::Type(rs) => Some(rs),
+            DeclarationItemKind::Namespace | DeclarationItemKind::Value(_) => None,
+        }
+    }
+
     pub(crate) fn register_struct(
         &mut self,
         namespace: &DeclarationId,

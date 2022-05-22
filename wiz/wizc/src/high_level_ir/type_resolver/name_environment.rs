@@ -53,12 +53,12 @@ impl<'a> NameEnvironment<'a> {
         type_name: &str,
     ) -> Option<&ResolverStruct> {
         let maybe_type_parameter = match self.local_stack.get(type_name) {
-            Some(EnvValue::Type(rs)) => Some(rs),
+            Some(EnvValue::Type(id)) => Some(id),
             _ => None,
         };
         let n = match maybe_type_parameter {
             None => self.arena.get_type(&name_space, type_name),
-            Some(tp) => Some(tp),
+            Some(id) => self.arena.get_type_by_id(id),
         };
         n
     }
@@ -80,8 +80,8 @@ impl<'a> NameEnvironment<'a> {
                     let ids = ids.iter().collect::<Vec<_>>();
                     let items = self.arena.get_by_ids(&ids)?;
                     if !items.is_empty() {
-                        if let DeclarationItemKind::Type(t) = &items.first().unwrap().kind {
-                            return Some(EnvValue::from(t.clone()));
+                        if let DeclarationItemKind::Type(_) = &items.first().unwrap().kind {
+                            return Some(EnvValue::from(**ids.first().unwrap()));
                         } else {
                             let mut values = HashSet::new();
                             for item in items {
@@ -110,8 +110,8 @@ impl<'a> NameEnvironment<'a> {
             let child = child.iter().collect::<Vec<_>>();
             let items = self.arena.get_by_ids(&child)?;
             if !items.is_empty() {
-                if let DeclarationItemKind::Type(t) = &items.first().unwrap().kind {
-                    return Some(EnvValue::from(t.clone()));
+                if let DeclarationItemKind::Type(_) = &items.first().unwrap().kind {
+                    return Some(EnvValue::from(**child.first().unwrap()));
                 } else {
                     let mut values = HashSet::new();
                     for item in items {
