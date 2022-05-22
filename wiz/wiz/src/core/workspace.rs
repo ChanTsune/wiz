@@ -4,6 +4,7 @@ use crate::core::manifest::{self, Manifest};
 use std::error::Error;
 use std::path::{Path, PathBuf};
 
+#[derive(Debug)]
 pub(crate) struct Workspace {
     pub(crate) cws: PathBuf,
     pub(crate) manifest_path: PathBuf,
