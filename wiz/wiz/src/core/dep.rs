@@ -4,6 +4,7 @@ use crate::core::manifest::Manifest;
 use std::env;
 use std::error::Error;
 use std::path::{Path, PathBuf};
+use crate::core::error::CliError;
 
 #[derive(Debug, Clone)]
 pub struct ResolvedDependencyTree {
@@ -38,7 +39,7 @@ pub fn resolve_manifest_dependencies(
             }
         }
         if !resolved {
-            println!("Could not find dependency {} {}", name, version);
+            return Err(Box::new(CliError::from(format!("Could not find dependency {} {}", name, version))));
         }
     }
     Ok(ResolvedDependencyTree {
