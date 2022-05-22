@@ -17,8 +17,8 @@ use crate::high_level_ir::typed_type::{
     Package, TypedArgType, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType,
     TypedValueType,
 };
-use wiz_utils::StackedHashMap;
 use std::collections::{HashMap, HashSet};
+use wiz_utils::StackedHashMap;
 
 #[derive(Debug, Clone)]
 pub struct ResolverContext {
