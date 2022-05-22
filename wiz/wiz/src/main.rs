@@ -6,6 +6,7 @@ mod external_subcommand;
 mod init;
 mod new;
 mod subcommand;
+mod test;
 
 use ansi_term::Color;
 use clap::{crate_version, Arg, Command};
@@ -64,6 +65,14 @@ fn cli() -> Result<(), Box<dyn Error>> {
                         .help("Path to the manifest file"),
                 ),
         )
+        .subcommand(
+            Command::new(test::COMMAND_NAME).about("Run the tests").arg(
+                Arg::new("manifest-path")
+                    .long("manifest-path")
+                    .takes_value(true)
+                    .help("Path to the manifest file"),
+            ),
+        )
         .arg(
             Arg::new("quite")
                 .short('q')
@@ -77,6 +86,7 @@ fn cli() -> Result<(), Box<dyn Error>> {
         Some((init::COMMAND_NAME, option)) => init::command(init::COMMAND_NAME, option),
         Some((build::COMMAND_NAME, option)) => build::command(build::COMMAND_NAME, option),
         Some((check::COMMAND_NAME, option)) => check::command(check::COMMAND_NAME, option),
+        Some((test::COMMAND_NAME, option)) => test::command(test::COMMAND_NAME, option),
         Some((cmd, option)) => external_subcommand::try_execute(cmd, option),
         _ => panic!(),
     }?;

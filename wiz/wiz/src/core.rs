@@ -1,10 +1,12 @@
 use crate::constant::MANIFEST_FILE_NAME;
 use crate::core::manifest::{Manifest, PackageInfo};
+use crate::core::workspace::{construct_workspace_from, Workspace};
 use std::collections::BTreeMap;
+use std::env;
 use std::error::Error;
 use std::fs::{create_dir_all, File};
 use std::io::{BufWriter, Write};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 pub mod dep;
 pub mod error;
@@ -42,4 +44,13 @@ fun main() {{
 }}"#
     )?;
     Ok(())
+}
+
+pub(crate) fn load_project(path: Option<&str>) -> Result<Workspace, Box<dyn Error>> {
+    let manifest_path = if let Some(manifest_path) = path {
+        PathBuf::from(manifest_path).parent().unwrap().to_path_buf()
+    } else {
+        env::current_dir()?
+    };
+    construct_workspace_from(&manifest_path)
 }
