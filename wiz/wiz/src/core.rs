@@ -12,9 +12,9 @@ pub mod manifest;
 pub mod workspace;
 
 pub(crate) fn create_project(path: &Path, project_name: &str) -> Result<(), Box<dyn Error>> {
-    let mut path = path.join(MANIFEST_FILE_NAME);
+    let manifest_path = path.join(MANIFEST_FILE_NAME);
     manifest::write(
-        &path,
+        &manifest_path,
         &Manifest {
             package: PackageInfo {
                 name: project_name.to_string(),
@@ -28,12 +28,12 @@ pub(crate) fn create_project(path: &Path, project_name: &str) -> Result<(), Box<
             },
         },
     )?;
-    path.pop();
 
-    path.push("src");
-    create_dir_all(&path)?;
-    path.push("main.wiz");
-    let mut main_wiz = BufWriter::new(File::create(&path)?);
+    let src_dir = path.join("src");
+    create_dir_all(&src_dir)?;
+
+    let main_wiz_path = src_dir.join("main.wiz");
+    let mut main_wiz = BufWriter::new(File::create(&main_wiz_path)?);
     writeln!(
         main_wiz,
         r#"
