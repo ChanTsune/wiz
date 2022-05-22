@@ -1,7 +1,7 @@
 use crate::core::dep::{resolve_manifest_dependencies, ResolvedDependencyTree};
 use crate::core::error::CliError;
 use crate::core::load_project;
-use crate::core::workspace::{construct_workspace_from, Workspace};
+use crate::core::workspace::Workspace;
 use clap::ArgMatches;
 use std::collections::BTreeSet;
 use std::env;

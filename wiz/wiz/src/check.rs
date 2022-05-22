@@ -1,10 +1,7 @@
 use crate::core::dep::resolve_manifest_dependencies;
 use crate::core::load_project;
-use crate::core::workspace::construct_workspace_from;
 use clap::ArgMatches;
-use std::env;
 use std::error::Error;
-use std::path::PathBuf;
 
 pub(crate) const COMMAND_NAME: &str = "check";
 
