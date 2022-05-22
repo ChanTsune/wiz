@@ -1,6 +1,6 @@
+use crate::core::load_project;
 use clap::ArgMatches;
 use std::error::Error;
-use crate::core::load_project;
 
 pub(crate) const COMMAND_NAME: &str = "test";
 
