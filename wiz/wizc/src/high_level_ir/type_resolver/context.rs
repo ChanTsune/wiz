@@ -240,7 +240,7 @@ impl ResolverContext {
                     TypedType::Type(Box::new(rs.self_type())),
                     rs.self_type().package(),
                 ))
-            },
+            }
         }
     }
 
@@ -342,7 +342,7 @@ impl ResolverContext {
                                 ),
                             },
                         }
-                    },
+                    }
                     _ => panic!(),
                 }
             }

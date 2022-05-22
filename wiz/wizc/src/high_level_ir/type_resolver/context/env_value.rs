@@ -1,6 +1,6 @@
+use crate::high_level_ir::declaration_id::DeclarationId;
 use crate::high_level_ir::typed_type::TypedType;
 use std::collections::HashSet;
-use crate::high_level_ir::declaration_id::DeclarationId;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum EnvValue {
