@@ -1,4 +1,4 @@
-use crate::utils::stacked_hash_map::StackedHashMap;
+use wiz_utils::StackedHashMap;
 use either::Either;
 use inkwell::builder::Builder;
 use inkwell::context::Context;

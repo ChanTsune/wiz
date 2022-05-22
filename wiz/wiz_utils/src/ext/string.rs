@@ -1,4 +1,4 @@
-pub(crate) trait StringExt {
+pub trait StringExt {
     fn remove_first(&self) -> Self;
     fn remove_last(&self) -> Self;
 }
@@ -31,7 +31,7 @@ impl StringExt for &str {
 
 #[cfg(test)]
 mod tests {
-    use crate::ext::string::StringExt;
+    use super::StringExt;
 
     #[test]
     fn test_remove_first() {

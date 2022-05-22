@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::hash::{BuildHasher, Hash};
 
 #[derive(Debug, Clone, Default)]
-pub(crate) struct StackedHashMap<K, V, S = RandomState> {
+pub struct StackedHashMap<K, V, S = RandomState> {
     map_stack: Vec<HashMap<K, V, S>>,
 }
 
@@ -13,28 +13,28 @@ where
     K: Hash + Eq,
     S: BuildHasher,
 {
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         StackedHashMap { map_stack: vec![] }
     }
 
-    pub(crate) fn from(m: HashMap<K, V, S>) -> Self {
+    pub fn from(m: HashMap<K, V, S>) -> Self {
         StackedHashMap { map_stack: vec![m] }
     }
 
-    pub(crate) fn push(&mut self, m: HashMap<K, V, S>) {
+    pub fn push(&mut self, m: HashMap<K, V, S>) {
         self.map_stack.push(m);
     }
 
-    pub(crate) fn pop(&mut self) -> Option<HashMap<K, V, S>> {
+    pub fn pop(&mut self) -> Option<HashMap<K, V, S>> {
         self.map_stack.pop()
     }
 
-    pub(crate) fn insert(&mut self, k: K, v: V) -> Option<V> {
+    pub fn insert(&mut self, k: K, v: V) -> Option<V> {
         let last_index = self.map_stack.len() - 1;
         self.map_stack[last_index].insert(k, v)
     }
 
-    pub(crate) fn get<Q: ?Sized>(&self, k: &Q) -> Option<&V>
+    pub fn get<Q: ?Sized>(&self, k: &Q) -> Option<&V>
     where
         K: Borrow<Q>,
         Q: Hash + Eq,
@@ -47,7 +47,7 @@ where
         None
     }
 
-    pub(crate) fn stack_is_empty(&self) -> bool {
+    pub fn stack_is_empty(&self) -> bool {
         self.map_stack.is_empty()
     }
 }
@@ -57,14 +57,14 @@ where
     K: Hash + Eq,
     S: BuildHasher + Default,
 {
-    pub(crate) fn into_map(self) -> HashMap<K, V, S> {
+    pub fn into_map(self) -> HashMap<K, V, S> {
         self.map_stack.into_iter().flatten().collect()
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::utils::stacked_hash_map::StackedHashMap;
+    use super::StackedHashMap;
     use std::collections::HashMap;
 
     #[test]

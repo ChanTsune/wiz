@@ -8,6 +8,7 @@ members = [
     "wiz_session",
     "wiz_syntax",
     "wiz_syntax_parser",
+    "wiz_utils",
     "wizc",
     "wizc_cli",
 ]

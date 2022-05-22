@@ -17,7 +17,7 @@ use crate::high_level_ir::typed_type::{
     Package, TypedArgType, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType,
     TypedValueType,
 };
-use crate::utils::stacked_hash_map::StackedHashMap;
+use wiz_utils::StackedHashMap;
 use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Clone)]

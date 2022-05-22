@@ -1,7 +1,5 @@
 use std::path::Path;
 
-pub(crate) mod stacked_hash_map;
-
 pub(crate) fn path_string_to_page_name(path: String) -> String {
     let path = Path::new(&path);
     path.file_stem()
@@ -13,7 +11,7 @@ pub(crate) fn path_string_to_page_name(path: String) -> String {
 
 #[cfg(test)]
 mod tests {
-    use crate::utils::path_string_to_page_name;
+    use super::path_string_to_page_name;
 
     #[test]
     fn test_path_string_to_page_name() {

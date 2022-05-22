@@ -18,7 +18,6 @@ use wiz_syntax_parser::parser::wiz::{parse_from_file_path, read_package_from_pat
 use wizc_cli::{BuildType, Config};
 
 mod constants;
-mod ext;
 mod high_level_ir;
 mod llvm_ir;
 mod middle_level_ir;
