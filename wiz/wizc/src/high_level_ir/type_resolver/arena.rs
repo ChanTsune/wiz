@@ -519,7 +519,7 @@ mod tests {
         );
 
         let ns_id = arena
-            .resolve_namespace_from_root(&[child_namespace_name, grandchildren_namespace_name]);
+            .resolve_declaration_id_from_root(&[child_namespace_name, grandchildren_namespace_name]);
 
         assert_eq!(
             arena.resolve_fully_qualified_name(&ns_id.unwrap()),
