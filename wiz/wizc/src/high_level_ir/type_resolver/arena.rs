@@ -335,12 +335,12 @@ mod tests {
     use crate::high_level_ir::typed_type::{TypedArgType, TypedFunctionType, TypedType};
 
     #[test]
-    fn resolve_root_namespace() {
+    fn resolve_declaration_id_from_root() {
         let arena = ResolverArena::default();
 
         let namespace_name: [&str; 0] = [];
 
-        let ns_id = arena.resolve_namespace_from_root(&namespace_name);
+        let ns_id = arena.resolve_declaration_id_from_root(&namespace_name);
         assert_eq!(DeclarationId::ROOT, ns_id.unwrap())
     }
 
