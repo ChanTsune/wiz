@@ -176,7 +176,7 @@ impl ResolverArena {
                 .chain([name.to_string()])
                 .collect::<Vec<_>>(),
         )?;
-        self.declarations.get_mut(&id)
+        self.get_mut_by_id(&id)
     }
 
     pub(crate) fn get_type_by_id(&self, id: &DeclarationId) -> Option<&ResolverStruct> {
