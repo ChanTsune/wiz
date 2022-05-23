@@ -352,7 +352,7 @@ mod tests {
         let std_namespace_id =
             arena.register_namespace(&DeclarationId::ROOT, std_namespace_name, Default::default());
 
-        let ns_id = arena.resolve_namespace_from_root(&[std_namespace_name]);
+        let ns_id = arena.resolve_declaration_id_from_root(&[std_namespace_name]);
 
         assert_eq!(std_namespace_id.unwrap(), ns_id.unwrap());
     }
@@ -377,7 +377,7 @@ mod tests {
         );
 
         let ns_id = arena
-            .resolve_namespace_from_root(&[child_namespace_name, grandchildren_namespace_name]);
+            .resolve_declaration_id_from_root(&[child_namespace_name, grandchildren_namespace_name]);
 
         assert_eq!(std_collections_id, ns_id);
     }
