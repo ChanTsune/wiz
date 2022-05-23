@@ -13,7 +13,7 @@ jobs:
         run: cargo fmt --manifest-path wiz/Cargo.toml --all
       - id: get_email
         name: get auther email
-        run: echo "::set-output name=auther_email::$(git log HEAD^ -n 1 --format='%ce')"
+        run: echo "::set-output name=auther_email::$(git log -n 1 --format='%ce')"
       - name: Commit changes
         uses: EndBug/add-and-commit@v9
         with:
