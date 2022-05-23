@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -eu
+
 WIZ_HOME=${WIZ_HOME:-"$HOME/.wiz"}
 BIN_DIR="$WIZ_HOME/bin"
 LIB_DIR="$WIZ_HOME/lib"
@@ -39,7 +41,7 @@ main() {
 build_install() {
     TMP="$(pwd)"
     cd "wiz"
-    cargo build --bin "$1" --release || err "$1 build failed"
+    cargo build --bin "$1" --release
     cp "target/release/$1" "$BIN_DIR/$1"
     cd "$TMP"
 }
