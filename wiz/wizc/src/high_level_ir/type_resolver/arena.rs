@@ -61,39 +61,6 @@ impl Default for ResolverArena {
 }
 
 impl ResolverArena {
-    pub(crate) fn resolve_namespace<T: ToString>(
-        &self,
-        parent: DeclarationId,
-        namespace: &[T],
-    ) -> Option<DeclarationId> {
-        if namespace.is_empty() {
-            Some(parent)
-        } else {
-            let name = namespace.get(0).unwrap();
-            let parent = self.declarations.get(&parent)?;
-            if parent.is_namespace() {
-                self.resolve_namespace(
-                    *parent
-                        .get_child(&name.to_string())?
-                        .into_iter()
-                        .collect::<Vec<_>>()
-                        .first()
-                        .unwrap(),
-                    &namespace[1..],
-                )
-            } else {
-                None
-            }
-        }
-    }
-
-    pub(crate) fn resolve_namespace_from_root<T: ToString>(
-        &self,
-        namespace: &[T],
-    ) -> Option<DeclarationId> {
-        self.resolve_namespace(DeclarationId::ROOT, namespace)
-    }
-
     fn register(
         &mut self,
         namespace: &DeclarationId,
@@ -150,11 +117,10 @@ impl ResolverArena {
         if item_name.is_empty() {
             Some(parent_id)
         } else {
-            let name = item_name.get(0).unwrap();
             let parent = self.declarations.get(&parent_id)?;
             self.resolve_declaration_id(
                 *parent
-                    .get_child(&name.to_string())?
+                    .get_child(&item_name[0].to_string())?
                     .into_iter()
                     .collect::<Vec<_>>()
                     .first()
