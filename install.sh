@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -eu
+
 WIZ_HOME=${WIZ_HOME:-"$HOME/.wiz"}
 BIN_DIR="$WIZ_HOME/bin"
 LIB_DIR="$WIZ_HOME/lib"
