@@ -4,16 +4,21 @@ on:
 
 jobs:
   format:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: echo rust version
+        run: rustc --version
       - name: run format
         run: cargo fmt --manifest-path wiz/Cargo.toml --all
+      - id: get_email
+        name: get auther email
+        run: echo "::set-output name=auther_email::$(git log -n 1 --format='%ce')"
       - name: Commit changes
         uses: EndBug/add-and-commit@v9
         with:
           author_name: GitHub Actions
-          author_email: 41658782+ChanTsune@users.noreply.github.com
+          author_email: "${{ steps.get_email.outputs.auther_email }}"
           message: "Format commit"
           add: "wiz/*.rs"
         env:
