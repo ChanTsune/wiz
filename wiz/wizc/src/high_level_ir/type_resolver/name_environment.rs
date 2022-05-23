@@ -27,7 +27,7 @@ impl<'a> NameEnvironment<'a> {
 
     /// use [namespace]::*;
     pub(crate) fn use_asterisk<T: ToString>(&mut self, namespace: &[T]) -> Option<()> {
-        let ns_id = self.arena.resolve_namespace_from_root(namespace)?;
+        let ns_id = self.arena.resolve_declaration_id_from_root(namespace)?;
         let ns = self.arena.get_by_id(&ns_id).unwrap();
         self.values.extend(ns.children().clone());
         Some(())
