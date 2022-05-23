@@ -39,7 +39,7 @@ main() {
 build_install() {
     TMP="$(pwd)"
     cd "wiz"
-    cargo build --bin "$1" --release
+    cargo build --bin "$1" --release || err "$1 build failed"
     cp "target/release/$1" "$BIN_DIR/$1"
     cd "$TMP"
 }
