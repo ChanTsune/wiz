@@ -22,3 +22,8 @@ pub(crate) const UNIT: &str = "Unit"; // "unit";
 pub(crate) const NOTING: &str = "Noting"; // "noting";
 
 pub(crate) const STRING: &str = "str";
+
+pub(crate) mod annotation {
+    pub(crate) const BUILTIN: &str = "builtin";
+    pub(crate) const NO_MANGLE: &str = "no_mangle";
+}
