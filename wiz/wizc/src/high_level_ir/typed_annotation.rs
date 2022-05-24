@@ -11,8 +11,8 @@ impl TypedAnnotations {
     }
 }
 
-impl From<Vec<String>> for TypedAnnotations {
-    fn from(annotations: Vec<String>) -> Self {
-        Self { annotations }
+impl<T: ToString> From<Vec<T>> for TypedAnnotations {
+    fn from(annotations: Vec<T>) -> Self {
+        Self { annotations: annotations.iter().map(T::to_string).collect() }
     }
 }
