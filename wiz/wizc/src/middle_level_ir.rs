@@ -30,6 +30,7 @@ use wiz_mir::ml_decl::{MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, ML
 use wiz_mir::ml_file::MLFile;
 use wiz_mir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
 use wiz_mir::statement::{MLAssignmentStmt, MLLoopStmt, MLReturn, MLStmt};
+use crate::constants::annotation::NO_MANGLE;
 
 mod context;
 #[cfg(test)]
@@ -343,7 +344,7 @@ impl<'arena> HLIR2MLIR<'arena> {
             return_type,
         } = f;
         let package_mangled_name = self.package_name_mangling_(&package, &name);
-        let mangled_name = if annotations.has_annotate("no_mangle") {
+        let mangled_name = if annotations.has_annotate(NO_MANGLE) {
             name
         } else {
             let fun_arg_label_type_mangled_name = self.fun_arg_label_type_name_mangling(&arg_defs);
@@ -479,7 +480,7 @@ impl<'arena> HLIR2MLIR<'arena> {
             let package = t.package().into_resolved();
             let name = t.name();
             let has_no_mangle = if let Some(i) = self.arena.get(&package.names, &name) {
-                i.has_annotation("no_mangle")
+                i.has_annotation(NO_MANGLE)
             } else {
                 false
             };
@@ -506,7 +507,7 @@ impl<'arena> HLIR2MLIR<'arena> {
         } else {
             let package = n.package.clone().into_resolved();
             let has_no_mangle = if let Some(i) = self.arena.get(&package.names, &n.name) {
-                i.has_annotation("no_mangle")
+                i.has_annotation(NO_MANGLE)
             } else {
                 false
             };
