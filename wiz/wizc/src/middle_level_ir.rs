@@ -1,4 +1,5 @@
 use crate::constants;
+use crate::constants::annotation::NO_MANGLE;
 use crate::high_level_ir::type_resolver::arena::ResolverArena;
 use crate::high_level_ir::typed_annotation::TypedAnnotations;
 use crate::high_level_ir::typed_decl::{
@@ -30,7 +31,6 @@ use wiz_mir::ml_decl::{MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, ML
 use wiz_mir::ml_file::MLFile;
 use wiz_mir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
 use wiz_mir::statement::{MLAssignmentStmt, MLLoopStmt, MLReturn, MLStmt};
-use crate::constants::annotation::NO_MANGLE;
 
 mod context;
 #[cfg(test)]
