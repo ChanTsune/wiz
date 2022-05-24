@@ -25,7 +25,7 @@ impl Session {
         if let Some((start, duration)) = start {
             let time = now.duration_since(*start);
             duration.replace(time);
-            return time
+            return time;
         }
         Duration::default()
     }
