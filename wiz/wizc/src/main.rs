@@ -11,6 +11,7 @@ use std::error::Error;
 use std::io::Write;
 use std::path::PathBuf;
 use std::{env, fs, result};
+use std::iter::FromIterator;
 use wiz_session::Session;
 use wiz_syntax::syntax::file::SourceSet;
 use wiz_syntax_parser::parser;
@@ -24,9 +25,7 @@ mod middle_level_ir;
 mod utils;
 
 fn get_builtin_find_path() -> PathBuf {
-    let mut std_path = PathBuf::from(env!("HOME"));
-    std_path.extend(&[".wiz", "lib", "src"]);
-    std_path
+    PathBuf::from_iter([env!("HOME"), ".wiz", "lib", "src"])
 }
 
 fn get_find_paths() -> Vec<PathBuf> {
