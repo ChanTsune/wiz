@@ -1,6 +1,6 @@
 pub mod arena;
 pub mod context;
-mod declaration;
+pub mod declaration;
 pub mod error;
 mod name_environment;
 pub mod result;
