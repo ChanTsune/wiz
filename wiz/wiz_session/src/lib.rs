@@ -13,17 +13,21 @@ impl Session {
         Session::default()
     }
 
-    pub fn start(&mut self, id: &str) {
-        self.timers.insert(id.to_string(), (Instant::now(), None));
+    pub fn start(&mut self, id: &str) -> Instant {
+        let now = Instant::now();
+        self.timers.insert(id.to_string(), (now, None));
+        now
     }
 
-    pub fn stop(&mut self, id: &str) {
+    pub fn stop(&mut self, id: &str) -> Duration {
         let now = Instant::now();
         let start = self.timers.get_mut(id);
         if let Some((start, duration)) = start {
             let time = now.duration_since(*start);
             duration.replace(time);
+            return time
         }
+        Duration::default()
     }
 
     pub fn get_duration(&self, id: &str) -> Option<Duration> {
@@ -34,9 +38,10 @@ impl Session {
     }
 
     pub fn timer<T, F: FnOnce(&mut Self) -> T>(&mut self, name: &str, f: F) -> T {
-        let start = Instant::now();
+        self.start(name);
         let r = f(self);
-        println!("{}: {}ms", name, start.elapsed().as_millis());
+        let stop = self.stop(name);
+        println!("{}: {}ms", name, stop.as_millis());
         r
     }
 
