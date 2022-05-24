@@ -1,3 +1,4 @@
+use crate::constants::annotation::BUILTIN;
 use crate::high_level_ir::declaration_id::{DeclarationId, DeclarationIdGenerator};
 use crate::high_level_ir::type_resolver::context::{ResolverStruct, StructKind};
 use crate::high_level_ir::type_resolver::declaration::{DeclarationItem, DeclarationItemKind};
@@ -9,7 +10,6 @@ use crate::high_level_ir::typed_type::{
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
-use crate::constants::annotation::BUILTIN;
 
 #[derive(Debug, Clone)]
 pub struct ArenaError(String);
@@ -34,7 +34,12 @@ impl Default for ResolverArena {
         let mut declarations = HashMap::new();
         declarations.insert(
             DeclarationId::ROOT,
-            DeclarationItem::new(TypedAnnotations::from(vec![BUILTIN]), "", DeclarationItemKind::Namespace, None),
+            DeclarationItem::new(
+                TypedAnnotations::from(vec![BUILTIN]),
+                "",
+                DeclarationItemKind::Namespace,
+                None,
+            ),
         );
 
         let mut arena = Self {
@@ -47,7 +52,11 @@ impl Default for ResolverArena {
             match &t {
                 TypedType::Value(v) => match v {
                     TypedValueType::Value(v) => {
-                        arena.register_struct(&DeclarationId::ROOT, &v.name, TypedAnnotations::from(vec![BUILTIN]));
+                        arena.register_struct(
+                            &DeclarationId::ROOT,
+                            &v.name,
+                            TypedAnnotations::from(vec![BUILTIN]),
+                        );
                     }
                     TypedValueType::Array(_, _) => {}
                     TypedValueType::Tuple(_) => {}
