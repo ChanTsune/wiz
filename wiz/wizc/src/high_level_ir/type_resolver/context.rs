@@ -446,7 +446,7 @@ impl ResolverContext {
 #[cfg(test)]
 mod tests {
     use super::{ResolverContext, ResolverStruct, StructKind};
-    use wiz_constants::constants::INT32;
+    use wiz_constants::INT32;
     use wiz_hir::typed_type::TypedType;
 
     #[test]
