@@ -469,25 +469,27 @@ fn test_struct_member_function_call() {
                             type_params: None,
                             body: Some(TypedFunBody::Block(TypedBlock {
                                 body: vec![TypedStmt::Expr(TypedExprKind::Return(TypedReturn {
-                                    value: Some(Box::new(TypedExprKind::Member(TypedInstanceMember {
-                                        target: Box::new(TypedExprKind::Name(TypedName {
-                                            package: TypedPackage::Resolved(Package::new()),
-                                            name: "self".to_string(),
-                                            type_: Some(TypedType::Value(TypedValueType::Value(
-                                                TypedNamedValueType {
-                                                    package: TypedPackage::Resolved(Package::from(
-                                                        &vec!["test"],
-                                                    )),
-                                                    name: "A".to_string(),
-                                                    type_args: None,
-                                                },
-                                            ))),
-                                            type_arguments: None,
-                                        })),
-                                        name: "a".to_string(),
-                                        is_safe: false,
-                                        type_: Some(TypedType::int64()),
-                                    }))),
+                                    value: Some(Box::new(TypedExprKind::Member(
+                                        TypedInstanceMember {
+                                            target: Box::new(TypedExprKind::Name(TypedName {
+                                                package: TypedPackage::Resolved(Package::new()),
+                                                name: "self".to_string(),
+                                                type_: Some(TypedType::Value(
+                                                    TypedValueType::Value(TypedNamedValueType {
+                                                        package: TypedPackage::Resolved(
+                                                            Package::from(&vec!["test"]),
+                                                        ),
+                                                        name: "A".to_string(),
+                                                        type_args: None,
+                                                    }),
+                                                )),
+                                                type_arguments: None,
+                                            })),
+                                            name: "a".to_string(),
+                                            is_safe: false,
+                                            type_: Some(TypedType::int64()),
+                                        },
+                                    ))),
                                 }))],
                             })),
                             return_type: Some(TypedType::int64()),
@@ -836,19 +838,21 @@ fn test_subscript() {
                         name: "p".to_string(),
                         type_: TypedType::unsafe_pointer(TypedType::uint8()),
                     }],
-                    body: Option::from(TypedFunBody::Expr(TypedExprKind::Subscript(TypedSubscript {
-                        target: Box::new(TypedExprKind::Name(TypedName {
-                            package: TypedPackage::Resolved(Package::new()),
-                            name: "p".to_string(),
-                            type_: Some(TypedType::unsafe_pointer(TypedType::uint8())),
-                            type_arguments: None,
-                        })),
-                        indexes: vec![TypedExprKind::Literal(TypedLiteral::Integer {
-                            value: "0".to_string(),
-                            type_: Some(TypedType::int64()),
-                        })],
-                        type_: Some(TypedType::uint8()),
-                    }))),
+                    body: Option::from(TypedFunBody::Expr(TypedExprKind::Subscript(
+                        TypedSubscript {
+                            target: Box::new(TypedExprKind::Name(TypedName {
+                                package: TypedPackage::Resolved(Package::new()),
+                                name: "p".to_string(),
+                                type_: Some(TypedType::unsafe_pointer(TypedType::uint8())),
+                                type_arguments: None,
+                            })),
+                            indexes: vec![TypedExprKind::Literal(TypedLiteral::Integer {
+                                value: "0".to_string(),
+                                type_: Some(TypedType::int64()),
+                            })],
+                            type_: Some(TypedType::uint8()),
+                        },
+                    ))),
                     return_type: Some(TypedType::uint8()),
                 }),
             }],
@@ -893,10 +897,12 @@ fn test_if_else() {
                                         type_arguments: None,
                                     })),
                                     operator: TypedBinaryOperator::LessThanEqual,
-                                    right: Box::new(TypedExprKind::Literal(TypedLiteral::Integer {
-                                        value: "0".to_string(),
-                                        type_: Some(TypedType::int64()),
-                                    })),
+                                    right: Box::new(TypedExprKind::Literal(
+                                        TypedLiteral::Integer {
+                                            value: "0".to_string(),
+                                            type_: Some(TypedType::int64()),
+                                        },
+                                    )),
                                     type_: Some(TypedType::bool()),
                                 })),
                                 body: TypedBlock {
@@ -1237,10 +1243,12 @@ fn test_function_overload_by_arguments() {
                                     })),
                                     args: vec![TypedCallArg {
                                         label: None,
-                                        arg: Box::new(TypedExprKind::Literal(TypedLiteral::Integer {
-                                            value: "1".to_string(),
-                                            type_: Some(TypedType::int64()),
-                                        })),
+                                        arg: Box::new(TypedExprKind::Literal(
+                                            TypedLiteral::Integer {
+                                                value: "1".to_string(),
+                                                type_: Some(TypedType::int64()),
+                                            },
+                                        )),
                                         is_vararg: false,
                                     }],
                                     type_: Some(TypedType::unit()),

@@ -622,10 +622,16 @@ impl<'s> TypeResolver<'s> {
             .collect::<Result<_>>()
     }
 
-    pub fn expr(&mut self, e: TypedExprKind, type_annotation: Option<TypedType>) -> Result<TypedExprKind> {
+    pub fn expr(
+        &mut self,
+        e: TypedExprKind,
+        type_annotation: Option<TypedType>,
+    ) -> Result<TypedExprKind> {
         Ok(match e {
             TypedExprKind::Name(n) => TypedExprKind::Name(self.typed_name(n, type_annotation)?),
-            TypedExprKind::Literal(l) => TypedExprKind::Literal(self.typed_literal(l, type_annotation)?),
+            TypedExprKind::Literal(l) => {
+                TypedExprKind::Literal(self.typed_literal(l, type_annotation)?)
+            }
             TypedExprKind::BinOp(b) => TypedExprKind::BinOp(self.typed_binop(b)?),
             TypedExprKind::UnaryOp(u) => TypedExprKind::UnaryOp(self.typed_unary_op(u)?),
             TypedExprKind::Subscript(s) => TypedExprKind::Subscript(self.typed_subscript(s)?),
