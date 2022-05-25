@@ -1,8 +1,8 @@
 use crate::high_level_ir::declaration_id::DeclarationId;
 use crate::high_level_ir::type_resolver::context::ResolverStruct;
+use std::collections::{HashMap, HashSet};
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_type::TypedType;
-use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct DeclarationItem {

@@ -1,7 +1,7 @@
 use crate::high_level_ir::type_resolver::TypeResolver;
-use wiz_hir::typed_file::TypedSourceSet;
 use crate::high_level_ir::AstLowering;
 use crate::middle_level_ir::HLIR2MLIR;
+use wiz_hir::typed_file::TypedSourceSet;
 use wiz_mir::expr::{
     MLCall, MLCallArg, MLExpr, MLLiteral, MLLiteralKind, MLName, MLUnaryOp, MLUnaryOpKind,
 };

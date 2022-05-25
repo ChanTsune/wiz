@@ -1,15 +1,13 @@
-use wiz_constants::annotation::BUILTIN;
 use crate::high_level_ir::declaration_id::{DeclarationId, DeclarationIdGenerator};
 use crate::high_level_ir::type_resolver::context::{ResolverStruct, StructKind};
 use crate::high_level_ir::type_resolver::declaration::{DeclarationItem, DeclarationItemKind};
-use wiz_hir::typed_annotation::TypedAnnotations;
-use wiz_hir::typed_expr::TypedBinaryOperator;
-use wiz_hir::typed_type::{
-    Package, TypedNamedValueType, TypedPackage, TypedType, TypedValueType,
-};
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
+use wiz_constants::annotation::BUILTIN;
+use wiz_hir::typed_annotation::TypedAnnotations;
+use wiz_hir::typed_expr::TypedBinaryOperator;
+use wiz_hir::typed_type::{Package, TypedNamedValueType, TypedPackage, TypedType, TypedValueType};
 
 #[derive(Debug, Clone)]
 pub struct ArenaError(String);

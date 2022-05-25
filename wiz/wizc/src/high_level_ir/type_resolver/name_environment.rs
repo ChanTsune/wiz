@@ -2,8 +2,8 @@ use crate::high_level_ir::declaration_id::DeclarationId;
 use crate::high_level_ir::type_resolver::arena::ResolverArena;
 use crate::high_level_ir::type_resolver::context::{EnvValue, ResolverStruct};
 use crate::high_level_ir::type_resolver::declaration::DeclarationItemKind;
-use wiz_hir::typed_type::TypedType;
 use std::collections::{HashMap, HashSet};
+use wiz_hir::typed_type::TypedType;
 use wiz_utils::StackedHashMap;
 
 #[derive(Debug, Clone)]

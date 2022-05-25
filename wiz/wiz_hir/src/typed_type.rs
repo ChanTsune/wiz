@@ -1,5 +1,5 @@
-use wiz_constants as constants;
 use serde::{Deserialize, Serialize};
+use wiz_constants as constants;
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash, Serialize, Deserialize)]
 pub enum TypedPackage {

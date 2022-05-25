@@ -1,7 +1,7 @@
-use wiz_hir::typed_file::TypedSourceSet;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use std::path::Path;
+use wiz_hir::typed_file::TypedSourceSet;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WLib {

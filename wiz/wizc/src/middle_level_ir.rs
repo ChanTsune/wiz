@@ -1,7 +1,11 @@
-use wiz_constants as constants;
-use wiz_constants::annotation::{BUILTIN, NO_MANGLE};
 use crate::high_level_ir::type_resolver::arena::ResolverArena;
 use crate::high_level_ir::type_resolver::declaration::{DeclarationItem, DeclarationItemKind};
+use crate::middle_level_ir::context::HLIR2MLIRContext;
+use core::result;
+use std::collections::HashMap;
+use std::error::Error;
+use wiz_constants as constants;
+use wiz_constants::annotation::{BUILTIN, NO_MANGLE};
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_decl::{
     TypedArgDef, TypedDecl, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody,
@@ -19,10 +23,6 @@ use wiz_hir::typed_stmt::{
 use wiz_hir::typed_type::{
     Package, TypedFunctionType, TypedPackage, TypedType, TypedTypeParam, TypedValueType,
 };
-use crate::middle_level_ir::context::HLIR2MLIRContext;
-use core::result;
-use std::collections::HashMap;
-use std::error::Error;
 use wiz_mir::builder::{FunBuilder, MLIRModule};
 use wiz_mir::expr::{
     MLArray, MLBinOp, MLBinOpKind, MLBlock, MLCall, MLCallArg, MLExpr, MLIf, MLLiteral,

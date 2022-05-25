@@ -25,9 +25,7 @@ use wiz_hir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedForStmt,
     TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
 };
-use wiz_hir::typed_type::{
-    Package, TypedArgType, TypedFunctionType, TypedType, TypedValueType,
-};
+use wiz_hir::typed_type::{Package, TypedArgType, TypedFunctionType, TypedType, TypedValueType};
 use wiz_hir::typed_type_constraint::TypedTypeConstraint;
 use wiz_session::Session;
 

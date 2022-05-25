@@ -1,4 +1,5 @@
 use crate::high_level_ir::type_resolver::TypeResolver;
+use crate::high_level_ir::AstLowering;
 use wiz_hir::typed_decl::{
     TypedArgDef, TypedDecl, TypedDeclKind, TypedFun, TypedFunBody, TypedMemberFunction,
     TypedStoredProperty, TypedStruct, TypedVar,
@@ -14,7 +15,6 @@ use wiz_hir::typed_type::{
     Package, TypedArgType, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType,
     TypedValueType,
 };
-use crate::high_level_ir::AstLowering;
 use wiz_session::Session;
 use wiz_syntax_parser::parser::wiz::parse_from_string;
 

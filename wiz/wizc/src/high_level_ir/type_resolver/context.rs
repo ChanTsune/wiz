@@ -11,13 +11,13 @@ use crate::high_level_ir::type_resolver::declaration::DeclarationItemKind;
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::name_environment::NameEnvironment;
 use crate::high_level_ir::type_resolver::result::Result;
+use std::collections::{HashMap, HashSet};
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_expr::TypedBinaryOperator;
 use wiz_hir::typed_type::{
     Package, TypedArgType, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType,
     TypedValueType,
 };
-use std::collections::{HashMap, HashSet};
 use wiz_utils::StackedHashMap;
 
 #[derive(Debug, Clone)]
