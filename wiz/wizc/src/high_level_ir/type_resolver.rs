@@ -16,7 +16,7 @@ use wiz_hir::typed_decl::{
     TypedMemberFunction, TypedProtocol, TypedStoredProperty, TypedStruct, TypedVar,
 };
 use wiz_hir::typed_expr::{
-    TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember,
+    TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExprKind, TypedIf, TypedInstanceMember,
     TypedLiteral, TypedName, TypedPostfixUnaryOp, TypedPrefixUnaryOp, TypedPrefixUnaryOperator,
     TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
@@ -622,24 +622,24 @@ impl<'s> TypeResolver<'s> {
             .collect::<Result<_>>()
     }
 
-    pub fn expr(&mut self, e: TypedExpr, type_annotation: Option<TypedType>) -> Result<TypedExpr> {
+    pub fn expr(&mut self, e: TypedExprKind, type_annotation: Option<TypedType>) -> Result<TypedExprKind> {
         Ok(match e {
-            TypedExpr::Name(n) => TypedExpr::Name(self.typed_name(n, type_annotation)?),
-            TypedExpr::Literal(l) => TypedExpr::Literal(self.typed_literal(l, type_annotation)?),
-            TypedExpr::BinOp(b) => TypedExpr::BinOp(self.typed_binop(b)?),
-            TypedExpr::UnaryOp(u) => TypedExpr::UnaryOp(self.typed_unary_op(u)?),
-            TypedExpr::Subscript(s) => TypedExpr::Subscript(self.typed_subscript(s)?),
-            TypedExpr::Member(m) => TypedExpr::Member(self.typed_instance_member(m)?),
-            TypedExpr::Array(a) => TypedExpr::Array(self.typed_array(a)?),
-            TypedExpr::Tuple => TypedExpr::Tuple,
-            TypedExpr::Dict => TypedExpr::Dict,
-            TypedExpr::StringBuilder => TypedExpr::StringBuilder,
-            TypedExpr::Call(c) => TypedExpr::Call(self.typed_call(c)?),
-            TypedExpr::If(i) => TypedExpr::If(self.typed_if(i)?),
-            TypedExpr::When => TypedExpr::When,
-            TypedExpr::Lambda(l) => TypedExpr::Lambda(l),
-            TypedExpr::Return(r) => TypedExpr::Return(self.typed_return(r)?),
-            TypedExpr::TypeCast(t) => TypedExpr::TypeCast(self.typed_type_cast(t)?),
+            TypedExprKind::Name(n) => TypedExprKind::Name(self.typed_name(n, type_annotation)?),
+            TypedExprKind::Literal(l) => TypedExprKind::Literal(self.typed_literal(l, type_annotation)?),
+            TypedExprKind::BinOp(b) => TypedExprKind::BinOp(self.typed_binop(b)?),
+            TypedExprKind::UnaryOp(u) => TypedExprKind::UnaryOp(self.typed_unary_op(u)?),
+            TypedExprKind::Subscript(s) => TypedExprKind::Subscript(self.typed_subscript(s)?),
+            TypedExprKind::Member(m) => TypedExprKind::Member(self.typed_instance_member(m)?),
+            TypedExprKind::Array(a) => TypedExprKind::Array(self.typed_array(a)?),
+            TypedExprKind::Tuple => TypedExprKind::Tuple,
+            TypedExprKind::Dict => TypedExprKind::Dict,
+            TypedExprKind::StringBuilder => TypedExprKind::StringBuilder,
+            TypedExprKind::Call(c) => TypedExprKind::Call(self.typed_call(c)?),
+            TypedExprKind::If(i) => TypedExprKind::If(self.typed_if(i)?),
+            TypedExprKind::When => TypedExprKind::When,
+            TypedExprKind::Lambda(l) => TypedExprKind::Lambda(l),
+            TypedExprKind::Return(r) => TypedExprKind::Return(self.typed_return(r)?),
+            TypedExprKind::TypeCast(t) => TypedExprKind::TypeCast(self.typed_type_cast(t)?),
         })
     }
 
@@ -762,25 +762,25 @@ impl<'s> TypeResolver<'s> {
         let right = self.expr(*b.right, None)?;
         let (left, right) = match (left, right) {
             (
-                TypedExpr::Literal(TypedLiteral::Integer {
+                TypedExprKind::Literal(TypedLiteral::Integer {
                     value: left_value,
                     type_: left_type,
                 }),
-                TypedExpr::Literal(TypedLiteral::Integer {
+                TypedExprKind::Literal(TypedLiteral::Integer {
                     value: right_value,
                     type_: right_type,
                 }),
             ) => (
-                TypedExpr::Literal(TypedLiteral::Integer {
+                TypedExprKind::Literal(TypedLiteral::Integer {
                     value: left_value,
                     type_: left_type,
                 }),
-                TypedExpr::Literal(TypedLiteral::Integer {
+                TypedExprKind::Literal(TypedLiteral::Integer {
                     value: right_value,
                     type_: right_type,
                 }),
             ),
-            (left, TypedExpr::Literal(TypedLiteral::Integer { value, type_ })) => {
+            (left, TypedExprKind::Literal(TypedLiteral::Integer { value, type_ })) => {
                 let left_type = left.type_();
                 let is_integer = match &left_type {
                     None => false,
@@ -789,7 +789,7 @@ impl<'s> TypeResolver<'s> {
                 if is_integer {
                     (
                         left,
-                        TypedExpr::Literal(TypedLiteral::Integer {
+                        TypedExprKind::Literal(TypedLiteral::Integer {
                             value,
                             type_: left_type,
                         }),
@@ -797,7 +797,7 @@ impl<'s> TypeResolver<'s> {
                 } else {
                     (
                         left,
-                        TypedExpr::Literal(TypedLiteral::Integer { value, type_ }),
+                        TypedExprKind::Literal(TypedLiteral::Integer { value, type_ }),
                     )
                 }
             }
@@ -927,8 +927,8 @@ impl<'s> TypeResolver<'s> {
 
     pub fn typed_call(&mut self, c: TypedCall) -> Result<TypedCall> {
         let (target, args) = match self.expr((*c.target).clone(), None) {
-            Ok(TypedExpr::Name(n)) => {
-                let target = TypedExpr::Name(n);
+            Ok(TypedExprKind::Name(n)) => {
+                let target = TypedExprKind::Name(n);
                 if let TypedType::Function(f) = target.type_().unwrap() {
                     if c.args.len() != f.arguments.len() {
                         Err(ResolverError::from(format!(

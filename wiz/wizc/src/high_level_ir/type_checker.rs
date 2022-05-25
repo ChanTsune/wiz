@@ -7,7 +7,7 @@ use wiz_hir::typed_decl::{
     TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedProtocol, TypedStruct, TypedVar,
 };
 use wiz_hir::typed_expr::{
-    TypedArray, TypedBinOp, TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLambda,
+    TypedArray, TypedBinOp, TypedCall, TypedExprKind, TypedIf, TypedInstanceMember, TypedLambda,
     TypedLiteral, TypedName, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
 use wiz_hir::typed_file::{TypedFile, TypedSourceSet};
@@ -187,24 +187,24 @@ impl<'s> TypeChecker<'s> {
         typed_block.body.iter().for_each(|s| self.statement(s))
     }
 
-    fn expression(&mut self, typed_expr: &TypedExpr) {
+    fn expression(&mut self, typed_expr: &TypedExprKind) {
         match typed_expr {
-            TypedExpr::Name(n) => self.name(n),
-            TypedExpr::Literal(l) => self.literal(l),
-            TypedExpr::BinOp(b) => self.binary_operation(b),
-            TypedExpr::UnaryOp(u) => self.unary_operation(u),
-            TypedExpr::Subscript(s) => self.subscript(s),
-            TypedExpr::Member(m) => self.member(m),
-            TypedExpr::Array(a) => self.array(a),
-            TypedExpr::Tuple => todo!(),
-            TypedExpr::Dict => todo!(),
-            TypedExpr::StringBuilder => todo!(),
-            TypedExpr::Call(c) => self.call(c),
-            TypedExpr::If(i) => self.if_(i),
-            TypedExpr::When => todo!(),
-            TypedExpr::Lambda(l) => self.lambda(l),
-            TypedExpr::Return(r) => self.return_(r),
-            TypedExpr::TypeCast(c) => self.type_cast(c),
+            TypedExprKind::Name(n) => self.name(n),
+            TypedExprKind::Literal(l) => self.literal(l),
+            TypedExprKind::BinOp(b) => self.binary_operation(b),
+            TypedExprKind::UnaryOp(u) => self.unary_operation(u),
+            TypedExprKind::Subscript(s) => self.subscript(s),
+            TypedExprKind::Member(m) => self.member(m),
+            TypedExprKind::Array(a) => self.array(a),
+            TypedExprKind::Tuple => todo!(),
+            TypedExprKind::Dict => todo!(),
+            TypedExprKind::StringBuilder => todo!(),
+            TypedExprKind::Call(c) => self.call(c),
+            TypedExprKind::If(i) => self.if_(i),
+            TypedExprKind::When => todo!(),
+            TypedExprKind::Lambda(l) => self.lambda(l),
+            TypedExprKind::Return(r) => self.return_(r),
+            TypedExprKind::TypeCast(c) => self.type_cast(c),
         }
     }
 

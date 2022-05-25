@@ -1,11 +1,11 @@
 use crate::typed_decl::TypedDecl;
-use crate::typed_expr::TypedExpr;
+use crate::typed_expr::TypedExprKind;
 use crate::typed_type::TypedType;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub enum TypedStmt {
-    Expr(TypedExpr),
+    Expr(TypedExprKind),
     Decl(TypedDecl),
     Assignment(TypedAssignmentStmt),
     Loop(TypedLoopStmt),
@@ -19,15 +19,15 @@ pub enum TypedAssignmentStmt {
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedAssignment {
-    pub target: TypedExpr,
-    pub value: TypedExpr,
+    pub target: TypedExprKind,
+    pub value: TypedExprKind,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedAssignmentAndOperation {
-    pub target: TypedExpr,
+    pub target: TypedExprKind,
     pub operator: TypedAssignmentAndOperator,
-    pub value: TypedExpr,
+    pub value: TypedExprKind,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
@@ -47,14 +47,14 @@ pub enum TypedLoopStmt {
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedWhileLoopStmt {
-    pub condition: TypedExpr,
+    pub condition: TypedExprKind,
     pub block: TypedBlock,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedForStmt {
     pub values: Vec<String>,
-    pub iterator: TypedExpr,
+    pub iterator: TypedExprKind,
     pub block: TypedBlock,
 }
 

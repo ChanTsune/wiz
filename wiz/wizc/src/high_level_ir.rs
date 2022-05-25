@@ -7,7 +7,7 @@ use wiz_hir::typed_decl::{
     TypedFunBody, TypedMemberFunction, TypedProtocol, TypedStoredProperty, TypedStruct, TypedVar,
 };
 use wiz_hir::typed_expr::{
-    TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
+    TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExprKind, TypedIf,
     TypedInstanceMember, TypedLambda, TypedLiteral, TypedName, TypedPostfixUnaryOp,
     TypedPostfixUnaryOperator, TypedPrefixUnaryOp, TypedPrefixUnaryOperator, TypedReturn,
     TypedSubscript, TypedTypeCast, TypedUnaryOp,
@@ -519,24 +519,24 @@ impl AstLowering {
         }
     }
 
-    pub fn expr(&self, e: Expr) -> TypedExpr {
+    pub fn expr(&self, e: Expr) -> TypedExprKind {
         match e {
-            Expr::Name(n) => TypedExpr::Name(self.name_syntax(n)),
-            Expr::Literal(literal) => TypedExpr::Literal(self.literal_syntax(literal)),
-            Expr::BinOp(b) => TypedExpr::BinOp(self.binary_operation_syntax(b)),
-            Expr::UnaryOp(u) => TypedExpr::UnaryOp(self.unary_operation_syntax(u)),
-            Expr::Subscript(s) => TypedExpr::Subscript(self.subscript_syntax(s)),
-            Expr::Member(m) => TypedExpr::Member(self.member_syntax(m)),
-            Expr::Array(a) => TypedExpr::Array(self.array_syntax(a)),
-            Expr::Tuple { .. } => TypedExpr::Tuple,
-            Expr::Dict { .. } => TypedExpr::Dict,
-            Expr::StringBuilder { .. } => TypedExpr::StringBuilder,
-            Expr::Call(c) => TypedExpr::Call(self.call_syntax(c)),
-            Expr::If(i) => TypedExpr::If(self.if_syntax(i)),
-            Expr::When { .. } => TypedExpr::When,
-            Expr::Lambda(l) => TypedExpr::Lambda(self.lambda_syntax(l)),
-            Expr::Return(r) => TypedExpr::Return(self.return_syntax(r)),
-            Expr::TypeCast(t) => TypedExpr::TypeCast(self.type_cast(t)),
+            Expr::Name(n) => TypedExprKind::Name(self.name_syntax(n)),
+            Expr::Literal(literal) => TypedExprKind::Literal(self.literal_syntax(literal)),
+            Expr::BinOp(b) => TypedExprKind::BinOp(self.binary_operation_syntax(b)),
+            Expr::UnaryOp(u) => TypedExprKind::UnaryOp(self.unary_operation_syntax(u)),
+            Expr::Subscript(s) => TypedExprKind::Subscript(self.subscript_syntax(s)),
+            Expr::Member(m) => TypedExprKind::Member(self.member_syntax(m)),
+            Expr::Array(a) => TypedExprKind::Array(self.array_syntax(a)),
+            Expr::Tuple { .. } => TypedExprKind::Tuple,
+            Expr::Dict { .. } => TypedExprKind::Dict,
+            Expr::StringBuilder { .. } => TypedExprKind::StringBuilder,
+            Expr::Call(c) => TypedExprKind::Call(self.call_syntax(c)),
+            Expr::If(i) => TypedExprKind::If(self.if_syntax(i)),
+            Expr::When { .. } => TypedExprKind::When,
+            Expr::Lambda(l) => TypedExprKind::Lambda(self.lambda_syntax(l)),
+            Expr::Return(r) => TypedExprKind::Return(self.return_syntax(r)),
+            Expr::TypeCast(t) => TypedExprKind::TypeCast(self.type_cast(t)),
             Expr::Parenthesized(p) => self.expr(*p.expr),
         }
     }
@@ -684,7 +684,7 @@ impl AstLowering {
 
     pub fn subscript_syntax(&self, s: SubscriptSyntax) -> TypedSubscript {
         let target = Box::new(self.expr(*s.target));
-        let indexes: Vec<TypedExpr> = s
+        let indexes: Vec<TypedExprKind> = s
             .idx_or_keys
             .elements
             .into_iter()
@@ -733,7 +733,7 @@ impl AstLowering {
                 args.len(),
                 TypedCallArg {
                     label: None,
-                    arg: Box::new(TypedExpr::Lambda(self.lambda_syntax(lambda))),
+                    arg: Box::new(TypedExprKind::Lambda(self.lambda_syntax(lambda))),
                     is_vararg: false,
                 },
             )

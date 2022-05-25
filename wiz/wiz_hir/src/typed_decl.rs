@@ -1,5 +1,5 @@
 use crate::typed_annotation::TypedAnnotations;
-use crate::typed_expr::TypedExpr;
+use crate::typed_expr::TypedExprKind;
 use crate::typed_stmt::TypedBlock;
 use crate::typed_type::{Package, TypedArgType, TypedFunctionType, TypedType, TypedTypeParam};
 use crate::typed_type_constraint::TypedTypeConstraint;
@@ -29,7 +29,7 @@ pub struct TypedVar {
     pub is_mut: bool,
     pub name: String,
     pub type_: Option<TypedType>,
-    pub value: TypedExpr,
+    pub value: TypedExprKind,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
@@ -60,7 +60,7 @@ impl TypedArgDef {
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub enum TypedFunBody {
-    Expr(TypedExpr),
+    Expr(TypedExprKind),
     Block(TypedBlock),
 }
 

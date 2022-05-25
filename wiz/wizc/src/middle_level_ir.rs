@@ -12,7 +12,7 @@ use wiz_hir::typed_decl::{
     TypedMemberFunction, TypedProtocol, TypedStruct, TypedVar,
 };
 use wiz_hir::typed_expr::{
-    TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
+    TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExprKind, TypedIf,
     TypedInstanceMember, TypedLiteral, TypedName, TypedPrefixUnaryOperator, TypedReturn,
     TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
@@ -236,7 +236,7 @@ impl<'arena> HLIR2MLIR<'arena> {
             },
             TypedAssignmentStmt::AssignmentAndOperation(a) => {
                 let target = self.expr(a.target.clone());
-                let value = TypedExpr::BinOp(TypedBinOp {
+                let value = TypedExprKind::BinOp(TypedBinOp {
                     left: Box::new(a.target.clone()),
                     operator: match a.operator {
                         TypedAssignmentAndOperator::Add => TypedBinaryOperator::Add,
@@ -455,24 +455,24 @@ impl<'arena> HLIR2MLIR<'arena> {
         vec![]
     }
 
-    fn expr(&mut self, e: TypedExpr) -> MLExpr {
+    fn expr(&mut self, e: TypedExprKind) -> MLExpr {
         match e {
-            TypedExpr::Name(name) => self.name(name),
-            TypedExpr::Literal(l) => MLExpr::Literal(self.literal(l)),
-            TypedExpr::BinOp(b) => MLExpr::PrimitiveBinOp(self.binop(b)),
-            TypedExpr::UnaryOp(u) => MLExpr::PrimitiveUnaryOp(self.unary_op(u)),
-            TypedExpr::Subscript(s) => self.subscript(s),
-            TypedExpr::Member(m) => self.member(m),
-            TypedExpr::Array(a) => MLExpr::Array(self.array(a)),
-            TypedExpr::Tuple => todo!(),
-            TypedExpr::Dict => todo!(),
-            TypedExpr::StringBuilder => todo!(),
-            TypedExpr::Call(c) => self.call(c),
-            TypedExpr::If(i) => MLExpr::If(self.if_expr(i)),
-            TypedExpr::When => todo!(),
-            TypedExpr::Lambda(l) => todo!(),
-            TypedExpr::Return(r) => MLExpr::Return(self.return_expr(r)),
-            TypedExpr::TypeCast(t) => MLExpr::PrimitiveTypeCast(self.type_cast(t)),
+            TypedExprKind::Name(name) => self.name(name),
+            TypedExprKind::Literal(l) => MLExpr::Literal(self.literal(l)),
+            TypedExprKind::BinOp(b) => MLExpr::PrimitiveBinOp(self.binop(b)),
+            TypedExprKind::UnaryOp(u) => MLExpr::PrimitiveUnaryOp(self.unary_op(u)),
+            TypedExprKind::Subscript(s) => self.subscript(s),
+            TypedExprKind::Member(m) => self.member(m),
+            TypedExprKind::Array(a) => MLExpr::Array(self.array(a)),
+            TypedExprKind::Tuple => todo!(),
+            TypedExprKind::Dict => todo!(),
+            TypedExprKind::StringBuilder => todo!(),
+            TypedExprKind::Call(c) => self.call(c),
+            TypedExprKind::If(i) => MLExpr::If(self.if_expr(i)),
+            TypedExprKind::When => todo!(),
+            TypedExprKind::Lambda(l) => todo!(),
+            TypedExprKind::Return(r) => MLExpr::Return(self.return_expr(r)),
+            TypedExprKind::TypeCast(t) => MLExpr::PrimitiveTypeCast(self.type_cast(t)),
         }
     }
 
@@ -734,7 +734,7 @@ impl<'arena> HLIR2MLIR<'arena> {
             type_,
         } = c;
         let target = match *target {
-            TypedExpr::Member(m) => {
+            TypedExprKind::Member(m) => {
                 let TypedInstanceMember {
                     target,
                     name,
