@@ -3,6 +3,7 @@
 members = [
     "wiz",
     "wiz_dev_utils",
+    "wiz_hir",
     "wiz_lexar",
     "wiz_mir",
     "wiz_session",

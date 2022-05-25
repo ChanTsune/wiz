@@ -16,5 +16,6 @@ wizc_cli = { path = "../wizc_cli" }
 wiz_session = { path = "../wiz_session" }
 wiz_syntax = { path = "../wiz_syntax" }
 wiz_syntax_parser = { path = "../wiz_syntax_parser" }
+wiz_hir = { path = "../wiz_hir" }
 wiz_mir = { path = "../wiz_mir" }
 wiz_utils = { path = "../wiz_utils" }
