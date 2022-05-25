@@ -1,5 +1,5 @@
-use crate::high_level_ir::typed_stmt::TypedBlock;
-use crate::high_level_ir::typed_type::{TypedPackage, TypedType};
+use crate::typed_stmt::TypedBlock;
+use crate::typed_type::{TypedPackage, TypedType};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
@@ -24,23 +24,23 @@ pub enum TypedExpr {
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedName {
-    pub(crate) package: TypedPackage,
-    pub(crate) name: String,
-    pub(crate) type_: Option<TypedType>,
-    pub(crate) type_arguments: Option<Vec<TypedType>>,
+    pub package: TypedPackage,
+    pub name: String,
+    pub type_: Option<TypedType>,
+    pub type_arguments: Option<Vec<TypedType>>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedArray {
-    pub(crate) elements: Vec<TypedExpr>,
-    pub(crate) type_: Option<TypedType>,
+    pub elements: Vec<TypedExpr>,
+    pub type_: Option<TypedType>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedSubscript {
-    pub(crate) target: Box<TypedExpr>,
-    pub(crate) indexes: Vec<TypedExpr>,
-    pub(crate) type_: Option<TypedType>,
+    pub target: Box<TypedExpr>,
+    pub indexes: Vec<TypedExpr>,
+    pub type_: Option<TypedType>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
@@ -68,10 +68,10 @@ pub enum TypedLiteral {
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedBinOp {
-    pub(crate) left: Box<TypedExpr>,
-    pub(crate) operator: TypedBinaryOperator,
-    pub(crate) right: Box<TypedExpr>,
-    pub(crate) type_: Option<TypedType>,
+    pub left: Box<TypedExpr>,
+    pub operator: TypedBinaryOperator,
+    pub right: Box<TypedExpr>,
+    pub type_: Option<TypedType>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash, Serialize, Deserialize)]
@@ -97,7 +97,7 @@ pub enum TypedUnaryOp {
 }
 
 impl TypedUnaryOp {
-    pub(crate) fn type_(&self) -> Option<TypedType> {
+    pub fn type_(&self) -> Option<TypedType> {
         match self {
             TypedUnaryOp::Prefix(p) => p.type_.clone(),
             TypedUnaryOp::Postfix(p) => p.type_.clone(),
@@ -107,9 +107,9 @@ impl TypedUnaryOp {
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedPrefixUnaryOp {
-    pub(crate) target: Box<TypedExpr>,
-    pub(crate) operator: TypedPrefixUnaryOperator,
-    pub(crate) type_: Option<TypedType>,
+    pub target: Box<TypedExpr>,
+    pub operator: TypedPrefixUnaryOperator,
+    pub type_: Option<TypedType>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
@@ -123,9 +123,9 @@ pub enum TypedPrefixUnaryOperator {
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedPostfixUnaryOp {
-    pub(crate) target: Box<TypedExpr>,
-    pub(crate) operator: TypedPostfixUnaryOperator,
-    pub(crate) type_: Option<TypedType>,
+    pub target: Box<TypedExpr>,
+    pub operator: TypedPostfixUnaryOperator,
+    pub type_: Option<TypedType>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
@@ -135,57 +135,57 @@ pub enum TypedPostfixUnaryOperator {
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedCall {
-    pub(crate) target: Box<TypedExpr>,
-    pub(crate) args: Vec<TypedCallArg>,
-    pub(crate) type_: Option<TypedType>,
+    pub target: Box<TypedExpr>,
+    pub args: Vec<TypedCallArg>,
+    pub type_: Option<TypedType>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedCallArg {
-    pub(crate) label: Option<String>,
-    pub(crate) arg: Box<TypedExpr>,
-    pub(crate) is_vararg: bool,
+    pub label: Option<String>,
+    pub arg: Box<TypedExpr>,
+    pub is_vararg: bool,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedInstanceMember {
-    pub(crate) target: Box<TypedExpr>,
-    pub(crate) name: String,
-    pub(crate) is_safe: bool,
-    pub(crate) type_: Option<TypedType>,
+    pub target: Box<TypedExpr>,
+    pub name: String,
+    pub is_safe: bool,
+    pub type_: Option<TypedType>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedStaticMember {
-    pub(crate) target: TypedType,
-    pub(crate) name: String,
-    pub(crate) type_: Option<TypedType>,
+    pub target: TypedType,
+    pub name: String,
+    pub type_: Option<TypedType>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedIf {
-    pub(crate) condition: Box<TypedExpr>,
-    pub(crate) body: TypedBlock,
-    pub(crate) else_body: Option<TypedBlock>,
-    pub(crate) type_: Option<TypedType>,
+    pub condition: Box<TypedExpr>,
+    pub body: TypedBlock,
+    pub else_body: Option<TypedBlock>,
+    pub type_: Option<TypedType>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedLambda {
-    pub(crate) args: Vec<String>,
-    pub(crate) body: TypedBlock,
+    pub args: Vec<String>,
+    pub body: TypedBlock,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedReturn {
-    pub(crate) value: Option<Box<TypedExpr>>,
+    pub value: Option<Box<TypedExpr>>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedTypeCast {
-    pub(crate) target: Box<TypedExpr>,
-    pub(crate) is_safe: bool,
-    pub(crate) type_: Option<TypedType>,
+    pub target: Box<TypedExpr>,
+    pub is_safe: bool,
+    pub type_: Option<TypedType>,
 }
 
 impl TypedExpr {
@@ -244,7 +244,7 @@ impl TypedLiteral {
 }
 
 impl TypedReturn {
-    pub(crate) fn type_(&self) -> TypedType {
+    pub fn type_(&self) -> TypedType {
         TypedType::noting()
     }
 }

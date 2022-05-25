@@ -3,16 +3,16 @@ mod error;
 use crate::high_level_ir::type_checker::error::CheckerError;
 use crate::high_level_ir::type_resolver::arena::ResolverArena;
 use crate::high_level_ir::type_resolver::context::StructKind;
-use crate::high_level_ir::typed_decl::{
+use wiz_hir::typed_decl::{
     TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedProtocol, TypedStruct, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{
+use wiz_hir::typed_expr::{
     TypedArray, TypedBinOp, TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLambda,
     TypedLiteral, TypedName, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
-use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
-use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
-use crate::high_level_ir::typed_type::Package;
+use wiz_hir::typed_file::{TypedFile, TypedSourceSet};
+use wiz_hir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
+use wiz_hir::typed_type::Package;
 use wiz_session::Session;
 
 #[derive(Debug)]

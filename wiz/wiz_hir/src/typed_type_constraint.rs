@@ -1,4 +1,4 @@
-use crate::high_level_ir::typed_type::TypedType;
+use crate::typed_type::TypedType;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]

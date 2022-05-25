@@ -1,10 +1,10 @@
-use crate::constants::annotation::BUILTIN;
+use wiz_constants::annotation::BUILTIN;
 use crate::high_level_ir::declaration_id::{DeclarationId, DeclarationIdGenerator};
 use crate::high_level_ir::type_resolver::context::{ResolverStruct, StructKind};
 use crate::high_level_ir::type_resolver::declaration::{DeclarationItem, DeclarationItemKind};
-use crate::high_level_ir::typed_annotation::TypedAnnotations;
-use crate::high_level_ir::typed_expr::TypedBinaryOperator;
-use crate::high_level_ir::typed_type::{
+use wiz_hir::typed_annotation::TypedAnnotations;
+use wiz_hir::typed_expr::TypedBinaryOperator;
+use wiz_hir::typed_type::{
     Package, TypedNamedValueType, TypedPackage, TypedType, TypedValueType,
 };
 use std::collections::HashMap;
@@ -308,7 +308,7 @@ mod tests {
     use super::super::declaration::DeclarationItemKind;
     use super::ResolverArena;
     use crate::high_level_ir::type_resolver::declaration::DeclarationItem;
-    use crate::high_level_ir::typed_type::{TypedArgType, TypedFunctionType, TypedType};
+    use wiz_hir::typed_type::{TypedArgType, TypedFunctionType, TypedType};
 
     #[test]
     fn resolve_declaration_id_from_root() {

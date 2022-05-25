@@ -1,5 +1,5 @@
 use crate::high_level_ir::type_resolver::TypeResolver;
-use crate::high_level_ir::typed_file::TypedSourceSet;
+use wiz_hir::typed_file::TypedSourceSet;
 use crate::high_level_ir::AstLowering;
 use crate::middle_level_ir::HLIR2MLIR;
 use wiz_mir::expr::{

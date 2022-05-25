@@ -1,4 +1,4 @@
-use crate::constants;
+use wiz_constants as constants;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash, Serialize, Deserialize)]
@@ -9,7 +9,7 @@ pub enum TypedPackage {
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash, Serialize, Deserialize)]
 pub struct Package {
-    pub(crate) names: Vec<String>,
+    pub names: Vec<String>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash, Serialize, Deserialize)]
@@ -21,11 +21,20 @@ pub enum TypedType {
 }
 
 impl TypedType {
-    pub(crate) fn is_self(&self) -> bool {
+    pub fn is_self(&self) -> bool {
         matches!(self, Self::Self_)
     }
 
-    pub(crate) fn package(&self) -> TypedPackage {
+    pub fn is_generic(&self) -> bool {
+        match self {
+            TypedType::Self_ => false,
+            TypedType::Value(v) => v.is_generic(),
+            TypedType::Function(f) => f.is_generic(),
+            TypedType::Type(t) => t.is_generic(),
+        }
+    }
+
+    pub fn package(&self) -> TypedPackage {
         match self {
             TypedType::Self_ => panic!(),
             TypedType::Value(v) => v.package(),
@@ -34,7 +43,7 @@ impl TypedType {
         }
     }
 
-    pub(crate) fn name(&self) -> String {
+    pub fn name(&self) -> String {
         match self {
             TypedType::Self_ => panic!(),
             TypedType::Value(v) => v.name(),
@@ -126,7 +135,17 @@ impl TypedValueType {
         matches!(self, Self::Array(_, _))
     }
 
-    pub(crate) fn package(&self) -> TypedPackage {
+    pub fn is_generic(&self) -> bool {
+        match self {
+            TypedValueType::Value(v) => v.is_generic(),
+            TypedValueType::Array(v, _) => v.is_generic(),
+            TypedValueType::Tuple(t) => todo!(),
+            TypedValueType::Pointer(v) => v.is_generic(),
+            TypedValueType::Reference(v) => v.is_generic(),
+        }
+    }
+
+    pub fn package(&self) -> TypedPackage {
         match self {
             TypedValueType::Value(v) => v.package.clone(),
             TypedValueType::Array(_, _) | TypedValueType::Tuple(_) => {
@@ -136,7 +155,7 @@ impl TypedValueType {
         }
     }
 
-    pub(crate) fn name(&self) -> String {
+    pub fn name(&self) -> String {
         match self {
             TypedValueType::Value(v) => v.name.clone(),
             TypedValueType::Array(_, _) => todo!(),
@@ -172,6 +191,12 @@ pub struct TypedFunctionType {
     pub return_type: TypedType,
 }
 
+impl TypedFunctionType {
+    pub fn is_generic(&self) -> bool {
+        self.arguments.iter().any(|a| a.is_generic()) || self.return_type.is_generic()
+    }
+}
+
 #[derive(Debug, Eq, PartialEq, Clone, Hash, Serialize, Deserialize)]
 pub struct TypedArgType {
     pub label: String,
@@ -179,33 +204,37 @@ pub struct TypedArgType {
 }
 
 impl TypedArgType {
-    pub(crate) fn is_self(&self) -> bool {
+    pub fn is_self(&self) -> bool {
         self.typ.is_self()
+    }
+
+    pub fn is_generic(&self) -> bool {
+        self.typ.is_generic()
     }
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash, Serialize, Deserialize)]
 pub struct TypedNamedValueType {
-    pub(crate) package: TypedPackage,
-    pub(crate) name: String,
-    pub(crate) type_args: Option<Vec<TypedType>>,
+    pub package: TypedPackage,
+    pub name: String,
+    pub type_args: Option<Vec<TypedType>>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash, Serialize, Deserialize)]
 pub struct TypedTypeParam {
-    pub(crate) name: String,
+    pub name: String,
 }
 
 impl TypedPackage {
-    pub(crate) fn is_raw(&self) -> bool {
+    pub fn is_raw(&self) -> bool {
         matches!(self, Self::Raw(_))
     }
 
-    pub(crate) fn is_resolved(&self) -> bool {
+    pub fn is_resolved(&self) -> bool {
         matches!(self, Self::Resolved(_))
     }
 
-    pub(crate) fn into_raw(self) -> Package {
+    pub fn into_raw(self) -> Package {
         match self {
             TypedPackage::Raw(p) => p,
             TypedPackage::Resolved(_) => {
@@ -214,7 +243,7 @@ impl TypedPackage {
         }
     }
 
-    pub(crate) fn into_resolved(self) -> Package {
+    pub fn into_resolved(self) -> Package {
         match self {
             TypedPackage::Raw(_) => panic!("cannot convert raw package to resolved ({:?})", self),
             TypedPackage::Resolved(p) => p,
@@ -223,15 +252,15 @@ impl TypedPackage {
 }
 
 impl Package {
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         Self { names: vec![] }
     }
 
-    pub(crate) fn global() -> Self {
+    pub fn global() -> Self {
         Self { names: vec![] }
     }
 
-    pub(crate) fn is_global(&self) -> bool {
+    pub fn is_global(&self) -> bool {
         self.names.is_empty()
     }
 }
@@ -267,72 +296,76 @@ impl TypedNamedValueType {
         }
     }
 
-    pub(crate) fn noting() -> Self {
+    pub fn noting() -> Self {
         Self::builtin(constants::NOTING)
     }
 
-    pub(crate) fn unit() -> Self {
+    pub fn unit() -> Self {
         Self::builtin(constants::UNIT)
     }
 
-    pub(crate) fn int8() -> Self {
+    pub fn int8() -> Self {
         Self::builtin(constants::INT8)
     }
 
-    pub(crate) fn int16() -> Self {
+    pub fn int16() -> Self {
         Self::builtin(constants::INT16)
     }
 
-    pub(crate) fn int32() -> Self {
+    pub fn int32() -> Self {
         Self::builtin(constants::INT32)
     }
 
-    pub(crate) fn int64() -> Self {
+    pub fn int64() -> Self {
         Self::builtin(constants::INT64)
     }
 
-    pub(crate) fn size() -> Self {
+    pub fn size() -> Self {
         Self::builtin(constants::SIZE)
     }
 
-    pub(crate) fn uint8() -> Self {
+    pub fn uint8() -> Self {
         Self::builtin(constants::UINT8)
     }
 
-    pub(crate) fn uint16() -> Self {
+    pub fn uint16() -> Self {
         Self::builtin(constants::UINT16)
     }
 
-    pub(crate) fn uint32() -> Self {
+    pub fn uint32() -> Self {
         Self::builtin(constants::UINT32)
     }
 
-    pub(crate) fn uint64() -> Self {
+    pub fn uint64() -> Self {
         Self::builtin(constants::UINT64)
     }
 
-    pub(crate) fn usize() -> Self {
+    pub fn usize() -> Self {
         Self::builtin(constants::USIZE)
     }
 
-    pub(crate) fn float() -> Self {
+    pub fn float() -> Self {
         Self::builtin(constants::F32)
     }
 
-    pub(crate) fn double() -> Self {
+    pub fn double() -> Self {
         Self::builtin(constants::F64)
     }
 
-    pub(crate) fn bool() -> Self {
+    pub fn bool() -> Self {
         Self::builtin(constants::BOOL)
     }
 
-    pub(crate) fn string() -> Self {
+    pub fn string() -> Self {
         Self::builtin(constants::STRING)
     }
 
-    pub(crate) fn is_string(&self) -> bool {
+    pub fn is_string(&self) -> bool {
         Self::string().eq(self)
+    }
+
+    pub fn is_generic(&self) -> bool {
+        self.type_args.is_some()
     }
 }
 

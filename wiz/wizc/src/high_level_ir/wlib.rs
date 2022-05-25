@@ -1,4 +1,4 @@
-use crate::high_level_ir::typed_file::TypedSourceSet;
+use wiz_hir::typed_file::TypedSourceSet;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use std::path::Path;

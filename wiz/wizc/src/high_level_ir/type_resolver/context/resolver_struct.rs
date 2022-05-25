@@ -1,4 +1,4 @@
-use crate::high_level_ir::typed_type::TypedType;
+use wiz_hir::typed_type::TypedType;
 use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Eq, PartialEq, Clone)]

@@ -11,9 +11,9 @@ use crate::high_level_ir::type_resolver::declaration::DeclarationItemKind;
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::name_environment::NameEnvironment;
 use crate::high_level_ir::type_resolver::result::Result;
-use crate::high_level_ir::typed_annotation::TypedAnnotations;
-use crate::high_level_ir::typed_expr::TypedBinaryOperator;
-use crate::high_level_ir::typed_type::{
+use wiz_hir::typed_annotation::TypedAnnotations;
+use wiz_hir::typed_expr::TypedBinaryOperator;
+use wiz_hir::typed_type::{
     Package, TypedArgType, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType,
     TypedValueType,
 };
@@ -446,8 +446,8 @@ impl ResolverContext {
 #[cfg(test)]
 mod tests {
     use super::{ResolverContext, ResolverStruct, StructKind};
-    use crate::constants::INT32;
-    use crate::high_level_ir::typed_type::TypedType;
+    use wiz_constants::constants::INT32;
+    use wiz_hir::typed_type::TypedType;
 
     #[test]
     fn test_context_name_environment() {

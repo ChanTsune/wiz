@@ -1,6 +1,6 @@
-use crate::high_level_ir::typed_decl::TypedDecl;
-use crate::high_level_ir::typed_expr::TypedExpr;
-use crate::high_level_ir::typed_type::TypedType;
+use crate::typed_decl::TypedDecl;
+use crate::typed_expr::TypedExpr;
+use crate::typed_type::TypedType;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
@@ -19,15 +19,15 @@ pub enum TypedAssignmentStmt {
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedAssignment {
-    pub(crate) target: TypedExpr,
-    pub(crate) value: TypedExpr,
+    pub target: TypedExpr,
+    pub value: TypedExpr,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedAssignmentAndOperation {
-    pub(crate) target: TypedExpr,
-    pub(crate) operator: TypedAssignmentAndOperator,
-    pub(crate) value: TypedExpr,
+    pub target: TypedExpr,
+    pub operator: TypedAssignmentAndOperator,
+    pub value: TypedExpr,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
@@ -47,20 +47,20 @@ pub enum TypedLoopStmt {
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedWhileLoopStmt {
-    pub(crate) condition: TypedExpr,
-    pub(crate) block: TypedBlock,
+    pub condition: TypedExpr,
+    pub block: TypedBlock,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedForStmt {
-    pub(crate) values: Vec<String>,
-    pub(crate) iterator: TypedExpr,
-    pub(crate) block: TypedBlock,
+    pub values: Vec<String>,
+    pub iterator: TypedExpr,
+    pub block: TypedBlock,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedBlock {
-    pub(crate) body: Vec<TypedStmt>,
+    pub body: Vec<TypedStmt>,
 }
 
 impl TypedBlock {

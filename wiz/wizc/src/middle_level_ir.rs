@@ -1,21 +1,22 @@
-use crate::constants;
-use crate::constants::annotation::NO_MANGLE;
+use wiz_constants as constants;
+use wiz_constants::annotation::{BUILTIN, NO_MANGLE};
 use crate::high_level_ir::type_resolver::arena::ResolverArena;
-use crate::high_level_ir::typed_annotation::TypedAnnotations;
-use crate::high_level_ir::typed_decl::{
+use crate::high_level_ir::type_resolver::declaration::{DeclarationItem, DeclarationItemKind};
+use wiz_hir::typed_annotation::TypedAnnotations;
+use wiz_hir::typed_decl::{
     TypedArgDef, TypedDecl, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody,
     TypedMemberFunction, TypedProtocol, TypedStruct, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{
+use wiz_hir::typed_expr::{
     TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
     TypedInstanceMember, TypedLiteral, TypedName, TypedPrefixUnaryOperator, TypedReturn,
     TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
-use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
-use crate::high_level_ir::typed_stmt::{
+use wiz_hir::typed_file::{TypedFile, TypedSourceSet};
+use wiz_hir::typed_stmt::{
     TypedAssignmentAndOperator, TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt,
 };
-use crate::high_level_ir::typed_type::{
+use wiz_hir::typed_type::{
     Package, TypedFunctionType, TypedPackage, TypedType, TypedTypeParam, TypedValueType,
 };
 use crate::middle_level_ir::context::HLIR2MLIRContext;

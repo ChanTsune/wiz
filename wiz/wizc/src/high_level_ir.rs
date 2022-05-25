@@ -1,25 +1,25 @@
 use crate::high_level_ir::node_id::TypedModuleId;
-use crate::high_level_ir::typed_annotation::TypedAnnotations;
-use crate::high_level_ir::typed_decl::{
+use wiz_hir::typed_annotation::TypedAnnotations;
+use wiz_hir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedDeclKind, TypedExtension, TypedFun,
     TypedFunBody, TypedMemberFunction, TypedProtocol, TypedStoredProperty, TypedStruct, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{
-    TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
+use wiz_hir::typed_expr::{
+    TypedArray, TypedBinaryOperator, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf,
     TypedInstanceMember, TypedLambda, TypedLiteral, TypedName, TypedPostfixUnaryOp,
     TypedPostfixUnaryOperator, TypedPrefixUnaryOp, TypedPrefixUnaryOperator, TypedReturn,
     TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
-use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
-use crate::high_level_ir::typed_stmt::{
+use wiz_hir::typed_file::{TypedFile, TypedSourceSet};
+use wiz_hir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentAndOperator, TypedAssignmentStmt,
     TypedBlock, TypedForStmt, TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
 };
-use crate::high_level_ir::typed_type::{
+use wiz_hir::typed_type::{
     Package, TypedNamedValueType, TypedPackage, TypedType, TypedTypeParam, TypedValueType,
 };
-use crate::high_level_ir::typed_type_constraint::TypedTypeConstraint;
-use crate::high_level_ir::typed_use::TypedUse;
+use wiz_hir::typed_type_constraint::TypedTypeConstraint;
+use wiz_hir::typed_use::TypedUse;
 use crate::utils::path_string_to_page_name;
 use std::collections::HashMap;
 use wiz_syntax::syntax::annotation::AnnotationsSyntax;
@@ -45,14 +45,6 @@ pub mod declaration_id;
 pub mod node_id;
 pub mod type_checker;
 pub mod type_resolver;
-pub mod typed_annotation;
-pub mod typed_decl;
-pub mod typed_expr;
-pub mod typed_file;
-pub mod typed_stmt;
-pub mod typed_type;
-pub mod typed_type_constraint;
-pub mod typed_use;
 pub mod wlib;
 
 pub struct AstLowering;
