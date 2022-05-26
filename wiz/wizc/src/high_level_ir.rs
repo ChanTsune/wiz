@@ -691,7 +691,7 @@ impl<'a> AstLowering<'a> {
 
     pub fn subscript_syntax(&self, s: SubscriptSyntax) -> TypedSubscript {
         let target = Box::new(self.expr(*s.target));
-        let indexes: Vec<TypedExprKind> = s
+        let indexes: Vec<_> = s
             .idx_or_keys
             .elements
             .into_iter()
