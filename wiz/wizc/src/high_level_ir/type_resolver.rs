@@ -8,6 +8,7 @@ pub mod result;
 mod tests;
 
 use crate::high_level_ir::declaration_id::DeclarationId;
+use crate::high_level_ir::type_resolver::arena::ResolverArena;
 use crate::high_level_ir::type_resolver::context::ResolverContext;
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
@@ -28,7 +29,6 @@ use wiz_hir::typed_stmt::{
 use wiz_hir::typed_type::{Package, TypedArgType, TypedFunctionType, TypedType, TypedValueType};
 use wiz_hir::typed_type_constraint::TypedTypeConstraint;
 use wiz_session::Session;
-use crate::high_level_ir::type_resolver::arena::ResolverArena;
 
 #[derive(Debug)]
 pub(crate) struct TypeResolver<'s> {
