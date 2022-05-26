@@ -28,9 +28,9 @@ fn check(source: &str, typed_file: TypedFile) {
     file.name = typed_file.name.clone();
 
     let mut session = Session::new();
-    let arena = ResolverArena::default();
+    let mut arena = ResolverArena::default();
 
-    let mut resolver = TypeResolver::new(&mut session, arena);
+    let mut resolver = TypeResolver::new(&mut session, &mut arena);
     let _ = resolver.detect_type(&file).unwrap();
     let _ = resolver.preload_file(&file).unwrap();
     let f = resolver.file(file);

@@ -120,9 +120,10 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
         ast2hlir.source_set(input_source, TypedModuleId::new(std_hlir.len()))
     });
 
-    let (std_hlir, hlfiles, arena) = session.timer::<Result<_>, _>("resolve type", |session| {
-        let arena = ResolverArena::default();
-        let mut type_resolver = TypeResolver::new(session, arena);
+    let mut arena = ResolverArena::default();
+
+    let (std_hlir, hlfiles) = session.timer::<Result<_>, _>("resolve type", |session| {
+        let mut type_resolver = TypeResolver::new(session, &mut arena);
         type_resolver.global_use(&["core", "builtin", "*"]);
         type_resolver.global_use(&["std", "builtin", "*"]);
 
@@ -156,7 +157,7 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
 
         let hlfiles = type_resolver.source_set(hlfiles)?;
 
-        Ok((std_hlir, hlfiles, type_resolver.context.arena))
+        Ok((std_hlir, hlfiles))
     })?;
 
     session.timer("type check", |session| {

@@ -33,11 +33,11 @@ use crate::high_level_ir::type_resolver::arena::ResolverArena;
 #[derive(Debug)]
 pub(crate) struct TypeResolver<'s> {
     session: &'s mut Session,
-    pub(crate) context: ResolverContext,
+    pub(crate) context: ResolverContext<'s>,
 }
 
 impl<'s> TypeResolver<'s> {
-    pub fn new(session: &'s mut Session, arena: ResolverArena) -> Self {
+    pub fn new(session: &'s mut Session, arena: &'s mut ResolverArena) -> Self {
         Self {
             session,
             context: ResolverContext::new(arena),

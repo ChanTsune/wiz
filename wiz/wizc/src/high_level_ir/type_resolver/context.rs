@@ -20,18 +20,18 @@ use wiz_hir::typed_type::{
 };
 use wiz_utils::StackedHashMap;
 
-#[derive(Debug, Clone)]
-pub struct ResolverContext {
+#[derive(Debug)]
+pub struct ResolverContext<'a> {
     global_used_name_space: Vec<Vec<String>>,
     used_name_space: Vec<Vec<String>>,
-    pub(crate) arena: ResolverArena,
+    pub(crate) arena: &'a mut ResolverArena,
     current_type: Option<TypedType>,
     current_namespace_id: DeclarationId,
     local_stack: StackedHashMap<String, EnvValue>,
 }
 
-impl ResolverContext {
-    pub(crate) fn new(arena: ResolverArena) -> Self {
+impl<'a> ResolverContext<'a> {
+    pub(crate) fn new(arena: &'a mut ResolverArena) -> Self {
         Self {
             global_used_name_space: Default::default(),
             used_name_space: Default::default(),
@@ -448,10 +448,12 @@ mod tests {
     use super::{ResolverContext, ResolverStruct, StructKind};
     use wiz_constants::INT32;
     use wiz_hir::typed_type::TypedType;
+    use crate::ResolverArena;
 
     #[test]
     fn test_context_name_environment() {
-        let mut context = ResolverContext::new(Default::default());
+        let mut arena = ResolverArena::default();
+        let mut context = ResolverContext::new(&mut arena);
 
         let env = context.get_current_name_environment();
 
