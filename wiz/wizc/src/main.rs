@@ -92,6 +92,9 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
         session.get_duration(id_parse_files).unwrap().as_millis()
     );
 
+    let mut arena = ResolverArena::default();
+
+
     let std_hlir = session.timer("load dependencies", |_| {
         let libraries = config.libraries();
 
@@ -103,7 +106,7 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
             Ok(source_sets
                 .into_iter()
                 .enumerate()
-                .map(|(i, s)| ast2hlir(s, TypedModuleId::new(i)))
+                .map(|(i, s)| ast2hlir(&mut arena, s, TypedModuleId::new(i)))
                 .collect())
         } else {
             Ok(libraries
@@ -115,12 +118,10 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
     })?;
 
     let hlfiles = session.timer("convert to hlir", |_| {
-        let mut ast2hlir = AstLowering::new();
+        let mut ast2hlir = AstLowering::new(&mut arena);
 
         ast2hlir.source_set(input_source, TypedModuleId::new(std_hlir.len()))
     });
-
-    let mut arena = ResolverArena::default();
 
     let (std_hlir, hlfiles) = session.timer::<Result<_>, _>("resolve type", |session| {
         let mut type_resolver = TypeResolver::new(session, &mut arena);

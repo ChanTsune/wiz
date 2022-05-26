@@ -22,7 +22,9 @@ use wiz_syntax_parser::parser::wiz::parse_from_string;
 fn check(source: &str, typed_file: TypedFile) {
     let ast = parse_from_string(source).unwrap();
 
-    let mut ast2hlir = AstLowering::new();
+    let mut arena = ResolverArena::default();
+
+    let mut ast2hlir = AstLowering::new(&mut arena);
 
     let mut file = ast2hlir.file(ast);
     file.name = typed_file.name.clone();

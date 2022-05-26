@@ -40,6 +40,7 @@ use wiz_syntax::syntax::statement::{
     AssignmentStmt, ForLoopSyntax, LoopStmt, Stmt, WhileLoopSyntax,
 };
 use wiz_syntax::syntax::type_name::{TypeName, TypeParam, UserTypeName};
+use crate::ResolverArena;
 
 pub mod declaration_id;
 pub mod node_id;
@@ -47,16 +48,18 @@ pub mod type_checker;
 pub mod type_resolver;
 pub mod wlib;
 
-pub struct AstLowering;
+pub struct AstLowering<'a> {
+    arena: &'a mut ResolverArena
+}
 
-pub fn ast2hlir(s: SourceSet, module_id: TypedModuleId) -> TypedSourceSet {
-    let mut converter = AstLowering::new();
+pub fn ast2hlir(arena: &mut ResolverArena, s: SourceSet, module_id: TypedModuleId) -> TypedSourceSet {
+    let mut converter = AstLowering::new(arena);
     converter.source_set(s, module_id)
 }
 
-impl AstLowering {
-    pub fn new() -> Self {
-        Self {}
+impl<'a> AstLowering<'a> {
+    pub fn new(arena: &'a mut ResolverArena) -> Self {
+        Self { arena }
     }
 
     pub fn source_set(&mut self, s: SourceSet, module_id: TypedModuleId) -> TypedSourceSet {

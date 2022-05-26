@@ -16,7 +16,9 @@ use wiz_syntax_parser::parser::wiz::parse_from_string;
 fn check(source: &str, except: MLFile) {
     let ast = parse_from_string(source).unwrap();
 
-    let mut ast2hlir = AstLowering::new();
+    let mut arena = ResolverArena::default();
+
+    let mut ast2hlir = AstLowering::new(&mut arena);
 
     let mut file = ast2hlir.file(ast);
     file.name = String::from("test");
@@ -29,7 +31,7 @@ fn check(source: &str, except: MLFile) {
     let _ = resolver.preload_file(&file).unwrap();
     let hl_file = resolver.file(file).unwrap();
 
-    let mut hlir2mlir = HLIR2MLIR::new(resolver.context.arena());
+    let mut hlir2mlir = HLIR2MLIR::new(&mut arena);
 
     let f = hlir2mlir.convert_from_source_set(TypedSourceSet::File(hl_file));
 
