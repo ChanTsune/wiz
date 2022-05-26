@@ -94,7 +94,6 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
 
     let mut arena = ResolverArena::default();
 
-
     let std_hlir = session.timer("load dependencies", |_| {
         let libraries = config.libraries();
 

@@ -1,5 +1,6 @@
 use crate::high_level_ir::node_id::TypedModuleId;
 use crate::utils::path_string_to_page_name;
+use crate::ResolverArena;
 use std::collections::HashMap;
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_decl::{
@@ -40,7 +41,6 @@ use wiz_syntax::syntax::statement::{
     AssignmentStmt, ForLoopSyntax, LoopStmt, Stmt, WhileLoopSyntax,
 };
 use wiz_syntax::syntax::type_name::{TypeName, TypeParam, UserTypeName};
-use crate::ResolverArena;
 
 pub mod declaration_id;
 pub mod node_id;
@@ -49,10 +49,14 @@ pub mod type_resolver;
 pub mod wlib;
 
 pub struct AstLowering<'a> {
-    arena: &'a mut ResolverArena
+    arena: &'a mut ResolverArena,
 }
 
-pub fn ast2hlir(arena: &mut ResolverArena, s: SourceSet, module_id: TypedModuleId) -> TypedSourceSet {
+pub fn ast2hlir(
+    arena: &mut ResolverArena,
+    s: SourceSet,
+    module_id: TypedModuleId,
+) -> TypedSourceSet {
     let mut converter = AstLowering::new(arena);
     converter.source_set(s, module_id)
 }
