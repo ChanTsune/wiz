@@ -39,7 +39,7 @@ impl<'s> TypeResolver<'s> {
     pub fn new(session: &'s mut Session) -> Self {
         Self {
             session,
-            context: ResolverContext::new(),
+            context: ResolverContext::new(Default::default()),
         }
     }
 

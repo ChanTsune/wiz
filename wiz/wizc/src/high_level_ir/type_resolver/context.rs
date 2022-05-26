@@ -31,11 +31,11 @@ pub struct ResolverContext {
 }
 
 impl ResolverContext {
-    pub(crate) fn new() -> Self {
+    pub(crate) fn new(arena: ResolverArena) -> Self {
         Self {
             global_used_name_space: Default::default(),
             used_name_space: Default::default(),
-            arena: ResolverArena::default(),
+            arena,
             current_type: None,
             current_namespace_id: DeclarationId::ROOT,
             local_stack: StackedHashMap::new(),
@@ -451,7 +451,7 @@ mod tests {
 
     #[test]
     fn test_context_name_environment() {
-        let mut context = ResolverContext::new();
+        let mut context = ResolverContext::new(Default::default());
 
         let env = context.get_current_name_environment();
 
