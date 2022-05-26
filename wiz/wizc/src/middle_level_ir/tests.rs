@@ -1,3 +1,4 @@
+use crate::high_level_ir::type_resolver::arena::ResolverArena;
 use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::AstLowering;
 use crate::middle_level_ir::HLIR2MLIR;
@@ -11,7 +12,6 @@ use wiz_mir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
 use wiz_mir::statement::{MLReturn, MLStmt};
 use wiz_session::Session;
 use wiz_syntax_parser::parser::wiz::parse_from_string;
-use crate::high_level_ir::type_resolver::arena::ResolverArena;
 
 fn check(source: &str, except: MLFile) {
     let ast = parse_from_string(source).unwrap();

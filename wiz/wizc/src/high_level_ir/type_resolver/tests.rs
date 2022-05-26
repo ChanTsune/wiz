@@ -1,3 +1,4 @@
+use crate::high_level_ir::type_resolver::arena::ResolverArena;
 use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::AstLowering;
 use wiz_hir::typed_decl::{
@@ -17,7 +18,6 @@ use wiz_hir::typed_type::{
 };
 use wiz_session::Session;
 use wiz_syntax_parser::parser::wiz::parse_from_string;
-use crate::high_level_ir::type_resolver::arena::ResolverArena;
 
 fn check(source: &str, typed_file: TypedFile) {
     let ast = parse_from_string(source).unwrap();
