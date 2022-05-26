@@ -17,6 +17,7 @@ use wiz_hir::typed_type::{
 };
 use wiz_session::Session;
 use wiz_syntax_parser::parser::wiz::parse_from_string;
+use crate::high_level_ir::type_resolver::arena::ResolverArena;
 
 fn check(source: &str, typed_file: TypedFile) {
     let ast = parse_from_string(source).unwrap();
@@ -27,8 +28,9 @@ fn check(source: &str, typed_file: TypedFile) {
     file.name = typed_file.name.clone();
 
     let mut session = Session::new();
+    let arena = ResolverArena::default();
 
-    let mut resolver = TypeResolver::new(&mut session);
+    let mut resolver = TypeResolver::new(&mut session, arena);
     let _ = resolver.detect_type(&file).unwrap();
     let _ = resolver.preload_file(&file).unwrap();
     let f = resolver.file(file);

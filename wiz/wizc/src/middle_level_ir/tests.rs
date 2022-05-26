@@ -11,6 +11,7 @@ use wiz_mir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
 use wiz_mir::statement::{MLReturn, MLStmt};
 use wiz_session::Session;
 use wiz_syntax_parser::parser::wiz::parse_from_string;
+use crate::high_level_ir::type_resolver::arena::ResolverArena;
 
 fn check(source: &str, except: MLFile) {
     let ast = parse_from_string(source).unwrap();
@@ -21,8 +22,9 @@ fn check(source: &str, except: MLFile) {
     file.name = String::from("test");
 
     let mut session = Session::new();
+    let arena = ResolverArena::default();
 
-    let mut resolver = TypeResolver::new(&mut session);
+    let mut resolver = TypeResolver::new(&mut session, arena);
     let _ = resolver.detect_type(&file).unwrap();
     let _ = resolver.preload_file(&file).unwrap();
     let hl_file = resolver.file(file).unwrap();

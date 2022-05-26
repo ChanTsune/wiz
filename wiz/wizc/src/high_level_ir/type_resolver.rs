@@ -28,6 +28,7 @@ use wiz_hir::typed_stmt::{
 use wiz_hir::typed_type::{Package, TypedArgType, TypedFunctionType, TypedType, TypedValueType};
 use wiz_hir::typed_type_constraint::TypedTypeConstraint;
 use wiz_session::Session;
+use crate::high_level_ir::type_resolver::arena::ResolverArena;
 
 #[derive(Debug)]
 pub(crate) struct TypeResolver<'s> {
@@ -36,10 +37,10 @@ pub(crate) struct TypeResolver<'s> {
 }
 
 impl<'s> TypeResolver<'s> {
-    pub fn new(session: &'s mut Session) -> Self {
+    pub fn new(session: &'s mut Session, arena: ResolverArena) -> Self {
         Self {
             session,
-            context: ResolverContext::new(Default::default()),
+            context: ResolverContext::new(arena),
         }
     }
 

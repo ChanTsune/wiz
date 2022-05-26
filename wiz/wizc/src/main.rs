@@ -17,6 +17,7 @@ use wiz_syntax::syntax::file::SourceSet;
 use wiz_syntax_parser::parser;
 use wiz_syntax_parser::parser::wiz::{parse_from_file_path, read_package_from_path};
 use wizc_cli::{BuildType, Config};
+use crate::high_level_ir::type_resolver::arena::ResolverArena;
 
 mod high_level_ir;
 mod llvm_ir;
@@ -120,7 +121,8 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
     });
 
     let (std_hlir, hlfiles, arena) = session.timer::<Result<_>, _>("resolve type", |session| {
-        let mut type_resolver = TypeResolver::new(session);
+        let arena = ResolverArena::default();
+        let mut type_resolver = TypeResolver::new(session, arena);
         type_resolver.global_use(&["core", "builtin", "*"]);
         type_resolver.global_use(&["std", "builtin", "*"]);
 
