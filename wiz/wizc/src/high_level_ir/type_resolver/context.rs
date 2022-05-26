@@ -446,9 +446,9 @@ impl<'a> ResolverContext<'a> {
 #[cfg(test)]
 mod tests {
     use super::{ResolverContext, ResolverStruct, StructKind};
+    use crate::ResolverArena;
     use wiz_constants::INT32;
     use wiz_hir::typed_type::TypedType;
-    use crate::ResolverArena;
 
     #[test]
     fn test_context_name_environment() {
