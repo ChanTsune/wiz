@@ -33,7 +33,7 @@ use wiz_session::Session;
 #[derive(Debug)]
 pub(crate) struct TypeResolver<'s> {
     session: &'s mut Session,
-    pub(crate) context: ResolverContext<'s>,
+    context: ResolverContext<'s>,
 }
 
 impl<'s> TypeResolver<'s> {
