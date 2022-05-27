@@ -17,6 +17,7 @@ pub struct ResolvedDependencyTree {
 pub fn resolve_manifest_dependencies(
     manifest_path: &Path,
     manifest: &Manifest,
+    another_std: Option<&str>,
 ) -> Result<ResolvedDependencyTree, Box<dyn Error>> {
     let home_dir = PathBuf::from(env!("HOME"));
     let builtin_package_dir = home_dir.join(".wiz/lib/src/");
@@ -32,7 +33,7 @@ pub fn resolve_manifest_dependencies(
                 .join(MANIFEST_FILE_NAME);
             if manifest_path.exists() {
                 let manifest = manifest::read(&manifest_path)?;
-                let dependency = resolve_manifest_dependencies(&manifest_path, &manifest)?;
+                let dependency = resolve_manifest_dependencies(&manifest_path, &manifest, another_std)?;
                 result.push(dependency);
                 resolved = true;
                 break;

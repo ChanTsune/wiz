@@ -48,6 +48,12 @@ fn cli() -> Result<(), Box<dyn Error>> {
                         .long("manifest-path")
                         .takes_value(true)
                         .help("Path to the manifest file"),
+                )
+                .arg(
+                    Arg::new("std")
+                        .long("std")
+                        .takes_value(true)
+                        .help("Use another std library"),
                 ),
         )
         .subcommand(
@@ -63,15 +69,29 @@ fn cli() -> Result<(), Box<dyn Error>> {
                         .long("manifest-path")
                         .takes_value(true)
                         .help("Path to the manifest file"),
+                )
+                .arg(
+                    Arg::new("std")
+                        .long("std")
+                        .takes_value(true)
+                        .help("Use another std library"),
                 ),
         )
         .subcommand(
-            Command::new(test::COMMAND_NAME).about("Run the tests").arg(
-                Arg::new("manifest-path")
-                    .long("manifest-path")
-                    .takes_value(true)
-                    .help("Path to the manifest file"),
-            ),
+            Command::new(test::COMMAND_NAME)
+                .about("Run the tests")
+                .arg(
+                    Arg::new("manifest-path")
+                        .long("manifest-path")
+                        .takes_value(true)
+                        .help("Path to the manifest file"),
+                )
+                .arg(
+                    Arg::new("std")
+                        .long("std")
+                        .takes_value(true)
+                        .help("Use another std library"),
+                ),
         )
         .arg(
             Arg::new("quite")
