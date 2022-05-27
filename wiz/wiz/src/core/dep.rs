@@ -31,7 +31,8 @@ pub fn resolve_manifest_dependencies(
             let manifest_path = PathBuf::from(std).join(name).join(MANIFEST_FILE_NAME);
             if manifest_path.exists() {
                 let manifest = manifest::read(&manifest_path)?;
-                let dependency = resolve_manifest_dependencies(&manifest_path, &manifest, another_std)?;
+                let dependency =
+                    resolve_manifest_dependencies(&manifest_path, &manifest, another_std)?;
                 result.push(dependency);
                 resolved = true;
             }
