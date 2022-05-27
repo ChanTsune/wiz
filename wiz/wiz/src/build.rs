@@ -18,7 +18,8 @@ pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn Error
 
     let ws = load_project(manifest_path)?;
 
-    let resolved_dependencies = resolve_manifest_dependencies(&ws.cws, &ws.get_manifest()?, another_std)?;
+    let resolved_dependencies =
+        resolve_manifest_dependencies(&ws.cws, &ws.get_manifest()?, another_std)?;
 
     println!("{:?}", resolved_dependencies);
 
