@@ -15,7 +15,8 @@ pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn Error
     if options.is_present("manifest") {
         println!("{:?}", ws.get_manifest()?);
     };
-    let resolved_dependencies = resolve_manifest_dependencies(&ws.cws, &ws.get_manifest()?, another_std)?;
+    let resolved_dependencies =
+        resolve_manifest_dependencies(&ws.cws, &ws.get_manifest()?, another_std)?;
     println!("{:?}", resolved_dependencies);
     Ok(())
 }

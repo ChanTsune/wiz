@@ -44,7 +44,8 @@ pub fn resolve_manifest_dependencies(
                 .join(MANIFEST_FILE_NAME);
             if !resolved && manifest_path.exists() {
                 let manifest = manifest::read(&manifest_path)?;
-                let dependency = resolve_manifest_dependencies(&manifest_path, &manifest, another_std)?;
+                let dependency =
+                    resolve_manifest_dependencies(&manifest_path, &manifest, another_std)?;
                 result.push(dependency);
                 resolved = true;
                 break;
