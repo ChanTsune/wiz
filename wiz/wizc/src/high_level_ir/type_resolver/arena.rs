@@ -3,7 +3,7 @@ use crate::high_level_ir::type_resolver::context::{ResolverStruct, StructKind};
 use crate::high_level_ir::type_resolver::declaration::{DeclarationItem, DeclarationItemKind};
 use std::collections::HashMap;
 use std::error::Error;
-use std::fmt::{Debug, Display, Formatter};
+use std::fmt::{Debug, Display, Formatter, Write};
 use wiz_constants::annotation::BUILTIN;
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_expr::TypedBinaryOperator;
@@ -297,6 +297,62 @@ impl ResolverArena {
         key: &(TypedBinaryOperator, TypedType, TypedType),
     ) -> Option<&TypedType> {
         self.binary_operators.get(key)
+    }
+}
+
+impl Display for ResolverArena {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        if let Some(root) = self.get_by_id(&DeclarationId::ROOT) {
+            let mut h = vec![false];
+            self._fmt(f, "root",root, 0, true, &mut h)
+        } else {
+            f.write_str("root...")
+        }
+    }
+}
+
+impl ResolverArena {
+
+    fn ident(
+        f: &mut Formatter<'_>,
+        level: usize,
+        is_last: bool,
+        hierarchy_tree: &[bool]
+    ) -> std::fmt::Result {
+        let mut i = 0;
+        let s = hierarchy_tree.len();
+        while i < s - 1 {
+            f.write_str(if hierarchy_tree[i] { "│  " } else { "   " })?;
+            i += 1;
+        }
+        if level > 0 {
+            f.write_str(if is_last { "└──" } else { "├──" })?;
+        }
+        Ok(())
+    }
+
+    fn _fmt(
+        &self,
+        f: &mut Formatter<'_>,
+        name: &str,
+        item: &DeclarationItem,
+        level: usize,
+        is_last: bool,
+        hierarchy_tree: &mut Vec<bool>,
+    ) -> std::fmt::Result {
+        Self::ident(f, level, is_last, &hierarchy_tree)?;
+        f.write_str(name)?;
+        f.write_char('\n')?;
+        let children_count = item.children().len();
+        for (i, child) in item.children().into_iter().enumerate() {
+            let last = (i + 1) == children_count;
+            hierarchy_tree.push(i != (children_count - 1));
+            let id = child.1.into_iter().find(|_|true).unwrap();
+            let item = self.get_by_id(id).unwrap();
+            self._fmt(f, child.0, item, level + 1, last, hierarchy_tree)?;
+            hierarchy_tree.pop();
+        }
+        Ok(())
     }
 }
 
