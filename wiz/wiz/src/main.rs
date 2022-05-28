@@ -13,6 +13,27 @@ use clap::{crate_version, Arg, Command};
 use std::error::Error;
 use std::process::exit;
 
+fn arg_target_triple() -> Arg<'static> {
+    Arg::new("target-triple")
+        .long("target-triple")
+        .takes_value(true)
+        .help("Build target platform")
+}
+
+fn arg_manifest_path() -> Arg<'static> {
+    Arg::new("manifest-path")
+        .long("manifest-path")
+        .takes_value(true)
+        .help("Path to the manifest file")
+}
+
+fn arg_std() -> Arg<'static> {
+    Arg::new("std")
+        .long("std")
+        .takes_value(true)
+        .help("Use another std library")
+}
+
 fn cli() -> Result<(), Box<dyn Error>> {
     let app = Command::new("wiz")
         .version(crate_version!())
@@ -37,24 +58,9 @@ fn cli() -> Result<(), Box<dyn Error>> {
             Command::new(build::COMMAND_NAME)
                 .about("Compile the current package")
                 .arg(Arg::new("target-dir").help("Directory for all generated artifacts"))
-                .arg(
-                    Arg::new("target-triple")
-                        .long("target-triple")
-                        .takes_value(true)
-                        .help("Build target platform"),
-                )
-                .arg(
-                    Arg::new("manifest-path")
-                        .long("manifest-path")
-                        .takes_value(true)
-                        .help("Path to the manifest file"),
-                )
-                .arg(
-                    Arg::new("std")
-                        .long("std")
-                        .takes_value(true)
-                        .help("Use another std library"),
-                ),
+                .arg(arg_target_triple())
+                .arg(arg_manifest_path())
+                .arg(arg_std()),
         )
         .subcommand(
             Command::new(check::COMMAND_NAME)
@@ -64,34 +70,14 @@ fn cli() -> Result<(), Box<dyn Error>> {
                         .long("manifest")
                         .help("Check manifest.toml"),
                 )
-                .arg(
-                    Arg::new("manifest-path")
-                        .long("manifest-path")
-                        .takes_value(true)
-                        .help("Path to the manifest file"),
-                )
-                .arg(
-                    Arg::new("std")
-                        .long("std")
-                        .takes_value(true)
-                        .help("Use another std library"),
-                ),
+                .arg(arg_manifest_path())
+                .arg(arg_std()),
         )
         .subcommand(
             Command::new(test::COMMAND_NAME)
                 .about("Run the tests")
-                .arg(
-                    Arg::new("manifest-path")
-                        .long("manifest-path")
-                        .takes_value(true)
-                        .help("Path to the manifest file"),
-                )
-                .arg(
-                    Arg::new("std")
-                        .long("std")
-                        .takes_value(true)
-                        .help("Use another std library"),
-                ),
+                .arg(arg_manifest_path())
+                .arg(arg_std()),
         )
         .arg(
             Arg::new("quite")
