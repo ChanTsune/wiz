@@ -304,7 +304,7 @@ impl Display for ResolverArena {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         if let Some(root) = self.get_by_id(&DeclarationId::ROOT) {
             let mut h = vec![false];
-            self._fmt(f, "root",root, 0, true, &mut h)
+            self._fmt(f, "root", root, 0, true, &mut h)
         } else {
             f.write_str("root...")
         }
@@ -312,12 +312,11 @@ impl Display for ResolverArena {
 }
 
 impl ResolverArena {
-
     fn ident(
         f: &mut Formatter<'_>,
         level: usize,
         is_last: bool,
-        hierarchy_tree: &[bool]
+        hierarchy_tree: &[bool],
     ) -> std::fmt::Result {
         let mut i = 0;
         let s = hierarchy_tree.len();
@@ -347,7 +346,7 @@ impl ResolverArena {
         for (i, child) in item.children().into_iter().enumerate() {
             let last = (i + 1) == children_count;
             hierarchy_tree.push(i != (children_count - 1));
-            let id = child.1.into_iter().find(|_|true).unwrap();
+            let id = child.1.into_iter().find(|_| true).unwrap();
             let item = self.get_by_id(id).unwrap();
             self._fmt(f, child.0, item, level + 1, last, hierarchy_tree)?;
             hierarchy_tree.pop();
