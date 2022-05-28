@@ -341,6 +341,11 @@ impl ResolverArena {
     ) -> std::fmt::Result {
         Self::ident(f, level, is_last, &hierarchy_tree)?;
         f.write_str(name)?;
+        if item.is_namespace() {
+            f.write_char('/')?;
+        } else if item.is_type() {
+            f.write_char('*')?;
+        }
         f.write_char('\n')?;
         let children_count = item.children().len();
         for (i, child) in item.children().into_iter().enumerate() {
