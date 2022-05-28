@@ -1,3 +1,4 @@
+use crate::high_level_ir::declaration_id::DeclarationId;
 use crate::high_level_ir::node_id::TypedModuleId;
 use crate::utils::path_string_to_page_name;
 use crate::ResolverArena;
@@ -50,6 +51,7 @@ pub mod wlib;
 
 pub struct AstLowering<'a> {
     arena: &'a mut ResolverArena,
+    namespace_id: DeclarationId,
 }
 
 pub fn ast2hlir(
@@ -63,43 +65,71 @@ pub fn ast2hlir(
 
 impl<'a> AstLowering<'a> {
     pub fn new(arena: &'a mut ResolverArena) -> Self {
-        Self { arena }
+        Self {
+            arena,
+            namespace_id: DeclarationId::ROOT,
+        }
+    }
+
+    fn push_namespace<T, F: FnOnce(&mut Self) -> T>(&mut self, name: &str, f: F) -> T {
+        let parent = self.namespace_id;
+
+        self.namespace_id = self
+            .arena
+            .resolve_declaration_id(parent, &[name])
+            .unwrap_or_else(|| {
+                self.arena
+                    .register_namespace(&parent, name, Default::default())
+                    .unwrap_or_else(|| panic!("Can not create {}", name))
+            });
+
+        let result = f(self);
+
+        self.namespace_id = parent;
+        result
     }
 
     pub fn source_set(&mut self, s: SourceSet, module_id: TypedModuleId) -> TypedSourceSet {
         match s {
             SourceSet::File(f) => TypedSourceSet::File(self.file(f)),
-            SourceSet::Dir { name, items } => TypedSourceSet::Dir {
-                name,
-                items: items
-                    .into_iter()
-                    .map(|i| self.source_set(i, module_id))
-                    .collect(),
-            },
+            SourceSet::Dir { name, items } => {
+                self.push_namespace(&name.clone(), |slf| TypedSourceSet::Dir {
+                    name,
+                    items: items
+                        .into_iter()
+                        .map(|i| slf.source_set(i, module_id))
+                        .collect(),
+                })
+            }
         }
     }
 
     pub fn file(&mut self, f: WizFile) -> TypedFile {
         let WizFile { name, syntax } = f;
-        let mut uses = vec![];
-        let mut others = vec![];
-        for l in syntax.body.into_iter() {
-            if let DeclKind::Use(u) = l.kind {
-                uses.push(self.use_syntax(u, l.annotations));
-            } else {
-                others.push(l);
-            }
-        }
 
-        TypedFile {
-            name: path_string_to_page_name(name),
-            uses,
-            body: self.file_syntax(FileSyntax {
-                leading_trivia: Default::default(),
-                body: others,
-                trailing_trivia: Default::default(),
-            }),
-        }
+        let name = path_string_to_page_name(name);
+
+        self.push_namespace(&name.clone(), |slf| {
+            let mut uses = vec![];
+            let mut others = vec![];
+            for l in syntax.body.into_iter() {
+                if let DeclKind::Use(u) = l.kind {
+                    uses.push(slf.use_syntax(u, l.annotations));
+                } else {
+                    others.push(l);
+                }
+            }
+
+            TypedFile {
+                name,
+                uses,
+                body: slf.file_syntax(FileSyntax {
+                    leading_trivia: Default::default(),
+                    body: others,
+                    trailing_trivia: Default::default(),
+                }),
+            }
+        })
     }
 
     pub fn file_syntax(&mut self, f: FileSyntax) -> Vec<TypedDecl> {
