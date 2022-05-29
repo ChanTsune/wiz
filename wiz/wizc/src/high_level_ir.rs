@@ -115,6 +115,14 @@ impl<'a> AstLowering<'a> {
             for l in syntax.body.into_iter() {
                 if let DeclKind::Use(u) = l.kind {
                     uses.push(slf.use_syntax(u, l.annotations));
+                } else if let DeclKind::Struct(s) = &l.kind {
+                    let annotation = slf.annotations(l.annotations.clone());
+                    match s.struct_keyword.token().as_str() {
+                        "struct" => slf.arena.register_struct(&slf.namespace_id, &s.name.token(), annotation),
+                        "protocol" => slf.arena.register_protocol(&slf.namespace_id, &s.name.token(), annotation),
+                        _ => unreachable!(),
+                    };
+                    others.push(l);
                 } else {
                     others.push(l);
                 }

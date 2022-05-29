@@ -110,7 +110,11 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
         } else {
             Ok(libraries
                 .iter()
-                .map(|p| WLib::read_from(p).typed_ir)
+                .map(|p| {
+                    let lib = WLib::read_from(p);
+                    lib.apply_to(&mut arena).unwrap();
+                    lib.typed_ir
+                })
                 .collect())
         };
         std_hlir
@@ -126,14 +130,6 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
         let mut type_resolver = TypeResolver::new(session, &mut arena);
         type_resolver.global_use(&["core", "builtin", "*"]);
         type_resolver.global_use(&["std", "builtin", "*"]);
-
-        println!("===== detect types =====");
-        // detect types
-        for s in std_hlir.iter() {
-            type_resolver.detect_type_from_source_set(s)?;
-        }
-
-        type_resolver.detect_type_from_source_set(&hlfiles)?;
 
         println!("===== preload decls =====");
         // preload decls

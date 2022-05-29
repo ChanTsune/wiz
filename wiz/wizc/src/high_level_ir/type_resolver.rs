@@ -49,42 +49,6 @@ impl<'s> TypeResolver<'s> {
             .global_use_name_space(name_space.iter().map(T::to_string).collect())
     }
 
-    pub fn detect_type_from_source_set(&mut self, s: &TypedSourceSet) -> Result<()> {
-        match s {
-            TypedSourceSet::File(f) => self.detect_type(f),
-            TypedSourceSet::Dir { name, items } => {
-                self.context.register_namespace(name, Default::default());
-                self.context.push_name_space(name);
-                items
-                    .iter()
-                    .try_for_each(|i| self.detect_type_from_source_set(i))?;
-                self.context.pop_name_space();
-                Ok(())
-            }
-        }
-    }
-
-    pub fn detect_type(&mut self, f: &TypedFile) -> Result<()> {
-        self.context.register_namespace(&f.name, Default::default());
-        self.context.push_name_space(&f.name);
-        for d in f.body.iter() {
-            match &d.kind {
-                TypedDeclKind::Struct(s) => {
-                    self.context.register_struct(&s.name, d.annotations.clone());
-                }
-                TypedDeclKind::Class => {}
-                TypedDeclKind::Enum => {}
-                TypedDeclKind::Protocol(p) => {
-                    self.context
-                        .register_protocol(&p.name, d.annotations.clone());
-                }
-                _ => {}
-            }
-        }
-        self.context.pop_name_space();
-        Ok(())
-    }
-
     pub fn preload_source_set(&mut self, s: &TypedSourceSet) -> Result<()> {
         match s {
             TypedSourceSet::File(f) => self.preload_file(f),
