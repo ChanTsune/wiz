@@ -3,7 +3,7 @@ use crate::ResolverArena;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use std::path::Path;
-use wiz_hir::typed_decl::{TypedDecl, TypedDeclKind};
+use wiz_hir::typed_decl::TypedDeclKind;
 use wiz_hir::typed_file::TypedSourceSet;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
