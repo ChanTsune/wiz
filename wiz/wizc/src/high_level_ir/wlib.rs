@@ -1,10 +1,10 @@
+use crate::high_level_ir::declaration_id::DeclarationId;
+use crate::ResolverArena;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use std::path::Path;
 use wiz_hir::typed_decl::{TypedDecl, TypedDeclKind};
 use wiz_hir::typed_file::TypedSourceSet;
-use crate::high_level_ir::declaration_id::DeclarationId;
-use crate::ResolverArena;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WLib {
@@ -32,10 +32,17 @@ impl WLib {
         self._apply_to(&namespace_id, &self.typed_ir, arena)
     }
 
-    fn _apply_to(&self, parent: &DeclarationId, source_set: &TypedSourceSet, arena: &mut ResolverArena) -> Result<(), String> {
+    fn _apply_to(
+        &self,
+        parent: &DeclarationId,
+        source_set: &TypedSourceSet,
+        arena: &mut ResolverArena,
+    ) -> Result<(), String> {
         match source_set {
             TypedSourceSet::File(f) => {
-                let id = arena.register_namespace(&parent, &f.name, Default::default()).unwrap();
+                let id = arena
+                    .register_namespace(&parent, &f.name, Default::default())
+                    .unwrap();
                 for decl in &f.body {
                     match &decl.kind {
                         TypedDeclKind::Var(_) => {}
@@ -50,12 +57,16 @@ impl WLib {
                         }
                         TypedDeclKind::Extension(_) => {}
                     };
-                };
+                }
             }
             TypedSourceSet::Dir { name, items } => {
-                let id = arena.register_namespace(&parent, name, Default::default()).unwrap();
+                let id = arena
+                    .register_namespace(&parent, name, Default::default())
+                    .unwrap();
 
-                items.into_iter().try_for_each(|f|self._apply_to(&id, f, arena))?;
+                items
+                    .into_iter()
+                    .try_for_each(|f| self._apply_to(&id, f, arena))?;
             }
         }
         Ok(())
