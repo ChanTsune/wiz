@@ -20,17 +20,17 @@ use wiz_session::Session;
 use wiz_syntax_parser::parser::wiz::parse_from_string;
 
 fn check(source: &str, typed_file: TypedFile) {
-    let ast = parse_from_string(source).unwrap();
+    let ast = parse_from_string(source, Some(&typed_file.name)).unwrap();
 
     let mut arena = ResolverArena::default();
 
     let mut ast2hlir = AstLowering::new(&mut arena);
 
-    let mut file = ast2hlir.file(ast);
-    file.name = typed_file.name.clone();
+    let file = ast2hlir.file(ast);
+
+    println!("{}", arena);
 
     let mut session = Session::new();
-    let mut arena = ResolverArena::default();
 
     let mut resolver = TypeResolver::new(&mut session, &mut arena);
     let _ = resolver.preload_file(&file).unwrap();

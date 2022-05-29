@@ -14,17 +14,15 @@ use wiz_session::Session;
 use wiz_syntax_parser::parser::wiz::parse_from_string;
 
 fn check(source: &str, except: MLFile) {
-    let ast = parse_from_string(source).unwrap();
+    let ast = parse_from_string(source, Some(&except.name)).unwrap();
 
     let mut arena = ResolverArena::default();
 
     let mut ast2hlir = AstLowering::new(&mut arena);
 
-    let mut file = ast2hlir.file(ast);
-    file.name = String::from("test");
+    let file = ast2hlir.file(ast);
 
     let mut session = Session::new();
-    let mut arena = ResolverArena::default();
 
     let mut resolver = TypeResolver::new(&mut session, &mut arena);
     let _ = resolver.preload_file(&file).unwrap();
