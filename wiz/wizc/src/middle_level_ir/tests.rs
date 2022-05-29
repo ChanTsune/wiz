@@ -27,7 +27,6 @@ fn check(source: &str, except: MLFile) {
     let mut arena = ResolverArena::default();
 
     let mut resolver = TypeResolver::new(&mut session, &mut arena);
-    let _ = resolver.detect_type(&file).unwrap();
     let _ = resolver.preload_file(&file).unwrap();
     let hl_file = resolver.file(file).unwrap();
 
