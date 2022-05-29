@@ -70,7 +70,7 @@ impl<'s> TypeResolver<'s> {
             self.preload_decl(d)?;
         }
         for u in f.uses.iter() {
-            self.context.use_name_space(u.package.names.clone());
+            self.context.unuse_name_space(u.package.names.clone());
         }
         self.context.pop_name_space();
         Ok(())
