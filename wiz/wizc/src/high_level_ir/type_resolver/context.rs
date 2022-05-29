@@ -168,8 +168,8 @@ impl<'a> ResolverContext<'a> {
         self.used_name_space.push(n);
     }
 
-    pub(crate) fn unuse_name_space(&mut self, n: Vec<String>) {
-        let i = self.used_name_space.iter().rposition(|i| i.eq(&n));
+    pub(crate) fn unuse_name_space(&mut self, n: &Vec<String>) {
+        let i = self.used_name_space.iter().rposition(|i| i.eq(n));
         if let Some(i) = i {
             self.used_name_space.remove(i);
         };

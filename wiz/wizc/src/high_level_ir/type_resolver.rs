@@ -70,7 +70,7 @@ impl<'s> TypeResolver<'s> {
             self.preload_decl(d)?;
         }
         for u in f.uses.iter() {
-            self.context.unuse_name_space(u.package.names.clone());
+            self.context.unuse_name_space(&u.package.names);
         }
         self.context.pop_name_space();
         Ok(())
@@ -309,8 +309,8 @@ impl<'s> TypeResolver<'s> {
                 .map(|s| self.decl(s))
                 .collect::<Result<Vec<_>>>()?,
         });
-        for u in f.uses.into_iter() {
-            self.context.unuse_name_space(u.package.names);
+        for u in f.uses.iter() {
+            self.context.unuse_name_space(&u.package.names);
         }
         self.context.pop_name_space();
         result
