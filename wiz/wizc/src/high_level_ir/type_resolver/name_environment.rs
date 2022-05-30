@@ -67,11 +67,7 @@ impl<'a> NameEnvironment<'a> {
         self.get_type(typ.package().into_resolved().names, &typ.name())
     }
 
-    pub(crate) fn get_env_item(
-        &self,
-        namespace: &[String],
-        name: &str,
-    ) -> Option<EnvValue> {
+    pub(crate) fn get_env_item(&self, namespace: &[String], name: &str) -> Option<EnvValue> {
         if namespace.is_empty() {
             let maybe_local_value = self.local_stack.get(name).cloned();
             match maybe_local_value {
