@@ -148,14 +148,14 @@ impl<'a> AstLowering<'a> {
         })
     }
 
-    pub fn file_syntax(&mut self, f: FileSyntax) -> Vec<TypedDecl> {
+    fn file_syntax(&mut self, f: FileSyntax) -> Vec<TypedDecl> {
         f.body
             .into_iter()
             .map(|d| self.decl(d.kind, d.annotations))
             .collect()
     }
 
-    pub(crate) fn annotations(&self, a: Option<AnnotationsSyntax>) -> TypedAnnotations {
+    fn annotations(&self, a: Option<AnnotationsSyntax>) -> TypedAnnotations {
         match a {
             None => TypedAnnotations::default(),
             Some(a) => TypedAnnotations::from(
@@ -167,7 +167,7 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    pub fn stmt(&self, s: Stmt) -> TypedStmt {
+    fn stmt(&self, s: Stmt) -> TypedStmt {
         match s {
             Stmt::Decl(decl) => TypedStmt::Decl(self.decl(decl.kind, decl.annotations)),
             Stmt::Expr(expr) => TypedStmt::Expr(self.expr(expr)),
@@ -176,7 +176,7 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    pub fn assignment(&self, a: AssignmentStmt) -> TypedAssignmentStmt {
+    fn assignment(&self, a: AssignmentStmt) -> TypedAssignmentStmt {
         match a {
             AssignmentStmt::Assignment(a) => TypedAssignmentStmt::Assignment(TypedAssignment {
                 target: self.expr(a.target),
@@ -199,7 +199,7 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    pub fn loop_stmt(&self, l: LoopStmt) -> TypedLoopStmt {
+    fn loop_stmt(&self, l: LoopStmt) -> TypedLoopStmt {
         match l {
             LoopStmt::While(WhileLoopSyntax {
                 while_keyword: _,
@@ -223,7 +223,7 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    pub fn decl(&self, d: DeclKind, annotation: Option<AnnotationsSyntax>) -> TypedDecl {
+    fn decl(&self, d: DeclKind, annotation: Option<AnnotationsSyntax>) -> TypedDecl {
         TypedDecl {
             annotations: self.annotations(annotation),
             package: Package::from(&self.arena.resolve_fully_qualified_name(&self.namespace_id)),
