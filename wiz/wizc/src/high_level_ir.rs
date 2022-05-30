@@ -226,7 +226,7 @@ impl<'a> AstLowering<'a> {
     pub fn decl(&self, d: DeclKind, annotation: Option<AnnotationsSyntax>) -> TypedDecl {
         TypedDecl {
             annotations: self.annotations(annotation),
-            package: Package::new(),
+            package: Package::from(&self.arena.resolve_fully_qualified_name(&self.namespace_id)),
             modifiers: vec![],
             kind: match d {
                 DeclKind::Var(v) => TypedDeclKind::Var(self.var_syntax(v)),
