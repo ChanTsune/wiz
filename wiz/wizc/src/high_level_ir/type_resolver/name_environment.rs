@@ -67,9 +67,9 @@ impl<'a> NameEnvironment<'a> {
         self.get_type(typ.package().into_resolved().names, &typ.name())
     }
 
-    pub(crate) fn get_env_item<T: ToString>(
+    pub(crate) fn get_env_item(
         &self,
-        namespace: &[T],
+        namespace: &[String],
         name: &str,
     ) -> Option<EnvValue> {
         if namespace.is_empty() {
