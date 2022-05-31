@@ -1,12 +1,11 @@
 use std::path::Path;
 
-pub(crate) fn path_string_to_page_name(path: &str) -> String {
+pub(crate) fn path_string_to_page_name(path: &str) -> &str {
     let path = Path::new(path);
     path.file_stem()
         .unwrap_or_default()
         .to_str()
         .unwrap_or_default()
-        .to_string()
 }
 
 #[cfg(test)]
@@ -17,10 +16,10 @@ mod tests {
     fn test_path_string_to_page_name() {
         assert_eq!(
             path_string_to_page_name("../main.wiz"),
-            String::from("main")
+            "main"
         );
-        assert_eq!(path_string_to_page_name("main.wiz"), String::from("main"));
-        assert_eq!(path_string_to_page_name("main"), String::from("main"));
-        assert_eq!(path_string_to_page_name(""), String::new());
+        assert_eq!(path_string_to_page_name("main.wiz"), "main");
+        assert_eq!(path_string_to_page_name("main"), "main");
+        assert_eq!(path_string_to_page_name(""), "");
     }
 }

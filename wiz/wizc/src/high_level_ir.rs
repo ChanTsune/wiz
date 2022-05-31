@@ -113,7 +113,7 @@ impl<'a> AstLowering<'a> {
 
         let name = path_string_to_page_name(&name);
 
-        self.push_namespace(&name.clone(), |slf| {
+        self.push_namespace(name, |slf| {
             let mut uses = vec![];
             let mut others = vec![];
             for l in syntax.body.into_iter() {
@@ -141,7 +141,7 @@ impl<'a> AstLowering<'a> {
             }
 
             TypedFile {
-                name,
+                name: name.to_string(),
                 uses,
                 body: slf.file_syntax(FileSyntax {
                     leading_trivia: Default::default(),
