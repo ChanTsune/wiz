@@ -722,10 +722,12 @@ fn test_return_integer_literal() {
                     arg_defs: vec![],
                     body: Option::from(TypedFunBody::Block(TypedBlock {
                         body: vec![TypedStmt::Expr(TypedExprKind::Return(TypedReturn {
-                            value: Some(Box::new(TypedExprKind::Literal(TypedLiteralKind::Integer {
-                                value: "1".to_string(),
-                                type_: Some(TypedType::int64()),
-                            }))),
+                            value: Some(Box::new(TypedExprKind::Literal(
+                                TypedLiteralKind::Integer {
+                                    value: "1".to_string(),
+                                    type_: Some(TypedType::int64()),
+                                },
+                            ))),
                         }))],
                     })),
                     return_type: Some(TypedType::int64()),
@@ -973,10 +975,12 @@ fn test_if() {
                                     type_arguments: None,
                                 })),
                                 operator: TypedBinaryOperator::LessThanEqual,
-                                right: Box::new(TypedExprKind::Literal(TypedLiteralKind::Integer {
-                                    value: "0".to_string(),
-                                    type_: Some(TypedType::int64()),
-                                })),
+                                right: Box::new(TypedExprKind::Literal(
+                                    TypedLiteralKind::Integer {
+                                        value: "0".to_string(),
+                                        type_: Some(TypedType::int64()),
+                                    },
+                                )),
                                 type_: Some(TypedType::bool()),
                             })),
                             body: TypedBlock {

@@ -672,7 +672,9 @@ impl<'s> TypeResolver<'s> {
                 },
             },
             TypedLiteralKind::String { value, type_ } => TypedLiteralKind::String { value, type_ },
-            TypedLiteralKind::Boolean { value, type_ } => TypedLiteralKind::Boolean { value, type_ },
+            TypedLiteralKind::Boolean { value, type_ } => {
+                TypedLiteralKind::Boolean { value, type_ }
+            }
             TypedLiteralKind::NullLiteral { type_: _ } => TypedLiteralKind::NullLiteral {
                 type_: type_annotation,
             },
