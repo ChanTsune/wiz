@@ -1,8 +1,8 @@
 use std::path::Path;
 
 pub(crate) fn path_string_to_page_name(path: &str) -> &str {
-    let path = Path::new(path);
-    path.file_stem()
+    Path::new(path)
+        .file_stem()
         .unwrap_or_default()
         .to_str()
         .unwrap_or_default()
