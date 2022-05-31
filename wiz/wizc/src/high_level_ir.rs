@@ -606,9 +606,7 @@ impl<'a> AstLowering<'a> {
                 open_quote: _,
                 value,
                 close_quote: _,
-            } => TypedLiteralKind::String {
-                value,
-            },
+            } => TypedLiteralKind::String { value },
             LiteralSyntax::Boolean(syntax) => TypedLiteralKind::Boolean {
                 value: syntax.token(),
             },

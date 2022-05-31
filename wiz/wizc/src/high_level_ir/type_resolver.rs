@@ -661,16 +661,18 @@ impl<'s> TypeResolver<'s> {
                 } else {
                     Some(TypedType::int64())
                 }
-            },
-            TypedLiteralKind::FloatingPoint { .. } => if type_.is_some() {
-                type_
-            } else if type_annotation.is_some() {
-                type_annotation
-            } else {
-                Some(TypedType::double())
-            },
-            TypedLiteralKind::String { ..} => Some(TypedType::string_ref()),
-            TypedLiteralKind::Boolean { ..} => Some(TypedType::bool()),
+            }
+            TypedLiteralKind::FloatingPoint { .. } => {
+                if type_.is_some() {
+                    type_
+                } else if type_annotation.is_some() {
+                    type_annotation
+                } else {
+                    Some(TypedType::double())
+                }
+            }
+            TypedLiteralKind::String { .. } => Some(TypedType::string_ref()),
+            TypedLiteralKind::Boolean { .. } => Some(TypedType::bool()),
             TypedLiteralKind::NullLiteral => type_annotation,
         };
         Ok((l, ty))
@@ -730,19 +732,17 @@ impl<'s> TypeResolver<'s> {
         let right = self.expr(*b.right, None)?;
         let (left, right) = match (left, right) {
             (
-                TypedExprKind::Literal(TypedLiteralKind::Integer {
-                    value: left_value,
-                }, left_type),
-                TypedExprKind::Literal(TypedLiteralKind::Integer {
-                    value: right_value,
-                }, right_type),
+                TypedExprKind::Literal(TypedLiteralKind::Integer { value: left_value }, left_type),
+                TypedExprKind::Literal(
+                    TypedLiteralKind::Integer { value: right_value },
+                    right_type,
+                ),
             ) => (
-                TypedExprKind::Literal(TypedLiteralKind::Integer {
-                    value: left_value,
-                }, left_type),
-                TypedExprKind::Literal(TypedLiteralKind::Integer {
-                    value: right_value,
-                }, right_type),
+                TypedExprKind::Literal(TypedLiteralKind::Integer { value: left_value }, left_type),
+                TypedExprKind::Literal(
+                    TypedLiteralKind::Integer { value: right_value },
+                    right_type,
+                ),
             ),
             (left, TypedExprKind::Literal(TypedLiteralKind::Integer { value }, type_)) => {
                 let left_type = left.type_();
@@ -753,9 +753,7 @@ impl<'s> TypeResolver<'s> {
                 if is_integer {
                     (
                         left,
-                        TypedExprKind::Literal(TypedLiteralKind::Integer {
-                            value,
-                        }, left_type),
+                        TypedExprKind::Literal(TypedLiteralKind::Integer { value }, left_type),
                     )
                 } else {
                     (

@@ -563,11 +563,11 @@ impl<'arena> HLIR2MLIR<'arena> {
                 MLLiteralKind::FloatingPoint(value),
                 self.type_(type_.unwrap()).into_value_type(),
             ),
-            TypedLiteralKind::String { value} => (
+            TypedLiteralKind::String { value } => (
                 MLLiteralKind::String(value),
                 self.type_(type_.unwrap()).into_value_type(),
             ),
-            TypedLiteralKind::Boolean { value} => (
+            TypedLiteralKind::Boolean { value } => (
                 MLLiteralKind::Boolean(value),
                 self.type_(type_.unwrap()).into_value_type(),
             ),

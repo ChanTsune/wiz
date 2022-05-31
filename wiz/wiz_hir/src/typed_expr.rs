@@ -45,18 +45,10 @@ pub struct TypedSubscript {
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub enum TypedLiteralKind {
-    Integer {
-        value: String,
-    },
-    FloatingPoint {
-        value: String,
-    },
-    String {
-        value: String,
-    },
-    Boolean {
-        value: String,
-    },
+    Integer { value: String },
+    FloatingPoint { value: String },
+    String { value: String },
+    Boolean { value: String },
     NullLiteral,
 }
 

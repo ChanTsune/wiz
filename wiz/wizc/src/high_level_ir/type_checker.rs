@@ -190,7 +190,7 @@ impl<'s> TypeChecker<'s> {
     fn expression(&mut self, typed_expr: &TypedExprKind) {
         match typed_expr {
             TypedExprKind::Name(n) => self.name(n),
-            TypedExprKind::Literal(l,t) => self.literal(l, t),
+            TypedExprKind::Literal(l, t) => self.literal(l, t),
             TypedExprKind::BinOp(b) => self.binary_operation(b),
             TypedExprKind::UnaryOp(u) => self.unary_operation(u),
             TypedExprKind::Subscript(s) => self.subscript(s),
