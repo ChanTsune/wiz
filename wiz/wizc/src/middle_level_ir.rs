@@ -742,7 +742,7 @@ impl<'arena> HLIR2MLIR<'arena> {
                     type_,
                 } = m;
                 match target.type_().unwrap() {
-                    TypedType::Self_ => panic!("never execution branch"),
+                    TypedType::Self_ => unreachable!(),
                     TypedType::Value(v) => {
                         let target_type = self.value_type(v);
                         let type_ = type_.unwrap();
@@ -793,7 +793,7 @@ impl<'arena> HLIR2MLIR<'arena> {
                         todo!()
                     }
                     TypedType::Type(t) => match *t {
-                        TypedType::Self_ => panic!("never execution branch"),
+                        TypedType::Self_ => unreachable!(),
                         TypedType::Value(t) => match t {
                             TypedValueType::Value(t) => {
                                 let type_ = self.type_(type_.unwrap());
