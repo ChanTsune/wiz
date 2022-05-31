@@ -22,15 +22,13 @@ use wiz_syntax_parser::parser::wiz::parse_from_string;
 fn check(source: &str, typed_file: TypedFile) {
     let ast = parse_from_string(source, Some(&typed_file.name)).unwrap();
 
+    let mut session = Session::new();
+
     let mut arena = ResolverArena::default();
 
-    let mut ast2hlir = AstLowering::new(&mut arena);
+    let mut ast2hlir = AstLowering::new(&mut session, &mut arena);
 
     let file = ast2hlir.file(ast);
-
-    println!("{}", arena);
-
-    let mut session = Session::new();
 
     let mut resolver = TypeResolver::new(&mut session, &mut arena);
     let _ = resolver.preload_file(&file).unwrap();
