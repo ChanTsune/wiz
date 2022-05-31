@@ -2,6 +2,7 @@
 
 members = [
     "wiz",
+    "wiz_constants",
     "wiz_dev_utils",
     "wiz_hir",
     "wiz_lexar",
