@@ -108,7 +108,7 @@ mod tests {
         if let Err(e) = result {
             assert_eq!(e.to_string(), "1 | unknown_token\n    ^");
         } else {
-            panic!("never execution branch executed!!");
+            unreachable!();
         }
     }
 }
