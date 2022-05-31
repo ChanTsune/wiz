@@ -6,7 +6,7 @@ use std::fs;
 use std::fs::read_to_string;
 use std::path::Path;
 use wiz_syntax::syntax::file::{SourceSet, WizFile};
-use wiz_syntax::syntax::{get_line_offset, Location};
+use wiz_span::{get_line_offset, Location};
 
 pub mod annotation;
 pub mod character;
