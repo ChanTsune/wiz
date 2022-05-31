@@ -111,7 +111,7 @@ impl<'a> AstLowering<'a> {
     pub fn file(&mut self, f: WizFile) -> TypedFile {
         let WizFile { name, syntax } = f;
 
-        let name = path_string_to_page_name(name);
+        let name = path_string_to_page_name(&name);
 
         self.push_namespace(&name.clone(), |slf| {
             let mut uses = vec![];
