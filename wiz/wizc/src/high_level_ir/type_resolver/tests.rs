@@ -7,7 +7,7 @@ use wiz_hir::typed_decl::{
 };
 use wiz_hir::typed_expr::{
     TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExprKind, TypedIf,
-    TypedInstanceMember, TypedLiteral, TypedName, TypedPrefixUnaryOp, TypedPrefixUnaryOperator,
+    TypedInstanceMember, TypedLiteralKind, TypedName, TypedPrefixUnaryOp, TypedPrefixUnaryOperator,
     TypedReturn, TypedSubscript, TypedUnaryOp,
 };
 use wiz_hir::typed_file::TypedFile;
@@ -316,7 +316,7 @@ fn test_struct_init() {
                                         args: vec![TypedCallArg {
                                             label: Some(String::from("a")),
                                             arg: Box::new(TypedExprKind::Literal(
-                                                TypedLiteral::Integer {
+                                                TypedLiteralKind::Integer {
                                                     value: "1".to_string(),
                                                     type_: Some(TypedType::int64()),
                                                 },
@@ -584,7 +584,7 @@ fn test_expr_function_with_no_arg() {
                     type_constraints: None,
                     arg_defs: vec![],
                     body: Some(TypedFunBody::Expr(TypedExprKind::Literal(
-                        TypedLiteral::Integer {
+                        TypedLiteralKind::Integer {
                             value: "1".to_string(),
                             type_: Some(TypedType::int64()),
                         },
@@ -658,7 +658,7 @@ fn test_function_call() {
                         type_constraints: None,
                         arg_defs: vec![],
                         body: Some(TypedFunBody::Expr(TypedExprKind::Literal(
-                            TypedLiteral::Integer {
+                            TypedLiteralKind::Integer {
                                 value: "1".to_string(),
                                 type_: Some(TypedType::int64()),
                             },
@@ -722,7 +722,7 @@ fn test_return_integer_literal() {
                     arg_defs: vec![],
                     body: Option::from(TypedFunBody::Block(TypedBlock {
                         body: vec![TypedStmt::Expr(TypedExprKind::Return(TypedReturn {
-                            value: Some(Box::new(TypedExprKind::Literal(TypedLiteral::Integer {
+                            value: Some(Box::new(TypedExprKind::Literal(TypedLiteralKind::Integer {
                                 value: "1".to_string(),
                                 type_: Some(TypedType::int64()),
                             }))),
@@ -760,7 +760,7 @@ fn test_return_floating_point_literal() {
                     body: Option::from(TypedFunBody::Block(TypedBlock {
                         body: vec![TypedStmt::Expr(TypedExprKind::Return(TypedReturn {
                             value: Some(Box::new(TypedExprKind::Literal(
-                                TypedLiteral::FloatingPoint {
+                                TypedLiteralKind::FloatingPoint {
                                     value: "0.5".to_string(),
                                     type_: Some(TypedType::double()),
                                 },
@@ -798,12 +798,12 @@ fn test_binop() {
                     arg_defs: vec![],
                     body: Option::from(TypedFunBody::Block(TypedBlock {
                         body: vec![TypedStmt::Expr(TypedExprKind::BinOp(TypedBinOp {
-                            left: Box::new(TypedExprKind::Literal(TypedLiteral::Integer {
+                            left: Box::new(TypedExprKind::Literal(TypedLiteralKind::Integer {
                                 value: "1".to_string(),
                                 type_: Some(TypedType::int64()),
                             })),
                             operator: TypedBinaryOperator::Add,
-                            right: Box::new(TypedExprKind::Literal(TypedLiteral::Integer {
+                            right: Box::new(TypedExprKind::Literal(TypedLiteralKind::Integer {
                                 value: "2".to_string(),
                                 type_: Some(TypedType::int64()),
                             })),
@@ -849,7 +849,7 @@ fn test_subscript() {
                                 type_: Some(TypedType::unsafe_pointer(TypedType::uint8())),
                                 type_arguments: None,
                             })),
-                            indexes: vec![TypedExprKind::Literal(TypedLiteral::Integer {
+                            indexes: vec![TypedExprKind::Literal(TypedLiteralKind::Integer {
                                 value: "0".to_string(),
                                 type_: Some(TypedType::int64()),
                             })],
@@ -901,7 +901,7 @@ fn test_if_else() {
                                     })),
                                     operator: TypedBinaryOperator::LessThanEqual,
                                     right: Box::new(TypedExprKind::Literal(
-                                        TypedLiteral::Integer {
+                                        TypedLiteralKind::Integer {
                                             value: "0".to_string(),
                                             type_: Some(TypedType::int64()),
                                         },
@@ -910,7 +910,7 @@ fn test_if_else() {
                                 })),
                                 body: TypedBlock {
                                     body: vec![TypedStmt::Expr(TypedExprKind::Literal(
-                                        TypedLiteral::Integer {
+                                        TypedLiteralKind::Integer {
                                             value: "0".to_string(),
                                             type_: Some(TypedType::int64()),
                                         },
@@ -973,7 +973,7 @@ fn test_if() {
                                     type_arguments: None,
                                 })),
                                 operator: TypedBinaryOperator::LessThanEqual,
-                                right: Box::new(TypedExprKind::Literal(TypedLiteral::Integer {
+                                right: Box::new(TypedExprKind::Literal(TypedLiteralKind::Integer {
                                     value: "0".to_string(),
                                     type_: Some(TypedType::int64()),
                                 })),
@@ -988,7 +988,7 @@ fn test_if() {
                                         is_mut: false,
                                         name: "p".to_string(),
                                         type_: Some(TypedType::int64()),
-                                        value: TypedExprKind::Literal(TypedLiteral::Integer {
+                                        value: TypedExprKind::Literal(TypedLiteralKind::Integer {
                                             value: "1".to_string(),
                                             type_: Some(TypedType::int64()),
                                         }),
@@ -1039,7 +1039,7 @@ fn test_reference_dereference() {
                                     is_mut: false,
                                     name: "a".to_string(),
                                     type_: Some(TypedType::int64()),
-                                    value: TypedExprKind::Literal(TypedLiteral::Integer {
+                                    value: TypedExprKind::Literal(TypedLiteralKind::Integer {
                                         value: "1".to_string(),
                                         type_: Some(TypedType::int64()),
                                     }),
@@ -1126,7 +1126,7 @@ fn test_toplevel_var() {
                     is_mut: false,
                     name: "i".to_string(),
                     type_: Some(TypedType::int32()),
-                    value: TypedExprKind::Literal(TypedLiteral::Integer {
+                    value: TypedExprKind::Literal(TypedLiteralKind::Integer {
                         value: "1".to_string(),
                         type_: Some(TypedType::int32()),
                     }),
@@ -1218,7 +1218,7 @@ fn test_function_overload_by_arguments() {
                                     args: vec![TypedCallArg {
                                         label: None,
                                         arg: Box::new(TypedExprKind::Literal(
-                                            TypedLiteral::FloatingPoint {
+                                            TypedLiteralKind::FloatingPoint {
                                                 value: "0.5".to_string(),
                                                 type_: Some(TypedType::double()),
                                             },
@@ -1247,7 +1247,7 @@ fn test_function_overload_by_arguments() {
                                     args: vec![TypedCallArg {
                                         label: None,
                                         arg: Box::new(TypedExprKind::Literal(
-                                            TypedLiteral::Integer {
+                                            TypedLiteralKind::Integer {
                                                 value: "1".to_string(),
                                                 type_: Some(TypedType::int64()),
                                             },

@@ -13,7 +13,7 @@ use wiz_hir::typed_decl::{
 };
 use wiz_hir::typed_expr::{
     TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExprKind, TypedIf,
-    TypedInstanceMember, TypedLiteral, TypedName, TypedPrefixUnaryOperator, TypedReturn,
+    TypedInstanceMember, TypedLiteralKind, TypedName, TypedPrefixUnaryOperator, TypedReturn,
     TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
 use wiz_hir::typed_file::{TypedFile, TypedSourceSet};
@@ -553,25 +553,25 @@ impl<'arena> HLIR2MLIR<'arena> {
         }
     }
 
-    fn literal(&self, l: TypedLiteral) -> MLLiteral {
+    fn literal(&self, l: TypedLiteralKind) -> MLLiteral {
         let (kind, type_) = match l {
-            TypedLiteral::Integer { value, type_ } => (
+            TypedLiteralKind::Integer { value, type_ } => (
                 MLLiteralKind::Integer(value),
                 self.type_(type_.unwrap()).into_value_type(),
             ),
-            TypedLiteral::FloatingPoint { value, type_ } => (
+            TypedLiteralKind::FloatingPoint { value, type_ } => (
                 MLLiteralKind::FloatingPoint(value),
                 self.type_(type_.unwrap()).into_value_type(),
             ),
-            TypedLiteral::String { value, type_ } => (
+            TypedLiteralKind::String { value, type_ } => (
                 MLLiteralKind::String(value),
                 self.type_(type_.unwrap()).into_value_type(),
             ),
-            TypedLiteral::Boolean { value, type_ } => (
+            TypedLiteralKind::Boolean { value, type_ } => (
                 MLLiteralKind::Boolean(value),
                 self.type_(type_.unwrap()).into_value_type(),
             ),
-            TypedLiteral::NullLiteral { type_ } => (
+            TypedLiteralKind::NullLiteral { type_ } => (
                 MLLiteralKind::Null,
                 self.type_(type_.unwrap()).into_value_type(),
             ),

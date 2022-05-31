@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub enum TypedExprKind {
     Name(TypedName),
-    Literal(TypedLiteral),
+    Literal(TypedLiteralKind),
     BinOp(TypedBinOp),
     UnaryOp(TypedUnaryOp),
     Subscript(TypedSubscript),
@@ -44,7 +44,7 @@ pub struct TypedSubscript {
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
-pub enum TypedLiteral {
+pub enum TypedLiteralKind {
     Integer {
         value: String,
         type_: Option<TypedType>,
@@ -211,35 +211,35 @@ impl TypedExprKind {
     }
 }
 
-impl TypedLiteral {
+impl TypedLiteralKind {
     pub fn type_(&self) -> Option<TypedType> {
         match self {
-            TypedLiteral::Integer { value: _, type_ } => type_.clone(),
-            TypedLiteral::FloatingPoint { value: _, type_ } => type_.clone(),
-            TypedLiteral::String { value: _, type_ } => type_.clone(),
-            TypedLiteral::Boolean { value: _, type_ } => type_.clone(),
-            TypedLiteral::NullLiteral { type_ } => type_.clone(),
+            TypedLiteralKind::Integer { value: _, type_ } => type_.clone(),
+            TypedLiteralKind::FloatingPoint { value: _, type_ } => type_.clone(),
+            TypedLiteralKind::String { value: _, type_ } => type_.clone(),
+            TypedLiteralKind::Boolean { value: _, type_ } => type_.clone(),
+            TypedLiteralKind::NullLiteral { type_ } => type_.clone(),
         }
     }
 
     pub fn is_integer(&self) -> bool {
-        matches!(self, TypedLiteral::Integer { .. })
+        matches!(self, TypedLiteralKind::Integer { .. })
     }
 
     pub fn is_floating_point(&self) -> bool {
-        matches!(self, TypedLiteral::FloatingPoint { .. })
+        matches!(self, TypedLiteralKind::FloatingPoint { .. })
     }
 
     pub fn is_string(&self) -> bool {
-        matches!(self, TypedLiteral::String { .. })
+        matches!(self, TypedLiteralKind::String { .. })
     }
 
     pub fn is_boolean(&self) -> bool {
-        matches!(self, TypedLiteral::Boolean { .. })
+        matches!(self, TypedLiteralKind::Boolean { .. })
     }
 
     pub fn is_null(&self) -> bool {
-        matches!(self, TypedLiteral::NullLiteral { .. })
+        matches!(self, TypedLiteralKind::NullLiteral { .. })
     }
 }
 

@@ -10,7 +10,7 @@ use wiz_hir::typed_decl::{
 };
 use wiz_hir::typed_expr::{
     TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExprKind, TypedIf,
-    TypedInstanceMember, TypedLambda, TypedLiteral, TypedName, TypedPostfixUnaryOp,
+    TypedInstanceMember, TypedLambda, TypedLiteralKind, TypedName, TypedPostfixUnaryOp,
     TypedPostfixUnaryOperator, TypedPrefixUnaryOp, TypedPrefixUnaryOperator, TypedReturn,
     TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
@@ -594,13 +594,13 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    pub fn literal_syntax(&self, literal: LiteralSyntax) -> TypedLiteral {
+    pub fn literal_syntax(&self, literal: LiteralSyntax) -> TypedLiteralKind {
         match literal {
-            LiteralSyntax::Integer(value) => TypedLiteral::Integer {
+            LiteralSyntax::Integer(value) => TypedLiteralKind::Integer {
                 value: value.token(),
                 type_: None,
             },
-            LiteralSyntax::FloatingPoint(value) => TypedLiteral::FloatingPoint {
+            LiteralSyntax::FloatingPoint(value) => TypedLiteralKind::FloatingPoint {
                 value: value.token(),
                 type_: None,
             },
@@ -608,15 +608,15 @@ impl<'a> AstLowering<'a> {
                 open_quote: _,
                 value,
                 close_quote: _,
-            } => TypedLiteral::String {
+            } => TypedLiteralKind::String {
                 value,
                 type_: Some(TypedType::string_ref()),
             },
-            LiteralSyntax::Boolean(syntax) => TypedLiteral::Boolean {
+            LiteralSyntax::Boolean(syntax) => TypedLiteralKind::Boolean {
                 value: syntax.token(),
                 type_: Some(TypedType::bool()),
             },
-            LiteralSyntax::Null => TypedLiteral::NullLiteral { type_: None },
+            LiteralSyntax::Null => TypedLiteralKind::NullLiteral { type_: None },
         }
     }
 

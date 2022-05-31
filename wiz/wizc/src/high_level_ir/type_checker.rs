@@ -8,7 +8,7 @@ use wiz_hir::typed_decl::{
 };
 use wiz_hir::typed_expr::{
     TypedArray, TypedBinOp, TypedCall, TypedExprKind, TypedIf, TypedInstanceMember, TypedLambda,
-    TypedLiteral, TypedName, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
+    TypedLiteralKind, TypedName, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
 use wiz_hir::typed_file::{TypedFile, TypedSourceSet};
 use wiz_hir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
@@ -217,9 +217,9 @@ impl<'s> TypeChecker<'s> {
         }
     }
 
-    fn literal(&mut self, typed_literal: &TypedLiteral) {
+    fn literal(&mut self, typed_literal: &TypedLiteralKind) {
         match typed_literal {
-            TypedLiteral::Integer { value, type_ } => {
+            TypedLiteralKind::Integer { value, type_ } => {
                 if let Some(typ) = type_ {
                     if !typ.is_integer() {
                         self.session.emit_error(CheckerError::new(format!(
@@ -234,7 +234,7 @@ impl<'s> TypeChecker<'s> {
                     )))
                 }
             }
-            TypedLiteral::FloatingPoint { value, type_ } => {
+            TypedLiteralKind::FloatingPoint { value, type_ } => {
                 if let Some(typ) = type_ {
                     if !typ.is_floating_point() {
                         self.session.emit_error(CheckerError::new(format!(
@@ -249,7 +249,7 @@ impl<'s> TypeChecker<'s> {
                     )))
                 }
             }
-            TypedLiteral::String { value, type_ } => {
+            TypedLiteralKind::String { value, type_ } => {
                 if let Some(typ) = type_ {
                     if !typ.is_string_ref() {
                         self.session.emit_error(CheckerError::new(format!(
@@ -264,7 +264,7 @@ impl<'s> TypeChecker<'s> {
                     )))
                 }
             }
-            TypedLiteral::Boolean { value, type_ } => {
+            TypedLiteralKind::Boolean { value, type_ } => {
                 if let Some(typ) = type_ {
                     if !typ.is_boolean() {
                         self.session.emit_error(CheckerError::new(format!(
@@ -279,7 +279,7 @@ impl<'s> TypeChecker<'s> {
                     )))
                 }
             }
-            TypedLiteral::NullLiteral { type_ } => {
+            TypedLiteralKind::NullLiteral { type_ } => {
                 if type_.is_none() {
                     self.session.emit_error(CheckerError::new(format!(
                         "Can not resolve literal type of null"

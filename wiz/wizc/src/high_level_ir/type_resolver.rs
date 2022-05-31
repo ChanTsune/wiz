@@ -18,7 +18,7 @@ use wiz_hir::typed_decl::{
 };
 use wiz_hir::typed_expr::{
     TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExprKind, TypedIf, TypedInstanceMember,
-    TypedLiteral, TypedName, TypedPostfixUnaryOp, TypedPrefixUnaryOp, TypedPrefixUnaryOperator,
+    TypedLiteralKind, TypedName, TypedPostfixUnaryOp, TypedPrefixUnaryOp, TypedPrefixUnaryOperator,
     TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
 use wiz_hir::typed_file::{TypedFile, TypedSourceSet};
@@ -647,11 +647,11 @@ impl<'s> TypeResolver<'s> {
 
     fn typed_literal(
         &mut self,
-        l: TypedLiteral,
+        l: TypedLiteralKind,
         type_annotation: Option<TypedType>,
-    ) -> Result<TypedLiteral> {
+    ) -> Result<TypedLiteralKind> {
         Ok(match l {
-            TypedLiteral::Integer { value, type_ } => TypedLiteral::Integer {
+            TypedLiteralKind::Integer { value, type_ } => TypedLiteralKind::Integer {
                 value,
                 type_: if type_.is_some() {
                     type_
@@ -661,7 +661,7 @@ impl<'s> TypeResolver<'s> {
                     Some(TypedType::int64())
                 },
             },
-            TypedLiteral::FloatingPoint { value, type_ } => TypedLiteral::FloatingPoint {
+            TypedLiteralKind::FloatingPoint { value, type_ } => TypedLiteralKind::FloatingPoint {
                 value,
                 type_: if type_.is_some() {
                     type_
@@ -671,9 +671,9 @@ impl<'s> TypeResolver<'s> {
                     Some(TypedType::double())
                 },
             },
-            TypedLiteral::String { value, type_ } => TypedLiteral::String { value, type_ },
-            TypedLiteral::Boolean { value, type_ } => TypedLiteral::Boolean { value, type_ },
-            TypedLiteral::NullLiteral { type_: _ } => TypedLiteral::NullLiteral {
+            TypedLiteralKind::String { value, type_ } => TypedLiteralKind::String { value, type_ },
+            TypedLiteralKind::Boolean { value, type_ } => TypedLiteralKind::Boolean { value, type_ },
+            TypedLiteralKind::NullLiteral { type_: _ } => TypedLiteralKind::NullLiteral {
                 type_: type_annotation,
             },
         })
@@ -733,25 +733,25 @@ impl<'s> TypeResolver<'s> {
         let right = self.expr(*b.right, None)?;
         let (left, right) = match (left, right) {
             (
-                TypedExprKind::Literal(TypedLiteral::Integer {
+                TypedExprKind::Literal(TypedLiteralKind::Integer {
                     value: left_value,
                     type_: left_type,
                 }),
-                TypedExprKind::Literal(TypedLiteral::Integer {
+                TypedExprKind::Literal(TypedLiteralKind::Integer {
                     value: right_value,
                     type_: right_type,
                 }),
             ) => (
-                TypedExprKind::Literal(TypedLiteral::Integer {
+                TypedExprKind::Literal(TypedLiteralKind::Integer {
                     value: left_value,
                     type_: left_type,
                 }),
-                TypedExprKind::Literal(TypedLiteral::Integer {
+                TypedExprKind::Literal(TypedLiteralKind::Integer {
                     value: right_value,
                     type_: right_type,
                 }),
             ),
-            (left, TypedExprKind::Literal(TypedLiteral::Integer { value, type_ })) => {
+            (left, TypedExprKind::Literal(TypedLiteralKind::Integer { value, type_ })) => {
                 let left_type = left.type_();
                 let is_integer = match &left_type {
                     None => false,
@@ -760,7 +760,7 @@ impl<'s> TypeResolver<'s> {
                 if is_integer {
                     (
                         left,
-                        TypedExprKind::Literal(TypedLiteral::Integer {
+                        TypedExprKind::Literal(TypedLiteralKind::Integer {
                             value,
                             type_: left_type,
                         }),
@@ -768,7 +768,7 @@ impl<'s> TypeResolver<'s> {
                 } else {
                     (
                         left,
-                        TypedExprKind::Literal(TypedLiteral::Integer { value, type_ }),
+                        TypedExprKind::Literal(TypedLiteralKind::Integer { value, type_ }),
                     )
                 }
             }
