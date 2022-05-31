@@ -24,6 +24,7 @@ use wiz_hir::typed_type::{
 };
 use wiz_hir::typed_type_constraint::TypedTypeConstraint;
 use wiz_hir::typed_use::TypedUse;
+use wiz_session::Session;
 use wiz_syntax::syntax::annotation::AnnotationsSyntax;
 use wiz_syntax::syntax::block::BlockSyntax;
 use wiz_syntax::syntax::declaration::fun_syntax::{ArgDef, FunBody, FunSyntax};
@@ -50,22 +51,25 @@ pub mod type_resolver;
 pub mod wlib;
 
 pub struct AstLowering<'a> {
+    session: &'a mut Session,
     arena: &'a mut ResolverArena,
     namespace_id: DeclarationId,
 }
 
 pub fn ast2hlir(
+    session: &mut Session,
     arena: &mut ResolverArena,
     s: SourceSet,
     module_id: TypedModuleId,
 ) -> TypedSourceSet {
-    let mut converter = AstLowering::new(arena);
+    let mut converter = AstLowering::new(session, arena);
     converter.source_set(s, module_id)
 }
 
 impl<'a> AstLowering<'a> {
-    pub fn new(arena: &'a mut ResolverArena) -> Self {
+    pub fn new(session: &'a mut Session, arena: &'a mut ResolverArena) -> Self {
         Self {
+            session,
             arena,
             namespace_id: DeclarationId::ROOT,
         }
