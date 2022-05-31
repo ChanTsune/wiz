@@ -318,8 +318,8 @@ fn test_struct_init() {
                                             arg: Box::new(TypedExprKind::Literal(
                                                 TypedLiteralKind::Integer {
                                                     value: "1".to_string(),
-                                                    type_: Some(TypedType::int64()),
                                                 },
+                                                Some(TypedType::int64())
                                             )),
                                             is_vararg: false,
                                         }],
@@ -586,8 +586,7 @@ fn test_expr_function_with_no_arg() {
                     body: Some(TypedFunBody::Expr(TypedExprKind::Literal(
                         TypedLiteralKind::Integer {
                             value: "1".to_string(),
-                            type_: Some(TypedType::int64()),
-                        },
+                        },Some(TypedType::int64())
                     ))),
                     return_type: Some(TypedType::int64()),
                 }),
@@ -660,8 +659,7 @@ fn test_function_call() {
                         body: Some(TypedFunBody::Expr(TypedExprKind::Literal(
                             TypedLiteralKind::Integer {
                                 value: "1".to_string(),
-                                type_: Some(TypedType::int64()),
-                            },
+                            },Some(TypedType::int64())
                         ))),
                         return_type: Some(TypedType::int64()),
                     }),
@@ -722,12 +720,9 @@ fn test_return_integer_literal() {
                     arg_defs: vec![],
                     body: Option::from(TypedFunBody::Block(TypedBlock {
                         body: vec![TypedStmt::Expr(TypedExprKind::Return(TypedReturn {
-                            value: Some(Box::new(TypedExprKind::Literal(
-                                TypedLiteralKind::Integer {
-                                    value: "1".to_string(),
-                                    type_: Some(TypedType::int64()),
-                                },
-                            ))),
+                            value: Some(Box::new(TypedExprKind::Literal(TypedLiteralKind::Integer {
+                                value: "1".to_string(),
+                            }, Some(TypedType::int64())))),
                         }))],
                     })),
                     return_type: Some(TypedType::int64()),
@@ -764,8 +759,7 @@ fn test_return_floating_point_literal() {
                             value: Some(Box::new(TypedExprKind::Literal(
                                 TypedLiteralKind::FloatingPoint {
                                     value: "0.5".to_string(),
-                                    type_: Some(TypedType::double()),
-                                },
+                                },Some(TypedType::double()),
                             ))),
                         }))],
                     })),
@@ -802,13 +796,11 @@ fn test_binop() {
                         body: vec![TypedStmt::Expr(TypedExprKind::BinOp(TypedBinOp {
                             left: Box::new(TypedExprKind::Literal(TypedLiteralKind::Integer {
                                 value: "1".to_string(),
-                                type_: Some(TypedType::int64()),
-                            })),
+                            }, Some(TypedType::int64()),)),
                             operator: TypedBinaryOperator::Add,
                             right: Box::new(TypedExprKind::Literal(TypedLiteralKind::Integer {
                                 value: "2".to_string(),
-                                type_: Some(TypedType::int64()),
-                            })),
+                            }, Some(TypedType::int64()),)),
                             type_: Some(TypedType::int64()),
                         }))],
                     })),
@@ -853,8 +845,7 @@ fn test_subscript() {
                             })),
                             indexes: vec![TypedExprKind::Literal(TypedLiteralKind::Integer {
                                 value: "0".to_string(),
-                                type_: Some(TypedType::int64()),
-                            })],
+                            }, Some(TypedType::int64()))],
                             type_: Some(TypedType::uint8()),
                         },
                     ))),
@@ -905,8 +896,7 @@ fn test_if_else() {
                                     right: Box::new(TypedExprKind::Literal(
                                         TypedLiteralKind::Integer {
                                             value: "0".to_string(),
-                                            type_: Some(TypedType::int64()),
-                                        },
+                                        },Some(TypedType::int64()),
                                     )),
                                     type_: Some(TypedType::bool()),
                                 })),
@@ -914,8 +904,7 @@ fn test_if_else() {
                                     body: vec![TypedStmt::Expr(TypedExprKind::Literal(
                                         TypedLiteralKind::Integer {
                                             value: "0".to_string(),
-                                            type_: Some(TypedType::int64()),
-                                        },
+                                        },Some(TypedType::int64()),
                                     ))],
                                 },
                                 type_: Some(TypedType::int64()),
@@ -975,12 +964,9 @@ fn test_if() {
                                     type_arguments: None,
                                 })),
                                 operator: TypedBinaryOperator::LessThanEqual,
-                                right: Box::new(TypedExprKind::Literal(
-                                    TypedLiteralKind::Integer {
-                                        value: "0".to_string(),
-                                        type_: Some(TypedType::int64()),
-                                    },
-                                )),
+                                right: Box::new(TypedExprKind::Literal(TypedLiteralKind::Integer {
+                                    value: "0".to_string(),
+                                }, Some(TypedType::int64()))),
                                 type_: Some(TypedType::bool()),
                             })),
                             body: TypedBlock {
@@ -994,8 +980,7 @@ fn test_if() {
                                         type_: Some(TypedType::int64()),
                                         value: TypedExprKind::Literal(TypedLiteralKind::Integer {
                                             value: "1".to_string(),
-                                            type_: Some(TypedType::int64()),
-                                        }),
+                                        }, Some(TypedType::int64()),),
                                     }),
                                 })],
                             },
@@ -1045,8 +1030,7 @@ fn test_reference_dereference() {
                                     type_: Some(TypedType::int64()),
                                     value: TypedExprKind::Literal(TypedLiteralKind::Integer {
                                         value: "1".to_string(),
-                                        type_: Some(TypedType::int64()),
-                                    }),
+                                    }, Some(TypedType::int64())),
                                 }),
                             }),
                             TypedStmt::Decl(TypedDecl {
@@ -1132,8 +1116,7 @@ fn test_toplevel_var() {
                     type_: Some(TypedType::int32()),
                     value: TypedExprKind::Literal(TypedLiteralKind::Integer {
                         value: "1".to_string(),
-                        type_: Some(TypedType::int32()),
-                    }),
+                    }, Some(TypedType::int32())),
                 }),
             }],
         },
@@ -1224,8 +1207,7 @@ fn test_function_overload_by_arguments() {
                                         arg: Box::new(TypedExprKind::Literal(
                                             TypedLiteralKind::FloatingPoint {
                                                 value: "0.5".to_string(),
-                                                type_: Some(TypedType::double()),
-                                            },
+                                            }, Some(TypedType::double())
                                         )),
                                         is_vararg: false,
                                     }],
@@ -1253,8 +1235,7 @@ fn test_function_overload_by_arguments() {
                                         arg: Box::new(TypedExprKind::Literal(
                                             TypedLiteralKind::Integer {
                                                 value: "1".to_string(),
-                                                type_: Some(TypedType::int64()),
-                                            },
+                                            },Some(TypedType::int64()),
                                         )),
                                         is_vararg: false,
                                     }],

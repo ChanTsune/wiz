@@ -575,7 +575,7 @@ impl<'a> AstLowering<'a> {
     pub fn expr(&self, e: Expr) -> TypedExprKind {
         match e {
             Expr::Name(n) => TypedExprKind::Name(self.name_syntax(n)),
-            Expr::Literal(literal) => TypedExprKind::Literal(self.literal_syntax(literal)),
+            Expr::Literal(literal) => TypedExprKind::Literal(self.literal_syntax(literal), None),
             Expr::BinOp(b) => TypedExprKind::BinOp(self.binary_operation_syntax(b)),
             Expr::UnaryOp(u) => TypedExprKind::UnaryOp(self.unary_operation_syntax(u)),
             Expr::Subscript(s) => TypedExprKind::Subscript(self.subscript_syntax(s)),
@@ -598,11 +598,9 @@ impl<'a> AstLowering<'a> {
         match literal {
             LiteralSyntax::Integer(value) => TypedLiteralKind::Integer {
                 value: value.token(),
-                type_: None,
             },
             LiteralSyntax::FloatingPoint(value) => TypedLiteralKind::FloatingPoint {
                 value: value.token(),
-                type_: None,
             },
             LiteralSyntax::String {
                 open_quote: _,
@@ -610,13 +608,11 @@ impl<'a> AstLowering<'a> {
                 close_quote: _,
             } => TypedLiteralKind::String {
                 value,
-                type_: Some(TypedType::string_ref()),
             },
             LiteralSyntax::Boolean(syntax) => TypedLiteralKind::Boolean {
                 value: syntax.token(),
-                type_: Some(TypedType::bool()),
             },
-            LiteralSyntax::Null => TypedLiteralKind::NullLiteral { type_: None },
+            LiteralSyntax::Null => TypedLiteralKind::NullLiteral,
         }
     }
 

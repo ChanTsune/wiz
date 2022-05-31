@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub enum TypedExprKind {
     Name(TypedName),
-    Literal(TypedLiteralKind),
+    Literal(TypedLiteralKind, Option<TypedType>),
     BinOp(TypedBinOp),
     UnaryOp(TypedUnaryOp),
     Subscript(TypedSubscript),
@@ -47,23 +47,17 @@ pub struct TypedSubscript {
 pub enum TypedLiteralKind {
     Integer {
         value: String,
-        type_: Option<TypedType>,
     },
     FloatingPoint {
         value: String,
-        type_: Option<TypedType>,
     },
     String {
         value: String,
-        type_: Option<TypedType>,
     },
     Boolean {
         value: String,
-        type_: Option<TypedType>,
     },
-    NullLiteral {
-        type_: Option<TypedType>,
-    },
+    NullLiteral,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
@@ -192,7 +186,7 @@ impl TypedExprKind {
     pub fn type_(&self) -> Option<TypedType> {
         match self {
             TypedExprKind::Name(name) => name.type_.clone(),
-            TypedExprKind::Literal(l) => l.type_(),
+            TypedExprKind::Literal(l, type_) => type_.clone(),
             TypedExprKind::BinOp(b) => b.type_.clone(),
             TypedExprKind::UnaryOp(u) => u.type_(),
             TypedExprKind::Subscript(s) => s.type_.clone(),
@@ -212,16 +206,6 @@ impl TypedExprKind {
 }
 
 impl TypedLiteralKind {
-    pub fn type_(&self) -> Option<TypedType> {
-        match self {
-            TypedLiteralKind::Integer { value: _, type_ } => type_.clone(),
-            TypedLiteralKind::FloatingPoint { value: _, type_ } => type_.clone(),
-            TypedLiteralKind::String { value: _, type_ } => type_.clone(),
-            TypedLiteralKind::Boolean { value: _, type_ } => type_.clone(),
-            TypedLiteralKind::NullLiteral { type_ } => type_.clone(),
-        }
-    }
-
     pub fn is_integer(&self) -> bool {
         matches!(self, TypedLiteralKind::Integer { .. })
     }

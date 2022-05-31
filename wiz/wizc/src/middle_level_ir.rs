@@ -458,7 +458,7 @@ impl<'arena> HLIR2MLIR<'arena> {
     fn expr(&mut self, e: TypedExprKind) -> MLExpr {
         match e {
             TypedExprKind::Name(name) => self.name(name),
-            TypedExprKind::Literal(l) => MLExpr::Literal(self.literal(l)),
+            TypedExprKind::Literal(l, t) => MLExpr::Literal(self.literal(l, t)),
             TypedExprKind::BinOp(b) => MLExpr::PrimitiveBinOp(self.binop(b)),
             TypedExprKind::UnaryOp(u) => MLExpr::PrimitiveUnaryOp(self.unary_op(u)),
             TypedExprKind::Subscript(s) => self.subscript(s),
@@ -553,25 +553,25 @@ impl<'arena> HLIR2MLIR<'arena> {
         }
     }
 
-    fn literal(&self, l: TypedLiteralKind) -> MLLiteral {
+    fn literal(&self, l: TypedLiteralKind, type_: Option<TypedType>) -> MLLiteral {
         let (kind, type_) = match l {
-            TypedLiteralKind::Integer { value, type_ } => (
+            TypedLiteralKind::Integer { value } => (
                 MLLiteralKind::Integer(value),
                 self.type_(type_.unwrap()).into_value_type(),
             ),
-            TypedLiteralKind::FloatingPoint { value, type_ } => (
+            TypedLiteralKind::FloatingPoint { value } => (
                 MLLiteralKind::FloatingPoint(value),
                 self.type_(type_.unwrap()).into_value_type(),
             ),
-            TypedLiteralKind::String { value, type_ } => (
+            TypedLiteralKind::String { value} => (
                 MLLiteralKind::String(value),
                 self.type_(type_.unwrap()).into_value_type(),
             ),
-            TypedLiteralKind::Boolean { value, type_ } => (
+            TypedLiteralKind::Boolean { value} => (
                 MLLiteralKind::Boolean(value),
                 self.type_(type_.unwrap()).into_value_type(),
             ),
-            TypedLiteralKind::NullLiteral { type_ } => (
+            TypedLiteralKind::NullLiteral => (
                 MLLiteralKind::Null,
                 self.type_(type_.unwrap()).into_value_type(),
             ),
