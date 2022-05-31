@@ -37,7 +37,7 @@ use wiz_syntax::syntax::expression::{
     MemberSyntax, NameExprSyntax, PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax,
     ReturnSyntax, SubscriptSyntax, TypeCastSyntax, UnaryOperationSyntax,
 };
-use wiz_syntax::syntax::file::{FileSyntax, SourceSet, WizFile};
+use wiz_syntax::syntax::file::{SourceSet, WizFile};
 use wiz_syntax::syntax::literal::LiteralSyntax;
 use wiz_syntax::syntax::statement::{
     AssignmentStmt, ForLoopSyntax, LoopStmt, Stmt, WhileLoopSyntax,
