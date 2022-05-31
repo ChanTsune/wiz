@@ -143,7 +143,8 @@ impl<'a> AstLowering<'a> {
             TypedFile {
                 name: name.to_string(),
                 uses,
-                body: others.into_iter()
+                body: others
+                    .into_iter()
                     .map(|d| slf.decl(d.kind, d.annotations))
                     .collect(),
             }
