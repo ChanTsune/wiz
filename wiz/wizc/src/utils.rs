@@ -14,10 +14,7 @@ mod tests {
 
     #[test]
     fn test_path_string_to_page_name() {
-        assert_eq!(
-            path_string_to_page_name("../main.wiz"),
-            "main"
-        );
+        assert_eq!(path_string_to_page_name("../main.wiz"), "main");
         assert_eq!(path_string_to_page_name("main.wiz"), "main");
         assert_eq!(path_string_to_page_name("main"), "main");
         assert_eq!(path_string_to_page_name(""), "");
