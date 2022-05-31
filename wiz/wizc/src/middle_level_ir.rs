@@ -555,19 +555,19 @@ impl<'arena> HLIR2MLIR<'arena> {
 
     fn literal(&self, l: TypedLiteralKind, type_: Option<TypedType>) -> MLLiteral {
         let (kind, type_) = match l {
-            TypedLiteralKind::Integer { value } => (
+            TypedLiteralKind::Integer(value) => (
                 MLLiteralKind::Integer(value),
                 self.type_(type_.unwrap()).into_value_type(),
             ),
-            TypedLiteralKind::FloatingPoint { value } => (
+            TypedLiteralKind::FloatingPoint(value) => (
                 MLLiteralKind::FloatingPoint(value),
                 self.type_(type_.unwrap()).into_value_type(),
             ),
-            TypedLiteralKind::String { value } => (
+            TypedLiteralKind::String(value) => (
                 MLLiteralKind::String(value),
                 self.type_(type_.unwrap()).into_value_type(),
             ),
-            TypedLiteralKind::Boolean { value } => (
+            TypedLiteralKind::Boolean(value) => (
                 MLLiteralKind::Boolean(value),
                 self.type_(type_.unwrap()).into_value_type(),
             ),
