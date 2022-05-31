@@ -94,7 +94,7 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
 
     let mut arena = ResolverArena::default();
 
-    let std_hlir = session.timer("load dependencies", |_| {
+    let std_hlir = session.timer("load dependencies", |session| {
         let libraries = config.libraries();
 
         let std_hlir: parser::result::Result<Vec<_>> = if libraries.is_empty() {
@@ -105,7 +105,7 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
             Ok(source_sets
                 .into_iter()
                 .enumerate()
-                .map(|(i, s)| ast2hlir(&mut arena, s, TypedModuleId::new(i)))
+                .map(|(i, s)| ast2hlir(session, &mut arena, s, TypedModuleId::new(i)))
                 .collect())
         } else {
             Ok(libraries
@@ -120,8 +120,8 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
         std_hlir
     })?;
 
-    let hlfiles = session.timer("convert to hlir", |_| {
-        let mut ast2hlir = AstLowering::new(&mut arena);
+    let hlfiles = session.timer("convert to hlir", |session| {
+        let mut ast2hlir = AstLowering::new(session, &mut arena);
 
         ast2hlir.source_set(input_source, TypedModuleId::new(std_hlir.len()))
     });
