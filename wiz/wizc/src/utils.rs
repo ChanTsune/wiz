@@ -19,14 +19,8 @@ mod tests {
             path_string_to_page_name("../main.wiz"),
             String::from("main")
         );
-        assert_eq!(
-            path_string_to_page_name("main.wiz"),
-            String::from("main")
-        );
-        assert_eq!(
-            path_string_to_page_name("main"),
-            String::from("main")
-        );
+        assert_eq!(path_string_to_page_name("main.wiz"), String::from("main"));
+        assert_eq!(path_string_to_page_name("main"), String::from("main"));
         assert_eq!(path_string_to_page_name(""), String::new());
     }
 }
