@@ -596,20 +596,14 @@ impl<'a> AstLowering<'a> {
 
     pub fn literal_syntax(&self, literal: LiteralSyntax) -> TypedLiteralKind {
         match literal {
-            LiteralSyntax::Integer(value) => TypedLiteralKind::Integer {
-                value: value.token(),
-            },
-            LiteralSyntax::FloatingPoint(value) => TypedLiteralKind::FloatingPoint {
-                value: value.token(),
-            },
+            LiteralSyntax::Integer(value) => TypedLiteralKind::Integer(value.token()),
+            LiteralSyntax::FloatingPoint(value) => TypedLiteralKind::FloatingPoint(value.token()),
             LiteralSyntax::String {
                 open_quote: _,
                 value,
                 close_quote: _,
-            } => TypedLiteralKind::String { value },
-            LiteralSyntax::Boolean(syntax) => TypedLiteralKind::Boolean {
-                value: syntax.token(),
-            },
+            } => TypedLiteralKind::String(value),
+            LiteralSyntax::Boolean(syntax) => TypedLiteralKind::Boolean(syntax.token()),
             LiteralSyntax::Null => TypedLiteralKind::NullLiteral,
         }
     }

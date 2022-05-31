@@ -732,19 +732,13 @@ impl<'s> TypeResolver<'s> {
         let right = self.expr(*b.right, None)?;
         let (left, right) = match (left, right) {
             (
-                TypedExprKind::Literal(TypedLiteralKind::Integer { value: left_value }, left_type),
-                TypedExprKind::Literal(
-                    TypedLiteralKind::Integer { value: right_value },
-                    right_type,
-                ),
+                TypedExprKind::Literal(TypedLiteralKind::Integer(left_value), left_type),
+                TypedExprKind::Literal(TypedLiteralKind::Integer(right_value), right_type),
             ) => (
-                TypedExprKind::Literal(TypedLiteralKind::Integer { value: left_value }, left_type),
-                TypedExprKind::Literal(
-                    TypedLiteralKind::Integer { value: right_value },
-                    right_type,
-                ),
+                TypedExprKind::Literal(TypedLiteralKind::Integer(left_value), left_type),
+                TypedExprKind::Literal(TypedLiteralKind::Integer(right_value), right_type),
             ),
-            (left, TypedExprKind::Literal(TypedLiteralKind::Integer { value }, type_)) => {
+            (left, TypedExprKind::Literal(TypedLiteralKind::Integer(value), type_)) => {
                 let left_type = left.type_();
                 let is_integer = match &left_type {
                     None => false,
@@ -753,12 +747,12 @@ impl<'s> TypeResolver<'s> {
                 if is_integer {
                     (
                         left,
-                        TypedExprKind::Literal(TypedLiteralKind::Integer { value }, left_type),
+                        TypedExprKind::Literal(TypedLiteralKind::Integer(value), left_type),
                     )
                 } else {
                     (
                         left,
-                        TypedExprKind::Literal(TypedLiteralKind::Integer { value }, type_),
+                        TypedExprKind::Literal(TypedLiteralKind::Integer(value), type_),
                     )
                 }
             }

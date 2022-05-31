@@ -219,7 +219,7 @@ impl<'s> TypeChecker<'s> {
 
     fn literal(&mut self, typed_literal: &TypedLiteralKind, type_: &Option<TypedType>) {
         match typed_literal {
-            TypedLiteralKind::Integer { value } => {
+            TypedLiteralKind::Integer(value) => {
                 if let Some(typ) = type_ {
                     if !typ.is_integer() {
                         self.session.emit_error(CheckerError::new(format!(
@@ -234,7 +234,7 @@ impl<'s> TypeChecker<'s> {
                     )))
                 }
             }
-            TypedLiteralKind::FloatingPoint { value } => {
+            TypedLiteralKind::FloatingPoint(value) => {
                 if let Some(typ) = type_ {
                     if !typ.is_floating_point() {
                         self.session.emit_error(CheckerError::new(format!(
@@ -249,7 +249,7 @@ impl<'s> TypeChecker<'s> {
                     )))
                 }
             }
-            TypedLiteralKind::String { value } => {
+            TypedLiteralKind::String(value) => {
                 if let Some(typ) = type_ {
                     if !typ.is_string_ref() {
                         self.session.emit_error(CheckerError::new(format!(
@@ -264,7 +264,7 @@ impl<'s> TypeChecker<'s> {
                     )))
                 }
             }
-            TypedLiteralKind::Boolean { value } => {
+            TypedLiteralKind::Boolean(value) => {
                 if let Some(typ) = type_ {
                     if !typ.is_boolean() {
                         self.session.emit_error(CheckerError::new(format!(
