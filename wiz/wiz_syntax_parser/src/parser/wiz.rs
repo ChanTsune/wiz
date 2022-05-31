@@ -56,9 +56,7 @@ pub fn read_package_from_path(path: &Path, name: Option<&str>) -> Result<SourceS
                     .unwrap_or_else(|| path.file_name().unwrap().to_str().unwrap())
                     .to_string(),
                 items: match read_package_files(dir_entry.path().as_path())? {
-                    SourceSet::File(_) => {
-                        panic!("never execution branch executed!!")
-                    }
+                    SourceSet::File(_) => unreachable!(),
                     SourceSet::Dir { name: _, items } => items,
                 },
             });
