@@ -143,20 +143,11 @@ impl<'a> AstLowering<'a> {
             TypedFile {
                 name: name.to_string(),
                 uses,
-                body: slf.file_syntax(FileSyntax {
-                    leading_trivia: Default::default(),
-                    body: others,
-                    trailing_trivia: Default::default(),
-                }),
+                body: others.into_iter()
+                    .map(|d| slf.decl(d.kind, d.annotations))
+                    .collect(),
             }
         })
-    }
-
-    fn file_syntax(&mut self, f: FileSyntax) -> Vec<TypedDecl> {
-        f.body
-            .into_iter()
-            .map(|d| self.decl(d.kind, d.annotations))
-            .collect()
     }
 
     fn annotations(&self, a: Option<AnnotationsSyntax>) -> TypedAnnotations {
