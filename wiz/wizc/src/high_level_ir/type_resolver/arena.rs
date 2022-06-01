@@ -348,10 +348,10 @@ impl ResolverArena {
         }
         f.write_char('\n')?;
         let children_count = item.children().len();
-        for (i, child) in item.children().into_iter().enumerate() {
+        for (i, child) in item.children().iter().enumerate() {
             let last = (i + 1) == children_count;
             hierarchy_tree.push(i != (children_count - 1));
-            let id = child.1.into_iter().find(|_| true).unwrap();
+            let id = child.1.iter().find(|_| true).unwrap();
             let item = self.get_by_id(id).unwrap();
             self._fmt(f, child.0, item, level + 1, last, hierarchy_tree)?;
             hierarchy_tree.pop();

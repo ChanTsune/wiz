@@ -41,7 +41,7 @@ impl WLib {
         match source_set {
             TypedSourceSet::File(f) => {
                 let id = arena
-                    .register_namespace(&parent, &f.name, Default::default())
+                    .register_namespace(parent, &f.name, Default::default())
                     .unwrap();
                 for decl in &f.body {
                     match &decl.kind {
@@ -61,11 +61,11 @@ impl WLib {
             }
             TypedSourceSet::Dir { name, items } => {
                 let id = arena
-                    .register_namespace(&parent, name, Default::default())
+                    .register_namespace(parent, name, Default::default())
                     .unwrap();
 
                 items
-                    .into_iter()
+                    .iter()
                     .try_for_each(|f| self._apply_to(&id, f, arena))?;
             }
         }
