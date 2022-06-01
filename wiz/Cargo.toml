@@ -2,12 +2,16 @@
 
 members = [
     "wiz",
+    "wiz_constants",
     "wiz_dev_utils",
+    "wiz_hir",
     "wiz_lexar",
     "wiz_mir",
     "wiz_session",
+    "wiz_span",
     "wiz_syntax",
     "wiz_syntax_parser",
+    "wiz_utils",
     "wizc",
     "wizc_cli",
 ]

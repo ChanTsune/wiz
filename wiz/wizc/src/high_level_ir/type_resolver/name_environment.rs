@@ -2,9 +2,9 @@ use crate::high_level_ir::declaration_id::DeclarationId;
 use crate::high_level_ir::type_resolver::arena::ResolverArena;
 use crate::high_level_ir::type_resolver::context::{EnvValue, ResolverStruct};
 use crate::high_level_ir::type_resolver::declaration::DeclarationItemKind;
-use crate::high_level_ir::typed_type::TypedType;
-use crate::utils::stacked_hash_map::StackedHashMap;
 use std::collections::{HashMap, HashSet};
+use wiz_hir::typed_type::TypedType;
+use wiz_utils::StackedHashMap;
 
 #[derive(Debug, Clone)]
 pub(crate) struct NameEnvironment<'a> {
@@ -27,7 +27,7 @@ impl<'a> NameEnvironment<'a> {
 
     /// use [namespace]::*;
     pub(crate) fn use_asterisk<T: ToString>(&mut self, namespace: &[T]) -> Option<()> {
-        let ns_id = self.arena.resolve_namespace_from_root(namespace)?;
+        let ns_id = self.arena.resolve_declaration_id_from_root(namespace)?;
         let ns = self.arena.get_by_id(&ns_id).unwrap();
         self.values.extend(ns.children().clone());
         Some(())
@@ -53,12 +53,12 @@ impl<'a> NameEnvironment<'a> {
         type_name: &str,
     ) -> Option<&ResolverStruct> {
         let maybe_type_parameter = match self.local_stack.get(type_name) {
-            Some(EnvValue::Type(rs)) => Some(rs),
+            Some(EnvValue::Type(id)) => Some(id),
             _ => None,
         };
         let n = match maybe_type_parameter {
             None => self.arena.get_type(&name_space, type_name),
-            Some(tp) => Some(tp),
+            Some(id) => self.arena.get_type_by_id(id),
         };
         n
     }
@@ -67,11 +67,7 @@ impl<'a> NameEnvironment<'a> {
         self.get_type(typ.package().into_resolved().names, &typ.name())
     }
 
-    pub(crate) fn get_env_item<T: ToString>(
-        &self,
-        namespace: &[T],
-        name: &str,
-    ) -> Option<EnvValue> {
+    pub(crate) fn get_env_item(&self, namespace: &[String], name: &str) -> Option<EnvValue> {
         if namespace.is_empty() {
             let maybe_local_value = self.local_stack.get(name).cloned();
             match maybe_local_value {
@@ -80,13 +76,13 @@ impl<'a> NameEnvironment<'a> {
                     let ids = ids.iter().collect::<Vec<_>>();
                     let items = self.arena.get_by_ids(&ids)?;
                     if !items.is_empty() {
-                        if let DeclarationItemKind::Type(t) = &items.first().unwrap().kind {
-                            return Some(EnvValue::from(t.clone()));
+                        if let DeclarationItemKind::Type(_) = &items.first().unwrap().kind {
+                            return Some(EnvValue::from(**ids.first().unwrap()));
                         } else {
                             let mut values = HashSet::new();
                             for item in items {
                                 if let DeclarationItemKind::Value(v) = &item.kind {
-                                    values.insert(v.clone());
+                                    values.insert((item.parent().unwrap(), v.clone()));
                                 } else {
                                     None?
                                 }
@@ -110,13 +106,13 @@ impl<'a> NameEnvironment<'a> {
             let child = child.iter().collect::<Vec<_>>();
             let items = self.arena.get_by_ids(&child)?;
             if !items.is_empty() {
-                if let DeclarationItemKind::Type(t) = &items.first().unwrap().kind {
-                    return Some(EnvValue::from(t.clone()));
+                if let DeclarationItemKind::Type(_) = &items.first().unwrap().kind {
+                    return Some(EnvValue::from(**child.first().unwrap()));
                 } else {
                     let mut values = HashSet::new();
                     for item in items {
                         if let DeclarationItemKind::Value(v) = &item.kind {
-                            values.insert(v.clone());
+                            values.insert((item.parent().unwrap(), v.clone()));
                         } else {
                             None?
                         }

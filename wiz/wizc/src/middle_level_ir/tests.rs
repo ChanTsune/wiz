@@ -1,7 +1,8 @@
+use crate::high_level_ir::type_resolver::arena::ResolverArena;
 use crate::high_level_ir::type_resolver::TypeResolver;
-use crate::high_level_ir::typed_file::TypedSourceSet;
 use crate::high_level_ir::AstLowering;
 use crate::middle_level_ir::HLIR2MLIR;
+use wiz_hir::typed_file::TypedSourceSet;
 use wiz_mir::expr::{
     MLCall, MLCallArg, MLExpr, MLLiteral, MLLiteralKind, MLName, MLUnaryOp, MLUnaryOpKind,
 };
@@ -13,21 +14,21 @@ use wiz_session::Session;
 use wiz_syntax_parser::parser::wiz::parse_from_string;
 
 fn check(source: &str, except: MLFile) {
-    let ast = parse_from_string(source).unwrap();
-
-    let mut ast2hlir = AstLowering::new();
-
-    let mut file = ast2hlir.file(ast);
-    file.name = String::from("test");
+    let ast = parse_from_string(source, Some(&except.name)).unwrap();
 
     let mut session = Session::new();
 
-    let mut resolver = TypeResolver::new(&mut session);
-    let _ = resolver.detect_type(&file).unwrap();
+    let mut arena = ResolverArena::default();
+
+    let mut ast2hlir = AstLowering::new(&mut session, &mut arena);
+
+    let file = ast2hlir.file(ast);
+
+    let mut resolver = TypeResolver::new(&mut session, &mut arena);
     let _ = resolver.preload_file(&file).unwrap();
     let hl_file = resolver.file(file).unwrap();
 
-    let mut hlir2mlir = HLIR2MLIR::new(resolver.context.arena());
+    let mut hlir2mlir = HLIR2MLIR::new(&mut arena);
 
     let f = hlir2mlir.convert_from_source_set(TypedSourceSet::File(hl_file));
 

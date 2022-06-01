@@ -1,88 +1,52 @@
 pub mod arena;
 pub mod context;
-mod declaration;
+pub mod declaration;
 pub mod error;
 mod name_environment;
 pub mod result;
 #[cfg(test)]
 mod tests;
 
+use crate::high_level_ir::declaration_id::DeclarationId;
+use crate::high_level_ir::type_resolver::arena::ResolverArena;
 use crate::high_level_ir::type_resolver::context::ResolverContext;
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
-use crate::high_level_ir::typed_decl::{
+use wiz_hir::typed_decl::{
     TypedArgDef, TypedDecl, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody,
     TypedMemberFunction, TypedProtocol, TypedStoredProperty, TypedStruct, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{
-    TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedIf, TypedInstanceMember,
-    TypedLiteral, TypedName, TypedPostfixUnaryOp, TypedPrefixUnaryOp, TypedPrefixUnaryOperator,
+use wiz_hir::typed_expr::{
+    TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExprKind, TypedIf, TypedInstanceMember,
+    TypedLiteralKind, TypedName, TypedPostfixUnaryOp, TypedPrefixUnaryOp, TypedPrefixUnaryOperator,
     TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
-use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
-use crate::high_level_ir::typed_stmt::{
+use wiz_hir::typed_file::{TypedFile, TypedSourceSet};
+use wiz_hir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedForStmt,
     TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
 };
-use crate::high_level_ir::typed_type::{
-    Package, TypedArgType, TypedFunctionType, TypedType, TypedValueType,
-};
-use crate::high_level_ir::typed_type_constraint::TypedTypeConstraint;
+use wiz_hir::typed_type::{Package, TypedArgType, TypedFunctionType, TypedType, TypedValueType};
+use wiz_hir::typed_type_constraint::TypedTypeConstraint;
 use wiz_session::Session;
 
 #[derive(Debug)]
 pub(crate) struct TypeResolver<'s> {
     session: &'s mut Session,
-    pub(crate) context: ResolverContext,
+    context: ResolverContext<'s>,
 }
 
 impl<'s> TypeResolver<'s> {
-    pub fn new(session: &'s mut Session) -> Self {
+    pub fn new(session: &'s mut Session, arena: &'s mut ResolverArena) -> Self {
         Self {
             session,
-            context: ResolverContext::new(),
+            context: ResolverContext::new(arena),
         }
     }
 
     pub(crate) fn global_use<T: ToString>(&mut self, name_space: &[T]) {
         self.context
             .global_use_name_space(name_space.iter().map(T::to_string).collect())
-    }
-
-    pub fn detect_type_from_source_set(&mut self, s: &TypedSourceSet) -> Result<()> {
-        match s {
-            TypedSourceSet::File(f) => self.detect_type(f),
-            TypedSourceSet::Dir { name, items } => {
-                self.context.register_namespace(name, Default::default());
-                self.context.push_name_space(name);
-                items
-                    .iter()
-                    .try_for_each(|i| self.detect_type_from_source_set(i))?;
-                self.context.pop_name_space();
-                Ok(())
-            }
-        }
-    }
-
-    pub fn detect_type(&mut self, f: &TypedFile) -> Result<()> {
-        self.context.register_namespace(&f.name, Default::default());
-        self.context.push_name_space(&f.name);
-        for d in f.body.iter() {
-            match &d.kind {
-                TypedDeclKind::Struct(s) => {
-                    self.context.register_struct(&s.name, d.annotations.clone());
-                }
-                TypedDeclKind::Class => {}
-                TypedDeclKind::Enum => {}
-                TypedDeclKind::Protocol(p) => {
-                    self.context
-                        .register_protocol(&p.name, d.annotations.clone());
-                }
-                _ => {}
-            }
-        }
-        self.context.pop_name_space();
-        Ok(())
     }
 
     pub fn preload_source_set(&mut self, s: &TypedSourceSet) -> Result<()> {
@@ -106,7 +70,7 @@ impl<'s> TypeResolver<'s> {
             self.preload_decl(d)?;
         }
         for u in f.uses.iter() {
-            self.context.use_name_space(u.package.names.clone());
+            self.context.unuse_name_space(&u.package.names);
         }
         self.context.pop_name_space();
         Ok(())
@@ -163,7 +127,7 @@ impl<'s> TypeResolver<'s> {
             .map(|a| {
                 let a = self.typed_arg_def(a.clone())?;
                 self.context
-                    .register_to_env(a.name.clone(), (vec![], a.type_.clone()));
+                    .register_to_env(a.name.clone(), (DeclarationId::DUMMY, a.type_.clone()));
                 Ok(a)
             })
             .collect::<Result<Vec<_>>>()?;
@@ -345,8 +309,8 @@ impl<'s> TypeResolver<'s> {
                 .map(|s| self.decl(s))
                 .collect::<Result<Vec<_>>>()?,
         });
-        for u in f.uses.into_iter() {
-            self.context.unuse_name_space(u.package.names);
+        for u in f.uses.iter() {
+            self.context.unuse_name_space(&u.package.names);
         }
         self.context.pop_name_space();
         result
@@ -355,7 +319,7 @@ impl<'s> TypeResolver<'s> {
     pub fn decl(&mut self, d: TypedDecl) -> Result<TypedDecl> {
         Ok(TypedDecl {
             annotations: d.annotations,
-            package: Package::from(&self.context.current_namespace()),
+            package: d.package,
             modifiers: d.modifiers,
             kind: match d.kind {
                 TypedDeclKind::Var(v) => TypedDeclKind::Var(self.typed_var(v)?),
@@ -457,7 +421,7 @@ impl<'s> TypeResolver<'s> {
             .map(|a| {
                 let a = self.typed_arg_def(a)?;
                 self.context
-                    .register_to_env(a.name.clone(), (vec![], a.type_.clone()));
+                    .register_to_env(a.name.clone(), (DeclarationId::DUMMY, a.type_.clone()));
                 Ok(a)
             })
             .collect::<Result<Vec<_>>>()?;
@@ -529,7 +493,7 @@ impl<'s> TypeResolver<'s> {
             .map(|a| {
                 let a = self.typed_arg_def(a)?;
                 self.context
-                    .register_to_env(a.name.clone(), (vec![], a.type_.clone()));
+                    .register_to_env(a.name.clone(), (DeclarationId::DUMMY, a.type_.clone()));
                 Ok(a)
             })
             .collect::<Result<Vec<_>>>()?;
@@ -623,24 +587,31 @@ impl<'s> TypeResolver<'s> {
             .collect::<Result<_>>()
     }
 
-    pub fn expr(&mut self, e: TypedExpr, type_annotation: Option<TypedType>) -> Result<TypedExpr> {
+    pub fn expr(
+        &mut self,
+        e: TypedExprKind,
+        type_annotation: Option<TypedType>,
+    ) -> Result<TypedExprKind> {
         Ok(match e {
-            TypedExpr::Name(n) => TypedExpr::Name(self.typed_name(n, type_annotation)?),
-            TypedExpr::Literal(l) => TypedExpr::Literal(self.typed_literal(l, type_annotation)?),
-            TypedExpr::BinOp(b) => TypedExpr::BinOp(self.typed_binop(b)?),
-            TypedExpr::UnaryOp(u) => TypedExpr::UnaryOp(self.typed_unary_op(u)?),
-            TypedExpr::Subscript(s) => TypedExpr::Subscript(self.typed_subscript(s)?),
-            TypedExpr::Member(m) => TypedExpr::Member(self.typed_instance_member(m)?),
-            TypedExpr::Array(a) => TypedExpr::Array(self.typed_array(a)?),
-            TypedExpr::Tuple => TypedExpr::Tuple,
-            TypedExpr::Dict => TypedExpr::Dict,
-            TypedExpr::StringBuilder => TypedExpr::StringBuilder,
-            TypedExpr::Call(c) => TypedExpr::Call(self.typed_call(c)?),
-            TypedExpr::If(i) => TypedExpr::If(self.typed_if(i)?),
-            TypedExpr::When => TypedExpr::When,
-            TypedExpr::Lambda(l) => TypedExpr::Lambda(l),
-            TypedExpr::Return(r) => TypedExpr::Return(self.typed_return(r)?),
-            TypedExpr::TypeCast(t) => TypedExpr::TypeCast(self.typed_type_cast(t)?),
+            TypedExprKind::Name(n) => TypedExprKind::Name(self.typed_name(n, type_annotation)?),
+            TypedExprKind::Literal(l, t) => {
+                let (kind, ty) = self.typed_literal(l, t, type_annotation)?;
+                TypedExprKind::Literal(kind, ty)
+            }
+            TypedExprKind::BinOp(b) => TypedExprKind::BinOp(self.typed_binop(b)?),
+            TypedExprKind::UnaryOp(u) => TypedExprKind::UnaryOp(self.typed_unary_op(u)?),
+            TypedExprKind::Subscript(s) => TypedExprKind::Subscript(self.typed_subscript(s)?),
+            TypedExprKind::Member(m) => TypedExprKind::Member(self.typed_instance_member(m)?),
+            TypedExprKind::Array(a) => TypedExprKind::Array(self.typed_array(a)?),
+            TypedExprKind::Tuple => TypedExprKind::Tuple,
+            TypedExprKind::Dict => TypedExprKind::Dict,
+            TypedExprKind::StringBuilder => TypedExprKind::StringBuilder,
+            TypedExprKind::Call(c) => TypedExprKind::Call(self.typed_call(c)?),
+            TypedExprKind::If(i) => TypedExprKind::If(self.typed_if(i)?),
+            TypedExprKind::When => TypedExprKind::When,
+            TypedExprKind::Lambda(l) => TypedExprKind::Lambda(l),
+            TypedExprKind::Return(r) => TypedExprKind::Return(self.typed_return(r)?),
+            TypedExprKind::TypeCast(t) => TypedExprKind::TypeCast(self.typed_type_cast(t)?),
         })
     }
 
@@ -677,36 +648,34 @@ impl<'s> TypeResolver<'s> {
 
     fn typed_literal(
         &mut self,
-        l: TypedLiteral,
+        l: TypedLiteralKind,
+        type_: Option<TypedType>,
         type_annotation: Option<TypedType>,
-    ) -> Result<TypedLiteral> {
-        Ok(match l {
-            TypedLiteral::Integer { value, type_ } => TypedLiteral::Integer {
-                value,
-                type_: if type_.is_some() {
+    ) -> Result<(TypedLiteralKind, Option<TypedType>)> {
+        let ty = match &l {
+            TypedLiteralKind::Integer { .. } => {
+                if type_.is_some() {
                     type_
                 } else if type_annotation.is_some() {
                     type_annotation
                 } else {
                     Some(TypedType::int64())
-                },
-            },
-            TypedLiteral::FloatingPoint { value, type_ } => TypedLiteral::FloatingPoint {
-                value,
-                type_: if type_.is_some() {
+                }
+            }
+            TypedLiteralKind::FloatingPoint { .. } => {
+                if type_.is_some() {
                     type_
                 } else if type_annotation.is_some() {
                     type_annotation
                 } else {
                     Some(TypedType::double())
-                },
-            },
-            TypedLiteral::String { value, type_ } => TypedLiteral::String { value, type_ },
-            TypedLiteral::Boolean { value, type_ } => TypedLiteral::Boolean { value, type_ },
-            TypedLiteral::NullLiteral { type_: _ } => TypedLiteral::NullLiteral {
-                type_: type_annotation,
-            },
-        })
+                }
+            }
+            TypedLiteralKind::String { .. } => Some(TypedType::string_ref()),
+            TypedLiteralKind::Boolean { .. } => Some(TypedType::bool()),
+            TypedLiteralKind::NullLiteral => type_annotation,
+        };
+        Ok((l, ty))
     }
 
     pub fn typed_unary_op(&mut self, u: TypedUnaryOp) -> Result<TypedUnaryOp> {
@@ -763,25 +732,13 @@ impl<'s> TypeResolver<'s> {
         let right = self.expr(*b.right, None)?;
         let (left, right) = match (left, right) {
             (
-                TypedExpr::Literal(TypedLiteral::Integer {
-                    value: left_value,
-                    type_: left_type,
-                }),
-                TypedExpr::Literal(TypedLiteral::Integer {
-                    value: right_value,
-                    type_: right_type,
-                }),
+                TypedExprKind::Literal(TypedLiteralKind::Integer(left_value), left_type),
+                TypedExprKind::Literal(TypedLiteralKind::Integer(right_value), right_type),
             ) => (
-                TypedExpr::Literal(TypedLiteral::Integer {
-                    value: left_value,
-                    type_: left_type,
-                }),
-                TypedExpr::Literal(TypedLiteral::Integer {
-                    value: right_value,
-                    type_: right_type,
-                }),
+                TypedExprKind::Literal(TypedLiteralKind::Integer(left_value), left_type),
+                TypedExprKind::Literal(TypedLiteralKind::Integer(right_value), right_type),
             ),
-            (left, TypedExpr::Literal(TypedLiteral::Integer { value, type_ })) => {
+            (left, TypedExprKind::Literal(TypedLiteralKind::Integer(value), type_)) => {
                 let left_type = left.type_();
                 let is_integer = match &left_type {
                     None => false,
@@ -790,15 +747,12 @@ impl<'s> TypeResolver<'s> {
                 if is_integer {
                     (
                         left,
-                        TypedExpr::Literal(TypedLiteral::Integer {
-                            value,
-                            type_: left_type,
-                        }),
+                        TypedExprKind::Literal(TypedLiteralKind::Integer(value), left_type),
                     )
                 } else {
                     (
                         left,
-                        TypedExpr::Literal(TypedLiteral::Integer { value, type_ }),
+                        TypedExprKind::Literal(TypedLiteralKind::Integer(value), type_),
                     )
                 }
             }
@@ -928,8 +882,8 @@ impl<'s> TypeResolver<'s> {
 
     pub fn typed_call(&mut self, c: TypedCall) -> Result<TypedCall> {
         let (target, args) = match self.expr((*c.target).clone(), None) {
-            Ok(TypedExpr::Name(n)) => {
-                let target = TypedExpr::Name(n);
+            Ok(TypedExprKind::Name(n)) => {
+                let target = TypedExprKind::Name(n);
                 if let TypedType::Function(f) = target.type_().unwrap() {
                     if c.args.len() != f.arguments.len() {
                         Err(ResolverError::from(format!(
@@ -1069,7 +1023,7 @@ impl<'s> TypeResolver<'s> {
                     self.context.register_to_env(
                         v.name.clone(),
                         (
-                            vec![],
+                            DeclarationId::DUMMY,
                             v.type_.clone().ok_or_else(|| {
                                 ResolverError::from("Cannot resolve variable type")
                             })?,

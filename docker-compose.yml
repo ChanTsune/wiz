@@ -3,9 +3,11 @@ version: '2'
 services:
   builder:
     build:
-        context: .
-        dockerfile: ./Dockerfile
+      context: .
+      dockerfile: ./Dockerfile
     volumes:
-        - ./:/wiz
+      - ./:/wiz
+    environment:
+      RUST_BACKTRACE: full
     working_dir: /wiz/wiz/wizc
     command: /root/.cargo/bin/cargo run /wiz/helloworld.wiz -p /wiz

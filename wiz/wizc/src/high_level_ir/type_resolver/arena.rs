@@ -1,14 +1,13 @@
 use crate::high_level_ir::declaration_id::{DeclarationId, DeclarationIdGenerator};
 use crate::high_level_ir::type_resolver::context::{ResolverStruct, StructKind};
 use crate::high_level_ir::type_resolver::declaration::{DeclarationItem, DeclarationItemKind};
-use crate::high_level_ir::typed_annotation::TypedAnnotations;
-use crate::high_level_ir::typed_expr::TypedBinaryOperator;
-use crate::high_level_ir::typed_type::{
-    Package, TypedNamedValueType, TypedPackage, TypedType, TypedValueType,
-};
 use std::collections::HashMap;
 use std::error::Error;
-use std::fmt::{Debug, Display, Formatter};
+use std::fmt::{Debug, Display, Formatter, Write};
+use wiz_constants::annotation::BUILTIN;
+use wiz_hir::typed_annotation::TypedAnnotations;
+use wiz_hir::typed_expr::TypedBinaryOperator;
+use wiz_hir::typed_type::{Package, TypedNamedValueType, TypedPackage, TypedType, TypedValueType};
 
 #[derive(Debug, Clone)]
 pub struct ArenaError(String);
@@ -33,7 +32,12 @@ impl Default for ResolverArena {
         let mut declarations = HashMap::new();
         declarations.insert(
             DeclarationId::ROOT,
-            DeclarationItem::new(Default::default(), "", DeclarationItemKind::Namespace, None),
+            DeclarationItem::new(
+                TypedAnnotations::from(vec![BUILTIN]),
+                "",
+                DeclarationItemKind::Namespace,
+                None,
+            ),
         );
 
         let mut arena = Self {
@@ -46,7 +50,11 @@ impl Default for ResolverArena {
             match &t {
                 TypedType::Value(v) => match v {
                     TypedValueType::Value(v) => {
-                        arena.register_struct(&DeclarationId::ROOT, &v.name, Default::default());
+                        arena.register_struct(
+                            &DeclarationId::ROOT,
+                            &v.name,
+                            TypedAnnotations::from(vec![BUILTIN]),
+                        );
                     }
                     TypedValueType::Array(_, _) => {}
                     TypedValueType::Tuple(_) => {}
@@ -61,39 +69,6 @@ impl Default for ResolverArena {
 }
 
 impl ResolverArena {
-    pub(crate) fn resolve_namespace<T: ToString>(
-        &self,
-        parent: DeclarationId,
-        namespace: &[T],
-    ) -> Option<DeclarationId> {
-        if namespace.is_empty() {
-            Some(parent)
-        } else {
-            let name = namespace.get(0).unwrap();
-            let parent = self.declarations.get(&parent)?;
-            if parent.is_namespace() {
-                self.resolve_namespace(
-                    *parent
-                        .get_child(&name.to_string())?
-                        .into_iter()
-                        .collect::<Vec<_>>()
-                        .first()
-                        .unwrap(),
-                    &namespace[1..],
-                )
-            } else {
-                None
-            }
-        }
-    }
-
-    pub(crate) fn resolve_namespace_from_root<T: ToString>(
-        &self,
-        namespace: &[T],
-    ) -> Option<DeclarationId> {
-        self.resolve_namespace(DeclarationId::ROOT, namespace)
-    }
-
     fn register(
         &mut self,
         namespace: &DeclarationId,
@@ -150,11 +125,10 @@ impl ResolverArena {
         if item_name.is_empty() {
             Some(parent_id)
         } else {
-            let name = item_name.get(0).unwrap();
             let parent = self.declarations.get(&parent_id)?;
             self.resolve_declaration_id(
                 *parent
-                    .get_child(&name.to_string())?
+                    .get_child(&item_name[0].to_string())?
                     .into_iter()
                     .collect::<Vec<_>>()
                     .first()
@@ -210,7 +184,14 @@ impl ResolverArena {
                 .chain([name.to_string()])
                 .collect::<Vec<_>>(),
         )?;
-        self.declarations.get_mut(&id)
+        self.get_mut_by_id(&id)
+    }
+
+    pub(crate) fn get_type_by_id(&self, id: &DeclarationId) -> Option<&ResolverStruct> {
+        match &self.get_by_id(id)?.kind {
+            DeclarationItemKind::Type(rs) => Some(rs),
+            DeclarationItemKind::Namespace | DeclarationItemKind::Value(_) => None,
+        }
     }
 
     pub(crate) fn register_struct(
@@ -299,14 +280,13 @@ impl ResolverArena {
         ty: TypedType,
         annotation: TypedAnnotations,
     ) -> Option<DeclarationId> {
-        let vec_namespace = self.resolve_fully_qualified_name(namespace);
         self.register(
             namespace,
             name,
             DeclarationItem::new(
                 annotation,
                 name,
-                DeclarationItemKind::Value((vec_namespace, ty)),
+                DeclarationItemKind::Value(ty),
                 Some(*namespace),
             ),
         )
@@ -320,21 +300,81 @@ impl ResolverArena {
     }
 }
 
+impl Display for ResolverArena {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        if let Some(root) = self.get_by_id(&DeclarationId::ROOT) {
+            let mut h = vec![false];
+            self._fmt(f, "root", root, 0, true, &mut h)
+        } else {
+            f.write_str("root...")
+        }
+    }
+}
+
+impl ResolverArena {
+    fn ident(
+        f: &mut Formatter<'_>,
+        level: usize,
+        is_last: bool,
+        hierarchy_tree: &[bool],
+    ) -> std::fmt::Result {
+        let mut i = 0;
+        let s = hierarchy_tree.len();
+        while i < s - 1 {
+            f.write_str(if hierarchy_tree[i] { "│  " } else { "   " })?;
+            i += 1;
+        }
+        if level > 0 {
+            f.write_str(if is_last { "└──" } else { "├──" })?;
+        }
+        Ok(())
+    }
+
+    fn _fmt(
+        &self,
+        f: &mut Formatter<'_>,
+        name: &str,
+        item: &DeclarationItem,
+        level: usize,
+        is_last: bool,
+        hierarchy_tree: &mut Vec<bool>,
+    ) -> std::fmt::Result {
+        Self::ident(f, level, is_last, &hierarchy_tree)?;
+        f.write_str(name)?;
+        if item.is_namespace() {
+            f.write_char('/')?;
+        } else if item.is_type() {
+            f.write_char('*')?;
+        }
+        f.write_char('\n')?;
+        let children_count = item.children().len();
+        for (i, child) in item.children().iter().enumerate() {
+            let last = (i + 1) == children_count;
+            hierarchy_tree.push(i != (children_count - 1));
+            let id = child.1.iter().find(|_| true).unwrap();
+            let item = self.get_by_id(id).unwrap();
+            self._fmt(f, child.0, item, level + 1, last, hierarchy_tree)?;
+            hierarchy_tree.pop();
+        }
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::super::super::declaration_id::DeclarationId;
     use super::super::declaration::DeclarationItemKind;
     use super::ResolverArena;
     use crate::high_level_ir::type_resolver::declaration::DeclarationItem;
-    use crate::high_level_ir::typed_type::{TypedArgType, TypedFunctionType, TypedType};
+    use wiz_hir::typed_type::{TypedArgType, TypedFunctionType, TypedType};
 
     #[test]
-    fn resolve_root_namespace() {
+    fn resolve_declaration_id_from_root() {
         let arena = ResolverArena::default();
 
         let namespace_name: [&str; 0] = [];
 
-        let ns_id = arena.resolve_namespace_from_root(&namespace_name);
+        let ns_id = arena.resolve_declaration_id_from_root(&namespace_name);
         assert_eq!(DeclarationId::ROOT, ns_id.unwrap())
     }
 
@@ -346,7 +386,7 @@ mod tests {
         let std_namespace_id =
             arena.register_namespace(&DeclarationId::ROOT, std_namespace_name, Default::default());
 
-        let ns_id = arena.resolve_namespace_from_root(&[std_namespace_name]);
+        let ns_id = arena.resolve_declaration_id_from_root(&[std_namespace_name]);
 
         assert_eq!(std_namespace_id.unwrap(), ns_id.unwrap());
     }
@@ -370,8 +410,10 @@ mod tests {
             Default::default(),
         );
 
-        let ns_id = arena
-            .resolve_namespace_from_root(&[child_namespace_name, grandchildren_namespace_name]);
+        let ns_id = arena.resolve_declaration_id_from_root(&[
+            child_namespace_name,
+            grandchildren_namespace_name,
+        ]);
 
         assert_eq!(std_collections_id, ns_id);
     }
@@ -512,8 +554,10 @@ mod tests {
             Default::default(),
         );
 
-        let ns_id = arena
-            .resolve_namespace_from_root(&[child_namespace_name, grandchildren_namespace_name]);
+        let ns_id = arena.resolve_declaration_id_from_root(&[
+            child_namespace_name,
+            grandchildren_namespace_name,
+        ]);
 
         assert_eq!(
             arena.resolve_fully_qualified_name(&ns_id.unwrap()),

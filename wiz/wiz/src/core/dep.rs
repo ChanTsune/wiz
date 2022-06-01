@@ -17,6 +17,7 @@ pub struct ResolvedDependencyTree {
 pub fn resolve_manifest_dependencies(
     manifest_path: &Path,
     manifest: &Manifest,
+    another_std: Option<&str>,
 ) -> Result<ResolvedDependencyTree, Box<dyn Error>> {
     let home_dir = PathBuf::from(env!("HOME"));
     let builtin_package_dir = home_dir.join(".wiz/lib/src/");
@@ -25,14 +26,27 @@ pub fn resolve_manifest_dependencies(
     let mut result = Vec::new();
     for (name, version) in manifest.dependencies.iter() {
         let mut resolved = false;
+
+        if let Some(std) = another_std {
+            let manifest_path = PathBuf::from(std).join(name).join(MANIFEST_FILE_NAME);
+            if manifest_path.exists() {
+                let manifest = manifest::read(&manifest_path)?;
+                let dependency =
+                    resolve_manifest_dependencies(&manifest_path, &manifest, another_std)?;
+                result.push(dependency);
+                resolved = true;
+            }
+        }
+
         for package_dir in package_dirs.iter() {
             let manifest_path = package_dir
                 .join(name)
                 .join(version)
                 .join(MANIFEST_FILE_NAME);
-            if manifest_path.exists() {
+            if !resolved && manifest_path.exists() {
                 let manifest = manifest::read(&manifest_path)?;
-                let dependency = resolve_manifest_dependencies(&manifest_path, &manifest)?;
+                let dependency =
+                    resolve_manifest_dependencies(&manifest_path, &manifest, another_std)?;
                 result.push(dependency);
                 resolved = true;
                 break;

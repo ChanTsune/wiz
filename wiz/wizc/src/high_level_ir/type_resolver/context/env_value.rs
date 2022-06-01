@@ -1,27 +1,27 @@
-use crate::high_level_ir::type_resolver::context::ResolverStruct;
-use crate::high_level_ir::typed_type::TypedType;
+use crate::high_level_ir::declaration_id::DeclarationId;
 use std::collections::HashSet;
+use wiz_hir::typed_type::TypedType;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum EnvValue {
-    Value(HashSet<(Vec<String>, TypedType)>),
-    Type(ResolverStruct),
+    Value(HashSet<(DeclarationId, TypedType)>),
+    Type(DeclarationId),
 }
 
-impl From<(Vec<String>, TypedType)> for EnvValue {
-    fn from(typed_type: (Vec<String>, TypedType)) -> Self {
+impl From<(DeclarationId, TypedType)> for EnvValue {
+    fn from(typed_type: (DeclarationId, TypedType)) -> Self {
         Self::Value(HashSet::from([typed_type]))
     }
 }
 
-impl From<HashSet<(Vec<String>, TypedType)>> for EnvValue {
-    fn from(typed_type: HashSet<(Vec<String>, TypedType)>) -> Self {
+impl From<HashSet<(DeclarationId, TypedType)>> for EnvValue {
+    fn from(typed_type: HashSet<(DeclarationId, TypedType)>) -> Self {
         Self::Value(typed_type)
     }
 }
 
-impl From<ResolverStruct> for EnvValue {
-    fn from(s: ResolverStruct) -> Self {
+impl From<DeclarationId> for EnvValue {
+    fn from(s: DeclarationId) -> Self {
         Self::Type(s)
     }
 }

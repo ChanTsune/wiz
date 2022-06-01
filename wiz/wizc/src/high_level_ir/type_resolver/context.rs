@@ -11,31 +11,31 @@ use crate::high_level_ir::type_resolver::declaration::DeclarationItemKind;
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::name_environment::NameEnvironment;
 use crate::high_level_ir::type_resolver::result::Result;
-use crate::high_level_ir::typed_annotation::TypedAnnotations;
-use crate::high_level_ir::typed_expr::TypedBinaryOperator;
-use crate::high_level_ir::typed_type::{
+use std::collections::{HashMap, HashSet};
+use wiz_hir::typed_annotation::TypedAnnotations;
+use wiz_hir::typed_expr::TypedBinaryOperator;
+use wiz_hir::typed_type::{
     Package, TypedArgType, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType,
     TypedValueType,
 };
-use crate::utils::stacked_hash_map::StackedHashMap;
-use std::collections::{HashMap, HashSet};
+use wiz_utils::StackedHashMap;
 
-#[derive(Debug, Clone)]
-pub struct ResolverContext {
+#[derive(Debug)]
+pub struct ResolverContext<'a> {
     global_used_name_space: Vec<Vec<String>>,
     used_name_space: Vec<Vec<String>>,
-    pub(crate) arena: ResolverArena,
+    pub(crate) arena: &'a mut ResolverArena,
     current_type: Option<TypedType>,
     current_namespace_id: DeclarationId,
     local_stack: StackedHashMap<String, EnvValue>,
 }
 
-impl ResolverContext {
-    pub(crate) fn new() -> Self {
+impl<'a> ResolverContext<'a> {
+    pub(crate) fn new(arena: &'a mut ResolverArena) -> Self {
         Self {
             global_used_name_space: Default::default(),
             used_name_space: Default::default(),
-            arena: ResolverArena::default(),
+            arena,
             current_type: None,
             current_namespace_id: DeclarationId::ROOT,
             local_stack: StackedHashMap::new(),
@@ -168,8 +168,8 @@ impl ResolverContext {
         self.used_name_space.push(n);
     }
 
-    pub(crate) fn unuse_name_space(&mut self, n: Vec<String>) {
-        let i = self.used_name_space.iter().rposition(|i| i.eq(&n));
+    pub(crate) fn unuse_name_space(&mut self, n: &Vec<String>) {
+        let i = self.used_name_space.iter().rposition(|i| i.eq(n));
         if let Some(i) = i {
             self.used_name_space.remove(i);
         };
@@ -227,24 +227,38 @@ impl ResolverContext {
         })?;
         match env_value {
             EnvValue::Value(t_set) => Self::resolve_overload(&t_set, type_annotation)
-                .map(|(ns, t)| (t, TypedPackage::Resolved(Package::from(&ns))))
+                .map(|(id, t)| {
+                    (
+                        t,
+                        TypedPackage::Resolved({
+                            if id != DeclarationId::DUMMY {
+                                Package::from(&self.arena.resolve_fully_qualified_name(&id))
+                            } else {
+                                Package::new()
+                            }
+                        }),
+                    )
+                })
                 .ok_or_else(|| {
                     ResolverError::from(format!(
                         "Dose not match any overloaded function `{}`",
                         name
                     ))
                 }),
-            EnvValue::Type(rs) => Ok((
-                TypedType::Type(Box::new(rs.self_type())),
-                rs.self_type().package(),
-            )),
+            EnvValue::Type(id) => {
+                let rs = self.arena.get_type_by_id(&id).unwrap();
+                Ok((
+                    TypedType::Type(Box::new(rs.self_type())),
+                    rs.self_type().package(),
+                ))
+            }
         }
     }
 
     fn resolve_overload(
-        type_set: &HashSet<(Vec<String>, TypedType)>,
+        type_set: &HashSet<(DeclarationId, TypedType)>,
         type_annotation: Option<TypedType>,
-    ) -> Option<(Vec<String>, TypedType)> {
+    ) -> Option<(DeclarationId, TypedType)> {
         for t in type_set {
             if type_set.len() == 1 {
                 return Some(t.clone());
@@ -325,18 +339,21 @@ impl ResolverContext {
                     ))
                 })?;
                 match env_value {
-                    EnvValue::Type(rs) => TypedNamedValueType {
-                        package: TypedPackage::Resolved(Package::from(&rs.namespace)),
-                        name: type_.name.clone(),
-                        type_args: match &type_.type_args {
-                            None => None,
-                            Some(v) => Some(
-                                v.iter()
-                                    .map(|i| self.full_type_name(i))
-                                    .collect::<Result<Vec<_>>>()?,
-                            ),
-                        },
-                    },
+                    EnvValue::Type(id) => {
+                        let rs = self.arena.get_type_by_id(&id).unwrap();
+                        TypedNamedValueType {
+                            package: TypedPackage::Resolved(Package::from(&rs.namespace)),
+                            name: type_.name.clone(),
+                            type_args: match &type_.type_args {
+                                None => None,
+                                Some(v) => Some(
+                                    v.iter()
+                                        .map(|i| self.full_type_name(i))
+                                        .collect::<Result<Vec<_>>>()?,
+                                ),
+                            },
+                        }
+                    }
                     _ => panic!(),
                 }
             }
@@ -408,8 +425,8 @@ impl ResolverContext {
 
     pub(crate) fn update_value(&mut self, id: &DeclarationId, ty: TypedType) -> Option<()> {
         let item = self.arena.get_mut_by_id(id)?;
-        if let DeclarationItemKind::Value((ns, _)) = &item.kind {
-            item.kind = DeclarationItemKind::Value((ns.clone(), ty));
+        if let DeclarationItemKind::Value(_) = &item.kind {
+            item.kind = DeclarationItemKind::Value(ty);
             Some(())
         } else {
             None
@@ -429,12 +446,14 @@ impl ResolverContext {
 #[cfg(test)]
 mod tests {
     use super::{ResolverContext, ResolverStruct, StructKind};
-    use crate::constants::INT32;
-    use crate::high_level_ir::typed_type::TypedType;
+    use crate::ResolverArena;
+    use wiz_constants::INT32;
+    use wiz_hir::typed_type::TypedType;
 
     #[test]
     fn test_context_name_environment() {
-        let mut context = ResolverContext::new();
+        let mut arena = ResolverArena::default();
+        let mut context = ResolverContext::new(&mut arena);
 
         let env = context.get_current_name_environment();
 

@@ -1,12 +1,10 @@
 [package]
-name = "wiz_syntax_parser"
+name = "wiz_hir"
 version = "0.0.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-wiz_span = { path = "../wiz_span" }
-wiz_syntax = { path = "../wiz_syntax" }
-nom = "7.0.0"
-nom_locate = "4.0.0"
+serde = { version = "1.0.136", features = ["derive"]}
+wiz_constants = { path = "../wiz_constants" }

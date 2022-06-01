@@ -1,34 +1,22 @@
 use std::path::Path;
 
-pub(crate) mod stacked_hash_map;
-
-pub(crate) fn path_string_to_page_name(path: String) -> String {
-    let path = Path::new(&path);
-    path.file_stem()
+pub(crate) fn path_string_to_page_name(path: &str) -> &str {
+    Path::new(path)
+        .file_stem()
         .unwrap_or_default()
         .to_str()
         .unwrap_or_default()
-        .to_string()
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::utils::path_string_to_page_name;
+    use super::path_string_to_page_name;
 
     #[test]
     fn test_path_string_to_page_name() {
-        assert_eq!(
-            path_string_to_page_name(String::from("../main.wiz")),
-            String::from("main")
-        );
-        assert_eq!(
-            path_string_to_page_name(String::from("main.wiz")),
-            String::from("main")
-        );
-        assert_eq!(
-            path_string_to_page_name(String::from("main")),
-            String::from("main")
-        );
-        assert_eq!(path_string_to_page_name(String::new()), String::new());
+        assert_eq!(path_string_to_page_name("../main.wiz"), "main");
+        assert_eq!(path_string_to_page_name("main.wiz"), "main");
+        assert_eq!(path_string_to_page_name("main"), "main");
+        assert_eq!(path_string_to_page_name(""), "");
     }
 }

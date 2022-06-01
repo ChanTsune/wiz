@@ -1,18 +1,16 @@
-use crate::high_level_ir::typed_annotation::TypedAnnotations;
-use crate::high_level_ir::typed_expr::TypedExpr;
-use crate::high_level_ir::typed_stmt::TypedBlock;
-use crate::high_level_ir::typed_type::{
-    Package, TypedArgType, TypedFunctionType, TypedType, TypedTypeParam,
-};
-use crate::high_level_ir::typed_type_constraint::TypedTypeConstraint;
+use crate::typed_annotation::TypedAnnotations;
+use crate::typed_expr::TypedExprKind;
+use crate::typed_stmt::TypedBlock;
+use crate::typed_type::{Package, TypedArgType, TypedFunctionType, TypedType, TypedTypeParam};
+use crate::typed_type_constraint::TypedTypeConstraint;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedDecl {
-    pub(crate) annotations: TypedAnnotations,
-    pub(crate) package: Package,
-    pub(crate) modifiers: Vec<String>,
-    pub(crate) kind: TypedDeclKind,
+    pub annotations: TypedAnnotations,
+    pub package: Package,
+    pub modifiers: Vec<String>,
+    pub kind: TypedDeclKind,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
@@ -28,31 +26,31 @@ pub enum TypedDeclKind {
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedVar {
-    pub(crate) is_mut: bool,
-    pub(crate) name: String,
-    pub(crate) type_: Option<TypedType>,
-    pub(crate) value: TypedExpr,
+    pub is_mut: bool,
+    pub name: String,
+    pub type_: Option<TypedType>,
+    pub value: TypedExprKind,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedFun {
-    pub(crate) name: String,
-    pub(crate) type_params: Option<Vec<TypedTypeParam>>,
-    pub(crate) type_constraints: Option<Vec<TypedTypeConstraint>>,
-    pub(crate) arg_defs: Vec<TypedArgDef>,
-    pub(crate) body: Option<TypedFunBody>,
-    pub(crate) return_type: Option<TypedType>,
+    pub name: String,
+    pub type_params: Option<Vec<TypedTypeParam>>,
+    pub type_constraints: Option<Vec<TypedTypeConstraint>>,
+    pub arg_defs: Vec<TypedArgDef>,
+    pub body: Option<TypedFunBody>,
+    pub return_type: Option<TypedType>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash, Serialize, Deserialize)]
 pub struct TypedArgDef {
-    pub(crate) label: String,
-    pub(crate) name: String,
-    pub(crate) type_: TypedType,
+    pub label: String,
+    pub name: String,
+    pub type_: TypedType,
 }
 
 impl TypedArgDef {
-    pub(crate) fn to_arg_type(&self) -> TypedArgType {
+    pub fn to_arg_type(&self) -> TypedArgType {
         TypedArgType {
             label: self.label.clone(),
             typ: self.type_.clone(),
@@ -62,54 +60,54 @@ impl TypedArgDef {
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub enum TypedFunBody {
-    Expr(TypedExpr),
+    Expr(TypedExprKind),
     Block(TypedBlock),
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedStruct {
-    pub(crate) name: String,
-    pub(crate) type_params: Option<Vec<TypedTypeParam>>,
-    pub(crate) stored_properties: Vec<TypedStoredProperty>,
-    pub(crate) computed_properties: Vec<TypedComputedProperty>,
-    pub(crate) member_functions: Vec<TypedMemberFunction>,
+    pub name: String,
+    pub type_params: Option<Vec<TypedTypeParam>>,
+    pub stored_properties: Vec<TypedStoredProperty>,
+    pub computed_properties: Vec<TypedComputedProperty>,
+    pub member_functions: Vec<TypedMemberFunction>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedStoredProperty {
-    pub(crate) name: String,
-    pub(crate) type_: TypedType,
+    pub name: String,
+    pub type_: TypedType,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedComputedProperty {
-    pub(crate) name: String,
-    pub(crate) type_: TypedType,
+    pub name: String,
+    pub type_: TypedType,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedMemberFunction {
-    pub(crate) name: String,
-    pub(crate) type_params: Option<Vec<TypedTypeParam>>,
-    pub(crate) arg_defs: Vec<TypedArgDef>,
-    pub(crate) body: Option<TypedFunBody>,
-    pub(crate) return_type: Option<TypedType>,
+    pub name: String,
+    pub type_params: Option<Vec<TypedTypeParam>>,
+    pub arg_defs: Vec<TypedArgDef>,
+    pub body: Option<TypedFunBody>,
+    pub return_type: Option<TypedType>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedExtension {
-    pub(crate) name: TypedType,
-    pub(crate) protocol: Option<TypedType>,
-    pub(crate) computed_properties: Vec<TypedComputedProperty>,
-    pub(crate) member_functions: Vec<TypedMemberFunction>,
+    pub name: TypedType,
+    pub protocol: Option<TypedType>,
+    pub computed_properties: Vec<TypedComputedProperty>,
+    pub member_functions: Vec<TypedMemberFunction>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedProtocol {
-    pub(crate) name: String,
-    pub(crate) type_params: Option<Vec<TypedTypeParam>>,
-    pub(crate) computed_properties: Vec<TypedComputedProperty>,
-    pub(crate) member_functions: Vec<TypedMemberFunction>,
+    pub name: String,
+    pub type_params: Option<Vec<TypedTypeParam>>,
+    pub computed_properties: Vec<TypedComputedProperty>,
+    pub member_functions: Vec<TypedMemberFunction>,
 }
 
 impl TypedFun {
@@ -128,7 +126,7 @@ impl TypedFun {
 }
 
 impl TypedMemberFunction {
-    pub(crate) fn type_(&self) -> Option<TypedType> {
+    pub fn type_(&self) -> Option<TypedType> {
         match &self.return_type {
             Some(return_type) => Some(TypedType::Function(Box::new(TypedFunctionType {
                 arguments: self.arg_defs.iter().map(|a| a.to_arg_type()).collect(),

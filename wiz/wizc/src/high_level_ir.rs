@@ -1,27 +1,30 @@
+use crate::high_level_ir::declaration_id::DeclarationId;
 use crate::high_level_ir::node_id::TypedModuleId;
-use crate::high_level_ir::typed_annotation::TypedAnnotations;
-use crate::high_level_ir::typed_decl::{
+use crate::utils::path_string_to_page_name;
+use crate::ResolverArena;
+use std::collections::HashMap;
+use wiz_hir::typed_annotation::TypedAnnotations;
+use wiz_hir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedDeclKind, TypedExtension, TypedFun,
     TypedFunBody, TypedMemberFunction, TypedProtocol, TypedStoredProperty, TypedStruct, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{
-    TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedIf,
-    TypedInstanceMember, TypedLambda, TypedLiteral, TypedName, TypedPostfixUnaryOp,
+use wiz_hir::typed_expr::{
+    TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExprKind, TypedIf,
+    TypedInstanceMember, TypedLambda, TypedLiteralKind, TypedName, TypedPostfixUnaryOp,
     TypedPostfixUnaryOperator, TypedPrefixUnaryOp, TypedPrefixUnaryOperator, TypedReturn,
     TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
-use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
-use crate::high_level_ir::typed_stmt::{
+use wiz_hir::typed_file::{TypedFile, TypedSourceSet};
+use wiz_hir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentAndOperator, TypedAssignmentStmt,
     TypedBlock, TypedForStmt, TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
 };
-use crate::high_level_ir::typed_type::{
+use wiz_hir::typed_type::{
     Package, TypedNamedValueType, TypedPackage, TypedType, TypedTypeParam, TypedValueType,
 };
-use crate::high_level_ir::typed_type_constraint::TypedTypeConstraint;
-use crate::high_level_ir::typed_use::TypedUse;
-use crate::utils::path_string_to_page_name;
-use std::collections::HashMap;
+use wiz_hir::typed_type_constraint::TypedTypeConstraint;
+use wiz_hir::typed_use::TypedUse;
+use wiz_session::Session;
 use wiz_syntax::syntax::annotation::AnnotationsSyntax;
 use wiz_syntax::syntax::block::BlockSyntax;
 use wiz_syntax::syntax::declaration::fun_syntax::{ArgDef, FunBody, FunSyntax};
@@ -34,7 +37,7 @@ use wiz_syntax::syntax::expression::{
     MemberSyntax, NameExprSyntax, PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax,
     ReturnSyntax, SubscriptSyntax, TypeCastSyntax, UnaryOperationSyntax,
 };
-use wiz_syntax::syntax::file::{FileSyntax, SourceSet, WizFile};
+use wiz_syntax::syntax::file::{SourceSet, WizFile};
 use wiz_syntax::syntax::literal::LiteralSyntax;
 use wiz_syntax::syntax::statement::{
     AssignmentStmt, ForLoopSyntax, LoopStmt, Stmt, WhileLoopSyntax,
@@ -45,72 +48,110 @@ pub mod declaration_id;
 pub mod node_id;
 pub mod type_checker;
 pub mod type_resolver;
-pub mod typed_annotation;
-pub mod typed_decl;
-pub mod typed_expr;
-pub mod typed_file;
-pub mod typed_stmt;
-pub mod typed_type;
-pub mod typed_type_constraint;
-pub mod typed_use;
 pub mod wlib;
 
-pub struct AstLowering;
+pub struct AstLowering<'a> {
+    session: &'a mut Session,
+    arena: &'a mut ResolverArena,
+    namespace_id: DeclarationId,
+}
 
-pub fn ast2hlir(s: SourceSet, module_id: TypedModuleId) -> TypedSourceSet {
-    let mut converter = AstLowering::new();
+pub fn ast2hlir(
+    session: &mut Session,
+    arena: &mut ResolverArena,
+    s: SourceSet,
+    module_id: TypedModuleId,
+) -> TypedSourceSet {
+    let mut converter = AstLowering::new(session, arena);
     converter.source_set(s, module_id)
 }
 
-impl AstLowering {
-    pub fn new() -> Self {
-        Self {}
+impl<'a> AstLowering<'a> {
+    pub fn new(session: &'a mut Session, arena: &'a mut ResolverArena) -> Self {
+        Self {
+            session,
+            arena,
+            namespace_id: DeclarationId::ROOT,
+        }
+    }
+
+    fn push_namespace<T, F: FnOnce(&mut Self) -> T>(&mut self, name: &str, f: F) -> T {
+        let parent = self.namespace_id;
+
+        self.namespace_id = self
+            .arena
+            .resolve_declaration_id(parent, &[name])
+            .unwrap_or_else(|| {
+                self.arena
+                    .register_namespace(&parent, name, Default::default())
+                    .unwrap_or_else(|| panic!("Can not create {}", name))
+            });
+
+        let result = f(self);
+
+        self.namespace_id = parent;
+        result
     }
 
     pub fn source_set(&mut self, s: SourceSet, module_id: TypedModuleId) -> TypedSourceSet {
         match s {
             SourceSet::File(f) => TypedSourceSet::File(self.file(f)),
-            SourceSet::Dir { name, items } => TypedSourceSet::Dir {
-                name,
-                items: items
-                    .into_iter()
-                    .map(|i| self.source_set(i, module_id))
-                    .collect(),
-            },
+            SourceSet::Dir { name, items } => {
+                self.push_namespace(&name.clone(), |slf| TypedSourceSet::Dir {
+                    name,
+                    items: items
+                        .into_iter()
+                        .map(|i| slf.source_set(i, module_id))
+                        .collect(),
+                })
+            }
         }
     }
 
     pub fn file(&mut self, f: WizFile) -> TypedFile {
         let WizFile { name, syntax } = f;
-        let mut uses = vec![];
-        let mut others = vec![];
-        for l in syntax.body.into_iter() {
-            if let DeclKind::Use(u) = l.kind {
-                uses.push(self.use_syntax(u, l.annotations));
-            } else {
-                others.push(l);
+
+        let name = path_string_to_page_name(&name);
+
+        self.push_namespace(name, |slf| {
+            let mut uses = vec![];
+            let mut others = vec![];
+            for l in syntax.body.into_iter() {
+                if let DeclKind::Use(u) = l.kind {
+                    uses.push(slf.use_syntax(u, l.annotations));
+                } else if let DeclKind::Struct(s) = &l.kind {
+                    let annotation = slf.annotations(l.annotations.clone());
+                    match s.struct_keyword.token().as_str() {
+                        "struct" => slf.arena.register_struct(
+                            &slf.namespace_id,
+                            &s.name.token(),
+                            annotation,
+                        ),
+                        "protocol" => slf.arena.register_protocol(
+                            &slf.namespace_id,
+                            &s.name.token(),
+                            annotation,
+                        ),
+                        _ => unreachable!(),
+                    };
+                    others.push(l);
+                } else {
+                    others.push(l);
+                }
             }
-        }
 
-        TypedFile {
-            name: path_string_to_page_name(name),
-            uses,
-            body: self.file_syntax(FileSyntax {
-                leading_trivia: Default::default(),
-                body: others,
-                trailing_trivia: Default::default(),
-            }),
-        }
+            TypedFile {
+                name: name.to_string(),
+                uses,
+                body: others
+                    .into_iter()
+                    .map(|d| slf.decl(d.kind, d.annotations))
+                    .collect(),
+            }
+        })
     }
 
-    pub fn file_syntax(&mut self, f: FileSyntax) -> Vec<TypedDecl> {
-        f.body
-            .into_iter()
-            .map(|d| self.decl(d.kind, d.annotations))
-            .collect()
-    }
-
-    pub(crate) fn annotations(&self, a: Option<AnnotationsSyntax>) -> TypedAnnotations {
+    fn annotations(&self, a: Option<AnnotationsSyntax>) -> TypedAnnotations {
         match a {
             None => TypedAnnotations::default(),
             Some(a) => TypedAnnotations::from(
@@ -122,7 +163,7 @@ impl AstLowering {
         }
     }
 
-    pub fn stmt(&self, s: Stmt) -> TypedStmt {
+    fn stmt(&self, s: Stmt) -> TypedStmt {
         match s {
             Stmt::Decl(decl) => TypedStmt::Decl(self.decl(decl.kind, decl.annotations)),
             Stmt::Expr(expr) => TypedStmt::Expr(self.expr(expr)),
@@ -131,7 +172,7 @@ impl AstLowering {
         }
     }
 
-    pub fn assignment(&self, a: AssignmentStmt) -> TypedAssignmentStmt {
+    fn assignment(&self, a: AssignmentStmt) -> TypedAssignmentStmt {
         match a {
             AssignmentStmt::Assignment(a) => TypedAssignmentStmt::Assignment(TypedAssignment {
                 target: self.expr(a.target),
@@ -154,7 +195,7 @@ impl AstLowering {
         }
     }
 
-    pub fn loop_stmt(&self, l: LoopStmt) -> TypedLoopStmt {
+    fn loop_stmt(&self, l: LoopStmt) -> TypedLoopStmt {
         match l {
             LoopStmt::While(WhileLoopSyntax {
                 while_keyword: _,
@@ -178,10 +219,10 @@ impl AstLowering {
         }
     }
 
-    pub fn decl(&self, d: DeclKind, annotation: Option<AnnotationsSyntax>) -> TypedDecl {
+    fn decl(&self, d: DeclKind, annotation: Option<AnnotationsSyntax>) -> TypedDecl {
         TypedDecl {
             annotations: self.annotations(annotation),
-            package: Package::new(),
+            package: Package::from(&self.arena.resolve_fully_qualified_name(&self.namespace_id)),
             modifiers: vec![],
             kind: match d {
                 DeclKind::Var(v) => TypedDeclKind::Var(self.var_syntax(v)),
@@ -527,51 +568,39 @@ impl AstLowering {
         }
     }
 
-    pub fn expr(&self, e: Expr) -> TypedExpr {
+    pub fn expr(&self, e: Expr) -> TypedExprKind {
         match e {
-            Expr::Name(n) => TypedExpr::Name(self.name_syntax(n)),
-            Expr::Literal(literal) => TypedExpr::Literal(self.literal_syntax(literal)),
-            Expr::BinOp(b) => TypedExpr::BinOp(self.binary_operation_syntax(b)),
-            Expr::UnaryOp(u) => TypedExpr::UnaryOp(self.unary_operation_syntax(u)),
-            Expr::Subscript(s) => TypedExpr::Subscript(self.subscript_syntax(s)),
-            Expr::Member(m) => TypedExpr::Member(self.member_syntax(m)),
-            Expr::Array(a) => TypedExpr::Array(self.array_syntax(a)),
-            Expr::Tuple { .. } => TypedExpr::Tuple,
-            Expr::Dict { .. } => TypedExpr::Dict,
-            Expr::StringBuilder { .. } => TypedExpr::StringBuilder,
-            Expr::Call(c) => TypedExpr::Call(self.call_syntax(c)),
-            Expr::If(i) => TypedExpr::If(self.if_syntax(i)),
-            Expr::When { .. } => TypedExpr::When,
-            Expr::Lambda(l) => TypedExpr::Lambda(self.lambda_syntax(l)),
-            Expr::Return(r) => TypedExpr::Return(self.return_syntax(r)),
-            Expr::TypeCast(t) => TypedExpr::TypeCast(self.type_cast(t)),
+            Expr::Name(n) => TypedExprKind::Name(self.name_syntax(n)),
+            Expr::Literal(literal) => TypedExprKind::Literal(self.literal_syntax(literal), None),
+            Expr::BinOp(b) => TypedExprKind::BinOp(self.binary_operation_syntax(b)),
+            Expr::UnaryOp(u) => TypedExprKind::UnaryOp(self.unary_operation_syntax(u)),
+            Expr::Subscript(s) => TypedExprKind::Subscript(self.subscript_syntax(s)),
+            Expr::Member(m) => TypedExprKind::Member(self.member_syntax(m)),
+            Expr::Array(a) => TypedExprKind::Array(self.array_syntax(a)),
+            Expr::Tuple { .. } => TypedExprKind::Tuple,
+            Expr::Dict { .. } => TypedExprKind::Dict,
+            Expr::StringBuilder { .. } => TypedExprKind::StringBuilder,
+            Expr::Call(c) => TypedExprKind::Call(self.call_syntax(c)),
+            Expr::If(i) => TypedExprKind::If(self.if_syntax(i)),
+            Expr::When { .. } => TypedExprKind::When,
+            Expr::Lambda(l) => TypedExprKind::Lambda(self.lambda_syntax(l)),
+            Expr::Return(r) => TypedExprKind::Return(self.return_syntax(r)),
+            Expr::TypeCast(t) => TypedExprKind::TypeCast(self.type_cast(t)),
             Expr::Parenthesized(p) => self.expr(*p.expr),
         }
     }
 
-    pub fn literal_syntax(&self, literal: LiteralSyntax) -> TypedLiteral {
+    pub fn literal_syntax(&self, literal: LiteralSyntax) -> TypedLiteralKind {
         match literal {
-            LiteralSyntax::Integer(value) => TypedLiteral::Integer {
-                value: value.token(),
-                type_: None,
-            },
-            LiteralSyntax::FloatingPoint(value) => TypedLiteral::FloatingPoint {
-                value: value.token(),
-                type_: None,
-            },
+            LiteralSyntax::Integer(value) => TypedLiteralKind::Integer(value.token()),
+            LiteralSyntax::FloatingPoint(value) => TypedLiteralKind::FloatingPoint(value.token()),
             LiteralSyntax::String {
                 open_quote: _,
                 value,
                 close_quote: _,
-            } => TypedLiteral::String {
-                value,
-                type_: Some(TypedType::string_ref()),
-            },
-            LiteralSyntax::Boolean(syntax) => TypedLiteral::Boolean {
-                value: syntax.token(),
-                type_: Some(TypedType::bool()),
-            },
-            LiteralSyntax::Null => TypedLiteral::NullLiteral { type_: None },
+            } => TypedLiteralKind::String(value),
+            LiteralSyntax::Boolean(syntax) => TypedLiteralKind::Boolean(syntax.token()),
+            LiteralSyntax::Null => TypedLiteralKind::NullLiteral,
         }
     }
 
@@ -692,7 +721,7 @@ impl AstLowering {
 
     pub fn subscript_syntax(&self, s: SubscriptSyntax) -> TypedSubscript {
         let target = Box::new(self.expr(*s.target));
-        let indexes: Vec<TypedExpr> = s
+        let indexes: Vec<_> = s
             .idx_or_keys
             .elements
             .into_iter()
@@ -741,7 +770,7 @@ impl AstLowering {
                 args.len(),
                 TypedCallArg {
                     label: None,
-                    arg: Box::new(TypedExpr::Lambda(self.lambda_syntax(lambda))),
+                    arg: Box::new(TypedExprKind::Lambda(self.lambda_syntax(lambda))),
                     is_vararg: false,
                 },
             )

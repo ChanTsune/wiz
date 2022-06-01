@@ -1,4 +1,3 @@
-use crate::utils::stacked_hash_map::StackedHashMap;
 use either::Either;
 use inkwell::builder::Builder;
 use inkwell::context::Context;
@@ -22,6 +21,7 @@ use wiz_mir::ml_decl::{MLDecl, MLFun, MLStruct, MLVar};
 use wiz_mir::ml_file::MLFile;
 use wiz_mir::ml_type::{MLPrimitiveType, MLType, MLValueType};
 use wiz_mir::statement::{MLAssignmentStmt, MLLoopStmt, MLReturn, MLStmt};
+use wiz_utils::StackedHashMap;
 
 pub(crate) struct MLContext<'ctx> {
     pub(crate) struct_environment: StackedHashMap<String, MLStruct>,

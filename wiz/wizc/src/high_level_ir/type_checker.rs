@@ -3,16 +3,16 @@ mod error;
 use crate::high_level_ir::type_checker::error::CheckerError;
 use crate::high_level_ir::type_resolver::arena::ResolverArena;
 use crate::high_level_ir::type_resolver::context::StructKind;
-use crate::high_level_ir::typed_decl::{
+use wiz_hir::typed_decl::{
     TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedProtocol, TypedStruct, TypedVar,
 };
-use crate::high_level_ir::typed_expr::{
-    TypedArray, TypedBinOp, TypedCall, TypedExpr, TypedIf, TypedInstanceMember, TypedLambda,
-    TypedLiteral, TypedName, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
+use wiz_hir::typed_expr::{
+    TypedArray, TypedBinOp, TypedCall, TypedExprKind, TypedIf, TypedInstanceMember, TypedLambda,
+    TypedLiteralKind, TypedName, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
-use crate::high_level_ir::typed_file::{TypedFile, TypedSourceSet};
-use crate::high_level_ir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
-use crate::high_level_ir::typed_type::Package;
+use wiz_hir::typed_file::{TypedFile, TypedSourceSet};
+use wiz_hir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
+use wiz_hir::typed_type::{Package, TypedType};
 use wiz_session::Session;
 
 #[derive(Debug)]
@@ -187,24 +187,24 @@ impl<'s> TypeChecker<'s> {
         typed_block.body.iter().for_each(|s| self.statement(s))
     }
 
-    fn expression(&mut self, typed_expr: &TypedExpr) {
+    fn expression(&mut self, typed_expr: &TypedExprKind) {
         match typed_expr {
-            TypedExpr::Name(n) => self.name(n),
-            TypedExpr::Literal(l) => self.literal(l),
-            TypedExpr::BinOp(b) => self.binary_operation(b),
-            TypedExpr::UnaryOp(u) => self.unary_operation(u),
-            TypedExpr::Subscript(s) => self.subscript(s),
-            TypedExpr::Member(m) => self.member(m),
-            TypedExpr::Array(a) => self.array(a),
-            TypedExpr::Tuple => todo!(),
-            TypedExpr::Dict => todo!(),
-            TypedExpr::StringBuilder => todo!(),
-            TypedExpr::Call(c) => self.call(c),
-            TypedExpr::If(i) => self.if_(i),
-            TypedExpr::When => todo!(),
-            TypedExpr::Lambda(l) => self.lambda(l),
-            TypedExpr::Return(r) => self.return_(r),
-            TypedExpr::TypeCast(c) => self.type_cast(c),
+            TypedExprKind::Name(n) => self.name(n),
+            TypedExprKind::Literal(l, t) => self.literal(l, t),
+            TypedExprKind::BinOp(b) => self.binary_operation(b),
+            TypedExprKind::UnaryOp(u) => self.unary_operation(u),
+            TypedExprKind::Subscript(s) => self.subscript(s),
+            TypedExprKind::Member(m) => self.member(m),
+            TypedExprKind::Array(a) => self.array(a),
+            TypedExprKind::Tuple => todo!(),
+            TypedExprKind::Dict => todo!(),
+            TypedExprKind::StringBuilder => todo!(),
+            TypedExprKind::Call(c) => self.call(c),
+            TypedExprKind::If(i) => self.if_(i),
+            TypedExprKind::When => todo!(),
+            TypedExprKind::Lambda(l) => self.lambda(l),
+            TypedExprKind::Return(r) => self.return_(r),
+            TypedExprKind::TypeCast(c) => self.type_cast(c),
         }
     }
 
@@ -217,9 +217,9 @@ impl<'s> TypeChecker<'s> {
         }
     }
 
-    fn literal(&mut self, typed_literal: &TypedLiteral) {
+    fn literal(&mut self, typed_literal: &TypedLiteralKind, type_: &Option<TypedType>) {
         match typed_literal {
-            TypedLiteral::Integer { value, type_ } => {
+            TypedLiteralKind::Integer(value) => {
                 if let Some(typ) = type_ {
                     if !typ.is_integer() {
                         self.session.emit_error(CheckerError::new(format!(
@@ -234,7 +234,7 @@ impl<'s> TypeChecker<'s> {
                     )))
                 }
             }
-            TypedLiteral::FloatingPoint { value, type_ } => {
+            TypedLiteralKind::FloatingPoint(value) => {
                 if let Some(typ) = type_ {
                     if !typ.is_floating_point() {
                         self.session.emit_error(CheckerError::new(format!(
@@ -249,7 +249,7 @@ impl<'s> TypeChecker<'s> {
                     )))
                 }
             }
-            TypedLiteral::String { value, type_ } => {
+            TypedLiteralKind::String(value) => {
                 if let Some(typ) = type_ {
                     if !typ.is_string_ref() {
                         self.session.emit_error(CheckerError::new(format!(
@@ -264,7 +264,7 @@ impl<'s> TypeChecker<'s> {
                     )))
                 }
             }
-            TypedLiteral::Boolean { value, type_ } => {
+            TypedLiteralKind::Boolean(value) => {
                 if let Some(typ) = type_ {
                     if !typ.is_boolean() {
                         self.session.emit_error(CheckerError::new(format!(
@@ -279,7 +279,7 @@ impl<'s> TypeChecker<'s> {
                     )))
                 }
             }
-            TypedLiteral::NullLiteral { type_ } => {
+            TypedLiteralKind::NullLiteral => {
                 if type_.is_none() {
                     self.session.emit_error(CheckerError::new(format!(
                         "Can not resolve literal type of null"

@@ -3,11 +3,10 @@ use crate::parser::result::Result;
 use crate::parser::wiz::statement::file;
 use crate::parser::Span;
 use std::fs;
-use std::fs::{read_to_string, File};
-use std::io::Read;
+use std::fs::read_to_string;
 use std::path::Path;
+use wiz_span::{get_line_offset, Location};
 use wiz_syntax::syntax::file::{SourceSet, WizFile};
-use wiz_syntax::syntax::{get_line_offset, Location};
 
 pub mod annotation;
 pub mod character;
@@ -20,7 +19,7 @@ pub mod operators;
 pub mod statement;
 pub mod type_;
 
-pub fn parse_from_string(src: &str) -> Result<WizFile> {
+pub fn parse_from_string(src: &str, name: Option<&str>) -> Result<WizFile> {
     match file(Span::from(src)) {
         Ok((s, f)) => {
             if !s.is_empty() {
@@ -28,19 +27,13 @@ pub fn parse_from_string(src: &str) -> Result<WizFile> {
                 Err(ParseError::from(get_error_location_src(src, &location)))
             } else {
                 Ok(WizFile {
-                    name: String::new(),
+                    name: name.unwrap_or_default().to_string(),
                     syntax: f,
                 })
             }
         }
         Err(_) => Err(ParseError::from(String::new())),
     }
-}
-
-pub fn parse_from_file(mut file: File) -> Result<WizFile> {
-    let mut string = String::new();
-    let _ = file.read_to_string(&mut string)?;
-    parse_from_string(&*string)
 }
 
 pub fn parse_from_file_path_str(path: &str) -> Result<WizFile> {
@@ -50,9 +43,7 @@ pub fn parse_from_file_path_str(path: &str) -> Result<WizFile> {
 
 pub fn parse_from_file_path(path: &Path) -> Result<WizFile> {
     let s = read_to_string(path)?;
-    let mut f = parse_from_string(&*s)?;
-    f.name = String::from(path.to_string_lossy());
-    Ok(f)
+    parse_from_string(&*s, path.as_os_str().to_str())
 }
 
 pub fn read_package_from_path(path: &Path, name: Option<&str>) -> Result<SourceSet> {
@@ -65,9 +56,7 @@ pub fn read_package_from_path(path: &Path, name: Option<&str>) -> Result<SourceS
                     .unwrap_or_else(|| path.file_name().unwrap().to_str().unwrap())
                     .to_string(),
                 items: match read_package_files(dir_entry.path().as_path())? {
-                    SourceSet::File(_) => {
-                        panic!("never execution branch executed!!")
-                    }
+                    SourceSet::File(_) => unreachable!(),
                     SourceSet::Dir { name: _, items } => items,
                 },
             });
@@ -115,11 +104,11 @@ mod tests {
 
     #[test]
     fn test_parse_from_string() {
-        let result = parse_from_string("unknown_token");
+        let result = parse_from_string("unknown_token", None);
         if let Err(e) = result {
             assert_eq!(e.to_string(), "1 | unknown_token\n    ^");
         } else {
-            panic!("never execution branch executed!!");
+            unreachable!();
         }
     }
 }
