@@ -126,7 +126,7 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
         ast2hlir.source_set(input_source, TypedModuleId::new(std_hlir.len()))
     });
 
-    let (std_hlir, hlfiles) = session.timer::<Result<_>, _>("resolve type", |session| {
+    let std_hlir = session.timer("resolve dependencies type", |session| {
         let mut type_resolver = TypeResolver::new(session, &mut arena);
         type_resolver.global_use(&["core", "builtin", "*"]);
         type_resolver.global_use(&["std", "builtin", "*"]);
@@ -137,23 +137,27 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
             type_resolver.preload_source_set(hlir)?;
         }
 
+        println!("===== resolve types =====");
+        // resolve types
+
+        std_hlir
+            .into_iter()
+            .map(|s| type_resolver.source_set(s))
+            .collect::<Result<Vec<_>>>()
+    })?;
+
+    let hlfiles = session.timer::<Result<_>, _>("resolve type", |session| {
+        let mut type_resolver = TypeResolver::new(session, &mut arena);
+        type_resolver.global_use(&["core", "builtin", "*"]);
+        type_resolver.global_use(&["std", "builtin", "*"]);
+
         println!("===== preload decls for input source =====");
 
         type_resolver.preload_source_set(&hlfiles)?;
 
-        println!("===== resolve types =====");
-        // resolve types
-
-        let std_hlir: Vec<_> = std_hlir
-            .into_iter()
-            .map(|s| type_resolver.source_set(s))
-            .collect::<Result<_>>()?;
-
         println!("===== resolve types for input source =====");
 
-        let hlfiles = type_resolver.source_set(hlfiles)?;
-
-        Ok((std_hlir, hlfiles))
+        type_resolver.source_set(hlfiles)
     })?;
 
     session.timer("type check", |session| {
