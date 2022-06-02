@@ -85,10 +85,7 @@ fn dependency_list(dependencies: ResolvedDependencyTree) -> HashMap<SimpleDep, H
             .into_iter()
             .map(|d| _dependency_list(result, d))
             .collect();
-        result.insert(
-            task.clone(),
-            dependencies
-        );
+        result.insert(task.clone(), dependencies);
         task
     }
     let mut result = HashMap::new();
