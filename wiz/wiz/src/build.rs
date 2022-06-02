@@ -119,7 +119,10 @@ fn compile_dependencies(
             eprintln!("{}", String::from_utf8_lossy(&output.stderr));
         }
         if !output.status.success() {
-            return Err(Box::new(CliError::from(format!("compile failed {:?}", dep.name))));
+            return Err(Box::new(CliError::from(format!(
+                "compile failed {:?}",
+                dep.name
+            ))));
         }
         wlib_paths.extend(dep_wlib_paths);
         wlib_paths.insert(format!("{}/{}.wlib", target_dir, dep.name));
