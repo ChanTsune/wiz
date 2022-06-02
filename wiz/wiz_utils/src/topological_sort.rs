@@ -48,9 +48,7 @@ where
         .values()
         .cloned()
         .reduce(|l, r| {
-            let t = HashSet::union(&l, &r).collect::<HashSet<_>>();
-            let t = t.into_iter().cloned().collect();
-            t
+            HashSet::union(&l, &r).cloned().collect::<HashSet<_>>()
         })
         .unwrap_or_default();
 
@@ -92,11 +90,11 @@ where
         result.push(ordered);
     }
 
-    return if !data.is_empty() {
+    if !data.is_empty() {
         Err(CircularDependencyError::new())
     } else {
         Ok(result)
-    };
+    }
 }
 
 #[cfg(test)]
