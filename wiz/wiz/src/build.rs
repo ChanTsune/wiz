@@ -39,7 +39,7 @@ pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn Error
     create_dir_all(&target_dir)?;
 
     let wlib_paths =
-        compile_dependencies(&ws, resolved_dependencies, target_dir.to_str().unwrap())?;
+        compile_dependencies(&ws, &resolved_dependencies, target_dir.to_str().unwrap())?;
 
     let mut args = vec![ws.cws.to_str().unwrap()];
     args.extend(["--out-dir", target_dir.to_str().unwrap()]);
@@ -60,11 +60,11 @@ pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn Error
 
 fn compile_dependencies(
     ws: &Workspace,
-    dependencies: ResolvedDependencyTree,
+    dependencies: &ResolvedDependencyTree,
     target_dir: &str,
 ) -> Result<BTreeSet<String>, Box<dyn Error>> {
     let mut wlib_paths = BTreeSet::new();
-    for dep in dependencies.dependencies {
+    for dep in dependencies.dependencies.iter() {
         let dep_wlib_paths = compile_dependencies(ws, dep, target_dir)?;
         let mut args = vec![dep.src_path.as_str()];
         args.extend(["--out-dir", target_dir]);
