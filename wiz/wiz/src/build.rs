@@ -65,9 +65,7 @@ struct SimpleDep {
     src_path: String,
 }
 
-fn dependency_list(
-    dependencies: ResolvedDependencyTree,
-) -> HashMap<SimpleDep, HashSet<SimpleDep>> {
+fn dependency_list(dependencies: ResolvedDependencyTree) -> HashMap<SimpleDep, HashSet<SimpleDep>> {
     fn _dependency_list(
         result: &mut HashMap<SimpleDep, HashSet<SimpleDep>>,
         dep: ResolvedDependencyTree,
