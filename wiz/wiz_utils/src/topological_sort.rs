@@ -47,7 +47,7 @@ where
     let t = data
         .values()
         .cloned()
-        .reduce(|l, r| HashSet::union(&l, &r).cloned().collect::<HashSet<_>>())
+        .reduce(|l, r| l.union(&r).cloned().collect::<HashSet<_>>())
         .unwrap_or_default();
 
     let v = data.keys().cloned().collect::<HashSet<_>>();
