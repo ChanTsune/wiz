@@ -65,13 +65,31 @@ struct SimpleDep {
     src_path: String,
 }
 
-fn dependency_list(dependencies: ResolvedDependencyTree) -> Vec<HashMap<SimpleDep, Vec<SimpleDep>>> {
-    fn _dependency_list(result: &mut Vec<HashMap<SimpleDep, Vec<SimpleDep>>>, dep: ResolvedDependencyTree) -> SimpleDep {
+fn dependency_list(
+    dependencies: ResolvedDependencyTree,
+) -> Vec<HashMap<SimpleDep, Vec<SimpleDep>>> {
+    fn _dependency_list(
+        result: &mut Vec<HashMap<SimpleDep, Vec<SimpleDep>>>,
+        dep: ResolvedDependencyTree,
+    ) -> SimpleDep {
         let ResolvedDependencyTree {
-            name, version, src_path, dependencies
+            name,
+            version,
+            src_path,
+            dependencies,
         } = dep;
-        let task = SimpleDep { name, version, src_path };
-        let s = HashMap::from([(task.clone(), dependencies.into_iter().map(|d|_dependency_list(result, d)).collect())]);
+        let task = SimpleDep {
+            name,
+            version,
+            src_path,
+        };
+        let s = HashMap::from([(
+            task.clone(),
+            dependencies
+                .into_iter()
+                .map(|d| _dependency_list(result, d))
+                .collect(),
+        )]);
         result.push(s);
         task
     }
