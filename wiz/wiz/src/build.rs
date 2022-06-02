@@ -8,6 +8,7 @@ use std::env;
 use std::error::Error;
 use std::fs::create_dir_all;
 use std::path::PathBuf;
+use wiz_utils::topological_sort::topological_sort;
 
 pub(crate) const COMMAND_NAME: &str = "build";
 
@@ -39,7 +40,7 @@ pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn Error
     create_dir_all(&target_dir)?;
 
     let wlib_paths =
-        compile_dependencies(&ws, &resolved_dependencies, target_dir.to_str().unwrap())?;
+        compile_dependencies(&ws, resolved_dependencies, target_dir.to_str().unwrap())?;
 
     let mut args = vec![ws.cws.to_str().unwrap()];
     args.extend(["--out-dir", target_dir.to_str().unwrap()]);
@@ -89,18 +90,22 @@ fn dependency_list(dependencies: ResolvedDependencyTree) -> HashMap<SimpleDep, H
         task
     }
     let mut result = HashMap::new();
-    dependency_list(&mut result, dependencies);
+    for dependency in dependencies.dependencies {
+        dependency_list(&mut result, dependency);
+    }
     result
 }
 
 fn compile_dependencies(
     ws: &Workspace,
-    dependencies: &ResolvedDependencyTree,
+    dependencies: ResolvedDependencyTree,
     target_dir: &str,
 ) -> Result<BTreeSet<String>, Box<dyn Error>> {
     let mut wlib_paths = BTreeSet::new();
-    for dep in dependencies.dependencies.iter() {
-        let dep_wlib_paths = compile_dependencies(ws, dep, target_dir)?;
+    let dependen_list = dependency_list(dependencies);
+    let dep_list = topological_sort(dependen_list.clone())?;
+    for dep in dep_list.into_iter().flatten() {
+        let dep_wlib_paths = dependen_list.get(&dep).unwrap().iter().map(|d|format!("{}/{}.wlib", target_dir, d.name)).collect::<Vec<_>>();
         let mut args = vec![dep.src_path.as_str()];
         args.extend(["--out-dir", target_dir]);
         args.extend(["--name", dep.name.as_str()]);
