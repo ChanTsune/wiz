@@ -83,12 +83,13 @@ fn dependency_list(
             version,
             src_path,
         };
+        let dependencies = dependencies
+            .into_iter()
+            .map(|d| _dependency_list(result, d))
+            .collect();
         result.insert(
             task.clone(),
             dependencies
-                .into_iter()
-                .map(|d| _dependency_list(result, d))
-                .collect(),
         );
         task
     }
