@@ -3,7 +3,7 @@ use crate::core::error::CliError;
 use crate::core::load_project;
 use crate::core::workspace::Workspace;
 use clap::ArgMatches;
-use std::collections::{BTreeSet, HashMap};
+use std::collections::{BTreeSet, HashMap, HashSet};
 use std::env;
 use std::error::Error;
 use std::fs::create_dir_all;
@@ -67,9 +67,9 @@ struct SimpleDep {
 
 fn dependency_list(
     dependencies: ResolvedDependencyTree,
-) -> Vec<HashMap<SimpleDep, Vec<SimpleDep>>> {
+) -> HashMap<SimpleDep, HashSet<SimpleDep>> {
     fn _dependency_list(
-        result: &mut Vec<HashMap<SimpleDep, Vec<SimpleDep>>>,
+        result: &mut HashMap<SimpleDep, HashSet<SimpleDep>>,
         dep: ResolvedDependencyTree,
     ) -> SimpleDep {
         let ResolvedDependencyTree {
@@ -83,17 +83,16 @@ fn dependency_list(
             version,
             src_path,
         };
-        let s = HashMap::from([(
+        result.insert(
             task.clone(),
             dependencies
                 .into_iter()
                 .map(|d| _dependency_list(result, d))
                 .collect(),
-        )]);
-        result.push(s);
+        );
         task
     }
-    let mut result = vec![];
+    let mut result = HashMap::new();
     _dependency_list(&mut result, dependencies);
     result
 }
