@@ -3,7 +3,7 @@ use crate::core::error::CliError;
 use crate::core::load_project;
 use crate::core::workspace::Workspace;
 use clap::ArgMatches;
-use std::collections::BTreeSet;
+use std::collections::{BTreeSet, HashMap};
 use std::env;
 use std::error::Error;
 use std::fs::create_dir_all;
@@ -56,6 +56,28 @@ pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn Error
     };
 
     super::subcommand::execute("wizc", &args)
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+struct SimpleDep {
+    name: String,
+    version: String,
+    src_path: String,
+}
+
+fn dependency_list(dependencies: ResolvedDependencyTree) -> Vec<HashMap<SimpleDep, Vec<SimpleDep>>> {
+    fn _dependency_list(result: &mut Vec<HashMap<SimpleDep, Vec<SimpleDep>>>, dep: ResolvedDependencyTree) -> SimpleDep {
+        let ResolvedDependencyTree {
+            name, version, src_path, dependencies
+        } = dep;
+        let task = SimpleDep { name, version, src_path };
+        let s = HashMap::from([(task.clone(), dependencies.into_iter().map(|d|_dependency_list(result, d)).collect())]);
+        result.push(s);
+        task
+    }
+    let mut result = vec![];
+    _dependency_list(&mut result, dependencies);
+    result
 }
 
 fn compile_dependencies(
