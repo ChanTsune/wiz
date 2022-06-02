@@ -58,7 +58,7 @@ where
 
     let extra_items_in_deps = t.difference(&v).collect::<HashSet<_>>();
 
-    // Add empty dependences where needed.
+    // Add empty dependencies where needed.
     data.extend(
         extra_items_in_deps
             .into_iter()
