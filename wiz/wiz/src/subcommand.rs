@@ -2,17 +2,17 @@ use crate::core::error::{CliError, ProcessError};
 use std::env;
 use std::error::Error;
 use std::os::unix::process::CommandExt;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
-fn get_executable_path(executable: &str) -> Result<PathBuf, Box<dyn Error>> {
+fn get_executable_path<P: AsRef<Path>>(executable: P) -> Result<PathBuf, Box<dyn Error>> {
     let mut path = env::current_exe()?;
     path.pop();
-    path.push(executable);
+    path.push(&executable);
     if !path.exists() {
         return Err(Box::new(CliError::from(format!(
             "command `{}` could not find",
-            executable
+            executable.as_ref().display()
         ))));
     }
     Ok(path)
