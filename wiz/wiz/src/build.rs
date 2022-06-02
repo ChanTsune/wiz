@@ -38,11 +38,8 @@ pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn Error
     };
     create_dir_all(&target_dir)?;
 
-    let wlib_paths = compile_dependencies(
-        &ws,
-        resolved_dependencies,
-        target_dir.to_str().unwrap(),
-    )?;
+    let wlib_paths =
+        compile_dependencies(&ws, resolved_dependencies, target_dir.to_str().unwrap())?;
 
     let mut args = vec![ws.cws.to_str().unwrap()];
     args.extend(["--out-dir", target_dir.to_str().unwrap()]);
