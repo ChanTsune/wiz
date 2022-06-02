@@ -105,7 +105,12 @@ fn compile_dependencies(
     let dependen_list = dependency_list(dependencies);
     let dep_list = topological_sort(dependen_list.clone())?;
     for dep in dep_list.into_iter().flatten() {
-        let dep_wlib_paths = dependen_list.get(&dep).unwrap().iter().map(|d|format!("{}/{}.wlib", target_dir, d.name)).collect::<Vec<_>>();
+        let dep_wlib_paths = dependen_list
+            .get(&dep)
+            .unwrap()
+            .iter()
+            .map(|d| format!("{}/{}.wlib", target_dir, d.name))
+            .collect::<Vec<_>>();
         let mut args = vec![dep.src_path.as_str()];
         args.extend(["--out-dir", target_dir]);
         args.extend(["--name", dep.name.as_str()]);
