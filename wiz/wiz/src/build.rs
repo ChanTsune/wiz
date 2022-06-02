@@ -66,7 +66,7 @@ struct SimpleDep {
 }
 
 fn dependency_list(dependencies: ResolvedDependencyTree) -> HashMap<SimpleDep, HashSet<SimpleDep>> {
-    fn _dependency_list(
+    fn dependency_list(
         result: &mut HashMap<SimpleDep, HashSet<SimpleDep>>,
         dep: ResolvedDependencyTree,
     ) -> SimpleDep {
@@ -83,13 +83,13 @@ fn dependency_list(dependencies: ResolvedDependencyTree) -> HashMap<SimpleDep, H
         };
         let dependencies = dependencies
             .into_iter()
-            .map(|d| _dependency_list(result, d))
+            .map(|d| dependency_list(result, d))
             .collect();
         result.insert(task.clone(), dependencies);
         task
     }
     let mut result = HashMap::new();
-    _dependency_list(&mut result, dependencies);
+    dependency_list(&mut result, dependencies);
     result
 }
 
