@@ -88,10 +88,10 @@ where
         result.push(ordered);
     }
 
-    if !data.is_empty() {
-        Err(CircularDependencyError::new())
-    } else {
+    if data.is_empty() {
         Ok(result)
+    } else {
+        Err(CircularDependencyError::new())
     }
 }
 
