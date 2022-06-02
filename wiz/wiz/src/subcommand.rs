@@ -34,9 +34,10 @@ pub(crate) fn execute(executable: &str, args: &[&str]) -> Result<(), Box<dyn Err
 }
 
 pub(crate) fn output<P, S, I>(executable: P, args: I) -> Result<Output, Box<dyn Error>>
-where I: IntoIterator<Item = S>,
-        S: AsRef<OsStr>,
-      P: AsRef<Path>
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<OsStr>,
+    P: AsRef<Path>,
 {
     let executable_path = get_executable_path(executable)?;
     let mut command = Command::new(executable_path);
