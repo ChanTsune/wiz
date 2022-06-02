@@ -40,7 +40,7 @@ pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn Error
 
     let wlib_paths = compile_dependencies(
         &ws,
-        &resolved_dependencies.dependencies,
+        resolved_dependencies,
         target_dir.to_str().unwrap(),
     )?;
 
@@ -63,12 +63,12 @@ pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn Error
 
 fn compile_dependencies(
     ws: &Workspace,
-    dependencies: &[ResolvedDependencyTree],
+    dependencies: ResolvedDependencyTree,
     target_dir: &str,
 ) -> Result<BTreeSet<String>, Box<dyn Error>> {
     let mut wlib_paths = BTreeSet::new();
-    for dep in dependencies {
-        let dep_wlib_paths = compile_dependencies(ws, &dep.dependencies, target_dir)?;
+    for dep in dependencies.dependencies {
+        let dep_wlib_paths = compile_dependencies(ws, dep, target_dir)?;
         let mut args = vec![dep.src_path.as_str()];
         args.extend(["--out-dir", target_dir]);
         args.extend(["--name", dep.name.as_str()]);
