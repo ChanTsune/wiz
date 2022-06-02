@@ -1,6 +1,7 @@
 use crate::core::error::{CliError, ProcessError};
 use std::env;
 use std::error::Error;
+use std::ffi::OsStr;
 use std::os::unix::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
@@ -32,7 +33,11 @@ pub(crate) fn execute(executable: &str, args: &[&str]) -> Result<(), Box<dyn Err
     Ok(())
 }
 
-pub(crate) fn output(executable: &str, args: &[&str]) -> Result<Output, Box<dyn Error>> {
+pub(crate) fn output<P, S, I>(executable: P, args: I) -> Result<Output, Box<dyn Error>>
+where I: IntoIterator<Item = S>,
+        S: AsRef<OsStr>,
+      P: AsRef<Path>
+{
     let executable_path = get_executable_path(executable)?;
     let mut command = Command::new(executable_path);
     command.args(args);
