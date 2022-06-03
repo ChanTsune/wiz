@@ -64,10 +64,8 @@ pub fn resolve_manifest_dependencies(
         version: manifest.package.version.clone(),
         src_path: manifest_path
             .parent()
-            .unwrap()
-            .to_str()
-            .unwrap()
-            .to_string(),
+            .map(|p| p.to_string_lossy().to_string())
+            .unwrap(),
         dependencies: result,
     })
 }
