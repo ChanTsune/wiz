@@ -63,24 +63,24 @@ pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn Error
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-struct SimpleDep {
+struct Task {
     name: String,
     version: String,
     src_path: String,
 }
 
-fn dependency_list(dependencies: ResolvedDependencyTree) -> HashMap<SimpleDep, HashSet<SimpleDep>> {
+fn dependency_list(dependencies: ResolvedDependencyTree) -> HashMap<Task, HashSet<Task>> {
     fn dependency_list(
-        result: &mut HashMap<SimpleDep, HashSet<SimpleDep>>,
+        result: &mut HashMap<Task, HashSet<Task>>,
         dep: ResolvedDependencyTree,
-    ) -> SimpleDep {
+    ) -> Task {
         let ResolvedDependencyTree {
             name,
             version,
             src_path,
             dependencies,
         } = dep;
-        let task = SimpleDep {
+        let task = Task {
             name,
             version,
             src_path,
