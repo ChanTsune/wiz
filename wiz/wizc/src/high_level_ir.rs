@@ -111,7 +111,7 @@ impl<'a> AstLowering<'a> {
         Ok(ss)
     }
 
-    pub fn source_set(&mut self, s: SourceSet, module_id: TypedModuleId) -> TypedSourceSet {
+    fn source_set(&mut self, s: SourceSet, module_id: TypedModuleId) -> TypedSourceSet {
         match s {
             SourceSet::File(f) => TypedSourceSet::File(self.file(f)),
             SourceSet::Dir { name, items } => {
