@@ -11,7 +11,9 @@ use wiz_mir::ml_file::MLFile;
 use wiz_mir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
 use wiz_mir::statement::{MLReturn, MLStmt};
 use wiz_session::Session;
+use wiz_syntax::syntax::file::SourceSet;
 use wiz_syntax_parser::parser::wiz::parse_from_string;
+use crate::TypedModuleId;
 
 fn check(source: &str, except: MLFile) {
     let ast = parse_from_string(source, Some(&except.name)).unwrap();
@@ -22,15 +24,11 @@ fn check(source: &str, except: MLFile) {
 
     let mut ast2hlir = AstLowering::new(&mut session, &mut arena);
 
-    let file = ast2hlir.file(ast);
-
-    let mut resolver = TypeResolver::new(&mut session, &mut arena);
-    let _ = resolver.preload_file(&file).unwrap();
-    let hl_file = resolver.file(file).unwrap();
+    let hl_ss = ast2hlir.lowing(SourceSet::File(ast), TypedModuleId::DUMMY).unwrap();
 
     let mut hlir2mlir = HLIR2MLIR::new(&mut arena);
 
-    let f = hlir2mlir.convert_from_source_set(TypedSourceSet::File(hl_file));
+    let f = hlir2mlir.convert_from_source_set(hl_ss);
 
     assert_eq!(f, except);
 }

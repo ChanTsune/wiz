@@ -122,7 +122,7 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    pub fn file(&mut self, f: WizFile) -> TypedFile {
+    fn file(&mut self, f: WizFile) -> TypedFile {
         let WizFile { name, syntax } = f;
 
         let name = path_string_to_page_name(&name);
