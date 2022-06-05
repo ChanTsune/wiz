@@ -11,7 +11,7 @@ use std::error::Error;
 use std::io::Write;
 use std::iter::FromIterator;
 use std::path::PathBuf;
-use std::{env, fs, result};
+use std::{env, fs};
 use wiz_session::Session;
 use wiz_syntax::syntax::file::SourceSet;
 use wiz_syntax_parser::parser;
