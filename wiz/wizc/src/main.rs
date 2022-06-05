@@ -35,7 +35,7 @@ fn get_builtin_lib() -> &'static [&'static str] {
     &["core", "std"]
 }
 
-fn main() -> result::Result<(), Box<dyn Error>> {
+fn main() -> Result<(), Box<dyn Error>> {
     println!("{:?}", env::args());
     let app = wizc_cli::app("wizc");
     let matches = app.get_matches();
@@ -45,7 +45,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
     session.timer("compile", |s| run_compiler(s, config))
 }
 
-fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box<dyn Error>> {
+fn run_compiler(session: &mut Session, config: Config) -> Result<(), Box<dyn Error>> {
     let output = config.output();
     let out_dir = config.out_dir();
     let paths = config.paths();
