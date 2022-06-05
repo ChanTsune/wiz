@@ -120,12 +120,6 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
         std_hlir
     })?;
 
-    let hlfiles = session.timer("convert to hlir", |session| {
-        let mut ast2hlir = AstLowering::new(session, &mut arena);
-
-        ast2hlir.source_set(input_source, TypedModuleId::new(std_hlir.len()))
-    });
-
     let std_hlir = session.timer("resolve dependencies type", |session| {
         let mut type_resolver = TypeResolver::new(session, &mut arena);
         type_resolver.global_use(&["core", "builtin", "*"]);
@@ -145,6 +139,12 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
             .map(|s| type_resolver.source_set(s))
             .collect::<Result<Vec<_>>>()
     })?;
+
+    let hlfiles = session.timer("convert to hlir", |session| {
+        let mut ast2hlir = AstLowering::new(session, &mut arena);
+
+        ast2hlir.source_set(input_source, TypedModuleId::new(std_hlir.len()))
+    });
 
     let hlfiles = session.timer::<Result<_>, _>("resolve type", |session| {
         let mut type_resolver = TypeResolver::new(session, &mut arena);
