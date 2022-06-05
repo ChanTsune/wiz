@@ -1,7 +1,6 @@
 use crate::high_level_ir::node_id::TypedModuleId;
 use crate::high_level_ir::type_checker::TypeChecker;
 use crate::high_level_ir::type_resolver::arena::ResolverArena;
-use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::wlib::WLib;
 use crate::high_level_ir::{ast2hlir, AstLowering};
@@ -67,24 +66,6 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
         SourceSet::File(parse_from_file_path(input)?)
     };
 
-    let find_paths: Vec<_> = get_find_paths().into_iter().chain(paths).collect();
-
-    let mut lib_paths = vec![];
-
-    for lib_name in get_builtin_lib() {
-        for p in find_paths.iter() {
-            let lib_path = p.join(lib_name);
-            let package_manifest_path = lib_path.join("Package.wiz");
-            if package_manifest_path.exists() {
-                println!("`{}` found at {}", lib_name, lib_path.display());
-                lib_paths.push(lib_path);
-                break;
-            } else {
-                println!("`{}` Not found at {}", lib_name, lib_path.display());
-            }
-        }
-    }
-
     session.stop(id_parse_files);
     println!(
         "{}: {}ms",
@@ -98,6 +79,25 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
         let libraries = config.libraries();
 
         let std_hlir: parser::result::Result<Vec<_>> = if libraries.is_empty() {
+
+            let find_paths: Vec<_> = get_find_paths().into_iter().chain(paths).collect();
+
+            let mut lib_paths = vec![];
+
+            for lib_name in get_builtin_lib() {
+                for p in find_paths.iter() {
+                    let lib_path = p.join(lib_name);
+                    let package_manifest_path = lib_path.join("Package.wiz");
+                    if package_manifest_path.exists() {
+                        println!("`{}` found at {}", lib_name, lib_path.display());
+                        lib_paths.push(lib_path);
+                        break;
+                    } else {
+                        println!("`{}` Not found at {}", lib_name, lib_path.display());
+                    }
+                }
+            }
+
             let source_sets = lib_paths
                 .iter()
                 .map(|p| read_package_from_path(p, None))
@@ -185,7 +185,7 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
 
     let out_path = out_dir.join(output);
 
-    println!("Output Path -> {:?}", out_path);
+    println!("Output Path -> {}", out_path.display());
 
     match emit {
         "llvm-ir" => {
