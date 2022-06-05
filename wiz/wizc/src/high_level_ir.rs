@@ -64,7 +64,7 @@ pub fn ast2hlir(
     module_id: TypedModuleId,
 ) -> TypedSourceSet {
     let mut converter = AstLowering::new(session, arena);
-    converter.source_set(s, module_id)
+    converter.lowing(s, module_id).unwrap()
 }
 
 impl<'a> AstLowering<'a> {

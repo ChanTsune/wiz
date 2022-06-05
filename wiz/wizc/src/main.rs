@@ -120,26 +120,6 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
         std_hlir
     })?;
 
-    let std_hlir = session.timer("resolve dependencies type", |session| {
-        let mut type_resolver = TypeResolver::new(session, &mut arena);
-        type_resolver.global_use(&["core", "builtin", "*"]);
-        type_resolver.global_use(&["std", "builtin", "*"]);
-
-        println!("===== preload decls =====");
-        // preload decls
-        for hlir in std_hlir.iter() {
-            type_resolver.preload_source_set(hlir)?;
-        }
-
-        println!("===== resolve types =====");
-        // resolve types
-
-        std_hlir
-            .into_iter()
-            .map(|s| type_resolver.source_set(s))
-            .collect::<Result<Vec<_>>>()
-    })?;
-
     let hlfiles = session.timer("resolve type", |session| {
         let mut ast2hlir = AstLowering::new(session, &mut arena);
         ast2hlir.lowing(input_source, TypedModuleId::new(std_hlir.len()))
