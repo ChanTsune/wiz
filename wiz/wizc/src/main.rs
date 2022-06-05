@@ -140,24 +140,9 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
             .collect::<Result<Vec<_>>>()
     })?;
 
-    let hlfiles = session.timer("convert to hlir", |session| {
+    let hlfiles = session.timer("resolve type", |session| {
         let mut ast2hlir = AstLowering::new(session, &mut arena);
-
-        ast2hlir.source_set(input_source, TypedModuleId::new(std_hlir.len()))
-    });
-
-    let hlfiles = session.timer::<Result<_>, _>("resolve type", |session| {
-        let mut type_resolver = TypeResolver::new(session, &mut arena);
-        type_resolver.global_use(&["core", "builtin", "*"]);
-        type_resolver.global_use(&["std", "builtin", "*"]);
-
-        println!("===== preload decls for input source =====");
-
-        type_resolver.preload_source_set(&hlfiles)?;
-
-        println!("===== resolve types for input source =====");
-
-        type_resolver.source_set(hlfiles)
+        ast2hlir.lowing(input_source, TypedModuleId::new(std_hlir.len()))
     })?;
 
     session.timer("type check", |session| {
