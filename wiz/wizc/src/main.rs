@@ -79,7 +79,6 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
         let libraries = config.libraries();
 
         let std_hlir: parser::result::Result<Vec<_>> = if libraries.is_empty() {
-
             let find_paths: Vec<_> = get_find_paths().into_iter().chain(paths).collect();
 
             let mut lib_paths = vec![];
