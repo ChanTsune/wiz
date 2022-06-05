@@ -94,7 +94,11 @@ impl<'a> AstLowering<'a> {
         result
     }
 
-    pub fn lowing(&mut self, s: SourceSet, module_id: TypedModuleId) -> Result<TypedSourceSet, Box<dyn Error>> {
+    pub fn lowing(
+        &mut self,
+        s: SourceSet,
+        module_id: TypedModuleId,
+    ) -> Result<TypedSourceSet, Box<dyn Error>> {
         let ss = self.source_set(s, module_id);
 
         let mut resolver = TypeResolver::new(self.session, self.arena);

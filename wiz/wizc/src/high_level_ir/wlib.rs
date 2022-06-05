@@ -46,10 +46,20 @@ impl WLib {
                 for decl in &f.body {
                     match &decl.kind {
                         TypedDeclKind::Var(v) => {
-                            arena.register_value(&id, &v.name, v.type_.clone().unwrap(), decl.annotations.clone());
+                            arena.register_value(
+                                &id,
+                                &v.name,
+                                v.type_.clone().unwrap(),
+                                decl.annotations.clone(),
+                            );
                         }
                         TypedDeclKind::Fun(f) => {
-                            arena.register_value(&id, &f.name, f.type_().unwrap(),decl.annotations.clone());
+                            arena.register_value(
+                                &id,
+                                &f.name,
+                                f.type_().unwrap(),
+                                decl.annotations.clone(),
+                            );
                         }
                         TypedDeclKind::Struct(s) => {
                             arena.register_struct(&id, &s.name, decl.annotations.clone());

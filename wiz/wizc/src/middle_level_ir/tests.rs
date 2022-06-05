@@ -2,6 +2,7 @@ use crate::high_level_ir::type_resolver::arena::ResolverArena;
 use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::AstLowering;
 use crate::middle_level_ir::HLIR2MLIR;
+use crate::TypedModuleId;
 use wiz_hir::typed_file::TypedSourceSet;
 use wiz_mir::expr::{
     MLCall, MLCallArg, MLExpr, MLLiteral, MLLiteralKind, MLName, MLUnaryOp, MLUnaryOpKind,
@@ -13,7 +14,6 @@ use wiz_mir::statement::{MLReturn, MLStmt};
 use wiz_session::Session;
 use wiz_syntax::syntax::file::SourceSet;
 use wiz_syntax_parser::parser::wiz::parse_from_string;
-use crate::TypedModuleId;
 
 fn check(source: &str, except: MLFile) {
     let ast = parse_from_string(source, Some(&except.name)).unwrap();
@@ -24,7 +24,9 @@ fn check(source: &str, except: MLFile) {
 
     let mut ast2hlir = AstLowering::new(&mut session, &mut arena);
 
-    let hl_ss = ast2hlir.lowing(SourceSet::File(ast), TypedModuleId::DUMMY).unwrap();
+    let hl_ss = ast2hlir
+        .lowing(SourceSet::File(ast), TypedModuleId::DUMMY)
+        .unwrap();
 
     let mut hlir2mlir = HLIR2MLIR::new(&mut arena);
 

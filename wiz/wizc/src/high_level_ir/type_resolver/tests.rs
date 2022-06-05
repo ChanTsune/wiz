@@ -1,6 +1,7 @@
 use crate::high_level_ir::type_resolver::arena::ResolverArena;
 use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::AstLowering;
+use crate::TypedModuleId;
 use wiz_hir::typed_decl::{
     TypedArgDef, TypedDecl, TypedDeclKind, TypedFun, TypedFunBody, TypedMemberFunction,
     TypedStoredProperty, TypedStruct, TypedVar,
@@ -19,7 +20,6 @@ use wiz_hir::typed_type::{
 use wiz_session::Session;
 use wiz_syntax::syntax::file::SourceSet;
 use wiz_syntax_parser::parser::wiz::parse_from_string;
-use crate::TypedModuleId;
 
 fn check(source: &str, typed_file: TypedFile) {
     let ast = parse_from_string(source, Some(&typed_file.name)).unwrap();
@@ -30,7 +30,9 @@ fn check(source: &str, typed_file: TypedFile) {
 
     let mut ast2hlir = AstLowering::new(&mut session, &mut arena);
 
-    let f = ast2hlir.lowing(SourceSet::File(ast), TypedModuleId::DUMMY).unwrap();
+    let f = ast2hlir
+        .lowing(SourceSet::File(ast), TypedModuleId::DUMMY)
+        .unwrap();
 
     assert_eq!(f, TypedSourceSet::File(typed_file));
 }
