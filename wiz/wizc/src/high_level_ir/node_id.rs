@@ -2,7 +2,8 @@
 pub struct TypedModuleId(usize);
 
 impl TypedModuleId {
-    pub fn new(id: usize) -> Self {
+    pub(crate) const DUMMY: Self = Self::new(usize::MAX);
+    pub const fn new(id: usize) -> Self {
         Self(id)
     }
 }

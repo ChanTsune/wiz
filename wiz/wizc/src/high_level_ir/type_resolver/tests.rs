@@ -10,14 +10,16 @@ use wiz_hir::typed_expr::{
     TypedInstanceMember, TypedLiteralKind, TypedName, TypedPrefixUnaryOp, TypedPrefixUnaryOperator,
     TypedReturn, TypedSubscript, TypedUnaryOp,
 };
-use wiz_hir::typed_file::TypedFile;
+use wiz_hir::typed_file::{TypedFile, TypedSourceSet};
 use wiz_hir::typed_stmt::{TypedBlock, TypedStmt};
 use wiz_hir::typed_type::{
     Package, TypedArgType, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType,
     TypedValueType,
 };
 use wiz_session::Session;
+use wiz_syntax::syntax::file::SourceSet;
 use wiz_syntax_parser::parser::wiz::parse_from_string;
+use crate::TypedModuleId;
 
 fn check(source: &str, typed_file: TypedFile) {
     let ast = parse_from_string(source, Some(&typed_file.name)).unwrap();
@@ -28,13 +30,9 @@ fn check(source: &str, typed_file: TypedFile) {
 
     let mut ast2hlir = AstLowering::new(&mut session, &mut arena);
 
-    let file = ast2hlir.file(ast);
+    let f = ast2hlir.lowing(SourceSet::File(ast), TypedModuleId::DUMMY).unwrap();
 
-    let mut resolver = TypeResolver::new(&mut session, &mut arena);
-    let _ = resolver.preload_file(&file).unwrap();
-    let f = resolver.file(file);
-
-    assert_eq!(f, Ok(typed_file));
+    assert_eq!(f, TypedSourceSet::File(typed_file));
 }
 
 #[test]
