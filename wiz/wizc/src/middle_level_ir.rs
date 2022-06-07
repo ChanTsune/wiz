@@ -183,12 +183,10 @@ impl<'arena> HLIR2MLIR<'arena> {
 
     fn source_set(&mut self, s: TypedSourceSet) -> Result<()> {
         match s {
-            TypedSourceSet::File(f) => {
-                self.file(f)
-            }
+            TypedSourceSet::File(f) => self.file(f),
             TypedSourceSet::Dir { mut items, .. } => {
                 items.sort();
-                items.into_iter().try_for_each(|i |self.source_set(i))
+                items.into_iter().try_for_each(|i| self.source_set(i))
             }
         }
     }
