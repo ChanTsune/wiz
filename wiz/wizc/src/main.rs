@@ -130,7 +130,7 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<(), Box<dyn Err
     });
     match build_type {
         BuildType::Library => {
-            let wlib = WLib::new(hlfiles.clone());
+            let wlib = WLib::new(hlfiles);
             let wlib_path = out_dir.join(format!("{}.wlib", config.name().unwrap_or_default()));
             wlib.write_to(&wlib_path);
             println!("library written to {}", wlib_path.display());
