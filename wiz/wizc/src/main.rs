@@ -187,15 +187,9 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<(), Box<dyn Err
     println!("Output Path -> {}", out_path.display());
 
     match emit {
-        "llvm-ir" => {
-            codegen.print_to_file(&out_path)
-        }
-        "asm" => {
-            codegen.write_as_assembly(&out_path)
-        }
-        _ => {
-            codegen.write_as_object(&out_path)
-        }
+        "llvm-ir" => codegen.print_to_file(&out_path),
+        "asm" => codegen.write_as_assembly(&out_path),
+        _ => codegen.write_as_object(&out_path),
     }?;
     Ok(())
 }
