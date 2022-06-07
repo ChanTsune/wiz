@@ -166,8 +166,8 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<(), Box<dyn Err
     let context = Context::create();
     let mut codegen = CodeGen::new(&context, module_name, config.target_triple());
 
-    for m in std_mlir.iter() {
-        codegen.file(m.clone());
+    for m in std_mlir.into_iter() {
+        codegen.file(m);
     }
 
     codegen.file(mlfile.clone());
