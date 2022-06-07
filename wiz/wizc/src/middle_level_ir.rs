@@ -190,10 +190,7 @@ impl<'arena> HLIR2MLIR<'arena> {
                 let _: Vec<_> = items
                     .into_iter()
                     .map(|i| self.source_set(i))
-                    .collect::<Result<Vec<_>>>()?
-                    .into_iter()
-                    .flat_map(|i| i.body)
-                    .collect();
+                    .collect::<Result<Vec<_>>>()?;
             }
         };
         Ok(self.module.to_mlir_file(name))
