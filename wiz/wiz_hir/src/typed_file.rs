@@ -13,7 +13,7 @@ pub enum TypedSourceSet {
 }
 
 impl TypedSourceSet {
-    fn name(&self) -> &str {
+    pub fn name(&self) -> &str {
         match self {
             TypedSourceSet::File(f) => &f.name,
             TypedSourceSet::Dir { name, items: _ } => name,

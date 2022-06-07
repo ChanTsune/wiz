@@ -180,13 +180,12 @@ impl<'arena> HLIR2MLIR<'arena> {
     }
 
     fn source_set(&mut self, s: TypedSourceSet) -> Result<MLFile> {
-        let name = match s {
+        let name = s.name().to_string();
+        match s {
             TypedSourceSet::File(f) => {
-                let name = f.name.clone();
                 self.file(f)?;
-                name
             }
-            TypedSourceSet::Dir { name, mut items } => {
+            TypedSourceSet::Dir { mut items, .. } => {
                 items.sort();
                 let _: Vec<_> = items
                     .into_iter()
@@ -195,7 +194,6 @@ impl<'arena> HLIR2MLIR<'arena> {
                     .into_iter()
                     .flat_map(|i| i.body)
                     .collect();
-                name
             }
         };
         Ok(self.module.to_mlir_file(name))
