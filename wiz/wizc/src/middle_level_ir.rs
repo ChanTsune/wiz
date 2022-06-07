@@ -106,7 +106,9 @@ impl<'arena> HLIR2MLIR<'arena> {
     }
 
     pub fn convert_from_source_set(&mut self, s: TypedSourceSet) -> MLFile {
-        self.source_set(s).unwrap()
+        let name = s.name().to_string();
+        self.source_set(s).unwrap();
+        self.module.to_mlir_file(name)
     }
 
     fn type_(&self, t: TypedType) -> MLType {
@@ -179,21 +181,16 @@ impl<'arena> HLIR2MLIR<'arena> {
         }
     }
 
-    fn source_set(&mut self, s: TypedSourceSet) -> Result<MLFile> {
-        let name = s.name().to_string();
+    fn source_set(&mut self, s: TypedSourceSet) -> Result<()> {
         match s {
             TypedSourceSet::File(f) => {
-                self.file(f)?;
+                self.file(f)
             }
             TypedSourceSet::Dir { mut items, .. } => {
                 items.sort();
-                let _: Vec<_> = items
-                    .into_iter()
-                    .map(|i| self.source_set(i))
-                    .collect::<Result<Vec<_>>>()?;
+                items.into_iter().try_for_each(|i |self.source_set(i))
             }
-        };
-        Ok(self.module.to_mlir_file(name))
+        }
     }
 
     fn file(&mut self, f: TypedFile) -> Result<()> {
