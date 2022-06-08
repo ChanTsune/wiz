@@ -150,16 +150,18 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<(), Box<dyn Err
 
     fs::create_dir_all(&mlir_out_dir)?;
     for m in std_mlir.iter() {
-        println!("==== {} ====", m.name);
-        let mut f = fs::File::create(mlir_out_dir.join(&m.name))?;
-        write!(f, "{}", m.to_string())?;
+        session.timer(&format!("write mlir `{}`", m.name),|session| {
+            let mut f = fs::File::create(mlir_out_dir.join(&m.name))?;
+            write!(f, "{}", m.to_string())
+        })?;
     }
 
     let mlfile = hlir2mlir(hlfiles, &std_mlir, &arena)?;
 
-    println!("==== {} ====", mlfile.name);
-    let mut f = fs::File::create(mlir_out_dir.join(&mlfile.name))?;
-    write!(f, "{}", mlfile.to_string())?;
+    session.timer(&format!("write mlir `{}`", mlfile.name), |session|{
+        let mut f = fs::File::create(mlir_out_dir.join(&mlfile.name))?;
+        write!(f, "{}", mlfile.to_string())
+    })?;
 
     println!("==== codegen ====");
     let module_name = &mlfile.name;
