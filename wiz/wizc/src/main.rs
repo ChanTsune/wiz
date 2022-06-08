@@ -57,21 +57,14 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<(), Box<dyn Err
 
     let mlir_out_dir = out_dir.join("mlir");
 
-    let id_parse_files = "parse files";
-    session.start(id_parse_files);
-
-    let input_source = if input.is_dir() {
-        read_package_from_path(input, config.name())?
-    } else {
-        SourceSet::File(parse_from_file_path(input)?)
-    };
-
-    session.stop(id_parse_files);
-    println!(
-        "{}: {}ms",
-        id_parse_files,
-        session.get_duration(id_parse_files).unwrap().as_millis()
-    );
+    let input_source = session.timer::<Result<_, Box<dyn Error>>, _>("parse files", |_|{
+        let input_source = if input.is_dir() {
+            read_package_from_path(input, config.name())?
+        } else {
+            SourceSet::File(parse_from_file_path(input)?)
+        };
+        Ok(input_source)
+    })?;
 
     let mut arena = ResolverArena::default();
 
@@ -150,7 +143,7 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<(), Box<dyn Err
 
     fs::create_dir_all(&mlir_out_dir)?;
     for m in std_mlir.iter() {
-        session.timer(&format!("write mlir `{}`", m.name), |session| {
+        session.timer(&format!("write mlir `{}`", m.name), |_| {
             let mut f = fs::File::create(mlir_out_dir.join(&m.name))?;
             write!(f, "{}", m.to_string())
         })?;
@@ -158,7 +151,7 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<(), Box<dyn Err
 
     let mlfile = hlir2mlir(hlfiles, &std_mlir, &arena)?;
 
-    session.timer(&format!("write mlir `{}`", mlfile.name), |session| {
+    session.timer(&format!("write mlir `{}`", mlfile.name), |_| {
         let mut f = fs::File::create(mlir_out_dir.join(&mlfile.name))?;
         write!(f, "{}", mlfile.to_string())
     })?;
