@@ -57,7 +57,7 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<(), Box<dyn Err
 
     let mlir_out_dir = out_dir.join("mlir");
 
-    let input_source = session.timer::<Result<_, Box<dyn Error>>, _>("parse files", |_|{
+    let input_source = session.timer::<Result<_, Box<dyn Error>>, _>("parse files", |_| {
         let input_source = if input.is_dir() {
             read_package_from_path(input, config.name())?
         } else {
