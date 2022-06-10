@@ -180,8 +180,11 @@ impl<'s> TypeResolver<'s> {
             let type_ = self
                 .context
                 .full_type_name(&member_function.type_().unwrap())?;
-            self.context
-                .register_function(&member_function.name, type_.clone(), Default::default());
+            self.context.register_function(
+                &member_function.name,
+                type_.clone(),
+                Default::default(),
+            );
             let rs = self.context.current_type_mut().ok_or_else(|| {
                 ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
             })?;
