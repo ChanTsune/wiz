@@ -413,6 +413,15 @@ impl<'a> ResolverContext<'a> {
             .register_type_parameter(&self.current_namespace_id, name, annotation)
     }
 
+    pub(crate) fn register_function(
+        &mut self,
+        name: &str,
+        ty: TypedType,
+        annotation: TypedAnnotations,
+    ) -> Option<DeclarationId> {
+        self.arena
+            .register_function(&self.current_namespace_id, name, ty, annotation)
+    }
     pub(crate) fn register_value(
         &mut self,
         name: &str,

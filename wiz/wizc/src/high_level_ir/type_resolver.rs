@@ -90,7 +90,7 @@ impl<'s> TypeResolver<'s> {
             TypedDeclKind::Fun(f) => {
                 let id = self
                     .context
-                    .register_value(&f.name, TypedType::noting(), d.annotations.clone())
+                    .register_function(&f.name, TypedType::noting(), d.annotations.clone())
                     .unwrap();
                 let fun = self.preload_fun(f)?;
                 self.context
@@ -181,7 +181,7 @@ impl<'s> TypeResolver<'s> {
                 .context
                 .full_type_name(&member_function.type_().unwrap())?;
             self.context
-                .register_value(&member_function.name, type_.clone(), Default::default());
+                .register_function(&member_function.name, type_.clone(), Default::default());
             let rs = self.context.current_type_mut().ok_or_else(|| {
                 ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
             })?;

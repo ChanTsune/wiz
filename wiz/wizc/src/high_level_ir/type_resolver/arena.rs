@@ -273,6 +273,25 @@ impl ResolverArena {
         }
     }
 
+    pub(crate) fn register_function(
+        &mut self,
+        namespace: &DeclarationId,
+        name: &str,
+        ty: TypedType,
+        annotation: TypedAnnotations,
+    ) -> Option<DeclarationId> {
+        self.register(
+            namespace,
+            name,
+            DeclarationItem::new(
+                annotation,
+                name,
+                DeclarationItemKind::Value(ty),
+                Some(*namespace),
+            ),
+        )
+    }
+
     pub(crate) fn register_value(
         &mut self,
         namespace: &DeclarationId,
@@ -444,7 +463,7 @@ mod tests {
             .register_struct(&grandchildren_namespace_id, type_name, Default::default())
             .unwrap();
 
-        let member_function_id = arena.register_value(
+        let member_function_id = arena.register_function(
             &type_id,
             member_function_name,
             TypedType::Function(Box::new(TypedFunctionType {

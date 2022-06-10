@@ -54,7 +54,7 @@ impl WLib {
                             );
                         }
                         TypedDeclKind::Fun(f) => {
-                            arena.register_value(
+                            arena.register_function(
                                 &id,
                                 &f.name,
                                 f.type_().unwrap(),
