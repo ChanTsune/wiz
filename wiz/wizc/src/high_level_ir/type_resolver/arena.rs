@@ -6,6 +6,7 @@ use std::error::Error;
 use std::fmt::{Debug, Display, Formatter, Write};
 use wiz_constants::annotation::BUILTIN;
 use wiz_hir::typed_annotation::TypedAnnotations;
+use wiz_hir::typed_decl::TypedFunBody;
 use wiz_hir::typed_expr::TypedBinaryOperator;
 use wiz_hir::typed_type::{Package, TypedNamedValueType, TypedPackage, TypedType, TypedValueType};
 
@@ -190,7 +191,7 @@ impl ResolverArena {
     pub(crate) fn get_type_by_id(&self, id: &DeclarationId) -> Option<&ResolverStruct> {
         match &self.get_by_id(id)?.kind {
             DeclarationItemKind::Type(rs) => Some(rs),
-            DeclarationItemKind::Namespace | DeclarationItemKind::Value(_) => None,
+            DeclarationItemKind::Namespace | DeclarationItemKind::Variable(_) | DeclarationItemKind::Function(_, _)=> None,
         }
     }
 
@@ -257,7 +258,7 @@ impl ResolverArena {
         match &self.get(name_space, name)?.kind {
             DeclarationItemKind::Namespace => panic!("this is namespace"),
             DeclarationItemKind::Type(t) => Some(t),
-            DeclarationItemKind::Value(v) => panic!("V:{:?}", v),
+            DeclarationItemKind::Variable(v)| DeclarationItemKind::Function(v, _) => panic!("V:{:?}", v),
         }
     }
 
@@ -269,7 +270,7 @@ impl ResolverArena {
         match &mut self.get_mut(name_space, name)?.kind {
             DeclarationItemKind::Namespace => panic!("this is namespace"),
             DeclarationItemKind::Type(t) => Some(t),
-            DeclarationItemKind::Value(v) => panic!("V:{:?}", v),
+            DeclarationItemKind::Variable(v) |DeclarationItemKind::Function(v, _) => panic!("V:{:?}", v),
         }
     }
 
@@ -278,6 +279,7 @@ impl ResolverArena {
         namespace: &DeclarationId,
         name: &str,
         ty: TypedType,
+        body: Option<TypedFunBody>,
         annotation: TypedAnnotations,
     ) -> Option<DeclarationId> {
         self.register(
@@ -286,7 +288,7 @@ impl ResolverArena {
             DeclarationItem::new(
                 annotation,
                 name,
-                DeclarationItemKind::Value(ty),
+                DeclarationItemKind::Function(ty, body),
                 Some(*namespace),
             ),
         )
@@ -305,7 +307,7 @@ impl ResolverArena {
             DeclarationItem::new(
                 annotation,
                 name,
-                DeclarationItemKind::Value(ty),
+                DeclarationItemKind::Variable(ty),
                 Some(*namespace),
             ),
         )
@@ -473,6 +475,7 @@ mod tests {
                 }],
                 return_type: TypedType::Self_,
             })),
+            None,
             Default::default(),
         );
 

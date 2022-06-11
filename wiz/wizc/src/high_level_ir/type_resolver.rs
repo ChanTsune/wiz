@@ -90,7 +90,7 @@ impl<'s> TypeResolver<'s> {
             TypedDeclKind::Fun(f) => {
                 let id = self
                     .context
-                    .register_function(&f.name, TypedType::noting(), d.annotations.clone())
+                    .register_function(&f.name, TypedType::noting(), f.body.clone(),d.annotations.clone())
                     .unwrap();
                 let fun = self.preload_fun(f)?;
                 self.context
@@ -183,6 +183,7 @@ impl<'s> TypeResolver<'s> {
             self.context.register_function(
                 &member_function.name,
                 type_.clone(),
+                member_function.body.clone(),
                 Default::default(),
             );
             let rs = self.context.current_type_mut().ok_or_else(|| {

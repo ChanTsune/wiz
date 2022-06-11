@@ -13,6 +13,7 @@ use crate::high_level_ir::type_resolver::name_environment::NameEnvironment;
 use crate::high_level_ir::type_resolver::result::Result;
 use std::collections::{HashMap, HashSet};
 use wiz_hir::typed_annotation::TypedAnnotations;
+use wiz_hir::typed_decl::TypedFunBody;
 use wiz_hir::typed_expr::TypedBinaryOperator;
 use wiz_hir::typed_type::{
     Package, TypedArgType, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType,
@@ -68,7 +69,7 @@ impl<'a> ResolverContext<'a> {
         match &self.arena.get_by_id(&self.current_namespace_id)?.kind {
             DeclarationItemKind::Namespace => None,
             DeclarationItemKind::Type(rs) => Some(rs),
-            DeclarationItemKind::Value(_) => None,
+            DeclarationItemKind::Variable(_) | DeclarationItemKind::Function(_, _) => None,
         }
     }
 
@@ -76,7 +77,7 @@ impl<'a> ResolverContext<'a> {
         match &mut self.arena.get_mut_by_id(&self.current_namespace_id)?.kind {
             DeclarationItemKind::Namespace => None,
             DeclarationItemKind::Type(rs) => Some(rs),
-            DeclarationItemKind::Value(_) => None,
+            DeclarationItemKind::Variable(_) | DeclarationItemKind::Function(_, _) => None,
         }
     }
 
@@ -88,9 +89,10 @@ impl<'a> ResolverContext<'a> {
         let item = self.arena.get_by_id(&id)?;
         match &item.kind {
             DeclarationItemKind::Namespace => Some(id),
-            DeclarationItemKind::Type(_) | DeclarationItemKind::Value(_) => {
+            DeclarationItemKind::Type(_) | DeclarationItemKind::Function(_, _) => {
                 self._current_module_id(item.parent().unwrap())
             }
+            DeclarationItemKind::Variable(_) => None
         }
     }
 
@@ -417,10 +419,11 @@ impl<'a> ResolverContext<'a> {
         &mut self,
         name: &str,
         ty: TypedType,
+        body: Option<TypedFunBody>,
         annotation: TypedAnnotations,
     ) -> Option<DeclarationId> {
         self.arena
-            .register_function(&self.current_namespace_id, name, ty, annotation)
+            .register_function(&self.current_namespace_id, name, ty, body, annotation)
     }
     pub(crate) fn register_value(
         &mut self,
@@ -434,8 +437,11 @@ impl<'a> ResolverContext<'a> {
 
     pub(crate) fn update_value(&mut self, id: &DeclarationId, ty: TypedType) -> Option<()> {
         let item = self.arena.get_mut_by_id(id)?;
-        if let DeclarationItemKind::Value(_) = &item.kind {
-            item.kind = DeclarationItemKind::Value(ty);
+        if let DeclarationItemKind::Variable(_) = &item.kind {
+            item.kind = DeclarationItemKind::Variable(ty);
+            Some(())
+        } else if let DeclarationItemKind::Function(_, body) = &item.kind {
+            item.kind = DeclarationItemKind::Function(ty, body.clone());
             Some(())
         } else {
             None
