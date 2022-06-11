@@ -92,7 +92,7 @@ impl<'a> ResolverContext<'a> {
             DeclarationItemKind::Type(_) | DeclarationItemKind::Function(_, _) => {
                 self._current_module_id(item.parent().unwrap())
             }
-            DeclarationItemKind::Variable(_) => None
+            DeclarationItemKind::Variable(_) => None,
         }
     }
 

@@ -81,7 +81,9 @@ impl<'a> NameEnvironment<'a> {
                         } else {
                             let mut values = HashSet::new();
                             for item in items {
-                                if let DeclarationItemKind::Function(v,_) | DeclarationItemKind::Variable(v) = &item.kind {
+                                if let DeclarationItemKind::Function(v, _)
+                                | DeclarationItemKind::Variable(v) = &item.kind
+                                {
                                     values.insert((item.parent().unwrap(), v.clone()));
                                 } else {
                                     None?
@@ -111,7 +113,9 @@ impl<'a> NameEnvironment<'a> {
                 } else {
                     let mut values = HashSet::new();
                     for item in items {
-                        if let DeclarationItemKind::Function(v, _) | DeclarationItemKind::Variable(v) = &item.kind {
+                        if let DeclarationItemKind::Function(v, _)
+                        | DeclarationItemKind::Variable(v) = &item.kind
+                        {
                             values.insert((item.parent().unwrap(), v.clone()));
                         } else {
                             None?

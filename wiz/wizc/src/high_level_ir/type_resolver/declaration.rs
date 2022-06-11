@@ -77,5 +77,5 @@ pub enum DeclarationItemKind {
     Namespace,
     Type(ResolverStruct),
     Variable(TypedType),
-    Function(TypedType, Option<TypedFunBody>)
+    Function(TypedType, Option<TypedFunBody>),
 }

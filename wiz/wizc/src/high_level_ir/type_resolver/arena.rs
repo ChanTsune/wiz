@@ -191,7 +191,9 @@ impl ResolverArena {
     pub(crate) fn get_type_by_id(&self, id: &DeclarationId) -> Option<&ResolverStruct> {
         match &self.get_by_id(id)?.kind {
             DeclarationItemKind::Type(rs) => Some(rs),
-            DeclarationItemKind::Namespace | DeclarationItemKind::Variable(_) | DeclarationItemKind::Function(_, _)=> None,
+            DeclarationItemKind::Namespace
+            | DeclarationItemKind::Variable(_)
+            | DeclarationItemKind::Function(_, _) => None,
         }
     }
 
@@ -258,7 +260,9 @@ impl ResolverArena {
         match &self.get(name_space, name)?.kind {
             DeclarationItemKind::Namespace => panic!("this is namespace"),
             DeclarationItemKind::Type(t) => Some(t),
-            DeclarationItemKind::Variable(v)| DeclarationItemKind::Function(v, _) => panic!("V:{:?}", v),
+            DeclarationItemKind::Variable(v) | DeclarationItemKind::Function(v, _) => {
+                panic!("V:{:?}", v)
+            }
         }
     }
 
@@ -270,7 +274,9 @@ impl ResolverArena {
         match &mut self.get_mut(name_space, name)?.kind {
             DeclarationItemKind::Namespace => panic!("this is namespace"),
             DeclarationItemKind::Type(t) => Some(t),
-            DeclarationItemKind::Variable(v) |DeclarationItemKind::Function(v, _) => panic!("V:{:?}", v),
+            DeclarationItemKind::Variable(v) | DeclarationItemKind::Function(v, _) => {
+                panic!("V:{:?}", v)
+            }
         }
     }
 

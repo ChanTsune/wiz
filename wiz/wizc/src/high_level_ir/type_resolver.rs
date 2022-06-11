@@ -90,7 +90,12 @@ impl<'s> TypeResolver<'s> {
             TypedDeclKind::Fun(f) => {
                 let id = self
                     .context
-                    .register_function(&f.name, TypedType::noting(), f.body.clone(),d.annotations.clone())
+                    .register_function(
+                        &f.name,
+                        TypedType::noting(),
+                        f.body.clone(),
+                        d.annotations.clone(),
+                    )
                     .unwrap();
                 let fun = self.preload_fun(f)?;
                 self.context
