@@ -29,6 +29,7 @@ use wiz_hir::typed_stmt::{
 use wiz_hir::typed_type::{Package, TypedArgType, TypedFunctionType, TypedType, TypedValueType};
 use wiz_hir::typed_type_constraint::TypedTypeConstraint;
 use wiz_session::Session;
+use crate::high_level_ir::type_resolver::declaration::DeclarationItemKind;
 
 #[derive(Debug)]
 pub(crate) struct TypeResolver<'s> {
@@ -93,6 +94,7 @@ impl<'s> TypeResolver<'s> {
                     .register_function(
                         &f.name,
                         TypedType::noting(),
+                        f.type_params.clone(),
                         f.body.clone(),
                         d.annotations.clone(),
                     )
@@ -188,6 +190,7 @@ impl<'s> TypeResolver<'s> {
             self.context.register_function(
                 &member_function.name,
                 type_.clone(),
+                member_function.type_params.clone(),
                 member_function.body.clone(),
                 Default::default(),
             );
@@ -640,6 +643,19 @@ impl<'s> TypeResolver<'s> {
                 )?
             }
         };
+        let item = self.context.arena.get_mut(&package.clone().into_resolved().names, &n.name);
+        if let Some(item) = item {
+            match &mut item.kind {
+                DeclarationItemKind::Namespace => {},
+                DeclarationItemKind::Type(t) => {}
+                DeclarationItemKind::Variable(t) => {}
+                DeclarationItemKind::Function(rf) => {
+                    if rf.is_generic() {
+                        println!("name => {}", n.name);
+                    }
+                }
+            }
+        }
         Ok(TypedName {
             package,
             type_: Some(type_),

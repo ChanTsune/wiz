@@ -1,5 +1,6 @@
 mod env_value;
 mod resolver_struct;
+mod resolver_function;
 
 use crate::high_level_ir::declaration_id::DeclarationId;
 use crate::high_level_ir::type_resolver::arena::ResolverArena;
@@ -7,6 +8,7 @@ pub(crate) use crate::high_level_ir::type_resolver::context::env_value::EnvValue
 pub(crate) use crate::high_level_ir::type_resolver::context::resolver_struct::{
     ResolverStruct, StructKind,
 };
+pub(crate) use crate::high_level_ir::type_resolver::context::resolver_function::ResolverFunction;
 use crate::high_level_ir::type_resolver::declaration::DeclarationItemKind;
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::name_environment::NameEnvironment;
@@ -15,10 +17,7 @@ use std::collections::{HashMap, HashSet};
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_decl::TypedFunBody;
 use wiz_hir::typed_expr::TypedBinaryOperator;
-use wiz_hir::typed_type::{
-    Package, TypedArgType, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType,
-    TypedValueType,
-};
+use wiz_hir::typed_type::{Package, TypedArgType, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType, TypedTypeParam, TypedValueType};
 use wiz_utils::StackedHashMap;
 
 #[derive(Debug)]
@@ -228,6 +227,7 @@ impl<'a> ResolverContext<'a> {
         let env_value = env.get_env_item(&name_space, name).ok_or_else(|| {
             ResolverError::from(format!("Cannot resolve name =>{:?} {:?}", name_space, name))
         })?;
+        println!("{}", name);
         match env_value {
             EnvValue::Value(t_set) => Self::resolve_overload(&t_set, type_annotation)
                 .map(|(id, t)| {
@@ -419,11 +419,12 @@ impl<'a> ResolverContext<'a> {
         &mut self,
         name: &str,
         ty: TypedType,
+        type_parameters: Option<Vec<TypedTypeParam>>,
         body: Option<TypedFunBody>,
         annotation: TypedAnnotations,
     ) -> Option<DeclarationId> {
         self.arena
-            .register_function(&self.current_namespace_id, name, ty, body, annotation)
+            .register_function(&self.current_namespace_id, name, ty, type_parameters, body, annotation)
     }
     pub(crate) fn register_value(
         &mut self,
@@ -437,8 +438,10 @@ impl<'a> ResolverContext<'a> {
 
     pub(crate) fn update_function(&mut self, id: &DeclarationId, ty: TypedType) -> Option<()> {
         let item = self.arena.get_mut_by_id(id)?;
-        if let DeclarationItemKind::Function(_, body, specialized) = &item.kind {
-            item.kind = DeclarationItemKind::Function(ty, body.clone(), specialized.clone());
+        if let DeclarationItemKind::Function(rf) = &item.kind {
+            let mut rf = rf.clone();
+            rf.ty = ty;
+            item.kind = DeclarationItemKind::Function(rf);
             Some(())
         } else {
             None

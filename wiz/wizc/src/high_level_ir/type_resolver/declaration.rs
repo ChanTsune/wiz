@@ -1,5 +1,5 @@
 use crate::high_level_ir::declaration_id::DeclarationId;
-use crate::high_level_ir::type_resolver::context::ResolverStruct;
+use crate::high_level_ir::type_resolver::context::{ResolverFunction, ResolverStruct};
 use std::collections::{HashMap, HashSet};
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_decl::TypedFunBody;
@@ -77,9 +77,5 @@ pub enum DeclarationItemKind {
     Namespace,
     Type(ResolverStruct),
     Variable(TypedType),
-    Function(
-        TypedType,
-        Option<TypedFunBody>,
-        Vec<HashMap<TypedTypeParam, TypedType>>,
-    ),
+    Function(ResolverFunction),
 }

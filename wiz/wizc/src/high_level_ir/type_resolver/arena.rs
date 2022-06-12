@@ -1,5 +1,5 @@
 use crate::high_level_ir::declaration_id::{DeclarationId, DeclarationIdGenerator};
-use crate::high_level_ir::type_resolver::context::{ResolverStruct, StructKind};
+use crate::high_level_ir::type_resolver::context::{ResolverFunction, ResolverStruct, StructKind};
 use crate::high_level_ir::type_resolver::declaration::{DeclarationItem, DeclarationItemKind};
 use std::collections::HashMap;
 use std::error::Error;
@@ -8,7 +8,7 @@ use wiz_constants::annotation::BUILTIN;
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_decl::TypedFunBody;
 use wiz_hir::typed_expr::TypedBinaryOperator;
-use wiz_hir::typed_type::{Package, TypedNamedValueType, TypedPackage, TypedType, TypedValueType};
+use wiz_hir::typed_type::{Package, TypedNamedValueType, TypedPackage, TypedType, TypedTypeParam, TypedValueType};
 
 #[derive(Debug, Clone)]
 pub struct ArenaError(String);
@@ -260,9 +260,8 @@ impl ResolverArena {
         match &self.get(name_space, name)?.kind {
             DeclarationItemKind::Namespace => panic!("this is namespace"),
             DeclarationItemKind::Type(t) => Some(t),
-            DeclarationItemKind::Variable(v) | DeclarationItemKind::Function(v, ..) => {
-                panic!("V:{:?}", v)
-            }
+            DeclarationItemKind::Variable(v) => panic!("V:{:?}", v),
+            DeclarationItemKind::Function(v) => panic!("F:{:?}", v),
         }
     }
 
@@ -274,9 +273,8 @@ impl ResolverArena {
         match &mut self.get_mut(name_space, name)?.kind {
             DeclarationItemKind::Namespace => panic!("this is namespace"),
             DeclarationItemKind::Type(t) => Some(t),
-            DeclarationItemKind::Variable(v) | DeclarationItemKind::Function(v, ..) => {
-                panic!("V:{:?}", v)
-            }
+            DeclarationItemKind::Variable(v) => panic!("V:{:?}", v),
+            DeclarationItemKind::Function(v) => panic!("F:{:?}", v),
         }
     }
 
@@ -285,6 +283,7 @@ impl ResolverArena {
         namespace: &DeclarationId,
         name: &str,
         ty: TypedType,
+        type_parameters: Option<Vec<TypedTypeParam>>,
         body: Option<TypedFunBody>,
         annotation: TypedAnnotations,
     ) -> Option<DeclarationId> {
@@ -294,7 +293,7 @@ impl ResolverArena {
             DeclarationItem::new(
                 annotation,
                 name,
-                DeclarationItemKind::Function(ty, body, vec![]),
+                DeclarationItemKind::Function(ResolverFunction::new(ty, type_parameters, body)),
                 Some(*namespace),
             ),
         )

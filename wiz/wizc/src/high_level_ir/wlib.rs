@@ -58,6 +58,7 @@ impl WLib {
                                 &id,
                                 &f.name,
                                 f.type_().unwrap(),
+                                f.type_params.clone(),
                                 f.body.clone(),
                                 decl.annotations.clone(),
                             );
