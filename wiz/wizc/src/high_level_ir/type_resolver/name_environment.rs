@@ -90,7 +90,7 @@ impl<'a> NameEnvironment<'a> {
                                 }
                             }
                             Some(EnvValue::from(values))
-                        }
+                        };
                     };
                     None
                 }
@@ -122,7 +122,7 @@ impl<'a> NameEnvironment<'a> {
                         }
                     }
                     Some(EnvValue::from(values))
-                }
+                };
             };
             None
         }
