@@ -34,17 +34,19 @@ impl<'a> NameEnvironment<'a> {
     }
 
     /// use [namespace]::[name];
-    pub(crate) fn use_<T: ToString>(&mut self, fqn: &[T]) {
-        if fqn.last().map(T::to_string) == Some("*".to_string()) {
+    pub(crate) fn use_(&mut self, fqn: &[String]) -> Option<()> {
+        let last = fqn.last()?;
+        if last == "*" {
             self.use_asterisk(&fqn[..fqn.len() - 1]);
         } else {
             let item = self.arena.resolve_declaration_id_from_root(fqn).unwrap();
             let entry = self
                 .values
-                .entry(fqn.last().unwrap().to_string())
+                .entry(last.to_string())
                 .or_default();
             entry.insert(item);
-        }
+        };
+        Some(())
     }
 
     pub(crate) fn get_type(
