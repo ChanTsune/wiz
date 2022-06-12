@@ -304,7 +304,7 @@ impl<'s> TypeResolver<'s> {
         })
     }
 
-    pub fn file(&mut self, f: TypedFile) -> Result<TypedFile> {
+    fn file(&mut self, f: TypedFile) -> Result<TypedFile> {
         self.context.push_name_space(&f.name);
         for u in f.uses.iter() {
             self.context.use_name_space(u.package.names.clone());
