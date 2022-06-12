@@ -76,8 +76,8 @@ impl<'a> NameEnvironment<'a> {
                     let ids = ids.iter().collect::<Vec<_>>();
                     let items = self.arena.get_by_ids(&ids)?;
                     if !items.is_empty() {
-                        if let DeclarationItemKind::Type(_) = &items.first().unwrap().kind {
-                            return Some(EnvValue::from(**ids.first().unwrap()));
+                        return if let DeclarationItemKind::Type(_) = &items.first().unwrap().kind {
+                            Some(EnvValue::from(**ids.first().unwrap()))
                         } else {
                             let mut values = HashSet::new();
                             for item in items {
@@ -89,7 +89,7 @@ impl<'a> NameEnvironment<'a> {
                                     None?
                                 }
                             }
-                            return Some(EnvValue::from(values));
+                            Some(EnvValue::from(values))
                         }
                     };
                     None
@@ -108,8 +108,8 @@ impl<'a> NameEnvironment<'a> {
             let child = child.iter().collect::<Vec<_>>();
             let items = self.arena.get_by_ids(&child)?;
             if !items.is_empty() {
-                if let DeclarationItemKind::Type(_) = &items.first().unwrap().kind {
-                    return Some(EnvValue::from(**child.first().unwrap()));
+                return if let DeclarationItemKind::Type(_) = &items.first().unwrap().kind {
+                    Some(EnvValue::from(**child.first().unwrap()))
                 } else {
                     let mut values = HashSet::new();
                     for item in items {
@@ -121,7 +121,7 @@ impl<'a> NameEnvironment<'a> {
                             None?
                         }
                     }
-                    return Some(EnvValue::from(values));
+                    Some(EnvValue::from(values))
                 }
             };
             None
