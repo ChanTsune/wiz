@@ -127,12 +127,9 @@ impl TypedFun {
 
 impl TypedMemberFunction {
     pub fn type_(&self) -> Option<TypedType> {
-        match &self.return_type {
-            Some(return_type) => Some(TypedType::Function(Box::new(TypedFunctionType {
-                arguments: self.arg_defs.iter().map(|a| a.to_arg_type()).collect(),
-                return_type: return_type.clone(),
-            }))),
-            None => None,
-        }
+        self.return_type.as_ref().map(|return_type|TypedType::Function(Box::new(TypedFunctionType {
+            arguments: self.arg_defs.iter().map(|a| a.to_arg_type()).collect(),
+            return_type: return_type.clone(),
+        })))
     }
 }
