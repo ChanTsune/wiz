@@ -17,7 +17,10 @@ impl ResolverFunction {
         body: Option<TypedFunBody>,
     ) -> Self {
         Self {
-            ty, type_parameters, body, used: Default::default()
+            ty,
+            type_parameters,
+            body,
+            used: Default::default(),
         }
     }
 

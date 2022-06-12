@@ -1,14 +1,14 @@
 mod env_value;
-mod resolver_struct;
 mod resolver_function;
+mod resolver_struct;
 
 use crate::high_level_ir::declaration_id::DeclarationId;
 use crate::high_level_ir::type_resolver::arena::ResolverArena;
 pub(crate) use crate::high_level_ir::type_resolver::context::env_value::EnvValue;
+pub(crate) use crate::high_level_ir::type_resolver::context::resolver_function::ResolverFunction;
 pub(crate) use crate::high_level_ir::type_resolver::context::resolver_struct::{
     ResolverStruct, StructKind,
 };
-pub(crate) use crate::high_level_ir::type_resolver::context::resolver_function::ResolverFunction;
 use crate::high_level_ir::type_resolver::declaration::DeclarationItemKind;
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::name_environment::NameEnvironment;
@@ -17,7 +17,10 @@ use std::collections::{HashMap, HashSet};
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_decl::TypedFunBody;
 use wiz_hir::typed_expr::TypedBinaryOperator;
-use wiz_hir::typed_type::{Package, TypedArgType, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType, TypedTypeParam, TypedValueType};
+use wiz_hir::typed_type::{
+    Package, TypedArgType, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType,
+    TypedTypeParam, TypedValueType,
+};
 use wiz_utils::StackedHashMap;
 
 #[derive(Debug)]
@@ -423,8 +426,14 @@ impl<'a> ResolverContext<'a> {
         body: Option<TypedFunBody>,
         annotation: TypedAnnotations,
     ) -> Option<DeclarationId> {
-        self.arena
-            .register_function(&self.current_namespace_id, name, ty, type_parameters, body, annotation)
+        self.arena.register_function(
+            &self.current_namespace_id,
+            name,
+            ty,
+            type_parameters,
+            body,
+            annotation,
+        )
     }
     pub(crate) fn register_value(
         &mut self,

@@ -8,7 +8,9 @@ use wiz_constants::annotation::BUILTIN;
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_decl::TypedFunBody;
 use wiz_hir::typed_expr::TypedBinaryOperator;
-use wiz_hir::typed_type::{Package, TypedNamedValueType, TypedPackage, TypedType, TypedTypeParam, TypedValueType};
+use wiz_hir::typed_type::{
+    Package, TypedNamedValueType, TypedPackage, TypedType, TypedTypeParam, TypedValueType,
+};
 
 #[derive(Debug, Clone)]
 pub struct ArenaError(String);
