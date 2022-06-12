@@ -26,7 +26,7 @@ impl<'a> NameEnvironment<'a> {
     }
 
     /// use [namespace]::*;
-    pub(crate) fn use_asterisk<T: ToString>(&mut self, namespace: &[T]) -> Option<()> {
+    pub(crate) fn use_asterisk(&mut self, namespace: &[String]) -> Option<()> {
         let ns_id = self.arena.resolve_declaration_id_from_root(namespace)?;
         let ns = self.arena.get_by_id(&ns_id).unwrap();
         self.values.extend(ns.children().clone());
@@ -37,7 +37,7 @@ impl<'a> NameEnvironment<'a> {
     pub(crate) fn use_(&mut self, fqn: &[String]) -> Option<()> {
         let last = fqn.last()?;
         if last == "*" {
-            self.use_asterisk(&fqn[..fqn.len() - 1]);
+            self.use_asterisk(&fqn[..fqn.len() - 1])?;
         } else {
             let item = self.arena.resolve_declaration_id_from_root(fqn).unwrap();
             let entry = self
