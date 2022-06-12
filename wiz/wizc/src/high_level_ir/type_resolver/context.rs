@@ -213,7 +213,7 @@ impl<'a> ResolverContext<'a> {
         }
     }
 
-    pub fn resolve_name_type(
+    pub fn infer_name_type(
         &mut self,
         name_space: Vec<String>,
         name: &str,

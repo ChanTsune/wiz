@@ -633,7 +633,7 @@ impl<'s> TypeResolver<'s> {
             if n.package.is_resolved() {
                 (n.type_.unwrap(), n.package)
             } else {
-                self.context.resolve_name_type(
+                self.context.infer_name_type(
                     n.package.into_raw().names,
                     &n.name,
                     type_annotation,
