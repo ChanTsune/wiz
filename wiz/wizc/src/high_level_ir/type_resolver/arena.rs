@@ -193,7 +193,7 @@ impl ResolverArena {
             DeclarationItemKind::Type(rs) => Some(rs),
             DeclarationItemKind::Namespace
             | DeclarationItemKind::Variable(_)
-            | DeclarationItemKind::Function(_, _) => None,
+            | DeclarationItemKind::Function(..) => None,
         }
     }
 
@@ -260,7 +260,7 @@ impl ResolverArena {
         match &self.get(name_space, name)?.kind {
             DeclarationItemKind::Namespace => panic!("this is namespace"),
             DeclarationItemKind::Type(t) => Some(t),
-            DeclarationItemKind::Variable(v) | DeclarationItemKind::Function(v, _) => {
+            DeclarationItemKind::Variable(v) | DeclarationItemKind::Function(v, ..) => {
                 panic!("V:{:?}", v)
             }
         }
@@ -274,7 +274,7 @@ impl ResolverArena {
         match &mut self.get_mut(name_space, name)?.kind {
             DeclarationItemKind::Namespace => panic!("this is namespace"),
             DeclarationItemKind::Type(t) => Some(t),
-            DeclarationItemKind::Variable(v) | DeclarationItemKind::Function(v, _) => {
+            DeclarationItemKind::Variable(v) | DeclarationItemKind::Function(v, ..) => {
                 panic!("V:{:?}", v)
             }
         }
@@ -294,7 +294,7 @@ impl ResolverArena {
             DeclarationItem::new(
                 annotation,
                 name,
-                DeclarationItemKind::Function(ty, body),
+                DeclarationItemKind::Function(ty, body, vec![]),
                 Some(*namespace),
             ),
         )

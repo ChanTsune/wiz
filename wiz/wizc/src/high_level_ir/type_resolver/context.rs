@@ -67,17 +67,17 @@ impl<'a> ResolverContext<'a> {
 
     pub(crate) fn current_type(&self) -> Option<&ResolverStruct> {
         match &self.arena.get_by_id(&self.current_namespace_id)?.kind {
-            DeclarationItemKind::Namespace => None,
             DeclarationItemKind::Type(rs) => Some(rs),
-            DeclarationItemKind::Variable(_) | DeclarationItemKind::Function(_, _) => None,
+            DeclarationItemKind::Namespace |
+            DeclarationItemKind::Variable(_) | DeclarationItemKind::Function(..) => None,
         }
     }
 
     pub(crate) fn current_type_mut(&mut self) -> Option<&mut ResolverStruct> {
         match &mut self.arena.get_mut_by_id(&self.current_namespace_id)?.kind {
-            DeclarationItemKind::Namespace => None,
             DeclarationItemKind::Type(rs) => Some(rs),
-            DeclarationItemKind::Variable(_) | DeclarationItemKind::Function(_, _) => None,
+            DeclarationItemKind::Namespace |
+            DeclarationItemKind::Variable(_) | DeclarationItemKind::Function(..) => None,
         }
     }
 
@@ -89,7 +89,7 @@ impl<'a> ResolverContext<'a> {
         let item = self.arena.get_by_id(&id)?;
         match &item.kind {
             DeclarationItemKind::Namespace => Some(id),
-            DeclarationItemKind::Type(_) | DeclarationItemKind::Function(_, _) => {
+            DeclarationItemKind::Type(_) | DeclarationItemKind::Function(..) => {
                 self._current_module_id(item.parent().unwrap())
             }
             DeclarationItemKind::Variable(_) => None,
@@ -439,8 +439,8 @@ impl<'a> ResolverContext<'a> {
         if let DeclarationItemKind::Variable(_) = &item.kind {
             item.kind = DeclarationItemKind::Variable(ty);
             Some(())
-        } else if let DeclarationItemKind::Function(_, body) = &item.kind {
-            item.kind = DeclarationItemKind::Function(ty, body.clone());
+        } else if let DeclarationItemKind::Function(_, body, specialized) = &item.kind {
+            item.kind = DeclarationItemKind::Function(ty, body.clone(), specialized.clone());
             Some(())
         } else {
             None

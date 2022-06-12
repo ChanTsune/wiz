@@ -3,7 +3,7 @@ use crate::high_level_ir::type_resolver::context::ResolverStruct;
 use std::collections::{HashMap, HashSet};
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_decl::TypedFunBody;
-use wiz_hir::typed_type::TypedType;
+use wiz_hir::typed_type::{TypedType, TypedTypeParam};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct DeclarationItem {
@@ -77,5 +77,5 @@ pub enum DeclarationItemKind {
     Namespace,
     Type(ResolverStruct),
     Variable(TypedType),
-    Function(TypedType, Option<TypedFunBody>),
+    Function(TypedType, Option<TypedFunBody>, Vec<HashMap<TypedTypeParam, TypedType>>),
 }
