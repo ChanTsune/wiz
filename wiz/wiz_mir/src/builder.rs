@@ -35,7 +35,7 @@ impl MLIRModule {
         self.get_function(&name)
     }
 
-    pub fn get_function(&mut self, name: &String) -> Option<&mut FunBuilder> {
+    pub fn get_function(&mut self, name: &str) -> Option<&mut FunBuilder> {
         self.functions.get_mut(name)
     }
 
@@ -49,7 +49,7 @@ impl MLIRModule {
         self.get_struct(&name)
     }
 
-    pub fn get_struct(&mut self, name: &String) -> Option<&mut MLStruct> {
+    pub fn get_struct(&mut self, name: &str) -> Option<&mut MLStruct> {
         self.structs.get_mut(name)
     }
 
@@ -68,7 +68,7 @@ impl MLIRModule {
         self.get_global_var(&name)
     }
 
-    pub fn get_global_var(&mut self, name: &String) -> Option<&mut MLVar> {
+    pub fn get_global_var(&mut self, name: &str) -> Option<&mut MLVar> {
         self.variables.get_mut(name)
     }
 
