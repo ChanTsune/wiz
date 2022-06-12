@@ -483,6 +483,7 @@ mod tests {
                 return_type: TypedType::Self_,
             })),
             None,
+            None,
             Default::default(),
         );
 
