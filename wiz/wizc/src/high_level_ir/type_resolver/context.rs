@@ -252,10 +252,7 @@ impl<'a> ResolverContext<'a> {
                 let rs = self.arena.get_type_by_id(&id).unwrap();
                 let self_type = rs.self_type();
                 let package = self_type.package();
-                Ok((
-                    TypedType::Type(Box::new(self_type)),
-                    package,
-                ))
+                Ok((TypedType::Type(Box::new(self_type)), package))
             }
         }
     }
