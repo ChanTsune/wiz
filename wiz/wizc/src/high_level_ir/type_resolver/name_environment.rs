@@ -40,10 +40,7 @@ impl<'a> NameEnvironment<'a> {
             self.use_asterisk(&fqn[..fqn.len() - 1]);
         } else {
             let item = self.arena.resolve_declaration_id_from_root(fqn).unwrap();
-            let entry = self
-                .values
-                .entry(last.to_string())
-                .or_default();
+            let entry = self.values.entry(last.to_string()).or_default();
             entry.insert(item);
         };
         Some(())
