@@ -1,5 +1,4 @@
 use crate::high_level_ir::type_resolver::arena::ResolverArena;
-use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::AstLowering;
 use crate::TypedModuleId;
 use wiz_hir::typed_decl::{
