@@ -435,12 +435,9 @@ impl<'a> ResolverContext<'a> {
             .register_value(&self.current_namespace_id, name, ty, annotation)
     }
 
-    pub(crate) fn update_value(&mut self, id: &DeclarationId, ty: TypedType) -> Option<()> {
+    pub(crate) fn update_function(&mut self, id: &DeclarationId, ty: TypedType) -> Option<()> {
         let item = self.arena.get_mut_by_id(id)?;
-        if let DeclarationItemKind::Variable(_) = &item.kind {
-            item.kind = DeclarationItemKind::Variable(ty);
-            Some(())
-        } else if let DeclarationItemKind::Function(_, body, specialized) = &item.kind {
+        if let DeclarationItemKind::Function(_, body, specialized) = &item.kind {
             item.kind = DeclarationItemKind::Function(ty, body.clone(), specialized.clone());
             Some(())
         } else {

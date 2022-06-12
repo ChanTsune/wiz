@@ -99,7 +99,7 @@ impl<'s> TypeResolver<'s> {
                     .unwrap();
                 let fun = self.preload_fun(f)?;
                 self.context
-                    .update_value(&id, fun.type_().unwrap())
+                    .update_function(&id, fun.type_().unwrap())
                     .unwrap();
             }
             TypedDeclKind::Struct(s) => {
