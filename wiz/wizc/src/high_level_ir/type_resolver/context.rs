@@ -68,16 +68,18 @@ impl<'a> ResolverContext<'a> {
     pub(crate) fn current_type(&self) -> Option<&ResolverStruct> {
         match &self.arena.get_by_id(&self.current_namespace_id)?.kind {
             DeclarationItemKind::Type(rs) => Some(rs),
-            DeclarationItemKind::Namespace |
-            DeclarationItemKind::Variable(_) | DeclarationItemKind::Function(..) => None,
+            DeclarationItemKind::Namespace
+            | DeclarationItemKind::Variable(_)
+            | DeclarationItemKind::Function(..) => None,
         }
     }
 
     pub(crate) fn current_type_mut(&mut self) -> Option<&mut ResolverStruct> {
         match &mut self.arena.get_mut_by_id(&self.current_namespace_id)?.kind {
             DeclarationItemKind::Type(rs) => Some(rs),
-            DeclarationItemKind::Namespace |
-            DeclarationItemKind::Variable(_) | DeclarationItemKind::Function(..) => None,
+            DeclarationItemKind::Namespace
+            | DeclarationItemKind::Variable(_)
+            | DeclarationItemKind::Function(..) => None,
         }
     }
 
