@@ -96,7 +96,7 @@ impl<'a> NameEnvironment<'a> {
                 Some(t) => Some(t),
             }
         } else {
-            let ids = self.values.get(&namespace[0].to_string())?;
+            let ids = self.values.get(&namespace[0])?;
             let ids = ids.iter().copied().collect::<Vec<_>>();
             let parent_id = ids.first()?;
             let id = self
