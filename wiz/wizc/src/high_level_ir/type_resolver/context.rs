@@ -231,7 +231,7 @@ impl<'a> ResolverContext<'a> {
             ResolverError::from(format!("Cannot resolve name =>{:?} {:?}", name_space, name))
         })?;
         match env_value {
-            EnvValue::Value(t_set) => Self::resolve_overload(&t_set, type_annotation)
+            EnvValue::Value(t_set) => self.resolve_overload(name,&t_set, type_annotation)
                 .map(|(id, t)| {
                     (
                         t,
@@ -260,6 +260,8 @@ impl<'a> ResolverContext<'a> {
     }
 
     fn resolve_overload(
+        &mut self,
+        name: &str,
         type_set: &HashSet<(DeclarationId, TypedType)>,
         type_annotation: Option<TypedType>,
     ) -> Option<(DeclarationId, TypedType)> {
