@@ -231,7 +231,8 @@ impl<'a> ResolverContext<'a> {
             ResolverError::from(format!("Cannot resolve name =>{:?} {:?}", name_space, name))
         })?;
         match env_value {
-            EnvValue::Value(t_set) => self.resolve_overload(name,&t_set, type_annotation)
+            EnvValue::Value(t_set) => self
+                .resolve_overload(name, &t_set, type_annotation)
                 .map(|(id, t)| {
                     (
                         t,
