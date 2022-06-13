@@ -230,7 +230,6 @@ impl<'a> ResolverContext<'a> {
         let env_value = env.get_env_item(&name_space, name).ok_or_else(|| {
             ResolverError::from(format!("Cannot resolve name =>{:?} {:?}", name_space, name))
         })?;
-        println!("{}", name);
         match env_value {
             EnvValue::Value(t_set) => Self::resolve_overload(&t_set, type_annotation)
                 .map(|(id, t)| {
