@@ -14,6 +14,20 @@ pub enum StructKind {
     TypeParameter,
 }
 
+impl StructKind {
+    pub fn is_struct(&self) -> bool {
+        matches!(self, Self::Struct)
+    }
+
+    pub fn is_protocol(&self) -> bool {
+        matches!(self, Self::Protocol)
+    }
+
+    pub fn is_type_parameter(&self) -> bool {
+        matches!(self, Self::TypeParameter)
+    }
+}
+
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct ResolverStruct {
     self_: TypedType, // TODO: remove this field
@@ -58,5 +72,9 @@ impl ResolverStruct {
 
     pub fn is_generic(&self) -> bool {
         self.type_parameters.is_some()
+    }
+
+    pub fn is_type_parameter(&self) -> bool {
+        self.kind.is_type_parameter()
     }
 }
