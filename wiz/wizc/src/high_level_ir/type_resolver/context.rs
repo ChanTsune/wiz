@@ -232,7 +232,7 @@ impl<'a> ResolverContext<'a> {
         })?;
         match env_value {
             EnvValue::Value(t_set) => self
-                .resolve_overload(name, &t_set, type_annotation)
+                .resolve_overload(name, t_set, type_annotation)
                 .map(|(id, t)| {
                     (
                         t,
@@ -263,16 +263,17 @@ impl<'a> ResolverContext<'a> {
     fn resolve_overload(
         &mut self,
         name: &str,
-        type_set: &HashSet<(DeclarationId, TypedType)>,
+        type_set: HashSet<(DeclarationId, TypedType)>,
         type_annotation: Option<TypedType>,
     ) -> Option<(DeclarationId, TypedType)> {
-        for t in type_set {
-            if type_set.len() == 1 {
-                return Some(t.clone());
+        let len = type_set.len();
+        for (id, ty) in type_set {
+            if len == 1 {
+                return Some((id, ty));
             } else if let Some(TypedType::Function(annotation)) = &type_annotation {
-                if let (_, TypedType::Function(typ)) = t {
+                if let TypedType::Function(typ) = &ty {
                     if annotation.arguments == typ.arguments {
-                        return Some(t.clone());
+                        return Some((id, ty));
                     }
                 }
             }
