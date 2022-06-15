@@ -238,7 +238,10 @@ impl<'a> ResolverContext<'a> {
                         t,
                         TypedPackage::Resolved({
                             if id != DeclarationId::DUMMY {
-                                Package::from(&self.arena.resolve_fully_qualified_name(&id))
+                                let mut fqn = self.arena.resolve_fully_qualified_name(&id);
+                                // item fqn to parent fqn
+                                fqn.pop();
+                                Package::from(&fqn)
                             } else {
                                 Package::new()
                             }
