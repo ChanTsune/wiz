@@ -1045,7 +1045,15 @@ impl<'s> TypeResolver<'s> {
                     )))
                 }
             }
-            Ok(_) | Err(_) => {
+            Ok(target) => {
+                let args = c
+                    .args
+                    .into_iter()
+                    .map(|c| self.typed_call_arg(c, None))
+                    .collect::<Result<Vec<_>>>()?;
+                Ok((target, args))
+            }
+            Err(_) => {
                 let args = c
                     .args
                     .into_iter()
