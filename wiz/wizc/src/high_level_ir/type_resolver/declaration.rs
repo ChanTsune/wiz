@@ -2,8 +2,7 @@ use crate::high_level_ir::declaration_id::DeclarationId;
 use crate::high_level_ir::type_resolver::context::{ResolverFunction, ResolverStruct};
 use std::collections::{HashMap, HashSet};
 use wiz_hir::typed_annotation::TypedAnnotations;
-use wiz_hir::typed_decl::TypedFunBody;
-use wiz_hir::typed_type::{TypedType, TypedTypeParam};
+use wiz_hir::typed_type::{TypedType};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct DeclarationItem {
