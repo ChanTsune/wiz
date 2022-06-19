@@ -7,8 +7,9 @@ use wiz_hir::typed_decl::{
     TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedProtocol, TypedStruct, TypedVar,
 };
 use wiz_hir::typed_expr::{
-    TypedArray, TypedBinOp, TypedCall, TypedExprKind, TypedIf, TypedInstanceMember, TypedLambda,
-    TypedLiteralKind, TypedName, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
+    TypedArray, TypedBinOp, TypedCall, TypedExpr, TypedExprKind, TypedIf, TypedInstanceMember,
+    TypedLambda, TypedLiteralKind, TypedName, TypedReturn, TypedSubscript, TypedTypeCast,
+    TypedUnaryOp,
 };
 use wiz_hir::typed_file::{TypedFile, TypedSourceSet};
 use wiz_hir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
@@ -53,11 +54,10 @@ impl<'s> TypeChecker<'s> {
     }
 
     fn variable(&mut self, typed_variable: &TypedVar) {
-        if typed_variable.type_ != typed_variable.value.type_() {
+        if typed_variable.type_ != typed_variable.value.ty {
             self.session.emit_error(CheckerError::new(format!(
                 "TypeMissMatchError: left -> {:?}, right -> {:?}",
-                typed_variable.type_,
-                typed_variable.value.type_()
+                typed_variable.type_, typed_variable.value.ty
             )));
         };
         self.expression(&typed_variable.value)
@@ -68,12 +68,10 @@ impl<'s> TypeChecker<'s> {
             match body {
                 TypedFunBody::Expr(e) => {
                     self.expression(e);
-                    if typed_function.return_type != e.type_() {
+                    if typed_function.return_type != e.ty {
                         self.session.emit_error(CheckerError::new(format!(
                             "TypeMissMatchError: {:?} excepted return {:?}, but return {:?}",
-                            typed_function.name,
-                            typed_function.return_type,
-                            e.type_(),
+                            typed_function.name, typed_function.return_type, e.ty,
                         )));
                     }
                 }
@@ -140,20 +138,18 @@ impl<'s> TypeChecker<'s> {
     fn assignment_statement(&mut self, typed_assignment: &TypedAssignmentStmt) {
         match typed_assignment {
             TypedAssignmentStmt::Assignment(a) => {
-                if a.target.type_() != a.value.type_() {
+                if a.target.ty != a.value.ty {
                     self.session.emit_error(CheckerError::new(format!(
                         "TypeMissMatchError: assignment {:?}, into {:?}",
-                        a.value.type_(),
-                        a.target.type_(),
+                        a.value.ty, a.target.ty,
                     )))
                 }
             }
             TypedAssignmentStmt::AssignmentAndOperation(a) => {
-                if a.target.type_() != a.value.type_() {
+                if a.target.ty != a.value.ty {
                     self.session.emit_error(CheckerError::new(format!(
                         "TypeMissMatchError: assignment {:?}, into {:?}",
-                        a.value.type_(),
-                        a.target.type_(),
+                        a.value.ty, a.target.ty,
                     )))
                 }
             }
@@ -165,19 +161,19 @@ impl<'s> TypeChecker<'s> {
             TypedLoopStmt::While(w) => {
                 if !w
                     .condition
-                    .type_()
+                    .ty
+                    .as_ref()
                     .map(|t| t.is_boolean())
                     .unwrap_or_else(|| false)
                 {
                     self.session.emit_error(CheckerError::new(format!(
                         "while condition must be boolean, but {:?}",
-                        w.condition.type_()
+                        w.condition.ty
                     )))
                 }
                 self.block(&w.block);
             }
             TypedLoopStmt::For(f) => {
-                f.iterator.type_();
                 self.block(&f.block);
             }
         }
@@ -187,15 +183,16 @@ impl<'s> TypeChecker<'s> {
         typed_block.body.iter().for_each(|s| self.statement(s))
     }
 
-    fn expression(&mut self, typed_expr: &TypedExprKind) {
-        match typed_expr {
-            TypedExprKind::Name(n) => self.name(n),
-            TypedExprKind::Literal(l, t) => self.literal(l, t),
+    fn expression(&mut self, typed_expr: &TypedExpr) {
+        let t = &typed_expr.ty;
+        match &typed_expr.kind {
+            TypedExprKind::Name(n) => self.name(n, t),
+            TypedExprKind::Literal(l) => self.literal(l, t),
             TypedExprKind::BinOp(b) => self.binary_operation(b),
             TypedExprKind::UnaryOp(u) => self.unary_operation(u),
             TypedExprKind::Subscript(s) => self.subscript(s),
             TypedExprKind::Member(m) => self.member(m),
-            TypedExprKind::Array(a) => self.array(a),
+            TypedExprKind::Array(a) => self.array(a, t),
             TypedExprKind::Tuple => todo!(),
             TypedExprKind::Dict => todo!(),
             TypedExprKind::StringBuilder => todo!(),
@@ -208,8 +205,8 @@ impl<'s> TypeChecker<'s> {
         }
     }
 
-    fn name(&mut self, typed_name: &TypedName) {
-        if typed_name.type_.is_none() {
+    fn name(&mut self, typed_name: &TypedName, ty: &Option<TypedType>) {
+        if ty.is_none() {
             self.session.emit_error(CheckerError::new(format!(
                 "Can not resolve name {:?}",
                 typed_name.name
@@ -217,10 +214,10 @@ impl<'s> TypeChecker<'s> {
         }
     }
 
-    fn literal(&mut self, typed_literal: &TypedLiteralKind, type_: &Option<TypedType>) {
+    fn literal(&mut self, typed_literal: &TypedLiteralKind, ty: &Option<TypedType>) {
         match typed_literal {
             TypedLiteralKind::Integer(value) => {
-                if let Some(typ) = type_ {
+                if let Some(typ) = ty {
                     if !typ.is_integer() {
                         self.session.emit_error(CheckerError::new(format!(
                             "Invalid literal type of {:?}",
@@ -235,7 +232,7 @@ impl<'s> TypeChecker<'s> {
                 }
             }
             TypedLiteralKind::FloatingPoint(value) => {
-                if let Some(typ) = type_ {
+                if let Some(typ) = ty {
                     if !typ.is_floating_point() {
                         self.session.emit_error(CheckerError::new(format!(
                             "Invalid literal type of {:?}",
@@ -250,7 +247,7 @@ impl<'s> TypeChecker<'s> {
                 }
             }
             TypedLiteralKind::String(value) => {
-                if let Some(typ) = type_ {
+                if let Some(typ) = ty {
                     if !typ.is_string_ref() {
                         self.session.emit_error(CheckerError::new(format!(
                             "Invalid literal type of {:?}",
@@ -265,7 +262,7 @@ impl<'s> TypeChecker<'s> {
                 }
             }
             TypedLiteralKind::Boolean(value) => {
-                if let Some(typ) = type_ {
+                if let Some(typ) = ty {
                     if !typ.is_boolean() {
                         self.session.emit_error(CheckerError::new(format!(
                             "Invalid literal type of {:?}",
@@ -280,7 +277,7 @@ impl<'s> TypeChecker<'s> {
                 }
             }
             TypedLiteralKind::NullLiteral => {
-                if type_.is_none() {
+                if ty.is_none() {
                     self.session.emit_error(CheckerError::new(format!(
                         "Can not resolve literal type of null"
                     )))
@@ -313,14 +310,13 @@ impl<'s> TypeChecker<'s> {
         self.expression(&*typed_member.target);
     }
 
-    fn array(&mut self, typed_array: &TypedArray) {
+    fn array(&mut self, typed_array: &TypedArray, ty: &Option<TypedType>) {
         typed_array.elements.iter().for_each(|e| {
             self.expression(e);
-            if typed_array.type_ != e.type_() {
+            if e.ty != *ty {
                 self.session.emit_error(CheckerError::new(format!(
                     "TypeMissMatchError: Array element excepted {:?}, but {:?} found",
-                    typed_array.type_,
-                    e.type_()
+                    ty, e.ty
                 )))
             }
         })
@@ -334,10 +330,10 @@ impl<'s> TypeChecker<'s> {
     }
 
     fn if_(&mut self, typed_if: &TypedIf) {
-        if typed_if.condition.type_().unwrap().is_boolean() {
+        if typed_if.condition.ty.as_ref().unwrap().is_boolean() {
             self.session.emit_error(CheckerError::new(format!(
                 "if condition type must be boolean, but {:?} ware given",
-                typed_if.condition.type_()
+                typed_if.condition.ty
             )))
         }
         self.block(&typed_if.body);

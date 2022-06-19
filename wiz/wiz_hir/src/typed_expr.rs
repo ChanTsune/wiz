@@ -3,9 +3,21 @@ use crate::typed_type::{TypedPackage, TypedType};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
+pub struct TypedExpr {
+    pub kind: TypedExprKind,
+    pub ty: Option<TypedType>,
+}
+
+impl TypedExpr {
+    pub fn new(kind: TypedExprKind, ty: Option<TypedType>) -> Self {
+        Self { kind, ty }
+    }
+}
+
+#[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub enum TypedExprKind {
     Name(TypedName),
-    Literal(TypedLiteralKind, Option<TypedType>),
+    Literal(TypedLiteralKind),
     BinOp(TypedBinOp),
     UnaryOp(TypedUnaryOp),
     Subscript(TypedSubscript),
@@ -26,21 +38,18 @@ pub enum TypedExprKind {
 pub struct TypedName {
     pub package: TypedPackage,
     pub name: String,
-    pub type_: Option<TypedType>,
     pub type_arguments: Option<Vec<TypedType>>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedArray {
-    pub elements: Vec<TypedExprKind>,
-    pub type_: Option<TypedType>,
+    pub elements: Vec<TypedExpr>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedSubscript {
-    pub target: Box<TypedExprKind>,
-    pub indexes: Vec<TypedExprKind>,
-    pub type_: Option<TypedType>,
+    pub target: Box<TypedExpr>,
+    pub indexes: Vec<TypedExpr>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
@@ -54,10 +63,9 @@ pub enum TypedLiteralKind {
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedBinOp {
-    pub left: Box<TypedExprKind>,
+    pub left: Box<TypedExpr>,
     pub operator: TypedBinaryOperator,
-    pub right: Box<TypedExprKind>,
-    pub type_: Option<TypedType>,
+    pub right: Box<TypedExpr>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash, Serialize, Deserialize)]
@@ -82,20 +90,10 @@ pub enum TypedUnaryOp {
     Postfix(TypedPostfixUnaryOp),
 }
 
-impl TypedUnaryOp {
-    pub fn type_(&self) -> Option<TypedType> {
-        match self {
-            TypedUnaryOp::Prefix(p) => p.type_.clone(),
-            TypedUnaryOp::Postfix(p) => p.type_.clone(),
-        }
-    }
-}
-
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedPrefixUnaryOp {
-    pub target: Box<TypedExprKind>,
+    pub target: Box<TypedExpr>,
     pub operator: TypedPrefixUnaryOperator,
-    pub type_: Option<TypedType>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
@@ -109,9 +107,8 @@ pub enum TypedPrefixUnaryOperator {
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedPostfixUnaryOp {
-    pub target: Box<TypedExprKind>,
+    pub target: Box<TypedExpr>,
     pub operator: TypedPostfixUnaryOperator,
-    pub type_: Option<TypedType>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
@@ -121,24 +118,22 @@ pub enum TypedPostfixUnaryOperator {
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedCall {
-    pub target: Box<TypedExprKind>,
+    pub target: Box<TypedExpr>,
     pub args: Vec<TypedCallArg>,
-    pub type_: Option<TypedType>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedCallArg {
     pub label: Option<String>,
-    pub arg: Box<TypedExprKind>,
+    pub arg: Box<TypedExpr>,
     pub is_vararg: bool,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedInstanceMember {
-    pub target: Box<TypedExprKind>,
+    pub target: Box<TypedExpr>,
     pub name: String,
     pub is_safe: bool,
-    pub type_: Option<TypedType>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
@@ -150,10 +145,9 @@ pub struct TypedStaticMember {
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedIf {
-    pub condition: Box<TypedExprKind>,
+    pub condition: Box<TypedExpr>,
     pub body: TypedBlock,
     pub else_body: Option<TypedBlock>,
-    pub type_: Option<TypedType>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
@@ -164,37 +158,14 @@ pub struct TypedLambda {
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedReturn {
-    pub value: Option<Box<TypedExprKind>>,
+    pub value: Option<Box<TypedExpr>>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedTypeCast {
-    pub target: Box<TypedExprKind>,
+    pub target: Box<TypedExpr>,
     pub is_safe: bool,
-    pub type_: Option<TypedType>,
-}
-
-impl TypedExprKind {
-    pub fn type_(&self) -> Option<TypedType> {
-        match self {
-            TypedExprKind::Name(name) => name.type_.clone(),
-            TypedExprKind::Literal(l, type_) => type_.clone(),
-            TypedExprKind::BinOp(b) => b.type_.clone(),
-            TypedExprKind::UnaryOp(u) => u.type_(),
-            TypedExprKind::Subscript(s) => s.type_.clone(),
-            TypedExprKind::Member(m) => m.type_.clone(),
-            TypedExprKind::Array(a) => a.type_.clone(),
-            TypedExprKind::Tuple => None,
-            TypedExprKind::Dict => None,
-            TypedExprKind::StringBuilder => None,
-            TypedExprKind::Call(c) => c.type_.clone(),
-            TypedExprKind::If(i) => i.type_.clone(),
-            TypedExprKind::When => None,
-            TypedExprKind::Lambda(l) => todo!(),
-            TypedExprKind::Return(r) => Some(r.type_()),
-            TypedExprKind::TypeCast(t) => t.type_.clone(),
-        }
-    }
+    pub type_: TypedType,
 }
 
 impl TypedLiteralKind {
@@ -216,11 +187,5 @@ impl TypedLiteralKind {
 
     pub fn is_null(&self) -> bool {
         matches!(self, TypedLiteralKind::NullLiteral { .. })
-    }
-}
-
-impl TypedReturn {
-    pub fn type_(&self) -> TypedType {
-        TypedType::noting()
     }
 }
