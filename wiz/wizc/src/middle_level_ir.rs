@@ -329,7 +329,7 @@ impl<'arena> HLIR2MLIR<'arena> {
     ) -> MLFun {
         let TypedFun {
             name,
-            type_params,
+            type_params: _,
             type_constraints: _,
             arg_defs,
             body,
