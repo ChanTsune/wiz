@@ -1,13 +1,16 @@
 use crate::high_level_ir::declaration_id::{DeclarationId, DeclarationIdGenerator};
-use crate::high_level_ir::type_resolver::context::{ResolverStruct, StructKind};
+use crate::high_level_ir::type_resolver::context::{ResolverFunction, ResolverStruct, StructKind};
 use crate::high_level_ir::type_resolver::declaration::{DeclarationItem, DeclarationItemKind};
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter, Write};
 use wiz_constants::annotation::BUILTIN;
 use wiz_hir::typed_annotation::TypedAnnotations;
+use wiz_hir::typed_decl::TypedFunBody;
 use wiz_hir::typed_expr::TypedBinaryOperator;
-use wiz_hir::typed_type::{Package, TypedNamedValueType, TypedPackage, TypedType, TypedValueType};
+use wiz_hir::typed_type::{
+    Package, TypedNamedValueType, TypedPackage, TypedType, TypedTypeParam, TypedValueType,
+};
 
 #[derive(Debug, Clone)]
 pub struct ArenaError(String);
@@ -190,7 +193,9 @@ impl ResolverArena {
     pub(crate) fn get_type_by_id(&self, id: &DeclarationId) -> Option<&ResolverStruct> {
         match &self.get_by_id(id)?.kind {
             DeclarationItemKind::Type(rs) => Some(rs),
-            DeclarationItemKind::Namespace | DeclarationItemKind::Value(_) => None,
+            DeclarationItemKind::Namespace
+            | DeclarationItemKind::Variable(_)
+            | DeclarationItemKind::Function(..) => None,
         }
     }
 
@@ -257,7 +262,8 @@ impl ResolverArena {
         match &self.get(name_space, name)?.kind {
             DeclarationItemKind::Namespace => panic!("this is namespace"),
             DeclarationItemKind::Type(t) => Some(t),
-            DeclarationItemKind::Value(v) => panic!("V:{:?}", v),
+            DeclarationItemKind::Variable(v) => panic!("V:{:?}", v),
+            DeclarationItemKind::Function(v) => panic!("F:{:?}", v),
         }
     }
 
@@ -269,8 +275,30 @@ impl ResolverArena {
         match &mut self.get_mut(name_space, name)?.kind {
             DeclarationItemKind::Namespace => panic!("this is namespace"),
             DeclarationItemKind::Type(t) => Some(t),
-            DeclarationItemKind::Value(v) => panic!("V:{:?}", v),
+            DeclarationItemKind::Variable(v) => panic!("V:{:?}", v),
+            DeclarationItemKind::Function(v) => panic!("F:{:?}", v),
         }
+    }
+
+    pub(crate) fn register_function(
+        &mut self,
+        namespace: &DeclarationId,
+        name: &str,
+        ty: TypedType,
+        type_parameters: Option<Vec<TypedTypeParam>>,
+        body: Option<TypedFunBody>,
+        annotation: TypedAnnotations,
+    ) -> Option<DeclarationId> {
+        self.register(
+            namespace,
+            name,
+            DeclarationItem::new(
+                annotation,
+                name,
+                DeclarationItemKind::Function(ResolverFunction::new(ty, type_parameters, body)),
+                Some(*namespace),
+            ),
+        )
     }
 
     pub(crate) fn register_value(
@@ -286,7 +314,7 @@ impl ResolverArena {
             DeclarationItem::new(
                 annotation,
                 name,
-                DeclarationItemKind::Value(ty),
+                DeclarationItemKind::Variable(ty),
                 Some(*namespace),
             ),
         )
@@ -444,7 +472,7 @@ mod tests {
             .register_struct(&grandchildren_namespace_id, type_name, Default::default())
             .unwrap();
 
-        let member_function_id = arena.register_value(
+        let member_function_id = arena.register_function(
             &type_id,
             member_function_name,
             TypedType::Function(Box::new(TypedFunctionType {
@@ -454,6 +482,8 @@ mod tests {
                 }],
                 return_type: TypedType::Self_,
             })),
+            None,
+            None,
             Default::default(),
         );
 

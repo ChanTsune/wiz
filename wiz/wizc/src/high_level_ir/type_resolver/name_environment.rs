@@ -26,7 +26,7 @@ impl<'a> NameEnvironment<'a> {
     }
 
     /// use [namespace]::*;
-    pub(crate) fn use_asterisk<T: ToString>(&mut self, namespace: &[T]) -> Option<()> {
+    pub(crate) fn use_asterisk(&mut self, namespace: &[String]) -> Option<()> {
         let ns_id = self.arena.resolve_declaration_id_from_root(namespace)?;
         let ns = self.arena.get_by_id(&ns_id).unwrap();
         self.values.extend(ns.children().clone());
@@ -34,17 +34,16 @@ impl<'a> NameEnvironment<'a> {
     }
 
     /// use [namespace]::[name];
-    pub(crate) fn use_<T: ToString>(&mut self, fqn: &[T]) {
-        if fqn.last().map(T::to_string) == Some("*".to_string()) {
-            self.use_asterisk(&fqn[..fqn.len() - 1]);
+    pub(crate) fn use_(&mut self, fqn: &[String]) -> Option<()> {
+        let last = fqn.last()?;
+        if last == "*" {
+            self.use_asterisk(&fqn[..fqn.len() - 1])?;
         } else {
             let item = self.arena.resolve_declaration_id_from_root(fqn).unwrap();
-            let entry = self
-                .values
-                .entry(fqn.last().unwrap().to_string())
-                .or_default();
+            let entry = self.values.entry(last.to_string()).or_default();
             entry.insert(item);
-        }
+        };
+        Some(())
     }
 
     pub(crate) fn get_type(
@@ -76,49 +75,53 @@ impl<'a> NameEnvironment<'a> {
                     let ids = ids.iter().collect::<Vec<_>>();
                     let items = self.arena.get_by_ids(&ids)?;
                     if !items.is_empty() {
-                        if let DeclarationItemKind::Type(_) = &items.first().unwrap().kind {
-                            return Some(EnvValue::from(**ids.first().unwrap()));
+                        return if let DeclarationItemKind::Type(_) = &items.first().unwrap().kind {
+                            Some(EnvValue::from(**ids.first().unwrap()))
                         } else {
                             let mut values = HashSet::new();
-                            for item in items {
-                                if let DeclarationItemKind::Value(v) = &item.kind {
-                                    values.insert((item.parent().unwrap(), v.clone()));
+                            for (item, id) in items.iter().zip(ids) {
+                                if let DeclarationItemKind::Function(rf) = &item.kind {
+                                    values.insert((*id, rf.ty.clone()));
+                                } else if let DeclarationItemKind::Variable(v) = &item.kind {
+                                    values.insert((*id, v.clone()));
                                 } else {
                                     None?
                                 }
                             }
-                            return Some(EnvValue::from(values));
-                        }
+                            Some(EnvValue::from(values))
+                        };
                     };
                     None
                 }
                 Some(t) => Some(t),
             }
         } else {
-            let ids = self.values.get(&namespace[0].to_string())?;
+            let ids = self.values.get(&namespace[0])?;
             let ids = ids.iter().copied().collect::<Vec<_>>();
             let parent_id = ids.first()?;
             let id = self
                 .arena
                 .resolve_declaration_id(*parent_id, &namespace[1..])?;
             let item = self.arena.get_by_id(&id)?;
-            let child = item.get_child(name)?;
-            let child = child.iter().collect::<Vec<_>>();
-            let items = self.arena.get_by_ids(&child)?;
+            let children = item.get_child(name)?;
+            let children = children.iter().collect::<Vec<_>>();
+            let items = self.arena.get_by_ids(&children)?;
             if !items.is_empty() {
-                if let DeclarationItemKind::Type(_) = &items.first().unwrap().kind {
-                    return Some(EnvValue::from(**child.first().unwrap()));
+                return if let DeclarationItemKind::Type(_) = &items.first().unwrap().kind {
+                    Some(EnvValue::from(**children.first().unwrap()))
                 } else {
                     let mut values = HashSet::new();
-                    for item in items {
-                        if let DeclarationItemKind::Value(v) = &item.kind {
-                            values.insert((item.parent().unwrap(), v.clone()));
+                    for (item, id) in items.iter().zip(children) {
+                        if let DeclarationItemKind::Function(rf) = &item.kind {
+                            values.insert((*id, rf.ty.clone()));
+                        } else if let DeclarationItemKind::Variable(v) = &item.kind {
+                            values.insert((*id, v.clone()));
                         } else {
                             None?
                         }
                     }
-                    return Some(EnvValue::from(values));
-                }
+                    Some(EnvValue::from(values))
+                };
             };
             None
         }

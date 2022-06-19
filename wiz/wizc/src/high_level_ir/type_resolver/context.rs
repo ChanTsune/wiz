@@ -1,9 +1,11 @@
 mod env_value;
+mod resolver_function;
 mod resolver_struct;
 
 use crate::high_level_ir::declaration_id::DeclarationId;
 use crate::high_level_ir::type_resolver::arena::ResolverArena;
 pub(crate) use crate::high_level_ir::type_resolver::context::env_value::EnvValue;
+pub(crate) use crate::high_level_ir::type_resolver::context::resolver_function::ResolverFunction;
 pub(crate) use crate::high_level_ir::type_resolver::context::resolver_struct::{
     ResolverStruct, StructKind,
 };
@@ -13,10 +15,11 @@ use crate::high_level_ir::type_resolver::name_environment::NameEnvironment;
 use crate::high_level_ir::type_resolver::result::Result;
 use std::collections::{HashMap, HashSet};
 use wiz_hir::typed_annotation::TypedAnnotations;
+use wiz_hir::typed_decl::TypedFunBody;
 use wiz_hir::typed_expr::TypedBinaryOperator;
 use wiz_hir::typed_type::{
     Package, TypedArgType, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType,
-    TypedValueType,
+    TypedTypeParam, TypedValueType,
 };
 use wiz_utils::StackedHashMap;
 
@@ -66,17 +69,19 @@ impl<'a> ResolverContext<'a> {
 
     pub(crate) fn current_type(&self) -> Option<&ResolverStruct> {
         match &self.arena.get_by_id(&self.current_namespace_id)?.kind {
-            DeclarationItemKind::Namespace => None,
             DeclarationItemKind::Type(rs) => Some(rs),
-            DeclarationItemKind::Value(_) => None,
+            DeclarationItemKind::Namespace
+            | DeclarationItemKind::Variable(_)
+            | DeclarationItemKind::Function(..) => None,
         }
     }
 
     pub(crate) fn current_type_mut(&mut self) -> Option<&mut ResolverStruct> {
         match &mut self.arena.get_mut_by_id(&self.current_namespace_id)?.kind {
-            DeclarationItemKind::Namespace => None,
             DeclarationItemKind::Type(rs) => Some(rs),
-            DeclarationItemKind::Value(_) => None,
+            DeclarationItemKind::Namespace
+            | DeclarationItemKind::Variable(_)
+            | DeclarationItemKind::Function(..) => None,
         }
     }
 
@@ -88,9 +93,10 @@ impl<'a> ResolverContext<'a> {
         let item = self.arena.get_by_id(&id)?;
         match &item.kind {
             DeclarationItemKind::Namespace => Some(id),
-            DeclarationItemKind::Type(_) | DeclarationItemKind::Value(_) => {
+            DeclarationItemKind::Type(_) | DeclarationItemKind::Function(..) => {
                 self._current_module_id(item.parent().unwrap())
             }
+            DeclarationItemKind::Variable(_) => None,
         }
     }
 
@@ -134,8 +140,7 @@ impl<'a> ResolverContext<'a> {
 
     pub(crate) fn get_current_name_environment(&self) -> NameEnvironment {
         let mut env = NameEnvironment::new(&self.arena, &self.local_stack);
-        let root_namespace_name: [&str; 0] = [];
-        env.use_asterisk(&root_namespace_name);
+        env.use_asterisk(&[]);
 
         let module_id = self.current_module_id().unwrap();
 
@@ -210,7 +215,7 @@ impl<'a> ResolverContext<'a> {
         }
     }
 
-    pub fn resolve_name_type(
+    pub fn infer_name_type(
         &mut self,
         name_space: Vec<String>,
         name: &str,
@@ -226,13 +231,17 @@ impl<'a> ResolverContext<'a> {
             ResolverError::from(format!("Cannot resolve name =>{:?} {:?}", name_space, name))
         })?;
         match env_value {
-            EnvValue::Value(t_set) => Self::resolve_overload(&t_set, type_annotation)
+            EnvValue::Value(t_set) => self
+                .resolve_overload(name, t_set, type_annotation)
                 .map(|(id, t)| {
                     (
                         t,
                         TypedPackage::Resolved({
                             if id != DeclarationId::DUMMY {
-                                Package::from(&self.arena.resolve_fully_qualified_name(&id))
+                                let mut fqn = self.arena.resolve_fully_qualified_name(&id);
+                                // item fqn to parent fqn
+                                fqn.pop();
+                                Package::from(&fqn)
                             } else {
                                 Package::new()
                             }
@@ -247,25 +256,27 @@ impl<'a> ResolverContext<'a> {
                 }),
             EnvValue::Type(id) => {
                 let rs = self.arena.get_type_by_id(&id).unwrap();
-                Ok((
-                    TypedType::Type(Box::new(rs.self_type())),
-                    rs.self_type().package(),
-                ))
+                let self_type = rs.self_type();
+                let package = self_type.package();
+                Ok((TypedType::Type(Box::new(self_type)), package))
             }
         }
     }
 
     fn resolve_overload(
-        type_set: &HashSet<(DeclarationId, TypedType)>,
+        &mut self,
+        name: &str,
+        type_set: HashSet<(DeclarationId, TypedType)>,
         type_annotation: Option<TypedType>,
     ) -> Option<(DeclarationId, TypedType)> {
-        for t in type_set {
-            if type_set.len() == 1 {
-                return Some(t.clone());
+        let len = type_set.len();
+        for (id, ty) in type_set {
+            if len == 1 {
+                return Some((id, ty));
             } else if let Some(TypedType::Function(annotation)) = &type_annotation {
-                if let (_, TypedType::Function(typ)) = t {
+                if let TypedType::Function(typ) = &ty {
                     if annotation.arguments == typ.arguments {
-                        return Some(t.clone());
+                        return Some((id, ty));
                     }
                 }
             }
@@ -413,6 +424,23 @@ impl<'a> ResolverContext<'a> {
             .register_type_parameter(&self.current_namespace_id, name, annotation)
     }
 
+    pub(crate) fn register_function(
+        &mut self,
+        name: &str,
+        ty: TypedType,
+        type_parameters: Option<Vec<TypedTypeParam>>,
+        body: Option<TypedFunBody>,
+        annotation: TypedAnnotations,
+    ) -> Option<DeclarationId> {
+        self.arena.register_function(
+            &self.current_namespace_id,
+            name,
+            ty,
+            type_parameters,
+            body,
+            annotation,
+        )
+    }
     pub(crate) fn register_value(
         &mut self,
         name: &str,
@@ -423,10 +451,12 @@ impl<'a> ResolverContext<'a> {
             .register_value(&self.current_namespace_id, name, ty, annotation)
     }
 
-    pub(crate) fn update_value(&mut self, id: &DeclarationId, ty: TypedType) -> Option<()> {
+    pub(crate) fn update_function(&mut self, id: &DeclarationId, ty: TypedType) -> Option<()> {
         let item = self.arena.get_mut_by_id(id)?;
-        if let DeclarationItemKind::Value(_) = &item.kind {
-            item.kind = DeclarationItemKind::Value(ty);
+        if let DeclarationItemKind::Function(rf) = &item.kind {
+            let mut rf = rf.clone();
+            rf.ty = ty;
+            item.kind = DeclarationItemKind::Function(rf);
             Some(())
         } else {
             None

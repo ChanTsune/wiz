@@ -1,5 +1,5 @@
 use crate::typed_annotation::TypedAnnotations;
-use crate::typed_expr::TypedExprKind;
+use crate::typed_expr::TypedExpr;
 use crate::typed_stmt::TypedBlock;
 use crate::typed_type::{Package, TypedArgType, TypedFunctionType, TypedType, TypedTypeParam};
 use crate::typed_type_constraint::TypedTypeConstraint;
@@ -29,7 +29,7 @@ pub struct TypedVar {
     pub is_mut: bool,
     pub name: String,
     pub type_: Option<TypedType>,
-    pub value: TypedExprKind,
+    pub value: TypedExpr,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
@@ -60,7 +60,7 @@ impl TypedArgDef {
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub enum TypedFunBody {
-    Expr(TypedExprKind),
+    Expr(TypedExpr),
     Block(TypedBlock),
 }
 
@@ -127,12 +127,11 @@ impl TypedFun {
 
 impl TypedMemberFunction {
     pub fn type_(&self) -> Option<TypedType> {
-        match &self.return_type {
-            Some(return_type) => Some(TypedType::Function(Box::new(TypedFunctionType {
+        self.return_type.as_ref().map(|return_type| {
+            TypedType::Function(Box::new(TypedFunctionType {
                 arguments: self.arg_defs.iter().map(|a| a.to_arg_type()).collect(),
                 return_type: return_type.clone(),
-            }))),
-            None => None,
-        }
+            }))
+        })
     }
 }

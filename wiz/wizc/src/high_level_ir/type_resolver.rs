@@ -10,6 +10,7 @@ mod tests;
 use crate::high_level_ir::declaration_id::DeclarationId;
 use crate::high_level_ir::type_resolver::arena::ResolverArena;
 use crate::high_level_ir::type_resolver::context::ResolverContext;
+use crate::high_level_ir::type_resolver::declaration::DeclarationItemKind;
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
 use wiz_hir::typed_decl::{
@@ -17,9 +18,9 @@ use wiz_hir::typed_decl::{
     TypedMemberFunction, TypedProtocol, TypedStoredProperty, TypedStruct, TypedVar,
 };
 use wiz_hir::typed_expr::{
-    TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExprKind, TypedIf, TypedInstanceMember,
-    TypedLiteralKind, TypedName, TypedPostfixUnaryOp, TypedPrefixUnaryOp, TypedPrefixUnaryOperator,
-    TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
+    TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedExprKind, TypedIf,
+    TypedInstanceMember, TypedLiteralKind, TypedName, TypedPostfixUnaryOp, TypedPrefixUnaryOp,
+    TypedPrefixUnaryOperator, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
 use wiz_hir::typed_file::{TypedFile, TypedSourceSet};
 use wiz_hir::typed_stmt::{
@@ -90,11 +91,17 @@ impl<'s> TypeResolver<'s> {
             TypedDeclKind::Fun(f) => {
                 let id = self
                     .context
-                    .register_value(&f.name, TypedType::noting(), d.annotations.clone())
+                    .register_function(
+                        &f.name,
+                        TypedType::noting(),
+                        f.type_params.clone(),
+                        f.body.clone(),
+                        d.annotations.clone(),
+                    )
                     .unwrap();
                 let fun = self.preload_fun(f)?;
                 self.context
-                    .update_value(&id, fun.type_().unwrap())
+                    .update_function(&id, fun.type_().unwrap())
                     .unwrap();
             }
             TypedDeclKind::Struct(s) => {
@@ -180,8 +187,13 @@ impl<'s> TypeResolver<'s> {
             let type_ = self
                 .context
                 .full_type_name(&member_function.type_().unwrap())?;
-            self.context
-                .register_value(&member_function.name, type_.clone(), Default::default());
+            self.context.register_function(
+                &member_function.name,
+                type_.clone(),
+                member_function.type_params.clone(),
+                member_function.body.clone(),
+                Default::default(),
+            );
             let rs = self.context.current_type_mut().ok_or_else(|| {
                 ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
             })?;
@@ -295,7 +307,7 @@ impl<'s> TypeResolver<'s> {
         })
     }
 
-    pub fn file(&mut self, f: TypedFile) -> Result<TypedFile> {
+    fn file(&mut self, f: TypedFile) -> Result<TypedFile> {
         self.context.push_name_space(&f.name);
         for u in f.uses.iter() {
             self.context.use_name_space(u.package.names.clone());
@@ -350,7 +362,7 @@ impl<'s> TypeResolver<'s> {
         let v = TypedVar {
             is_mut,
             name,
-            type_: value.type_(),
+            type_: value.ty.clone(),
             value,
         };
         Ok(v)
@@ -369,14 +381,9 @@ impl<'s> TypeResolver<'s> {
                     name
                 ))),
                 Some(TypedFunBody::Block(_)) => Ok(TypedType::unit()),
-                Some(TypedFunBody::Expr(e)) => {
-                    self.expr(e.clone(), None)?.type_().ok_or_else(|| {
-                        ResolverError::from(format!(
-                            "Can not resolve expr type at function {:?}",
-                            name
-                        ))
-                    })
-                }
+                Some(TypedFunBody::Expr(e)) => self.expr(e.clone(), None)?.ty.ok_or_else(|| {
+                    ResolverError::from(format!("Can not resolve expr type at function {:?}", name))
+                }),
             },
             Some(b) => self.context.full_type_name(b),
         }
@@ -587,63 +594,109 @@ impl<'s> TypeResolver<'s> {
             .collect::<Result<_>>()
     }
 
-    pub fn expr(
-        &mut self,
-        e: TypedExprKind,
-        type_annotation: Option<TypedType>,
-    ) -> Result<TypedExprKind> {
-        Ok(match e {
-            TypedExprKind::Name(n) => TypedExprKind::Name(self.typed_name(n, type_annotation)?),
-            TypedExprKind::Literal(l, t) => {
-                let (kind, ty) = self.typed_literal(l, t, type_annotation)?;
-                TypedExprKind::Literal(kind, ty)
+    pub fn expr(&mut self, e: TypedExpr, type_annotation: Option<TypedType>) -> Result<TypedExpr> {
+        let TypedExpr { kind, ty } = e;
+        Ok(match kind {
+            TypedExprKind::Name(n) => {
+                let (kind, ty) = self.typed_name(n, ty, type_annotation)?;
+                TypedExpr::new(TypedExprKind::Name(kind), ty)
             }
-            TypedExprKind::BinOp(b) => TypedExprKind::BinOp(self.typed_binop(b)?),
-            TypedExprKind::UnaryOp(u) => TypedExprKind::UnaryOp(self.typed_unary_op(u)?),
-            TypedExprKind::Subscript(s) => TypedExprKind::Subscript(self.typed_subscript(s)?),
-            TypedExprKind::Member(m) => TypedExprKind::Member(self.typed_instance_member(m)?),
-            TypedExprKind::Array(a) => TypedExprKind::Array(self.typed_array(a)?),
-            TypedExprKind::Tuple => TypedExprKind::Tuple,
-            TypedExprKind::Dict => TypedExprKind::Dict,
-            TypedExprKind::StringBuilder => TypedExprKind::StringBuilder,
-            TypedExprKind::Call(c) => TypedExprKind::Call(self.typed_call(c)?),
-            TypedExprKind::If(i) => TypedExprKind::If(self.typed_if(i)?),
-            TypedExprKind::When => TypedExprKind::When,
-            TypedExprKind::Lambda(l) => TypedExprKind::Lambda(l),
-            TypedExprKind::Return(r) => TypedExprKind::Return(self.typed_return(r)?),
-            TypedExprKind::TypeCast(t) => TypedExprKind::TypeCast(self.typed_type_cast(t)?),
+            TypedExprKind::Literal(l) => {
+                let (kind, ty) = self.typed_literal(l, ty, type_annotation)?;
+                TypedExpr::new(TypedExprKind::Literal(kind), ty)
+            }
+            TypedExprKind::BinOp(b) => {
+                let (kind, ty) = self.typed_binop(b)?;
+                TypedExpr::new(TypedExprKind::BinOp(kind), ty)
+            }
+            TypedExprKind::UnaryOp(u) => {
+                let (kind, ty) = self.typed_unary_op(u)?;
+                TypedExpr::new(TypedExprKind::UnaryOp(kind), ty)
+            }
+            TypedExprKind::Subscript(s) => {
+                let (kind, ty) = self.typed_subscript(s, ty)?;
+                TypedExpr::new(TypedExprKind::Subscript(kind), ty)
+            }
+            TypedExprKind::Member(m) => {
+                let (kind, ty) = self.typed_instance_member(m)?;
+                TypedExpr::new(TypedExprKind::Member(kind), ty)
+            }
+            TypedExprKind::Array(a) => {
+                let (kind, ty) = self.typed_array(a)?;
+                TypedExpr::new(TypedExprKind::Array(kind), ty)
+            }
+            TypedExprKind::Tuple => TypedExpr::new(TypedExprKind::Tuple, None),
+            TypedExprKind::Dict => TypedExpr::new(TypedExprKind::Dict, None),
+            TypedExprKind::StringBuilder => TypedExpr::new(TypedExprKind::StringBuilder, None),
+            TypedExprKind::Call(c) => {
+                let (kind, ty) = self.typed_call(c)?;
+                TypedExpr::new(TypedExprKind::Call(kind), ty)
+            }
+            TypedExprKind::If(i) => {
+                let (kind, ty) = self.typed_if(i)?;
+                TypedExpr::new(TypedExprKind::If(kind), ty)
+            }
+            TypedExprKind::When => TypedExpr::new(TypedExprKind::When, None),
+            TypedExprKind::Lambda(l) => TypedExpr::new(TypedExprKind::Lambda(l), None),
+            TypedExprKind::Return(r) => {
+                let (kind, ty) = self.typed_return(r)?;
+                TypedExpr::new(TypedExprKind::Return(kind), ty)
+            }
+            TypedExprKind::TypeCast(t) => {
+                let (kind, ty) = self.typed_type_cast(t)?;
+                TypedExpr::new(TypedExprKind::TypeCast(kind), ty)
+            }
         })
     }
 
     pub fn typed_name(
         &mut self,
         n: TypedName,
+        ty: Option<TypedType>,
         type_annotation: Option<TypedType>,
-    ) -> Result<TypedName> {
+    ) -> Result<(TypedName, Option<TypedType>)> {
         let (type_, package) = {
             if n.package.is_resolved() {
-                (n.type_.unwrap(), n.package)
+                (ty.unwrap(), n.package)
             } else {
-                self.context.resolve_name_type(
+                self.context.infer_name_type(
                     n.package.into_raw().names,
                     &n.name,
                     type_annotation,
                 )?
             }
         };
-        Ok(TypedName {
-            package,
-            type_: Some(type_),
-            name: n.name,
-            type_arguments: match n.type_arguments {
-                None => None,
-                Some(t) => Some(
-                    t.iter()
-                        .map(|ta| self.context.full_type_name(ta))
-                        .collect::<Result<_>>()?,
-                ),
+        let item = self
+            .context
+            .arena
+            .get_mut(&package.clone().into_resolved().names, &n.name);
+        if let Some(item) = item {
+            match &mut item.kind {
+                DeclarationItemKind::Namespace => {}
+                DeclarationItemKind::Type(t) => {}
+                DeclarationItemKind::Variable(t) => {}
+                DeclarationItemKind::Function(rf) => {
+                    if rf.is_generic() {
+                        println!("name => {}", n.name);
+                    }
+                }
+            }
+        }
+        Ok((
+            TypedName {
+                package,
+                name: n.name,
+                type_arguments: match n.type_arguments {
+                    None => None,
+                    Some(t) => Some(
+                        t.iter()
+                            .map(|ta| self.context.full_type_name(ta))
+                            .collect::<Result<_>>()?,
+                    ),
+                },
             },
-        })
+            Some(type_),
+        ))
     }
 
     fn typed_literal(
@@ -678,68 +731,103 @@ impl<'s> TypeResolver<'s> {
         Ok((l, ty))
     }
 
-    pub fn typed_unary_op(&mut self, u: TypedUnaryOp) -> Result<TypedUnaryOp> {
+    pub fn typed_unary_op(&mut self, u: TypedUnaryOp) -> Result<(TypedUnaryOp, Option<TypedType>)> {
         Ok(match u {
-            TypedUnaryOp::Prefix(p) => TypedUnaryOp::Prefix(self.typed_prefix_unary_op(p)?),
-            TypedUnaryOp::Postfix(p) => TypedUnaryOp::Postfix(self.typed_postfix_unary_op(p)?),
+            TypedUnaryOp::Prefix(p) => {
+                let (kind, ty) = self.typed_prefix_unary_op(p)?;
+                (TypedUnaryOp::Prefix(kind), ty)
+            }
+            TypedUnaryOp::Postfix(p) => {
+                let (kind, ty) = self.typed_postfix_unary_op(p)?;
+                (TypedUnaryOp::Postfix(kind), ty)
+            }
         })
     }
 
-    pub fn typed_prefix_unary_op(&mut self, u: TypedPrefixUnaryOp) -> Result<TypedPrefixUnaryOp> {
+    pub fn typed_prefix_unary_op(
+        &mut self,
+        u: TypedPrefixUnaryOp,
+    ) -> Result<(TypedPrefixUnaryOp, Option<TypedType>)> {
         let target = Box::new(self.expr(*u.target, None)?);
+        let ty = target.ty.clone();
         Ok(match &u.operator {
             TypedPrefixUnaryOperator::Negative
             | TypedPrefixUnaryOperator::Positive
-            | TypedPrefixUnaryOperator::Not => TypedPrefixUnaryOp {
-                operator: u.operator,
-                type_: target.type_(),
-                target,
-            },
-            TypedPrefixUnaryOperator::Reference => TypedPrefixUnaryOp {
-                operator: u.operator,
-                type_: target
-                    .type_()
-                    .map(|t| TypedType::Value(TypedValueType::Reference(Box::new(t)))),
-                target,
-            },
-            TypedPrefixUnaryOperator::Dereference => TypedPrefixUnaryOp {
-                operator: u.operator,
-                type_: match target.type_() {
+            | TypedPrefixUnaryOperator::Not => (
+                TypedPrefixUnaryOp {
+                    operator: u.operator,
+                    target,
+                },
+                ty,
+            ),
+            TypedPrefixUnaryOperator::Reference => (
+                TypedPrefixUnaryOp {
+                    operator: u.operator,
+                    target,
+                },
+                ty.map(|t| TypedType::Value(TypedValueType::Reference(Box::new(t)))),
+            ),
+            TypedPrefixUnaryOperator::Dereference => (
+                TypedPrefixUnaryOp {
+                    operator: u.operator,
+                    target,
+                },
+                match ty {
                     None => None,
-                    Some(TypedType::Value(TypedValueType::Reference(t))) => Some(*t),
-                    Some(TypedType::Value(TypedValueType::Pointer(t))) => Some(*t),
+                    Some(TypedType::Value(TypedValueType::Reference(t)))
+                    | Some(TypedType::Value(TypedValueType::Pointer(t))) => Some(*t),
                     Some(_) => None,
                 },
-                target,
-            },
+            ),
         })
     }
 
     pub fn typed_postfix_unary_op(
         &mut self,
         u: TypedPostfixUnaryOp,
-    ) -> Result<TypedPostfixUnaryOp> {
+    ) -> Result<(TypedPostfixUnaryOp, Option<TypedType>)> {
         let target = Box::new(self.expr(*u.target, None)?);
-        Ok(TypedPostfixUnaryOp {
-            operator: u.operator,
-            type_: target.type_(),
-            target,
-        })
+        let ty = target.ty.clone();
+        Ok((
+            TypedPostfixUnaryOp {
+                operator: u.operator,
+                target,
+            },
+            ty,
+        ))
     }
 
-    pub fn typed_binop(&mut self, b: TypedBinOp) -> Result<TypedBinOp> {
+    pub fn typed_binop(&mut self, b: TypedBinOp) -> Result<(TypedBinOp, Option<TypedType>)> {
         let left = self.expr(*b.left, None)?;
         let right = self.expr(*b.right, None)?;
         let (left, right) = match (left, right) {
             (
-                TypedExprKind::Literal(TypedLiteralKind::Integer(left_value), left_type),
-                TypedExprKind::Literal(TypedLiteralKind::Integer(right_value), right_type),
+                TypedExpr {
+                    kind: TypedExprKind::Literal(TypedLiteralKind::Integer(left_value)),
+                    ty: lty,
+                },
+                TypedExpr {
+                    kind: TypedExprKind::Literal(TypedLiteralKind::Integer(right_value)),
+                    ty: rty,
+                },
             ) => (
-                TypedExprKind::Literal(TypedLiteralKind::Integer(left_value), left_type),
-                TypedExprKind::Literal(TypedLiteralKind::Integer(right_value), right_type),
+                TypedExpr {
+                    kind: TypedExprKind::Literal(TypedLiteralKind::Integer(left_value)),
+                    ty: lty,
+                },
+                TypedExpr {
+                    kind: TypedExprKind::Literal(TypedLiteralKind::Integer(right_value)),
+                    ty: rty,
+                },
             ),
-            (left, TypedExprKind::Literal(TypedLiteralKind::Integer(value), type_)) => {
-                let left_type = left.type_();
+            (
+                left,
+                TypedExpr {
+                    kind: TypedExprKind::Literal(TypedLiteralKind::Integer(value)),
+                    ty: type_,
+                },
+            ) => {
+                let left_type = left.ty.clone();
                 let is_integer = match &left_type {
                     None => false,
                     Some(t) => t.is_integer(),
@@ -747,113 +835,140 @@ impl<'s> TypeResolver<'s> {
                 if is_integer {
                     (
                         left,
-                        TypedExprKind::Literal(TypedLiteralKind::Integer(value), left_type),
+                        TypedExpr::new(
+                            TypedExprKind::Literal(TypedLiteralKind::Integer(value)),
+                            left_type,
+                        ),
                     )
                 } else {
                     (
                         left,
-                        TypedExprKind::Literal(TypedLiteralKind::Integer(value), type_),
+                        TypedExpr::new(
+                            TypedExprKind::Literal(TypedLiteralKind::Integer(value)),
+                            type_,
+                        ),
                     )
                 }
             }
             (left, right) => (left, right),
         };
         let type_ = self.context.resolve_binop_type(
-            left.type_().unwrap(),
+            left.ty.clone().unwrap(),
             b.operator.clone(),
-            right.type_().unwrap(),
+            right.ty.clone().unwrap(),
         )?;
-        Ok(TypedBinOp {
-            left: Box::new(left),
-            operator: b.operator,
-            right: Box::new(right),
-            type_: Some(type_),
-        })
+        Ok((
+            TypedBinOp {
+                left: Box::new(left),
+                operator: b.operator,
+                right: Box::new(right),
+            },
+            Some(type_),
+        ))
     }
 
-    pub fn typed_instance_member(&mut self, m: TypedInstanceMember) -> Result<TypedInstanceMember> {
+    pub fn typed_instance_member(
+        &mut self,
+        m: TypedInstanceMember,
+    ) -> Result<(TypedInstanceMember, Option<TypedType>)> {
         let target = self.expr(*m.target, None)?;
         let type_ = self
             .context
-            .resolve_member_type(target.type_().unwrap(), &m.name)?;
-        Ok(TypedInstanceMember {
-            target: Box::new(target),
-            name: m.name,
-            is_safe: m.is_safe,
-            type_: Some(type_),
-        })
+            .resolve_member_type(target.ty.clone().unwrap(), &m.name)?;
+        Ok((
+            TypedInstanceMember {
+                target: Box::new(target),
+                name: m.name,
+                is_safe: m.is_safe,
+            },
+            Some(type_),
+        ))
     }
 
-    pub fn typed_subscript(&mut self, s: TypedSubscript) -> Result<TypedSubscript> {
+    pub fn typed_subscript(
+        &mut self,
+        s: TypedSubscript,
+        ty: Option<TypedType>,
+    ) -> Result<(TypedSubscript, Option<TypedType>)> {
         let target = self.expr(*s.target, None)?;
-        let target_type = target.type_().unwrap();
+        let target_type = target.ty.clone().unwrap();
         if let TypedType::Value(v) = target_type {
             match v {
                 TypedValueType::Value(v) => {
                     if v.is_string() {
-                        return Ok(TypedSubscript {
+                        return Ok((
+                            TypedSubscript {
+                                target: Box::new(target),
+                                indexes: s
+                                    .indexes
+                                    .into_iter()
+                                    .map(|i| self.expr(i, None))
+                                    .collect::<Result<_>>()?,
+                            },
+                            Some(TypedType::uint8()),
+                        ));
+                    }
+                }
+                TypedValueType::Array(et, _) => {
+                    return Ok((
+                        TypedSubscript {
                             target: Box::new(target),
                             indexes: s
                                 .indexes
                                 .into_iter()
                                 .map(|i| self.expr(i, None))
                                 .collect::<Result<_>>()?,
-                            type_: Some(TypedType::uint8()),
-                        });
-                    }
-                }
-                TypedValueType::Array(et, _) => {
-                    return Ok(TypedSubscript {
-                        target: Box::new(target),
-                        indexes: s
-                            .indexes
-                            .into_iter()
-                            .map(|i| self.expr(i, None))
-                            .collect::<Result<_>>()?,
-                        type_: Some(*et),
-                    })
+                        },
+                        Some(*et),
+                    ))
                 }
                 TypedValueType::Tuple(_) => {
                     todo!()
                 }
                 TypedValueType::Pointer(p) => {
-                    return Ok(TypedSubscript {
-                        target: Box::new(target),
-                        indexes: s
-                            .indexes
-                            .into_iter()
-                            .map(|i| self.expr(i, None))
-                            .collect::<Result<_>>()?,
-                        type_: Some(*p),
-                    })
-                }
-                TypedValueType::Reference(r) => {
-                    if r.is_string() {
-                        return Ok(TypedSubscript {
+                    return Ok((
+                        TypedSubscript {
                             target: Box::new(target),
                             indexes: s
                                 .indexes
                                 .into_iter()
                                 .map(|i| self.expr(i, None))
                                 .collect::<Result<_>>()?,
-                            type_: Some(TypedType::uint8()),
-                        });
+                        },
+                        Some(*p),
+                    ))
+                }
+                TypedValueType::Reference(r) => {
+                    if r.is_string() {
+                        return Ok((
+                            TypedSubscript {
+                                target: Box::new(target),
+                                indexes: s
+                                    .indexes
+                                    .into_iter()
+                                    .map(|i| self.expr(i, None))
+                                    .collect::<Result<_>>()?,
+                            },
+                            Some(TypedType::uint8()),
+                        ));
                     }
                 }
             }
         }
-        Ok(TypedSubscript {
-            target: Box::new(target),
-            indexes: s
-                .indexes
-                .into_iter()
-                .map(|i| self.expr(i, None))
-                .collect::<Result<_>>()?,
-            type_: s.type_,
-        })
+        Ok((
+            TypedSubscript {
+                target: Box::new(target),
+                indexes: s
+                    .indexes
+                    .into_iter()
+                    .map(|i| self.expr(i, None))
+                    .collect::<Result<_>>()?,
+            },
+            ty,
+        ))
     }
 
-    pub fn typed_array(&mut self, a: TypedArray) -> Result<TypedArray> {
+    pub fn typed_array(&mut self, a: TypedArray) -> Result<(TypedArray, Option<TypedType>)> {
         let elements = a
             .elements
             .into_iter()
@@ -861,30 +976,28 @@ impl<'s> TypeResolver<'s> {
             .collect::<Result<Vec<_>>>()?;
         let len = elements.len();
         Ok(if let Some(e) = elements.get(0) {
-            let e_type = e.type_();
-            if elements.iter().all(|e| e.type_() == e_type) {
-                TypedArray {
-                    elements,
-                    type_: e_type
-                        .map(|e| TypedType::Value(TypedValueType::Array(Box::new(e), len))),
-                }
+            if elements.iter().all(|e| e.ty == e.ty) {
+                let ty =
+                    e.ty.clone()
+                        .map(|e| TypedType::Value(TypedValueType::Array(Box::new(e), len)));
+                (TypedArray { elements }, ty)
             } else {
                 return Err(ResolverError::from("Array elements must be same type."));
             }
         } else {
             // empty case
-            TypedArray {
-                elements,
-                type_: None,
-            }
+            (TypedArray { elements }, None)
         })
     }
 
-    pub fn typed_call(&mut self, c: TypedCall) -> Result<TypedCall> {
+    pub fn typed_call(&mut self, c: TypedCall) -> Result<(TypedCall, Option<TypedType>)> {
         let (target, args) = match self.expr((*c.target).clone(), None) {
-            Ok(TypedExprKind::Name(n)) => {
-                let target = TypedExprKind::Name(n);
-                if let TypedType::Function(f) = target.type_().unwrap() {
+            Ok(TypedExpr {
+                kind: TypedExprKind::Name(n),
+                ty,
+            }) => {
+                let target = TypedExpr::new(TypedExprKind::Name(n), ty);
+                if let Some(TypedType::Function(f)) = target.ty.clone() {
                     if c.args.len() != f.arguments.len() {
                         Err(ResolverError::from(format!(
                             "{:?} required {} arguments, but {} were given.",
@@ -902,7 +1015,7 @@ impl<'s> TypeResolver<'s> {
                                 .collect::<Result<Vec<_>>>()?,
                         ))
                     }
-                } else if let TypedType::Type(t) = target.type_().unwrap() {
+                } else if let Some(TypedType::Type(t)) = &target.ty {
                     let rs = self
                         .context
                         .arena
@@ -943,7 +1056,7 @@ impl<'s> TypeResolver<'s> {
                         .iter()
                         .map(|a| TypedArgType {
                             label: a.label.clone().unwrap_or_else(|| "_".to_string()),
-                            typ: a.arg.type_().unwrap(),
+                            typ: a.arg.ty.clone().unwrap(),
                         })
                         .collect(),
                     return_type: TypedType::noting(),
@@ -952,17 +1065,19 @@ impl<'s> TypeResolver<'s> {
                 Ok((target, args))
             }
         }?;
-        let c_type = match target.type_().unwrap() {
+        let c_type = match target.ty.clone().unwrap() {
             TypedType::Value(v) => Err(ResolverError::from(format!("{:?} is not callable.", v))),
             TypedType::Type(t) => Ok(*t),
             TypedType::Self_ => Err(ResolverError::from("Self is not callable.")),
             TypedType::Function(f) => Ok(f.return_type),
         }?;
-        Ok(TypedCall {
-            target: Box::new(target),
-            args,
-            type_: Some(c_type),
-        })
+        Ok((
+            TypedCall {
+                target: Box::new(target),
+                args,
+            },
+            Some(c_type),
+        ))
     }
 
     pub fn typed_call_arg(
@@ -977,7 +1092,7 @@ impl<'s> TypeResolver<'s> {
         })
     }
 
-    pub fn typed_if(&mut self, i: TypedIf) -> Result<TypedIf> {
+    pub fn typed_if(&mut self, i: TypedIf) -> Result<(TypedIf, Option<TypedType>)> {
         let condition = Box::new(self.expr(*i.condition, None)?);
         let body = self.typed_block(i.body)?;
         let else_body = match i.else_body {
@@ -989,28 +1104,35 @@ impl<'s> TypeResolver<'s> {
         } else {
             TypedType::noting()
         };
-        Ok(TypedIf {
-            condition,
-            body,
-            else_body,
-            type_: Some(type_),
-        })
+        Ok((
+            TypedIf {
+                condition,
+                body,
+                else_body,
+            },
+            Some(type_),
+        ))
     }
 
-    pub fn typed_return(&mut self, r: TypedReturn) -> Result<TypedReturn> {
+    pub fn typed_return(&mut self, r: TypedReturn) -> Result<(TypedReturn, Option<TypedType>)> {
         let value = match r.value {
             Some(v) => Some(Box::new(self.expr(*v, None)?)),
             None => None,
         };
-        Ok(TypedReturn { value })
+        Ok((TypedReturn { value }, Some(TypedType::noting())))
     }
 
-    pub fn typed_type_cast(&mut self, t: TypedTypeCast) -> Result<TypedTypeCast> {
-        Ok(TypedTypeCast {
+    pub fn typed_type_cast(
+        &mut self,
+        t: TypedTypeCast,
+    ) -> Result<(TypedTypeCast, Option<TypedType>)> {
+        let kind = TypedTypeCast {
             target: Box::new(self.expr(*t.target, None)?),
             is_safe: t.is_safe,
-            type_: Some(self.context.full_type_name(&t.type_.unwrap())?),
-        })
+            type_: self.context.full_type_name(&t.type_)?,
+        };
+        let ty = kind.type_.clone();
+        Ok((kind, Some(ty)))
     }
 
     pub fn stmt(&mut self, s: TypedStmt) -> Result<TypedStmt> {
@@ -1076,7 +1198,7 @@ impl<'s> TypeResolver<'s> {
     pub fn typed_while_loop_stmt(&mut self, w: TypedWhileLoopStmt) -> Result<TypedWhileLoopStmt> {
         let TypedWhileLoopStmt { condition, block } = w;
         let condition = self.expr(condition, None)?;
-        if !condition.type_().unwrap().is_boolean() {
+        if !condition.ty.clone().unwrap().is_boolean() {
             return Err(ResolverError::from("while loop condition must be boolean"));
         };
         Ok(TypedWhileLoopStmt {

@@ -26,7 +26,7 @@ pub fn app(name: &str) -> Command {
         .arg(
             long("emit")
                 .takes_value(true)
-                .possible_values(&["llvm-ir", "object"]),
+                .possible_values(&["llvm-ir", "object", "asm"]),
         )
 }
 

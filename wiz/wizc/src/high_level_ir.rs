@@ -1,16 +1,17 @@
 use crate::high_level_ir::declaration_id::DeclarationId;
 use crate::high_level_ir::node_id::TypedModuleId;
 use crate::utils::path_string_to_page_name;
-use crate::ResolverArena;
+use crate::{ResolverArena, TypeResolver};
 use std::collections::HashMap;
+use std::error::Error;
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedDeclKind, TypedExtension, TypedFun,
     TypedFunBody, TypedMemberFunction, TypedProtocol, TypedStoredProperty, TypedStruct, TypedVar,
 };
 use wiz_hir::typed_expr::{
-    TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExprKind, TypedIf,
-    TypedInstanceMember, TypedLambda, TypedLiteralKind, TypedName, TypedPostfixUnaryOp,
+    TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedExprKind,
+    TypedIf, TypedInstanceMember, TypedLambda, TypedLiteralKind, TypedName, TypedPostfixUnaryOp,
     TypedPostfixUnaryOperator, TypedPrefixUnaryOp, TypedPrefixUnaryOperator, TypedReturn,
     TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
@@ -63,7 +64,7 @@ pub fn ast2hlir(
     module_id: TypedModuleId,
 ) -> TypedSourceSet {
     let mut converter = AstLowering::new(session, arena);
-    converter.source_set(s, module_id)
+    converter.lowing(s, module_id).unwrap()
 }
 
 impl<'a> AstLowering<'a> {
@@ -93,7 +94,24 @@ impl<'a> AstLowering<'a> {
         result
     }
 
-    pub fn source_set(&mut self, s: SourceSet, module_id: TypedModuleId) -> TypedSourceSet {
+    pub fn lowing(
+        &mut self,
+        s: SourceSet,
+        module_id: TypedModuleId,
+    ) -> Result<TypedSourceSet, Box<dyn Error>> {
+        let ss = self.source_set(s, module_id);
+
+        let mut resolver = TypeResolver::new(self.session, self.arena);
+        resolver.global_use(&["core", "builtin", "*"]);
+        resolver.global_use(&["std", "builtin", "*"]);
+
+        resolver.preload_source_set(&ss)?;
+
+        let ss = resolver.source_set(ss)?;
+        Ok(ss)
+    }
+
+    fn source_set(&mut self, s: SourceSet, module_id: TypedModuleId) -> TypedSourceSet {
         match s {
             SourceSet::File(f) => TypedSourceSet::File(self.file(f)),
             SourceSet::Dir { name, items } => {
@@ -108,7 +126,7 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    pub fn file(&mut self, f: WizFile) -> TypedFile {
+    fn file(&mut self, f: WizFile) -> TypedFile {
         let WizFile { name, syntax } = f;
 
         let name = path_string_to_page_name(&name);
@@ -568,24 +586,32 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    pub fn expr(&self, e: Expr) -> TypedExprKind {
+    pub fn expr(&self, e: Expr) -> TypedExpr {
         match e {
-            Expr::Name(n) => TypedExprKind::Name(self.name_syntax(n)),
-            Expr::Literal(literal) => TypedExprKind::Literal(self.literal_syntax(literal), None),
-            Expr::BinOp(b) => TypedExprKind::BinOp(self.binary_operation_syntax(b)),
-            Expr::UnaryOp(u) => TypedExprKind::UnaryOp(self.unary_operation_syntax(u)),
-            Expr::Subscript(s) => TypedExprKind::Subscript(self.subscript_syntax(s)),
-            Expr::Member(m) => TypedExprKind::Member(self.member_syntax(m)),
-            Expr::Array(a) => TypedExprKind::Array(self.array_syntax(a)),
-            Expr::Tuple { .. } => TypedExprKind::Tuple,
-            Expr::Dict { .. } => TypedExprKind::Dict,
-            Expr::StringBuilder { .. } => TypedExprKind::StringBuilder,
-            Expr::Call(c) => TypedExprKind::Call(self.call_syntax(c)),
-            Expr::If(i) => TypedExprKind::If(self.if_syntax(i)),
-            Expr::When { .. } => TypedExprKind::When,
-            Expr::Lambda(l) => TypedExprKind::Lambda(self.lambda_syntax(l)),
-            Expr::Return(r) => TypedExprKind::Return(self.return_syntax(r)),
-            Expr::TypeCast(t) => TypedExprKind::TypeCast(self.type_cast(t)),
+            Expr::Name(n) => TypedExpr::new(TypedExprKind::Name(self.name_syntax(n)), None),
+            Expr::Literal(literal) => {
+                TypedExpr::new(TypedExprKind::Literal(self.literal_syntax(literal)), None)
+            }
+            Expr::BinOp(b) => {
+                TypedExpr::new(TypedExprKind::BinOp(self.binary_operation_syntax(b)), None)
+            }
+            Expr::UnaryOp(u) => {
+                TypedExpr::new(TypedExprKind::UnaryOp(self.unary_operation_syntax(u)), None)
+            }
+            Expr::Subscript(s) => {
+                TypedExpr::new(TypedExprKind::Subscript(self.subscript_syntax(s)), None)
+            }
+            Expr::Member(m) => TypedExpr::new(TypedExprKind::Member(self.member_syntax(m)), None),
+            Expr::Array(a) => TypedExpr::new(TypedExprKind::Array(self.array_syntax(a)), None),
+            Expr::Tuple { .. } => TypedExpr::new(TypedExprKind::Tuple, None),
+            Expr::Dict { .. } => TypedExpr::new(TypedExprKind::Dict, None),
+            Expr::StringBuilder { .. } => TypedExpr::new(TypedExprKind::StringBuilder, None),
+            Expr::Call(c) => TypedExpr::new(TypedExprKind::Call(self.call_syntax(c)), None),
+            Expr::If(i) => TypedExpr::new(TypedExprKind::If(self.if_syntax(i)), None),
+            Expr::When { .. } => TypedExpr::new(TypedExprKind::When, None),
+            Expr::Lambda(l) => TypedExpr::new(TypedExprKind::Lambda(self.lambda_syntax(l)), None),
+            Expr::Return(r) => TypedExpr::new(TypedExprKind::Return(self.return_syntax(r)), None),
+            Expr::TypeCast(t) => TypedExpr::new(TypedExprKind::TypeCast(self.type_cast(t)), None),
             Expr::Parenthesized(p) => self.expr(*p.expr),
         }
     }
@@ -622,7 +648,6 @@ impl<'a> AstLowering<'a> {
                 )),
             },
             name: name.token(),
-            type_: None,
             type_arguments: type_arguments.map(|t| {
                 t.elements
                     .into_iter()
@@ -657,7 +682,6 @@ impl<'a> AstLowering<'a> {
                 _ => TypedBinaryOperator::InfixFunctionCall(kind.token()),
             },
             right,
-            type_: None,
         }
     }
 
@@ -688,7 +712,6 @@ impl<'a> AstLowering<'a> {
                 "!" => TypedPrefixUnaryOperator::Not,
                 _ => panic!(),
             },
-            type_: None,
         }
     }
 
@@ -704,7 +727,6 @@ impl<'a> AstLowering<'a> {
                 "!!" => TypedPostfixUnaryOperator::Unwrap,
                 _ => panic!(),
             },
-            type_: None,
         }
     }
 
@@ -715,7 +737,6 @@ impl<'a> AstLowering<'a> {
                 .into_iter()
                 .map(|e| self.expr(e.element))
                 .collect(),
-            type_: None,
         }
     }
 
@@ -727,11 +748,7 @@ impl<'a> AstLowering<'a> {
             .into_iter()
             .map(|i| self.expr(i.element))
             .collect();
-        TypedSubscript {
-            target,
-            indexes,
-            type_: None,
-        }
+        TypedSubscript { target, indexes }
     }
 
     pub fn member_syntax(&self, m: MemberSyntax) -> TypedInstanceMember {
@@ -745,7 +762,6 @@ impl<'a> AstLowering<'a> {
             target: Box::new(target),
             name: name.token(),
             is_safe: navigation_operator.token().ends_with('?'),
-            type_: None,
         }
     }
 
@@ -770,7 +786,10 @@ impl<'a> AstLowering<'a> {
                 args.len(),
                 TypedCallArg {
                     label: None,
-                    arg: Box::new(TypedExprKind::Lambda(self.lambda_syntax(lambda))),
+                    arg: Box::new(TypedExpr::new(
+                        TypedExprKind::Lambda(self.lambda_syntax(lambda)),
+                        None,
+                    )),
                     is_vararg: false,
                 },
             )
@@ -778,7 +797,6 @@ impl<'a> AstLowering<'a> {
         TypedCall {
             target: Box::new(self.expr(*target)),
             args,
-            type_: None,
         }
     }
 
@@ -794,7 +812,6 @@ impl<'a> AstLowering<'a> {
             condition: Box::new(self.expr(*condition)),
             body: block,
             else_body: else_body.map(|b| self.block(b.body)),
-            type_: None,
         }
     }
 
@@ -820,7 +837,7 @@ impl<'a> AstLowering<'a> {
         TypedTypeCast {
             target: Box::new(self.expr(*t.target)),
             is_safe: t.operator.token().ends_with('?'),
-            type_: Some(self.type_(t.type_)),
+            type_: self.type_(t.type_),
         }
     }
 

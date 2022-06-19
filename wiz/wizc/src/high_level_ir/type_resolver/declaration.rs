@@ -1,5 +1,5 @@
 use crate::high_level_ir::declaration_id::DeclarationId;
-use crate::high_level_ir::type_resolver::context::ResolverStruct;
+use crate::high_level_ir::type_resolver::context::{ResolverFunction, ResolverStruct};
 use std::collections::{HashMap, HashSet};
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_type::TypedType;
@@ -59,7 +59,15 @@ impl DeclarationItem {
     }
 
     pub fn is_value(&self) -> bool {
-        matches!(self.kind, DeclarationItemKind::Value(_))
+        self.is_variable() || self.is_function()
+    }
+
+    pub fn is_variable(&self) -> bool {
+        matches!(self.kind, DeclarationItemKind::Variable(_))
+    }
+
+    pub fn is_function(&self) -> bool {
+        matches!(self.kind, DeclarationItemKind::Function(..))
     }
 }
 
@@ -67,5 +75,6 @@ impl DeclarationItem {
 pub enum DeclarationItemKind {
     Namespace,
     Type(ResolverStruct),
-    Value(TypedType),
+    Variable(TypedType),
+    Function(ResolverFunction),
 }

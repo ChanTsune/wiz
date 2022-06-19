@@ -1,8 +1,7 @@
 use crate::high_level_ir::type_resolver::arena::ResolverArena;
-use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::AstLowering;
 use crate::middle_level_ir::HLIR2MLIR;
-use wiz_hir::typed_file::TypedSourceSet;
+use crate::TypedModuleId;
 use wiz_mir::expr::{
     MLCall, MLCallArg, MLExpr, MLLiteral, MLLiteralKind, MLName, MLUnaryOp, MLUnaryOpKind,
 };
@@ -11,6 +10,7 @@ use wiz_mir::ml_file::MLFile;
 use wiz_mir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
 use wiz_mir::statement::{MLReturn, MLStmt};
 use wiz_session::Session;
+use wiz_syntax::syntax::file::SourceSet;
 use wiz_syntax_parser::parser::wiz::parse_from_string;
 
 fn check(source: &str, except: MLFile) {
@@ -22,15 +22,13 @@ fn check(source: &str, except: MLFile) {
 
     let mut ast2hlir = AstLowering::new(&mut session, &mut arena);
 
-    let file = ast2hlir.file(ast);
-
-    let mut resolver = TypeResolver::new(&mut session, &mut arena);
-    let _ = resolver.preload_file(&file).unwrap();
-    let hl_file = resolver.file(file).unwrap();
+    let hl_ss = ast2hlir
+        .lowing(SourceSet::File(ast), TypedModuleId::DUMMY)
+        .unwrap();
 
     let mut hlir2mlir = HLIR2MLIR::new(&mut arena);
 
-    let f = hlir2mlir.convert_from_source_set(TypedSourceSet::File(hl_file));
+    let f = hlir2mlir.convert_from_source_set(hl_ss);
 
     assert_eq!(f, except);
 }

@@ -1122,8 +1122,7 @@ impl<'ctx> CodeGen<'ctx> {
         self.module.print_to_file(path)
     }
 
-    /// Write Object file to given path.
-    pub fn write_as_object<P: AsRef<Path>>(&self, path: P) -> Result<(), LLVMString> {
+    fn write_as<P: AsRef<Path>>(&self, file_type: FileType, path: P) -> Result<(), LLVMString> {
         let triple = self.module.get_triple();
         let target_machine = self
             .target
@@ -1136,24 +1135,17 @@ impl<'ctx> CodeGen<'ctx> {
                 CodeModel::Default,
             )
             .unwrap();
-        target_machine.write_to_file(&self.module, FileType::Object, path.as_ref())
+        target_machine.write_to_file(&self.module, file_type, path.as_ref())
+    }
+
+    /// Write Object file to given path.
+    pub fn write_as_object<P: AsRef<Path>>(&self, path: P) -> Result<(), LLVMString> {
+        self.write_as(FileType::Object, path.as_ref())
     }
 
     /// Write Assembly to given path.
     pub fn write_as_assembly<P: AsRef<Path>>(&self, path: P) -> Result<(), LLVMString> {
-        let triple = self.module.get_triple();
-        let target_machine = self
-            .target
-            .create_target_machine(
-                &triple,
-                "generic",
-                "",
-                OptimizationLevel::Default,
-                RelocMode::Default,
-                CodeModel::Default,
-            )
-            .unwrap();
-        target_machine.write_to_file(&self.module, FileType::Assembly, path.as_ref())
+        self.write_as(FileType::Assembly, path.as_ref())
     }
 
     fn ml_type_to_type(&self, ml_type: MLValueType) -> AnyTypeEnum<'ctx> {

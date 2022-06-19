@@ -12,9 +12,9 @@ use wiz_hir::typed_decl::{
     TypedMemberFunction, TypedProtocol, TypedStruct, TypedVar,
 };
 use wiz_hir::typed_expr::{
-    TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExprKind, TypedIf,
-    TypedInstanceMember, TypedLiteralKind, TypedName, TypedPrefixUnaryOperator, TypedReturn,
-    TypedSubscript, TypedTypeCast, TypedUnaryOp,
+    TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedExprKind,
+    TypedIf, TypedInstanceMember, TypedLiteralKind, TypedName, TypedPrefixUnaryOperator,
+    TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
 use wiz_hir::typed_file::{TypedFile, TypedSourceSet};
 use wiz_hir::typed_stmt::{
@@ -106,7 +106,9 @@ impl<'arena> HLIR2MLIR<'arena> {
     }
 
     pub fn convert_from_source_set(&mut self, s: TypedSourceSet) -> MLFile {
-        self.source_set(s).unwrap()
+        let name = s.name().to_string();
+        self.source_set(s).unwrap();
+        self.module.to_mlir_file(name)
     }
 
     fn type_(&self, t: TypedType) -> MLType {
@@ -179,26 +181,13 @@ impl<'arena> HLIR2MLIR<'arena> {
         }
     }
 
-    fn source_set(&mut self, s: TypedSourceSet) -> Result<MLFile> {
-        let name = match s {
-            TypedSourceSet::File(f) => {
-                let name = f.name.clone();
-                self.file(f)?;
-                name
+    fn source_set(&mut self, s: TypedSourceSet) -> Result<()> {
+        match s {
+            TypedSourceSet::File(f) => self.file(f),
+            TypedSourceSet::Dir { items, .. } => {
+                items.into_iter().try_for_each(|i| self.source_set(i))
             }
-            TypedSourceSet::Dir { name, mut items } => {
-                items.sort();
-                let _: Vec<_> = items
-                    .into_iter()
-                    .map(|i| self.source_set(i))
-                    .collect::<Result<Vec<_>>>()?
-                    .into_iter()
-                    .flat_map(|i| i.body)
-                    .collect();
-                name
-            }
-        };
-        Ok(self.module.to_mlir_file(name))
+        }
     }
 
     fn file(&mut self, f: TypedFile) -> Result<()> {
@@ -236,18 +225,20 @@ impl<'arena> HLIR2MLIR<'arena> {
             },
             TypedAssignmentStmt::AssignmentAndOperation(a) => {
                 let target = self.expr(a.target.clone());
-                let value = TypedExprKind::BinOp(TypedBinOp {
-                    left: Box::new(a.target.clone()),
-                    operator: match a.operator {
-                        TypedAssignmentAndOperator::Add => TypedBinaryOperator::Add,
-                        TypedAssignmentAndOperator::Sub => TypedBinaryOperator::Sub,
-                        TypedAssignmentAndOperator::Mul => TypedBinaryOperator::Mul,
-                        TypedAssignmentAndOperator::Div => TypedBinaryOperator::Div,
-                        TypedAssignmentAndOperator::Mod => TypedBinaryOperator::Mod,
-                    },
-                    right: Box::new(a.value),
-                    type_: a.target.type_(),
-                });
+                let value = TypedExpr::new(
+                    TypedExprKind::BinOp(TypedBinOp {
+                        left: Box::new(a.target.clone()),
+                        operator: match a.operator {
+                            TypedAssignmentAndOperator::Add => TypedBinaryOperator::Add,
+                            TypedAssignmentAndOperator::Sub => TypedBinaryOperator::Sub,
+                            TypedAssignmentAndOperator::Mul => TypedBinaryOperator::Mul,
+                            TypedAssignmentAndOperator::Div => TypedBinaryOperator::Div,
+                            TypedAssignmentAndOperator::Mod => TypedBinaryOperator::Mod,
+                        },
+                        right: Box::new(a.value),
+                    }),
+                    a.target.ty,
+                );
                 MLAssignmentStmt {
                     target,
                     value: self.expr(value),
@@ -455,20 +446,21 @@ impl<'arena> HLIR2MLIR<'arena> {
         vec![]
     }
 
-    fn expr(&mut self, e: TypedExprKind) -> MLExpr {
-        match e {
-            TypedExprKind::Name(name) => self.name(name),
-            TypedExprKind::Literal(l, t) => MLExpr::Literal(self.literal(l, t)),
-            TypedExprKind::BinOp(b) => MLExpr::PrimitiveBinOp(self.binop(b)),
-            TypedExprKind::UnaryOp(u) => MLExpr::PrimitiveUnaryOp(self.unary_op(u)),
-            TypedExprKind::Subscript(s) => self.subscript(s),
-            TypedExprKind::Member(m) => self.member(m),
-            TypedExprKind::Array(a) => MLExpr::Array(self.array(a)),
+    fn expr(&mut self, e: TypedExpr) -> MLExpr {
+        let TypedExpr { kind, ty } = e;
+        match kind {
+            TypedExprKind::Name(name) => self.name(name, ty),
+            TypedExprKind::Literal(l) => MLExpr::Literal(self.literal(l, ty)),
+            TypedExprKind::BinOp(b) => MLExpr::PrimitiveBinOp(self.binop(b, ty)),
+            TypedExprKind::UnaryOp(u) => MLExpr::PrimitiveUnaryOp(self.unary_op(u, ty)),
+            TypedExprKind::Subscript(s) => self.subscript(s, ty),
+            TypedExprKind::Member(m) => self.member(m, ty),
+            TypedExprKind::Array(a) => MLExpr::Array(self.array(a, ty)),
             TypedExprKind::Tuple => todo!(),
             TypedExprKind::Dict => todo!(),
             TypedExprKind::StringBuilder => todo!(),
-            TypedExprKind::Call(c) => self.call(c),
-            TypedExprKind::If(i) => MLExpr::If(self.if_expr(i)),
+            TypedExprKind::Call(c) => self.call(c, ty),
+            TypedExprKind::If(i) => MLExpr::If(self.if_expr(i, ty)),
             TypedExprKind::When => todo!(),
             TypedExprKind::Lambda(l) => todo!(),
             TypedExprKind::Return(r) => MLExpr::Return(self.return_expr(r)),
@@ -476,8 +468,8 @@ impl<'arena> HLIR2MLIR<'arena> {
         }
     }
 
-    fn name(&self, n: TypedName) -> MLExpr {
-        if let TypedType::Type(t) = n.type_.as_ref().unwrap() {
+    fn name(&self, n: TypedName, ty: Option<TypedType>) -> MLExpr {
+        if let TypedType::Type(t) = ty.as_ref().unwrap() {
             let package = t.package().into_resolved();
             let name = t.name();
             let has_no_mangle = if let Some(i) = self.arena.get(&package.names, &name) {
@@ -529,7 +521,7 @@ impl<'arena> HLIR2MLIR<'arena> {
                 .as_str()
             };
             if !has_no_mangle {
-                if let Some(TypedType::Function(fun_type)) = &n.type_ {
+                if let Some(TypedType::Function(fun_type)) = &ty {
                     if !fun_type.arguments.is_empty() {
                         mangled_name += "##";
                         mangled_name += &*self.fun_arg_label_type_name_mangling(
@@ -548,7 +540,7 @@ impl<'arena> HLIR2MLIR<'arena> {
             }
             MLExpr::Name(MLName {
                 name: mangled_name,
-                type_: self.type_(n.type_.unwrap()),
+                type_: self.type_(ty.unwrap()),
             })
         }
     }
@@ -579,12 +571,11 @@ impl<'arena> HLIR2MLIR<'arena> {
         MLLiteral { kind, type_ }
     }
 
-    fn binop(&mut self, b: TypedBinOp) -> MLBinOp {
+    fn binop(&mut self, b: TypedBinOp, ty: Option<TypedType>) -> MLBinOp {
         let TypedBinOp {
             left,
             operator: kind,
             right,
-            type_,
         } = b;
         MLBinOp {
             left: Box::new(self.expr(*left)),
@@ -605,11 +596,11 @@ impl<'arena> HLIR2MLIR<'arena> {
                 }
             },
             right: Box::new(self.expr(*right)),
-            type_: self.type_(type_.unwrap()).into_value_type(),
+            type_: self.type_(ty.unwrap()).into_value_type(),
         }
     }
 
-    fn unary_op(&mut self, u: TypedUnaryOp) -> MLUnaryOp {
+    fn unary_op(&mut self, u: TypedUnaryOp, ty: Option<TypedType>) -> MLUnaryOp {
         match u {
             TypedUnaryOp::Prefix(p) => {
                 let target = self.expr(*p.target);
@@ -621,7 +612,7 @@ impl<'arena> HLIR2MLIR<'arena> {
                         TypedPrefixUnaryOperator::Reference => MLUnaryOpKind::Ref,
                         TypedPrefixUnaryOperator::Not => MLUnaryOpKind::Not,
                     },
-                    type_: self.type_(p.type_.unwrap()).into_value_type(),
+                    type_: self.type_(ty.unwrap()).into_value_type(),
                     target: Box::new(target),
                 }
             }
@@ -631,8 +622,8 @@ impl<'arena> HLIR2MLIR<'arena> {
         }
     }
 
-    fn subscript(&mut self, s: TypedSubscript) -> MLExpr {
-        let t = s.target.type_().unwrap();
+    fn subscript(&mut self, s: TypedSubscript, ty: Option<TypedType>) -> MLExpr {
+        let t = s.target.ty.clone().unwrap();
         if t.is_pointer_type() && s.indexes.len() == 1 {
             match t {
                 TypedType::Value(v) => match v {
@@ -646,7 +637,7 @@ impl<'arena> HLIR2MLIR<'arena> {
                                     .into_value_type(),
                             })
                         } else {
-                            self.subscript_for_user_defined(s)
+                            self.subscript_for_user_defined(s, ty)
                         }
                     }
                     TypedValueType::Array(_, _) => {
@@ -684,11 +675,11 @@ impl<'arena> HLIR2MLIR<'arena> {
                 },
             })
         } else {
-            self.subscript_for_user_defined(s)
+            self.subscript_for_user_defined(s, ty)
         }
     }
 
-    fn subscript_for_user_defined(&mut self, s: TypedSubscript) -> MLExpr {
+    fn subscript_for_user_defined(&mut self, s: TypedSubscript, ty: Option<TypedType>) -> MLExpr {
         let target = self.expr(*s.target);
         match target {
             MLExpr::Name(target) => MLExpr::Call(MLCall {
@@ -698,21 +689,20 @@ impl<'arena> HLIR2MLIR<'arena> {
                     .into_iter()
                     .map(|i| MLCallArg { arg: self.expr(i) })
                     .collect(),
-                type_: self.type_(s.type_.unwrap()).into_value_type(),
+                type_: self.type_(ty.unwrap()).into_value_type(),
             }),
             a => panic!("{:?}", a),
         }
     }
 
-    fn member(&mut self, m: TypedInstanceMember) -> MLExpr {
+    fn member(&mut self, m: TypedInstanceMember, ty: Option<TypedType>) -> MLExpr {
         let TypedInstanceMember {
             target,
             name,
             is_safe,
-            type_,
         } = m;
         let target = self.expr(*target);
-        let type_ = self.type_(type_.unwrap());
+        let type_ = self.type_(ty.unwrap());
         MLExpr::Member(MLMember {
             target: Box::new(target),
             name,
@@ -720,32 +710,30 @@ impl<'arena> HLIR2MLIR<'arena> {
         })
     }
 
-    fn array(&mut self, a: TypedArray) -> MLArray {
+    fn array(&mut self, a: TypedArray, ty: Option<TypedType>) -> MLArray {
         MLArray {
             elements: a.elements.into_iter().map(|e| self.expr(e)).collect(),
-            type_: self.type_(a.type_.unwrap()).into_value_type(),
+            type_: self.type_(ty.unwrap()).into_value_type(),
         }
     }
 
-    fn call(&mut self, c: TypedCall) -> MLExpr {
-        let TypedCall {
-            target,
-            mut args,
-            type_,
-        } = c;
+    fn call(&mut self, c: TypedCall, ty: Option<TypedType>) -> MLExpr {
+        let TypedCall { target, mut args } = c;
         let target = match *target {
-            TypedExprKind::Member(m) => {
+            TypedExpr {
+                kind: TypedExprKind::Member(m),
+                ty,
+            } => {
                 let TypedInstanceMember {
                     target,
                     name,
                     is_safe,
-                    type_,
                 } = m;
-                match target.type_().unwrap() {
+                match target.ty.clone().unwrap() {
                     TypedType::Self_ => unreachable!(),
                     TypedType::Value(v) => {
                         let target_type = self.value_type(v);
-                        let type_ = type_.unwrap();
+                        let type_ = ty.unwrap();
                         if let TypedType::Function(fun_type) = &type_ {
                             args.insert(
                                 0,
@@ -796,7 +784,7 @@ impl<'arena> HLIR2MLIR<'arena> {
                         TypedType::Self_ => unreachable!(),
                         TypedType::Value(t) => match t {
                             TypedValueType::Value(t) => {
-                                let type_ = self.type_(type_.unwrap());
+                                let type_ = self.type_(ty.unwrap());
                                 MLExpr::Name(MLName {
                                     name: self.package_name_mangling(&t.package, &*t.name)
                                         + "::"
@@ -853,16 +841,16 @@ impl<'arena> HLIR2MLIR<'arena> {
                     arg: self.expr(*a.arg),
                 })
                 .collect(),
-            type_: self.type_(type_.unwrap()).into_value_type(),
+            type_: self.type_(ty.unwrap()).into_value_type(),
         })
     }
 
-    fn if_expr(&mut self, i: TypedIf) -> MLIf {
+    fn if_expr(&mut self, i: TypedIf, ty: Option<TypedType>) -> MLIf {
         MLIf {
             condition: Box::new(self.expr(*i.condition)),
             body: self.block(i.body),
             else_body: i.else_body.map(|b| self.block(b)),
-            type_: self.type_(i.type_.unwrap()).into_value_type(),
+            type_: self.type_(ty.unwrap()).into_value_type(),
         }
     }
 
@@ -875,7 +863,7 @@ impl<'arena> HLIR2MLIR<'arena> {
     fn type_cast(&mut self, t: TypedTypeCast) -> MLTypeCast {
         MLTypeCast {
             target: Box::new(self.expr(*t.target)),
-            type_: self.type_(t.type_.unwrap()).into_value_type(),
+            type_: self.type_(t.type_).into_value_type(),
         }
     }
 

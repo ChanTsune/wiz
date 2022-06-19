@@ -1,7 +1,6 @@
 use crate::high_level_ir::node_id::TypedModuleId;
 use crate::high_level_ir::type_checker::TypeChecker;
 use crate::high_level_ir::type_resolver::arena::ResolverArena;
-use crate::high_level_ir::type_resolver::result::Result;
 use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::wlib::WLib;
 use crate::high_level_ir::{ast2hlir, AstLowering};
@@ -12,7 +11,7 @@ use std::error::Error;
 use std::io::Write;
 use std::iter::FromIterator;
 use std::path::PathBuf;
-use std::{env, fs, result};
+use std::{env, fs};
 use wiz_session::Session;
 use wiz_syntax::syntax::file::SourceSet;
 use wiz_syntax_parser::parser;
@@ -36,7 +35,7 @@ fn get_builtin_lib() -> &'static [&'static str] {
     &["core", "std"]
 }
 
-fn main() -> result::Result<(), Box<dyn Error>> {
+fn main() -> Result<(), Box<dyn Error>> {
     println!("{:?}", env::args());
     let app = wizc_cli::app("wizc");
     let matches = app.get_matches();
@@ -46,7 +45,7 @@ fn main() -> result::Result<(), Box<dyn Error>> {
     session.timer("compile", |s| run_compiler(s, config))
 }
 
-fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box<dyn Error>> {
+fn run_compiler(session: &mut Session, config: Config) -> Result<(), Box<dyn Error>> {
     let output = config.output();
     let out_dir = config.out_dir();
     let paths = config.paths();
@@ -58,39 +57,14 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
 
     let mlir_out_dir = out_dir.join("mlir");
 
-    let id_parse_files = "parse files";
-    session.start(id_parse_files);
-
-    let input_source = if input.is_dir() {
-        read_package_from_path(input, config.name())?
-    } else {
-        SourceSet::File(parse_from_file_path(input)?)
-    };
-
-    let find_paths: Vec<_> = get_find_paths().into_iter().chain(paths).collect();
-
-    let mut lib_paths = vec![];
-
-    for lib_name in get_builtin_lib() {
-        for p in find_paths.iter() {
-            let lib_path = p.join(lib_name);
-            let package_manifest_path = lib_path.join("Package.wiz");
-            if package_manifest_path.exists() {
-                println!("`{}` found at {}", lib_name, lib_path.display());
-                lib_paths.push(lib_path);
-                break;
-            } else {
-                println!("`{}` Not found at {}", lib_name, lib_path.display());
-            }
-        }
-    }
-
-    session.stop(id_parse_files);
-    println!(
-        "{}: {}ms",
-        id_parse_files,
-        session.get_duration(id_parse_files).unwrap().as_millis()
-    );
+    let input_source = session.timer::<Result<_, Box<dyn Error>>, _>("parse files", |_| {
+        let input_source = if input.is_dir() {
+            read_package_from_path(input, config.name())?
+        } else {
+            SourceSet::File(parse_from_file_path(input)?)
+        };
+        Ok(input_source)
+    })?;
 
     let mut arena = ResolverArena::default();
 
@@ -98,6 +72,24 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
         let libraries = config.libraries();
 
         let std_hlir: parser::result::Result<Vec<_>> = if libraries.is_empty() {
+            let find_paths: Vec<_> = get_find_paths().into_iter().chain(paths).collect();
+
+            let mut lib_paths = vec![];
+
+            for lib_name in get_builtin_lib() {
+                for p in find_paths.iter() {
+                    let lib_path = p.join(lib_name);
+                    let package_manifest_path = lib_path.join("Package.wiz");
+                    if package_manifest_path.exists() {
+                        println!("`{}` found at {}", lib_name, lib_path.display());
+                        lib_paths.push(lib_path);
+                        break;
+                    } else {
+                        println!("`{}` Not found at {}", lib_name, lib_path.display());
+                    }
+                }
+            }
+
             let source_sets = lib_paths
                 .iter()
                 .map(|p| read_package_from_path(p, None))
@@ -120,44 +112,9 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
         std_hlir
     })?;
 
-    let hlfiles = session.timer("convert to hlir", |session| {
+    let hlfiles = session.timer("resolve type", |session| {
         let mut ast2hlir = AstLowering::new(session, &mut arena);
-
-        ast2hlir.source_set(input_source, TypedModuleId::new(std_hlir.len()))
-    });
-
-    let std_hlir = session.timer("resolve dependencies type", |session| {
-        let mut type_resolver = TypeResolver::new(session, &mut arena);
-        type_resolver.global_use(&["core", "builtin", "*"]);
-        type_resolver.global_use(&["std", "builtin", "*"]);
-
-        println!("===== preload decls =====");
-        // preload decls
-        for hlir in std_hlir.iter() {
-            type_resolver.preload_source_set(hlir)?;
-        }
-
-        println!("===== resolve types =====");
-        // resolve types
-
-        std_hlir
-            .into_iter()
-            .map(|s| type_resolver.source_set(s))
-            .collect::<Result<Vec<_>>>()
-    })?;
-
-    let hlfiles = session.timer::<Result<_>, _>("resolve type", |session| {
-        let mut type_resolver = TypeResolver::new(session, &mut arena);
-        type_resolver.global_use(&["core", "builtin", "*"]);
-        type_resolver.global_use(&["std", "builtin", "*"]);
-
-        println!("===== preload decls for input source =====");
-
-        type_resolver.preload_source_set(&hlfiles)?;
-
-        println!("===== resolve types for input source =====");
-
-        type_resolver.source_set(hlfiles)
+        ast2hlir.lowing(input_source, TypedModuleId::new(std_hlir.len()))
     })?;
 
     session.timer("type check", |session| {
@@ -166,7 +123,7 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
     });
     match build_type {
         BuildType::Library => {
-            let wlib = WLib::new(hlfiles.clone());
+            let wlib = WLib::new(hlfiles);
             let wlib_path = out_dir.join(format!("{}.wlib", config.name().unwrap_or_default()));
             wlib.write_to(&wlib_path);
             println!("library written to {}", wlib_path.display());
@@ -186,24 +143,26 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
 
     fs::create_dir_all(&mlir_out_dir)?;
     for m in std_mlir.iter() {
-        println!("==== {} ====", m.name);
-        let mut f = fs::File::create(mlir_out_dir.join(&m.name))?;
-        write!(f, "{}", m.to_string())?;
+        session.timer(&format!("write mlir `{}`", m.name), |_| {
+            let mut f = fs::File::create(mlir_out_dir.join(&m.name))?;
+            write!(f, "{}", m.to_string())
+        })?;
     }
 
     let mlfile = hlir2mlir(hlfiles, &std_mlir, &arena)?;
 
-    println!("==== {} ====", mlfile.name);
-    let mut f = fs::File::create(mlir_out_dir.join(&mlfile.name))?;
-    write!(f, "{}", mlfile.to_string())?;
+    session.timer(&format!("write mlir `{}`", mlfile.name), |_| {
+        let mut f = fs::File::create(mlir_out_dir.join(&mlfile.name))?;
+        write!(f, "{}", mlfile.to_string())
+    })?;
 
     println!("==== codegen ====");
     let module_name = &mlfile.name;
     let context = Context::create();
     let mut codegen = CodeGen::new(&context, module_name, config.target_triple());
 
-    for m in std_mlir.iter() {
-        codegen.file(m.clone());
+    for m in std_mlir.into_iter() {
+        codegen.file(m);
     }
 
     codegen.file(mlfile.clone());
@@ -220,15 +179,12 @@ fn run_compiler(session: &mut Session, config: Config) -> result::Result<(), Box
 
     let out_path = out_dir.join(output);
 
-    println!("Output Path -> {:?}", out_path);
+    println!("Output Path -> {}", out_path.display());
 
     match emit {
-        "llvm-ir" => {
-            codegen.print_to_file(&out_path)?;
-        }
-        _ => {
-            codegen.write_as_object(&out_path)?;
-        }
-    };
+        "llvm-ir" => codegen.print_to_file(&out_path),
+        "asm" => codegen.write_as_assembly(&out_path),
+        _ => codegen.write_as_object(&out_path),
+    }?;
     Ok(())
 }
