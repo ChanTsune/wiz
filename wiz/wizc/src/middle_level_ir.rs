@@ -351,7 +351,7 @@ impl<'arena> HLIR2MLIR<'arena> {
             name: mangled_name,
             arg_defs: args,
             return_type: self.type_(return_type.unwrap()).into_value_type(),
-            body: body.map(|b| self.fun_body(b)),
+            body: body.map(|b| self.fun_body(b, type_arguments)),
         }
     }
 
@@ -399,7 +399,7 @@ impl<'arena> HLIR2MLIR<'arena> {
                         },
                     arg_defs: args,
                     return_type: self.type_(return_type.unwrap()).into_value_type(),
-                    body: body.map(|body| self.fun_body(body)),
+                    body: body.map(|body| self.fun_body(body, None)),
                 }
             })
             .collect();
@@ -436,7 +436,7 @@ impl<'arena> HLIR2MLIR<'arena> {
                         },
                     arg_defs: args,
                     return_type: self.type_(return_type.unwrap()).into_value_type(),
-                    body: body.map(|body| self.fun_body(body)),
+                    body: body.map(|body| self.fun_body(body, None)),
                 }
             })
             .collect()
@@ -874,7 +874,7 @@ impl<'arena> HLIR2MLIR<'arena> {
         }
     }
 
-    fn fun_body(&mut self, b: TypedFunBody) -> MLFunBody {
+    fn fun_body(&mut self, b: TypedFunBody, type_arguments: Option<HashMap<TypedTypeParam, TypedType>>) -> MLFunBody {
         match b {
             TypedFunBody::Expr(e) => MLFunBody {
                 body: vec![MLStmt::Expr(MLExpr::Return(MLReturn::new(Some(
