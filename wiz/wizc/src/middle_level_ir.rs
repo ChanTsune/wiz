@@ -874,7 +874,11 @@ impl<'arena> HLIR2MLIR<'arena> {
         }
     }
 
-    fn fun_body(&mut self, b: TypedFunBody, type_arguments: Option<HashMap<TypedTypeParam, TypedType>>) -> MLFunBody {
+    fn fun_body(
+        &mut self,
+        b: TypedFunBody,
+        type_arguments: Option<HashMap<TypedTypeParam, TypedType>>,
+    ) -> MLFunBody {
         match b {
             TypedFunBody::Expr(e) => MLFunBody {
                 body: vec![MLStmt::Expr(MLExpr::Return(MLReturn::new(Some(
