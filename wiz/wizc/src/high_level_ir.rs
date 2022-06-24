@@ -7,7 +7,7 @@ use std::error::Error;
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedDeclKind, TypedExtension, TypedFun,
-    TypedFunBody, TypedMemberFunction, TypedProtocol, TypedStoredProperty, TypedStruct, TypedVar,
+    TypedFunBody, TypedProtocol, TypedStoredProperty, TypedStruct, TypedVar,
 };
 use wiz_hir::typed_expr::{
     TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedExprKind,
@@ -455,7 +455,7 @@ impl<'a> AstLowering<'a> {
     pub fn struct_syntax(&self, s: StructSyntax) -> TypedStruct {
         let mut stored_properties: Vec<TypedStoredProperty> = vec![];
         let mut computed_properties: Vec<TypedComputedProperty> = vec![];
-        let mut member_functions: Vec<TypedMemberFunction> = vec![];
+        let mut member_functions: Vec<TypedFun> = vec![];
         for p in s.body.properties {
             match p {
                 StructPropertySyntax::StoredProperty(v) => {
@@ -491,7 +491,7 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    pub fn member_function(&self, member_function: FunSyntax) -> TypedMemberFunction {
+    pub fn member_function(&self, member_function: FunSyntax) -> TypedFun {
         let FunSyntax {
             fun_keyword: _,
             name,
@@ -504,7 +504,7 @@ impl<'a> AstLowering<'a> {
 
         let rt = return_type.map(|r| self.type_(r.type_));
         let fb = body.map(|b| self.fun_body(b));
-        TypedMemberFunction {
+        TypedFun {
             name: name.token(),
             arg_defs: arg_defs
                 .elements
@@ -519,6 +519,7 @@ impl<'a> AstLowering<'a> {
             }),
             body: fb,
             return_type: rt,
+            type_constraints: None, // TODO:
         }
     }
 
@@ -558,7 +559,7 @@ impl<'a> AstLowering<'a> {
 
     fn protocol_syntax(&self, p: StructSyntax) -> TypedProtocol {
         let mut computed_properties: Vec<TypedComputedProperty> = vec![];
-        let mut member_functions: Vec<TypedMemberFunction> = vec![];
+        let mut member_functions: Vec<TypedFun> = vec![];
         for p in p.body.properties {
             match p {
                 StructPropertySyntax::StoredProperty(v) => {

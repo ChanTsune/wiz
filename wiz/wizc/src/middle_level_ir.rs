@@ -9,7 +9,7 @@ use wiz_constants::annotation::{BUILTIN, NO_MANGLE};
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_decl::{
     TypedArgDef, TypedDecl, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody,
-    TypedMemberFunction, TypedProtocol, TypedStruct, TypedVar,
+    TypedProtocol, TypedStruct, TypedVar,
 };
 use wiz_hir::typed_expr::{
     TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedExprKind,
@@ -379,9 +379,9 @@ impl<'arena> HLIR2MLIR<'arena> {
         let members: Vec<MLFun> = member_functions
             .into_iter()
             .map(|mf| {
-                let TypedMemberFunction {
+                let TypedFun {
                     name: fname,
-                    arg_defs: args,
+                    type_constraints, arg_defs: args,
                     type_params,
                     body,
                     return_type,
@@ -416,9 +416,9 @@ impl<'arena> HLIR2MLIR<'arena> {
         member_functions
             .into_iter()
             .map(|mf| {
-                let TypedMemberFunction {
+                let TypedFun {
                     name: fname,
-                    arg_defs: args,
+                    type_constraints, arg_defs: args,
                     type_params,
                     body,
                     return_type,

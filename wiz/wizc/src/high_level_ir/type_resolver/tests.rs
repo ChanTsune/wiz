@@ -2,7 +2,7 @@ use crate::high_level_ir::type_resolver::arena::ResolverArena;
 use crate::high_level_ir::AstLowering;
 use crate::TypedModuleId;
 use wiz_hir::typed_decl::{
-    TypedArgDef, TypedDecl, TypedDeclKind, TypedFun, TypedFunBody, TypedMemberFunction,
+    TypedArgDef, TypedDecl, TypedDeclKind, TypedFun, TypedFunBody,
     TypedStoredProperty, TypedStruct, TypedVar,
 };
 use wiz_hir::typed_expr::{
@@ -380,7 +380,7 @@ fn test_struct_member_function() {
                         type_: TypedType::int64(),
                     }],
                     computed_properties: vec![],
-                    member_functions: vec![TypedMemberFunction {
+                    member_functions: vec![TypedFun {
                         name: "getA".to_string(),
                         arg_defs: vec![TypedArgDef {
                             label: "_".to_string(),
@@ -426,6 +426,7 @@ fn test_struct_member_function() {
                             ))],
                         })),
                         return_type: Some(TypedType::int64()),
+                        type_constraints: None
                     }],
                 }),
             }],
@@ -467,7 +468,7 @@ fn test_struct_member_function_call() {
                             type_: TypedType::int64(),
                         }],
                         computed_properties: vec![],
-                        member_functions: vec![TypedMemberFunction {
+                        member_functions: vec![TypedFun {
                             name: "getA".to_string(),
                             arg_defs: vec![TypedArgDef {
                                 label: "_".to_string(),
@@ -517,6 +518,7 @@ fn test_struct_member_function_call() {
                                 ))],
                             })),
                             return_type: Some(TypedType::int64()),
+                            type_constraints: None
                         }],
                     }),
                 },

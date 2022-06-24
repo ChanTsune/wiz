@@ -70,7 +70,7 @@ pub struct TypedStruct {
     pub type_params: Option<Vec<TypedTypeParam>>,
     pub stored_properties: Vec<TypedStoredProperty>,
     pub computed_properties: Vec<TypedComputedProperty>,
-    pub member_functions: Vec<TypedMemberFunction>,
+    pub member_functions: Vec<TypedFun>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
@@ -86,20 +86,11 @@ pub struct TypedComputedProperty {
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
-pub struct TypedMemberFunction {
-    pub name: String,
-    pub type_params: Option<Vec<TypedTypeParam>>,
-    pub arg_defs: Vec<TypedArgDef>,
-    pub body: Option<TypedFunBody>,
-    pub return_type: Option<TypedType>,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedExtension {
     pub name: TypedType,
     pub protocol: Option<TypedType>,
     pub computed_properties: Vec<TypedComputedProperty>,
-    pub member_functions: Vec<TypedMemberFunction>,
+    pub member_functions: Vec<TypedFun>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
@@ -107,7 +98,7 @@ pub struct TypedProtocol {
     pub name: String,
     pub type_params: Option<Vec<TypedTypeParam>>,
     pub computed_properties: Vec<TypedComputedProperty>,
-    pub member_functions: Vec<TypedMemberFunction>,
+    pub member_functions: Vec<TypedFun>,
 }
 
 impl TypedFun {
@@ -122,16 +113,5 @@ impl TypedFun {
 
     pub fn is_generic(&self) -> bool {
         self.type_params.is_some()
-    }
-}
-
-impl TypedMemberFunction {
-    pub fn type_(&self) -> Option<TypedType> {
-        self.return_type.as_ref().map(|return_type| {
-            TypedType::Function(Box::new(TypedFunctionType {
-                arguments: self.arg_defs.iter().map(|a| a.to_arg_type()).collect(),
-                return_type: return_type.clone(),
-            }))
-        })
     }
 }
