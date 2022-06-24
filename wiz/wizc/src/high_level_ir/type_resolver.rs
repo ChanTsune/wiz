@@ -14,8 +14,8 @@ use crate::high_level_ir::type_resolver::declaration::DeclarationItemKind;
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
 use wiz_hir::typed_decl::{
-    TypedArgDef, TypedDecl, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody,
-    TypedProtocol, TypedStoredProperty, TypedStruct, TypedVar,
+    TypedArgDef, TypedDecl, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedProtocol,
+    TypedStoredProperty, TypedStruct, TypedVar,
 };
 use wiz_hir::typed_expr::{
     TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedExprKind, TypedIf,
@@ -514,7 +514,7 @@ impl<'s> TypeResolver<'s> {
                 Some(body) => Some(self.typed_fun_body(body)?),
             },
             return_type: Some(return_type),
-            type_constraints: mf.type_constraints
+            type_constraints: mf.type_constraints,
         });
         self.context.pop_local_stack();
         result

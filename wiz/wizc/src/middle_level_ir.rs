@@ -8,8 +8,8 @@ use wiz_constants as constants;
 use wiz_constants::annotation::{BUILTIN, NO_MANGLE};
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_decl::{
-    TypedArgDef, TypedDecl, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody,
-    TypedProtocol, TypedStruct, TypedVar,
+    TypedArgDef, TypedDecl, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedProtocol,
+    TypedStruct, TypedVar,
 };
 use wiz_hir::typed_expr::{
     TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedExprKind,
@@ -381,7 +381,8 @@ impl<'arena> HLIR2MLIR<'arena> {
             .map(|mf| {
                 let TypedFun {
                     name: fname,
-                    type_constraints, arg_defs: args,
+                    type_constraints,
+                    arg_defs: args,
                     type_params,
                     body,
                     return_type,
@@ -418,7 +419,8 @@ impl<'arena> HLIR2MLIR<'arena> {
             .map(|mf| {
                 let TypedFun {
                     name: fname,
-                    type_constraints, arg_defs: args,
+                    type_constraints,
+                    arg_defs: args,
                     type_params,
                     body,
                     return_type,

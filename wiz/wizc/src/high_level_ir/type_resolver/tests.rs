@@ -2,8 +2,8 @@ use crate::high_level_ir::type_resolver::arena::ResolverArena;
 use crate::high_level_ir::AstLowering;
 use crate::TypedModuleId;
 use wiz_hir::typed_decl::{
-    TypedArgDef, TypedDecl, TypedDeclKind, TypedFun, TypedFunBody,
-    TypedStoredProperty, TypedStruct, TypedVar,
+    TypedArgDef, TypedDecl, TypedDeclKind, TypedFun, TypedFunBody, TypedStoredProperty,
+    TypedStruct, TypedVar,
 };
 use wiz_hir::typed_expr::{
     TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedExprKind, TypedIf,
@@ -426,7 +426,7 @@ fn test_struct_member_function() {
                             ))],
                         })),
                         return_type: Some(TypedType::int64()),
-                        type_constraints: None
+                        type_constraints: None,
                     }],
                 }),
             }],
@@ -518,7 +518,7 @@ fn test_struct_member_function_call() {
                                 ))],
                             })),
                             return_type: Some(TypedType::int64()),
-                            type_constraints: None
+                            type_constraints: None,
                         }],
                     }),
                 },
