@@ -138,7 +138,7 @@ impl<'a> AstLowering<'a> {
                 if let DeclKind::Use(u) = l.kind {
                     uses.push(slf.use_syntax(u, l.annotations));
                 } else if let DeclKind::Struct(s) = &l.kind {
-                    let annotation = slf.annotations(l.annotations.clone());
+                    let annotation = slf.annotations(&l.annotations);
                     match s.struct_keyword.token().as_str() {
                         "struct" => slf.arena.register_struct(
                             &slf.namespace_id,
@@ -169,12 +169,12 @@ impl<'a> AstLowering<'a> {
         })
     }
 
-    fn annotations(&self, a: Option<AnnotationsSyntax>) -> TypedAnnotations {
+    fn annotations(&self, a: &Option<AnnotationsSyntax>) -> TypedAnnotations {
         match a {
             None => TypedAnnotations::default(),
             Some(a) => TypedAnnotations::from(
                 a.elements
-                    .into_iter()
+                    .iter()
                     .map(|a| a.element.token())
                     .collect::<Vec<_>>(),
             ),
@@ -239,7 +239,7 @@ impl<'a> AstLowering<'a> {
 
     fn decl(&self, d: DeclKind, annotation: Option<AnnotationsSyntax>) -> TypedDecl {
         TypedDecl {
-            annotations: self.annotations(annotation),
+            annotations: self.annotations(&annotation),
             package: Package::from(&self.arena.resolve_fully_qualified_name(&self.namespace_id)),
             modifiers: vec![],
             kind: match d {
@@ -530,7 +530,7 @@ impl<'a> AstLowering<'a> {
             .unwrap_or_default();
         names.push(u.used_name.token());
         TypedUse {
-            annotations: self.annotations(annotations),
+            annotations: self.annotations(&annotations),
             package: Package { names },
             alias: u.alias.map(|a| a.name.token()),
         }
