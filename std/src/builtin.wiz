@@ -21,11 +21,39 @@ fun println(_ item: &str) {
     puts(item)
 }
 
+fun print(_ item: Int8) {
+    print(item as Int64)
+}
+
+fun print(_ item: Int16) {
+    print(item as Int64)
+}
+
+fun print(_ item: Int32) {
+    print(item as Int64)
+}
+
 fun print(_ item: Int64) {
     if 9 < item {
         print(item / 10)
     }
     putchar(((item % 10)+48) as Int32)
+}
+
+fun println(_ item: Size) {
+    println(item as Int64)
+}
+
+fun println(_ item: Int8) {
+    println(item as Int64)
+}
+
+fun println(_ item: Int16) {
+    println(item as Int64)
+}
+
+fun println(_ item: Int32) {
+    println(item as Int64)
 }
 
 fun println(_ item: Int64) {
@@ -36,6 +64,10 @@ fun println(_ item: Int64) {
         print(item)
     }
     println()
+}
+
+fun println(_ item: Size) {
+    println(item as Int64)
 }
 
 fun print(_ item: *Int64) {
