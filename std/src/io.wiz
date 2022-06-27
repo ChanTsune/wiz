@@ -7,3 +7,39 @@ fun write(_ fd: Size, _ buf: *UInt8, _ nbyte: Size): Size
 
 #[no_mangle]
 fun read(_ fd: Size, _ buf: *UInt8, _ nbyte: Size): Size
+
+val O_RDONLY: Size = 0
+// 0x0000          /* open for reading only */
+
+val O_WRONLY: Size = 1
+// 0x0001          /* open for writing only */
+
+val O_RDWR: Size = 2
+// 0x0002          /* open for reading and writing */
+
+val O_NONBLOCK: Size = 8
+// 0x00000004      /* no delay */
+
+val O_APPEND: Size = 8
+// 0x00000008      /* set append mode */
+
+val O_SYNC: Size = 128
+// 0x0080          /* synch I/O file integrity */
+
+val O_CREAT: Size = 512
+// 0x00000200      /* create if nonexistant */
+
+val O_TRUNC: Size = 1024
+// 0x00000400      /* truncate to zero length */
+
+val O_EXCL: Size = 2048
+// 0x00000800      /* error if already exists */
+
+val O_NOCTTY: Size = 131072
+// 0x00020000      /* don't assign controlling terminal */
+
+#[no_mangle]
+fun open(_ fileName: *UInt8, _ options: Size): Size
+
+#[no_mangle]
+fun close(_ socket: Size): Size
