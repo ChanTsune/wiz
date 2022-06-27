@@ -71,7 +71,7 @@ fun vector_methods() {
     }
     putchar(10)
 
-    println(vector.length as Int64)
+    println(vector.length)
 
     var poped = vector.pop()
     assert(poped == 111)
