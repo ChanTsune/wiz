@@ -43,3 +43,58 @@ fun open(_ fileName: *UInt8, _ options: Size): Size
 
 #[no_mangle]
 fun close(_ socket: Size): Size
+
+struct FileDescriptor {
+    val rawFd: Size
+
+    fun from(rawFd: Size): Self {
+        return Self(rawFd: rawFd)
+    }
+
+    fun write(&self, item: &str): Unit {
+        std::io::write(self.rawFd, item as *UInt8, strlen(item as *UInt8))
+    }
+
+    fun read(&self, _ bufferLength: Size): *UInt8 {
+        val buf = malloc(bufferLength + 1) as *UInt8
+        val readLength = std::io::read(self.rawFd, buf, bufferLength)
+        buf[readLength] = 0 as UInt8
+        return buf
+    }
+}
+
+struct StdIn {
+    val fd: FileDescriptor
+
+    fun new(): Self {
+        return Self(fd: FileDescriptor::from(rawFd: FD_STDIN))
+    }
+
+    fun read(&self, _ length: Size): *UInt8 {
+        return self.fd.read(length)
+    }
+}
+
+struct StdOut {
+    val fd: FileDescriptor
+
+    fun new(): Self {
+        return Self(fd: FileDescriptor::from(rawFd: FD_STDOUT))
+    }
+
+    fun write(&self, _ item: &str): Unit {
+        self.fd.write(item)
+    }
+}
+
+struct StdErr {
+    val fd: FileDescriptor
+
+    fun new(): Self {
+        return Self(fd: FileDescriptor::from(rawFd: FD_STDERR))
+    }
+
+    fun write(&self, _ item: &str): Unit {
+        self.fd.write(item)
+    }
+}
