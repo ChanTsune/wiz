@@ -1,0 +1,9 @@
+val FD_STDIN: Size = 0
+val FD_STDOUT: Size = 1
+val FD_STDERR: Size = 2
+
+#[no_mangle]
+fun write(_ fd: Size, _ buf: *UInt8, _ nbyte: Size): Size
+
+#[no_mangle]
+fun read(_ fd: Size, _ buf: *UInt8, _ nbyte: Size): Size
