@@ -1,4 +1,6 @@
 use std::collection::vector::UInt8Vector
+use std::format::Printable
+use std::format::DebugPrintable
 
 struct String {
     val buffer: UInt8Vector
@@ -17,6 +19,18 @@ struct String {
 
     fun length(&self): UInt64 {
         return self.buffer.length
+    }
+}
+
+extension String: Printable {
+    fun description(&self): String {
+        return self.clone()
+    }
+}
+
+extension String: DebugPrintable {
+    fun debugDescription(&self): Self {
+        return self.clone()
     }
 }
 
