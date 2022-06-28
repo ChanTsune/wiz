@@ -10,10 +10,10 @@ use inkwell::context::Context;
 use std::error::Error;
 use std::io::{Read, Write};
 use std::iter::FromIterator;
-use std::path::PathBuf;
-use std::{env, fs};
 use std::os::unix::process::CommandExt;
+use std::path::PathBuf;
 use std::process::Command;
+use std::{env, fs};
 use wiz_session::Session;
 use wiz_syntax::syntax::file::SourceSet;
 use wiz_syntax_parser::parser;
@@ -196,7 +196,9 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<(), Box<dyn Err
         let mut ir_file = out_dir.join(&output);
         ir_file.set_extension("ll");
         codegen.print_to_file(&ir_file)?;
-        Command::new("clang").args(&[ir_file.to_str().unwrap_or_default(), "-o", &output]).exec();
+        Command::new("clang")
+            .args(&[ir_file.to_str().unwrap_or_default(), "-o", &output])
+            .exec();
     };
     Ok(())
 }
