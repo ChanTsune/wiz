@@ -4,3 +4,4 @@ version="0.0.0"
 
 [dependencies]
 core = "0.0.0"
+libc = "0.0.0"

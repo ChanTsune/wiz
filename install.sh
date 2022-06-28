@@ -50,6 +50,7 @@ install_builtin_lib() {
     mkdir -p "$LIB_DIR/src"
     copy_lib_src core "$VERSION"
     copy_lib_src std "$VERSION"
+    copy_lib_src libc "$VERSION"
 }
 
 install_shell_env() {
