@@ -57,8 +57,8 @@ install_shell_env() {
 }
 
 copy_lib_src() {
-    cp -r "$1" "$LIB_DIR/src/$1"
-    cp -r "$1" "$LIB_DIR/src/$1/$2"
+    cp -r "libraries/$1" "$LIB_DIR/src/$1"
+    cp -r "libraries/$1" "$LIB_DIR/src/$1/$2"
 }
 
 err() {
