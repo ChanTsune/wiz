@@ -1,0 +1,55 @@
+#[no_mangle]
+fun isalnum(_ c: Size): Size
+// fun isalnum(_ c: c_int): c_int
+
+#[no_mangle]
+fun isalpha(_ c: Size): Size
+// fun isalpha(_ c: c_int): c_int
+
+#[no_mangle]
+fun isblank(_ c: Size): Size
+// fun isblank(_ c: c_int): c_int
+
+#[no_mangle]
+fun iscntrl(_ c: Size): Size
+// fun iscntrl(_ c: c_int): c_int
+
+#[no_mangle]
+fun isdigit(_ c: Size): Size
+// fun isdigit(_ c: c_int): c_int
+
+#[no_mangle]
+fun isgraph(_ c: Size): Size
+// fun isgraph(_ c: c_int): c_int
+
+#[no_mangle]
+fun islower(_ c: Size): Size
+// fun islower(_ c: c_int): c_int
+
+#[no_mangle]
+fun isprint(_ c: Size): Size
+// fun isprint(_ c: c_int): c_int
+
+#[no_mangle]
+fun ispunct(_ c: Size): Size
+// fun ispunct(_ c: c_int): c_int
+
+#[no_mangle]
+fun isspace(_ c: Size): Size
+// fun isspace(_ c: c_int): c_int
+
+#[no_mangle]
+fun isupper(_ c: Size): Size
+// fun isupper(_ c: c_int): c_int
+
+#[no_mangle]
+fun isxdigit(_ c: Size): Size
+// fun isxdigit(_ c: c_int): c_int
+
+#[no_mangle]
+fun tolower(_ c: Size): Size
+// fun tolower(_ c: c_int): c_int
+
+#[no_mangle]
+fun toupper(_ c: Size): Size
+// fun toupper(_ c: c_int): c_int
