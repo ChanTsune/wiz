@@ -17,6 +17,10 @@ struct String {
         return Self(buffer: buffer)
     }
 
+    fun empty(): Self {
+        return Self(buffer: UInt8Vector::new())
+    }
+
     fun length(&self): UInt64 {
         return self.buffer.length
     }
