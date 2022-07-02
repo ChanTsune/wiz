@@ -3,7 +3,7 @@ fun atof(_ nptr: *UInt8): Double
 // fun atof(_ nptr: *c_char): c_double
 
 #[no_mangle]
-fun atoi(_ nptr: *UInt8): Size
+fun atoi(_ nptr: *UInt8): Int32
 // fun atoi(_ nptr: *c_char): c_int
 
 #[no_mangle]
@@ -23,27 +23,27 @@ fun strtof(_ nptr: *UInt8, _ endptr: *(*UInt8)): Float
 // fun strtof(_ nptr: *c_char, _ endptr: *(*c_char)): c_float
 
 #[no_mangle]
-fun strtol(_ nptr: *UInt8, _ endptr: *(*UInt8), _ base: Size): Int64
+fun strtol(_ nptr: *UInt8, _ endptr: *(*UInt8), _ base: Int32): Int64
 // fun strtol(_ nptr: *c_char, _ endptr: *(*c_char), _ base: c_int): c_long
 
 #[no_mangle]
-fun strtoll(_ nptr: *UInt8, _ endptr: *(*UInt8), _ base: Size): Int64
+fun strtoll(_ nptr: *UInt8, _ endptr: *(*UInt8), _ base: Int32): Int64
 // fun strtoll(_ nptr: *c_char, _ endptr: *(*c_char), _ base: c_int): c_longlong
 
 #[no_mangle]
-fun strtoul(_ nptr: *UInt8, _ endptr: *(*UInt8), _ base: Size): UInt64
+fun strtoul(_ nptr: *UInt8, _ endptr: *(*UInt8), _ base: Int32): UInt64
 // fun strtoul(_ nptr: *c_char, _ endptr: *(*c_char), _ base: c_int): c_ulong
 
 #[no_mangle]
-fun strtoull(_ nptr: *UInt8, _ endptr: *(*UInt8), _ base: Size): UInt64
+fun strtoull(_ nptr: *UInt8, _ endptr: *(*UInt8), _ base: Int32): UInt64
 // fun strtoull(_ nptr: *c_char, _ endptr: *(*c_char), _ base: c_int): c_ulonglong
 
 #[no_mangle]
-fun rand(): Size
+fun rand(): Int32
 // fun rand(): c_int
 
 #[no_mangle]
-fun srand(_ seed: USize): Unit
+fun srand(_ seed: UInt32): Unit
 // fun srand(_ seed: c_uint): c_void
 
 #[no_mangle]
@@ -71,11 +71,11 @@ fun atexit(_ func: *UInt8): Unit
 // fun atexit(_ func: *c_void): c_void
 
 #[no_mangle]
-fun exit(_ status: Size): Unit
+fun exit(_ status: Int32): Unit
 // fun exit(_ status: c_int): c_void
 
 #[no_mangle]
-fun _Exit(_ status: Size): Unit
+fun _Exit(_ status: Int32): Unit
 // fun _Exit(_ status: c_int): c_void
 
 #[no_mangle]
@@ -83,7 +83,7 @@ fun getenv(_ name: *UInt8): *UInt8
 // fun getenv(_ name: *c_char): *c_char
 
 #[no_mangle]
-fun system(_ command: *UInt8): Size
+fun system(_ command: *UInt8): Int32
 // fun system(_ command: *c_char): c_int
 
 #[no_mangle]
