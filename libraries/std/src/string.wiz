@@ -6,19 +6,23 @@ struct String {
     val buffer: UInt8Vector
 
     fun new(_ literal: &str): Self {
-        var buffer = UInt8Vector::new()
-        val literalLength = strlen(literal)
-        var i = 0
-        while literalLength > i {
-            val t = literal[i]
-            buffer.push(element:t)
-            i += 1
-        }
-        return Self(buffer: buffer)
+        var s = String::empty()
+        s.push(literal)
+        return s
     }
 
     fun empty(): Self {
         return Self(buffer: UInt8Vector::new())
+    }
+
+    fun push(&self, _ s: &str): Unit {
+        val sLength = strlen(s)
+        var i = 0
+        while sLength > i {
+            val t = s[i]
+            self.buffer.push(element:t)
+            i += 1
+        }
     }
 
     fun length(&self): UInt64 {
