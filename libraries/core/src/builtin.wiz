@@ -1,16 +1,4 @@
 #[no_mangle]
-fun malloc(_ size: UInt64): *UInt8
-
-#[no_mangle]
-fun calloc(_ count: UInt64, _ sizeOfContent: UInt64): *UInt8
-
-#[no_mangle]
-fun realloc(_ pointer: *UInt8, _ size: UInt64): *UInt8
-
-#[no_mangle]
-fun free(_ ptr: *UInt8): Unit
-
-#[no_mangle]
 fun strlen(_ item: &str): UInt64
 
 #[no_mangle]

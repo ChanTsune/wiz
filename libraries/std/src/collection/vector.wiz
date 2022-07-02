@@ -1,3 +1,5 @@
+use libc::stdlib::*
+
 struct UInt8Vector {
     var ptr: *UInt8
     var length: UInt64
