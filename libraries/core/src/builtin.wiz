@@ -11,18 +11,6 @@ fun realloc(_ pointer: *UInt8, _ size: UInt64): *UInt8
 fun free(_ ptr: *UInt8): Unit
 
 #[no_mangle]
-fun fopen(_ fileName: &str, _ mode: &str): *UInt8
-
-#[no_mangle]
-fun fclose(_ filePointer: *UInt8): Unit
-
-#[no_mangle]
-fun fread(_ buf:*UInt8, _ size: UInt64, _ n: UInt64, _ fp: *UInt8): UInt64
-
-#[no_mangle]
-fun fwrite(_ ptr:*UInt8, _ size:Int64, _ nmemb: Int64, _ stream: *UInt8): Int64
-
-#[no_mangle]
 fun strlen(_ item: &str): UInt64
 
 #[no_mangle]
