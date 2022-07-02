@@ -8,9 +8,11 @@ use crate::llvm_ir::codegen::CodeGen;
 use crate::middle_level_ir::{hlir2mlir, HLIR2MLIR};
 use inkwell::context::Context;
 use std::error::Error;
-use std::io::Write;
+use std::io::{Read, Write};
 use std::iter::FromIterator;
+use std::os::unix::process::CommandExt;
 use std::path::PathBuf;
+use std::process::Command;
 use std::{env, fs};
 use wiz_session::Session;
 use wiz_syntax::syntax::file::SourceSet;
@@ -165,24 +167,42 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<(), Box<dyn Err
 
     codegen.file(mlfile.clone());
 
-    let emit = config.emit().unwrap_or("llvm-ir");
+    if let Some(emit) = config.emit() {
+        let output = if let Some(output) = output {
+            PathBuf::from(output)
+        } else {
+            let mut output_path = PathBuf::from(&mlfile.name);
+            output_path.set_extension("ll");
+            output_path
+        };
 
-    let output = if let Some(output) = output {
-        PathBuf::from(output)
+        let out_path = out_dir.join(output);
+
+        println!("Output Path -> {}", out_path.display());
+
+        match emit {
+            "llvm-ir" => codegen.print_to_file(&out_path),
+            "asm" => codegen.write_as_assembly(&out_path),
+            _ => codegen.write_as_object(&out_path),
+        }?;
     } else {
-        let mut output_path = PathBuf::from(&mlfile.name);
-        output_path.set_extension("ll");
-        output_path
+        let output = if let Some(output) = output {
+            String::from(output)
+        } else {
+            String::from(&mlfile.name)
+        };
+        let mut ir_file = out_dir.join(&output);
+        ir_file.set_extension("ll");
+        codegen.print_to_file(&ir_file)?;
+
+        let output = out_dir
+            .join(&output)
+            .as_os_str()
+            .to_string_lossy()
+            .to_string();
+        Command::new("clang")
+            .args(&[ir_file.to_str().unwrap_or_default(), "-o", &output])
+            .exec();
     };
-
-    let out_path = out_dir.join(output);
-
-    println!("Output Path -> {}", out_path.display());
-
-    match emit {
-        "llvm-ir" => codegen.print_to_file(&out_path),
-        "asm" => codegen.write_as_assembly(&out_path),
-        _ => codegen.write_as_object(&out_path),
-    }?;
     Ok(())
 }

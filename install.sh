@@ -18,6 +18,7 @@ main() {
     need_cmd cp
     need_cmd echo
     need_cmd cargo
+    need_cmd clang
 
     mkdir -p "$BIN_DIR"
     build_install "wiz"

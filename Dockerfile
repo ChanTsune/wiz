@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 RUN apt-get update
 
@@ -9,6 +9,8 @@ RUN apt install -y curl gcc lzma-dev
 RUN apt install -y llvm-12
 
 RUN apt install -y clang-12
+
+RUN ln -s $(which clang-12) /usr/bin/clang
 
 ENV LLVM_SYS_120_PREFIX="/usr/lib/llvm-12"
 
