@@ -14,9 +14,6 @@ fun free(_ ptr: *UInt8): Unit
 fun strlen(_ item: &str): UInt64
 
 #[no_mangle]
-fun atoi(_ item: &str): Int64
-
-#[no_mangle]
 fun memmove(_ dist: *UInt8, _ src: *UInt8, _ size: UInt64): *UInt8
 
 #[no_mangle]
