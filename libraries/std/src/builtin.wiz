@@ -5,20 +5,20 @@
 // }
 
 fun println() {
-    putchar(10)
+    libc::stdio::putchar(10)
 }
 
 fun print(_ item: &str) {
     val len = strlen(item)
     var i = 0
     while len > i {
-        putchar(item[i] as Int32)
+        libc::stdio::putchar(item[i] as Size)
         i += 1
     }
 }
 
 fun println(_ item: &str) {
-    puts(item)
+    libc::stdio::puts(item)
 }
 
 fun print(_ item: Int8) {
@@ -37,7 +37,7 @@ fun print(_ item: Int64) {
     if 9 < item {
         print(item / 10)
     }
-    putchar(((item % 10)+48) as Int32)
+    libc::stdio::putchar(((item % 10)+48) as Size)
 }
 
 fun println(_ item: Size) {
@@ -58,7 +58,7 @@ fun println(_ item: Int32) {
 
 fun println(_ item: Int64) {
     if item < 0 {
-        putchar(45)
+        libc::stdio::putchar(45)
         print(-item)
     } else {
         print(item)
@@ -86,7 +86,7 @@ fun print(_ item: UInt64) {
     if 9 < item {
         print(item / 10)
     }
-    putchar(((item % 10)+48) as Int32)
+    libc::stdio::putchar(((item % 10)+48) as Size)
 }
 
 fun print(_ item: USize) {

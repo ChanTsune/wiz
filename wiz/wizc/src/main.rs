@@ -32,7 +32,7 @@ fn get_find_paths() -> Vec<PathBuf> {
 }
 
 fn get_builtin_lib() -> &'static [&'static str] {
-    &["core", "std"]
+    &["core", "libc", "std"]
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
