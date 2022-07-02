@@ -1,15 +1,17 @@
-use libc::stdlib::*
+use std::memory::allocator::DefaultAllocator
 
 struct UInt8Vector {
     var ptr: *UInt8
     var length: UInt64
     var capacity: UInt64
+    val allocator: DefaultAllocator
 
     fun new(): Self {
-        val ptr = malloc(0)
+        val allocator = DefaultAllocator::new()
+        val ptr = allocator.allocate(0)
         val capacity: UInt64 = 0
         val length: UInt64 = 0
-        return Self(ptr: ptr, length: length, capacity: capacity)
+        return Self(ptr: ptr, length: length, capacity: capacity, allocator: allocator)
     }
 
     fun isEmpty(&self): Bool {
@@ -19,8 +21,7 @@ struct UInt8Vector {
     fun push(&self, element: UInt8): Unit {
         if self.capacity <= self.length {
             val newCapacity = if self.capacity == 0 { 4 } else { self.capacity * 2 }
-            self.ptr = realloc(self.ptr, newCapacity)
-            self.capacity = newCapacity
+            self.reserve(newCapacity)
         }
         self.ptr[self.length] = element
         self.length += 1
@@ -41,8 +42,7 @@ struct UInt8Vector {
         } else {
             if self.capacity <= self.length {
                 val newCapacity = if self.capacity == 0 { 4 } else { self.capacity * 2 }
-                self.ptr = realloc(self.ptr, newCapacity)
-                self.capacity = newCapacity
+                self.reserve(newCapacity)
             }
             memmove(self.ptr + index, self.ptr + index - 1, self.length - index)
             self.ptr[index] = element
@@ -88,7 +88,7 @@ struct UInt8Vector {
     }
 
     fun shinkTo(&self, minSize: UInt64): Unit {
-        self.ptr = realloc(self.ptr, minSize)
+        self.ptr = self.allocator.reallocate(self.ptr, minSize)
         self.capacity = minSize
     }
 
@@ -97,15 +97,15 @@ struct UInt8Vector {
     }
 
     fun reserve(&self, newCapacity: UInt64): Unit {
-        self.ptr = realloc(self.ptr, newCapacity)
+        self.ptr = self.allocator.reallocate(self.ptr, newCapacity)
         self.capacity = newCapacity
     }
 }
 
 extension UInt8Vector: Clonable {
     fun clone(&self): Self {
-        val ptr = malloc(self.length)
+        val ptr = self.allocator.allocate(self.length)
         memcpy(ptr, self.ptr, self.length)
-        return Self(ptr: ptr, length: self.length, capacity: self.capacity)
+        return Self(ptr: ptr, length: self.length, capacity: self.capacity, allocator: self.allocator)
     }
 }
