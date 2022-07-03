@@ -7,6 +7,7 @@ mod init;
 mod new;
 mod subcommand;
 mod test;
+mod run;
 
 use ansi_term::Color;
 use clap::{crate_version, Arg, Command};
@@ -75,6 +76,14 @@ fn cli() -> Result<()> {
                 .arg(arg_std()),
         )
         .subcommand(
+            Command::new(run::COMMAND_NAME)
+                .about("Run a binary or example of the local package")
+                .arg(Arg::new("target-dir").help("Directory for all generated artifacts"))
+                .arg(arg_target_triple())
+                .arg(arg_manifest_path())
+                .arg(arg_std()),
+        )
+        .subcommand(
             Command::new(test::COMMAND_NAME)
                 .about("Run the tests")
                 .arg(arg_manifest_path())
@@ -94,6 +103,7 @@ fn cli() -> Result<()> {
         Some((build::COMMAND_NAME, option)) => build::command(build::COMMAND_NAME, option),
         Some((check::COMMAND_NAME, option)) => check::command(check::COMMAND_NAME, option),
         Some((test::COMMAND_NAME, option)) => test::command(test::COMMAND_NAME, option),
+        Some((run::COMMAND_NAME, option)) => run::command(run::COMMAND_NAME, option),
         Some((cmd, option)) => external_subcommand::try_execute(cmd, option),
         _ => panic!(),
     }?;
