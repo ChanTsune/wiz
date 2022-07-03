@@ -1,4 +1,5 @@
 use crate::core::create_project;
+use crate::core::Result;
 use ansi_term::Color;
 use clap::ArgMatches;
 use std::env::current_dir;
@@ -7,7 +8,7 @@ use std::fs::create_dir_all;
 
 pub(crate) const COMMAND_NAME: &str = "new";
 
-pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn Error>> {
+pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<()> {
     let mut current = current_dir()?;
     let project_dir = options.value_of("path").unwrap();
     current.push(project_dir);

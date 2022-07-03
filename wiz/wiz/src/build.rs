@@ -2,6 +2,7 @@ use crate::core::dep::{resolve_manifest_dependencies, ResolvedDependencyTree};
 use crate::core::error::CliError;
 use crate::core::load_project;
 use crate::core::workspace::Workspace;
+use crate::core::Result;
 use clap::ArgMatches;
 use std::collections::{BTreeSet, HashMap, HashSet};
 use std::env;
@@ -12,7 +13,7 @@ use wiz_utils::topological_sort::topological_sort;
 
 pub(crate) const COMMAND_NAME: &str = "build";
 
-pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn Error>> {
+pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<()> {
     let manifest_path = options.value_of("manifest-path");
 
     let another_std = options.value_of("std");
@@ -103,7 +104,7 @@ fn compile_dependencies(
     ws: &Workspace,
     dependencies: ResolvedDependencyTree,
     target_dir: &str,
-) -> Result<BTreeSet<String>, Box<dyn Error>> {
+) -> Result<BTreeSet<String>> {
     let mut wlib_paths = BTreeSet::new();
     let dependen_list = dependency_list(dependencies);
     let dep_list = topological_sort(dependen_list.clone())?;

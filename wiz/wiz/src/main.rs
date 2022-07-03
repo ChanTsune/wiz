@@ -8,6 +8,7 @@ mod new;
 mod subcommand;
 mod test;
 
+use core::Result;
 use ansi_term::Color;
 use clap::{crate_version, Arg, Command};
 use std::error::Error;
@@ -34,7 +35,7 @@ fn arg_std() -> Arg<'static> {
         .help("Use another std library")
 }
 
-fn cli() -> Result<(), Box<dyn Error>> {
+fn cli() -> Result<()> {
     let app = Command::new("wiz")
         .version(crate_version!())
         .about("Wiz's package manager")
