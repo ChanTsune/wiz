@@ -5,9 +5,9 @@ mod core;
 mod external_subcommand;
 mod init;
 mod new;
+mod run;
 mod subcommand;
 mod test;
-mod run;
 
 use ansi_term::Color;
 use clap::{crate_version, Arg, Command};
