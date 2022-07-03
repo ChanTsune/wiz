@@ -9,9 +9,9 @@ mod run;
 mod subcommand;
 mod test;
 
+use crate::core::Result;
 use ansi_term::Color;
 use clap::{crate_version, Arg, Command};
-use crate::core::Result;
 use std::process::exit;
 
 fn arg_target_triple() -> Arg<'static> {
