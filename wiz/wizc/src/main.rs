@@ -55,7 +55,6 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<(), Box<dyn Err
     let out_dir = out_dir
         .map(PathBuf::from)
         .unwrap_or_else(|| env::current_dir().unwrap());
-    let build_type = config.type_().unwrap_or(BuildType::Binary);
 
     let mlir_out_dir = out_dir.join("mlir");
 
@@ -123,7 +122,7 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<(), Box<dyn Err
         let mut type_checker = TypeChecker::new(session, &arena);
         type_checker.verify(&hlfiles);
     });
-    match build_type {
+    match config.type_() {
         BuildType::Library => {
             let wlib = WLib::new(hlfiles);
             let wlib_path = out_dir.join(format!("{}.wlib", config.name().unwrap_or_default()));

@@ -27,8 +27,8 @@ impl<'ctx> Config<'ctx> {
         self.name
     }
 
-    pub fn type_(&self) -> Option<BuildType> {
-        self.type_
+    pub fn type_(&self) -> BuildType {
+        self.type_.unwrap_or(BuildType::Binary)
     }
 
     pub fn output(&self) -> Option<&'ctx str> {
