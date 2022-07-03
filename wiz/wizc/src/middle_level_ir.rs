@@ -32,6 +32,7 @@ use wiz_mir::ml_decl::{MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, ML
 use wiz_mir::ml_file::MLFile;
 use wiz_mir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
 use wiz_mir::statement::{MLAssignmentStmt, MLLoopStmt, MLReturn, MLStmt};
+use wizc_cli::Config;
 
 mod context;
 #[cfg(test)]
@@ -39,26 +40,29 @@ mod tests;
 
 pub type Result<T> = result::Result<T, Box<dyn Error>>;
 
-pub fn hlir2mlir<'a>(
+pub fn hlir2mlir<'a, 'c>(
     target: TypedSourceSet,
     dependencies: &'a [MLFile],
     arena: &'a ResolverArena,
+    config: &'a Config<'c>,
 ) -> Result<MLFile> {
-    let mut converter = HLIR2MLIR::new(arena);
+    let mut converter = HLIR2MLIR::new(config, arena);
     converter.load_dependencies(dependencies)?;
     Ok(converter.convert_from_source_set(target))
 }
 
 #[derive(Debug)]
-pub struct HLIR2MLIR<'a> {
+pub struct HLIR2MLIR<'a, 'c> {
+    config: &'a Config<'c>,
     arena: &'a ResolverArena,
     context: HLIR2MLIRContext,
     module: MLIRModule,
 }
 
-impl<'a> HLIR2MLIR<'a> {
-    pub fn new(arena: &'a ResolverArena) -> Self {
+impl<'a, 'c> HLIR2MLIR<'a, 'c> {
+    pub fn new(config: &'a Config<'c>, arena: &'a ResolverArena) -> Self {
         Self {
+            config,
             arena,
             context: Default::default(),
             module: Default::default(),

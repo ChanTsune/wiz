@@ -135,7 +135,7 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<(), Box<dyn Err
 
     println!("===== convert to mlir =====");
 
-    let mut h2m = HLIR2MLIR::new(&arena);
+    let mut h2m = HLIR2MLIR::new(&config, &arena);
 
     let std_mlir = std_hlir
         .into_iter()
@@ -150,7 +150,7 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<(), Box<dyn Err
         })?;
     }
 
-    let mlfile = hlir2mlir(hlfiles, &std_mlir, &arena)?;
+    let mlfile = hlir2mlir(hlfiles, &std_mlir, &arena, &config)?;
 
     session.timer(&format!("write mlir `{}`", mlfile.name), |_| {
         let mut f = fs::File::create(mlir_out_dir.join(&mlfile.name))?;
