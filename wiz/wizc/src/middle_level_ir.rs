@@ -39,10 +39,10 @@ mod tests;
 
 pub type Result<T> = result::Result<T, Box<dyn Error>>;
 
-pub fn hlir2mlir<'arena>(
+pub fn hlir2mlir<'a>(
     target: TypedSourceSet,
-    dependencies: &'arena [MLFile],
-    arena: &'arena ResolverArena,
+    dependencies: &'a [MLFile],
+    arena: &'a ResolverArena,
 ) -> Result<MLFile> {
     let mut converter = HLIR2MLIR::new(arena);
     converter.load_dependencies(dependencies)?;
@@ -50,14 +50,14 @@ pub fn hlir2mlir<'arena>(
 }
 
 #[derive(Debug)]
-pub struct HLIR2MLIR<'arena> {
-    arena: &'arena ResolverArena,
+pub struct HLIR2MLIR<'a> {
+    arena: &'a ResolverArena,
     context: HLIR2MLIRContext,
     module: MLIRModule,
 }
 
-impl<'arena> HLIR2MLIR<'arena> {
-    pub fn new(arena: &'arena ResolverArena) -> Self {
+impl<'a> HLIR2MLIR<'a> {
+    pub fn new(arena: &'a ResolverArena) -> Self {
         Self {
             arena,
             context: Default::default(),
