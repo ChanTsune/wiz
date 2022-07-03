@@ -4,6 +4,7 @@ use crate::config::build_type::BuildType;
 use clap::ArgMatches;
 use std::path::{Path, PathBuf};
 
+#[derive(Debug)]
 pub struct Config<'ctx> {
     input: &'ctx str,
     name: Option<&'ctx str>,
