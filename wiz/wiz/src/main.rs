@@ -8,9 +8,9 @@ mod new;
 mod subcommand;
 mod test;
 
-use core::Result;
 use ansi_term::Color;
 use clap::{crate_version, Arg, Command};
+use core::Result;
 use std::error::Error;
 use std::process::exit;
 
