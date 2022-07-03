@@ -3,7 +3,6 @@ use crate::core::Result;
 use ansi_term::Color;
 use clap::ArgMatches;
 use std::env::current_dir;
-use std::error::Error;
 use std::fs::create_dir_all;
 
 pub(crate) const COMMAND_NAME: &str = "new";

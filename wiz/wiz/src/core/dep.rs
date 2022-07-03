@@ -4,7 +4,6 @@ use crate::core::manifest;
 use crate::core::manifest::Manifest;
 use crate::core::Result;
 use std::env;
-use std::error::Error;
 use std::path::{Path, PathBuf};
 
 #[derive(Debug, Clone)]

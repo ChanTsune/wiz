@@ -6,7 +6,6 @@ use crate::core::Result;
 use clap::ArgMatches;
 use std::collections::{BTreeSet, HashMap, HashSet};
 use std::env;
-use std::error::Error;
 use std::fs::create_dir_all;
 use std::path::PathBuf;
 use wiz_utils::topological_sort::topological_sort;

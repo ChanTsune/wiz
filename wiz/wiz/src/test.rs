@@ -2,7 +2,6 @@ use crate::core::dep::resolve_manifest_dependencies;
 use crate::core::load_project;
 use crate::core::Result;
 use clap::ArgMatches;
-use std::error::Error;
 
 pub(crate) const COMMAND_NAME: &str = "test";
 

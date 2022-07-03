@@ -1,7 +1,6 @@
 use crate::core::error::{CliError, ProcessError};
 use crate::core::Result;
 use std::env;
-use std::error::Error;
 use std::ffi::OsStr;
 use std::os::unix::process::CommandExt;
 use std::path::{Path, PathBuf};

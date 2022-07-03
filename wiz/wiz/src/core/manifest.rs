@@ -1,7 +1,6 @@
 use crate::core::Result;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
-use std::error::Error;
 use std::path::Path;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize, Serialize)]

@@ -11,8 +11,7 @@ mod test;
 
 use ansi_term::Color;
 use clap::{crate_version, Arg, Command};
-use core::Result;
-use std::error::Error;
+use crate::core::Result;
 use std::process::exit;
 
 fn arg_target_triple() -> Arg<'static> {

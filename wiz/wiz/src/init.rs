@@ -4,7 +4,6 @@ use crate::core::Result;
 use ansi_term::Color;
 use clap::ArgMatches;
 use std::env::current_dir;
-use std::error::Error;
 
 pub(crate) const COMMAND_NAME: &str = "init";
 
