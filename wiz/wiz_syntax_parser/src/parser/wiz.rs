@@ -62,7 +62,7 @@ pub fn read_package_from_path(path: &Path, name: Option<&str>) -> Result<SourceS
                 },
             });
         }
-        println!("{}", dir_entry.path().to_str().unwrap());
+        println!("{}", dir_entry.path().display());
     }
     Ok(SourceSet::Dir {
         name: path
