@@ -48,10 +48,15 @@ pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<()> {
         .out_dir(target_dir.to_str().unwrap())
         .name(ws.cws.file_name().and_then(|p| p.to_str()).unwrap())
         .type_(BuildType::Binary)
-        .libraries(&wlib_paths.iter().map(|s| {
-        let s: &str = s;
-        s
-    }).collect::<Vec<_>>());
+        .libraries(
+            &wlib_paths
+                .iter()
+                .map(|s| {
+                    let s: &str = s;
+                    s
+                })
+                .collect::<Vec<_>>(),
+        );
 
     config = if let Some(target_triple) = options.value_of("target-triple") {
         config.target_triple(target_triple)
