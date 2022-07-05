@@ -18,42 +18,60 @@ pub struct Config<'ctx> {
     emit: Option<&'ctx str>,
 }
 
-impl<'ctx> Config<'ctx> {
-    pub fn input(&self) -> &Path {
+pub trait ConfigExt<'ctx> {
+    fn input(&self) -> &Path;
+    fn name(&self) -> Option<&'ctx str>;
+    fn type_(&self) -> BuildType;
+    fn output(&self) -> Option<&'ctx str>;
+    fn out_dir(&self) -> Option<&'ctx str>;
+    fn paths(&self) -> Vec<PathBuf>;
+    fn target_triple(&self) -> Option<&'ctx str>;
+    fn libraries(&self) -> Vec<PathBuf>;
+    fn emit(&self) -> Option<&'ctx str>;
+}
+
+impl<'ctx> ConfigExt<'ctx> for Config<'ctx> {
+    fn input(&self) -> &Path {
         Path::new(self.input)
     }
 
-    pub fn name(&self) -> Option<&'ctx str> {
+    fn name(&self) -> Option<&'ctx str> {
         self.name
     }
 
-    pub fn type_(&self) -> BuildType {
+    fn type_(&self) -> BuildType {
         self.type_.unwrap_or(BuildType::Binary)
     }
 
-    pub fn output(&self) -> Option<&'ctx str> {
+    fn output(&self) -> Option<&'ctx str> {
         self.output
     }
 
-    pub fn out_dir(&self) -> Option<&'ctx str> {
+    fn out_dir(&self) -> Option<&'ctx str> {
         self.out_dir
     }
 
-    pub fn paths(&self) -> Vec<PathBuf> {
+    fn paths(&self) -> Vec<PathBuf> {
         self.paths.iter().map(PathBuf::from).collect()
     }
 
-    pub fn target_triple(&self) -> Option<&'ctx str> {
+    fn target_triple(&self) -> Option<&'ctx str> {
         self.target_triple
     }
 
-    pub fn libraries(&self) -> Vec<PathBuf> {
+    fn libraries(&self) -> Vec<PathBuf> {
         self.libraries.iter().map(PathBuf::from).collect()
     }
 
-    pub fn emit(&self) -> Option<&'ctx str> {
+    fn emit(&self) -> Option<&'ctx str> {
         self.emit
     }
+}
+
+pub trait ConfigBuilder<'c> {
+}
+
+impl<'ctx> ConfigBuilder<'ctx> for Config<'ctx> {
 }
 
 impl<'ctx> From<&'ctx ArgMatches> for Config<'ctx> {
