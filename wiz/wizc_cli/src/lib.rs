@@ -44,8 +44,8 @@ fn short(name: &str, s: char) -> Arg {
 
 #[cfg(test)]
 mod tests {
-    use std::path::PathBuf;
     use super::ConfigExt;
+    use std::path::PathBuf;
 
     #[test]
     fn test_parse_arg() {

@@ -9,6 +9,7 @@ use std::env;
 use std::fs::create_dir_all;
 use std::path::PathBuf;
 use wiz_utils::topological_sort::topological_sort;
+use wizc_cli::{BuildType, ConfigBuilder};
 
 pub(crate) const COMMAND_NAME: &str = "build";
 
@@ -42,22 +43,23 @@ pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<()> {
     let wlib_paths =
         compile_dependencies(&ws, resolved_dependencies, target_dir.to_str().unwrap())?;
 
-    let mut args = vec![ws.cws.to_str().unwrap()];
-    args.extend(["--out-dir", target_dir.to_str().unwrap()]);
+    let mut config = wizc_cli::Config::default()
+        .input(ws.cws.to_str().unwrap())
+        .out_dir(target_dir.to_str().unwrap())
+        .name(ws.cws.file_name().and_then(|p| p.to_str()).unwrap())
+        .type_(BuildType::Binary)
+        .libraries(&wlib_paths.iter().map(|s| {
+        let s: &str = s;
+        s
+    }).collect::<Vec<_>>());
 
-    args.extend([
-        "--name",
-        ws.cws.file_name().and_then(|p| p.to_str()).unwrap(),
-    ]);
-    args.extend(["--type", "bin"]);
-
-    for wlib_path in wlib_paths.iter() {
-        args.extend(["--library", wlib_path]);
-    }
-
-    if let Some(target_triple) = options.value_of("target-triple") {
-        args.extend(["--target-triple", target_triple]);
+    config = if let Some(target_triple) = options.value_of("target-triple") {
+        config.target_triple(target_triple)
+    } else {
+        config
     };
+
+    let mut args = config.as_args();
 
     super::subcommand::execute("wizc", &args)
 }

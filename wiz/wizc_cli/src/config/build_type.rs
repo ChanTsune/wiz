@@ -9,6 +9,14 @@ impl BuildType {
     pub fn all_str() -> &'static [&'static str] {
         &["bin", "lib", "test"]
     }
+
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            BuildType::Binary => "bin",
+            BuildType::Library => "lib",
+            BuildType::Test => "test",
+        }
+    }
 }
 
 impl From<&str> for BuildType {
