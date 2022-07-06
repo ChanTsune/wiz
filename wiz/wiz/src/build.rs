@@ -64,9 +64,7 @@ pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<()> {
         config
     };
 
-    let mut args = config.as_args();
-
-    super::subcommand::execute("wizc", &args)
+    super::subcommand::execute("wizc", &config.as_args())
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
