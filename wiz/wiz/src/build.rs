@@ -11,7 +11,7 @@ use std::fs::create_dir_all;
 use std::ops::Deref;
 use std::path::PathBuf;
 use wiz_utils::topological_sort::topological_sort;
-use wizc_cli::{BuildType, ConfigBuilder};
+use wizc_cli::{BuildType, Config, ConfigBuilder};
 
 pub(crate) const COMMAND_NAME: &str = "build";
 
@@ -113,14 +113,13 @@ fn compile_dependencies(
             .iter()
             .map(|d| format!("{}/{}.wlib", target_dir, d.name))
             .collect::<Vec<_>>();
-        let mut args = vec![dep.src_path.as_str()];
-        args.extend(["--out-dir", target_dir]);
-        args.extend(["--name", dep.name.as_str()]);
-        args.extend(["--type", "lib"]);
-        for wlib_path in dep_wlib_paths.iter() {
-            args.extend(["--library", wlib_path]);
-        }
-        let output = super::subcommand::output("wizc", &args)?;
+        let output = super::subcommand::output("wizc", &Config::default()
+            .input(dep.src_path.as_str())
+            .out_dir(target_dir)
+            .name(dep.name.as_str())
+            .type_(BuildType::Library)
+            .libraries(&dep_wlib_paths.iter().map(Deref::deref).collect::<Vec<_>>())
+            .as_args())?;
         println!("{}", String::from_utf8_lossy(&output.stdout));
         if !output.stderr.is_empty() {
             eprintln!("{}", String::from_utf8_lossy(&output.stderr));
