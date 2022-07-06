@@ -113,13 +113,16 @@ fn compile_dependencies(
             .iter()
             .map(|d| format!("{}/{}.wlib", target_dir, d.name))
             .collect::<Vec<_>>();
-        let output = super::subcommand::output("wizc", &Config::default()
-            .input(dep.src_path.as_str())
-            .out_dir(target_dir)
-            .name(dep.name.as_str())
-            .type_(BuildType::Library)
-            .libraries(&dep_wlib_paths.iter().map(Deref::deref).collect::<Vec<_>>())
-            .as_args())?;
+        let output = super::subcommand::output(
+            "wizc",
+            &Config::default()
+                .input(dep.src_path.as_str())
+                .out_dir(target_dir)
+                .name(dep.name.as_str())
+                .type_(BuildType::Library)
+                .libraries(&dep_wlib_paths.iter().map(Deref::deref).collect::<Vec<_>>())
+                .as_args(),
+        )?;
         println!("{}", String::from_utf8_lossy(&output.stdout));
         if !output.stderr.is_empty() {
             eprintln!("{}", String::from_utf8_lossy(&output.stderr));
