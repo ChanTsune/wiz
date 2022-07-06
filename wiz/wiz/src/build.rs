@@ -7,8 +7,8 @@ use clap::ArgMatches;
 use std::collections::{BTreeSet, HashMap, HashSet};
 use std::env;
 use std::fs::create_dir_all;
-use std::path::PathBuf;
 use std::ops::Deref;
+use std::path::PathBuf;
 use wiz_utils::topological_sort::topological_sort;
 use wizc_cli::{BuildType, ConfigBuilder};
 
@@ -49,12 +49,7 @@ pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<()> {
         .out_dir(target_dir.to_str().unwrap())
         .name(ws.cws.file_name().and_then(|p| p.to_str()).unwrap())
         .type_(BuildType::Binary)
-        .libraries(
-            &wlib_paths
-                .iter()
-                .map(Deref::deref)
-                .collect::<Vec<_>>(),
-        );
+        .libraries(&wlib_paths.iter().map(Deref::deref).collect::<Vec<_>>());
 
     config = if let Some(target_triple) = options.value_of("target-triple") {
         config.target_triple(target_triple)
