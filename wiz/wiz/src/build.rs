@@ -6,6 +6,7 @@ use crate::core::Result;
 use clap::ArgMatches;
 use std::collections::{BTreeSet, HashMap, HashSet};
 use std::env;
+use std::ffi::OsStr;
 use std::fs::create_dir_all;
 use std::ops::Deref;
 use std::path::PathBuf;
@@ -47,7 +48,7 @@ pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<()> {
     let mut config = wizc_cli::Config::default()
         .input(ws.cws.to_str().unwrap())
         .out_dir(target_dir.to_str().unwrap())
-        .name(ws.cws.file_name().and_then(|p| p.to_str()).unwrap())
+        .name(ws.cws.file_name().and_then(OsStr::to_str).unwrap())
         .type_(BuildType::Binary)
         .libraries(&wlib_paths.iter().map(Deref::deref).collect::<Vec<_>>());
 
