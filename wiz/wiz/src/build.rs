@@ -8,6 +8,7 @@ use std::collections::{BTreeSet, HashMap, HashSet};
 use std::env;
 use std::fs::create_dir_all;
 use std::path::PathBuf;
+use std::ops::Deref;
 use wiz_utils::topological_sort::topological_sort;
 use wizc_cli::{BuildType, ConfigBuilder};
 
@@ -51,10 +52,7 @@ pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<()> {
         .libraries(
             &wlib_paths
                 .iter()
-                .map(|s| {
-                    let s: &str = s;
-                    s
-                })
+                .map(Deref::deref)
                 .collect::<Vec<_>>(),
         );
 
