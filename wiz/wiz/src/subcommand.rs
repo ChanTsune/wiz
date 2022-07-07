@@ -7,9 +7,8 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
 fn get_executable_path<P: AsRef<Path>>(executable: P) -> Result<PathBuf> {
-    let mut path = env::current_exe()?;
-    path.pop();
-    path.push(&executable);
+    let path = env::current_exe()?;
+    let path = path.with_file_name(executable.as_ref());
     if !path.exists() {
         return Err(Box::new(CliError::from(format!(
             "command `{}` could not find",
