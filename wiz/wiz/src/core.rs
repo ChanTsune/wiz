@@ -7,6 +7,7 @@ use std::error::Error;
 use std::fs::{create_dir_all, File};
 use std::io::{BufWriter, Write};
 use std::path::{Path, PathBuf};
+use clap::ArgMatches;
 
 pub mod dep;
 pub mod error;
@@ -14,6 +15,11 @@ pub mod manifest;
 pub mod workspace;
 
 pub(crate) type Result<T> = std::result::Result<T, Box<dyn Error>>;
+
+pub(crate) trait Cmd {
+    const NAME: &'static str;
+    fn execute(args: &ArgMatches) -> Result<()>;
+}
 
 pub(crate) fn create_project(path: &Path, project_name: &str) -> Result<()> {
     let manifest_path = path.join(MANIFEST_FILE_NAME);

@@ -9,10 +9,11 @@ mod run;
 mod subcommand;
 mod test;
 
-use crate::core::Result;
+use crate::core::{Cmd, Result};
 use ansi_term::Color;
 use clap::{crate_version, Arg, Command};
 use std::process::exit;
+use crate::build::BuildCommand;
 
 fn arg_target_triple() -> Arg<'static> {
     Arg::new("target-triple")
@@ -56,7 +57,7 @@ fn cli() -> Result<()> {
                 ),
         )
         .subcommand(
-            Command::new(build::COMMAND_NAME)
+            Command::new(BuildCommand::NAME)
                 .about("Compile the current package")
                 .arg(Arg::new("target-dir").help("Directory for all generated artifacts"))
                 .arg(arg_target_triple())
@@ -99,7 +100,7 @@ fn cli() -> Result<()> {
     match matches.subcommand() {
         Some((new::COMMAND_NAME, option)) => new::command(new::COMMAND_NAME, option),
         Some((init::COMMAND_NAME, option)) => init::command(init::COMMAND_NAME, option),
-        Some((build::COMMAND_NAME, option)) => build::command(build::COMMAND_NAME, option),
+        Some((BuildCommand::NAME, option)) => BuildCommand::execute(option),
         Some((check::COMMAND_NAME, option)) => check::command(check::COMMAND_NAME, option),
         Some((test::COMMAND_NAME, option)) => test::command(test::COMMAND_NAME, option),
         Some((run::COMMAND_NAME, option)) => run::command(run::COMMAND_NAME, option),

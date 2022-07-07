@@ -1,6 +1,6 @@
 use crate::core::dep::{resolve_manifest_dependencies, ResolvedDependencyTree};
 use crate::core::error::CliError;
-use crate::core::load_project;
+use crate::core::{Cmd, load_project};
 use crate::core::workspace::Workspace;
 use crate::core::Result;
 use clap::ArgMatches;
@@ -13,7 +13,15 @@ use std::path::PathBuf;
 use wiz_utils::topological_sort::topological_sort;
 use wizc_cli::{BuildType, Config, ConfigBuilder};
 
-pub(crate) const COMMAND_NAME: &str = "build";
+pub(crate) struct BuildCommand;
+
+impl Cmd for BuildCommand {
+    const NAME: &'static str = "build";
+
+    fn execute(args: &ArgMatches) -> Result<()> {
+        command(Self::NAME, args)
+    }
+}
 
 pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<()> {
     let manifest_path = options.value_of("manifest-path");
