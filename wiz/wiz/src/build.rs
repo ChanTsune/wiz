@@ -28,6 +28,7 @@ pub(crate) struct Options<'ops> {
     std: Option<&'ops str>,
     target_dir: Option<&'ops str>,
     target_triple: Option<&'ops str>,
+    test: bool,
 }
 
 impl<'ops> Options<'ops> {
@@ -36,12 +37,14 @@ impl<'ops> Options<'ops> {
         std: Option<&'ops str>,
         target_dir: Option<&'ops str>,
         target_triple: Option<&'ops str>,
+        test: bool,
     ) -> Self {
         Self {
             manifest_path,
             std,
             target_dir,
             target_triple,
+            test,
         }
     }
 }
@@ -53,6 +56,7 @@ impl<'ops> From<&'ops ArgMatches> for Options<'ops> {
             args.value_of("std"),
             args.value_of("target-dir"),
             args.value_of("target-triple"),
+            args.is_present("tests"),
         )
     }
 }
@@ -87,7 +91,7 @@ pub(crate) fn command(_: &str, options: Options) -> Result<()> {
         .input(ws.cws.to_str().unwrap())
         .out_dir(target_dir.to_str().unwrap())
         .name(ws.cws.file_name().and_then(OsStr::to_str).unwrap())
-        .type_(BuildType::Binary)
+        .type_(if options.test { BuildType::Test } else { BuildType::Binary })
         .libraries(&wlib_paths.iter().map(Deref::deref).collect::<Vec<_>>());
 
     config = if let Some(target_triple) = options.target_triple {

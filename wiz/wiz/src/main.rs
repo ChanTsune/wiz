@@ -62,7 +62,8 @@ fn cli() -> Result<()> {
                 .arg(Arg::new("target-dir").help("Directory for all generated artifacts"))
                 .arg(arg_target_triple())
                 .arg(arg_manifest_path())
-                .arg(arg_std()),
+                .arg(arg_std())
+                .arg(Arg::new("tests").long("tests")),
         )
         .subcommand(
             Command::new(check::COMMAND_NAME)
