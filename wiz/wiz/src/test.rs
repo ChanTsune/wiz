@@ -1,5 +1,5 @@
-use crate::{BuildCommand, Cmd};
 use crate::core::Result;
+use crate::{BuildCommand, Cmd};
 use clap::ArgMatches;
 
 pub(crate) const COMMAND_NAME: &str = "test";
