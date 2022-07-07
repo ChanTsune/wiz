@@ -1,6 +1,6 @@
 use crate::core::Result;
-use clap::ArgMatches;
 use crate::{BuildCommand, Cmd};
+use clap::ArgMatches;
 
 pub(crate) const COMMAND_NAME: &str = "run";
 
