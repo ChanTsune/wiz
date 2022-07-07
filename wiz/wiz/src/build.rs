@@ -91,7 +91,11 @@ pub(crate) fn command(_: &str, options: Options) -> Result<()> {
         .input(ws.cws.to_str().unwrap())
         .out_dir(target_dir.to_str().unwrap())
         .name(ws.cws.file_name().and_then(OsStr::to_str).unwrap())
-        .type_(if options.test { BuildType::Test } else { BuildType::Binary })
+        .type_(if options.test {
+            BuildType::Test
+        } else {
+            BuildType::Binary
+        })
         .libraries(&wlib_paths.iter().map(Deref::deref).collect::<Vec<_>>());
 
     config = if let Some(target_triple) = options.target_triple {
