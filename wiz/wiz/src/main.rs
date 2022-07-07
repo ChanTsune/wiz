@@ -87,6 +87,7 @@ fn cli() -> Result<()> {
         .subcommand(
             Command::new(test::COMMAND_NAME)
                 .about("Run the tests")
+                .arg(Arg::new("target-dir").help("Directory for all generated artifacts"))
                 .arg(arg_manifest_path())
                 .arg(arg_std()),
         )
