@@ -58,7 +58,6 @@ impl<'ops> From<&'ops ArgMatches> for Options<'ops> {
 }
 
 pub(crate) fn command(_: &str, options: Options) -> Result<()> {
-
     let ws = load_project(options.manifest_path)?;
 
     let resolved_dependencies =
