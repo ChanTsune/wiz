@@ -19,23 +19,54 @@ impl Cmd for BuildCommand {
     const NAME: &'static str = "build";
 
     fn execute(args: &ArgMatches) -> Result<()> {
-        command(Self::NAME, args)
+        command(Self::NAME, Options::from(args))
     }
 }
 
-pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<()> {
-    let manifest_path = options.value_of("manifest-path");
+pub(crate) struct Options<'ops> {
+    manifest_path: Option<&'ops str>,
+    std: Option<&'ops str>,
+    target_dir: Option<&'ops str>,
+    target_triple: Option<&'ops str>,
+}
 
-    let another_std = options.value_of("std");
+impl<'ops> Options<'ops> {
+    pub(crate) fn new(
+        manifest_path: Option<&'ops str>,
+        std: Option<&'ops str>,
+        target_dir: Option<&'ops str>,
+        target_triple: Option<&'ops str>,
+    ) -> Self {
+        Self {
+            manifest_path,
+            std,
+            target_dir,
+            target_triple,
+        }
+    }
+}
 
-    let ws = load_project(manifest_path)?;
+impl<'ops> From<&'ops ArgMatches> for Options<'ops> {
+    fn from(args: &'ops ArgMatches) -> Self {
+        Self::new(
+            args.value_of("manifest-path"),
+            args.value_of("std"),
+            args.value_of("target-dir"),
+            args.value_of("target-triple"),
+        )
+    }
+}
+
+pub(crate) fn command(_: &str, options: Options) -> Result<()> {
+
+    let ws = load_project(options.manifest_path)?;
 
     let resolved_dependencies =
-        resolve_manifest_dependencies(&ws.cws, &ws.get_manifest()?, another_std)?;
+        resolve_manifest_dependencies(&ws.cws, &ws.get_manifest()?, options.std)?;
 
     println!("{:?}", resolved_dependencies);
 
-    let target_dir = if let Some(target_dir) = options.value_of("target-dir") {
+    let target_dir = if let Some(target_dir) = options.target_dir {
         let d = PathBuf::from(target_dir);
         if d.exists() && !d.is_dir() {
             return Err(Box::from(CliError::from(format!(
@@ -53,14 +84,14 @@ pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<()> {
     let wlib_paths =
         compile_dependencies(&ws, resolved_dependencies, target_dir.to_str().unwrap())?;
 
-    let mut config = wizc_cli::Config::default()
+    let mut config = Config::default()
         .input(ws.cws.to_str().unwrap())
         .out_dir(target_dir.to_str().unwrap())
         .name(ws.cws.file_name().and_then(OsStr::to_str).unwrap())
         .type_(BuildType::Binary)
         .libraries(&wlib_paths.iter().map(Deref::deref).collect::<Vec<_>>());
 
-    config = if let Some(target_triple) = options.value_of("target-triple") {
+    config = if let Some(target_triple) = options.target_triple {
         config.target_triple(target_triple)
     } else {
         config
