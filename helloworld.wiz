@@ -96,6 +96,7 @@ fun file_io() {
     println("...bye")
 }
 
+#[entry]
 fun main() {
     println(true)
     println(false)
