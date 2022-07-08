@@ -5,7 +5,7 @@ use core::result;
 use std::collections::HashMap;
 use std::error::Error;
 use wiz_constants as constants;
-use wiz_constants::annotation::{BUILTIN, NO_MANGLE};
+use wiz_constants::annotation::{BUILTIN, ENTRY, NO_MANGLE};
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_decl::{
     TypedArgDef, TypedDecl, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody,
@@ -342,6 +342,8 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
         let package_mangled_name = self.package_name_mangling_(&package, &name);
         let mangled_name = if annotations.has_annotate(NO_MANGLE) {
             name
+        } else if annotations.has_annotate(ENTRY) {
+            String::from("main")
         } else {
             let fun_arg_label_type_mangled_name = self.fun_arg_label_type_name_mangling(&arg_defs);
             if fun_arg_label_type_mangled_name.is_empty() {
