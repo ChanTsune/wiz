@@ -335,10 +335,10 @@ impl<'arena> HLIR2MLIR<'arena> {
             body,
             return_type,
         } = f;
-        let package_mangled_name = self.package_name_mangling_(&package, &name);
         let mangled_name = if annotations.has_annotate(NO_MANGLE) {
             name
         } else {
+            let package_mangled_name = self.package_name_mangling_(&package, &name);
             let fun_arg_label_type_mangled_name = self.fun_arg_label_type_name_mangling(&arg_defs);
             if fun_arg_label_type_mangled_name.is_empty() {
                 package_mangled_name
