@@ -122,6 +122,9 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
         if generate_test_harness_if_needed && BuildType::Test == self.config.type_() {
             let test_harness = self.generate_test_harness();
             self.module._add_function(FunBuilder::from(test_harness));
+            for test in self.tests.clone() {
+                self.module._add_function(FunBuilder::from(test));
+            }
         };
         self.module.to_mlir_file(name)
     }
