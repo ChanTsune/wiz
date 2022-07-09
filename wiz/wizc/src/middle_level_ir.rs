@@ -112,7 +112,11 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
         Ok(())
     }
 
-    pub fn convert_from_source_set(&mut self, s: TypedSourceSet, generate_test_harness_if_needed: bool) -> MLFile {
+    pub fn convert_from_source_set(
+        &mut self,
+        s: TypedSourceSet,
+        generate_test_harness_if_needed: bool,
+    ) -> MLFile {
         let name = s.name().to_string();
         self.source_set(s).unwrap();
         if generate_test_harness_if_needed && BuildType::Test == self.config.type_() {
@@ -935,29 +939,31 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
             .collect::<Vec<_>>()
             .join("##")
     }
-    
+
     fn generate_test_harness(&self) -> MLFun {
         MLFun {
             name: "main".to_string(),
             arg_defs: vec![],
             return_type: MLValueType::Primitive(MLPrimitiveType::Unit),
             body: Some(MLFunBody {
-                body: self.tests.iter().map(|n|{
-                    MLStmt::Expr(MLExpr::Call(MLCall {
-                        target: MLName {
-                            name: n.name.clone(),
-                            type_: MLType::Function(MLFunctionType {
-                                arguments: n.arg_defs.iter().map(|i|{
-                                    i.type_.clone()
-                                }).collect(),
-                                return_type: n.return_type.clone()
-                            })
-                        },
-                        args: vec![],
-                        type_: n.return_type.clone()
-                    }))
-                }).collect()
-            })
+                body: self
+                    .tests
+                    .iter()
+                    .map(|n| {
+                        MLStmt::Expr(MLExpr::Call(MLCall {
+                            target: MLName {
+                                name: n.name.clone(),
+                                type_: MLType::Function(MLFunctionType {
+                                    arguments: n.arg_defs.iter().map(|i| i.type_.clone()).collect(),
+                                    return_type: n.return_type.clone(),
+                                }),
+                            },
+                            args: vec![],
+                            type_: n.return_type.clone(),
+                        }))
+                    })
+                    .collect(),
+            }),
         }
     }
 }
