@@ -5,7 +5,7 @@ use core::result;
 use std::collections::HashMap;
 use std::error::Error;
 use wiz_constants as constants;
-use wiz_constants::annotation::{BUILTIN, ENTRY, NO_MANGLE};
+use wiz_constants::annotation::{BUILTIN, ENTRY, NO_MANGLE, TEST};
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_decl::{
     TypedArgDef, TypedDecl, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody,
@@ -32,6 +32,7 @@ use wiz_mir::ml_decl::{MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, ML
 use wiz_mir::ml_file::MLFile;
 use wiz_mir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
 use wiz_mir::statement::{MLAssignmentStmt, MLLoopStmt, MLReturn, MLStmt};
+use wizc_cli::{BuildType, Config, ConfigExt};
 
 mod context;
 #[cfg(test)]
@@ -39,29 +40,35 @@ mod tests;
 
 pub type Result<T> = result::Result<T, Box<dyn Error>>;
 
-pub fn hlir2mlir<'arena>(
+pub fn hlir2mlir<'a, 'c>(
     target: TypedSourceSet,
-    dependencies: &'arena [MLFile],
-    arena: &'arena ResolverArena,
+    dependencies: &'a [MLFile],
+    arena: &'a ResolverArena,
+    config: &'a Config<'c>,
+    generate_test_harness_if_needed: bool,
 ) -> Result<MLFile> {
-    let mut converter = HLIR2MLIR::new(arena);
+    let mut converter = HLIR2MLIR::new(config, arena);
     converter.load_dependencies(dependencies)?;
-    Ok(converter.convert_from_source_set(target))
+    Ok(converter.convert_from_source_set(target, generate_test_harness_if_needed))
 }
 
 #[derive(Debug)]
-pub struct HLIR2MLIR<'arena> {
-    arena: &'arena ResolverArena,
+pub struct HLIR2MLIR<'a, 'c> {
+    config: &'a Config<'c>,
+    arena: &'a ResolverArena,
     context: HLIR2MLIRContext,
     module: MLIRModule,
+    tests: Vec<MLFun>,
 }
 
-impl<'arena> HLIR2MLIR<'arena> {
-    pub fn new(arena: &'arena ResolverArena) -> Self {
+impl<'a, 'c> HLIR2MLIR<'a, 'c> {
+    pub fn new(config: &'a Config<'c>, arena: &'a ResolverArena) -> Self {
         Self {
+            config,
             arena,
             context: Default::default(),
             module: Default::default(),
+            tests: Default::default(),
         }
     }
 
@@ -105,9 +112,20 @@ impl<'arena> HLIR2MLIR<'arena> {
         Ok(())
     }
 
-    pub fn convert_from_source_set(&mut self, s: TypedSourceSet) -> MLFile {
+    pub fn convert_from_source_set(
+        &mut self,
+        s: TypedSourceSet,
+        generate_test_harness_if_needed: bool,
+    ) -> MLFile {
         let name = s.name().to_string();
         self.source_set(s).unwrap();
+        if generate_test_harness_if_needed && BuildType::Test == self.config.type_() {
+            let test_harness = self.generate_test_harness();
+            self.module._add_function(FunBuilder::from(test_harness));
+            for test in self.tests.clone() {
+                self.module._add_function(FunBuilder::from(test));
+            }
+        };
         self.module.to_mlir_file(name)
     }
 
@@ -270,9 +288,16 @@ impl<'arena> HLIR2MLIR<'arena> {
                 self.module.add_global_var(v);
             }
             TypedDeclKind::Fun(f) => {
-                if !f.is_generic() {
-                    let f = FunBuilder::from(self.fun(f, annotations, package, None));
-                    self.module._add_function(f);
+                if BuildType::Test == self.config.type_() && annotations.has_annotate(TEST) {
+                    if !f.is_generic() {
+                        let f = self.fun(f, annotations, package, None);
+                        self.tests.push(f);
+                    }
+                } else {
+                    if !f.is_generic() {
+                        let f = FunBuilder::from(self.fun(f, annotations, package, None));
+                        self.module._add_function(f);
+                    }
                 }
             }
             TypedDeclKind::Struct(s) => {
@@ -338,7 +363,7 @@ impl<'arena> HLIR2MLIR<'arena> {
         let package_mangled_name = self.package_name_mangling_(&package, &name);
         let mangled_name = if annotations.has_annotate(NO_MANGLE) {
             name
-        } else if annotations.has_annotate(ENTRY) {
+        } else if annotations.has_annotate(ENTRY) && self.config.type_() == BuildType::Binary {
             String::from("main")
         } else {
             let fun_arg_label_type_mangled_name = self.fun_arg_label_type_name_mangling(&arg_defs);
@@ -896,7 +921,7 @@ impl<'arena> HLIR2MLIR<'arena> {
     }
 
     fn package_name_mangling_(&self, package: &Package, name: &str) -> String {
-        if package.is_global() || name == "main" {
+        if package.is_global() || (name == "main" && self.config.type_() == BuildType::Binary) {
             String::from(name)
         } else {
             package.to_string() + "::" + name
@@ -916,5 +941,32 @@ impl<'arena> HLIR2MLIR<'arena> {
             .map(|arg| format!("{}#{}", arg.label, arg.type_.to_string()))
             .collect::<Vec<_>>()
             .join("##")
+    }
+
+    fn generate_test_harness(&self) -> MLFun {
+        MLFun {
+            name: "main".to_string(),
+            arg_defs: vec![],
+            return_type: MLValueType::Primitive(MLPrimitiveType::Unit),
+            body: Some(MLFunBody {
+                body: self
+                    .tests
+                    .iter()
+                    .map(|n| {
+                        MLStmt::Expr(MLExpr::Call(MLCall {
+                            target: MLName {
+                                name: n.name.clone(),
+                                type_: MLType::Function(MLFunctionType {
+                                    arguments: n.arg_defs.iter().map(|i| i.type_.clone()).collect(),
+                                    return_type: n.return_type.clone(),
+                                }),
+                            },
+                            args: vec![],
+                            type_: n.return_type.clone(),
+                        }))
+                    })
+                    .collect(),
+            }),
+        }
     }
 }

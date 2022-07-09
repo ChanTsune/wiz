@@ -1,6 +1,7 @@
 use crate::constant::MANIFEST_FILE_NAME;
 use crate::core::manifest::{Manifest, PackageInfo};
 use crate::core::workspace::{construct_workspace_from, Workspace};
+use clap::ArgMatches;
 use std::collections::BTreeMap;
 use std::env;
 use std::error::Error;
@@ -13,7 +14,14 @@ pub mod error;
 pub mod manifest;
 pub mod workspace;
 
-pub(crate) fn create_project(path: &Path, project_name: &str) -> Result<(), Box<dyn Error>> {
+pub(crate) type Result<T> = std::result::Result<T, Box<dyn Error>>;
+
+pub(crate) trait Cmd {
+    const NAME: &'static str;
+    fn execute(args: &ArgMatches) -> Result<()>;
+}
+
+pub(crate) fn create_project(path: &Path, project_name: &str) -> Result<()> {
     let manifest_path = path.join(MANIFEST_FILE_NAME);
     manifest::write(
         &manifest_path,
@@ -46,7 +54,7 @@ fun main() {{
     Ok(())
 }
 
-pub(crate) fn load_project(path: Option<&str>) -> Result<Workspace, Box<dyn Error>> {
+pub(crate) fn load_project(path: Option<&str>) -> Result<Workspace> {
     let manifest_path = if let Some(manifest_path) = path {
         PathBuf::from(manifest_path).parent().unwrap().to_path_buf()
     } else {

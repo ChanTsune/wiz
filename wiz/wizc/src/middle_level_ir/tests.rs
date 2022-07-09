@@ -12,6 +12,7 @@ use wiz_mir::statement::{MLReturn, MLStmt};
 use wiz_session::Session;
 use wiz_syntax::syntax::file::SourceSet;
 use wiz_syntax_parser::parser::wiz::parse_from_string;
+use wizc_cli::Config;
 
 fn check(source: &str, except: MLFile) {
     let ast = parse_from_string(source, Some(&except.name)).unwrap();
@@ -26,9 +27,11 @@ fn check(source: &str, except: MLFile) {
         .lowing(SourceSet::File(ast), TypedModuleId::DUMMY)
         .unwrap();
 
-    let mut hlir2mlir = HLIR2MLIR::new(&mut arena);
+    let config = Config::default();
 
-    let f = hlir2mlir.convert_from_source_set(hl_ss);
+    let mut hlir2mlir = HLIR2MLIR::new(&config, &mut arena);
+
+    let f = hlir2mlir.convert_from_source_set(hl_ss, false);
 
     assert_eq!(f, except);
 }

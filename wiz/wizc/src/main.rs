@@ -18,7 +18,7 @@ use wiz_session::Session;
 use wiz_syntax::syntax::file::SourceSet;
 use wiz_syntax_parser::parser;
 use wiz_syntax_parser::parser::wiz::{parse_from_file_path, read_package_from_path};
-use wizc_cli::{BuildType, Config};
+use wizc_cli::{BuildType, Config, ConfigExt};
 
 mod high_level_ir;
 mod llvm_ir;
@@ -55,7 +55,6 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<(), Box<dyn Err
     let out_dir = out_dir
         .map(PathBuf::from)
         .unwrap_or_else(|| env::current_dir().unwrap());
-    let build_type = config.type_().unwrap_or(BuildType::Binary);
 
     let mlir_out_dir = out_dir.join("mlir");
 
@@ -123,7 +122,7 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<(), Box<dyn Err
         let mut type_checker = TypeChecker::new(session, &arena);
         type_checker.verify(&hlfiles);
     });
-    match build_type {
+    match config.type_() {
         BuildType::Library => {
             let wlib = WLib::new(hlfiles);
             let wlib_path = out_dir.join(format!("{}.wlib", config.name().unwrap_or_default()));
@@ -136,11 +135,11 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<(), Box<dyn Err
 
     println!("===== convert to mlir =====");
 
-    let mut h2m = HLIR2MLIR::new(&arena);
+    let mut h2m = HLIR2MLIR::new(&config, &arena);
 
     let std_mlir = std_hlir
         .into_iter()
-        .map(|w| h2m.convert_from_source_set(w))
+        .map(|w| h2m.convert_from_source_set(w, false))
         .collect::<Vec<_>>();
 
     fs::create_dir_all(&mlir_out_dir)?;
@@ -151,7 +150,7 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<(), Box<dyn Err
         })?;
     }
 
-    let mlfile = hlir2mlir(hlfiles, &std_mlir, &arena)?;
+    let mlfile = hlir2mlir(hlfiles, &std_mlir, &arena, &config, true)?;
 
     session.timer(&format!("write mlir `{}`", mlfile.name), |_| {
         let mut f = fs::File::create(mlir_out_dir.join(&mlfile.name))?;

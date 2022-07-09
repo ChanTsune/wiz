@@ -1,30 +1,75 @@
 use crate::core::dep::{resolve_manifest_dependencies, ResolvedDependencyTree};
 use crate::core::error::CliError;
-use crate::core::load_project;
 use crate::core::workspace::Workspace;
+use crate::core::Result;
+use crate::core::{load_project, Cmd};
 use clap::ArgMatches;
 use std::collections::{BTreeSet, HashMap, HashSet};
 use std::env;
-use std::error::Error;
+use std::ffi::OsStr;
 use std::fs::create_dir_all;
+use std::ops::Deref;
 use std::path::PathBuf;
 use wiz_utils::topological_sort::topological_sort;
+use wizc_cli::{BuildType, Config, ConfigBuilder};
 
-pub(crate) const COMMAND_NAME: &str = "build";
+pub(crate) struct BuildCommand;
 
-pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn Error>> {
-    let manifest_path = options.value_of("manifest-path");
+impl Cmd for BuildCommand {
+    const NAME: &'static str = "build";
 
-    let another_std = options.value_of("std");
+    fn execute(args: &ArgMatches) -> Result<()> {
+        command(Self::NAME, Options::from(args))
+    }
+}
 
-    let ws = load_project(manifest_path)?;
+pub(crate) struct Options<'ops> {
+    manifest_path: Option<&'ops str>,
+    std: Option<&'ops str>,
+    target_dir: Option<&'ops str>,
+    target_triple: Option<&'ops str>,
+    test: bool,
+}
+
+impl<'ops> Options<'ops> {
+    pub(crate) fn new(
+        manifest_path: Option<&'ops str>,
+        std: Option<&'ops str>,
+        target_dir: Option<&'ops str>,
+        target_triple: Option<&'ops str>,
+        test: bool,
+    ) -> Self {
+        Self {
+            manifest_path,
+            std,
+            target_dir,
+            target_triple,
+            test,
+        }
+    }
+}
+
+impl<'ops> From<&'ops ArgMatches> for Options<'ops> {
+    fn from(args: &'ops ArgMatches) -> Self {
+        Self::new(
+            args.value_of("manifest-path"),
+            args.value_of("std"),
+            args.value_of("target-dir"),
+            args.value_of("target-triple"),
+            args.is_present("tests"),
+        )
+    }
+}
+
+pub(crate) fn command(_: &str, options: Options) -> Result<()> {
+    let ws = load_project(options.manifest_path)?;
 
     let resolved_dependencies =
-        resolve_manifest_dependencies(&ws.cws, &ws.get_manifest()?, another_std)?;
+        resolve_manifest_dependencies(&ws.cws, &ws.get_manifest()?, options.std)?;
 
     println!("{:?}", resolved_dependencies);
 
-    let target_dir = if let Some(target_dir) = options.value_of("target-dir") {
+    let target_dir = if let Some(target_dir) = options.target_dir {
         let d = PathBuf::from(target_dir);
         if d.exists() && !d.is_dir() {
             return Err(Box::from(CliError::from(format!(
@@ -42,24 +87,24 @@ pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn Error
     let wlib_paths =
         compile_dependencies(&ws, resolved_dependencies, target_dir.to_str().unwrap())?;
 
-    let mut args = vec![ws.cws.to_str().unwrap()];
-    args.extend(["--out-dir", target_dir.to_str().unwrap()]);
+    let mut config = Config::default()
+        .input(ws.cws.to_str().unwrap())
+        .out_dir(target_dir.to_str().unwrap())
+        .name(ws.cws.file_name().and_then(OsStr::to_str).unwrap())
+        .type_(if options.test {
+            BuildType::Test
+        } else {
+            BuildType::Binary
+        })
+        .libraries(&wlib_paths.iter().map(Deref::deref).collect::<Vec<_>>());
 
-    args.extend([
-        "--name",
-        ws.cws.file_name().and_then(|p| p.to_str()).unwrap(),
-    ]);
-    args.extend(["--type", "bin"]);
-
-    for wlib_path in wlib_paths.iter() {
-        args.extend(["--library", wlib_path]);
-    }
-
-    if let Some(target_triple) = options.value_of("target-triple") {
-        args.extend(["--target-triple", target_triple]);
+    config = if let Some(target_triple) = options.target_triple {
+        config.target_triple(target_triple)
+    } else {
+        config
     };
 
-    super::subcommand::execute("wizc", &args)
+    super::subcommand::execute("wizc", &config.as_args())
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
@@ -103,7 +148,7 @@ fn compile_dependencies(
     ws: &Workspace,
     dependencies: ResolvedDependencyTree,
     target_dir: &str,
-) -> Result<BTreeSet<String>, Box<dyn Error>> {
+) -> Result<BTreeSet<String>> {
     let mut wlib_paths = BTreeSet::new();
     let dependen_list = dependency_list(dependencies);
     let dep_list = topological_sort(dependen_list.clone())?;
@@ -114,14 +159,16 @@ fn compile_dependencies(
             .iter()
             .map(|d| format!("{}/{}.wlib", target_dir, d.name))
             .collect::<Vec<_>>();
-        let mut args = vec![dep.src_path.as_str()];
-        args.extend(["--out-dir", target_dir]);
-        args.extend(["--name", dep.name.as_str()]);
-        args.extend(["--type", "lib"]);
-        for wlib_path in dep_wlib_paths.iter() {
-            args.extend(["--library", wlib_path]);
-        }
-        let output = super::subcommand::output("wizc", &args)?;
+        let output = super::subcommand::output(
+            "wizc",
+            &Config::default()
+                .input(dep.src_path.as_str())
+                .out_dir(target_dir)
+                .name(dep.name.as_str())
+                .type_(BuildType::Library)
+                .libraries(&dep_wlib_paths.iter().map(Deref::deref).collect::<Vec<_>>())
+                .as_args(),
+        )?;
         println!("{}", String::from_utf8_lossy(&output.stdout));
         if !output.stderr.is_empty() {
             eprintln!("{}", String::from_utf8_lossy(&output.stderr));

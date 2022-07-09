@@ -1,7 +1,7 @@
 use crate::constant::MANIFEST_FILE_NAME;
 use crate::core::error::CliError;
 use crate::core::manifest::{self, Manifest};
-use std::error::Error;
+use crate::core::Result;
 use std::path::{Path, PathBuf};
 
 #[derive(Debug)]
@@ -11,7 +11,7 @@ pub(crate) struct Workspace {
 }
 
 impl Workspace {
-    pub(crate) fn get_manifest(&self) -> Result<Manifest, Box<dyn Error>> {
+    pub(crate) fn get_manifest(&self) -> Result<Manifest> {
         if self.manifest_path.exists() {
             Ok(manifest::read(&self.manifest_path)?)
         } else {
@@ -23,7 +23,7 @@ impl Workspace {
     }
 }
 
-pub(crate) fn construct_workspace_from(cws: &Path) -> Result<Workspace, Box<dyn Error>> {
+pub(crate) fn construct_workspace_from(cws: &Path) -> Result<Workspace> {
     let cws = cws.to_path_buf();
     if !cws.is_dir() {
         return Err(Box::new(CliError::from(format!(
