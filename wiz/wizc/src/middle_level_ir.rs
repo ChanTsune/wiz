@@ -956,7 +956,7 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
             return_type: MLValueType::Primitive(MLPrimitiveType::Size),
             body: Some(MLFunBody {
                 body: {
-                    let mut tests:Vec<_> = self
+                    let mut tests: Vec<_> = self
                         .tests
                         .iter()
                         .map(|n| {
@@ -964,7 +964,11 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
                                 target: MLName {
                                     name: n.name.clone(),
                                     type_: MLType::Function(MLFunctionType {
-                                        arguments: n.arg_defs.iter().map(|i| i.type_.clone()).collect(),
+                                        arguments: n
+                                            .arg_defs
+                                            .iter()
+                                            .map(|i| i.type_.clone())
+                                            .collect(),
                                         return_type: n.return_type.clone(),
                                     }),
                                 },
@@ -973,12 +977,12 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
                             }))
                         })
                         .collect();
-                    tests.push(
-                        MLStmt::Return(MLReturn::new(Some(MLExpr::Literal(MLLiteral {
+                    tests.push(MLStmt::Return(MLReturn::new(Some(MLExpr::Literal(
+                        MLLiteral {
                             kind: MLLiteralKind::Integer("0".to_string()),
-                            type_: MLValueType::Primitive(MLPrimitiveType::Size)
-                        }))))
-                    );
+                            type_: MLValueType::Primitive(MLPrimitiveType::Size),
+                        },
+                    )))));
                     tests
                 },
             }),
