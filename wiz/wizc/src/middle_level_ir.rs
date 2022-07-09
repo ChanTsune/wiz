@@ -953,25 +953,34 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
         MLFun {
             name: "main".to_string(),
             arg_defs: vec![],
-            return_type: MLValueType::Primitive(MLPrimitiveType::Unit),
+            return_type: MLValueType::Primitive(MLPrimitiveType::Size),
             body: Some(MLFunBody {
-                body: self
-                    .tests
-                    .iter()
-                    .map(|n| {
-                        MLStmt::Expr(MLExpr::Call(MLCall {
-                            target: MLName {
-                                name: n.name.clone(),
-                                type_: MLType::Function(MLFunctionType {
-                                    arguments: n.arg_defs.iter().map(|i| i.type_.clone()).collect(),
-                                    return_type: n.return_type.clone(),
-                                }),
-                            },
-                            args: vec![],
-                            type_: n.return_type.clone(),
-                        }))
-                    })
-                    .collect(),
+                body: {
+                    let mut tests:Vec<_> = self
+                        .tests
+                        .iter()
+                        .map(|n| {
+                            MLStmt::Expr(MLExpr::Call(MLCall {
+                                target: MLName {
+                                    name: n.name.clone(),
+                                    type_: MLType::Function(MLFunctionType {
+                                        arguments: n.arg_defs.iter().map(|i| i.type_.clone()).collect(),
+                                        return_type: n.return_type.clone(),
+                                    }),
+                                },
+                                args: vec![],
+                                type_: n.return_type.clone(),
+                            }))
+                        })
+                        .collect();
+                    tests.push(
+                        MLStmt::Return(MLReturn::new(Some(MLExpr::Literal(MLLiteral {
+                            kind: MLLiteralKind::Integer("0".to_string()),
+                            type_: MLValueType::Primitive(MLPrimitiveType::Size)
+                        }))))
+                    );
+                    tests
+                },
             }),
         }
     }
