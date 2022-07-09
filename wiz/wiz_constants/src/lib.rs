@@ -27,4 +27,5 @@ pub mod annotation {
     pub const BUILTIN: &str = "builtin";
     pub const ENTRY: &str = "entry";
     pub const NO_MANGLE: &str = "no_mangle";
+    pub const TEST: &str = "test";
 }

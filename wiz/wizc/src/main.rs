@@ -139,7 +139,7 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<(), Box<dyn Err
 
     let std_mlir = std_hlir
         .into_iter()
-        .map(|w| h2m.convert_from_source_set(w))
+        .map(|w| h2m.convert_from_source_set(w, false))
         .collect::<Vec<_>>();
 
     fs::create_dir_all(&mlir_out_dir)?;
@@ -150,7 +150,7 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<(), Box<dyn Err
         })?;
     }
 
-    let mlfile = hlir2mlir(hlfiles, &std_mlir, &arena, &config)?;
+    let mlfile = hlir2mlir(hlfiles, &std_mlir, &arena, &config, true)?;
 
     session.timer(&format!("write mlir `{}`", mlfile.name), |_| {
         let mut f = fs::File::create(mlir_out_dir.join(&mlfile.name))?;

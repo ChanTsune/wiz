@@ -31,7 +31,7 @@ fn check(source: &str, except: MLFile) {
 
     let mut hlir2mlir = HLIR2MLIR::new(&config, &mut arena);
 
-    let f = hlir2mlir.convert_from_source_set(hl_ss);
+    let f = hlir2mlir.convert_from_source_set(hl_ss, false);
 
     assert_eq!(f, except);
 }
