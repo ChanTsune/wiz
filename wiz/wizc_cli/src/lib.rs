@@ -2,7 +2,7 @@ mod config;
 
 use clap::{Arg, Command};
 pub use config::build_type::BuildType;
-pub use config::Config;
+pub use config::{Config, ConfigBuilder, ConfigExt};
 
 pub fn app(name: &str) -> Command {
     Command::new(name)
@@ -44,6 +44,7 @@ fn short(name: &str, s: char) -> Arg {
 
 #[cfg(test)]
 mod tests {
+    use super::ConfigExt;
     use std::path::PathBuf;
 
     #[test]

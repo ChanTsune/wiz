@@ -1,15 +1,14 @@
 use crate::core::error::{CliError, ProcessError};
+use crate::core::Result;
 use std::env;
-use std::error::Error;
 use std::ffi::OsStr;
 use std::os::unix::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
-fn get_executable_path<P: AsRef<Path>>(executable: P) -> Result<PathBuf, Box<dyn Error>> {
-    let mut path = env::current_exe()?;
-    path.pop();
-    path.push(&executable);
+fn get_executable_path<P: AsRef<Path>>(executable: P) -> Result<PathBuf> {
+    let path = env::current_exe()?;
+    let path = path.with_file_name(executable.as_ref());
     if !path.exists() {
         return Err(Box::new(CliError::from(format!(
             "command `{}` could not find",
@@ -19,7 +18,7 @@ fn get_executable_path<P: AsRef<Path>>(executable: P) -> Result<PathBuf, Box<dyn
     Ok(path)
 }
 
-pub(crate) fn execute(executable: &str, args: &[&str]) -> Result<(), Box<dyn Error>> {
+pub(crate) fn execute(executable: &str, args: &[&str]) -> Result<()> {
     let executable_path = get_executable_path(executable)?;
     let mut command = Command::new(executable_path);
     command.args(args);
@@ -33,7 +32,7 @@ pub(crate) fn execute(executable: &str, args: &[&str]) -> Result<(), Box<dyn Err
     Ok(())
 }
 
-pub(crate) fn output<P, S, I>(executable: P, args: I) -> Result<Output, Box<dyn Error>>
+pub(crate) fn output<P, S, I>(executable: P, args: I) -> Result<Output>
 where
     I: IntoIterator<Item = S>,
     S: AsRef<OsStr>,

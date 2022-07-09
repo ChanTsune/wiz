@@ -9,7 +9,7 @@ pub struct Session {
 }
 
 impl Session {
-    pub fn new() -> Session {
+    pub fn new() -> Self {
         Session::default()
     }
 

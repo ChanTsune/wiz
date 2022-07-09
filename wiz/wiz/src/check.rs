@@ -1,11 +1,11 @@
 use crate::core::dep::resolve_manifest_dependencies;
 use crate::core::load_project;
+use crate::core::Result;
 use clap::ArgMatches;
-use std::error::Error;
 
 pub(crate) const COMMAND_NAME: &str = "check";
 
-pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<(), Box<dyn Error>> {
+pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<()> {
     let manifest_path = options.value_of("manifest-path");
 
     let another_std = options.value_of("std");

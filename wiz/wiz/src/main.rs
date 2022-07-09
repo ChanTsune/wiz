@@ -5,12 +5,14 @@ mod core;
 mod external_subcommand;
 mod init;
 mod new;
+mod run;
 mod subcommand;
 mod test;
 
+use crate::build::BuildCommand;
+use crate::core::{Cmd, Result};
 use ansi_term::Color;
 use clap::{crate_version, Arg, Command};
-use std::error::Error;
 use std::process::exit;
 
 fn arg_target_triple() -> Arg<'static> {
@@ -34,7 +36,7 @@ fn arg_std() -> Arg<'static> {
         .help("Use another std library")
 }
 
-fn cli() -> Result<(), Box<dyn Error>> {
+fn cli() -> Result<()> {
     let app = Command::new("wiz")
         .version(crate_version!())
         .about("Wiz's package manager")
@@ -55,12 +57,13 @@ fn cli() -> Result<(), Box<dyn Error>> {
                 ),
         )
         .subcommand(
-            Command::new(build::COMMAND_NAME)
+            Command::new(BuildCommand::NAME)
                 .about("Compile the current package")
                 .arg(Arg::new("target-dir").help("Directory for all generated artifacts"))
                 .arg(arg_target_triple())
                 .arg(arg_manifest_path())
-                .arg(arg_std()),
+                .arg(arg_std())
+                .arg(Arg::new("tests").long("tests")),
         )
         .subcommand(
             Command::new(check::COMMAND_NAME)
@@ -74,8 +77,17 @@ fn cli() -> Result<(), Box<dyn Error>> {
                 .arg(arg_std()),
         )
         .subcommand(
+            Command::new(run::COMMAND_NAME)
+                .about("Run a binary or example of the local package")
+                .arg(Arg::new("target-dir").help("Directory for all generated artifacts"))
+                .arg(arg_target_triple())
+                .arg(arg_manifest_path())
+                .arg(arg_std()),
+        )
+        .subcommand(
             Command::new(test::COMMAND_NAME)
                 .about("Run the tests")
+                .arg(Arg::new("target-dir").help("Directory for all generated artifacts"))
                 .arg(arg_manifest_path())
                 .arg(arg_std()),
         )
@@ -90,9 +102,10 @@ fn cli() -> Result<(), Box<dyn Error>> {
     match matches.subcommand() {
         Some((new::COMMAND_NAME, option)) => new::command(new::COMMAND_NAME, option),
         Some((init::COMMAND_NAME, option)) => init::command(init::COMMAND_NAME, option),
-        Some((build::COMMAND_NAME, option)) => build::command(build::COMMAND_NAME, option),
+        Some((BuildCommand::NAME, option)) => BuildCommand::execute(option),
         Some((check::COMMAND_NAME, option)) => check::command(check::COMMAND_NAME, option),
         Some((test::COMMAND_NAME, option)) => test::command(test::COMMAND_NAME, option),
+        Some((run::COMMAND_NAME, option)) => run::command(run::COMMAND_NAME, option),
         Some((cmd, option)) => external_subcommand::try_execute(cmd, option),
         _ => panic!(),
     }?;
