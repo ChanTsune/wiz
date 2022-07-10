@@ -44,9 +44,9 @@ struct UInt8Vector {
                 val newCapacity = if self.capacity == 0 { 4 } else { self.capacity * 2 }
                 self.reserve(newCapacity)
             }
+            self.length += 1
             memmove(self.ptr + index, self.ptr + index - 1, self.length - index)
             self.ptr[index] = element
-            self.length += 1
         }
     }
 
