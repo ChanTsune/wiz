@@ -109,3 +109,136 @@ extension UInt8Vector: Clonable {
         return Self(ptr: ptr, length: self.length, capacity: self.capacity, allocator: self.allocator)
     }
 }
+
+
+#[test]
+fun test_vector_init() {
+    val vec = UInt8Vector::new()
+    assert(vec.length == 0)
+}
+
+#[test]
+fun test_vector_push() {
+    val vec = UInt8Vector::new()
+    vec.push(element: 1 as UInt8)
+    assert(vec.length == 1)
+    assert(vec.get(index: 0) == 1)
+}
+
+#[test]
+fun test_vector_pop() {
+    val vec = UInt8Vector::new()
+    vec.push(element: 1 as UInt8)
+    vec.push(element: 2 as UInt8)
+    vec.push(element: 3 as UInt8)
+    assert(vec.pop() == 3)
+    assert(vec.pop() == 2)
+    assert(vec.pop() == 1)
+    assert(vec.pop() == -1 as UInt8)
+}
+
+#[test]
+fun test_vector_swap() {
+    val vec = UInt8Vector::new()
+    vec.push(element: 1 as UInt8)
+    vec.push(element: 2 as UInt8)
+    vec.push(element: 3 as UInt8)
+    assert(vec.swap(index: 0, element: 4 as UInt8) == 1)
+    assert(vec.swap(index: 1, element: 5 as UInt8) == 2)
+    assert(vec.swap(index: 2, element: 6 as UInt8) == 3)
+    assert(vec.length == 3)
+    assert(vec.get(index: 0) == 4)
+    assert(vec.get(index: 1) == 5)
+    assert(vec.get(index: 2) == 6)
+}
+
+#[test]
+fun test_vector_isEmpty() {
+    val vec = UInt8Vector::new()
+    assert(vec.isEmpty())
+
+    vec.push(element: 1 as UInt8)
+    assert(!vec.isEmpty())
+}
+
+#[test]
+fun test_vector_insert() {
+    val vec = UInt8Vector::new()
+    vec.push(element: 1 as UInt8)
+    vec.push(element: 2 as UInt8)
+    vec.push(element: 3 as UInt8)
+    vec.insert(into: 1, element: 4 as UInt8)
+    vec.insert(into: 4, element: 5 as UInt8)
+    vec.insert(into: 0, element: 6 as UInt8)
+    assert(vec.length == 6)
+    assert(vec.get(index: 0) == 6)
+    assert(vec.get(index: 1) == 1)
+    assert(vec.get(index: 2) == 4)
+    assert(vec.get(index: 3) == 2)
+    assert(vec.get(index: 4) == 3)
+    assert(vec.get(index: 5) == 5)
+}
+
+#[test]
+fun test_vector_remove() {
+    val vec = UInt8Vector::new()
+    vec.push(element: 1 as UInt8)
+    vec.push(element: 2 as UInt8)
+    vec.push(element: 3 as UInt8)
+    vec.insert(into: 1, element: 4 as UInt8)
+    vec.insert(into: 4, element: 5 as UInt8)
+    vec.insert(into: 0, element: 6 as UInt8)
+    vec.remove(index: 1)
+    vec.remove(index: 3)
+    vec.remove(index: 0)
+    assert(vec.length == 3)
+    assert(vec.get(index: 0) == 4)
+    assert(vec.get(index: 1) == 2)
+    assert(vec.get(index: 2) == 5)
+}
+
+#[test]
+fun test_vector_set() {
+    val vec = UInt8Vector::new()
+    vec.push(element: 1 as UInt8)
+    vec.push(element: 2 as UInt8)
+    vec.push(element: 3 as UInt8)
+    vec.set(index: 1, element: 7 as UInt8)
+    vec.set(index: 2, element: 8 as UInt8)
+    vec.set(index: 0, element: 9 as UInt8)
+    assert(vec.length == 3)
+    assert(vec.get(index: 0) == 9)
+    assert(vec.get(index: 1) == 7)
+    assert(vec.get(index: 2) == 8)
+}
+
+#[test]
+fun test_vector_clear() {
+    val vec = UInt8Vector::new()
+    vec.push(element: 1 as UInt8)
+    vec.push(element: 2 as UInt8)
+    vec.push(element: 3 as UInt8)
+    vec.clear()
+    assert(vec.length == 0)
+    vec.push(element: 4 as UInt8)
+    assert(vec.length == 1)
+    assert(vec.get(index: 0) == 4)
+}
+
+#[test]
+fun test_vector_shinkToFit() {
+    val vec = UInt8Vector::new()
+    vec.push(element: 1 as UInt8)
+    vec.push(element: 2 as UInt8)
+    vec.push(element: 3 as UInt8)
+    vec.push(element: 4 as UInt8)
+    vec.push(element: 5 as UInt8)
+    assert(vec.pop() == 5)
+    assert(vec.pop() == 4)
+    assert(vec.pop() == 3)
+    vec.shinkToFit()
+    assert(vec.length == 2)
+    assert(vec.capacity == 2)
+    assert(vec.get(index: 0) == 1)
+    assert(vec.get(index: 1) == 2)
+}
