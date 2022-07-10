@@ -28,6 +28,10 @@ struct String {
     fun length(&self): UInt64 {
         return self.buffer.length
     }
+
+    fun isEmpty(&self): Bool {
+        return self.buffer.isEmpty()
+    }
 }
 
 extension String: Printable {
@@ -46,4 +50,22 @@ extension String: Clonable {
     fun clone(&self): String {
         return Self(buffer: self.buffer.clone())
     }
+}
+
+#[test]
+fun test_string_new() {
+    var s = String::new("Hello, World!")
+    assert(s.length() == 13)
+}
+
+#[test]
+fun test_string_empry() {
+    var s = String::empty()
+    assert(s.length() == 0)
+}
+
+#[test]
+fun test_string_isEmpty() {
+    var s = String::empty()
+    assert(s.isEmpty())
 }
