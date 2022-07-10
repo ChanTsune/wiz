@@ -1,6 +1,5 @@
 use std::builtin::println
 use std::collection::vector::UInt8Vector
-use std::test::assert
 use libc::stdio::*
 use libc::stdlib::*
 
