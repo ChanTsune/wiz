@@ -112,7 +112,7 @@ extension UInt8Vector: Clonable {
 
 
 #[test]
-fun test_vector_init() {
+fun test_vector_new() {
     val vec = UInt8Vector::new()
     assert(vec.length == 0)
 }
