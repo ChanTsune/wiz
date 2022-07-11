@@ -2,7 +2,5 @@ fun assert(_ result: Bool): Unit {
     if !result {
         println("Assertion failed")
         libc::stdlib::exit(-1 as Int32)
-    } else {
-        println("Assertion passed")
     }
 }
