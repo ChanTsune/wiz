@@ -965,37 +965,41 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
                                     target: MLName {
                                         name: "puts".to_string(),
                                         type_: MLType::Function(MLFunctionType {
-                                            arguments: vec![
-                                                MLValueType::Pointer(Box::new(MLType::Value(MLValueType::Primitive(MLPrimitiveType::UInt8))))
-                                            ],
-                                            return_type: MLValueType::Primitive(MLPrimitiveType::Size)
-                                        })
+                                            arguments: vec![MLValueType::Pointer(Box::new(
+                                                MLType::Value(MLValueType::Primitive(
+                                                    MLPrimitiveType::UInt8,
+                                                )),
+                                            ))],
+                                            return_type: MLValueType::Primitive(
+                                                MLPrimitiveType::Size,
+                                            ),
+                                        }),
                                     },
-                                    args: vec![
-                                        MLCallArg {
-                                            arg: MLExpr::Literal(MLLiteral {
-                                                kind: MLLiteralKind::String(n.name.clone()),
-                                                type_:                                                 MLValueType::Pointer(Box::new(MLType::Value(MLValueType::Primitive(MLPrimitiveType::UInt8))))
-                                            })
-                                        }
-                                    ],
-                                    type_: MLValueType::Primitive(MLPrimitiveType::Unit)
+                                    args: vec![MLCallArg {
+                                        arg: MLExpr::Literal(MLLiteral {
+                                            kind: MLLiteralKind::String(n.name.clone()),
+                                            type_: MLValueType::Pointer(Box::new(MLType::Value(
+                                                MLValueType::Primitive(MLPrimitiveType::UInt8),
+                                            ))),
+                                        }),
+                                    }],
+                                    type_: MLValueType::Primitive(MLPrimitiveType::Unit),
                                 })),
                                 MLStmt::Expr(MLExpr::Call(MLCall {
-                                target: MLName {
-                                    name: n.name.clone(),
-                                    type_: MLType::Function(MLFunctionType {
-                                        arguments: n
-                                            .arg_defs
-                                            .iter()
-                                            .map(|i| i.type_.clone())
-                                            .collect(),
-                                        return_type: n.return_type.clone(),
-                                    }),
-                                },
-                                args: vec![],
-                                type_: n.return_type.clone(),
-                            }))
+                                    target: MLName {
+                                        name: n.name.clone(),
+                                        type_: MLType::Function(MLFunctionType {
+                                            arguments: n
+                                                .arg_defs
+                                                .iter()
+                                                .map(|i| i.type_.clone())
+                                                .collect(),
+                                            return_type: n.return_type.clone(),
+                                        }),
+                                    },
+                                    args: vec![],
+                                    type_: n.return_type.clone(),
+                                })),
                             ]
                         })
                         .flatten()
