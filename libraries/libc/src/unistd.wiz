@@ -1,0 +1,11 @@
+#[no_mangle]
+fun dup(_ fd: Int32): Int32
+// fun dup(_ fd: c_int): c_int
+
+#[no_mangle]
+fun dup2(_ fd: Int32, _ fd2: Int32): Int32
+// fun dup2(fd: c_int, fd2: c_int): c_int
+
+#[no_mangle]
+fun pipe(_ pipefd: *Int32): Int32
+// fun pipe(pipefd: *c_int): c_int
