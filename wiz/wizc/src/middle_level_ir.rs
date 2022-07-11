@@ -960,7 +960,28 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
                         .tests
                         .iter()
                         .map(|n| {
-                            MLStmt::Expr(MLExpr::Call(MLCall {
+                            [
+                                MLStmt::Expr(MLExpr::Call(MLCall {
+                                    target: MLName {
+                                        name: "puts".to_string(),
+                                        type_: MLType::Function(MLFunctionType {
+                                            arguments: vec![
+                                                MLValueType::Pointer(Box::new(MLType::Value(MLValueType::Primitive(MLPrimitiveType::UInt8))))
+                                            ],
+                                            return_type: MLValueType::Primitive(MLPrimitiveType::Size)
+                                        })
+                                    },
+                                    args: vec![
+                                        MLCallArg {
+                                            arg: MLExpr::Literal(MLLiteral {
+                                                kind: MLLiteralKind::String(n.name.clone()),
+                                                type_:                                                 MLValueType::Pointer(Box::new(MLType::Value(MLValueType::Primitive(MLPrimitiveType::UInt8))))
+                                            })
+                                        }
+                                    ],
+                                    type_: MLValueType::Primitive(MLPrimitiveType::Unit)
+                                })),
+                                MLStmt::Expr(MLExpr::Call(MLCall {
                                 target: MLName {
                                     name: n.name.clone(),
                                     type_: MLType::Function(MLFunctionType {
@@ -975,7 +996,9 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
                                 args: vec![],
                                 type_: n.return_type.clone(),
                             }))
+                            ]
                         })
+                        .flatten()
                         .collect();
                     tests.push(MLStmt::Return(MLReturn::new(Some(MLExpr::Literal(
                         MLLiteral {
