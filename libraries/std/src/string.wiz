@@ -1,0 +1,71 @@
+use std::collection::vector::UInt8Vector
+use std::format::Printable
+use std::format::DebugPrintable
+
+struct String {
+    val buffer: UInt8Vector
+
+    fun new(_ literal: &str): Self {
+        var s = String::empty()
+        s.push(literal)
+        return s
+    }
+
+    fun empty(): Self {
+        return Self(buffer: UInt8Vector::new())
+    }
+
+    fun push(&self, _ s: &str): Unit {
+        val sLength = strlen(s)
+        var i = 0
+        while sLength > i {
+            val t = s[i]
+            self.buffer.push(element:t)
+            i += 1
+        }
+    }
+
+    fun length(&self): UInt64 {
+        return self.buffer.length
+    }
+
+    fun isEmpty(&self): Bool {
+        return self.buffer.isEmpty()
+    }
+}
+
+extension String: Printable {
+    fun description(&self): String {
+        return self.clone()
+    }
+}
+
+extension String: DebugPrintable {
+    fun debugDescription(&self): Self {
+        return self.clone()
+    }
+}
+
+extension String: Clonable {
+    fun clone(&self): String {
+        return Self(buffer: self.buffer.clone())
+    }
+}
+
+#[test]
+fun test_string_new() {
+    var s = String::new("Hello, World!")
+    assert(s.length() == 13)
+}
+
+#[test]
+fun test_string_empry() {
+    var s = String::empty()
+    assert(s.length() == 0)
+}
+
+#[test]
+fun test_string_isEmpty() {
+    var s = String::empty()
+    assert(s.isEmpty())
+}

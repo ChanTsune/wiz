@@ -1,0 +1,91 @@
+use libc::stdlib::malloc
+use libc::stdlib::realloc
+
+/**
+* Queue
+*/
+struct QueueUInt8 {
+    var buf: *UInt8
+    var capacity: USize
+    var size: USize
+    var head: USize
+    var tail: USize
+
+    fun new(): Self {
+        var capacity: USize = 0
+        var buf = malloc(capacity as Size)
+        var size: USize = 0
+        var head: USize = 0
+        var tail: USize = 0
+        return Self(buf: buf, capacity: capacity, size: size, head: head, tail: tail)
+    }
+
+    fun enqueue(&self, _ item: UInt8): Unit {
+        if self.capacity == self.size {
+            self.reserve(if self.capacity == 0 { 4 } else { self.capacity * 2 })
+        }
+        self.buf[self.tail] = item
+        self.tail = (self.tail + 1) % self.capacity
+        self.size += 1
+    }
+
+    fun dequeue(&self): UInt8 {
+        var item = self.buf[self.head]
+        self.head = (self.head + 1) % self.capacity
+        self.size -= 1
+        return item
+    }
+
+    fun reserve(&self, _ newCapacity: USize): Unit {
+        val oldCapacity = self.capacity
+        if oldCapacity >= newCapacity {
+            return
+        }
+        self.buf = realloc(self.buf, newCapacity as Size)
+        if self.size != 0 {
+            if self.head == 0 {
+                // grow simple
+            } else if self.tail <= self.head {
+                // move to tail
+                memmove(self.buf + oldCapacity, self.buf, self.tail)
+                self.tail = self.head + self.size
+            }
+        }
+        self.capacity = newCapacity
+    }
+}
+
+#[test]
+fun test_queue_new() {
+    var queue = QueueUInt8::new()
+    queue.enqueue(1 as UInt8)
+    queue.enqueue(2 as UInt8)
+    queue.enqueue(3 as UInt8)
+    assert(queue.dequeue() == 1)
+    assert(queue.dequeue() == 2)
+    assert(queue.dequeue() == 3)
+}
+
+#[test]
+fun test_queue_reserve() {
+    var queue = QueueUInt8::new()
+    queue.enqueue(1 as UInt8)
+    queue.enqueue(2 as UInt8)
+    queue.enqueue(3 as UInt8)
+    assert(queue.size == 3)
+    assert(queue.capacity == 4)
+    assert(queue.dequeue() == 1)
+    assert(queue.size == 2)
+    queue.enqueue(4 as UInt8)
+    queue.enqueue(5 as UInt8)
+    assert(queue.size == 4)
+    assert(queue.capacity == 4)
+    queue.enqueue(6 as UInt8)
+    assert(queue.size == 5)
+    assert(queue.capacity == 8)
+    assert(queue.dequeue() == 2)
+    assert(queue.dequeue() == 3)
+    assert(queue.dequeue() == 4)
+    assert(queue.dequeue() == 5)
+    assert(queue.dequeue() == 6)
+}

@@ -1,0 +1,153 @@
+use std::string::String
+
+// fun println<T>(_ item: T)
+// where T: Printable
+// {
+//     puts(item.description)
+// }
+
+fun println() {
+    libc::stdio::putchar(10)
+}
+
+fun print(_ item: &str) {
+    val len = strlen(item)
+    var i = 0
+    while len > i {
+        libc::stdio::putchar(item[i] as Size)
+        i += 1
+    }
+}
+
+fun println(_ item: &str) {
+    libc::stdio::puts(item)
+}
+
+fun print(_ item: Int8) {
+    print(item as Int64)
+}
+
+fun print(_ item: Int16) {
+    print(item as Int64)
+}
+
+fun print(_ item: Int32) {
+    print(item as Int64)
+}
+
+fun print(_ item: Int64) {
+    if 9 < item {
+        print(item / 10)
+    }
+    libc::stdio::putchar(((item % 10)+48) as Size)
+}
+
+fun println(_ item: Size) {
+    println(item as Int64)
+}
+
+fun println(_ item: Int8) {
+    println(item as Int64)
+}
+
+fun println(_ item: Int16) {
+    println(item as Int64)
+}
+
+fun println(_ item: Int32) {
+    println(item as Int64)
+}
+
+fun println(_ item: Int64) {
+    if item < 0 {
+        libc::stdio::putchar(45)
+        print(-item)
+    } else {
+        print(item)
+    }
+    println()
+}
+
+fun println(_ item: Size) {
+    println(item as Int64)
+}
+
+fun print(_ item: UInt8) {
+    print(item as UInt64)
+}
+
+fun print(_ item: UInt16) {
+    print(item as UInt64)
+}
+
+fun print(_ item: UInt32) {
+    print(item as UInt64)
+}
+
+fun print(_ item: UInt64) {
+    if 9 < item {
+        print(item / 10)
+    }
+    libc::stdio::putchar(((item % 10)+48) as Size)
+}
+
+fun print(_ item: USize) {
+    print(item as UInt64)
+}
+
+fun println(_ item: UInt8) {
+    println(item as UInt64)
+}
+
+fun println(_ item: UInt16) {
+    println(item as UInt64)
+}
+
+fun println(_ item: UInt32) {
+    println(item as UInt64)
+}
+
+fun println(_ item: UInt64) {
+    print(item)
+    println()
+}
+
+fun println(_ item: USize) {
+    println(item as UInt64)
+}
+
+fun print(_ item: *Int64) {
+    print(item as Int64)
+}
+
+fun println(_ item: *Int64) {
+    println(item as Int64)
+}
+
+fun print(_ item: Bool) {
+    if item {
+        print("true")
+    } else {
+        print("false")
+    }
+}
+
+fun println(_ item: Bool) {
+    if item {
+        println("true")
+    } else {
+        println("false")
+    }
+}
+
+fun println(_ item: String) {
+    println(item.buffer.ptr as &str)
+}
+
+protocol Clonable {
+    fun clone(&self): Self
+}
+
+fun assert(_ result: Bool): Unit {
+    std::test::assert(result)
+}

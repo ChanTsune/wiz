@@ -1,0 +1,183 @@
+#[no_mangle]
+fun remove(_ fileName: *UInt8): Size
+// fun remove(_ fileName: *c_char): c_int
+
+#[no_mangle]
+fun rename(_ oldName: *UInt8, _ newName: *UInt8): Size
+// fun rename(_ oldName: *c_char, _ newName: *c_char): c_int
+
+#[no_mangle]
+fun tmpfile(): *UInt8
+// fun tmpfile(): *FILE
+
+#[no_mangle]
+fun tmpnam(_ fileName: *UInt8): *UInt8
+// fun tmpnam(_ fileName: *c_char): *c_char
+
+#[no_mangle]
+fun fclose(_ stream: *UInt8): Size
+// fun fclose(_ stream: *FILE): c_int
+
+#[no_mangle]
+fun fflush(_ stream: *UInt8): Size
+// fun fflush(_ stream: *FILE): c_int
+
+#[no_mangle]
+fun fopen(_ fileName: *UInt8, _ mode: *UInt8): *UInt8
+// fun fopen(_ fileName: *c_char, _ mode: *c_char): *FILE
+
+#[no_mangle]
+fun freopen(_ fileName: *UInt8, _ mode: *UInt8, _ stream: *UInt8): *UInt8
+// fun freopen(_ fileName: *c_char, _ mode: *c_char, _ stream: *FILE): *FILE
+
+#[no_mangle]
+fun setbuf(_ stream: *UInt8, _ buf: *UInt8): Unit
+// fun setbuf(_ stream: *FILE, _ buf: *c_char): c_void
+
+#[no_mangle]
+fun setvbuf(_ stream: *UInt8, _ buf: *UInt8, _ mode: Size, _ size: Size): Size
+// fun setvbuf(_ stream: *FILE, _ buf: *c_char, _ mode: c_int, _ size: c_size_t): c_int
+
+// #[no_mangle]
+// fun fprintf(_ stream: *UInt8, _ format: *UInt8, _ ...: *UInt8): Size
+// fun fprintf(_ stream: *FILE, _ format: *c_char, _ ...: *c_char): c_int
+
+// #[no_mangle]
+// fun fscanf(_ stream: *UInt8, _ format: *UInt8, _ ...: *UInt8): Size
+// fun fscanf(_ stream: *FILE, _ format: *c_char, _ ...: *c_char): c_int
+
+// #[no_mangle]
+// fun printf(_ format: *UInt8, _ ...: *UInt8): Size
+// fun printf(_ format: *c_char, _ ...: *c_char): c_int
+
+// #[no_mangle]
+// fun scanf(_ format: *UInt8, _ ...: *UInt8): Size
+// fun scanf(_ format: *c_char, _ ...: *c_char): c_int
+
+// #[no_mangle]
+// fun snprintf(_ str: *UInt8, _ size: Size, _ format: *UInt8, _ ...: *UInt8): Size
+// fun snprintf(_ str: *c_char, _ size: c_size_t, _ format: *c_char, _ ...: *c_char): c_int
+
+// #[no_mangle]
+// fun sprintf(_ str: *UInt8, _ format: *UInt8, _ ...: *UInt8): Size
+// fun sprintf(_ str: *c_char, _ format: *c_char, _ ...: *c_char): c_int
+
+// #[no_mangle]
+// fun sscanf(_ str: *UInt8, _ format: *UInt8, _ ...: *UInt8): Size
+// fun sscanf(_ str: *c_char, _ format: *c_char, _ ...: *c_char): c_int
+
+// #[no_mangle]
+// fun vfprintf(_ stream: *UInt8, _ format: *UInt8, _ arg: *va_list): Size
+// fun vfprintf(_ stream: *FILE, _ format: *c_char, _ arg: *va_list): c_int
+
+// #[no_mangle]
+// fun vfscanf(_ stream: *UInt8, _ format: *UInt8, _ arg: *va_list): Size
+// fun vfscanf(_ stream: *FILE, _ format: *c_char, _ arg: *va_list): c_int
+
+// #[no_mangle]
+// fun vprintf(_ format: *UInt8, _ arg: *va_list): Size
+// fun vprintf(_ format: *c_char, _ arg: *va_list): c_int
+
+// #[no_mangle]
+// fun vscanf(_ format: *UInt8, _ arg: *va_list): Size
+// fun vscanf(_ format: *c_char, _ arg: *va_list): c_int
+
+// #[no_mangle]
+// fun vsnprintf(_ str: *UInt8, _ size: Size, _ format: *UInt8, _ arg: *va_list): Size
+// fun vsnprintf(_ str: *c_char, _ size: c_size_t, _ format: *c_char, _ arg: *va_list): c_int
+
+// #[no_mangle]
+// fun vsprintf(_ str: *UInt8, _ format: *UInt8, _ arg: *va_list): Size
+// fun vsprintf(_ str: *c_char, _ format: *c_char, _ arg: *va_list): c_int
+
+// #[no_mangle]
+// fun vsscanf(_ str: *UInt8, _ format: *UInt8, _ arg: *va_list): Size
+// fun vsscanf(_ str: *c_char, _ format: *c_char, _ arg: *va_list): c_int
+
+#[no_mangle]
+fun fgetc(_ stream: *UInt8): Size
+// fun fgetc(_ stream: *FILE): c_int
+
+#[no_mangle]
+fun fgets(_ str: *UInt8, _ size: Size, _ stream: *UInt8): *UInt8
+// fun fgets(_ str: *c_char, _ size: c_int, _ stream: *FILE): *c_char
+
+#[no_mangle]
+fun fputc(_ c: Size, _ stream: *UInt8): Size
+// fun fputc(_ c: c_int, _ stream: *FILE): c_int
+
+#[no_mangle]
+fun fputs(_ str: *UInt8, _ stream: *UInt8): Size
+// fun fputs(_ str: *c_char, _ stream: *FILE): c_int
+
+#[no_mangle]
+fun getc(_ stream: *UInt8): Size
+// fun getc(_ stream: *FILE): c_int
+
+#[no_mangle]
+fun getchar(): Size
+// fun getchar(): c_int
+
+#[no_mangle]
+fun gets(_ str: *UInt8): *UInt8
+// fun gets(_ str: *c_char): *c_char
+
+#[no_mangle]
+fun putc(_ c: Size, _ stream: *UInt8): Size
+// fun putc(_ c: c_int, _ stream: *FILE): c_int
+
+#[no_mangle]
+fun putchar(_ c: Size): Size
+// fun putchar(_ c: c_int): c_int
+
+#[no_mangle]
+fun puts(_ str: *UInt8): Size
+// fun puts(_ str: *c_char): c_int
+
+#[no_mangle]
+fun ungetc(_ c: Size, _ stream: *UInt8): Size
+// fun ungetc(_ c: c_int, _ stream: *FILE): c_int
+
+#[no_mangle]
+fun fread(_ ptr: *UInt8, _ size: Size, _ n: Size, _ stream: *UInt8): Size
+// fun fread(_ ptr: *c_void, _ size: c_size_t, _ n: c_size_t, _ stream: *FILE): c_size_t
+
+#[no_mangle]
+fun fwrite(_ ptr: *UInt8, _ size: Size, _ n: Size, _ stream: *UInt8): Size
+// fun fwrite(_ ptr: *c_void, _ size: c_size_t, _ n: c_size_t, _ stream: *FILE): c_size_t
+
+#[no_mangle]
+fun fgetpos(_ stream: *UInt8, _ pos: *Size): Size
+// fun fgetpos(_ stream: *FILE, _ pos: *c_fpos_t): c_int
+
+#[no_mangle]
+fun fseek(_ stream: *UInt8, _ offset: Size, _ whence: Size): Size
+// fun fseek(_ stream: *FILE, _ offset: c_long, _ whence: c_int): c_int
+
+#[no_mangle]
+fun fsetpos(_ stream: *UInt8, _ pos: *Size): Size
+// fun fsetpos(_ stream: *FILE, _ pos: *c_fpos_t): c_int
+
+#[no_mangle]
+fun ftell(_ stream: *UInt8): Size
+// fun ftell(_ stream: *FILE): c_long
+
+#[no_mangle]
+fun rewind(_ stream: *UInt8): Size
+// fun rewind(_ stream: *FILE): c_int
+
+#[no_mangle]
+fun clearerr(_ stream: *UInt8): Unit
+// fun clearerr(_ stream: *FILE): c_void
+
+#[no_mangle]
+fun feof(_ stream: *UInt8): Size
+// fun feof(_ stream: *FILE): c_int
+
+#[no_mangle]
+fun ferror(_ stream: *UInt8): Size
+// fun ferror(_ stream: *FILE): c_int
+
+#[no_mangle]
+fun perror(_ str: *UInt8): Unit
+// fun perror(_ str: *c_char): c_void

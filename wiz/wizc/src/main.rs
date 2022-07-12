@@ -34,7 +34,7 @@ fn get_find_paths() -> Vec<PathBuf> {
 }
 
 fn get_builtin_lib() -> &'static [&'static str] {
-    &["core", "std"]
+    &["core", "libc", "std"]
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -85,8 +85,6 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<(), Box<dyn Err
                         println!("`{}` found at {}", lib_name, lib_path.display());
                         lib_paths.push(lib_path);
                         break;
-                    } else {
-                        println!("`{}` Not found at {}", lib_name, lib_path.display());
                     }
                 }
             }

@@ -1,0 +1,154 @@
+#[no_mangle]
+fun atof(_ nptr: *UInt8): Double
+// fun atof(_ nptr: *c_char): c_double
+
+#[no_mangle]
+fun atoi(_ nptr: *UInt8): Int32
+// fun atoi(_ nptr: *c_char): c_int
+
+#[no_mangle]
+fun atol(_ nptr: *UInt8): Int64
+// fun atol(_ nptr: *c_char): c_long
+
+#[no_mangle]
+fun atoll(_ nptr: *UInt8): Int64
+// fun atoll(_ nptr: *c_char): c_longlong
+
+#[no_mangle]
+fun strtod(_ nptr: *UInt8, _ endptr: *(*UInt8)): Double
+// fun strtod(_ nptr: *c_char, _ endptr: *(*c_char)): c_double
+
+#[no_mangle]
+fun strtof(_ nptr: *UInt8, _ endptr: *(*UInt8)): Float
+// fun strtof(_ nptr: *c_char, _ endptr: *(*c_char)): c_float
+
+#[no_mangle]
+fun strtol(_ nptr: *UInt8, _ endptr: *(*UInt8), _ base: Int32): Int64
+// fun strtol(_ nptr: *c_char, _ endptr: *(*c_char), _ base: c_int): c_long
+
+#[no_mangle]
+fun strtoll(_ nptr: *UInt8, _ endptr: *(*UInt8), _ base: Int32): Int64
+// fun strtoll(_ nptr: *c_char, _ endptr: *(*c_char), _ base: c_int): c_longlong
+
+#[no_mangle]
+fun strtoul(_ nptr: *UInt8, _ endptr: *(*UInt8), _ base: Int32): UInt64
+// fun strtoul(_ nptr: *c_char, _ endptr: *(*c_char), _ base: c_int): c_ulong
+
+#[no_mangle]
+fun strtoull(_ nptr: *UInt8, _ endptr: *(*UInt8), _ base: Int32): UInt64
+// fun strtoull(_ nptr: *c_char, _ endptr: *(*c_char), _ base: c_int): c_ulonglong
+
+#[no_mangle]
+fun rand(): Int32
+// fun rand(): c_int
+
+#[no_mangle]
+fun srand(_ seed: UInt32): Unit
+// fun srand(_ seed: c_uint): c_void
+
+#[no_mangle]
+fun calloc(_ nmemb: Size, _ size: Size): *UInt8
+// fun calloc(_ nmemb: c_size_t, _ size: c_size_t): *c_void
+
+#[no_mangle]
+fun free(_ ptr: *UInt8): Unit
+// fun free(_ ptr: *c_void): c_void
+
+#[no_mangle]
+fun malloc(_ size: Size): *UInt8
+// fun malloc(_ size: c_size_t): *c_void
+
+#[no_mangle]
+fun realloc(_ ptr: *UInt8, _ size: Size): *UInt8
+// fun realloc(_ ptr: *c_void, _ size: c_size_t): *c_void
+
+#[no_mangle]
+fun abort(): Unit
+// fun abort(): c_void
+
+#[no_mangle]
+fun atexit(_ func: *UInt8): Unit
+// fun atexit(_ func: *c_void): c_void
+
+#[no_mangle]
+fun exit(_ status: Int32): Unit
+// fun exit(_ status: c_int): c_void
+
+#[no_mangle]
+fun _Exit(_ status: Int32): Unit
+// fun _Exit(_ status: c_int): c_void
+
+#[no_mangle]
+fun getenv(_ name: *UInt8): *UInt8
+// fun getenv(_ name: *c_char): *c_char
+
+#[no_mangle]
+fun system(_ command: *UInt8): Int32
+// fun system(_ command: *c_char): c_int
+
+#[no_mangle]
+fun bsearch(_ key: *UInt8, _ base: *UInt8, _ nmemb: Size, _ size: Size, _ compar: *UInt8): *UInt8
+// fun bsearch(_ key: *c_void, _ base: *c_void, _ nmemb: c_size_t, _ size: c_size_t, _ compar: *c_void): *c_void
+
+#[no_mangle]
+fun qsort(_ base: *UInt8, _ nmemb: Size, _ size: Size, _ compar: *UInt8): Unit
+// fun qsort(_ base: *c_void, _ nmemb: c_size_t, _ size: c_size_t, _ compar: *c_void): c_void
+
+#[no_mangle]
+fun abs(_ i: Int32): Int32
+// fun abs(_ i: c_int): c_int
+
+#[no_mangle]
+fun labs(_ i: Int64): Int64
+// fun labs(_ i: c_long): c_long
+
+#[no_mangle]
+fun llabs(_ i: Int64): Int64
+// fun llabs(_ i: c_longlong): c_longlong
+
+struct div_t {
+    var quot: Int32
+    var rem: Int32
+}
+
+#[no_mangle]
+fun div(_ numer: Int32, _ denom: Int32): div_t
+// fun div(_ numer: c_int, _ denom: c_int): div_t
+
+struct ldiv_t {
+    var quot: Int64
+    var rem: Int64
+}
+
+#[no_mangle]
+fun ldiv(_ numer: Int64, _ denom: Int64): ldiv_t
+// fun ldiv(_ numer: c_long, _ denom: c_long): ldiv_t
+
+struct lldiv_t {
+    var quot: Int64
+    var rem: Int64
+}
+
+#[no_mangle]
+fun lldiv(_ numer: Int64, _ denom: Int64): lldiv_t
+// fun lldiv(_ numer: c_longlong, _ denom: c_longlong): lldiv_t
+
+#[no_mangle]
+fun mblen(_ s: *UInt8, _ n: Size): Int32
+// fun mblen(_ s: *c_char, _ n: size_t): c_int
+
+#[no_mangle]
+fun mbtowc(_ pwc: *UInt16, _ s: *UInt8, _ n: Size): Int32
+// fun mbtowc(_ pwc: *wchar_t, _ s: *c_char, _ n: size_t): c_int
+
+#[no_mangle]
+fun wctomb(_ s: *UInt8, _ wchar: UInt16): Int32
+// fun wctomb(_ s: *c_char, _ wchar: wchar_t): c_int
+
+#[no_mangle]
+fun mbstowcs(_ pwcs: *UInt16, _ s: *UInt8, _ n: Size): Size
+// fun mbstowcs(_ pwcs: *wchar_t, _ s: *c_char, _ n: size_t): size_t
+
+#[no_mangle]
+fun wcstombs(_ s: *UInt8, _ pwcs: *UInt16, _ n: Size): Size
+// fun wcstombs(_ s: *c_char, _ pwcs: *wchar_t, _ n: size_t): size_t

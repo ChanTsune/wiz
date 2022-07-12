@@ -71,6 +71,22 @@ jobs:
         run: rustc --version
       - name: install wiz
         run: sh install.sh
+      - name: wiz libc test
+        run: |
+          . ~/.wiz/env
+          cd libraries/libc
+          wiz test
+          ./target/libc
+        env:
+          RUST_BACKTRACE: 1
+      - name: wiz std test
+        run: |
+          . ~/.wiz/env
+          cd libraries/std
+          wiz test
+          ./target/std
+        env:
+          RUST_BACKTRACE: 1
       - name: create wiz project
         run: |
           . ~/.wiz/env

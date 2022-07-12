@@ -14,8 +14,8 @@ use crate::high_level_ir::type_resolver::declaration::DeclarationItemKind;
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
 use wiz_hir::typed_decl::{
-    TypedArgDef, TypedDecl, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody,
-    TypedMemberFunction, TypedProtocol, TypedStoredProperty, TypedStruct, TypedVar,
+    TypedArgDef, TypedDecl, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedProtocol,
+    TypedStoredProperty, TypedStruct, TypedVar,
 };
 use wiz_hir::typed_expr::{
     TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedExprKind, TypedIf,
@@ -492,7 +492,7 @@ impl<'s> TypeResolver<'s> {
         })
     }
 
-    fn typed_member_function(&mut self, mf: TypedMemberFunction) -> Result<TypedMemberFunction> {
+    fn typed_member_function(&mut self, mf: TypedFun) -> Result<TypedFun> {
         self.context.push_local_stack();
         let arg_defs = mf
             .arg_defs
@@ -505,7 +505,7 @@ impl<'s> TypeResolver<'s> {
             })
             .collect::<Result<Vec<_>>>()?;
         let return_type = self.typed_function_return_type(&mf.name, &mf.return_type, &mf.body)?;
-        let result = Ok(TypedMemberFunction {
+        let result = Ok(TypedFun {
             name: mf.name,
             arg_defs,
             type_params: mf.type_params,
@@ -514,6 +514,7 @@ impl<'s> TypeResolver<'s> {
                 Some(body) => Some(self.typed_fun_body(body)?),
             },
             return_type: Some(return_type),
+            type_constraints: mf.type_constraints,
         });
         self.context.pop_local_stack();
         result
@@ -1045,7 +1046,15 @@ impl<'s> TypeResolver<'s> {
                     )))
                 }
             }
-            Ok(_) | Err(_) => {
+            Ok(target) => {
+                let args = c
+                    .args
+                    .into_iter()
+                    .map(|c| self.typed_call_arg(c, None))
+                    .collect::<Result<Vec<_>>>()?;
+                Ok((target, args))
+            }
+            Err(_) => {
                 let args = c
                     .args
                     .into_iter()

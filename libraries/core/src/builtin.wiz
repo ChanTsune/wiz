@@ -1,0 +1,11 @@
+#[no_mangle]
+fun strlen(_ item: &str): UInt64
+
+#[no_mangle]
+fun memmove(_ dist: *UInt8, _ src: *UInt8, _ size: UInt64): *UInt8
+
+#[no_mangle]
+fun memcpy(_ dist: *UInt8, _ src: *UInt8, _ count: UInt64): Int32
+
+#[no_mangle]
+fun memset(_ ptr: *UInt8, _ value: UInt8, _ num: UInt64): *UInt8

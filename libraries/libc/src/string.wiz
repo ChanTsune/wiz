@@ -1,0 +1,7 @@
+#[no_mangle]
+fun strcmp(_ a: *UInt8, _ b: *UInt8): Int32
+// fun strcmp(a: *const c_char, b: *const c_char): c_int
+
+#[no_mangle]
+fun strncmp(_ a: *UInt8, _ b: *UInt8, _ n: Size): Int32
+// fun strncmp(a: *const c_char, b: *const c_char, n: size_t): c_int

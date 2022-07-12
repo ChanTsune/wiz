@@ -1,0 +1,30 @@
+use libc::stdlib::malloc
+use libc::stdlib::calloc
+use libc::stdlib::realloc
+use libc::stdlib::free
+
+protocol Allocator {
+    fun allocate(&self, _ size: Size): *UInt8
+    fun reallocate(&self, _ ptr: *UInt8, size: Size): *UInt8
+    fun deallocate(&self, _ ptr: *UInt8): Unit
+}
+
+struct DefaultAllocator {
+    fun new(): Self {
+        return Self()
+    }
+}
+
+extension DefaultAllocator: Allocator {
+    fun allocate(&self, _ size: Size): *UInt8 {
+        return malloc(size)
+    }
+
+    fun reallocate(&self, _ ptr: *UInt8, _ size: Size): *UInt8 {
+        return realloc(ptr, size)
+    }
+
+    fun deallocate(&self, _ ptr: *UInt8): Unit {
+        free(ptr)
+    }
+}

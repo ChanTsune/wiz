@@ -1,0 +1,105 @@
+use libc::stdlib::*
+
+val FD_STDIN: Size = 0
+val FD_STDOUT: Size = 1
+val FD_STDERR: Size = 2
+
+#[no_mangle]
+fun write(_ fd: Size, _ buf: *UInt8, _ nbyte: Size): Size
+
+#[no_mangle]
+fun read(_ fd: Size, _ buf: *UInt8, _ nbyte: Size): Size
+
+#[no_mangle]
+fun creat(_ fileName: *UInt8, _ mode: UInt16): Size
+
+val O_RDONLY: Size = 0
+// 0x0000          /* open for reading only */
+
+val O_WRONLY: Size = 1
+// 0x0001          /* open for writing only */
+
+val O_RDWR: Size = 2
+// 0x0002          /* open for reading and writing */
+
+val O_NONBLOCK: Size = 8
+// 0x00000004      /* no delay */
+
+val O_APPEND: Size = 8
+// 0x00000008      /* set append mode */
+
+val O_SYNC: Size = 128
+// 0x0080          /* synch I/O file integrity */
+
+val O_CREAT: Size = 512
+// 0x00000200      /* create if nonexistant */
+
+val O_TRUNC: Size = 1024
+// 0x00000400      /* truncate to zero length */
+
+val O_EXCL: Size = 2048
+// 0x00000800      /* error if already exists */
+
+val O_NOCTTY: Size = 131072
+// 0x00020000      /* don't assign controlling terminal */
+
+#[no_mangle]
+fun open(_ fileName: *UInt8, _ options: Size): Size
+
+#[no_mangle]
+fun close(_ socket: Size): Size
+
+struct FileDescriptor {
+    val rawFd: Size
+
+    fun from(rawFd: Size): Self {
+        return Self(rawFd: rawFd)
+    }
+
+    fun write(&self, item: &str): Unit {
+        std::io::write(self.rawFd, item as *UInt8, strlen(item as *UInt8))
+    }
+
+    fun read(&self, _ bufferLength: Size): *UInt8 {
+        val buf = malloc(bufferLength + 1) as *UInt8
+        val readLength = std::io::read(self.rawFd, buf, bufferLength)
+        buf[readLength] = 0 as UInt8
+        return buf
+    }
+}
+
+struct StdIn {
+    val fd: FileDescriptor
+
+    fun new(): Self {
+        return Self(fd: FileDescriptor::from(rawFd: FD_STDIN))
+    }
+
+    fun read(&self, _ length: Size): *UInt8 {
+        return self.fd.read(length)
+    }
+}
+
+struct StdOut {
+    val fd: FileDescriptor
+
+    fun new(): Self {
+        return Self(fd: FileDescriptor::from(rawFd: FD_STDOUT))
+    }
+
+    fun write(&self, _ item: &str): Unit {
+        self.fd.write(item)
+    }
+}
+
+struct StdErr {
+    val fd: FileDescriptor
+
+    fun new(): Self {
+        return Self(fd: FileDescriptor::from(rawFd: FD_STDERR))
+    }
+
+    fun write(&self, _ item: &str): Unit {
+        self.fd.write(item)
+    }
+}

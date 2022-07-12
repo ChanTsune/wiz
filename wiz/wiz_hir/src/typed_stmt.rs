@@ -65,11 +65,8 @@ pub struct TypedBlock {
 
 impl TypedBlock {
     pub fn type_(&self) -> Option<TypedType> {
-        if let Some(stmt) = self.body.last() {
-            match stmt {
-                TypedStmt::Expr(e) => e.ty.clone(),
-                _ => None,
-            }
+        if let Some(TypedStmt::Expr(e)) = self.body.last() {
+            e.ty.clone()
         } else {
             None
         }

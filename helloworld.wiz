@@ -1,6 +1,7 @@
 use std::builtin::println
 use std::collection::vector::UInt8Vector
-use std::test::assert
+use libc::stdio::*
+use libc::stdlib::*
 
 struct A {
     var a: Int64
@@ -66,12 +67,12 @@ fun vector_methods() {
     var i = 0
     while i < vector.length {
         val v = vector.ptr[i]
-        putchar(v as Int32)
+        putchar(v as Size)
         i += 1
     }
     putchar(10)
 
-    println(vector.length as Int64)
+    println(vector.length)
 
     var poped = vector.pop()
     assert(poped == 111)

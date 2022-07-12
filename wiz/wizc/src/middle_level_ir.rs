@@ -8,8 +8,8 @@ use wiz_constants as constants;
 use wiz_constants::annotation::{BUILTIN, ENTRY, NO_MANGLE, TEST};
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_decl::{
-    TypedArgDef, TypedDecl, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody,
-    TypedMemberFunction, TypedProtocol, TypedStruct, TypedVar,
+    TypedArgDef, TypedDecl, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedProtocol,
+    TypedStruct, TypedVar,
 };
 use wiz_hir::typed_expr::{
     TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedExprKind,
@@ -354,18 +354,18 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
     ) -> MLFun {
         let TypedFun {
             name,
-            type_params,
+            type_params: _,
             type_constraints: _,
             arg_defs,
             body,
             return_type,
         } = f;
-        let package_mangled_name = self.package_name_mangling_(&package, &name);
         let mangled_name = if annotations.has_annotate(NO_MANGLE) {
             name
         } else if annotations.has_annotate(ENTRY) && self.config.type_() == BuildType::Binary {
             String::from("main")
         } else {
+            let package_mangled_name = self.package_name_mangling_(&package, &name);
             let fun_arg_label_type_mangled_name = self.fun_arg_label_type_name_mangling(&arg_defs);
             if fun_arg_label_type_mangled_name.is_empty() {
                 package_mangled_name
@@ -378,7 +378,7 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
             name: mangled_name,
             arg_defs: args,
             return_type: self.type_(return_type.unwrap()).into_value_type(),
-            body: body.map(|b| self.fun_body(b)),
+            body: body.map(|b| self.fun_body(b, type_arguments)),
         }
     }
 
@@ -406,8 +406,9 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
         let members: Vec<MLFun> = member_functions
             .into_iter()
             .map(|mf| {
-                let TypedMemberFunction {
+                let TypedFun {
                     name: fname,
+                    type_constraints,
                     arg_defs: args,
                     type_params,
                     body,
@@ -426,7 +427,7 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
                         },
                     arg_defs: args,
                     return_type: self.type_(return_type.unwrap()).into_value_type(),
-                    body: body.map(|body| self.fun_body(body)),
+                    body: body.map(|body| self.fun_body(body, None)),
                 }
             })
             .collect();
@@ -443,8 +444,9 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
         member_functions
             .into_iter()
             .map(|mf| {
-                let TypedMemberFunction {
+                let TypedFun {
                     name: fname,
+                    type_constraints,
                     arg_defs: args,
                     type_params,
                     body,
@@ -463,7 +465,7 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
                         },
                     arg_defs: args,
                     return_type: self.type_(return_type.unwrap()).into_value_type(),
-                    body: body.map(|body| self.fun_body(body)),
+                    body: body.map(|body| self.fun_body(body, None)),
                 }
             })
             .collect()
@@ -901,7 +903,11 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
         }
     }
 
-    fn fun_body(&mut self, b: TypedFunBody) -> MLFunBody {
+    fn fun_body(
+        &mut self,
+        b: TypedFunBody,
+        type_arguments: Option<HashMap<TypedTypeParam, TypedType>>,
+    ) -> MLFunBody {
         match b {
             TypedFunBody::Expr(e) => MLFunBody {
                 body: vec![MLStmt::Expr(MLExpr::Return(MLReturn::new(Some(
@@ -947,25 +953,65 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
         MLFun {
             name: "main".to_string(),
             arg_defs: vec![],
-            return_type: MLValueType::Primitive(MLPrimitiveType::Unit),
+            return_type: MLValueType::Primitive(MLPrimitiveType::Size),
             body: Some(MLFunBody {
-                body: self
-                    .tests
-                    .iter()
-                    .map(|n| {
-                        MLStmt::Expr(MLExpr::Call(MLCall {
-                            target: MLName {
-                                name: n.name.clone(),
-                                type_: MLType::Function(MLFunctionType {
-                                    arguments: n.arg_defs.iter().map(|i| i.type_.clone()).collect(),
-                                    return_type: n.return_type.clone(),
-                                }),
-                            },
-                            args: vec![],
-                            type_: n.return_type.clone(),
-                        }))
-                    })
-                    .collect(),
+                body: {
+                    let mut tests: Vec<_> = self
+                        .tests
+                        .iter()
+                        .map(|n| {
+                            [
+                                MLStmt::Expr(MLExpr::Call(MLCall {
+                                    target: MLName {
+                                        name: "puts".to_string(),
+                                        type_: MLType::Function(MLFunctionType {
+                                            arguments: vec![MLValueType::Pointer(Box::new(
+                                                MLType::Value(MLValueType::Primitive(
+                                                    MLPrimitiveType::UInt8,
+                                                )),
+                                            ))],
+                                            return_type: MLValueType::Primitive(
+                                                MLPrimitiveType::Size,
+                                            ),
+                                        }),
+                                    },
+                                    args: vec![MLCallArg {
+                                        arg: MLExpr::Literal(MLLiteral {
+                                            kind: MLLiteralKind::String(n.name.clone()),
+                                            type_: MLValueType::Pointer(Box::new(MLType::Value(
+                                                MLValueType::Primitive(MLPrimitiveType::UInt8),
+                                            ))),
+                                        }),
+                                    }],
+                                    type_: MLValueType::Primitive(MLPrimitiveType::Unit),
+                                })),
+                                MLStmt::Expr(MLExpr::Call(MLCall {
+                                    target: MLName {
+                                        name: n.name.clone(),
+                                        type_: MLType::Function(MLFunctionType {
+                                            arguments: n
+                                                .arg_defs
+                                                .iter()
+                                                .map(|i| i.type_.clone())
+                                                .collect(),
+                                            return_type: n.return_type.clone(),
+                                        }),
+                                    },
+                                    args: vec![],
+                                    type_: n.return_type.clone(),
+                                })),
+                            ]
+                        })
+                        .flatten()
+                        .collect();
+                    tests.push(MLStmt::Return(MLReturn::new(Some(MLExpr::Literal(
+                        MLLiteral {
+                            kind: MLLiteralKind::Integer("0".to_string()),
+                            type_: MLValueType::Primitive(MLPrimitiveType::Size),
+                        },
+                    )))));
+                    tests
+                },
             }),
         }
     }
