@@ -1,11 +1,11 @@
 use crate::high_level_ir::declaration_id::DeclarationId;
+use crate::high_level_ir::type_resolver::declaration::DeclarationItemKind;
 use crate::ResolverArena;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use std::path::Path;
 use wiz_hir::typed_decl::TypedDeclKind;
 use wiz_hir::typed_file::TypedSourceSet;
-use crate::high_level_ir::type_resolver::declaration::DeclarationItemKind;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WLib {
@@ -68,7 +68,12 @@ impl WLib {
                             let id = arena.register_struct(&id, &s.name, decl.annotations.clone());
                             let item = arena.get_mut_by_id(&id.unwrap()).unwrap();
                             if let DeclarationItemKind::Type(rs) = &mut item.kind {
-                                rs.stored_properties.extend(s.stored_properties.iter().cloned().map(|t|(t.name, t.type_)))
+                                rs.stored_properties.extend(
+                                    s.stored_properties
+                                        .iter()
+                                        .cloned()
+                                        .map(|t| (t.name, t.type_)),
+                                )
                             }
                         }
                         TypedDeclKind::Class => {}
