@@ -66,6 +66,10 @@ struct FileDescriptor {
         buf[readLength] = 0 as UInt8
         return buf
     }
+
+    fun close(&self): Unit {
+        std::io::close(self.rawFd)
+    }
 }
 
 struct StdIn {
