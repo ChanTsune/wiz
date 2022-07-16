@@ -65,8 +65,8 @@ impl WLib {
                             );
                         }
                         TypedDeclKind::Struct(s) => {
-                            let id = arena.register_struct(&id, &s.name, decl.annotations.clone());
-                            let item = arena.get_mut_by_id(&id.unwrap()).unwrap();
+                            let id = arena.register_struct(&id, &s.name, decl.annotations.clone()).unwrap();
+                            let item = arena.get_mut_by_id(&id).unwrap();
                             if let DeclarationItemKind::Type(rs) = &mut item.kind {
                                 rs.stored_properties.extend(
                                     s.stored_properties
@@ -74,6 +74,16 @@ impl WLib {
                                         .cloned()
                                         .map(|t| (t.name, t.type_)),
                                 )
+                            }
+                            for member_function in s.member_functions.iter() {
+                                arena.register_function(
+                                    &id,
+                                    &member_function.name,
+                                    member_function.type_().unwrap(),
+                                    member_function.type_params.clone(),
+                                    member_function.body.clone(),
+                                    Default::default(),
+                                );
                             }
                         }
                         TypedDeclKind::Class => {}
