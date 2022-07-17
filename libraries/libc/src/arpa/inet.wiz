@@ -1,0 +1,21 @@
+
+struct in_addr {
+    var s_addr: UInt32
+    // var s_adder: in_addt_t
+}
+
+struct sockaddr_in {
+    var sin_len: UInt8
+    // var sin_len: c_uint8_t
+    var sin_family: UInt8
+    // var sin_family: c_uint8_t
+    var sin_port: UInt16
+    // var sin_port: c_uint16_t
+    var sin_addr: in_addr
+//    var sin_zero: [UInt8; 8]
+    var sin_zero: UInt64
+}
+
+#[no_mangle]
+fun inet_ntoa(_ x: in_addr): *UInt8
+// fun inet_ntoa(_ x: in_addr): *c_char
