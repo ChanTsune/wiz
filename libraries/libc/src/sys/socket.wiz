@@ -1,0 +1,3 @@
+#[no_mangle]
+fun socket(_ domain: Size, _ type: Size, _ protocol: Size): Size
+// fun socket(_ domain: c_int, type: c_int, _ protocol: c_int): c_int
