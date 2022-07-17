@@ -1,3 +1,13 @@
+// domain
+val AF_UNIX = 1
+val AF_INET = 2
+val AF_INET6 = 30
+
+// types
+val SOCK_STREAM = 1
+val SOCK_DGRAM = 2
+val SOCK_RAW = 3
+
 #[no_mangle]
 fun socket(_ domain: Size, _ type: Size, _ protocol: Size): Size
 // fun socket(_ domain: c_int, type: c_int, _ protocol: c_int): c_int
