@@ -102,7 +102,7 @@ struct UInt8Vector {
     }
 }
 
-extension UInt8Vector: Clonable {
+extension UInt8Vector: Clone {
     fun clone(&self): Self {
         val ptr = self.allocator.allocate(self.length)
         memcpy(ptr, self.ptr, self.length)

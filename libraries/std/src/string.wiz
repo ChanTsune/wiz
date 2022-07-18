@@ -46,7 +46,7 @@ extension String: DebugPrintable {
     }
 }
 
-extension String: Clonable {
+extension String: Clone {
     fun clone(&self): String {
         return Self(buffer: self.buffer.clone())
     }
