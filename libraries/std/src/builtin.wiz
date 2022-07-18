@@ -1,4 +1,5 @@
 use std::string::String
+use libc::string::strlen
 
 // fun println<T>(_ item: T)
 // where T: Printable
@@ -142,10 +143,6 @@ fun println(_ item: Bool) {
 
 fun println(_ item: String) {
     println(item.buffer.ptr as &str)
-}
-
-protocol Clonable {
-    fun clone(&self): Self
 }
 
 fun assert(_ result: Bool): Unit {

@@ -181,17 +181,17 @@ impl<'a> ResolverContext<'a> {
     }
 
     pub fn resolve_member_type(&mut self, t: TypedType, name: &str) -> Result<TypedType> {
-        match &t {
+        match t {
             TypedType::Value(v) => match v {
                 TypedValueType::Value(v) => {
                     let ne = self.get_current_name_environment();
                     let rs = ne
                         .get_type(v.package.clone().into_resolved().names, &v.name)
                         .ok_or_else(|| {
-                            ResolverError::from(format!("Can not resolve type {:?}", t))
+                            ResolverError::from(format!("Can not resolve type {:?}", v))
                         })?;
                     rs.get_instance_member_type(name).cloned().ok_or_else(|| {
-                        ResolverError::from(format!("{:?} not has member named `{}`", t, name))
+                        ResolverError::from(format!("{:?} not has member named `{}`", v, name))
                     })
                 }
                 TypedValueType::Array(_, _) => {
@@ -203,9 +203,7 @@ impl<'a> ResolverContext<'a> {
                 TypedValueType::Pointer(_) => {
                     todo!()
                 }
-                TypedValueType::Reference(_) => {
-                    todo!()
-                }
+                TypedValueType::Reference(rt) => self.resolve_member_type(*rt, name),
             },
             TypedType::Type(v) => Err(ResolverError::from(format!(
                 "{:?} has no member {}",

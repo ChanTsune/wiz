@@ -1,3 +1,4 @@
+use libc::string::*
 use std::collection::vector::UInt8Vector
 use std::format::Printable
 use std::format::DebugPrintable
@@ -32,6 +33,22 @@ struct String {
     fun isEmpty(&self): Bool {
         return self.buffer.isEmpty()
     }
+
+    fun startsWith(&self, _ s: &str): Bool {
+        val sLength = strlen(s)
+        if self.length() < sLength {
+            return false
+        }
+        return memcmp(self.buffer.ptr, s, sLength) == 0
+    }
+
+    fun endsWith(&self, _ s: &str): Bool {
+        val sLength = strlen(s)
+        if self.length() < sLength {
+            return false
+        }
+        return memcmp(self.buffer.ptr + self.length() - sLength, s, sLength) == 0
+    }
 }
 
 extension String: Printable {
@@ -46,9 +63,15 @@ extension String: DebugPrintable {
     }
 }
 
-extension String: Clonable {
+extension String: Clone {
     fun clone(&self): String {
         return Self(buffer: self.buffer.clone())
+    }
+}
+
+extension String: Equals {
+    fun equals(&self, _ other: &Self): Bool {
+        return self.buffer.equals(other.buffer)
     }
 }
 
@@ -68,4 +91,52 @@ fun test_string_empry() {
 fun test_string_isEmpty() {
     var s = String::empty()
     assert(s.isEmpty())
+}
+
+#[test]
+fun test_string_push() {
+    var s = String::empty()
+    s.push("Hello, World!")
+    assert(s.length() == 13)
+}
+
+#[test]
+fun test_string_equals() {
+    var s = String::new("Hello, World!")
+    var s2 = String::new("Hello, World!")
+    assert(s.equals(s2))
+}
+
+#[test]
+fun test_string_startsWith() {
+    var s = String::new("Hello, World!")
+    assert(s.startsWith("Hello"))
+    assert(!s.startsWith("World"))
+}
+
+#[test]
+fun test_string_startsWith_empty() {
+    var empry = String::empty()
+    assert(empry.startsWith(""))
+    assert(!empry.startsWith("Hello"))
+
+    var s = String::new("Hello, World!")
+    assert(s.startsWith(""))
+}
+
+#[test]
+fun test_string_endsWith() {
+    var s = String::new("Hello, World!")
+    assert(s.endsWith("World!"))
+    assert(!s.endsWith("Hello"))
+}
+
+#[test]
+fun test_string_endsWith_empty() {
+    var empry = String::empty()
+    assert(empry.endsWith(""))
+    assert(!empry.endsWith("Hello"))
+
+    var s = String::new("Hello, World!")
+    assert(s.endsWith(""))
 }

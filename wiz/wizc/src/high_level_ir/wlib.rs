@@ -1,4 +1,5 @@
 use crate::high_level_ir::declaration_id::DeclarationId;
+use crate::high_level_ir::type_resolver::declaration::DeclarationItemKind;
 use crate::ResolverArena;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
@@ -64,7 +65,28 @@ impl WLib {
                             );
                         }
                         TypedDeclKind::Struct(s) => {
-                            arena.register_struct(&id, &s.name, decl.annotations.clone());
+                            let id = arena
+                                .register_struct(&id, &s.name, decl.annotations.clone())
+                                .unwrap();
+                            let item = arena.get_mut_by_id(&id).unwrap();
+                            if let DeclarationItemKind::Type(rs) = &mut item.kind {
+                                rs.stored_properties.extend(
+                                    s.stored_properties
+                                        .iter()
+                                        .cloned()
+                                        .map(|t| (t.name, t.type_)),
+                                )
+                            }
+                            for member_function in s.member_functions.iter() {
+                                arena.register_function(
+                                    &id,
+                                    &member_function.name,
+                                    member_function.type_().unwrap(),
+                                    member_function.type_params.clone(),
+                                    member_function.body.clone(),
+                                    Default::default(),
+                                );
+                            }
                         }
                         TypedDeclKind::Class => {}
                         TypedDeclKind::Enum => {}
