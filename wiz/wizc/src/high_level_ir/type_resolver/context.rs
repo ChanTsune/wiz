@@ -203,8 +203,8 @@ impl<'a> ResolverContext<'a> {
                 TypedValueType::Pointer(_) => {
                     todo!()
                 }
-                TypedValueType::Reference(_) => {
-                    todo!()
+                TypedValueType::Reference(rt) => {
+                   self.resolve_member_type(*rt, name)
                 }
             },
             TypedType::Type(v) => Err(ResolverError::from(format!(
