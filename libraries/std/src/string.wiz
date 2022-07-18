@@ -108,15 +108,35 @@ fun test_string_equals() {
 }
 
 #[test]
-fun startsWith() {
+fun test_string_startsWith() {
     var s = String::new("Hello, World!")
     assert(s.startsWith("Hello"))
     assert(!s.startsWith("World"))
 }
 
 #[test]
-fun endsWith() {
+fun test_string_startsWith_empty() {
+    var empry = String::empty()
+    assert(empry.startsWith(""))
+    assert(!empry.startsWith("Hello"))
+
+    var s = String::new("Hello, World!")
+    assert(s.startsWith(""))
+}
+
+#[test]
+fun test_string_endsWith() {
     var s = String::new("Hello, World!")
     assert(s.endsWith("World!"))
     assert(!s.endsWith("Hello"))
+}
+
+#[test]
+fun test_string_endsWith_empty() {
+    var empry = String::empty()
+    assert(empry.endsWith(""))
+    assert(!empry.endsWith("Hello"))
+
+    var s = String::new("Hello, World!")
+    assert(s.endsWith(""))
 }
