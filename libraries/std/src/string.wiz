@@ -53,6 +53,12 @@ extension String: Clone {
     }
 }
 
+extension String: Equals {
+    fun equals(&self, _ other: &Self): Bool {
+        return self.buffer.equals(other.buffer)
+    }
+}
+
 #[test]
 fun test_string_new() {
     var s = String::new("Hello, World!")
@@ -69,4 +75,18 @@ fun test_string_empry() {
 fun test_string_isEmpty() {
     var s = String::empty()
     assert(s.isEmpty())
+}
+
+#[test]
+fun test_string_push() {
+    var s = String::empty()
+    s.push("Hello, World!")
+    assert(s.length() == 13)
+}
+
+#[test]
+fun test_string_equals() {
+    var s = String::new("Hello, World!")
+    var s2 = String::new("Hello, World!")
+    assert(s.equals(s2))
 }
