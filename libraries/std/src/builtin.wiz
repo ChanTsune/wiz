@@ -144,10 +144,6 @@ fun println(_ item: String) {
     println(item.buffer.ptr as &str)
 }
 
-protocol Clonable {
-    fun clone(&self): Self
-}
-
 fun assert(_ result: Bool): Unit {
     std::test::assert(result)
 }
