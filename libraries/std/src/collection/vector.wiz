@@ -1,3 +1,4 @@
+use libc::string::*
 use std::memory::allocator::DefaultAllocator
 
 struct UInt8Vector {

@@ -1,4 +1,5 @@
 use libc::stdlib::*
+use libc::string::*
 
 val FD_STDIN: Size = 0
 val FD_STDOUT: Size = 1

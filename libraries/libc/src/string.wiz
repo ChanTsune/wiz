@@ -1,7 +1,83 @@
 #[no_mangle]
+fun memcpy(_ dist: *UInt8, _ src: *UInt8, _ n: USize): *UInt8
+// fun memcpy(_ dist: *UInt8, _ src : *UInt8, _ n :c_size_t): *c_void
+
+#[no_mangle]
+fun memmove(_ dist: *UInt8, _ src: *UInt8, _ size: USize): *UInt8
+// fun memmove(_ dist: *UInt8, _ src : *UInt8, _ size :c_size_t): *c_void
+
+#[no_mangle]
+fun strcpy(_ dist: *UInt8, _ src: *UInt8): *UInt8
+// fun strcpy(_ dist: *c_char, _ src: *c_char): *c_char
+
+#[no_mangle]
+fun strncpy(_ dist: *UInt8, _ src: *UInt8, _ n: USize): *UInt8
+// fun strncpy(_ dist: *c_char, _ src: *c_char, _ n: c_size_t): *c_char
+
+#[no_mangle]
+fun strcat(_ dist: *UInt8, _ src: *UInt8): *UInt8
+// fun strcat(_ dist: *c_char, _ src: *c_char): *c_char
+
+#[no_mangle]
+fun strncat(_ dist: *UInt8, _ src: *UInt8, _ n: USize): *UInt8
+// fun strncat(_ dist: *c_char, _ src: *c_char, _ n: c_size_t): *c_char
+
+#[no_mangle]
+fun memcmp(_ s1: *UInt8, _ s2: *UInt8, _ n: USize): Int32
+// fun memcmp(_ s1: *c_void, _ s2: *c_void, _ n: c_size_t): c_int
+
+#[no_mangle]
 fun strcmp(_ a: *UInt8, _ b: *UInt8): Int32
 // fun strcmp(a: *const c_char, b: *const c_char): c_int
 
 #[no_mangle]
+fun strcoll(_ a: *UInt8, _ b: *UInt8): Int32
+// fun strcoll(a: *const c_char, b: *const c_char): c_int
+
+#[no_mangle]
 fun strncmp(_ a: *UInt8, _ b: *UInt8, _ n: Size): Int32
 // fun strncmp(a: *const c_char, b: *const c_char, n: size_t): c_int
+
+#[no_mangle]
+fun strxfrm(_ dst: *UInt8, _ src: *UInt8, _ n: USize): USize
+// fun strxfrm(_ dst: *c_char, _ src: *c_char, _ n: c_size_t): c_size_t
+
+#[no_mangle]
+fun memchr(_ s: *UInt8, _ c: UInt8, _ n: USize): *UInt8
+// fun memchr(_ s: *c_void, _ c: c_int, _ n: c_size_t): *c_void
+
+#[no_mangle]
+fun strchr(_ s: *UInt8, _ c: UInt8): *UInt8
+// fun strchr(_ s: *c_char, _ c: c_int): *c_char
+
+#[no_mangle]
+fun strcspn(_ s: *UInt8, _ reject: *UInt8): USize
+// fun strcspn(_ s: *c_char, _ reject: *c_char): c_size_t
+
+#[no_mangle]
+fun strpbrk(_ s: *UInt8, _ accept: *UInt8): *UInt8
+// fun strpbrk(_ s: *c_char, _ accept: *c_char): *c_char
+
+#[no_mangle]
+fun strspn(_ s: *UInt8, _ accept: *UInt8): USize
+// fun strspn(_ s: *c_char, _ accept: *c_char): c_size_t
+
+#[no_mangle]
+fun strstr(_ haystack: *UInt8, _ needle: *UInt8): *UInt8
+// fun strstr(_ haystack: *c_char, _ needle: *c_char): *c_char
+
+#[no_mangle]
+fun strtok(_ s: *UInt8, _ delim: *UInt8): *UInt8
+// fun strtok(_ s: *c_char, _ delim: *c_char): *c_char
+
+#[no_mangle]
+fun memset(_ ptr: *UInt8, _ value: UInt8, _ num: UInt64): *UInt8
+// fun memset(_ ptr: *c_void, _ value: c_int, _ num: c_ulong): *c_void
+
+#[no_mangle]
+fun strerror(_ errnum: Int32): *UInt8
+// fun strerror(_ errnum: c_int): *c_char
+
+#[no_mangle]
+fun strlen(_ item: &str): USize
+// fun strlen(item: *const c_char): c_size_t

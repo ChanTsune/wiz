@@ -1,4 +1,5 @@
 use std::string::String
+use libc::string::strlen
 
 // fun println<T>(_ item: T)
 // where T: Printable

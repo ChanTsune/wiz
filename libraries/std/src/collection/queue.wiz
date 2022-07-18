@@ -1,5 +1,6 @@
 use libc::stdlib::malloc
 use libc::stdlib::realloc
+use libc::string::memmove
 
 /**
 * Queue
