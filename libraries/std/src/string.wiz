@@ -1,4 +1,4 @@
-use libc::string::strlen
+use libc::string::*
 use std::collection::vector::UInt8Vector
 use std::format::Printable
 use std::format::DebugPrintable
@@ -32,6 +32,22 @@ struct String {
 
     fun isEmpty(&self): Bool {
         return self.buffer.isEmpty()
+    }
+
+    fun startsWith(&self, _ s: &str): Bool {
+        val sLength = strlen(s)
+        if self.length() < sLength {
+            return false
+        }
+        return memcmp(self.buffer.ptr, s, sLength) == 0
+    }
+
+    fun endsWith(&self, _ s: &str): Bool {
+        val sLength = strlen(s)
+        if self.length() < sLength {
+            return false
+        }
+        return memcmp(self.buffer.ptr + self.length() - sLength, s, sLength) == 0
     }
 }
 
@@ -89,4 +105,18 @@ fun test_string_equals() {
     var s = String::new("Hello, World!")
     var s2 = String::new("Hello, World!")
     assert(s.equals(s2))
+}
+
+#[test]
+fun startsWith() {
+    var s = String::new("Hello, World!")
+    assert(s.startsWith("Hello"))
+    assert(!s.startsWith("World"))
+}
+
+#[test]
+fun endsWith() {
+    var s = String::new("Hello, World!")
+    assert(s.endsWith("World!"))
+    assert(!s.endsWith("Hello"))
 }
