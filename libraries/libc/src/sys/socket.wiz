@@ -22,5 +22,9 @@ fun connect(_ socket: Size, _ addr: *UInt8, _ len: USize): Size
 // fun connect(_ socket: c_int, _ addr: *sockaddr, socklen_t): c_int;
 
 #[no_mangle]
+fun listen(_ socket: Size, _ backlog: Size): Size
+// fun listen(_ socket: c_int, _ backlog: c_int): c_int
+
+#[no_mangle]
 fun socket(_ domain: Size, _ type: Size, _ protocol: Size): Size
 // fun socket(_ domain: c_int, type: c_int, _ protocol: c_int): c_int
