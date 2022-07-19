@@ -11,7 +11,7 @@ pub use self::if_expr::MLIf;
 pub use self::literal::{MLLiteral, MLLiteralKind};
 use crate::format::Formatter;
 use crate::ml_node::MLNode;
-use crate::ml_type::{MLType, MLValueType};
+use crate::ml_type::{MLPrimitiveType, MLType, MLValueType};
 use crate::statement::MLReturn;
 use std::fmt;
 use std::fmt::Write;
@@ -31,6 +31,7 @@ pub enum MLExpr {
     Return(MLReturn),
     PrimitiveTypeCast(MLTypeCast),
     Block(MLBlock),
+    SizeOf(MLType),
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -114,6 +115,7 @@ impl MLExpr {
             MLExpr::Return(r) => MLType::Value(r.type_()),
             MLExpr::PrimitiveTypeCast(t) => MLType::Value(t.type_.clone()),
             MLExpr::Block(b) => b.r#type(),
+            MLExpr::SizeOf(_) => MLType::Value(MLValueType::Primitive(MLPrimitiveType::USize))
         }
     }
 
@@ -141,6 +143,10 @@ impl MLNode for MLExpr {
             MLExpr::Return(r) => r.fmt(f),
             MLExpr::PrimitiveTypeCast(t) => t.fmt(f),
             MLExpr::Block(b) => b.fmt(f),
+            MLExpr::SizeOf(t) => {
+                f.write_str("sizeof")?;
+                t.fmt(f)
+            }
         }
     }
 }

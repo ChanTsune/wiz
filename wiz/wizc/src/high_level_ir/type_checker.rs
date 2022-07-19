@@ -202,6 +202,7 @@ impl<'s> TypeChecker<'s> {
             TypedExprKind::Lambda(l) => self.lambda(l),
             TypedExprKind::Return(r) => self.return_(r),
             TypedExprKind::TypeCast(c) => self.type_cast(c),
+            TypedExprKind::SizeOf(t) => {}
         }
     }
 

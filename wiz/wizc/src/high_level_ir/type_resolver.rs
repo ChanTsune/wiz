@@ -647,6 +647,7 @@ impl<'s> TypeResolver<'s> {
                 let (kind, ty) = self.typed_type_cast(t)?;
                 TypedExpr::new(TypedExprKind::TypeCast(kind), ty)
             }
+            TypedExprKind::SizeOf(size_of) => TypedExpr::new(TypedExprKind::SizeOf(size_of), ty)
         })
     }
 
