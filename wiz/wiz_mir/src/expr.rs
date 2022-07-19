@@ -144,7 +144,7 @@ impl MLNode for MLExpr {
             MLExpr::PrimitiveTypeCast(t) => t.fmt(f),
             MLExpr::Block(b) => b.fmt(f),
             MLExpr::SizeOf(t) => {
-                f.write_str("sizeof")?;
+                f.write_str("sizeof ")?;
                 t.fmt(f)
             }
         }
