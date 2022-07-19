@@ -831,10 +831,12 @@ impl<'ctx> CodeGen<'ctx> {
 
     fn size_of(&self, t: MLType) -> AnyValueEnum<'ctx> {
         match t {
-            MLType::Value(v) => {
-                self.ml_type_to_type(v).size_of().unwrap().as_any_value_enum()
-            }
-            MLType::Function(f) => todo!()
+            MLType::Value(v) => self
+                .ml_type_to_type(v)
+                .size_of()
+                .unwrap()
+                .as_any_value_enum(),
+            MLType::Function(f) => todo!(),
         }
     }
 

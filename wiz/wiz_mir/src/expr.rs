@@ -115,7 +115,7 @@ impl MLExpr {
             MLExpr::Return(r) => MLType::Value(r.type_()),
             MLExpr::PrimitiveTypeCast(t) => MLType::Value(t.type_.clone()),
             MLExpr::Block(b) => b.r#type(),
-            MLExpr::SizeOf(_) => MLType::Value(MLValueType::Primitive(MLPrimitiveType::USize))
+            MLExpr::SizeOf(_) => MLType::Value(MLValueType::Primitive(MLPrimitiveType::USize)),
         }
     }
 

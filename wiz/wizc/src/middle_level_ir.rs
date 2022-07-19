@@ -494,7 +494,7 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
             TypedExprKind::Lambda(l) => todo!(),
             TypedExprKind::Return(r) => MLExpr::Return(self.return_expr(r)),
             TypedExprKind::TypeCast(t) => MLExpr::PrimitiveTypeCast(self.type_cast(t)),
-            TypedExprKind::SizeOf(t) => MLExpr::SizeOf(self.type_(t))
+            TypedExprKind::SizeOf(t) => MLExpr::SizeOf(self.type_(t)),
         }
     }
 
