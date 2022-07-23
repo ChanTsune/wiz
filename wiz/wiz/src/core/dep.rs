@@ -54,7 +54,7 @@ pub fn resolve_manifest_dependencies(
         }
         if !resolved {
             return Err(Box::new(CliError::from(format!(
-                "Could not find dependency {} {}",
+                "Could not find dependency {} {:?}",
                 name, version
             ))));
         }
