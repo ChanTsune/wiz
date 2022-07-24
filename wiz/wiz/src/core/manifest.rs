@@ -28,7 +28,10 @@ impl Dependency {
     }
 
     pub fn path<T: ToString>(path: T) -> Dependency {
-        Dependency::Detailed(DetailedDependency { version: None, path: Some(path.to_string()) })
+        Dependency::Detailed(DetailedDependency {
+            version: None,
+            path: Some(path.to_string()),
+        })
     }
 }
 

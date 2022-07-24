@@ -40,17 +40,13 @@ pub fn resolve_manifest_dependencies(
 
         for package_dir in package_dirs.iter() {
             let manifest_path = match version {
-                Dependency::Simple(version) => {
-                    package_dir
-                        .join(name)
-                        .join(version)
-                        .join(MANIFEST_FILE_NAME)
-                }
-                Dependency::Detailed(detail) => {
-                    package_dir
-                        .join(detail.path.as_ref().unwrap())
-                        .join(MANIFEST_FILE_NAME)
-                }
+                Dependency::Simple(version) => package_dir
+                    .join(name)
+                    .join(version)
+                    .join(MANIFEST_FILE_NAME),
+                Dependency::Detailed(detail) => package_dir
+                    .join(detail.path.as_ref().unwrap())
+                    .join(MANIFEST_FILE_NAME),
             };
             if !resolved && manifest_path.exists() {
                 let manifest = manifest::read(&manifest_path)?;
