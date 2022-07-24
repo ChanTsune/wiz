@@ -59,10 +59,10 @@ pub fn write(path: &Path, manifest: &Manifest) -> Result<()> {
 
 #[cfg(test)]
 mod tests {
+    use super::PackageInfo;
+    use crate::core::manifest::{Dependency, DetailedDependency, Manifest};
     use std::collections::BTreeMap;
     use wiz_dev_utils::StringExt;
-    use crate::core::manifest::{Dependency, DetailedDependency, Manifest};
-    use super::PackageInfo;
 
     #[test]
     fn read_from_string() {
@@ -75,25 +75,34 @@ mod tests {
             [dependencies]
             std = "0.0.0"
             local = { path = "../local" }
-            "#.trim_indent()
-        ).unwrap();
+            "#
+            .trim_indent(),
+        )
+        .unwrap();
 
-        assert_eq!(manifest, Manifest {
-            package: PackageInfo { name: "test".to_string(), version: "0.0.0".to_string() },
-            dependencies: BTreeMap::from([
-                ("std".to_string(), Dependency::simple("0.0.0")),
-                ("local".to_string(), Dependency::path("../local"))
-            ])
-        });
+        assert_eq!(
+            manifest,
+            Manifest {
+                package: PackageInfo {
+                    name: "test".to_string(),
+                    version: "0.0.0".to_string()
+                },
+                dependencies: BTreeMap::from([
+                    ("std".to_string(), Dependency::simple("0.0.0")),
+                    ("local".to_string(), Dependency::path("../local"))
+                ])
+            }
+        );
     }
 
     #[test]
     fn to_string() {
         let manifest = Manifest {
-            package: PackageInfo { name: "test".to_string(), version: "0.0.0".to_string() },
-            dependencies: BTreeMap::from([
-                ("std".to_string(), Dependency::simple("0.0.0")),
-            ])
+            package: PackageInfo {
+                name: "test".to_string(),
+                version: "0.0.0".to_string(),
+            },
+            dependencies: BTreeMap::from([("std".to_string(), Dependency::simple("0.0.0"))]),
         };
         assert_eq!(
             toml::to_string(&manifest).unwrap().trim_indent(),
@@ -104,7 +113,8 @@ mod tests {
 
             [dependencies]
             std = "0.0.0"
-            "#.trim_indent()
+            "#
+            .trim_indent()
         );
     }
 }
