@@ -2,7 +2,6 @@ use crate::constant::MANIFEST_FILE_NAME;
 use crate::core::manifest::{Dependencies, Dependency, Manifest, PackageInfo};
 use crate::core::workspace::{construct_workspace_from, Workspace};
 use clap::ArgMatches;
-use std::collections::BTreeMap;
 use std::env;
 use std::error::Error;
 use std::fs::{create_dir_all, File};
@@ -26,14 +25,11 @@ pub(crate) fn create_project(path: &Path, project_name: &str) -> Result<()> {
     manifest::write(
         &manifest_path,
         &Manifest {
-            package: PackageInfo {
-                name: project_name.to_string(),
-                version: "0.1.0".to_string(),
-            },
-            dependencies: Dependencies(BTreeMap::from([
+            package: PackageInfo::new(project_name, "0.1.0"),
+            dependencies: Dependencies::from([
                 ("core".to_string(), Dependency::simple("0.0.0")),
                 ("std".to_string(), Dependency::simple("0.0.0")),
-            ])),
+            ]),
         },
     )?;
 

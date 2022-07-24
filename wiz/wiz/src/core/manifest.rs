@@ -25,6 +25,12 @@ pub struct PackageInfo {
     pub version: String,
 }
 
+impl PackageInfo {
+    pub fn new<N: ToString,V: ToString>(name: N, version: V) -> Self {
+        Self { name: name.to_string(), version: version.to_string() }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize, Serialize)]
 #[serde(untagged)]
 pub enum Dependency {
@@ -92,10 +98,7 @@ mod tests {
         assert_eq!(
             manifest,
             Manifest {
-                package: PackageInfo {
-                    name: "test".to_string(),
-                    version: "0.0.0".to_string()
-                },
+                package: PackageInfo::new("test", "0.0.0"),
                 dependencies: Dependencies::from([
                     ("std".to_string(), Dependency::simple("0.0.0")),
                     ("local".to_string(), Dependency::path("../local"))
@@ -107,10 +110,7 @@ mod tests {
     #[test]
     fn to_string() {
         let manifest = Manifest {
-            package: PackageInfo {
-                name: "test".to_string(),
-                version: "0.0.0".to_string(),
-            },
+            package: PackageInfo::new("test", "0.0.0"),
             dependencies: Dependencies::from([("std".to_string(), Dependency::simple("0.0.0"))]),
         };
         assert_eq!(
