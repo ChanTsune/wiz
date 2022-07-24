@@ -1,7 +1,7 @@
 use crate::constant::MANIFEST_FILE_NAME;
 use crate::core::error::CliError;
 use crate::core::manifest;
-use crate::core::manifest::Manifest;
+use crate::core::manifest::{Dependency, Manifest};
 use crate::core::Result;
 use std::env;
 use std::path::{Path, PathBuf};
@@ -39,10 +39,19 @@ pub fn resolve_manifest_dependencies(
         }
 
         for package_dir in package_dirs.iter() {
-            let manifest_path = package_dir
-                .join(name)
-                .join(version)
-                .join(MANIFEST_FILE_NAME);
+            let manifest_path = match version {
+                Dependency::Simple(version) => {
+                    package_dir
+                        .join(name)
+                        .join(version)
+                        .join(MANIFEST_FILE_NAME)
+                }
+                Dependency::Detailed(detail) => {
+                    package_dir
+                        .join(detail.path.as_ref().unwrap())
+                        .join(MANIFEST_FILE_NAME)
+                }
+            };
             if !resolved && manifest_path.exists() {
                 let manifest = manifest::read(&manifest_path)?;
                 let dependency =
