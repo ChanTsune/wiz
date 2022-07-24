@@ -24,7 +24,7 @@ pub fn resolve_manifest_dependencies(
     let package_index_cache_dir = home_dir.join(".wiz/repository/");
     let package_dirs = vec![builtin_package_dir, package_index_cache_dir];
     let mut result = Vec::new();
-    for (name, version) in manifest.dependencies.iter() {
+    for (name, version) in manifest.dependencies.0.iter() {
         let mut resolved = false;
 
         if let Some(std) = another_std {

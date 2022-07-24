@@ -2,11 +2,21 @@ use crate::core::Result;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::path::Path;
+use serde::ser::{SerializeSeq, SerializeStruct};
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize, Serialize)]
 pub struct Manifest {
     pub package: PackageInfo,
-    pub dependencies: BTreeMap<String, Dependency>,
+    pub dependencies: Dependencies,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize, Serialize)]
+pub struct Dependencies(pub(crate) BTreeMap<String, Dependency>);
+
+impl <const N: usize> From<[(String, Dependency); N]> for Dependencies {
+    fn from(attr: [(String, Dependency); N]) -> Self {
+        Self(BTreeMap::from(attr))
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize, Serialize)]
@@ -60,9 +70,8 @@ pub fn write(path: &Path, manifest: &Manifest) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::PackageInfo;
-    use crate::core::manifest::{Dependency, DetailedDependency, Manifest};
-    use std::collections::BTreeMap;
     use wiz_dev_utils::StringExt;
+    use crate::core::manifest::{Dependencies, Dependency, Manifest};
 
     #[test]
     fn read_from_string() {
@@ -80,29 +89,22 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(
-            manifest,
-            Manifest {
-                package: PackageInfo {
-                    name: "test".to_string(),
-                    version: "0.0.0".to_string()
-                },
-                dependencies: BTreeMap::from([
-                    ("std".to_string(), Dependency::simple("0.0.0")),
-                    ("local".to_string(), Dependency::path("../local"))
-                ])
-            }
-        );
+        assert_eq!(manifest, Manifest {
+            package: PackageInfo { name: "test".to_string(), version: "0.0.0".to_string() },
+            dependencies: Dependencies::from([
+                ("std".to_string(), Dependency::simple("0.0.0")),
+                ("local".to_string(), Dependency::path("../local"))
+            ])
+        });
     }
 
     #[test]
     fn to_string() {
         let manifest = Manifest {
-            package: PackageInfo {
-                name: "test".to_string(),
-                version: "0.0.0".to_string(),
-            },
-            dependencies: BTreeMap::from([("std".to_string(), Dependency::simple("0.0.0"))]),
+            package: PackageInfo { name: "test".to_string(), version: "0.0.0".to_string() },
+            dependencies: Dependencies::from([
+                ("std".to_string(), Dependency::simple("0.0.0")),
+            ])
         };
         assert_eq!(
             toml::to_string(&manifest).unwrap().trim_indent(),

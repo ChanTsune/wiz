@@ -1,5 +1,5 @@
 use crate::constant::MANIFEST_FILE_NAME;
-use crate::core::manifest::{Dependency, Manifest, PackageInfo};
+use crate::core::manifest::{Dependencies, Dependency, Manifest, PackageInfo};
 use crate::core::workspace::{construct_workspace_from, Workspace};
 use clap::ArgMatches;
 use std::collections::BTreeMap;
@@ -30,12 +30,10 @@ pub(crate) fn create_project(path: &Path, project_name: &str) -> Result<()> {
                 name: project_name.to_string(),
                 version: "0.1.0".to_string(),
             },
-            dependencies: {
-                BTreeMap::from([
-                    ("core".to_string(), Dependency::simple("0.0.0")),
-                    ("std".to_string(), Dependency::simple("0.0.0")),
-                ])
-            },
+            dependencies: Dependencies(BTreeMap::from([
+                ("core".to_string(), Dependency::simple("0.0.0")),
+                ("std".to_string(), Dependency::simple("0.0.0")),
+            ])),
         },
     )?;
 
