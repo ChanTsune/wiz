@@ -26,8 +26,11 @@ pub struct PackageInfo {
 }
 
 impl PackageInfo {
-    pub fn new<N: ToString,V: ToString>(name: N, version: V) -> Self {
-        Self { name: name.to_string(), version: version.to_string() }
+    pub fn new<N: ToString, V: ToString>(name: N, version: V) -> Self {
+        Self {
+            name: name.to_string(),
+            version: version.to_string(),
+        }
     }
 }
 
