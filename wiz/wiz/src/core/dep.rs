@@ -23,7 +23,7 @@ pub fn resolve_manifest_dependencies(
     let builtin_package_dir = home_dir.join(".wiz/lib/src/");
     let package_index_cache_dir = home_dir.join(".wiz/repository/");
     let package_dirs = vec![builtin_package_dir, package_index_cache_dir];
-    let mut result = Vec::new();
+    let mut result = Vec::with_capacity(manifest.dependencies.0.len());
     for (name, version) in manifest.dependencies.0.iter() {
         let mut resolved = false;
 
