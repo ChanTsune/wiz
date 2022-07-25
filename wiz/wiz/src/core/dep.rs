@@ -25,7 +25,6 @@ pub fn resolve_manifest_dependencies(
     let package_dirs = vec![builtin_package_dir, package_index_cache_dir];
     let mut result = Vec::with_capacity(manifest.dependencies.0.len());
     for (name, version) in manifest.dependencies.0.iter() {
-
         if let Some(std) = another_std {
             let manifest_path = PathBuf::from(std).join(name).join(MANIFEST_FILE_NAME);
             if manifest_path.exists() {
@@ -40,8 +39,7 @@ pub fn resolve_manifest_dependencies(
         let manifest_path = manifest_find_in(&package_dirs, (name, version))?;
 
         let manifest = manifest::read(&manifest_path)?;
-        let dependency =
-            resolve_manifest_dependencies(&manifest_path, &manifest, another_std)?;
+        let dependency = resolve_manifest_dependencies(&manifest_path, &manifest, another_std)?;
         result.push(dependency);
     }
     Ok(ResolvedDependencyTree {
@@ -55,27 +53,24 @@ pub fn resolve_manifest_dependencies(
     })
 }
 
-fn manifest_find_in(find_dirs: &[PathBuf], (name, version): (&String, &Dependency)) -> Result<PathBuf> {
-    let manifest_path = find_dirs.iter().map(|dir|{
-        match version {
-            Dependency::Simple(version) => dir
-                .join(name)
-                .join(version)
-                .join(MANIFEST_FILE_NAME),
+fn manifest_find_in(
+    find_dirs: &[PathBuf],
+    (name, version): (&String, &Dependency),
+) -> Result<PathBuf> {
+    let manifest_path = find_dirs
+        .iter()
+        .map(|dir| match version {
+            Dependency::Simple(version) => dir.join(name).join(version).join(MANIFEST_FILE_NAME),
             Dependency::Detailed(detail) => dir
                 .join(detail.path.as_ref().unwrap())
                 .join(MANIFEST_FILE_NAME),
-        }
-    }).find(|manifest_path|manifest_path.exists());
+        })
+        .find(|manifest_path| manifest_path.exists());
     match manifest_path {
-        Some(manifest_path) => {
-            Ok(manifest_path)
-        }
-        None => {
-            Err(Box::new(CliError::from(format!(
-                "Could not find dependency {} {:?}",
-                name, version
-            ))))
-        }
+        Some(manifest_path) => Ok(manifest_path),
+        None => Err(Box::new(CliError::from(format!(
+            "Could not find dependency {} {:?}",
+            name, version
+        )))),
     }
 }
