@@ -36,7 +36,7 @@ pub fn resolve_manifest_dependencies(
             }
         }
 
-        let manifest_path = manifest_find_in(&package_dirs, (name, version))?;
+        let manifest_path = manifest_find_in(manifest_path,&package_dirs, (name, version))?;
 
         let manifest = manifest::read(&manifest_path)?;
         let dependency = resolve_manifest_dependencies(&manifest_path, &manifest, another_std)?;
@@ -54,6 +54,7 @@ pub fn resolve_manifest_dependencies(
 }
 
 fn manifest_find_in(
+    parent_manifest_path: &Path,
     find_dirs: &[PathBuf],
     (name, version): (&String, &Dependency),
 ) -> Result<PathBuf> {
@@ -61,9 +62,18 @@ fn manifest_find_in(
         .iter()
         .map(|dir| match version {
             Dependency::Simple(version) => dir.join(name).join(version).join(MANIFEST_FILE_NAME),
-            Dependency::Detailed(detail) => dir
-                .join(detail.path.as_ref().unwrap())
-                .join(MANIFEST_FILE_NAME),
+            Dependency::Detailed(detail) => {
+                let p = PathBuf::from(detail.path.as_ref().unwrap());
+
+                let p = if p.is_absolute() {
+                    p.join(MANIFEST_FILE_NAME)
+                } else {
+                    parent_manifest_path
+                        .join(detail.path.as_ref().unwrap())
+                        .join(MANIFEST_FILE_NAME)
+                }.canonicalize().unwrap();
+                p
+            },
         })
         .find(|manifest_path| manifest_path.exists());
     match manifest_path {
