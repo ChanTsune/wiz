@@ -36,7 +36,7 @@ pub fn resolve_manifest_dependencies(
             }
         }
 
-        let manifest_path = manifest_find_in(manifest_path,&package_dirs, (name, version))?;
+        let manifest_path = manifest_find_in(manifest_path, &package_dirs, (name, version))?;
 
         let manifest = manifest::read(&manifest_path)?;
         let dependency = resolve_manifest_dependencies(&manifest_path, &manifest, another_std)?;
@@ -71,9 +71,11 @@ fn manifest_find_in(
                     parent_manifest_path
                         .join(detail.path.as_ref().unwrap())
                         .join(MANIFEST_FILE_NAME)
-                }.canonicalize().unwrap();
+                }
+                .canonicalize()
+                .unwrap();
                 p
-            },
+            }
         })
         .find(|manifest_path| manifest_path.exists());
     match manifest_path {
