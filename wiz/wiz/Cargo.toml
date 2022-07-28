@@ -15,3 +15,6 @@ serde = { version = "1.0.136", features = ["derive"]}
 wizc_cli = { path = "../wizc_cli" }
 wiz_session = { path = "../wiz_session" }
 wiz_utils = { path = "../wiz_utils" }
+
+[dev-dependencies]
+wiz_dev_utils = { path = "../wiz_dev_utils" }
