@@ -9,9 +9,13 @@ where
     fn indent_count<T: ToString>(&self, indent_prefix: T) -> usize;
 }
 
-impl StringExt for &str {
+impl<S> StringExt for S
+where
+    S: ToString,
+{
     fn trim_indent(&self) -> String {
-        let i = self.split_terminator('\n').filter(|i| !i.is_empty());
+        let self_ = self.to_string();
+        let i = self_.split_terminator('\n').filter(|i| !i.is_empty());
         let indent_width = i
             .clone()
             .filter_map(|i| match i.indent_count(' ') {
@@ -32,7 +36,8 @@ impl StringExt for &str {
     }
 
     fn trim_margin<T: ToString>(&self, margin_prefix: T) -> String {
-        self.split_terminator('\n')
+        self.to_string()
+            .split_terminator('\n')
             .filter(|i| !i.is_empty())
             .filter_map(|i| {
                 let f = i.find(margin_prefix.to_string().as_str())? + 1;
