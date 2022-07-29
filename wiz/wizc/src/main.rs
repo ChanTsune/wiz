@@ -24,6 +24,7 @@ mod high_level_ir;
 mod llvm_ir;
 mod middle_level_ir;
 mod utils;
+mod result;
 
 fn get_builtin_find_path() -> PathBuf {
     PathBuf::from_iter([env!("HOME"), ".wiz", "lib", "src"])
