@@ -19,6 +19,7 @@ use wiz_syntax::syntax::file::SourceSet;
 use wiz_syntax_parser::parser;
 use wiz_syntax_parser::parser::wiz::{parse_from_file_path, read_package_from_path};
 use wizc_cli::{BuildType, Config, ConfigExt};
+use crate::result::Result;
 
 mod high_level_ir;
 mod llvm_ir;
@@ -38,7 +39,7 @@ fn get_builtin_lib() -> &'static [&'static str] {
     &["core", "libc", "std"]
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> Result<()> {
     println!("{:?}", env::args());
     let app = wizc_cli::app("wizc");
     let matches = app.get_matches();
@@ -48,7 +49,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     session.timer("compile", |s| run_compiler(s, config))
 }
 
-fn run_compiler(session: &mut Session, config: Config) -> Result<(), Box<dyn Error>> {
+fn run_compiler(session: &mut Session, config: Config) -> Result<()> {
     let output = config.output();
     let out_dir = config.out_dir();
     let paths = config.paths();
@@ -59,7 +60,7 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<(), Box<dyn Err
 
     let mlir_out_dir = out_dir.join("mlir");
 
-    let input_source = session.timer::<Result<_, Box<dyn Error>>, _>("parse files", |_| {
+    let input_source = session.timer::<Result<_>, _>("parse files", |_| {
         let input_source = if input.is_dir() {
             read_package_from_path(input, config.name())?
         } else {
