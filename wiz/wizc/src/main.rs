@@ -136,9 +136,7 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<()> {
 
     let std_mlir = std_hlir
         .into_iter()
-        .map(|w| {
-            hlir2mlir(w, &[], &arena, &config, false)
-        })
+        .map(|w| hlir2mlir(w, &[], &arena, &config, false))
         .collect::<Result<Vec<_>>>()?;
 
     fs::create_dir_all(&mlir_out_dir)?;
