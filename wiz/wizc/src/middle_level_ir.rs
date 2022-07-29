@@ -33,12 +33,11 @@ use wiz_mir::ml_file::MLFile;
 use wiz_mir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
 use wiz_mir::statement::{MLAssignmentStmt, MLLoopStmt, MLReturn, MLStmt};
 use wizc_cli::{BuildType, Config, ConfigExt};
+use crate::result::Result;
 
 mod context;
 #[cfg(test)]
 mod tests;
-
-pub type Result<T> = result::Result<T, Box<dyn Error>>;
 
 pub fn hlir2mlir<'a, 'c>(
     target: TypedSourceSet,
