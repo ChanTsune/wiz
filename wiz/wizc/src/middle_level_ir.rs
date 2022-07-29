@@ -1,6 +1,7 @@
 use crate::high_level_ir::type_resolver::arena::ResolverArena;
 use crate::high_level_ir::type_resolver::declaration::{DeclarationItem, DeclarationItemKind};
 use crate::middle_level_ir::context::HLIR2MLIRContext;
+use crate::result::Result;
 use core::result;
 use std::collections::HashMap;
 use std::error::Error;
@@ -33,7 +34,6 @@ use wiz_mir::ml_file::MLFile;
 use wiz_mir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
 use wiz_mir::statement::{MLAssignmentStmt, MLLoopStmt, MLReturn, MLStmt};
 use wizc_cli::{BuildType, Config, ConfigExt};
-use crate::result::Result;
 
 mod context;
 #[cfg(test)]
