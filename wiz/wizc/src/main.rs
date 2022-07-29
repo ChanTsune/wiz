@@ -5,11 +5,10 @@ use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::wlib::WLib;
 use crate::high_level_ir::{ast2hlir, AstLowering};
 use crate::llvm_ir::codegen::CodeGen;
-use crate::middle_level_ir::{hlir2mlir, HLIR2MLIR};
+use crate::middle_level_ir::hlir2mlir;
 use crate::result::Result;
 use inkwell::context::Context;
-use std::error::Error;
-use std::io::{Read, Write};
+use std::io::Write;
 use std::iter::FromIterator;
 use std::os::unix::process::CommandExt;
 use std::path::PathBuf;
@@ -135,12 +134,12 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<()> {
 
     println!("===== convert to mlir =====");
 
-    let mut h2m = HLIR2MLIR::new(&config, &arena);
-
     let std_mlir = std_hlir
         .into_iter()
-        .map(|w| h2m.convert_from_source_set(w, false))
-        .collect::<Vec<_>>();
+        .map(|w| {
+            hlir2mlir(w, &[], &arena, &config, false)
+        })
+        .collect::<Result<Vec<_>>>()?;
 
     fs::create_dir_all(&mlir_out_dir)?;
     for m in std_mlir.iter() {
