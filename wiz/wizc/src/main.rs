@@ -6,6 +6,7 @@ use crate::high_level_ir::wlib::WLib;
 use crate::high_level_ir::{ast2hlir, AstLowering};
 use crate::llvm_ir::codegen::CodeGen;
 use crate::middle_level_ir::{hlir2mlir, HLIR2MLIR};
+use crate::result::Result;
 use inkwell::context::Context;
 use std::error::Error;
 use std::io::{Read, Write};
@@ -19,7 +20,6 @@ use wiz_syntax::syntax::file::SourceSet;
 use wiz_syntax_parser::parser;
 use wiz_syntax_parser::parser::wiz::{parse_from_file_path, read_package_from_path};
 use wizc_cli::{BuildType, Config, ConfigExt};
-use crate::result::Result;
 
 mod high_level_ir;
 mod llvm_ir;
