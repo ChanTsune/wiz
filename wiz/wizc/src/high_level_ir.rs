@@ -466,6 +466,10 @@ impl<'a> AstLowering<'a> {
                 }
             };
         }
+
+        // add size_of struct
+        member_functions.push(TypedFun::size(TypedType::Self_));
+
         TypedStruct {
             name: s.name.token(),
             type_params: s.type_params.map(|v| {

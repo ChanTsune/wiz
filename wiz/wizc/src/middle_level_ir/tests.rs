@@ -60,13 +60,27 @@ fn test_struct() {
         source,
         MLFile {
             name: "test".to_string(),
-            body: vec![MLDecl::Struct(MLStruct {
+            body: vec![
+                MLDecl::Struct(MLStruct {
                 name: "test::A".to_string(),
                 fields: vec![MLField {
                     name: "a".to_string(),
                     type_: MLValueType::Primitive(MLPrimitiveType::Int64),
                 }],
-            })],
+            }),
+                MLDecl::Fun(MLFun {
+                    name: "test::A::size".to_string(),
+                    arg_defs: vec![],
+                    return_type: MLValueType::Primitive(MLPrimitiveType::USize),
+                    body: None }),
+
+                MLDecl::Fun(MLFun {
+                    name: "test::A::size".to_string(),
+                    arg_defs: vec![],
+                    return_type: MLValueType::Primitive(MLPrimitiveType::USize),
+                    body: Some(MLFunBody { body: vec![MLStmt::Expr(MLExpr::Return(MLReturn { value: Some(Box::from(MLExpr::SizeOf(MLType::Value(MLValueType::Struct("test::A".to_string()))))) }))] }) }),
+
+            ],
         },
     );
 }
@@ -95,11 +109,22 @@ fn test_struct_init() {
                     }],
                 }),
                 MLDecl::Fun(MLFun {
+                    name: "test::A::size".to_string(),
+                    arg_defs: vec![],
+                    return_type: MLValueType::Primitive(MLPrimitiveType::USize),
+                    body: None }),
+                MLDecl::Fun(MLFun {
                     name: "test::initA".to_string(),
                     arg_defs: vec![],
                     return_type: MLValueType::Struct(String::from("test::A")),
                     body: None,
                 }),
+                MLDecl::Fun(MLFun {
+                    name: "test::A::size".to_string(),
+                    arg_defs: vec![],
+                    return_type: MLValueType::Primitive(MLPrimitiveType::USize),
+                    body: Some(MLFunBody { body: vec![MLStmt::Expr(MLExpr::Return(MLReturn { value: Some(Box::from(MLExpr::SizeOf(MLType::Value(MLValueType::Struct("test::A".to_string()))))) }))] }) }),
+
                 MLDecl::Fun(MLFun {
                     name: "test::initA".to_string(),
                     arg_defs: vec![],
@@ -174,6 +199,11 @@ fn test_method_call() {
                     body: None,
                 }),
                 MLDecl::Fun(MLFun {
+                    name: "test::A::size".to_string(),
+                    arg_defs: vec![],
+                    return_type: MLValueType::Primitive(MLPrimitiveType::USize),
+                    body: None }),
+                MLDecl::Fun(MLFun {
                     name: "test::sample".to_string(),
                     arg_defs: vec![],
                     return_type: MLValueType::Primitive(MLPrimitiveType::Unit),
@@ -225,6 +255,11 @@ fn test_method_call() {
                         }))],
                     }),
                 }),
+                MLDecl::Fun(MLFun {
+                    name: "test::A::size".to_string(),
+                    arg_defs: vec![],
+                    return_type: MLValueType::Primitive(MLPrimitiveType::USize),
+                    body: Some(MLFunBody { body: vec![MLStmt::Expr(MLExpr::Return(MLReturn { value: Some(Box::from(MLExpr::SizeOf(MLType::Value(MLValueType::Struct("test::A".to_string()))))) }))] }) }),
                 MLDecl::Fun(MLFun {
                     name: "test::sample".to_string(),
                     arg_defs: vec![],

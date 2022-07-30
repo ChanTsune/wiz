@@ -78,7 +78,14 @@ fn test_unsafe_pointer() {
                             type_: TypedType::unsafe_pointer(TypedType::uint8()),
                         }],
                         computed_properties: vec![],
-                        member_functions: vec![],
+                        member_functions: vec![
+                            TypedFun::size(TypedType::Value(TypedValueType::Value(TypedNamedValueType {
+                                package: TypedPackage::Resolved(Package::from(&vec!["test"])),
+                                name: "A".to_string(),
+                                type_args: None
+                            })))
+
+                        ],
                     }),
                 },
                 TypedDecl {
@@ -170,7 +177,14 @@ fn test_struct_stored_property() {
                             type_: TypedType::int64(),
                         }],
                         computed_properties: vec![],
-                        member_functions: vec![],
+                        member_functions: vec![
+                            TypedFun::size(TypedType::Value(TypedValueType::Value(TypedNamedValueType {
+                                package: TypedPackage::Resolved(Package::from(&vec!["test"])),
+                                name: "A".to_string(),
+                                type_args: None
+                            })))
+
+                        ],
                     }),
                 },
                 TypedDecl {
@@ -181,7 +195,8 @@ fn test_struct_stored_property() {
                         name: "function".to_string(),
                         type_params: None,
                         type_constraints: None,
-                        arg_defs: vec![TypedArgDef {
+                        arg_defs: vec![
+                            TypedArgDef {
                             label: "_".to_string(),
                             name: "a".to_string(),
                             type_: TypedType::Value(TypedValueType::Value(TypedNamedValueType {
@@ -189,7 +204,8 @@ fn test_struct_stored_property() {
                                 name: "A".to_string(),
                                 type_args: None,
                             })),
-                        }],
+                        },
+                        ],
                         body: Some(TypedFunBody::Block(TypedBlock {
                             body: vec![TypedStmt::Decl(TypedDecl {
                                 annotations: Default::default(),
@@ -262,7 +278,13 @@ fn test_struct_init() {
                             type_: TypedType::int64(),
                         }],
                         computed_properties: vec![],
-                        member_functions: vec![],
+                        member_functions: vec![
+                            TypedFun::size(TypedType::Value(TypedValueType::Value(TypedNamedValueType {
+                                package: TypedPackage::Resolved(Package::from(&vec!["test"])),
+                                name: "A".to_string(),
+                                type_args: None
+                            })))
+                        ],
                     }),
                 },
                 TypedDecl {
@@ -380,7 +402,8 @@ fn test_struct_member_function() {
                         type_: TypedType::int64(),
                     }],
                     computed_properties: vec![],
-                    member_functions: vec![TypedFun {
+                    member_functions: vec![
+                        TypedFun {
                         name: "getA".to_string(),
                         arg_defs: vec![TypedArgDef {
                             label: "_".to_string(),
@@ -427,7 +450,14 @@ fn test_struct_member_function() {
                         })),
                         return_type: Some(TypedType::int64()),
                         type_constraints: None,
-                    }],
+                    },
+                        TypedFun::size(TypedType::Value(TypedValueType::Value(TypedNamedValueType {
+                            package: TypedPackage::Resolved(Package::from(&vec!["test"])),
+                            name: "A".to_string(),
+                            type_args: None
+                        })))
+
+                    ],
                 }),
             }],
         },
@@ -468,7 +498,8 @@ fn test_struct_member_function_call() {
                             type_: TypedType::int64(),
                         }],
                         computed_properties: vec![],
-                        member_functions: vec![TypedFun {
+                        member_functions: vec![
+                            TypedFun {
                             name: "getA".to_string(),
                             arg_defs: vec![TypedArgDef {
                                 label: "_".to_string(),
@@ -519,7 +550,14 @@ fn test_struct_member_function_call() {
                             })),
                             return_type: Some(TypedType::int64()),
                             type_constraints: None,
-                        }],
+                        },
+                            TypedFun::size(TypedType::Value(TypedValueType::Value(TypedNamedValueType {
+                                package: TypedPackage::Resolved(Package::from(&vec!["test"])),
+                                name: "A".to_string(),
+                                type_args: None
+                            })))
+
+                        ],
                     }),
                 },
                 TypedDecl {
