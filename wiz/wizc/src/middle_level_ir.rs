@@ -957,7 +957,7 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
                     let mut tests: Vec<_> = self
                         .tests
                         .iter()
-                        .map(|n| {
+                        .flat_map(|n| {
                             [
                                 MLStmt::Expr(MLExpr::Call(MLCall {
                                     target: MLName {
@@ -1000,7 +1000,6 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
                                 })),
                             ]
                         })
-                        .flatten()
                         .collect();
                     tests.push(MLStmt::Return(MLReturn::new(Some(MLExpr::Literal(
                         MLLiteral {
