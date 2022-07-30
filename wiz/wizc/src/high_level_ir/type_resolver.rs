@@ -977,7 +977,7 @@ impl<'s> TypeResolver<'s> {
             .collect::<Result<Vec<_>>>()?;
         let len = elements.len();
         Ok(if let Some(e) = elements.get(0) {
-            if elements.iter().all(|e| e.ty == e.ty) {
+            if elements.iter().all(|i| i.ty == e.ty) {
                 let ty =
                     e.ty.clone()
                         .map(|e| TypedType::Value(TypedValueType::Array(Box::new(e), len)));
