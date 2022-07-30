@@ -367,7 +367,7 @@ impl ResolverArena {
         is_last: bool,
         hierarchy_tree: &mut Vec<bool>,
     ) -> std::fmt::Result {
-        Self::ident(f, level, is_last, &hierarchy_tree)?;
+        Self::ident(f, level, is_last, hierarchy_tree)?;
         f.write_str(name)?;
         if item.is_namespace() {
             f.write_char('/')?;
