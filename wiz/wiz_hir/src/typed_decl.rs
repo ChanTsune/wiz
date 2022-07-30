@@ -49,8 +49,11 @@ impl TypedFun {
             type_params: None,
             type_constraints: None,
             arg_defs: vec![],
-            body: Some(TypedFunBody::Expr(TypedExpr::new(TypedExprKind::SizeOf(ty), Some(TypedType::usize())))),
-            return_type: Some(TypedType::usize())
+            body: Some(TypedFunBody::Expr(TypedExpr::new(
+                TypedExprKind::SizeOf(ty),
+                Some(TypedType::usize()),
+            ))),
+            return_type: Some(TypedType::usize()),
         }
     }
 }
