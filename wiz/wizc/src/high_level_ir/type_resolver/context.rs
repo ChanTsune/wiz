@@ -46,7 +46,7 @@ impl<'a> ResolverContext<'a> {
     }
 
     pub(crate) fn arena(&self) -> &ResolverArena {
-        &self.arena
+        self.arena
     }
 
     pub(crate) fn current_namespace(&self) -> Vec<String> {
@@ -139,7 +139,7 @@ impl<'a> ResolverContext<'a> {
     }
 
     pub(crate) fn get_current_name_environment(&self) -> NameEnvironment {
-        let mut env = NameEnvironment::new(&self.arena, &self.local_stack);
+        let mut env = NameEnvironment::new(self.arena, &self.local_stack);
         env.use_asterisk(&[]);
 
         let module_id = self.current_module_id().unwrap();
