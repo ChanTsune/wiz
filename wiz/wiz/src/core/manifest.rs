@@ -1,5 +1,4 @@
 use crate::core::Result;
-use serde::ser::{SerializeSeq, SerializeStruct};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::path::Path;
@@ -66,14 +65,12 @@ pub fn read(path: &Path) -> Result<Manifest> {
 }
 
 pub fn read_from_string(str: &str) -> Result<Manifest> {
-    let manifest = toml::from_str(&str)?;
-    Ok(manifest)
+    Ok(toml::from_str(str)?)
 }
 
 pub fn write(path: &Path, manifest: &Manifest) -> Result<()> {
     let file = toml::to_string(manifest)?;
-    std::fs::write(path, file)?;
-    Ok(())
+    Ok(std::fs::write(path, file)?)
 }
 
 #[cfg(test)]
