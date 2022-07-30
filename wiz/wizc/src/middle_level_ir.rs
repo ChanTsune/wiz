@@ -1,9 +1,8 @@
 use crate::high_level_ir::type_resolver::arena::ResolverArena;
 use crate::high_level_ir::type_resolver::declaration::{DeclarationItem, DeclarationItemKind};
 use crate::middle_level_ir::context::HLIR2MLIRContext;
-use core::result;
+use crate::result::Result;
 use std::collections::HashMap;
-use std::error::Error;
 use wiz_constants as constants;
 use wiz_constants::annotation::{BUILTIN, ENTRY, NO_MANGLE, TEST};
 use wiz_hir::typed_annotation::TypedAnnotations;
@@ -37,8 +36,6 @@ use wizc_cli::{BuildType, Config, ConfigExt};
 mod context;
 #[cfg(test)]
 mod tests;
-
-pub type Result<T> = result::Result<T, Box<dyn Error>>;
 
 pub fn hlir2mlir<'a, 'c>(
     target: TypedSourceSet,
@@ -494,6 +491,7 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
             TypedExprKind::Lambda(l) => todo!(),
             TypedExprKind::Return(r) => MLExpr::Return(self.return_expr(r)),
             TypedExprKind::TypeCast(t) => MLExpr::PrimitiveTypeCast(self.type_cast(t)),
+            TypedExprKind::SizeOf(t) => MLExpr::SizeOf(self.type_(t)),
         }
     }
 

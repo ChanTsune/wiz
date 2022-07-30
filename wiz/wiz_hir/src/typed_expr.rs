@@ -32,6 +32,7 @@ pub enum TypedExprKind {
     Lambda(TypedLambda),
     Return(TypedReturn),
     TypeCast(TypedTypeCast),
+    SizeOf(TypedType),
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]

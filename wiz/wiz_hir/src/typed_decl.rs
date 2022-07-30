@@ -1,5 +1,5 @@
 use crate::typed_annotation::TypedAnnotations;
-use crate::typed_expr::TypedExpr;
+use crate::typed_expr::{TypedExpr, TypedExprKind};
 use crate::typed_stmt::TypedBlock;
 use crate::typed_type::{Package, TypedArgType, TypedFunctionType, TypedType, TypedTypeParam};
 use crate::typed_type_constraint::TypedTypeConstraint;
@@ -40,6 +40,22 @@ pub struct TypedFun {
     pub arg_defs: Vec<TypedArgDef>,
     pub body: Option<TypedFunBody>,
     pub return_type: Option<TypedType>,
+}
+
+impl TypedFun {
+    pub fn size(ty: TypedType) -> Self {
+        TypedFun {
+            name: "size".to_string(),
+            type_params: None,
+            type_constraints: None,
+            arg_defs: vec![],
+            body: Some(TypedFunBody::Expr(TypedExpr::new(
+                TypedExprKind::SizeOf(ty),
+                Some(TypedType::usize()),
+            ))),
+            return_type: Some(TypedType::usize()),
+        }
+    }
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash, Serialize, Deserialize)]

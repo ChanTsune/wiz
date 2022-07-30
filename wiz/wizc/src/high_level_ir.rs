@@ -1,9 +1,9 @@
 use crate::high_level_ir::declaration_id::DeclarationId;
 use crate::high_level_ir::node_id::TypedModuleId;
+use crate::result::Result;
 use crate::utils::path_string_to_page_name;
 use crate::{ResolverArena, TypeResolver};
 use std::collections::HashMap;
-use std::error::Error;
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedDeclKind, TypedExtension, TypedFun,
@@ -94,11 +94,7 @@ impl<'a> AstLowering<'a> {
         result
     }
 
-    pub fn lowing(
-        &mut self,
-        s: SourceSet,
-        module_id: TypedModuleId,
-    ) -> Result<TypedSourceSet, Box<dyn Error>> {
+    pub fn lowing(&mut self, s: SourceSet, module_id: TypedModuleId) -> Result<TypedSourceSet> {
         let ss = self.source_set(s, module_id);
 
         let mut resolver = TypeResolver::new(self.session, self.arena);
@@ -470,6 +466,10 @@ impl<'a> AstLowering<'a> {
                 }
             };
         }
+
+        // add size_of struct
+        member_functions.push(TypedFun::size(TypedType::Self_));
+
         TypedStruct {
             name: s.name.token(),
             type_params: s.type_params.map(|v| {

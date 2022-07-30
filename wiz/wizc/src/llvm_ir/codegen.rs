@@ -150,6 +150,7 @@ impl<'ctx> CodeGen<'ctx> {
             MLExpr::Return(r) => self.return_expr(r),
             MLExpr::PrimitiveTypeCast(t) => self.type_cast(t),
             MLExpr::Block(b) => self.block(b),
+            MLExpr::SizeOf(t) => self.size_of(t),
         }
     }
 
@@ -826,6 +827,17 @@ impl<'ctx> CodeGen<'ctx> {
             };
         }
         AnyValueEnum::from(i8_type.const_int(0, false))
+    }
+
+    fn size_of(&self, t: MLType) -> AnyValueEnum<'ctx> {
+        match t {
+            MLType::Value(v) => self
+                .ml_type_to_type(v)
+                .size_of()
+                .unwrap()
+                .as_any_value_enum(),
+            MLType::Function(f) => todo!(),
+        }
     }
 
     fn load_if_pointer_value(
