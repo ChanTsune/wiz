@@ -2,8 +2,8 @@ use crate::high_level_ir::declaration_id::DeclarationId;
 use crate::high_level_ir::node_id::TypedModuleId;
 use crate::utils::path_string_to_page_name;
 use crate::{ResolverArena, TypeResolver};
+use crate::result::Result;
 use std::collections::HashMap;
-use std::error::Error;
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedDeclKind, TypedExtension, TypedFun,
@@ -98,7 +98,7 @@ impl<'a> AstLowering<'a> {
         &mut self,
         s: SourceSet,
         module_id: TypedModuleId,
-    ) -> Result<TypedSourceSet, Box<dyn Error>> {
+    ) -> Result<TypedSourceSet> {
         let ss = self.source_set(s, module_id);
 
         let mut resolver = TypeResolver::new(self.session, self.arena);
