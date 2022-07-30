@@ -270,7 +270,8 @@ impl<'ctx> CodeGen<'ctx> {
         });
         let args: Vec<BasicMetadataValueEnum> = args
             .filter_map(|arg| BasicValueEnum::try_from(arg).ok())
-            .map(|i| i.into()).collect();
+            .map(|i| i.into())
+            .collect();
         let function = target.into_function_value();
         let bv = self
             .builder
