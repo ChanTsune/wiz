@@ -268,10 +268,9 @@ impl<'ctx> CodeGen<'ctx> {
                 self.expr(arg.arg)
             }
         });
-        let args: Vec<_> = args
+        let args: Vec<BasicMetadataValueEnum> = args
             .filter_map(|arg| BasicValueEnum::try_from(arg).ok())
-            .collect();
-        let args: Vec<BasicMetadataValueEnum> = args.into_iter().map(|i| i.into()).collect();
+            .map(|i| i.into()).collect();
         let function = target.into_function_value();
         let bv = self
             .builder
