@@ -100,9 +100,7 @@ impl<'s> TypeResolver<'s> {
                     )
                     .unwrap();
                 let fun = self.preload_fun(f)?;
-                self.context
-                    .update_function(&id, fun.type_())
-                    .unwrap();
+                self.context.update_function(&id, fun.type_()).unwrap();
             }
             TypedDeclKind::Struct(s) => {
                 let _ = self.preload_struct(s)?;
@@ -184,9 +182,7 @@ impl<'s> TypeResolver<'s> {
         }
 
         for member_function in member_functions.iter() {
-            let type_ = self
-                .context
-                .full_type_name(&member_function.type_())?;
+            let type_ = self.context.full_type_name(&member_function.type_())?;
             self.context.register_function(
                 &member_function.name,
                 type_.clone(),
@@ -233,9 +229,7 @@ impl<'s> TypeResolver<'s> {
                 .insert(computed_property.name.clone(), type_);
         }
         for member_function in member_functions {
-            let type_ = self
-                .context
-                .full_type_name(&member_function.type_())?;
+            let type_ = self.context.full_type_name(&member_function.type_())?;
             let rs = self
                 .context
                 .arena
@@ -278,9 +272,7 @@ impl<'s> TypeResolver<'s> {
                 .insert(computed_property.name.clone(), type_);
         }
         for member_function in member_functions.iter() {
-            let type_ = self
-                .context
-                .full_type_name(&member_function.type_())?;
+            let type_ = self.context.full_type_name(&member_function.type_())?;
             let rs = self.context.current_type_mut().ok_or_else(|| {
                 ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
             })?;
