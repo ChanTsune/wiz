@@ -16,7 +16,7 @@ fun modBy2(_ n: Int64): Int64 {
     return n % 2
 }
 
-fun modBy2Expr(_ n: Int64) = n % 2
+fun modBy2Expr(_ n: Int64): Int64 = n % 2
 
 fun reference_dereference(_ p: &Int64): Int64 {
     return *p
