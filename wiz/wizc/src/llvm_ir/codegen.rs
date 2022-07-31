@@ -958,7 +958,7 @@ impl<'ctx> CodeGen<'ctx> {
             body,
         } = f;
         let return_type = self.ml_type_to_type(return_type);
-        let args: Vec<_> = arg_defs
+        let args: Vec<BasicMetadataTypeEnum> = arg_defs
             .iter()
             .map(|a| {
                 let a = a.type_.clone();
@@ -971,8 +971,7 @@ impl<'ctx> CodeGen<'ctx> {
                 }
             })
             .map(|a| BasicTypeEnum::try_from(a).unwrap())
-            .collect();
-        let args: Vec<BasicMetadataTypeEnum> = args.into_iter().map(|i| i.into()).collect();
+            .map(|i| i.into()).collect();
         let result = if let Some(body) = body {
             self.ml_context.push_environment();
             let is_void_type = return_type.is_void_type();
