@@ -971,7 +971,8 @@ impl<'ctx> CodeGen<'ctx> {
                 }
             })
             .map(|a| BasicTypeEnum::try_from(a).unwrap())
-            .map(|i| i.into()).collect();
+            .map(|i| i.into())
+            .collect();
         let result = if let Some(body) = body {
             self.ml_context.push_environment();
             let is_void_type = return_type.is_void_type();
