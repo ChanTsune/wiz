@@ -118,13 +118,11 @@ pub struct TypedProtocol {
 }
 
 impl TypedFun {
-    pub fn type_(&self) -> Option<TypedType> {
-        self.return_type.clone().map(|return_type| {
-            TypedType::Function(Box::new(TypedFunctionType {
-                arguments: self.arg_defs.iter().map(|a| a.to_arg_type()).collect(),
-                return_type,
-            }))
-        })
+    pub fn type_(&self) -> TypedType {
+        TypedType::Function(Box::new(TypedFunctionType {
+            arguments: self.arg_defs.iter().map(|a| a.to_arg_type()).collect(),
+            return_type: self.return_type.clone().unwrap(),
+        }))
     }
 
     pub fn is_generic(&self) -> bool {
