@@ -76,7 +76,8 @@ impl<'s> TypeChecker<'s> {
                             )));
                         }
                     } else {
-                        self.session.emit_error(CheckerError::new(format!("Cannot resolve type {:?}", e)))
+                        self.session
+                            .emit_error(CheckerError::new(format!("Cannot resolve type {:?}", e)))
                     }
                 }
                 TypedFunBody::Block(b) => {
