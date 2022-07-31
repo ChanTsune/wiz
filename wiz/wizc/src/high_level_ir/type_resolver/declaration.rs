@@ -38,8 +38,8 @@ impl DeclarationItem {
         entry.insert(id);
     }
 
-    pub fn get_child(&self, name: &str) -> Option<HashSet<DeclarationId>> {
-        self.children.get(name).cloned()
+    pub fn get_child(&self, name: &str) -> Option<&HashSet<DeclarationId>> {
+        self.children.get(name)
     }
 
     pub fn children(&self) -> &HashMap<String, HashSet<DeclarationId>> {
