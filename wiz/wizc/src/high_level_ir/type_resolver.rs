@@ -136,7 +136,7 @@ impl<'s> TypeResolver<'s> {
                 Ok(a)
             })
             .collect::<Result<Vec<_>>>()?;
-        let return_type = self.resolve_return_type(&f.name, &f.return_type, &f.body)?;
+        let return_type = self.context.full_type_name(&f.return_type)?;
         let fun = TypedFun {
             name: f.name.clone(),
             type_params: f.type_params.clone(),
@@ -360,15 +360,6 @@ impl<'s> TypeResolver<'s> {
         Ok(v)
     }
 
-    fn resolve_return_type(
-        &mut self,
-        name: &str,
-        return_type: &TypedType,
-        body: &Option<TypedFunBody>,
-    ) -> Result<TypedType> {
-        self.context.full_type_name(return_type)
-    }
-
     fn typed_arg_def(&mut self, a: TypedArgDef) -> Result<TypedArgDef> {
         Ok(TypedArgDef {
             label: a.label,
@@ -412,7 +403,7 @@ impl<'s> TypeResolver<'s> {
                 Ok(a)
             })
             .collect::<Result<Vec<_>>>()?;
-        let return_type = self.resolve_return_type(&f.name, &f.return_type, &f.body)?;
+        let return_type = self.context.full_type_name(&f.return_type)?;
         let fun = TypedFun {
             name: f.name,
             type_params: f.type_params,
@@ -484,7 +475,7 @@ impl<'s> TypeResolver<'s> {
                 Ok(a)
             })
             .collect::<Result<Vec<_>>>()?;
-        let return_type = self.resolve_return_type(&mf.name, &mf.return_type, &mf.body)?;
+        let return_type = self.context.full_type_name(&mf.return_type)?;
         let result = Ok(TypedFun {
             name: mf.name,
             arg_defs,
