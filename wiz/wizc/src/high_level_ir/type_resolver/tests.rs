@@ -139,7 +139,7 @@ fn test_unsafe_pointer() {
                                 }),
                             })],
                         })),
-                        return_type: Some(TypedType::unit()),
+                        return_type: TypedType::unit(),
                     }),
                 },
             ],
@@ -237,7 +237,7 @@ fn test_struct_stored_property() {
                                 }),
                             })],
                         })),
-                        return_type: Some(TypedType::unit()),
+                        return_type: TypedType::unit(),
                     }),
                 },
             ],
@@ -361,7 +361,7 @@ fn test_struct_init() {
                                 }),
                             })],
                         })),
-                        return_type: Some(TypedType::unit()),
+                        return_type: TypedType::unit(),
                     }),
                 },
             ],
@@ -448,7 +448,7 @@ fn test_struct_member_function() {
                                     Some(TypedType::noting()),
                                 ))],
                             })),
-                            return_type: Some(TypedType::int64()),
+                            return_type: TypedType::int64(),
                             type_constraints: None,
                         },
                         TypedFun::size(TypedType::Value(TypedValueType::Value(
@@ -553,7 +553,7 @@ fn test_struct_member_function_call() {
                                         Some(TypedType::noting()),
                                     ))],
                                 })),
-                                return_type: Some(TypedType::int64()),
+                                return_type: TypedType::int64(),
                                 type_constraints: None,
                             },
                             TypedFun::size(TypedType::Value(TypedValueType::Value(
@@ -628,7 +628,7 @@ fn test_struct_member_function_call() {
                                 Some(TypedType::int64()),
                             ))],
                         })),
-                        return_type: Some(TypedType::unit()),
+                        return_type: TypedType::unit(),
                     }),
                 },
             ],
@@ -639,7 +639,7 @@ fn test_struct_member_function_call() {
 #[test]
 fn test_expr_function_with_no_arg() {
     let source = r"
-        fun function() = 1
+        fun function(): Int64 = 1
         ";
 
     check(
@@ -660,7 +660,7 @@ fn test_expr_function_with_no_arg() {
                         TypedExprKind::Literal(TypedLiteralKind::Integer("1".to_string())),
                         Some(TypedType::int64()),
                     ))),
-                    return_type: Some(TypedType::int64()),
+                    return_type: TypedType::int64(),
                 }),
             }],
         },
@@ -670,7 +670,7 @@ fn test_expr_function_with_no_arg() {
 #[test]
 fn test_expr_function_with_arg() {
     let source = r"
-        fun function(_ i:Int32) = i
+        fun function(_ i:Int32): Int32 = i
         ";
 
     check(
@@ -699,7 +699,7 @@ fn test_expr_function_with_arg() {
                         }),
                         Some(TypedType::int32()),
                     ))),
-                    return_type: Some(TypedType::int32()),
+                    return_type: TypedType::int32(),
                 }),
             }],
         },
@@ -709,7 +709,7 @@ fn test_expr_function_with_arg() {
 #[test]
 fn test_function_call() {
     let source = r"
-        fun target_function() = 1
+        fun target_function(): Int64 = 1
         fun main() {
             target_function()
         }
@@ -734,7 +734,7 @@ fn test_function_call() {
                             TypedExprKind::Literal(TypedLiteralKind::Integer("1".to_string())),
                             Some(TypedType::int64()),
                         ))),
-                        return_type: Some(TypedType::int64()),
+                        return_type: TypedType::int64(),
                     }),
                 },
                 TypedDecl {
@@ -767,7 +767,7 @@ fn test_function_call() {
                                 Some(TypedType::int64()),
                             ))],
                         })),
-                        return_type: Some(TypedType::unit()),
+                        return_type: TypedType::unit(),
                     }),
                 },
             ],
@@ -810,7 +810,7 @@ fn test_return_integer_literal() {
                             Some(TypedType::noting()),
                         ))],
                     })),
-                    return_type: Some(TypedType::int64()),
+                    return_type: TypedType::int64(),
                 }),
             }],
         },
@@ -852,7 +852,7 @@ fn test_return_floating_point_literal() {
                             Some(TypedType::noting()),
                         ))],
                     })),
-                    return_type: Some(TypedType::double()),
+                    return_type: TypedType::double(),
                 }),
             }],
         },
@@ -901,7 +901,7 @@ fn test_binop() {
                             Some(TypedType::int64()),
                         ))],
                     })),
-                    return_type: Some(TypedType::unit()),
+                    return_type: TypedType::unit(),
                 }),
             }],
         },
@@ -911,7 +911,7 @@ fn test_binop() {
 #[test]
 fn test_subscript() {
     let source = r"
-        fun get_first(_ p: *UInt8) = p[0]
+        fun get_first(_ p: *UInt8): UInt8 = p[0]
         ";
 
     check(
@@ -949,7 +949,7 @@ fn test_subscript() {
                         }),
                         Some(TypedType::uint8()),
                     ))),
-                    return_type: Some(TypedType::uint8()),
+                    return_type: TypedType::uint8(),
                 }),
             }],
         },
@@ -1034,7 +1034,7 @@ fn test_if_else() {
                             Some(TypedType::noting()),
                         ))],
                     })),
-                    return_type: Some(TypedType::int64()),
+                    return_type: TypedType::int64(),
                 }),
             }],
         },
@@ -1115,7 +1115,7 @@ fn test_if() {
                             Some(TypedType::noting()),
                         ))],
                     })),
-                    return_type: Some(TypedType::unit()),
+                    return_type: TypedType::unit(),
                 }),
             }],
         },
@@ -1229,7 +1229,7 @@ fn test_reference_dereference() {
                             }),
                         ],
                     })),
-                    return_type: Some(TypedType::unit()),
+                    return_type: TypedType::unit(),
                 }),
             }],
         },
@@ -1295,7 +1295,7 @@ fn test_function_overload_by_arguments() {
                             type_: TypedType::double(),
                         }],
                         body: Option::from(TypedFunBody::Block(TypedBlock { body: vec![] })),
-                        return_type: Some(TypedType::unit()),
+                        return_type: TypedType::unit(),
                     }),
                 },
                 TypedDecl {
@@ -1312,7 +1312,7 @@ fn test_function_overload_by_arguments() {
                             type_: TypedType::int64(),
                         }],
                         body: Option::from(TypedFunBody::Block(TypedBlock { body: vec![] })),
-                        return_type: Some(TypedType::unit()),
+                        return_type: TypedType::unit(),
                     }),
                 },
                 TypedDecl {
@@ -1396,7 +1396,7 @@ fn test_function_overload_by_arguments() {
                                 )),
                             ],
                         })),
-                        return_type: Some(TypedType::unit()),
+                        return_type: TypedType::unit(),
                     }),
                 },
             ],
