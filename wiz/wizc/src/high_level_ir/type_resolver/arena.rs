@@ -132,7 +132,7 @@ impl ResolverArena {
             self.resolve_declaration_id(
                 **parent
                     .get_child(&item_name[0].to_string())?
-                    .into_iter()
+                    .iter()
                     .collect::<Vec<_>>()
                     .first()
                     .unwrap(),
