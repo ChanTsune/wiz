@@ -459,7 +459,7 @@ impl TypedType {
     }
 
     pub fn string_ref() -> Self {
-        Self::Value(TypedValueType::Reference(Box::new(Self::string())))
+        Self::reference(Self::string())
     }
 
     pub fn unsafe_pointer(typ: TypedType) -> Self {

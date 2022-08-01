@@ -68,11 +68,16 @@ impl<'s> TypeChecker<'s> {
             match body {
                 TypedFunBody::Expr(e) => {
                     self.expression(e);
-                    if typed_function.return_type != e.ty {
-                        self.session.emit_error(CheckerError::new(format!(
-                            "TypeMissMatchError: {:?} excepted return {:?}, but return {:?}",
-                            typed_function.name, typed_function.return_type, e.ty,
-                        )));
+                    if let Some(expr_type) = &e.ty {
+                        if typed_function.return_type != *expr_type {
+                            self.session.emit_error(CheckerError::new(format!(
+                                "TypeMissMatchError: {:?} excepted return {:?}, but return {:?}",
+                                typed_function.name, typed_function.return_type, expr_type,
+                            )));
+                        }
+                    } else {
+                        self.session
+                            .emit_error(CheckerError::new(format!("Cannot resolve type {:?}", e)))
                     }
                 }
                 TypedFunBody::Block(b) => {

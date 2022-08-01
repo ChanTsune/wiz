@@ -100,9 +100,7 @@ impl<'s> TypeResolver<'s> {
                     )
                     .unwrap();
                 let fun = self.preload_fun(f)?;
-                self.context
-                    .update_function(&id, fun.type_().unwrap())
-                    .unwrap();
+                self.context.update_function(&id, fun.type_()).unwrap();
             }
             TypedDeclKind::Struct(s) => {
                 let _ = self.preload_struct(s)?;
@@ -138,14 +136,14 @@ impl<'s> TypeResolver<'s> {
                 Ok(a)
             })
             .collect::<Result<Vec<_>>>()?;
-        let return_type = self.typed_function_return_type(&f.name, &f.return_type, &f.body)?;
+        let return_type = self.context.full_type_name(&f.return_type)?;
         let fun = TypedFun {
             name: f.name.clone(),
             type_params: f.type_params.clone(),
             type_constraints: f.type_constraints.clone(),
             arg_defs,
             body: None,
-            return_type: Some(return_type),
+            return_type,
         };
         self.context.pop_local_stack();
         self.context.pop_name_space();
@@ -184,9 +182,7 @@ impl<'s> TypeResolver<'s> {
         }
 
         for member_function in member_functions.iter() {
-            let type_ = self
-                .context
-                .full_type_name(&member_function.type_().unwrap())?;
+            let type_ = self.context.full_type_name(&member_function.type_())?;
             self.context.register_function(
                 &member_function.name,
                 type_.clone(),
@@ -233,9 +229,7 @@ impl<'s> TypeResolver<'s> {
                 .insert(computed_property.name.clone(), type_);
         }
         for member_function in member_functions {
-            let type_ = self
-                .context
-                .full_type_name(&member_function.type_().unwrap())?;
+            let type_ = self.context.full_type_name(&member_function.type_())?;
             let rs = self
                 .context
                 .arena
@@ -278,9 +272,7 @@ impl<'s> TypeResolver<'s> {
                 .insert(computed_property.name.clone(), type_);
         }
         for member_function in member_functions.iter() {
-            let type_ = self
-                .context
-                .full_type_name(&member_function.type_().unwrap())?;
+            let type_ = self.context.full_type_name(&member_function.type_())?;
             let rs = self.context.current_type_mut().ok_or_else(|| {
                 ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
             })?;
@@ -368,27 +360,6 @@ impl<'s> TypeResolver<'s> {
         Ok(v)
     }
 
-    fn typed_function_return_type(
-        &mut self,
-        name: &str,
-        return_type: &Option<TypedType>,
-        body: &Option<TypedFunBody>,
-    ) -> Result<TypedType> {
-        match return_type {
-            None => match body {
-                None => Err(ResolverError::from(format!(
-                    "abstract function {:?} must be define type",
-                    name
-                ))),
-                Some(TypedFunBody::Block(_)) => Ok(TypedType::unit()),
-                Some(TypedFunBody::Expr(e)) => self.expr(e.clone(), None)?.ty.ok_or_else(|| {
-                    ResolverError::from(format!("Can not resolve expr type at function {:?}", name))
-                }),
-            },
-            Some(b) => self.context.full_type_name(b),
-        }
-    }
-
     fn typed_arg_def(&mut self, a: TypedArgDef) -> Result<TypedArgDef> {
         Ok(TypedArgDef {
             label: a.label,
@@ -432,7 +403,7 @@ impl<'s> TypeResolver<'s> {
                 Ok(a)
             })
             .collect::<Result<Vec<_>>>()?;
-        let return_type = self.typed_function_return_type(&f.name, &f.return_type, &f.body)?;
+        let return_type = self.context.full_type_name(&f.return_type)?;
         let fun = TypedFun {
             name: f.name,
             type_params: f.type_params,
@@ -445,7 +416,7 @@ impl<'s> TypeResolver<'s> {
                 Some(b) => Some(self.typed_fun_body(b)?),
                 None => None,
             },
-            return_type: Some(return_type),
+            return_type,
         };
         self.context.pop_local_stack();
         self.context.pop_name_space();
@@ -504,7 +475,7 @@ impl<'s> TypeResolver<'s> {
                 Ok(a)
             })
             .collect::<Result<Vec<_>>>()?;
-        let return_type = self.typed_function_return_type(&mf.name, &mf.return_type, &mf.body)?;
+        let return_type = self.context.full_type_name(&mf.return_type)?;
         let result = Ok(TypedFun {
             name: mf.name,
             arg_defs,
@@ -513,7 +484,7 @@ impl<'s> TypeResolver<'s> {
                 None => None,
                 Some(body) => Some(self.typed_fun_body(body)?),
             },
-            return_type: Some(return_type),
+            return_type,
             type_constraints: mf.type_constraints,
         });
         self.context.pop_local_stack();

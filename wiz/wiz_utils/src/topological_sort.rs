@@ -7,7 +7,7 @@ use std::hash::Hash;
 pub struct CircularDependencyError;
 
 impl CircularDependencyError {
-    pub fn new() -> Self {
+    fn new() -> Self {
         Self
     }
 }

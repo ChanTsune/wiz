@@ -268,10 +268,10 @@ impl<'ctx> CodeGen<'ctx> {
                 self.expr(arg.arg)
             }
         });
-        let args: Vec<_> = args
+        let args: Vec<BasicMetadataValueEnum> = args
             .filter_map(|arg| BasicValueEnum::try_from(arg).ok())
+            .map(|i| i.into())
             .collect();
-        let args: Vec<BasicMetadataValueEnum> = args.into_iter().map(|i| i.into()).collect();
         let function = target.into_function_value();
         let bv = self
             .builder
@@ -958,7 +958,7 @@ impl<'ctx> CodeGen<'ctx> {
             body,
         } = f;
         let return_type = self.ml_type_to_type(return_type);
-        let args: Vec<_> = arg_defs
+        let args: Vec<BasicMetadataTypeEnum> = arg_defs
             .iter()
             .map(|a| {
                 let a = a.type_.clone();
@@ -971,8 +971,8 @@ impl<'ctx> CodeGen<'ctx> {
                 }
             })
             .map(|a| BasicTypeEnum::try_from(a).unwrap())
+            .map(|i| i.into())
             .collect();
-        let args: Vec<BasicMetadataTypeEnum> = args.into_iter().map(|i| i.into()).collect();
         let result = if let Some(body) = body {
             self.ml_context.push_environment();
             let is_void_type = return_type.is_void_type();

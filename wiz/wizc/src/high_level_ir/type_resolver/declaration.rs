@@ -1,6 +1,8 @@
 use crate::high_level_ir::declaration_id::DeclarationId;
 use crate::high_level_ir::type_resolver::context::{ResolverFunction, ResolverStruct};
+use std::borrow::Borrow;
 use std::collections::{HashMap, HashSet};
+use std::hash::Hash;
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_type::TypedType;
 
@@ -38,8 +40,12 @@ impl DeclarationItem {
         entry.insert(id);
     }
 
-    pub fn get_child(&self, name: &str) -> Option<HashSet<DeclarationId>> {
-        self.children.get(name).cloned()
+    pub fn get_child<Q: ?Sized>(&self, name: &Q) -> Option<&HashSet<DeclarationId>>
+    where
+        String: Borrow<Q>,
+        Q: Hash + Eq,
+    {
+        self.children.get(name)
     }
 
     pub fn children(&self) -> &HashMap<String, HashSet<DeclarationId>> {

@@ -130,7 +130,7 @@ impl ResolverArena {
         } else {
             let parent = self.declarations.get(&parent_id)?;
             self.resolve_declaration_id(
-                *parent
+                **parent
                     .get_child(&item_name[0].to_string())?
                     .into_iter()
                     .collect::<Vec<_>>()
@@ -367,7 +367,7 @@ impl ResolverArena {
         is_last: bool,
         hierarchy_tree: &mut Vec<bool>,
     ) -> std::fmt::Result {
-        Self::ident(f, level, is_last, &hierarchy_tree)?;
+        Self::ident(f, level, is_last, hierarchy_tree)?;
         f.write_str(name)?;
         if item.is_namespace() {
             f.write_char('/')?;

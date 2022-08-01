@@ -39,7 +39,7 @@ pub struct TypedFun {
     pub type_constraints: Option<Vec<TypedTypeConstraint>>,
     pub arg_defs: Vec<TypedArgDef>,
     pub body: Option<TypedFunBody>,
-    pub return_type: Option<TypedType>,
+    pub return_type: TypedType,
 }
 
 impl TypedFun {
@@ -53,7 +53,7 @@ impl TypedFun {
                 TypedExprKind::SizeOf(ty),
                 Some(TypedType::usize()),
             ))),
-            return_type: Some(TypedType::usize()),
+            return_type: TypedType::usize(),
         }
     }
 }
@@ -118,13 +118,11 @@ pub struct TypedProtocol {
 }
 
 impl TypedFun {
-    pub fn type_(&self) -> Option<TypedType> {
-        self.return_type.clone().map(|return_type| {
-            TypedType::Function(Box::new(TypedFunctionType {
-                arguments: self.arg_defs.iter().map(|a| a.to_arg_type()).collect(),
-                return_type,
-            }))
-        })
+    pub fn type_(&self) -> TypedType {
+        TypedType::Function(Box::new(TypedFunctionType {
+            arguments: self.arg_defs.iter().map(|a| a.to_arg_type()).collect(),
+            return_type: self.return_type.clone(),
+        }))
     }
 
     pub fn is_generic(&self) -> bool {

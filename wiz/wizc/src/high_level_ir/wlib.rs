@@ -58,7 +58,7 @@ impl WLib {
                             arena.register_function(
                                 &id,
                                 &f.name,
-                                f.type_().unwrap(),
+                                f.type_(),
                                 f.type_params.clone(),
                                 f.body.clone(),
                                 decl.annotations.clone(),
@@ -81,7 +81,7 @@ impl WLib {
                                 arena.register_function(
                                     &id,
                                     &member_function.name,
-                                    member_function.type_().unwrap(),
+                                    member_function.type_(),
                                     member_function.type_params.clone(),
                                     member_function.body.clone(),
                                     Default::default(),

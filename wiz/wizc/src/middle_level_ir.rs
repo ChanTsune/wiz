@@ -374,7 +374,7 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
         MLFun {
             name: mangled_name,
             arg_defs: args,
-            return_type: self.type_(return_type.unwrap()).into_value_type(),
+            return_type: self.type_(return_type).into_value_type(),
             body: body.map(|b| self.fun_body(b, type_arguments)),
         }
     }
@@ -423,7 +423,7 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
                             String::from("##") + &*fun_arg_label_type_mangled_name
                         },
                     arg_defs: args,
-                    return_type: self.type_(return_type.unwrap()).into_value_type(),
+                    return_type: self.type_(return_type).into_value_type(),
                     body: body.map(|body| self.fun_body(body, None)),
                 }
             })
@@ -461,7 +461,7 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
                             String::from("##") + &*fun_arg_label_type_mangled_name
                         },
                     arg_defs: args,
-                    return_type: self.type_(return_type.unwrap()).into_value_type(),
+                    return_type: self.type_(return_type).into_value_type(),
                     body: body.map(|body| self.fun_body(body, None)),
                 }
             })
@@ -957,7 +957,7 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
                     let mut tests: Vec<_> = self
                         .tests
                         .iter()
-                        .map(|n| {
+                        .flat_map(|n| {
                             [
                                 MLStmt::Expr(MLExpr::Call(MLCall {
                                     target: MLName {
@@ -1000,7 +1000,6 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
                                 })),
                             ]
                         })
-                        .flatten()
                         .collect();
                     tests.push(MLStmt::Return(MLReturn::new(Some(MLExpr::Literal(
                         MLLiteral {
