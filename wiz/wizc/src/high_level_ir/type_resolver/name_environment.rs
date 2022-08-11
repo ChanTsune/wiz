@@ -24,7 +24,9 @@ impl<'a> NameEnvironment<'a> {
             arena,
         }
     }
+}
 
+impl<'a> NameEnvironment<'a> {
     /// use [namespace]::*;
     pub(crate) fn use_asterisk(&mut self, namespace: &[String]) -> Option<()> {
         let ns_id = self.arena.resolve_declaration_id_from_root(namespace)?;
