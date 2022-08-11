@@ -14,10 +14,7 @@ pub(crate) struct NameEnvironment<'a> {
 }
 
 impl<'a> NameEnvironment<'a> {
-    pub fn new(
-        arena: &'a ResolverArena,
-        local_stack: StackedHashMap<String, EnvValue>,
-    ) -> Self {
+    pub fn new(arena: &'a ResolverArena, local_stack: StackedHashMap<String, EnvValue>) -> Self {
         Self {
             local_stack,
             values: Default::default(),
