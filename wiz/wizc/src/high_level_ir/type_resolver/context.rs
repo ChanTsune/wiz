@@ -139,7 +139,7 @@ impl<'a> ResolverContext<'a> {
     }
 
     pub(crate) fn get_current_name_environment(&self) -> NameEnvironment {
-        let mut env = NameEnvironment::new(self.arena, &self.local_stack);
+        let mut env = NameEnvironment::new(self.arena, self.local_stack.clone());
         env.use_asterisk(&[]);
 
         let module_id = self.current_module_id().unwrap();

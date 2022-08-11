@@ -8,7 +8,7 @@ use wiz_utils::StackedHashMap;
 
 #[derive(Debug, Clone)]
 pub(crate) struct NameEnvironment<'a> {
-    local_stack: &'a StackedHashMap<String, EnvValue>,
+    local_stack: StackedHashMap<String, EnvValue>,
     values: HashMap<String, HashSet<DeclarationId>>,
     arena: &'a ResolverArena,
 }
@@ -16,7 +16,7 @@ pub(crate) struct NameEnvironment<'a> {
 impl<'a> NameEnvironment<'a> {
     pub fn new(
         arena: &'a ResolverArena,
-        local_stack: &'a StackedHashMap<String, EnvValue>,
+        local_stack: StackedHashMap<String, EnvValue>,
     ) -> Self {
         Self {
             local_stack,
