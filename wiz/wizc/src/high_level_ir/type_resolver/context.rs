@@ -258,6 +258,7 @@ impl<'a> ResolverContext<'a> {
                 let package = self_type.package();
                 Ok((TypedType::Type(Box::new(self_type)), package))
             }
+            EnvValue::Namespace(id) => todo!()
         }
     }
 

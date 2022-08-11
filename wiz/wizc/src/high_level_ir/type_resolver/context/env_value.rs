@@ -6,6 +6,7 @@ use wiz_hir::typed_type::TypedType;
 pub enum EnvValue {
     Value(HashSet<(DeclarationId, TypedType)>),
     Type(DeclarationId),
+    Namespace(DeclarationId),
 }
 
 impl From<(DeclarationId, TypedType)> for EnvValue {
