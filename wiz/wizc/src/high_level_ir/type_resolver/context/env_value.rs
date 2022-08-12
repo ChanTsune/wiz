@@ -1,5 +1,5 @@
-use crate::high_level_ir::declaration_id::DeclarationId;
 use std::collections::HashSet;
+use wiz_arena::declaration_id::DeclarationId;
 use wiz_hir::typed_type::TypedType;
 
 #[derive(Debug, Eq, PartialEq, Clone)]

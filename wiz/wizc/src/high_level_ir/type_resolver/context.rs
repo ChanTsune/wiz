@@ -1,19 +1,13 @@
 mod env_value;
-mod resolver_function;
-mod resolver_struct;
 
-use crate::high_level_ir::declaration_id::DeclarationId;
-use crate::high_level_ir::type_resolver::arena::ResolverArena;
 pub(crate) use crate::high_level_ir::type_resolver::context::env_value::EnvValue;
-pub(crate) use crate::high_level_ir::type_resolver::context::resolver_function::ResolverFunction;
-pub(crate) use crate::high_level_ir::type_resolver::context::resolver_struct::{
-    ResolverStruct, StructKind,
-};
-use crate::high_level_ir::type_resolver::declaration::DeclarationItemKind;
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::name_environment::NameEnvironment;
 use crate::high_level_ir::type_resolver::result::Result;
 use std::collections::HashMap;
+use wiz_arena::arena::{Arena, ArenaStruct};
+use wiz_arena::declaration::DeclarationItemKind;
+use wiz_arena::declaration_id::DeclarationId;
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_decl::TypedFunBody;
 use wiz_hir::typed_expr::TypedBinaryOperator;
@@ -27,13 +21,13 @@ use wiz_utils::StackedHashMap;
 pub struct ResolverContext<'a> {
     global_used_name_space: Vec<Vec<String>>,
     used_name_space: Vec<Vec<String>>,
-    arena: &'a mut ResolverArena,
+    arena: &'a mut Arena,
     current_namespace_id: DeclarationId,
     local_stack: StackedHashMap<String, EnvValue>,
 }
 
 impl<'a> ResolverContext<'a> {
-    pub(crate) fn new(arena: &'a mut ResolverArena) -> Self {
+    pub(crate) fn new(arena: &'a mut Arena) -> Self {
         Self {
             global_used_name_space: Default::default(),
             used_name_space: Default::default(),
@@ -43,11 +37,11 @@ impl<'a> ResolverContext<'a> {
         }
     }
 
-    pub(crate) fn arena_mut(&mut self) -> &mut ResolverArena {
+    pub(crate) fn arena_mut(&mut self) -> &mut Arena {
         self.arena
     }
 
-    pub(crate) fn arena(&self) -> &ResolverArena {
+    pub(crate) fn arena(&self) -> &Arena {
         self.arena
     }
 
@@ -91,7 +85,7 @@ impl<'a> ResolverContext<'a> {
         }
     }
 
-    pub(crate) fn current_type_mut(&mut self) -> Option<&mut ResolverStruct> {
+    pub(crate) fn current_type_mut(&mut self) -> Option<&mut ArenaStruct> {
         let id = self.current_namespace_id;
         match &mut self.arena_mut().get_mut_by_id(&id)?.kind {
             DeclarationItemKind::Type(rs) => Some(rs),
@@ -366,21 +360,21 @@ impl<'a> ResolverContext<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::{ResolverContext, ResolverStruct, StructKind};
-    use crate::ResolverArena;
+    use super::ResolverContext;
+    use wiz_arena::arena::{Arena, ArenaStruct, StructKind};
     use wiz_constants::INT32;
     use wiz_hir::typed_type::TypedType;
 
     #[test]
     fn test_context_name_environment() {
-        let mut arena = ResolverArena::default();
+        let mut arena = Arena::default();
         let mut context = ResolverContext::new(&mut arena);
 
         let env = context.get_current_name_environment();
 
         assert_eq!(
             env.get_type(&[], INT32),
-            Some(&ResolverStruct::new(TypedType::int32(), StructKind::Struct)),
+            Some(&ArenaStruct::new(TypedType::int32(), StructKind::Struct)),
         );
     }
 }

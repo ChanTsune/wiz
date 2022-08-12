@@ -1,5 +1,5 @@
-use crate::high_level_ir::declaration_id::DeclarationId;
-use crate::high_level_ir::type_resolver::context::{ResolverFunction, ResolverStruct};
+use crate::arena::{ArenaFunction, ArenaStruct};
+use crate::declaration_id::DeclarationId;
 use std::borrow::Borrow;
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
@@ -8,15 +8,15 @@ use wiz_hir::typed_type::TypedType;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct DeclarationItem {
-    pub(crate) annotations: TypedAnnotations,
-    pub(crate) name: String,
-    pub(crate) kind: DeclarationItemKind,
+    pub annotations: TypedAnnotations,
+    pub name: String,
+    pub kind: DeclarationItemKind,
     parent: Option<DeclarationId>,
     children: HashMap<String, HashSet<DeclarationId>>,
 }
 
 impl DeclarationItem {
-    pub(crate) fn new(
+    pub fn new(
         annotations: TypedAnnotations,
         name: &str,
         kind: DeclarationItemKind,
@@ -31,7 +31,7 @@ impl DeclarationItem {
         }
     }
 
-    pub(crate) fn has_annotation(&self, annotation: &str) -> bool {
+    pub fn has_annotation(&self, annotation: &str) -> bool {
         self.annotations.has_annotate(annotation)
     }
 
@@ -80,7 +80,7 @@ impl DeclarationItem {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum DeclarationItemKind {
     Namespace,
-    Type(ResolverStruct),
+    Type(ArenaStruct),
     Variable(TypedType),
-    Function(ResolverFunction),
+    Function(ArenaFunction),
 }

@@ -1,8 +1,8 @@
-use crate::high_level_ir::declaration_id::{DeclarationId, DeclarationIdGenerator};
-use crate::high_level_ir::type_resolver::context::{ResolverFunction, ResolverStruct, StructKind};
-use crate::high_level_ir::type_resolver::declaration::{DeclarationItem, DeclarationItemKind};
+use crate::declaration::{DeclarationItem, DeclarationItemKind};
+use crate::declaration_id::{DeclarationId, DeclarationIdGenerator};
+pub use function::ArenaFunction;
+pub use r#struct::{ArenaStruct, StructKind};
 use std::collections::HashMap;
-use std::error::Error;
 use std::fmt::{Debug, Display, Formatter, Write};
 use wiz_constants::annotation::BUILTIN;
 use wiz_hir::typed_annotation::TypedAnnotations;
@@ -12,25 +12,17 @@ use wiz_hir::typed_type::{
     Package, TypedNamedValueType, TypedPackage, TypedType, TypedTypeParam, TypedValueType,
 };
 
-#[derive(Debug, Clone)]
-pub struct ArenaError(String);
-
-impl Display for ArenaError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        Display::fmt(&self.0, f)
-    }
-}
-
-impl Error for ArenaError {}
+mod function;
+mod r#struct;
 
 #[derive(Debug, Clone)]
-pub struct ResolverArena {
+pub struct Arena {
     declaration_id_generator: DeclarationIdGenerator,
     declarations: HashMap<DeclarationId, DeclarationItem>,
     binary_operators: HashMap<(TypedBinaryOperator, TypedType, TypedType), TypedType>,
 }
 
-impl Default for ResolverArena {
+impl Default for Arena {
     fn default() -> Self {
         let mut declarations = HashMap::new();
         declarations.insert(
@@ -71,7 +63,7 @@ impl Default for ResolverArena {
     }
 }
 
-impl ResolverArena {
+impl Arena {
     fn register(
         &mut self,
         namespace: &DeclarationId,
@@ -88,7 +80,7 @@ impl ResolverArena {
         Some(id)
     }
 
-    pub(crate) fn register_namespace(
+    pub fn register_namespace(
         &mut self,
         namespace: &DeclarationId,
         name: &str,
@@ -106,7 +98,7 @@ impl ResolverArena {
         )
     }
 
-    pub(crate) fn resolve_fully_qualified_name(&self, id: &DeclarationId) -> Vec<String> {
+    pub fn resolve_fully_qualified_name(&self, id: &DeclarationId) -> Vec<String> {
         let decl = self.declarations.get(id).unwrap();
         if let Some(parent_id) = decl.parent() {
             let mut parents_name = self.resolve_fully_qualified_name(&parent_id);
@@ -119,8 +111,8 @@ impl ResolverArena {
     }
 }
 
-impl ResolverArena {
-    pub(crate) fn resolve_declaration_id<T: ToString>(
+impl Arena {
+    pub fn resolve_declaration_id<T: ToString>(
         &self,
         parent_id: DeclarationId,
         item_name: &[T],
@@ -141,14 +133,14 @@ impl ResolverArena {
         }
     }
 
-    pub(crate) fn resolve_declaration_id_from_root<T: ToString>(
+    pub fn resolve_declaration_id_from_root<T: ToString>(
         &self,
         fqn: &[T],
     ) -> Option<DeclarationId> {
         self.resolve_declaration_id(DeclarationId::ROOT, fqn)
     }
 
-    pub(crate) fn get<T: ToString>(&self, namespace: &[T], name: &str) -> Option<&DeclarationItem> {
+    pub fn get<T: ToString>(&self, namespace: &[T], name: &str) -> Option<&DeclarationItem> {
         let id = self.resolve_declaration_id_from_root(
             &namespace
                 .iter()
@@ -159,19 +151,19 @@ impl ResolverArena {
         self.get_by_id(&id)
     }
 
-    pub(crate) fn get_root(&self) -> &DeclarationItem {
+    pub fn get_root(&self) -> &DeclarationItem {
         self.get_by_id(&DeclarationId::ROOT).unwrap()
     }
 
-    pub(crate) fn get_by_id(&self, id: &DeclarationId) -> Option<&DeclarationItem> {
+    pub fn get_by_id(&self, id: &DeclarationId) -> Option<&DeclarationItem> {
         self.declarations.get(id)
     }
 
-    pub(crate) fn get_mut_by_id(&mut self, id: &DeclarationId) -> Option<&mut DeclarationItem> {
+    pub fn get_mut_by_id(&mut self, id: &DeclarationId) -> Option<&mut DeclarationItem> {
         self.declarations.get_mut(id)
     }
 
-    pub(crate) fn get_by_ids(&self, ids: &[&DeclarationId]) -> Option<Vec<&DeclarationItem>> {
+    pub fn get_by_ids(&self, ids: &[&DeclarationId]) -> Option<Vec<&DeclarationItem>> {
         let mut items = vec![];
         for id in ids {
             items.push(self.declarations.get(id)?);
@@ -179,7 +171,7 @@ impl ResolverArena {
         Some(items)
     }
 
-    pub(crate) fn get_mut<T: ToString>(
+    pub fn get_mut<T: ToString>(
         &mut self,
         namespace: &[T],
         name: &str,
@@ -194,7 +186,7 @@ impl ResolverArena {
         self.get_mut_by_id(&id)
     }
 
-    pub(crate) fn get_type_by_id(&self, id: &DeclarationId) -> Option<&ResolverStruct> {
+    pub fn get_type_by_id(&self, id: &DeclarationId) -> Option<&ArenaStruct> {
         match &self.get_by_id(id)?.kind {
             DeclarationItemKind::Type(rs) => Some(rs),
             DeclarationItemKind::Namespace
@@ -203,7 +195,7 @@ impl ResolverArena {
         }
     }
 
-    pub(crate) fn register_struct(
+    pub fn register_struct(
         &mut self,
         namespace: &DeclarationId,
         name: &str, /* type_parameters */
@@ -212,7 +204,7 @@ impl ResolverArena {
         self.register_type(namespace, name, annotation, StructKind::Struct)
     }
 
-    pub(crate) fn register_type_parameter(
+    pub fn register_type_parameter(
         &mut self,
         namespace: &DeclarationId,
         name: &str, /* type_parameters */
@@ -221,7 +213,7 @@ impl ResolverArena {
         self.register_type(namespace, name, annotation, StructKind::TypeParameter)
     }
 
-    pub(crate) fn register_protocol(
+    pub fn register_protocol(
         &mut self,
         namespace: &DeclarationId,
         name: &str, /* type_parameters */
@@ -238,7 +230,7 @@ impl ResolverArena {
         kind: StructKind, /* type_parameters */
     ) -> Option<DeclarationId> {
         let vec_namespace = self.resolve_fully_qualified_name(namespace);
-        let s = ResolverStruct::new(
+        let s = ArenaStruct::new(
             TypedType::Value(TypedValueType::Value(TypedNamedValueType {
                 package: TypedPackage::Resolved(Package::from(&vec_namespace)),
                 name: name.to_string(),
@@ -258,11 +250,7 @@ impl ResolverArena {
         )
     }
 
-    pub(crate) fn get_type<T: ToString>(
-        &self,
-        name_space: &[T],
-        name: &str,
-    ) -> Option<&ResolverStruct> {
+    pub fn get_type<T: ToString>(&self, name_space: &[T], name: &str) -> Option<&ArenaStruct> {
         match &self.get(name_space, name)?.kind {
             DeclarationItemKind::Namespace => panic!("this is namespace"),
             DeclarationItemKind::Type(t) => Some(t),
@@ -271,11 +259,11 @@ impl ResolverArena {
         }
     }
 
-    pub(crate) fn get_type_mut<T: ToString>(
+    pub fn get_type_mut<T: ToString>(
         &mut self,
         name_space: &[T],
         name: &str,
-    ) -> Option<&mut ResolverStruct> {
+    ) -> Option<&mut ArenaStruct> {
         match &mut self.get_mut(name_space, name)?.kind {
             DeclarationItemKind::Namespace => panic!("this is namespace"),
             DeclarationItemKind::Type(t) => Some(t),
@@ -284,7 +272,7 @@ impl ResolverArena {
         }
     }
 
-    pub(crate) fn register_function(
+    pub fn register_function(
         &mut self,
         namespace: &DeclarationId,
         name: &str,
@@ -299,13 +287,13 @@ impl ResolverArena {
             DeclarationItem::new(
                 annotation,
                 name,
-                DeclarationItemKind::Function(ResolverFunction::new(ty, type_parameters, body)),
+                DeclarationItemKind::Function(ArenaFunction::new(ty, type_parameters, body)),
                 Some(*namespace),
             ),
         )
     }
 
-    pub(crate) fn register_value(
+    pub fn register_value(
         &mut self,
         namespace: &DeclarationId,
         name: &str,
@@ -324,7 +312,7 @@ impl ResolverArena {
         )
     }
 
-    pub(crate) fn resolve_binary_operator(
+    pub fn resolve_binary_operator(
         &self,
         key: &(TypedBinaryOperator, TypedType, TypedType),
     ) -> Option<&TypedType> {
@@ -332,7 +320,7 @@ impl ResolverArena {
     }
 }
 
-impl Display for ResolverArena {
+impl Display for Arena {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         if let Some(root) = self.get_by_id(&DeclarationId::ROOT) {
             let mut h = vec![false];
@@ -343,7 +331,7 @@ impl Display for ResolverArena {
     }
 }
 
-impl ResolverArena {
+impl Arena {
     fn ident(
         f: &mut Formatter<'_>,
         level: usize,
@@ -394,15 +382,15 @@ impl ResolverArena {
 
 #[cfg(test)]
 mod tests {
-    use super::super::super::declaration_id::DeclarationId;
-    use super::super::declaration::DeclarationItemKind;
-    use super::ResolverArena;
-    use crate::high_level_ir::type_resolver::declaration::DeclarationItem;
+    use super::Arena;
+    use crate::declaration::DeclarationItem;
+    use crate::declaration::DeclarationItemKind;
+    use crate::declaration_id::DeclarationId;
     use wiz_hir::typed_type::{TypedArgType, TypedFunctionType, TypedType};
 
     #[test]
     fn resolve_declaration_id_from_root() {
-        let arena = ResolverArena::default();
+        let arena = Arena::default();
 
         let namespace_name: [&str; 0] = [];
 
@@ -412,7 +400,7 @@ mod tests {
 
     #[test]
     fn resolve_child_namespace() {
-        let mut arena = ResolverArena::default();
+        let mut arena = Arena::default();
         let std_namespace_name = "std";
 
         let std_namespace_id =
@@ -425,7 +413,7 @@ mod tests {
 
     #[test]
     fn resolve_grandchildren_namespace() {
-        let mut arena = ResolverArena::default();
+        let mut arena = Arena::default();
         let child_namespace_name = "std";
         let grandchildren_namespace_name = "collections";
 
@@ -452,7 +440,7 @@ mod tests {
 
     #[test]
     fn register() {
-        let mut arena = ResolverArena::default();
+        let mut arena = Arena::default();
         let child_namespace_name = "std";
         let grandchildren_namespace_name = "collections";
         let type_name = "Type";
@@ -517,7 +505,7 @@ mod tests {
 
     #[test]
     fn register_duplicate_namespace() {
-        let mut arena = ResolverArena::default();
+        let mut arena = Arena::default();
         let child_namespace_name = "std";
         let grandchildren_namespace_name = "collections";
         let type_name = "Type";
@@ -548,7 +536,7 @@ mod tests {
 
     #[test]
     fn get() {
-        let mut arena = ResolverArena::default();
+        let mut arena = Arena::default();
         let root_namespace: [&str; 0] = [];
         let std_namespace_name = "std";
 
@@ -571,7 +559,7 @@ mod tests {
 
     #[test]
     fn resolve_fully_qualified_name() {
-        let mut arena = ResolverArena::default();
+        let mut arena = Arena::default();
         let child_namespace_name = "std";
         let grandchildren_namespace_name = "collections";
 

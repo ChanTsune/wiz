@@ -1,9 +1,9 @@
-use crate::high_level_ir::declaration_id::DeclarationId;
-use crate::high_level_ir::type_resolver::declaration::DeclarationItemKind;
-use crate::ResolverArena;
+use crate::Arena;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use std::path::Path;
+use wiz_arena::declaration::DeclarationItemKind;
+use wiz_arena::declaration_id::DeclarationId;
 use wiz_hir::typed_decl::TypedDeclKind;
 use wiz_hir::typed_file::TypedSourceSet;
 
@@ -28,7 +28,7 @@ impl WLib {
         std::fs::write(path, file).unwrap();
     }
 
-    pub fn apply_to(&self, arena: &mut ResolverArena) -> Result<(), String> {
+    pub fn apply_to(&self, arena: &mut Arena) -> Result<(), String> {
         let namespace_id = DeclarationId::ROOT;
         self._apply_to(&namespace_id, &self.typed_ir, arena)
     }
@@ -37,7 +37,7 @@ impl WLib {
         &self,
         parent: &DeclarationId,
         source_set: &TypedSourceSet,
-        arena: &mut ResolverArena,
+        arena: &mut Arena,
     ) -> Result<(), String> {
         match source_set {
             TypedSourceSet::File(f) => {

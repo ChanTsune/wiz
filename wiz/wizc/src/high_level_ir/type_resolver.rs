@@ -1,18 +1,16 @@
-pub mod arena;
 pub mod context;
-pub mod declaration;
 pub mod error;
 mod name_environment;
 pub mod result;
 #[cfg(test)]
 mod tests;
 
-use crate::high_level_ir::declaration_id::DeclarationId;
-use crate::high_level_ir::type_resolver::arena::ResolverArena;
 use crate::high_level_ir::type_resolver::context::ResolverContext;
-use crate::high_level_ir::type_resolver::declaration::DeclarationItemKind;
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
+use wiz_arena::arena::Arena;
+use wiz_arena::declaration::DeclarationItemKind;
+use wiz_arena::declaration_id::DeclarationId;
 use wiz_hir::typed_decl::{
     TypedArgDef, TypedDecl, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedProtocol,
     TypedStoredProperty, TypedStruct, TypedVar,
@@ -38,7 +36,7 @@ pub(crate) struct TypeResolver<'s> {
 }
 
 impl<'s> TypeResolver<'s> {
-    pub fn new(session: &'s mut Session, arena: &'s mut ResolverArena) -> Self {
+    pub fn new(session: &'s mut Session, arena: &'s mut Arena) -> Self {
         Self {
             session,
             context: ResolverContext::new(arena),

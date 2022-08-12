@@ -1,10 +1,10 @@
-use crate::high_level_ir::declaration_id::DeclarationId;
-use crate::high_level_ir::type_resolver::arena::ResolverArena;
-use crate::high_level_ir::type_resolver::context::{EnvValue, ResolverStruct};
-use crate::high_level_ir::type_resolver::declaration::DeclarationItemKind;
+use crate::high_level_ir::type_resolver::context::EnvValue;
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
 use std::collections::{HashMap, HashSet};
+use wiz_arena::arena::{Arena, ArenaStruct};
+use wiz_arena::declaration::DeclarationItemKind;
+use wiz_arena::declaration_id::DeclarationId;
 use wiz_hir::typed_type::{Package, TypedPackage, TypedType, TypedValueType};
 use wiz_utils::StackedHashMap;
 
@@ -12,17 +12,17 @@ use wiz_utils::StackedHashMap;
 pub(crate) struct NameEnvironment<'a> {
     local_stack: StackedHashMap<String, EnvValue>,
     values: HashMap<String, HashSet<DeclarationId>>,
-    arena: &'a ResolverArena,
+    arena: &'a Arena,
 }
 
 impl<'a> NameEnvironment<'a> {
     pub fn new(
-        arena: &'a ResolverArena,
+        arena: &'a Arena,
         local_stack: StackedHashMap<String, EnvValue>,
         self_id: Option<DeclarationId>,
     ) -> Self {
         fn init_local_stack(
-            arena: &ResolverArena,
+            arena: &Arena,
             self_id: Option<DeclarationId>,
             mut map: StackedHashMap<String, EnvValue>,
         ) -> StackedHashMap<String, EnvValue> {
@@ -107,11 +107,7 @@ impl<'a> NameEnvironment<'a> {
         Some(())
     }
 
-    pub(crate) fn get_type(
-        &self,
-        name_space: &[String],
-        type_name: &str,
-    ) -> Option<&ResolverStruct> {
+    pub(crate) fn get_type(&self, name_space: &[String], type_name: &str) -> Option<&ArenaStruct> {
         self.arena
             .get_type_by_id(&self.get_type_id(name_space, type_name)?)
     }
@@ -127,7 +123,7 @@ impl<'a> NameEnvironment<'a> {
         }
     }
 
-    pub(crate) fn get_type_by_typed_type(&self, typ: TypedType) -> Option<&ResolverStruct> {
+    pub(crate) fn get_type_by_typed_type(&self, typ: TypedType) -> Option<&ArenaStruct> {
         self.get_type(&typ.package().into_resolved().names, &typ.name())
     }
 
@@ -294,24 +290,24 @@ impl<'a> NameEnvironment<'a> {
 #[cfg(test)]
 mod tests {
     use super::NameEnvironment;
-    use crate::high_level_ir::declaration_id::DeclarationId;
     use crate::high_level_ir::type_resolver::context::EnvValue;
-    use crate::ResolverArena;
+    use crate::Arena;
     use std::collections::HashMap;
+    use wiz_constants::INT32;
     use wiz_utils::StackedHashMap;
 
     #[test]
     fn get_type() {
-        let mut arena = ResolverArena::default();
+        let mut arena = Arena::default();
         let env = NameEnvironment::new(&mut arena, StackedHashMap::from(HashMap::new()), None);
-        let int32 = env.get_type(&[], "Int32");
+        let int32 = env.get_type(&[], INT32);
 
         assert!(matches!(int32, Some(_)))
     }
 
     #[test]
     fn get_env_item() {
-        let mut arena = ResolverArena::default();
+        let mut arena = Arena::default();
         let env = NameEnvironment::new(&mut arena, StackedHashMap::from(HashMap::new()), None);
         let int32 = env.get_env_item(&[], "Int32");
 

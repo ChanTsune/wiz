@@ -2,9 +2,9 @@ use std::collections::{HashMap, HashSet};
 use wiz_hir::typed_type::TypedType;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
-pub(crate) struct ResolverTypeParam {
+pub struct ArenaTypeParam {
     type_constraints: Vec<String>,
-    type_params: Option<HashMap<String, ResolverTypeParam>>,
+    type_params: Option<HashMap<String, ArenaTypeParam>>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -29,18 +29,18 @@ impl StructKind {
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
-pub struct ResolverStruct {
+pub struct ArenaStruct {
     self_: TypedType, // TODO: remove this field
-    pub(crate) namespace: Vec<String>,
-    pub(crate) kind: StructKind,
-    pub(crate) stored_properties: HashMap<String, TypedType>,
-    pub(crate) computed_properties: HashMap<String, TypedType>,
-    pub(crate) member_functions: HashMap<String, TypedType>,
-    pub(crate) conformed_protocols: HashSet<String>,
-    pub(crate) type_parameters: Option<HashMap<String, ResolverTypeParam>>,
+    pub namespace: Vec<String>,
+    pub kind: StructKind,
+    pub stored_properties: HashMap<String, TypedType>,
+    pub computed_properties: HashMap<String, TypedType>,
+    pub member_functions: HashMap<String, TypedType>,
+    pub conformed_protocols: HashSet<String>,
+    pub type_parameters: Option<HashMap<String, ArenaTypeParam>>,
 }
 
-impl ResolverStruct {
+impl ArenaStruct {
     pub fn new(self_: TypedType, kind: StructKind) -> Self {
         Self {
             namespace: self_.package().into_resolved().names,
@@ -54,7 +54,7 @@ impl ResolverStruct {
         }
     }
 
-    pub(crate) fn get_instance_member_type(&self, name: &str) -> Option<&TypedType> {
+    pub fn get_instance_member_type(&self, name: &str) -> Option<&TypedType> {
         if let Some(t) = self.stored_properties.get(name) {
             Some(t)
         } else if let Some(t) = self.computed_properties.get(name) {
@@ -66,7 +66,7 @@ impl ResolverStruct {
         }
     }
 
-    pub(crate) fn self_type(&self) -> TypedType {
+    pub fn self_type(&self) -> TypedType {
         self.self_.clone()
     }
 
