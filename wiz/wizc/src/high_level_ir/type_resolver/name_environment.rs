@@ -129,11 +129,11 @@ impl<'a> NameEnvironment<'a> {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
-    use wiz_utils::StackedHashMap;
+    use super::NameEnvironment;
     use crate::high_level_ir::type_resolver::context::EnvValue;
     use crate::ResolverArena;
-    use super::NameEnvironment;
+    use std::collections::HashMap;
+    use wiz_utils::StackedHashMap;
 
     #[test]
     fn get_type() {
