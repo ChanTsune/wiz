@@ -47,22 +47,22 @@ impl<'a> NameEnvironment<'a> {
 
     pub(crate) fn get_type(
         &self,
-        name_space: Vec<String>,
+        name_space: &[String],
         type_name: &str,
     ) -> Option<&ResolverStruct> {
-        let maybe_type_parameter = match self.local_stack.get(type_name) {
+        let maybe_type_parameter = match self.get_env_item(name_space, type_name) {
             Some(EnvValue::Type(id)) => Some(id),
             _ => None,
         };
         let n = match maybe_type_parameter {
             None => self.arena.get_type(&name_space, type_name),
-            Some(id) => self.arena.get_type_by_id(id),
+            Some(id) => self.arena.get_type_by_id(&id),
         };
         n
     }
 
     pub(crate) fn get_type_by_typed_type(&self, typ: TypedType) -> Option<&ResolverStruct> {
-        self.get_type(typ.package().into_resolved().names, &typ.name())
+        self.get_type(&typ.package().into_resolved().names, &typ.name())
     }
 
     pub(crate) fn get_env_item(&self, namespace: &[String], name: &str) -> Option<EnvValue> {
@@ -124,5 +124,23 @@ impl<'a> NameEnvironment<'a> {
             };
             None
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashMap;
+    use wiz_utils::StackedHashMap;
+    use crate::high_level_ir::type_resolver::context::EnvValue;
+    use crate::ResolverArena;
+    use super::NameEnvironment;
+
+    #[test]
+    fn get_type() {
+        let mut arena = ResolverArena::default();
+        let env = NameEnvironment::new(&mut arena, StackedHashMap::from(HashMap::new()));
+        let int32 = env.get_type(&[], "Int32");
+
+        assert!(matches!(int32, Some(_)))
     }
 }

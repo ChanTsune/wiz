@@ -222,7 +222,7 @@ impl<'a> ResolverContext<'a> {
                 TypedValueType::Value(v) => {
                     let ne = self.get_current_name_environment();
                     let rs = ne
-                        .get_type(v.package.clone().into_resolved().names, &v.name)
+                        .get_type(&v.package.clone().into_resolved().names, &v.name)
                         .ok_or_else(|| {
                             ResolverError::from(format!("Can not resolve type {:?}", v))
                         })?;
@@ -523,7 +523,7 @@ mod tests {
         let env = context.get_current_name_environment();
 
         assert_eq!(
-            env.get_type(vec![], INT32),
+            env.get_type(&[], INT32),
             Some(&ResolverStruct::new(TypedType::int32(), StructKind::Struct)),
         );
     }
