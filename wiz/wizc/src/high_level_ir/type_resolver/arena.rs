@@ -159,6 +159,10 @@ impl ResolverArena {
         self.get_by_id(&id)
     }
 
+    pub(crate) fn get_root(&self) -> &DeclarationItem {
+        self.get_by_id(&DeclarationId::ROOT).unwrap()
+    }
+
     pub(crate) fn get_by_id(&self, id: &DeclarationId) -> Option<&DeclarationItem> {
         self.declarations.get(id)
     }

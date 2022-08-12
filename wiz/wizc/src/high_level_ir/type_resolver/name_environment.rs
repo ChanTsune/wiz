@@ -17,8 +17,28 @@ impl<'a> NameEnvironment<'a> {
     pub fn new(arena: &'a ResolverArena, local_stack: StackedHashMap<String, EnvValue>) -> Self {
         Self {
             local_stack,
-            values: Default::default(),
+            values: arena.get_root().children().clone(),
             arena,
+        }
+    }
+}
+
+impl<'a> NameEnvironment<'a> {
+    pub fn push(&mut self) -> Self {
+        self.local_stack.push(Default::default());
+        Self {
+            local_stack: self.local_stack.clone(),
+            values: self.values.clone(),
+            arena: self.arena,
+        }
+    }
+
+    pub fn pop(&mut self) -> Self {
+        self.local_stack.pop();
+        Self {
+            local_stack: self.local_stack.clone(),
+            values: self.values.clone(),
+            arena: self.arena,
         }
     }
 }
@@ -142,5 +162,14 @@ mod tests {
         let int32 = env.get_type(&[], "Int32");
 
         assert!(matches!(int32, Some(_)))
+    }
+
+    #[test]
+    fn get_env_item() {
+        let mut arena = ResolverArena::default();
+        let env = NameEnvironment::new(&mut arena, StackedHashMap::from(HashMap::new()));
+        let int32 = env.get_env_item(&[], "Int32");
+
+        assert!(matches!(int32, Some(EnvValue::Type(_))))
     }
 }
