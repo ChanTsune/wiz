@@ -158,10 +158,6 @@ impl<'a> ResolverContext<'a> {
         self.local_stack.pop();
     }
 
-    pub fn clear_local_stack(&mut self) {
-        self.local_stack = StackedHashMap::new()
-    }
-
     pub(crate) fn register_to_env<T>(&mut self, name: String, value: T)
     where
         EnvValue: From<T>,

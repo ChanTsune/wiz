@@ -24,22 +24,12 @@ impl<'a> NameEnvironment<'a> {
 }
 
 impl<'a> NameEnvironment<'a> {
-    pub fn push(&mut self) -> Self {
+    pub fn push(&mut self) {
         self.local_stack.push(Default::default());
-        Self {
-            local_stack: self.local_stack.clone(),
-            values: self.values.clone(),
-            arena: self.arena,
-        }
     }
 
-    pub fn pop(&mut self) -> Self {
+    pub fn pop(&mut self) {
         self.local_stack.pop();
-        Self {
-            local_stack: self.local_stack.clone(),
-            values: self.values.clone(),
-            arena: self.arena,
-        }
     }
 }
 
