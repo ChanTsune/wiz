@@ -214,7 +214,7 @@ impl<'s> TypeResolver<'s> {
             let type_ = self.context.full_type_name(&computed_property.type_)?;
             let rs = self
                 .context
-                .arena
+                .arena_mut()
                 .get_type_mut(
                     &this_type.package().into_resolved().names,
                     &this_type.name(),
@@ -232,7 +232,7 @@ impl<'s> TypeResolver<'s> {
             let type_ = self.context.full_type_name(&member_function.type_())?;
             let rs = self
                 .context
-                .arena
+                .arena_mut()
                 .get_type_mut(
                     &this_type.package().into_resolved().names,
                     &this_type.name(),
@@ -384,7 +384,7 @@ impl<'s> TypeResolver<'s> {
                             let members = crs.member_functions.clone();
                             let rs = self
                                 .context
-                                .arena
+                                .arena_mut()
                                 .get_type_mut(&vec_current_namespace, &type_param.name)
                                 .unwrap();
                             rs.member_functions.extend(members);
@@ -644,7 +644,7 @@ impl<'s> TypeResolver<'s> {
         };
         let item = self
             .context
-            .arena
+            .arena_mut()
             .get_mut(&package.clone().into_resolved().names, &n.name);
         if let Some(item) = item {
             match &mut item.kind {
@@ -994,7 +994,7 @@ impl<'s> TypeResolver<'s> {
                 } else if let Some(TypedType::Type(t)) = &target.ty {
                     let rs = self
                         .context
-                        .arena
+                        .arena_mut()
                         .get_type(&t.package().into_resolved().names, &t.name())
                         .unwrap();
                     if rs.stored_properties.len() != c.args.len() {

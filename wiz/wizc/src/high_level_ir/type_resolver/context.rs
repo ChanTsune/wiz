@@ -27,7 +27,7 @@ use wiz_utils::StackedHashMap;
 pub struct ResolverContext<'a> {
     global_used_name_space: Vec<Vec<String>>,
     used_name_space: Vec<Vec<String>>,
-    pub(crate) arena: &'a mut ResolverArena,
+    arena: &'a mut ResolverArena,
     current_type: Option<TypedType>,
     current_namespace_id: DeclarationId,
     local_stack: StackedHashMap<String, EnvValue>,
@@ -81,17 +81,21 @@ impl<'a> ResolverContext<'a> {
         }
     }
 
+    pub(crate) fn arena_mut(&mut self) -> &mut ResolverArena {
+        self.arena
+    }
+
     pub(crate) fn arena(&self) -> &ResolverArena {
         self.arena
     }
 
     pub(crate) fn current_namespace(&self) -> Vec<String> {
-        self.arena
+        self.arena()
             .resolve_fully_qualified_name(&self.current_namespace_id)
     }
 
     pub fn push_name_space(&mut self, name: &str) {
-        let c = self.arena.get_by_id(&self.current_namespace_id).unwrap();
+        let c = self.arena().get_by_id(&self.current_namespace_id).unwrap();
         let ids = c.get_child(name).unwrap();
         let ids = ids.iter().copied().collect::<Vec<_>>();
         let id = ids.first().unwrap();
@@ -99,12 +103,12 @@ impl<'a> ResolverContext<'a> {
     }
 
     pub fn pop_name_space(&mut self) {
-        let ns = self.arena.get_by_id(&self.current_namespace_id).unwrap();
+        let ns = self.arena().get_by_id(&self.current_namespace_id).unwrap();
         self.current_namespace_id = ns.parent().unwrap_or(DeclarationId::ROOT);
     }
 
     pub(crate) fn current_type(&self) -> Option<&ResolverStruct> {
-        match &self.arena.get_by_id(&self.current_namespace_id)?.kind {
+        match &self.arena().get_by_id(&self.current_namespace_id)?.kind {
             DeclarationItemKind::Type(rs) => Some(rs),
             DeclarationItemKind::Namespace
             | DeclarationItemKind::Variable(_)
@@ -113,7 +117,8 @@ impl<'a> ResolverContext<'a> {
     }
 
     pub(crate) fn current_type_mut(&mut self) -> Option<&mut ResolverStruct> {
-        match &mut self.arena.get_mut_by_id(&self.current_namespace_id)?.kind {
+        let id = self.current_namespace_id;
+        match &mut self.arena_mut().get_mut_by_id(&id)?.kind {
             DeclarationItemKind::Type(rs) => Some(rs),
             DeclarationItemKind::Namespace
             | DeclarationItemKind::Variable(_)
@@ -126,7 +131,7 @@ impl<'a> ResolverContext<'a> {
     }
 
     fn _current_module_id(&self, id: DeclarationId) -> Option<DeclarationId> {
-        let item = self.arena.get_by_id(&id)?;
+        let item = self.arena().get_by_id(&id)?;
         match &item.kind {
             DeclarationItemKind::Namespace => Some(id),
             DeclarationItemKind::Type(_) | DeclarationItemKind::Function(..) => {
@@ -171,18 +176,18 @@ impl<'a> ResolverContext<'a> {
     }
 
     pub(crate) fn get_current_name_environment(&self) -> NameEnvironment {
-        let mut env = NameEnvironment::new(self.arena, self.local_stack.clone());
+        let mut env = NameEnvironment::new(self.arena(), self.local_stack.clone());
         env.use_asterisk(&[]);
 
         let module_id = self.current_module_id().unwrap();
 
         if self.current_namespace_id != module_id {
-            let module_name = self.arena.resolve_fully_qualified_name(&module_id);
+            let module_name = self.arena().resolve_fully_qualified_name(&module_id);
             env.use_asterisk(&module_name);
         }
 
         let namespace_name = self
-            .arena
+            .arena()
             .resolve_fully_qualified_name(&self.current_namespace_id);
         env.use_asterisk(&namespace_name);
 
@@ -268,7 +273,7 @@ impl<'a> ResolverContext<'a> {
                         t,
                         TypedPackage::Resolved({
                             if id != DeclarationId::DUMMY {
-                                let mut fqn = self.arena.resolve_fully_qualified_name(&id);
+                                let mut fqn = self.arena().resolve_fully_qualified_name(&id);
                                 // item fqn to parent fqn
                                 fqn.pop();
                                 Package::from(&fqn)
@@ -285,7 +290,7 @@ impl<'a> ResolverContext<'a> {
                     ))
                 }),
             EnvValue::Type(id) => {
-                let rs = self.arena.get_type_by_id(&id).unwrap();
+                let rs = self.arena().get_type_by_id(&id).unwrap();
                 let self_type = rs.self_type();
                 let package = self_type.package();
                 Ok((TypedType::Type(Box::new(self_type)), package))
@@ -340,7 +345,7 @@ impl<'a> ResolverContext<'a> {
                     Ok(left)
                 } else {
                     let key = (kind, left, right);
-                    self.arena
+                    self.arena()
                         .resolve_binary_operator(&key)
                         .cloned()
                         .ok_or_else(|| ResolverError::from(format!("{:?} is not defined.", key)))
@@ -382,7 +387,7 @@ impl<'a> ResolverContext<'a> {
                 })?;
                 match env_value {
                     EnvValue::Type(id) => {
-                        let rs = self.arena.get_type_by_id(&id).unwrap();
+                        let rs = self.arena().get_type_by_id(&id).unwrap();
                         TypedNamedValueType {
                             package: TypedPackage::Resolved(Package::from(&rs.namespace)),
                             name: type_.name.clone(),
@@ -433,8 +438,8 @@ impl<'a> ResolverContext<'a> {
         name: &str,
         annotation: TypedAnnotations,
     ) -> Option<DeclarationId> {
-        self.arena
-            .register_struct(&self.current_namespace_id, name, annotation)
+        let id = self.current_namespace_id;
+        self.arena_mut().register_struct(&id, name, annotation)
     }
 
     pub(crate) fn register_protocol(
@@ -442,8 +447,8 @@ impl<'a> ResolverContext<'a> {
         name: &str,
         annotation: TypedAnnotations,
     ) -> Option<DeclarationId> {
-        self.arena
-            .register_protocol(&self.current_namespace_id, name, annotation)
+        let id = self.current_namespace_id;
+        self.arena_mut().register_protocol(&id, name, annotation)
     }
 
     pub(crate) fn register_type_parameter(
@@ -451,8 +456,9 @@ impl<'a> ResolverContext<'a> {
         name: &str,
         annotation: TypedAnnotations,
     ) -> Option<DeclarationId> {
-        self.arena
-            .register_type_parameter(&self.current_namespace_id, name, annotation)
+        let id = self.current_namespace_id;
+        self.arena_mut()
+            .register_type_parameter(&id, name, annotation)
     }
 
     pub(crate) fn register_function(
@@ -463,14 +469,9 @@ impl<'a> ResolverContext<'a> {
         body: Option<TypedFunBody>,
         annotation: TypedAnnotations,
     ) -> Option<DeclarationId> {
-        self.arena.register_function(
-            &self.current_namespace_id,
-            name,
-            ty,
-            type_parameters,
-            body,
-            annotation,
-        )
+        let id = self.current_namespace_id;
+        self.arena_mut()
+            .register_function(&id, name, ty, type_parameters, body, annotation)
     }
     pub(crate) fn register_value(
         &mut self,
@@ -478,12 +479,12 @@ impl<'a> ResolverContext<'a> {
         ty: TypedType,
         annotation: TypedAnnotations,
     ) -> Option<DeclarationId> {
-        self.arena
-            .register_value(&self.current_namespace_id, name, ty, annotation)
+        let id = self.current_namespace_id;
+        self.arena_mut().register_value(&id, name, ty, annotation)
     }
 
     pub(crate) fn update_function(&mut self, id: &DeclarationId, ty: TypedType) -> Option<()> {
-        let item = self.arena.get_mut_by_id(id)?;
+        let item = self.arena_mut().get_mut_by_id(id)?;
         if let DeclarationItemKind::Function(rf) = &item.kind {
             let mut rf = rf.clone();
             rf.ty = ty;
@@ -499,8 +500,8 @@ impl<'a> ResolverContext<'a> {
         name: &str,
         annotation: TypedAnnotations,
     ) -> Option<DeclarationId> {
-        self.arena
-            .register_namespace(&self.current_namespace_id, name, annotation)
+        let id = self.current_namespace_id;
+        self.arena_mut().register_namespace(&id, name, annotation)
     }
 }
 
