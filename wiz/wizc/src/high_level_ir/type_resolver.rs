@@ -129,12 +129,7 @@ impl<'s> TypeResolver<'s> {
         let arg_defs = f
             .arg_defs
             .iter()
-            .map(|a| {
-                let a = self.typed_arg_def(a.clone())?;
-                self.context
-                    .register_to_env(a.name.clone(), (DeclarationId::DUMMY, a.type_.clone()));
-                Ok(a)
-            })
+            .map(|a| self.typed_arg_def(a.clone()))
             .collect::<Result<Vec<_>>>()?;
         let return_type = self.context.full_type_name(&f.return_type)?;
         let fun = TypedFun {

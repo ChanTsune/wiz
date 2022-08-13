@@ -79,6 +79,10 @@ impl<'a> NameEnvironment<'a> {
     pub fn pop(&mut self) {
         self.local_stack.pop();
     }
+
+    pub fn extend(&mut self, name: String, item: EnvValue) {
+        self.local_stack.insert(name, item);
+    }
 }
 
 impl<'a> NameEnvironment<'a> {
