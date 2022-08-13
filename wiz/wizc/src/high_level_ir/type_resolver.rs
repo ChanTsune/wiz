@@ -632,11 +632,8 @@ impl<'s> TypeResolver<'s> {
             if n.package.is_resolved() {
                 (ty.unwrap(), n.package)
             } else {
-                self.context.infer_name_type(
-                    n.package.into_raw().names,
-                    &n.name,
-                    type_annotation,
-                )?
+                let env = self.context.get_current_name_environment();
+                env.infer_name_type(n.package.into_raw().names, &n.name, type_annotation)?
             }
         };
         let item = self

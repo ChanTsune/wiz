@@ -5,7 +5,7 @@ use crate::high_level_ir::type_resolver::declaration::DeclarationItemKind;
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
 use std::collections::{HashMap, HashSet};
-use wiz_hir::typed_type::{TypedType, TypedValueType};
+use wiz_hir::typed_type::{Package, TypedPackage, TypedType, TypedValueType};
 use wiz_utils::StackedHashMap;
 
 #[derive(Debug, Clone)]
@@ -214,6 +214,76 @@ impl<'a> NameEnvironment<'a> {
             ))),
             n => todo!("{} :=> {:?}", name, n),
         }
+    }
+
+    pub fn resolve_current_type(&self) -> Result<TypedType> {
+        self.get_type(&[], "Self")
+            .map(|i| i.self_type())
+            .ok_or_else(|| ResolverError::from("can not resolve Self"))
+    }
+
+    pub fn infer_name_type(
+        &self,
+        name_space: Vec<String>,
+        name: &str,
+        type_annotation: Option<TypedType>,
+    ) -> Result<(TypedType, TypedPackage)> {
+        let env_value = self.get_env_item(&name_space, name).ok_or_else(|| {
+            ResolverError::from(format!("Cannot resolve name =>{:?} {:?}", name_space, name))
+        })?;
+        match env_value {
+            EnvValue::Value(t_set) => self
+                .resolve_overload(name, t_set, type_annotation)
+                .map(|(id, t)| {
+                    (
+                        t,
+                        TypedPackage::Resolved({
+                            if id != DeclarationId::DUMMY {
+                                let mut fqn = self.arena.resolve_fully_qualified_name(&id);
+                                // item fqn to parent fqn
+                                fqn.pop();
+                                Package::from(&fqn)
+                            } else {
+                                Package::new()
+                            }
+                        }),
+                    )
+                })
+                .ok_or_else(|| {
+                    ResolverError::from(format!(
+                        "Dose not match any overloaded function `{}`",
+                        name
+                    ))
+                }),
+            EnvValue::Type(id) => {
+                let rs = self.arena.get_type_by_id(&id).unwrap();
+                let self_type = rs.self_type();
+                let package = self_type.package();
+                Ok((TypedType::Type(Box::new(self_type)), package))
+            }
+            EnvValue::Namespace(id) => todo!(),
+        }
+    }
+
+    fn resolve_overload(
+        &self,
+        name: &str,
+        type_set: HashSet<(DeclarationId, TypedType)>,
+        type_annotation: Option<TypedType>,
+    ) -> Option<(DeclarationId, TypedType)> {
+        let len = type_set.len();
+        for (id, ty) in type_set {
+            if len == 1 {
+                return Some((id, ty));
+            } else if let Some(TypedType::Function(annotation)) = &type_annotation {
+                if let TypedType::Function(typ) = &ty {
+                    if annotation.arguments == typ.arguments {
+                        return Some((id, ty));
+                    }
+                }
+            }
+        }
+        None
     }
 }
 
