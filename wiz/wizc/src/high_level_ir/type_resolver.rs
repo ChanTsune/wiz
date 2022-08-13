@@ -205,7 +205,12 @@ impl<'s> TypeResolver<'s> {
         let tmp_ns_id = self.context.get_current_namespace_id();
         let env = self.context.get_current_name_environment();
         let this_type = self.context.full_type_name(name)?;
-        let type_id = env.get_type_id(&this_type.package().into_resolved().names, &this_type.name()).unwrap();
+        let type_id = env
+            .get_type_id(
+                &this_type.package().into_resolved().names,
+                &this_type.name(),
+            )
+            .unwrap();
         self.context.set_current_namespace_id_force(type_id);
         for computed_property in computed_properties {
             let type_ = self.context.full_type_name(&computed_property.type_)?;
@@ -489,7 +494,12 @@ impl<'s> TypeResolver<'s> {
         let tmp_ns_id = self.context.get_current_namespace_id();
         let env = self.context.get_current_name_environment();
         let this_type = self.context.full_type_name(&e.name)?;
-        let type_id = env.get_type_id(&this_type.package().into_resolved().names, &this_type.name()).unwrap();
+        let type_id = env
+            .get_type_id(
+                &this_type.package().into_resolved().names,
+                &this_type.name(),
+            )
+            .unwrap();
         self.context.set_current_namespace_id_force(type_id);
         let result = Ok(TypedExtension {
             name: this_type,
