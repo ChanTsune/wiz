@@ -2,8 +2,10 @@ use crate::high_level_ir::declaration_id::DeclarationId;
 use crate::high_level_ir::type_resolver::arena::ResolverArena;
 use crate::high_level_ir::type_resolver::context::{EnvValue, ResolverStruct};
 use crate::high_level_ir::type_resolver::declaration::DeclarationItemKind;
+use crate::high_level_ir::type_resolver::error::ResolverError;
+use crate::high_level_ir::type_resolver::result::Result;
 use std::collections::{HashMap, HashSet};
-use wiz_hir::typed_type::TypedType;
+use wiz_hir::typed_type::{TypedType, TypedValueType};
 use wiz_utils::StackedHashMap;
 
 #[derive(Debug, Clone)]
@@ -133,6 +135,34 @@ impl<'a> NameEnvironment<'a> {
                 };
             };
             None
+        }
+    }
+}
+
+impl<'a> NameEnvironment<'a> {
+    pub fn resolve_member_type(&self, t: TypedType, name: &str) -> Result<TypedType> {
+        match t {
+            TypedType::Value(v) => match v {
+                TypedValueType::Value(v) => {
+                    let rs = self
+                        .get_type(&v.package.clone().into_resolved().names, &v.name)
+                        .ok_or_else(|| {
+                            ResolverError::from(format!("Can not resolve type {:?}", v))
+                        })?;
+                    rs.get_instance_member_type(name).cloned().ok_or_else(|| {
+                        ResolverError::from(format!("{:?} not has member named `{}`", v, name))
+                    })
+                }
+                TypedValueType::Array(_, _) => todo!(),
+                TypedValueType::Tuple(_) => todo!(),
+                TypedValueType::Pointer(_) => todo!(),
+                TypedValueType::Reference(rt) => self.resolve_member_type(*rt, name),
+            },
+            TypedType::Type(v) => Err(ResolverError::from(format!(
+                "{:?} has no member {}",
+                v, name
+            ))),
+            n => todo!("{} :=> {:?}", name, n),
         }
     }
 }

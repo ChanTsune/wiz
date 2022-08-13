@@ -848,9 +848,8 @@ impl<'s> TypeResolver<'s> {
         m: TypedInstanceMember,
     ) -> Result<(TypedInstanceMember, Option<TypedType>)> {
         let target = self.expr(*m.target, None)?;
-        let type_ = self
-            .context
-            .resolve_member_type(target.ty.clone().unwrap(), &m.name)?;
+        let env = self.context.get_current_name_environment();
+        let type_ = env.resolve_member_type(target.ty.clone().unwrap(), &m.name)?;
         Ok((
             TypedInstanceMember {
                 target: Box::new(target),
