@@ -62,15 +62,18 @@ impl<'a> NameEnvironment<'a> {
         name_space: &[String],
         type_name: &str,
     ) -> Option<&ResolverStruct> {
-        let maybe_type_parameter = match self.get_env_item(name_space, type_name) {
+        self.arena.get_type_by_id(&self.get_type_id(name_space, type_name)?)
+    }
+
+    pub(crate) fn get_type_id(
+        &self,
+        name_space: &[String],
+        type_name: &str,
+    ) -> Option<DeclarationId> {
+        match self.get_env_item(name_space, type_name) {
             Some(EnvValue::Type(id)) => Some(id),
             _ => None,
-        };
-        let n = match maybe_type_parameter {
-            None => self.arena.get_type(&name_space, type_name),
-            Some(id) => self.arena.get_type_by_id(&id),
-        };
-        n
+        }
     }
 
     pub(crate) fn get_type_by_typed_type(&self, typ: TypedType) -> Option<&ResolverStruct> {
