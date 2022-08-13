@@ -108,11 +108,17 @@ impl<'a> ResolverContext<'a> {
     }
 
     pub(crate) fn current_type(&self) -> Option<&ResolverStruct> {
-        match &self.arena().get_by_id(&self.current_namespace_id)?.kind {
+        let id = self.current_namespace_id;
+        self._current_type(id)
+    }
+
+    fn _current_type(&self, id: DeclarationId) -> Option<&ResolverStruct> {
+        let item = self.arena().get_by_id(&id)?;
+        match &item.kind {
             DeclarationItemKind::Type(rs) => Some(rs),
             DeclarationItemKind::Namespace
             | DeclarationItemKind::Variable(_)
-            | DeclarationItemKind::Function(..) => None,
+            | DeclarationItemKind::Function(..) => self._current_type(item.parent()?),
         }
     }
 
