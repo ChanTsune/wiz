@@ -344,28 +344,24 @@ impl<'a> ResolverContext<'a> {
     }
 
     pub fn full_type_name(&self, typ: &TypedType) -> Result<TypedType> {
-        if typ.is_self() {
-            self.resolve_current_type()
-        } else {
-            Ok(match typ {
-                TypedType::Value(v) => TypedType::Value(self.full_value_type_name(v)?),
-                TypedType::Type(v) => TypedType::Type(Box::new(self.full_type_name(v)?)),
-                TypedType::Self_ => self.resolve_current_type()?,
-                TypedType::Function(f) => TypedType::Function(Box::new(TypedFunctionType {
-                    arguments: f
-                        .arguments
-                        .iter()
-                        .map(|a| {
-                            Ok(TypedArgType {
-                                label: a.label.clone(),
-                                typ: self.full_type_name(&a.typ)?,
-                            })
+        Ok(match typ {
+            TypedType::Value(v) => TypedType::Value(self.full_value_type_name(v)?),
+            TypedType::Type(v) => TypedType::Type(Box::new(self.full_type_name(v)?)),
+            TypedType::Self_ => self.resolve_current_type()?,
+            TypedType::Function(f) => TypedType::Function(Box::new(TypedFunctionType {
+                arguments: f
+                    .arguments
+                    .iter()
+                    .map(|a| {
+                        Ok(TypedArgType {
+                            label: a.label.clone(),
+                            typ: self.full_type_name(&a.typ)?,
                         })
-                        .collect::<Result<Vec<_>>>()?,
-                    return_type: self.full_type_name(&f.return_type)?,
-                })),
-            })
-        }
+                    })
+                    .collect::<Result<Vec<_>>>()?,
+                return_type: self.full_type_name(&f.return_type)?,
+            })),
+        })
     }
 
     pub(crate) fn register_struct(
