@@ -28,7 +28,6 @@ pub struct ResolverContext<'a> {
     global_used_name_space: Vec<Vec<String>>,
     used_name_space: Vec<Vec<String>>,
     arena: &'a mut ResolverArena,
-    current_type: Option<TypedType>,
     current_namespace_id: DeclarationId,
     local_stack: StackedHashMap<String, EnvValue>,
 }
@@ -74,7 +73,6 @@ impl<'a> ResolverContext<'a> {
         Self {
             global_used_name_space: Default::default(),
             used_name_space: Default::default(),
-            current_type: None,
             current_namespace_id: DeclarationId::ROOT,
             local_stack: initial_local_stack(arena.clone()),
             arena,
@@ -92,6 +90,14 @@ impl<'a> ResolverContext<'a> {
     pub(crate) fn current_namespace(&self) -> Vec<String> {
         self.arena()
             .resolve_fully_qualified_name(&self.current_namespace_id)
+    }
+
+    pub(crate) fn set_current_namespace_id_force(&mut self, id: DeclarationId) {
+        self.current_namespace_id = id;
+    }
+
+    pub(crate) fn get_current_namespace_id(&self) -> DeclarationId {
+        self.current_namespace_id
     }
 
     pub fn push_name_space(&mut self, name: &str) {
@@ -148,17 +154,9 @@ impl<'a> ResolverContext<'a> {
     }
 
     pub fn resolve_current_type(&self) -> Result<TypedType> {
-        self.current_type
-            .clone()
+        self.current_type()
+            .map(|i| i.self_type())
             .ok_or_else(|| ResolverError::from("can not resolve Self"))
-    }
-
-    pub fn set_current_type(&mut self, t: TypedType) {
-        self.current_type = Some(t)
-    }
-
-    pub fn clear_current_type(&mut self) {
-        self.current_type = None
     }
 
     pub fn push_local_stack(&mut self) {

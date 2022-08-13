@@ -159,11 +159,6 @@ impl<'s> TypeResolver<'s> {
             member_functions,
         } = s;
         self.context.push_name_space(name);
-        let rs = self.context.current_type().ok_or_else(|| {
-            ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
-        })?;
-        let this_type = rs.self_type();
-        self.context.set_current_type(this_type);
         for stored_property in stored_properties.iter() {
             let type_ = self.context.full_type_name(&stored_property.type_)?;
             let rs = self.context.current_type_mut().ok_or_else(|| {
@@ -196,7 +191,6 @@ impl<'s> TypeResolver<'s> {
             rs.member_functions
                 .insert(member_function.name.clone(), type_);
         }
-        self.context.clear_current_type();
         self.context.pop_name_space();
         Ok(())
     }
@@ -208,8 +202,11 @@ impl<'s> TypeResolver<'s> {
             computed_properties,
             member_functions,
         } = e;
+        let tmp_ns_id = self.context.get_current_namespace_id();
+        let env = self.context.get_current_name_environment();
         let this_type = self.context.full_type_name(name)?;
-        self.context.set_current_type(this_type.clone());
+        let type_id = env.get_type_id(&this_type.package().into_resolved().names, &this_type.name()).unwrap();
+        self.context.set_current_namespace_id_force(type_id);
         for computed_property in computed_properties {
             let type_ = self.context.full_type_name(&computed_property.type_)?;
             let rs = self
@@ -246,7 +243,7 @@ impl<'s> TypeResolver<'s> {
             rs.member_functions
                 .insert(member_function.name.clone(), type_);
         }
-        self.context.clear_current_type();
+        self.context.set_current_namespace_id_force(tmp_ns_id);
         Ok(())
     }
 
@@ -258,11 +255,6 @@ impl<'s> TypeResolver<'s> {
             member_functions,
         } = p;
         self.context.push_name_space(name);
-        let rs = self.context.current_type().ok_or_else(|| {
-            ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
-        })?;
-        let this_type = rs.self_type();
-        self.context.set_current_type(this_type);
         for computed_property in computed_properties.iter() {
             let type_ = self.context.full_type_name(&computed_property.type_)?;
             let rs = self.context.current_type_mut().ok_or_else(|| {
@@ -279,7 +271,6 @@ impl<'s> TypeResolver<'s> {
             rs.member_functions
                 .insert(member_function.name.clone(), type_);
         }
-        self.context.clear_current_type();
         self.context.pop_name_space();
         Ok(())
     }
@@ -432,9 +423,6 @@ impl<'s> TypeResolver<'s> {
             member_functions,
         } = s;
         self.context.push_name_space(&name);
-        let rs = self.context.current_type().unwrap();
-        let this_type = rs.self_type();
-        self.context.set_current_type(this_type);
         let stored_properties = stored_properties
             .into_iter()
             .map(|s| self.typed_stored_property(s))
@@ -444,7 +432,6 @@ impl<'s> TypeResolver<'s> {
             .into_iter()
             .map(|m| self.typed_member_function(m))
             .collect::<Result<Vec<_>>>()?;
-        self.context.clear_current_type();
         self.context.pop_name_space();
         Ok(TypedStruct {
             name,
@@ -499,8 +486,11 @@ impl<'s> TypeResolver<'s> {
     }
 
     fn typed_extension(&mut self, e: TypedExtension) -> Result<TypedExtension> {
+        let tmp_ns_id = self.context.get_current_namespace_id();
+        let env = self.context.get_current_name_environment();
         let this_type = self.context.full_type_name(&e.name)?;
-        self.context.set_current_type(this_type.clone());
+        let type_id = env.get_type_id(&this_type.package().into_resolved().names, &this_type.name()).unwrap();
+        self.context.set_current_namespace_id_force(type_id);
         let result = Ok(TypedExtension {
             name: this_type,
             protocol: match &e.protocol {
@@ -514,14 +504,12 @@ impl<'s> TypeResolver<'s> {
                 .map(|m| self.typed_member_function(m))
                 .collect::<Result<_>>()?,
         });
-        self.context.clear_current_type();
+        self.context.set_current_namespace_id_force(tmp_ns_id);
         result
     }
 
     fn typed_protocol(&mut self, p: TypedProtocol) -> Result<TypedProtocol> {
         self.context.push_name_space(&p.name);
-        let rs = self.context.current_type().unwrap();
-        self.context.set_current_type(rs.self_type());
         let result = TypedProtocol {
             name: p.name,
             type_params: p.type_params, // TODO type params
@@ -532,7 +520,6 @@ impl<'s> TypeResolver<'s> {
                 .collect::<Result<_>>()?,
             computed_properties: p.computed_properties,
         };
-        self.context.clear_current_type();
         self.context.pop_name_space();
         Ok(result)
     }
