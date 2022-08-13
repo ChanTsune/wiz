@@ -77,18 +77,17 @@ impl<'a> ResolverContext<'a> {
         self.current_namespace_id = ns.parent().unwrap_or(DeclarationId::ROOT);
     }
 
-    pub(crate) fn current_type(&self) -> Option<&ResolverStruct> {
-        let id = self.current_namespace_id;
-        self._current_type(id)
+    pub(crate) fn current_type_id(&self) -> Option<DeclarationId> {
+        self._current_type_id(self.current_namespace_id)
     }
 
-    fn _current_type(&self, id: DeclarationId) -> Option<&ResolverStruct> {
+    fn _current_type_id(&self, id: DeclarationId) -> Option<DeclarationId> {
         let item = self.arena().get_by_id(&id)?;
         match &item.kind {
-            DeclarationItemKind::Type(rs) => Some(rs),
+            DeclarationItemKind::Type(_) => Some(id),
             DeclarationItemKind::Namespace
             | DeclarationItemKind::Variable(_)
-            | DeclarationItemKind::Function(..) => self._current_type(item.parent()?),
+            | DeclarationItemKind::Function(..) => self._current_type_id(item.parent()?),
         }
     }
 
@@ -118,7 +117,8 @@ impl<'a> ResolverContext<'a> {
     }
 
     pub fn resolve_current_type(&self) -> Result<TypedType> {
-        self.current_type()
+        let env = self.get_current_name_environment();
+        env.get_type(&[], "Self")
             .map(|i| i.self_type())
             .ok_or_else(|| ResolverError::from("can not resolve Self"))
     }
@@ -144,7 +144,11 @@ impl<'a> ResolverContext<'a> {
     }
 
     pub(crate) fn get_current_name_environment(&self) -> NameEnvironment {
-        let mut env = NameEnvironment::new(self.arena(), self.local_stack.clone());
+        let mut env = NameEnvironment::new(
+            self.arena(),
+            self.local_stack.clone(),
+            self.current_type_id(),
+        );
         env.use_asterisk(&[]);
 
         let module_id = self.current_module_id().unwrap();
@@ -191,11 +195,6 @@ impl<'a> ResolverContext<'a> {
         name: &str,
         type_annotation: Option<TypedType>,
     ) -> Result<(TypedType, TypedPackage)> {
-        if name_space.is_empty() && name == "Self" {
-            let self_type = self.resolve_current_type()?;
-            let package = self_type.package();
-            return Ok((TypedType::Type(Box::new(self_type)), package));
-        }
         let env = self.get_current_name_environment();
         let env_value = env.get_env_item(&name_space, name).ok_or_else(|| {
             ResolverError::from(format!("Cannot resolve name =>{:?} {:?}", name_space, name))

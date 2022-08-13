@@ -16,12 +16,20 @@ pub(crate) struct NameEnvironment<'a> {
 }
 
 impl<'a> NameEnvironment<'a> {
-    pub fn new(arena: &'a ResolverArena, local_stack: StackedHashMap<String, EnvValue>) -> Self {
+    pub fn new(
+        arena: &'a ResolverArena,
+        local_stack: StackedHashMap<String, EnvValue>,
+        self_id: Option<DeclarationId>,
+    ) -> Self {
         fn init_local_stack(
             arena: &ResolverArena,
+            self_id: Option<DeclarationId>,
             mut map: StackedHashMap<String, EnvValue>,
         ) -> StackedHashMap<String, EnvValue> {
             let mut m = HashMap::new();
+            if let Some(self_id) = self_id {
+                m.insert("Self".to_string(), EnvValue::Type(self_id));
+            }
             let root = arena.get_by_id(&DeclarationId::ROOT).unwrap();
             let children = root.children().clone();
 
@@ -56,7 +64,7 @@ impl<'a> NameEnvironment<'a> {
             map
         }
         Self {
-            local_stack: init_local_stack(arena, local_stack),
+            local_stack: init_local_stack(arena, self_id, local_stack),
             values: arena.get_root().children().clone(),
             arena,
         }
@@ -212,6 +220,7 @@ impl<'a> NameEnvironment<'a> {
 #[cfg(test)]
 mod tests {
     use super::NameEnvironment;
+    use crate::high_level_ir::declaration_id::DeclarationId;
     use crate::high_level_ir::type_resolver::context::EnvValue;
     use crate::ResolverArena;
     use std::collections::HashMap;
@@ -220,7 +229,7 @@ mod tests {
     #[test]
     fn get_type() {
         let mut arena = ResolverArena::default();
-        let env = NameEnvironment::new(&mut arena, StackedHashMap::from(HashMap::new()));
+        let env = NameEnvironment::new(&mut arena, StackedHashMap::from(HashMap::new()), None);
         let int32 = env.get_type(&[], "Int32");
 
         assert!(matches!(int32, Some(_)))
@@ -229,7 +238,7 @@ mod tests {
     #[test]
     fn get_env_item() {
         let mut arena = ResolverArena::default();
-        let env = NameEnvironment::new(&mut arena, StackedHashMap::from(HashMap::new()));
+        let env = NameEnvironment::new(&mut arena, StackedHashMap::from(HashMap::new()), None);
         let int32 = env.get_env_item(&[], "Int32");
 
         assert!(matches!(int32, Some(EnvValue::Type(_))))
