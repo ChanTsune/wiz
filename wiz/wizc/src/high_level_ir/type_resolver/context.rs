@@ -34,47 +34,11 @@ pub struct ResolverContext<'a> {
 
 impl<'a> ResolverContext<'a> {
     pub(crate) fn new(arena: &'a mut ResolverArena) -> Self {
-        fn initial_local_stack(arena: ResolverArena) -> StackedHashMap<String, EnvValue> {
-            let mut map = StackedHashMap::new();
-            let mut m = HashMap::new();
-            let root = { arena.get_by_id(&DeclarationId::ROOT).unwrap() };
-            let children = root.children().clone();
-
-            for (child_name, ids) in children {
-                let ids = ids.iter().collect::<Vec<_>>();
-                let items = arena.get_by_ids(&ids).unwrap();
-                let env_item = if let Some(i) = items.first() {
-                    if let DeclarationItemKind::Type(_) = i.kind {
-                        EnvValue::from(**ids.first().unwrap())
-                    } else if let DeclarationItemKind::Namespace = i.kind {
-                        EnvValue::Namespace(**ids.first().unwrap())
-                    } else {
-                        let mut values = HashSet::new();
-                        for (item, id) in items.iter().zip(ids) {
-                            if let DeclarationItemKind::Function(rf) = &item.kind {
-                                values.insert((*id, rf.ty.clone()));
-                            } else if let DeclarationItemKind::Variable(v) = &item.kind {
-                                values.insert((*id, v.clone()));
-                            } else {
-                                unreachable!()
-                            }
-                        }
-                        EnvValue::from(values)
-                    }
-                } else {
-                    unreachable!("{}", child_name)
-                };
-
-                m.insert(child_name, env_item);
-            }
-            map.push(m);
-            map
-        };
         Self {
             global_used_name_space: Default::default(),
             used_name_space: Default::default(),
             current_namespace_id: DeclarationId::ROOT,
-            local_stack: initial_local_stack(arena.clone()),
+            local_stack: StackedHashMap::new(),
             arena,
         }
     }

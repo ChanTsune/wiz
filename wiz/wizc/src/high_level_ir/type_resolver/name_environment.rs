@@ -17,8 +17,46 @@ pub(crate) struct NameEnvironment<'a> {
 
 impl<'a> NameEnvironment<'a> {
     pub fn new(arena: &'a ResolverArena, local_stack: StackedHashMap<String, EnvValue>) -> Self {
+        fn init_local_stack(
+            arena: &ResolverArena,
+            mut map: StackedHashMap<String, EnvValue>,
+        ) -> StackedHashMap<String, EnvValue> {
+            let mut m = HashMap::new();
+            let root = arena.get_by_id(&DeclarationId::ROOT).unwrap();
+            let children = root.children().clone();
+
+            for (child_name, ids) in children {
+                let ids = ids.iter().collect::<Vec<_>>();
+                let items = arena.get_by_ids(&ids).unwrap();
+                let env_item = if let Some(i) = items.first() {
+                    if let DeclarationItemKind::Type(_) = i.kind {
+                        EnvValue::from(**ids.first().unwrap())
+                    } else if let DeclarationItemKind::Namespace = i.kind {
+                        EnvValue::Namespace(**ids.first().unwrap())
+                    } else {
+                        let mut values = HashSet::new();
+                        for (item, id) in items.iter().zip(ids) {
+                            if let DeclarationItemKind::Function(rf) = &item.kind {
+                                values.insert((*id, rf.ty.clone()));
+                            } else if let DeclarationItemKind::Variable(v) = &item.kind {
+                                values.insert((*id, v.clone()));
+                            } else {
+                                unreachable!()
+                            }
+                        }
+                        EnvValue::from(values)
+                    }
+                } else {
+                    unreachable!("{}", child_name)
+                };
+
+                m.insert(child_name, env_item);
+            }
+            map.push(m);
+            map
+        }
         Self {
-            local_stack,
+            local_stack: init_local_stack(arena, local_stack),
             values: arena.get_root().children().clone(),
             arena,
         }
