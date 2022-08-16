@@ -1,6 +1,6 @@
-use crate::high_level_ir::type_resolver::arena::ResolverArena;
 use crate::high_level_ir::AstLowering;
 use crate::TypedModuleId;
+use wiz_arena::Arena;
 use wiz_hir::typed_decl::{
     TypedArgDef, TypedDecl, TypedDeclKind, TypedFun, TypedFunBody, TypedStoredProperty,
     TypedStruct, TypedVar,
@@ -25,7 +25,7 @@ fn check(source: &str, typed_file: TypedFile) {
 
     let mut session = Session::new();
 
-    let mut arena = ResolverArena::default();
+    let mut arena = Arena::default();
 
     let mut ast2hlir = AstLowering::new(&mut session, &mut arena);
 

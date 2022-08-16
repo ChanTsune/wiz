@@ -1,7 +1,7 @@
-use crate::high_level_ir::type_resolver::arena::ResolverArena;
 use crate::high_level_ir::AstLowering;
 use crate::middle_level_ir::HLIR2MLIR;
 use crate::TypedModuleId;
+use wiz_arena::Arena;
 use wiz_mir::expr::{
     MLCall, MLCallArg, MLExpr, MLLiteral, MLLiteralKind, MLName, MLUnaryOp, MLUnaryOpKind,
 };
@@ -19,7 +19,7 @@ fn check(source: &str, except: MLFile) {
 
     let mut session = Session::new();
 
-    let mut arena = ResolverArena::default();
+    let mut arena = Arena::default();
 
     let mut ast2hlir = AstLowering::new(&mut session, &mut arena);
 

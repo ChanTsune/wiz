@@ -1,10 +1,10 @@
 use std::collections::{HashMap, HashSet};
-use wiz_hir::typed_type::TypedType;
+use wiz_hir::typed_type::{Package, TypedNamedValueType, TypedPackage, TypedType, TypedValueType};
 
 #[derive(Debug, Eq, PartialEq, Clone)]
-pub(crate) struct ResolverTypeParam {
+pub struct ArenaTypeParam {
     type_constraints: Vec<String>,
-    type_params: Option<HashMap<String, ResolverTypeParam>>,
+    type_params: Option<HashMap<String, ArenaTypeParam>>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -29,22 +29,22 @@ impl StructKind {
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
-pub struct ResolverStruct {
-    self_: TypedType, // TODO: remove this field
-    pub(crate) namespace: Vec<String>,
-    pub(crate) kind: StructKind,
-    pub(crate) stored_properties: HashMap<String, TypedType>,
-    pub(crate) computed_properties: HashMap<String, TypedType>,
-    pub(crate) member_functions: HashMap<String, TypedType>,
-    pub(crate) conformed_protocols: HashSet<String>,
-    pub(crate) type_parameters: Option<HashMap<String, ResolverTypeParam>>,
+pub struct ArenaStruct {
+    pub namespace: Vec<String>,
+    name: String,
+    pub kind: StructKind,
+    pub stored_properties: HashMap<String, TypedType>,
+    pub computed_properties: HashMap<String, TypedType>,
+    pub member_functions: HashMap<String, TypedType>,
+    pub conformed_protocols: HashSet<String>,
+    pub type_parameters: Option<HashMap<String, ArenaTypeParam>>,
 }
 
-impl ResolverStruct {
-    pub fn new(self_: TypedType, kind: StructKind) -> Self {
+impl ArenaStruct {
+    pub fn new(name: &str, namespace: &[String], kind: StructKind) -> Self {
         Self {
-            namespace: self_.package().into_resolved().names,
-            self_,
+            namespace: namespace.to_vec(),
+            name: name.to_owned(),
             kind,
             stored_properties: Default::default(),
             computed_properties: Default::default(),
@@ -54,7 +54,7 @@ impl ResolverStruct {
         }
     }
 
-    pub(crate) fn get_instance_member_type(&self, name: &str) -> Option<&TypedType> {
+    pub fn get_instance_member_type(&self, name: &str) -> Option<&TypedType> {
         if let Some(t) = self.stored_properties.get(name) {
             Some(t)
         } else if let Some(t) = self.computed_properties.get(name) {
@@ -66,8 +66,12 @@ impl ResolverStruct {
         }
     }
 
-    pub(crate) fn self_type(&self) -> TypedType {
-        self.self_.clone()
+    pub fn self_type(&self) -> TypedType {
+        TypedType::Value(TypedValueType::Value(TypedNamedValueType {
+            package: TypedPackage::Resolved(Package::from(&self.namespace)),
+            name: self.name.clone(),
+            type_args: None,
+        }))
     }
 
     pub fn is_generic(&self) -> bool {

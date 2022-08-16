@@ -1,8 +1,7 @@
 mod error;
 
 use crate::high_level_ir::type_checker::error::CheckerError;
-use crate::high_level_ir::type_resolver::arena::ResolverArena;
-use crate::high_level_ir::type_resolver::context::StructKind;
+use wiz_arena::{Arena, StructKind};
 use wiz_hir::typed_decl::{
     TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedProtocol, TypedStruct, TypedVar,
 };
@@ -19,11 +18,11 @@ use wiz_session::Session;
 #[derive(Debug)]
 pub struct TypeChecker<'s> {
     session: &'s mut Session,
-    arena: &'s ResolverArena,
+    arena: &'s Arena,
 }
 
 impl<'s> TypeChecker<'s> {
-    pub fn new(session: &'s mut Session, arena: &'s ResolverArena) -> Self {
+    pub fn new(session: &'s mut Session, arena: &'s Arena) -> Self {
         Self { session, arena }
     }
 

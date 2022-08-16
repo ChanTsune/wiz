@@ -1,6 +1,5 @@
 use crate::high_level_ir::node_id::TypedModuleId;
 use crate::high_level_ir::type_checker::TypeChecker;
-use crate::high_level_ir::type_resolver::arena::ResolverArena;
 use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::wlib::WLib;
 use crate::high_level_ir::{ast2hlir, AstLowering};
@@ -14,6 +13,7 @@ use std::os::unix::process::CommandExt;
 use std::path::PathBuf;
 use std::process::Command;
 use std::{env, fs};
+use wiz_arena::Arena;
 use wiz_session::Session;
 use wiz_syntax::syntax::file::SourceSet;
 use wiz_syntax_parser::parser;
@@ -68,7 +68,7 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<()> {
         Ok(input_source)
     })?;
 
-    let mut arena = ResolverArena::default();
+    let mut arena = Arena::default();
 
     let std_hlir = session.timer("load dependencies", |session| {
         let libraries = config.libraries();

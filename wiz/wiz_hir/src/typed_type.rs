@@ -21,10 +21,6 @@ pub enum TypedType {
 }
 
 impl TypedType {
-    pub fn is_self(&self) -> bool {
-        matches!(self, Self::Self_)
-    }
-
     pub fn is_generic(&self) -> bool {
         match self {
             TypedType::Self_ => false,
@@ -204,10 +200,6 @@ pub struct TypedArgType {
 }
 
 impl TypedArgType {
-    pub fn is_self(&self) -> bool {
-        self.typ.is_self()
-    }
-
     pub fn is_generic(&self) -> bool {
         self.typ.is_generic()
     }

@@ -1,9 +1,9 @@
-use crate::high_level_ir::declaration_id::DeclarationId;
 use crate::high_level_ir::node_id::TypedModuleId;
+use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::result::Result;
 use crate::utils::path_string_to_page_name;
-use crate::{ResolverArena, TypeResolver};
 use std::collections::HashMap;
+use wiz_arena::{Arena, DeclarationId};
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedDeclKind, TypedExtension, TypedFun,
@@ -45,7 +45,6 @@ use wiz_syntax::syntax::statement::{
 };
 use wiz_syntax::syntax::type_name::{TypeName, TypeParam, UserTypeName};
 
-pub mod declaration_id;
 pub mod node_id;
 pub mod type_checker;
 pub mod type_resolver;
@@ -53,13 +52,13 @@ pub mod wlib;
 
 pub struct AstLowering<'a> {
     session: &'a mut Session,
-    arena: &'a mut ResolverArena,
+    arena: &'a mut Arena,
     namespace_id: DeclarationId,
 }
 
 pub fn ast2hlir(
     session: &mut Session,
-    arena: &mut ResolverArena,
+    arena: &mut Arena,
     s: SourceSet,
     module_id: TypedModuleId,
 ) -> TypedSourceSet {
@@ -68,7 +67,7 @@ pub fn ast2hlir(
 }
 
 impl<'a> AstLowering<'a> {
-    pub fn new(session: &'a mut Session, arena: &'a mut ResolverArena) -> Self {
+    pub fn new(session: &'a mut Session, arena: &'a mut Arena) -> Self {
         Self {
             session,
             arena,
@@ -385,7 +384,7 @@ impl<'a> AstLowering<'a> {
             body,
             return_type: return_type
                 .map(|t| self.type_(t.type_))
-                .unwrap_or(TypedType::unit()),
+                .unwrap_or_else(TypedType::unit),
         }
     }
 
@@ -506,7 +505,7 @@ impl<'a> AstLowering<'a> {
 
         let rt = return_type
             .map(|r| self.type_(r.type_))
-            .unwrap_or(TypedType::unit());
+            .unwrap_or_else(TypedType::unit);
         let fb = body.map(|b| self.fun_body(b));
         TypedFun {
             name: name.token(),

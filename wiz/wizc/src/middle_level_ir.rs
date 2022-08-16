@@ -1,8 +1,7 @@
-use crate::high_level_ir::type_resolver::arena::ResolverArena;
-use crate::high_level_ir::type_resolver::declaration::{DeclarationItem, DeclarationItemKind};
 use crate::middle_level_ir::context::HLIR2MLIRContext;
 use crate::result::Result;
 use std::collections::HashMap;
+use wiz_arena::{Arena, DeclarationItem, DeclarationItemKind};
 use wiz_constants as constants;
 use wiz_constants::annotation::{BUILTIN, ENTRY, NO_MANGLE, TEST};
 use wiz_hir::typed_annotation::TypedAnnotations;
@@ -40,7 +39,7 @@ mod tests;
 pub fn hlir2mlir<'a, 'c>(
     target: TypedSourceSet,
     dependencies: &'a [MLFile],
-    arena: &'a ResolverArena,
+    arena: &'a Arena,
     config: &'a Config<'c>,
     generate_test_harness_if_needed: bool,
 ) -> Result<MLFile> {
@@ -52,14 +51,14 @@ pub fn hlir2mlir<'a, 'c>(
 #[derive(Debug)]
 pub struct HLIR2MLIR<'a, 'c> {
     config: &'a Config<'c>,
-    arena: &'a ResolverArena,
+    arena: &'a Arena,
     context: HLIR2MLIRContext,
     module: MLIRModule,
     tests: Vec<MLFun>,
 }
 
 impl<'a, 'c> HLIR2MLIR<'a, 'c> {
-    pub fn new(config: &'a Config<'c>, arena: &'a ResolverArena) -> Self {
+    pub fn new(config: &'a Config<'c>, arena: &'a Arena) -> Self {
         Self {
             config,
             arena,

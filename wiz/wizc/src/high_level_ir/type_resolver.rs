@@ -1,18 +1,14 @@
-pub mod arena;
 pub mod context;
-pub mod declaration;
 pub mod error;
 mod name_environment;
 pub mod result;
 #[cfg(test)]
 mod tests;
 
-use crate::high_level_ir::declaration_id::DeclarationId;
-use crate::high_level_ir::type_resolver::arena::ResolverArena;
 use crate::high_level_ir::type_resolver::context::ResolverContext;
-use crate::high_level_ir::type_resolver::declaration::DeclarationItemKind;
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
+use wiz_arena::{Arena, DeclarationId, DeclarationItemKind};
 use wiz_hir::typed_decl::{
     TypedArgDef, TypedDecl, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedProtocol,
     TypedStoredProperty, TypedStruct, TypedVar,
@@ -38,7 +34,7 @@ pub(crate) struct TypeResolver<'s> {
 }
 
 impl<'s> TypeResolver<'s> {
-    pub fn new(session: &'s mut Session, arena: &'s mut ResolverArena) -> Self {
+    pub fn new(session: &'s mut Session, arena: &'s mut Arena) -> Self {
         Self {
             session,
             context: ResolverContext::new(arena),
@@ -129,12 +125,7 @@ impl<'s> TypeResolver<'s> {
         let arg_defs = f
             .arg_defs
             .iter()
-            .map(|a| {
-                let a = self.typed_arg_def(a.clone())?;
-                self.context
-                    .register_to_env(a.name.clone(), (DeclarationId::DUMMY, a.type_.clone()));
-                Ok(a)
-            })
+            .map(|a| self.typed_arg_def(a.clone()))
             .collect::<Result<Vec<_>>>()?;
         let return_type = self.context.full_type_name(&f.return_type)?;
         let fun = TypedFun {
@@ -159,11 +150,6 @@ impl<'s> TypeResolver<'s> {
             member_functions,
         } = s;
         self.context.push_name_space(name);
-        let rs = self.context.current_type().ok_or_else(|| {
-            ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
-        })?;
-        let this_type = rs.self_type();
-        self.context.set_current_type(this_type);
         for stored_property in stored_properties.iter() {
             let type_ = self.context.full_type_name(&stored_property.type_)?;
             let rs = self.context.current_type_mut().ok_or_else(|| {
@@ -196,7 +182,6 @@ impl<'s> TypeResolver<'s> {
             rs.member_functions
                 .insert(member_function.name.clone(), type_);
         }
-        self.context.clear_current_type();
         self.context.pop_name_space();
         Ok(())
     }
@@ -208,13 +193,21 @@ impl<'s> TypeResolver<'s> {
             computed_properties,
             member_functions,
         } = e;
+        let tmp_ns_id = self.context.get_current_namespace_id();
+        let env = self.context.get_current_name_environment();
         let this_type = self.context.full_type_name(name)?;
-        self.context.set_current_type(this_type.clone());
+        let type_id = env
+            .get_type_id(
+                &this_type.package().into_resolved().names,
+                &this_type.name(),
+            )
+            .unwrap();
+        self.context.set_current_namespace_id_force(type_id);
         for computed_property in computed_properties {
             let type_ = self.context.full_type_name(&computed_property.type_)?;
             let rs = self
                 .context
-                .arena
+                .arena_mut()
                 .get_type_mut(
                     &this_type.package().into_resolved().names,
                     &this_type.name(),
@@ -232,7 +225,7 @@ impl<'s> TypeResolver<'s> {
             let type_ = self.context.full_type_name(&member_function.type_())?;
             let rs = self
                 .context
-                .arena
+                .arena_mut()
                 .get_type_mut(
                     &this_type.package().into_resolved().names,
                     &this_type.name(),
@@ -246,7 +239,7 @@ impl<'s> TypeResolver<'s> {
             rs.member_functions
                 .insert(member_function.name.clone(), type_);
         }
-        self.context.clear_current_type();
+        self.context.set_current_namespace_id_force(tmp_ns_id);
         Ok(())
     }
 
@@ -258,11 +251,6 @@ impl<'s> TypeResolver<'s> {
             member_functions,
         } = p;
         self.context.push_name_space(name);
-        let rs = self.context.current_type().ok_or_else(|| {
-            ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
-        })?;
-        let this_type = rs.self_type();
-        self.context.set_current_type(this_type);
         for computed_property in computed_properties.iter() {
             let type_ = self.context.full_type_name(&computed_property.type_)?;
             let rs = self.context.current_type_mut().ok_or_else(|| {
@@ -279,7 +267,6 @@ impl<'s> TypeResolver<'s> {
             rs.member_functions
                 .insert(member_function.name.clone(), type_);
         }
-        self.context.clear_current_type();
         self.context.pop_name_space();
         Ok(())
     }
@@ -384,7 +371,7 @@ impl<'s> TypeResolver<'s> {
                             let members = crs.member_functions.clone();
                             let rs = self
                                 .context
-                                .arena
+                                .arena_mut()
                                 .get_type_mut(&vec_current_namespace, &type_param.name)
                                 .unwrap();
                             rs.member_functions.extend(members);
@@ -432,9 +419,6 @@ impl<'s> TypeResolver<'s> {
             member_functions,
         } = s;
         self.context.push_name_space(&name);
-        let rs = self.context.current_type().unwrap();
-        let this_type = rs.self_type();
-        self.context.set_current_type(this_type);
         let stored_properties = stored_properties
             .into_iter()
             .map(|s| self.typed_stored_property(s))
@@ -444,7 +428,6 @@ impl<'s> TypeResolver<'s> {
             .into_iter()
             .map(|m| self.typed_member_function(m))
             .collect::<Result<Vec<_>>>()?;
-        self.context.clear_current_type();
         self.context.pop_name_space();
         Ok(TypedStruct {
             name,
@@ -499,8 +482,16 @@ impl<'s> TypeResolver<'s> {
     }
 
     fn typed_extension(&mut self, e: TypedExtension) -> Result<TypedExtension> {
+        let tmp_ns_id = self.context.get_current_namespace_id();
+        let env = self.context.get_current_name_environment();
         let this_type = self.context.full_type_name(&e.name)?;
-        self.context.set_current_type(this_type.clone());
+        let type_id = env
+            .get_type_id(
+                &this_type.package().into_resolved().names,
+                &this_type.name(),
+            )
+            .unwrap();
+        self.context.set_current_namespace_id_force(type_id);
         let result = Ok(TypedExtension {
             name: this_type,
             protocol: match &e.protocol {
@@ -514,14 +505,12 @@ impl<'s> TypeResolver<'s> {
                 .map(|m| self.typed_member_function(m))
                 .collect::<Result<_>>()?,
         });
-        self.context.clear_current_type();
+        self.context.set_current_namespace_id_force(tmp_ns_id);
         result
     }
 
     fn typed_protocol(&mut self, p: TypedProtocol) -> Result<TypedProtocol> {
         self.context.push_name_space(&p.name);
-        let rs = self.context.current_type().unwrap();
-        self.context.set_current_type(rs.self_type());
         let result = TypedProtocol {
             name: p.name,
             type_params: p.type_params, // TODO type params
@@ -532,7 +521,6 @@ impl<'s> TypeResolver<'s> {
                 .collect::<Result<_>>()?,
             computed_properties: p.computed_properties,
         };
-        self.context.clear_current_type();
         self.context.pop_name_space();
         Ok(result)
     }
@@ -635,16 +623,13 @@ impl<'s> TypeResolver<'s> {
             if n.package.is_resolved() {
                 (ty.unwrap(), n.package)
             } else {
-                self.context.infer_name_type(
-                    n.package.into_raw().names,
-                    &n.name,
-                    type_annotation,
-                )?
+                let env = self.context.get_current_name_environment();
+                env.infer_name_type(n.package.into_raw().names, &n.name, type_annotation)?
             }
         };
         let item = self
             .context
-            .arena
+            .arena_mut()
             .get_mut(&package.clone().into_resolved().names, &n.name);
         if let Some(item) = item {
             match &mut item.kind {
@@ -848,9 +833,8 @@ impl<'s> TypeResolver<'s> {
         m: TypedInstanceMember,
     ) -> Result<(TypedInstanceMember, Option<TypedType>)> {
         let target = self.expr(*m.target, None)?;
-        let type_ = self
-            .context
-            .resolve_member_type(target.ty.clone().unwrap(), &m.name)?;
+        let env = self.context.get_current_name_environment();
+        let type_ = env.resolve_member_type(target.ty.clone().unwrap(), &m.name)?;
         Ok((
             TypedInstanceMember {
                 target: Box::new(target),
@@ -994,7 +978,7 @@ impl<'s> TypeResolver<'s> {
                 } else if let Some(TypedType::Type(t)) = &target.ty {
                     let rs = self
                         .context
-                        .arena
+                        .arena_mut()
                         .get_type(&t.package().into_resolved().names, &t.name())
                         .unwrap();
                     if rs.stored_properties.len() != c.args.len() {

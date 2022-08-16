@@ -1,11 +1,12 @@
-use crate::high_level_ir::declaration_id::DeclarationId;
 use std::collections::HashSet;
+use wiz_arena::DeclarationId;
 use wiz_hir::typed_type::TypedType;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum EnvValue {
     Value(HashSet<(DeclarationId, TypedType)>),
     Type(DeclarationId),
+    Namespace(DeclarationId),
 }
 
 impl From<(DeclarationId, TypedType)> for EnvValue {
