@@ -1,5 +1,5 @@
 use std::collections::{HashMap, HashSet};
-use wiz_hir::typed_type::TypedType;
+use wiz_hir::typed_type::{Package, TypedNamedValueType, TypedPackage, TypedType, TypedValueType};
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct ArenaTypeParam {
@@ -30,8 +30,8 @@ impl StructKind {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct ArenaStruct {
-    self_: TypedType, // TODO: remove this field
     pub namespace: Vec<String>,
+    name: String,
     pub kind: StructKind,
     pub stored_properties: HashMap<String, TypedType>,
     pub computed_properties: HashMap<String, TypedType>,
@@ -41,10 +41,10 @@ pub struct ArenaStruct {
 }
 
 impl ArenaStruct {
-    pub fn new(self_: TypedType, kind: StructKind) -> Self {
+    pub fn new(name: &str, namespace: &[String], kind: StructKind) -> Self {
         Self {
-            namespace: self_.package().into_resolved().names,
-            self_,
+            namespace: namespace.to_vec(),
+            name: name.to_owned(),
             kind,
             stored_properties: Default::default(),
             computed_properties: Default::default(),
@@ -67,7 +67,11 @@ impl ArenaStruct {
     }
 
     pub fn self_type(&self) -> TypedType {
-        self.self_.clone()
+        TypedType::Value(TypedValueType::Value(TypedNamedValueType {
+            package: TypedPackage::Resolved(Package::from(&self.namespace)),
+            name: self.name.clone(),
+            type_args: None,
+        }))
     }
 
     pub fn is_generic(&self) -> bool {

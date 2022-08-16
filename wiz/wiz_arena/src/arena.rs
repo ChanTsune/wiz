@@ -8,9 +8,7 @@ use wiz_constants::annotation::BUILTIN;
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_decl::TypedFunBody;
 use wiz_hir::typed_expr::TypedBinaryOperator;
-use wiz_hir::typed_type::{
-    Package, TypedNamedValueType, TypedPackage, TypedType, TypedTypeParam, TypedValueType,
-};
+use wiz_hir::typed_type::{TypedType, TypedTypeParam, TypedValueType};
 
 mod function;
 mod r#struct;
@@ -230,14 +228,7 @@ impl Arena {
         kind: StructKind, /* type_parameters */
     ) -> Option<DeclarationId> {
         let vec_namespace = self.resolve_fully_qualified_name(namespace);
-        let s = ArenaStruct::new(
-            TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-                package: TypedPackage::Resolved(Package::from(&vec_namespace)),
-                name: name.to_string(),
-                type_args: None,
-            })),
-            kind,
-        );
+        let s = ArenaStruct::new(name, &vec_namespace, kind);
         self.register(
             namespace,
             name,

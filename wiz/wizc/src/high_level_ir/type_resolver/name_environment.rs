@@ -72,20 +72,6 @@ impl<'a> NameEnvironment<'a> {
 }
 
 impl<'a> NameEnvironment<'a> {
-    pub fn push(&mut self) {
-        self.local_stack.push(Default::default());
-    }
-
-    pub fn pop(&mut self) {
-        self.local_stack.pop();
-    }
-
-    pub fn extend(&mut self, name: String, item: EnvValue) {
-        self.local_stack.insert(name, item);
-    }
-}
-
-impl<'a> NameEnvironment<'a> {
     /// use [namespace]::*;
     pub(crate) fn use_asterisk(&mut self, namespace: &[String]) -> Option<()> {
         let ns_id = self.arena.resolve_declaration_id_from_root(namespace)?;

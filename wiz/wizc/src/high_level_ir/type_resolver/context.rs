@@ -363,7 +363,6 @@ mod tests {
     use super::ResolverContext;
     use wiz_arena::arena::{Arena, ArenaStruct, StructKind};
     use wiz_constants::INT32;
-    use wiz_hir::typed_type::TypedType;
 
     #[test]
     fn test_context_name_environment() {
@@ -374,7 +373,7 @@ mod tests {
 
         assert_eq!(
             env.get_type(&[], INT32),
-            Some(&ArenaStruct::new(TypedType::int32(), StructKind::Struct)),
+            Some(&ArenaStruct::new(INT32, &[], StructKind::Struct)),
         );
     }
 }
