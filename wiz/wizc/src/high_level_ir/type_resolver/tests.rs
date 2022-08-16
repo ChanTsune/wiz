@@ -1,6 +1,6 @@
 use crate::high_level_ir::AstLowering;
 use crate::TypedModuleId;
-use wiz_arena::arena::Arena;
+use wiz_arena::Arena;
 use wiz_hir::typed_decl::{
     TypedArgDef, TypedDecl, TypedDeclKind, TypedFun, TypedFunBody, TypedStoredProperty,
     TypedStruct, TypedVar,

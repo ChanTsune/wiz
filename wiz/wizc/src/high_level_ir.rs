@@ -1,9 +1,9 @@
 use crate::high_level_ir::node_id::TypedModuleId;
+use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::result::Result;
 use crate::utils::path_string_to_page_name;
-use crate::{Arena, TypeResolver};
 use std::collections::HashMap;
-use wiz_arena::declaration_id::DeclarationId;
+use wiz_arena::{Arena, DeclarationId};
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedDeclKind, TypedExtension, TypedFun,

@@ -1,7 +1,7 @@
 use crate::high_level_ir::AstLowering;
 use crate::middle_level_ir::HLIR2MLIR;
 use crate::TypedModuleId;
-use wiz_arena::arena::Arena;
+use wiz_arena::Arena;
 use wiz_mir::expr::{
     MLCall, MLCallArg, MLExpr, MLLiteral, MLLiteralKind, MLName, MLUnaryOp, MLUnaryOpKind,
 };

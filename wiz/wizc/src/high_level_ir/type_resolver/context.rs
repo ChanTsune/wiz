@@ -5,9 +5,7 @@ use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::name_environment::NameEnvironment;
 use crate::high_level_ir::type_resolver::result::Result;
 use std::collections::HashMap;
-use wiz_arena::arena::{Arena, ArenaStruct};
-use wiz_arena::declaration::DeclarationItemKind;
-use wiz_arena::declaration_id::DeclarationId;
+use wiz_arena::{Arena, ArenaStruct, DeclarationId, DeclarationItemKind};
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_decl::TypedFunBody;
 use wiz_hir::typed_expr::TypedBinaryOperator;
@@ -334,7 +332,7 @@ impl<'a> ResolverContext<'a> {
 #[cfg(test)]
 mod tests {
     use super::ResolverContext;
-    use wiz_arena::arena::{Arena, ArenaStruct, StructKind};
+    use wiz_arena::{Arena, ArenaStruct, StructKind};
     use wiz_constants::INT32;
 
     #[test]

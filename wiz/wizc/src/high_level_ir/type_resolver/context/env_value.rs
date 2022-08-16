@@ -1,5 +1,5 @@
 use std::collections::HashSet;
-use wiz_arena::declaration_id::DeclarationId;
+use wiz_arena::DeclarationId;
 use wiz_hir::typed_type::TypedType;
 
 #[derive(Debug, Eq, PartialEq, Clone)]

@@ -1,7 +1,7 @@
 mod error;
 
 use crate::high_level_ir::type_checker::error::CheckerError;
-use wiz_arena::arena::{Arena, StructKind};
+use wiz_arena::{Arena, StructKind};
 use wiz_hir::typed_decl::{
     TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedProtocol, TypedStruct, TypedVar,
 };

@@ -1,9 +1,7 @@
-use crate::Arena;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use std::path::Path;
-use wiz_arena::declaration::DeclarationItemKind;
-use wiz_arena::declaration_id::DeclarationId;
+use wiz_arena::{Arena, DeclarationId, DeclarationItemKind};
 use wiz_hir::typed_decl::TypedDeclKind;
 use wiz_hir::typed_file::TypedSourceSet;
 

@@ -2,9 +2,7 @@ use crate::high_level_ir::type_resolver::context::EnvValue;
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
 use std::collections::{HashMap, HashSet};
-use wiz_arena::arena::{Arena, ArenaStruct};
-use wiz_arena::declaration::DeclarationItemKind;
-use wiz_arena::declaration_id::DeclarationId;
+use wiz_arena::{Arena, ArenaStruct, DeclarationId, DeclarationItemKind};
 use wiz_hir::typed_type::{Package, TypedPackage, TypedType, TypedValueType};
 use wiz_utils::StackedHashMap;
 
@@ -277,8 +275,8 @@ impl<'a> NameEnvironment<'a> {
 mod tests {
     use super::NameEnvironment;
     use crate::high_level_ir::type_resolver::context::EnvValue;
-    use crate::Arena;
     use std::collections::HashMap;
+    use wiz_arena::Arena;
     use wiz_constants::INT32;
     use wiz_utils::StackedHashMap;
 

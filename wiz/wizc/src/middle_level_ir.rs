@@ -1,8 +1,7 @@
 use crate::middle_level_ir::context::HLIR2MLIRContext;
 use crate::result::Result;
 use std::collections::HashMap;
-use wiz_arena::arena::Arena;
-use wiz_arena::declaration::{DeclarationItem, DeclarationItemKind};
+use wiz_arena::{Arena, DeclarationItem, DeclarationItemKind};
 use wiz_constants as constants;
 use wiz_constants::annotation::{BUILTIN, ENTRY, NO_MANGLE, TEST};
 use wiz_hir::typed_annotation::TypedAnnotations;

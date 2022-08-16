@@ -13,7 +13,7 @@ use std::os::unix::process::CommandExt;
 use std::path::PathBuf;
 use std::process::Command;
 use std::{env, fs};
-use wiz_arena::arena::Arena;
+use wiz_arena::Arena;
 use wiz_session::Session;
 use wiz_syntax::syntax::file::SourceSet;
 use wiz_syntax_parser::parser;
