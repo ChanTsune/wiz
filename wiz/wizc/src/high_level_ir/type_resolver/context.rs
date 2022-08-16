@@ -286,24 +286,6 @@ impl<'a> ResolverContext<'a> {
         })
     }
 
-    pub(crate) fn register_struct(
-        &mut self,
-        name: &str,
-        annotation: TypedAnnotations,
-    ) -> Option<DeclarationId> {
-        let id = self.current_namespace_id;
-        self.arena_mut().register_struct(&id, name, annotation)
-    }
-
-    pub(crate) fn register_protocol(
-        &mut self,
-        name: &str,
-        annotation: TypedAnnotations,
-    ) -> Option<DeclarationId> {
-        let id = self.current_namespace_id;
-        self.arena_mut().register_protocol(&id, name, annotation)
-    }
-
     pub(crate) fn register_type_parameter(
         &mut self,
         name: &str,
@@ -346,15 +328,6 @@ impl<'a> ResolverContext<'a> {
         } else {
             None
         }
-    }
-
-    pub(crate) fn register_namespace(
-        &mut self,
-        name: &str,
-        annotation: TypedAnnotations,
-    ) -> Option<DeclarationId> {
-        let id = self.current_namespace_id;
-        self.arena_mut().register_namespace(&id, name, annotation)
     }
 }
 
