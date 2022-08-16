@@ -12,6 +12,14 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - name: echo rust version
+        run: rustc --version
       - name: Cache cargo
         uses: actions/cache@v3
         with:
@@ -32,8 +40,6 @@ jobs:
         with:
           version: "12.0"
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
-      - name: echo rust version
-        run: rustc --version
       - name: run test
         run: cargo test --manifest-path wiz/Cargo.toml --release
         env:
@@ -47,6 +53,14 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - name: echo rust version
+        run: rustc --version
       - name: Cache cargo
         uses: actions/cache@v3
         with:
@@ -67,8 +81,6 @@ jobs:
         with:
           version: "12.0"
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
-      - name: echo rust version
-        run: rustc --version
       - name: install wiz
         run: sh install.sh
       - name: wiz libc test
