@@ -21,7 +21,6 @@ pub enum TypedType {
 }
 
 impl TypedType {
-
     pub fn package(&self) -> TypedPackage {
         match self {
             TypedType::Self_ => panic!(),
