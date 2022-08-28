@@ -204,3 +204,29 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<()> {
     };
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::run_compiler;
+    use std::path::PathBuf;
+    use wiz_session::Session;
+    use wizc_cli::{Config, ConfigBuilder};
+
+    #[test]
+    fn compile_file() {
+        let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        let test_resource_dir = manifest_dir.join("resources/").join("test");
+        let repository_root = manifest_dir.join("..").join("..").canonicalize().unwrap();
+
+        let target_file_path = test_resource_dir.join("helloworld.wiz");
+        let lib_path = repository_root.join("libraries");
+        let out_dir = repository_root.join("out");
+
+        let mut session = Session::new();
+        let config = Config::default()
+            .input(target_file_path.to_str().unwrap())
+            .path(lib_path.to_str().unwrap())
+            .out_dir(out_dir.to_str().unwrap());
+        run_compiler(&mut session, config).unwrap()
+    }
+}
