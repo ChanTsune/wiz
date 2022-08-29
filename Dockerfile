@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:22.04 as llvm
 
 RUN apt-get update
 
@@ -12,6 +12,10 @@ RUN apt install -y clang-12
 
 RUN ln -s $(which clang-12) /usr/bin/clang
 
+FROM llvm as rust
+
+RUN apt install -y zsh
+
 ENV LLVM_SYS_120_PREFIX="/usr/lib/llvm-12"
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rustup-init && \
@@ -21,3 +25,13 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rustup-init && \
     rustup --version; \
     cargo --version; \
     rustc --version;
+
+
+FROM rust as wiz
+
+COPY ./wiz ./wiz
+COPY ./libraries ./libraries
+COPY ./install.sh ./install.sh
+COPY ./env ./env
+
+RUN zsh ./install.sh

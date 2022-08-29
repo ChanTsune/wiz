@@ -21,15 +21,6 @@ pub enum TypedType {
 }
 
 impl TypedType {
-    pub fn is_generic(&self) -> bool {
-        match self {
-            TypedType::Self_ => false,
-            TypedType::Value(v) => v.is_generic(),
-            TypedType::Function(f) => f.is_generic(),
-            TypedType::Type(t) => t.is_generic(),
-        }
-    }
-
     pub fn package(&self) -> TypedPackage {
         match self {
             TypedType::Self_ => panic!(),
@@ -131,16 +122,6 @@ impl TypedValueType {
         matches!(self, Self::Array(_, _))
     }
 
-    pub fn is_generic(&self) -> bool {
-        match self {
-            TypedValueType::Value(v) => v.is_generic(),
-            TypedValueType::Array(v, _) => v.is_generic(),
-            TypedValueType::Tuple(t) => todo!(),
-            TypedValueType::Pointer(v) => v.is_generic(),
-            TypedValueType::Reference(v) => v.is_generic(),
-        }
-    }
-
     pub fn package(&self) -> TypedPackage {
         match self {
             TypedValueType::Value(v) => v.package.clone(),
@@ -187,22 +168,10 @@ pub struct TypedFunctionType {
     pub return_type: TypedType,
 }
 
-impl TypedFunctionType {
-    pub fn is_generic(&self) -> bool {
-        self.arguments.iter().any(|a| a.is_generic()) || self.return_type.is_generic()
-    }
-}
-
 #[derive(Debug, Eq, PartialEq, Clone, Hash, Serialize, Deserialize)]
 pub struct TypedArgType {
     pub label: String,
     pub typ: TypedType,
-}
-
-impl TypedArgType {
-    pub fn is_generic(&self) -> bool {
-        self.typ.is_generic()
-    }
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash, Serialize, Deserialize)]

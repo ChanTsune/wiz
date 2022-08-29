@@ -5,9 +5,18 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile
+      target: rust
     volumes:
       - ./:/wiz
     environment:
       RUST_BACKTRACE: full
-    working_dir: /wiz/wiz/wizc
-    command: /root/.cargo/bin/cargo run /wiz/helloworld.wiz -p /wiz
+    working_dir: /root/
+  wiz:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      target: wiz
+    environment:
+      RUST_BACKTRACE: full
+    working_dir: /root/
+
