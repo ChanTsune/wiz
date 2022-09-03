@@ -87,8 +87,9 @@ pub(crate) fn command(_: &str, options: Options) -> Result<()> {
     let wlib_paths =
         compile_dependencies(&ws, resolved_dependencies, target_dir.to_str().unwrap())?;
 
+    let input_path = ws.cws.join("src");
     let mut config = Config::default()
-        .input(ws.cws.to_str().unwrap())
+        .input(input_path.to_str().unwrap())
         .out_dir(target_dir.to_str().unwrap())
         .name(ws.cws.file_name().and_then(OsStr::to_str).unwrap())
         .type_(if options.test {
