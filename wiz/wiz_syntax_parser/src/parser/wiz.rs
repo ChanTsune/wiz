@@ -36,21 +36,12 @@ pub fn parse_from_string(src: &str, name: Option<&str>) -> Result<WizFile> {
     }
 }
 
-pub fn parse_from_file_path_str(path: &str) -> Result<WizFile> {
-    let p = Path::new(path);
-    parse_from_file_path(p)
-}
-
-pub fn parse_from_file_path(path: &Path) -> Result<WizFile> {
-    let s = read_to_string(path)?;
-    parse_from_string(&*s, path.as_os_str().to_str())
+pub fn parse_from_file_path<P: AsRef<Path>>(path: P) -> Result<WizFile> {
+    let s = read_to_string(&path)?;
+    parse_from_string(&*s, path.as_ref().to_str())
 }
 
 pub fn read_package_from_path(path: &Path, name: Option<&str>) -> Result<SourceSet> {
-    return read_package_files(path, name);
-}
-
-fn read_package_files(path: &Path, name: Option<&str>) -> Result<SourceSet> {
     Ok(if path.is_dir() {
         let dir = fs::read_dir(path)?;
         SourceSet::Dir {
@@ -60,7 +51,7 @@ fn read_package_files(path: &Path, name: Option<&str>) -> Result<SourceSet> {
                 .to_string(),
             items: dir
                 .into_iter()
-                .map(|d| read_package_files(&*d.unwrap().path(), None))
+                .map(|d| read_package_from_path(&*d.unwrap().path(), None))
                 .collect::<Result<_>>()?,
         }
     } else {
