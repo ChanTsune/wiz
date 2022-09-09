@@ -84,7 +84,7 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<()> {
                     let package_manifest_path = lib_path.join("Package.wiz");
                     if package_manifest_path.exists() {
                         println!("`{}` found at {}", lib_name, lib_path.display());
-                        lib_paths.push(lib_path);
+                        lib_paths.push((lib_path.join("src"), lib_name));
                         break;
                     }
                 }
@@ -92,7 +92,7 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<()> {
 
             let source_sets = lib_paths
                 .iter()
-                .map(|p| read_package_from_path(p, None))
+                .map(|(p, name)| read_package_from_path(p, Some(**name)))
                 .collect::<parser::result::Result<Vec<_>>>()?;
             Ok(source_sets
                 .into_iter()

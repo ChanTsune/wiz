@@ -36,56 +36,22 @@ pub fn parse_from_string(src: &str, name: Option<&str>) -> Result<WizFile> {
     }
 }
 
-pub fn parse_from_file_path_str(path: &str) -> Result<WizFile> {
-    let p = Path::new(path);
-    parse_from_file_path(p)
-}
-
-pub fn parse_from_file_path(path: &Path) -> Result<WizFile> {
-    let s = read_to_string(path)?;
-    parse_from_string(&*s, path.as_os_str().to_str())
+pub fn parse_from_file_path<P: AsRef<Path>>(path: P) -> Result<WizFile> {
+    let s = read_to_string(&path)?;
+    parse_from_string(&*s, path.as_ref().to_str())
 }
 
 pub fn read_package_from_path(path: &Path, name: Option<&str>) -> Result<SourceSet> {
-    let dir = fs::read_dir(path)?;
-    for item in dir {
-        let dir_entry = item.unwrap();
-        if let Some("src") = dir_entry.file_name().to_str() {
-            return Ok(SourceSet::Dir {
-                name: name
-                    .or_else(|| path.file_name().and_then(|p| p.to_str()))
-                    .unwrap_or_default()
-                    .to_string(),
-                items: match read_package_files(dir_entry.path().as_path())? {
-                    SourceSet::File(_) => unreachable!(),
-                    SourceSet::Dir { name: _, items } => items,
-                },
-            });
-        }
-        println!("{}", dir_entry.path().display());
-    }
-    Ok(SourceSet::Dir {
-        name: path
-            .file_name()
-            .and_then(|p| p.to_str())
-            .unwrap()
-            .to_string(),
-        items: vec![],
-    })
-}
-
-fn read_package_files(path: &Path) -> Result<SourceSet> {
     Ok(if path.is_dir() {
         let dir = fs::read_dir(path)?;
         SourceSet::Dir {
-            name: path
-                .file_name()
-                .and_then(|p| p.to_str())
-                .unwrap()
+            name: name
+                .or_else(|| path.file_name().and_then(|p| p.to_str()))
+                .unwrap_or_default()
                 .to_string(),
             items: dir
                 .into_iter()
-                .map(|d| read_package_files(&*d.unwrap().path()))
+                .map(|d| read_package_from_path(&*d.unwrap().path(), None))
                 .collect::<Result<_>>()?,
         }
     } else {

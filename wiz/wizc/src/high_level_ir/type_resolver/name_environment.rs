@@ -84,7 +84,10 @@ impl<'a> NameEnvironment<'a> {
         if last == "*" {
             self.use_asterisk(&fqn[..fqn.len() - 1])?;
         } else {
-            let item = self.arena.resolve_declaration_id_from_root(fqn).unwrap();
+            let item = self
+                .arena
+                .resolve_declaration_id_from_root(fqn)
+                .expect(&format!("Can not use {:?}", fqn));
             let entry = self.values.entry(last.to_string()).or_default();
             entry.insert(item);
         };

@@ -47,6 +47,7 @@ pub fn resolve_manifest_dependencies(
         version: manifest.package.version.clone(),
         src_path: manifest_path
             .parent()
+            .map(|p| p.join("src"))
             .map(|p| p.to_string_lossy().to_string())
             .unwrap(),
         dependencies: result,
