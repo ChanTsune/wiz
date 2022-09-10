@@ -132,5 +132,5 @@ impl TypedFun {
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedModule {
-    pub items: Vec<TypedDecl>
+    pub items: Vec<TypedDecl>,
 }
