@@ -18,7 +18,7 @@ pub enum TypedDeclKind {
     Var(TypedVar),
     Fun(TypedFun),
     Struct(TypedStruct),
-    Class,
+    Module(TypedModule),
     Enum,
     Protocol(TypedProtocol),
     Extension(TypedExtension),
@@ -128,4 +128,9 @@ impl TypedFun {
     pub fn is_generic(&self) -> bool {
         self.type_params.is_some()
     }
+}
+
+#[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
+pub struct TypedModule {
+    pub items: Vec<TypedDecl>
 }

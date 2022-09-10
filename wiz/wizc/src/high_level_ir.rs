@@ -251,7 +251,7 @@ impl<'a> AstLowering<'a> {
                     }
                     kw => panic!("Unknown keyword `{}`", kw),
                 },
-                DeclKind::ExternC { .. } => TypedDeclKind::Class,
+                DeclKind::ExternC { .. } => todo!(),
                 DeclKind::Enum { .. } => TypedDeclKind::Enum,
                 DeclKind::Extension(e) => TypedDeclKind::Extension(self.extension_syntax(e)),
                 DeclKind::Use(_) => unreachable!(),

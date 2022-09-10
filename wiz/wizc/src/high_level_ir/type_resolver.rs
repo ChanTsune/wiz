@@ -101,7 +101,7 @@ impl<'s> TypeResolver<'s> {
             TypedDeclKind::Struct(s) => {
                 let _ = self.preload_struct(s)?;
             }
-            TypedDeclKind::Class => todo!(),
+            TypedDeclKind::Module(m) => todo!(),
             TypedDeclKind::Enum => todo!(),
             TypedDeclKind::Protocol(p) => {
                 let _ = self.preload_protocol(p)?;
@@ -316,7 +316,7 @@ impl<'s> TypeResolver<'s> {
                 TypedDeclKind::Var(v) => TypedDeclKind::Var(self.typed_var(v)?),
                 TypedDeclKind::Fun(f) => TypedDeclKind::Fun(self.typed_fun(f)?),
                 TypedDeclKind::Struct(s) => TypedDeclKind::Struct(self.typed_struct(s)?),
-                TypedDeclKind::Class => TypedDeclKind::Class,
+                TypedDeclKind::Module(m) => TypedDeclKind::Module(todo!()),
                 TypedDeclKind::Enum => TypedDeclKind::Enum,
                 TypedDeclKind::Protocol(p) => TypedDeclKind::Protocol(self.typed_protocol(p)?),
                 TypedDeclKind::Extension(e) => TypedDeclKind::Extension(self.typed_extension(e)?),

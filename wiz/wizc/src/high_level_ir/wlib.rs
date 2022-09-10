@@ -86,7 +86,7 @@ impl WLib {
                                 );
                             }
                         }
-                        TypedDeclKind::Class => {}
+                        TypedDeclKind::Module(m) => todo!(),
                         TypedDeclKind::Enum => {}
                         TypedDeclKind::Protocol(p) => {
                             arena.register_struct(&id, &p.name, decl.annotations.clone());

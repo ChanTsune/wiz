@@ -217,12 +217,8 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
                 }
                 TypedDeclKind::Fun(_) => todo!("local function"),
                 TypedDeclKind::Struct(_) => todo!("local struct"),
-                TypedDeclKind::Class => {
-                    todo!()
-                }
-                TypedDeclKind::Enum => {
-                    todo!()
-                }
+                TypedDeclKind::Module(m) => todo!(),
+                TypedDeclKind::Enum => todo!(),
                 TypedDeclKind::Protocol(_) => todo!("local protocol"),
                 TypedDeclKind::Extension(_) => todo!("local extension"),
             },
@@ -303,7 +299,7 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
                     self.module._add_function(FunBuilder::from(f));
                 }
             }
-            TypedDeclKind::Class => todo!(),
+            TypedDeclKind::Module(m) => todo!(),
             TypedDeclKind::Enum => todo!(),
             TypedDeclKind::Protocol(p) => {
                 let functions = self.protocol(p);

@@ -45,7 +45,7 @@ impl<'s> TypeChecker<'s> {
             TypedDeclKind::Var(v) => self.variable(v),
             TypedDeclKind::Fun(f) => self.function(f),
             TypedDeclKind::Struct(s) => self.struct_(s, package),
-            TypedDeclKind::Class => todo!(),
+            TypedDeclKind::Module(m) => todo!(),
             TypedDeclKind::Enum => todo!(),
             TypedDeclKind::Protocol(p) => self.protocol(p),
             TypedDeclKind::Extension(e) => self.extension(e),
