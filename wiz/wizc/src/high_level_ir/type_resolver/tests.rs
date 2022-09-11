@@ -33,7 +33,7 @@ fn check(source: &str, typed_file: TypedFile) {
         .lowing(SourceSet::File(ast), TypedModuleId::DUMMY)
         .unwrap();
 
-    assert_eq!(f, TypedSourceSet::File(typed_file));
+    assert_eq!(f, typed_file);
 }
 
 #[test]

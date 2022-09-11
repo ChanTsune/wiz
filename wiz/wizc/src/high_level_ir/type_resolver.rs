@@ -18,7 +18,7 @@ use wiz_hir::typed_expr::{
     TypedInstanceMember, TypedLiteralKind, TypedName, TypedPostfixUnaryOp, TypedPrefixUnaryOp,
     TypedPrefixUnaryOperator, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
-use wiz_hir::typed_file::{TypedFile, TypedSourceSet};
+use wiz_hir::typed_file::TypedFile;
 use wiz_hir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedForStmt,
     TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,

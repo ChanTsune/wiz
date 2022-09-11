@@ -37,7 +37,7 @@ mod context;
 mod tests;
 
 pub fn hlir2mlir<'a, 'c>(
-    target: TypedSourceSet,
+    target: TypedFile,
     dependencies: &'a [MLFile],
     arena: &'a Arena,
     config: &'a Config<'c>,
@@ -45,7 +45,7 @@ pub fn hlir2mlir<'a, 'c>(
 ) -> Result<MLFile> {
     let mut converter = HLIR2MLIR::new(config, arena);
     converter.load_dependencies(dependencies)?;
-    Ok(converter.convert_from_source_set(target, generate_test_harness_if_needed))
+    Ok(converter.convert_from_file(target, generate_test_harness_if_needed))
 }
 
 #[derive(Debug)]
@@ -108,13 +108,13 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
         Ok(())
     }
 
-    pub fn convert_from_source_set(
+    pub fn convert_from_file(
         &mut self,
-        s: TypedSourceSet,
+        f: TypedFile,
         generate_test_harness_if_needed: bool,
     ) -> MLFile {
-        let name = s.name().to_string();
-        self.source_set(s).unwrap();
+        let name = f.name.clone();
+        self.file(f).unwrap();
         if generate_test_harness_if_needed && BuildType::Test == self.config.type_() {
             let test_harness = self.generate_test_harness();
             self.module._add_function(FunBuilder::from(test_harness));

@@ -10,7 +10,7 @@ use wiz_hir::typed_expr::{
     TypedLambda, TypedLiteralKind, TypedName, TypedReturn, TypedSubscript, TypedTypeCast,
     TypedUnaryOp,
 };
-use wiz_hir::typed_file::{TypedFile, TypedSourceSet};
+use wiz_hir::typed_file::TypedFile;
 use wiz_hir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
 use wiz_hir::typed_type::{Package, TypedType};
 use wiz_session::Session;
@@ -26,14 +26,7 @@ impl<'s> TypeChecker<'s> {
         Self { session, arena }
     }
 
-    pub fn verify(&mut self, typed_source_set: &TypedSourceSet) {
-        match typed_source_set {
-            TypedSourceSet::File(f) => self.file(f),
-            TypedSourceSet::Dir { name: _, items } => items.iter().for_each(|i| self.verify(i)),
-        }
-    }
-
-    fn file(&mut self, typed_file: &TypedFile) {
+    pub(crate) fn verify(&mut self, typed_file: &TypedFile) {
         typed_file
             .body
             .iter()
@@ -45,7 +38,7 @@ impl<'s> TypeChecker<'s> {
             TypedDeclKind::Var(v) => self.variable(v),
             TypedDeclKind::Fun(f) => self.function(f),
             TypedDeclKind::Struct(s) => self.struct_(s, package),
-            TypedDeclKind::Module(m) => todo!(),
+            TypedDeclKind::Module(m) => self.verify(m),
             TypedDeclKind::Enum => todo!(),
             TypedDeclKind::Protocol(p) => self.protocol(p),
             TypedDeclKind::Extension(e) => self.extension(e),
