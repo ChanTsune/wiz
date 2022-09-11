@@ -10,7 +10,7 @@ use wiz_hir::typed_expr::{
     TypedInstanceMember, TypedLiteralKind, TypedName, TypedPrefixUnaryOp, TypedPrefixUnaryOperator,
     TypedReturn, TypedSubscript, TypedUnaryOp,
 };
-use wiz_hir::typed_file::{TypedFile, TypedSourceSet};
+use wiz_hir::typed_file::TypedFile;
 use wiz_hir::typed_stmt::{TypedBlock, TypedStmt};
 use wiz_hir::typed_type::{
     Package, TypedArgType, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType,

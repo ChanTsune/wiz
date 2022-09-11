@@ -14,7 +14,7 @@ use wiz_hir::typed_expr::{
     TypedIf, TypedInstanceMember, TypedLiteralKind, TypedName, TypedPrefixUnaryOperator,
     TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
-use wiz_hir::typed_file::{TypedFile, TypedSourceSet};
+use wiz_hir::typed_file::TypedFile;
 use wiz_hir::typed_stmt::{
     TypedAssignmentAndOperator, TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt,
 };
@@ -192,15 +192,6 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
                 MLType::Value(v) => v,
                 MLType::Function(f) => todo!("{:?}", f),
             },
-        }
-    }
-
-    fn source_set(&mut self, s: TypedSourceSet) -> Result<()> {
-        match s {
-            TypedSourceSet::File(f) => self.file(f),
-            TypedSourceSet::Dir { items, .. } => {
-                items.into_iter().try_for_each(|i| self.source_set(i))
-            }
         }
     }
 
