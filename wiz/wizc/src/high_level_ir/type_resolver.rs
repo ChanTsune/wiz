@@ -261,21 +261,6 @@ impl<'s> TypeResolver<'s> {
         Ok(())
     }
 
-    pub fn source_set(&mut self, s: TypedSourceSet) -> Result<TypedSourceSet> {
-        Ok(match s {
-            TypedSourceSet::File(f) => TypedSourceSet::File(self.file(f)?),
-            TypedSourceSet::Dir { name, items } => {
-                self.context.push_name_space(&name);
-                let items = items
-                    .into_iter()
-                    .map(|i| self.source_set(i))
-                    .collect::<Result<Vec<TypedSourceSet>>>()?;
-                self.context.pop_name_space();
-                TypedSourceSet::Dir { name, items }
-            }
-        })
-    }
-
     pub fn file(&mut self, f: TypedFile) -> Result<TypedFile> {
         self.context.push_name_space(&f.name);
         for u in f.uses.iter() {
