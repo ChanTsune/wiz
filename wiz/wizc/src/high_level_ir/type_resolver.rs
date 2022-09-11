@@ -46,18 +46,6 @@ impl<'s> TypeResolver<'s> {
             .global_use_name_space(name_space.iter().map(T::to_string).collect())
     }
 
-    pub fn preload_source_set(&mut self, s: &TypedSourceSet) -> Result<()> {
-        match s {
-            TypedSourceSet::File(f) => self.preload_file(f),
-            TypedSourceSet::Dir { name, items } => {
-                self.context.push_name_space(name);
-                items.iter().try_for_each(|i| self.preload_source_set(i))?;
-                self.context.pop_name_space();
-                Ok(())
-            }
-        }
-    }
-
     pub fn preload_file(&mut self, f: &TypedFile) -> Result<()> {
         self.context.push_name_space(&f.name);
         for u in f.uses.iter() {
