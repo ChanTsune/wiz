@@ -1,5 +1,6 @@
 use crate::typed_annotation::TypedAnnotations;
 use crate::typed_expr::{TypedExpr, TypedExprKind};
+use crate::typed_file::TypedFile;
 use crate::typed_stmt::TypedBlock;
 use crate::typed_type::{Package, TypedArgType, TypedFunctionType, TypedType, TypedTypeParam};
 use crate::typed_type_constraint::TypedTypeConstraint;
@@ -18,7 +19,7 @@ pub enum TypedDeclKind {
     Var(TypedVar),
     Fun(TypedFun),
     Struct(TypedStruct),
-    Class,
+    Module(TypedModule),
     Enum,
     Protocol(TypedProtocol),
     Extension(TypedExtension),
@@ -129,3 +130,5 @@ impl TypedFun {
         self.type_params.is_some()
     }
 }
+
+pub type TypedModule = TypedFile;

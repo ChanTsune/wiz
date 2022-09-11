@@ -15,7 +15,7 @@ use wiz_hir::typed_expr::{
     TypedPostfixUnaryOperator, TypedPrefixUnaryOp, TypedPrefixUnaryOperator, TypedReturn,
     TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
-use wiz_hir::typed_file::{TypedFile, TypedSourceSet};
+use wiz_hir::typed_file::TypedFile;
 use wiz_hir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentAndOperator, TypedAssignmentStmt,
     TypedBlock, TypedForStmt, TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
@@ -61,7 +61,7 @@ pub fn ast2hlir(
     arena: &mut Arena,
     s: SourceSet,
     module_id: TypedModuleId,
-) -> TypedSourceSet {
+) -> TypedFile {
     let mut converter = AstLowering::new(session, arena);
     converter.lowing(s, module_id).unwrap()
 }
@@ -93,31 +93,36 @@ impl<'a> AstLowering<'a> {
         result
     }
 
-    pub fn lowing(&mut self, s: SourceSet, module_id: TypedModuleId) -> Result<TypedSourceSet> {
-        let ss = self.source_set(s, module_id);
+    pub fn lowing(&mut self, s: SourceSet, module_id: TypedModuleId) -> Result<TypedFile> {
+        let file = self.source_set(s, module_id);
 
         let mut resolver = TypeResolver::new(self.session, self.arena);
         resolver.global_use(&["core", "builtin", "*"]);
         resolver.global_use(&["std", "builtin", "*"]);
 
-        resolver.preload_source_set(&ss)?;
+        resolver.preload_file(&file)?;
 
-        let ss = resolver.source_set(ss)?;
-        Ok(ss)
+        let file = resolver.file(file)?;
+        Ok(file)
     }
 
-    fn source_set(&mut self, s: SourceSet, module_id: TypedModuleId) -> TypedSourceSet {
+    fn source_set(&mut self, s: SourceSet, module_id: TypedModuleId) -> TypedFile {
         match s {
-            SourceSet::File(f) => TypedSourceSet::File(self.file(f)),
-            SourceSet::Dir { name, items } => {
-                self.push_namespace(&name.clone(), |slf| TypedSourceSet::Dir {
-                    name,
-                    items: items
-                        .into_iter()
-                        .map(|i| slf.source_set(i, module_id))
-                        .collect(),
-                })
-            }
+            SourceSet::File(f) => self.file(f),
+            SourceSet::Dir { name, items } => self.push_namespace(&name.clone(), |slf| TypedFile {
+                name,
+                uses: vec![],
+                body: items
+                    .into_iter()
+                    .map(|i| slf.source_set(i, module_id))
+                    .map(|f| TypedDecl {
+                        annotations: Default::default(),
+                        package: Package::new(),
+                        modifiers: vec![],
+                        kind: TypedDeclKind::Module(f),
+                    })
+                    .collect(),
+            }),
         }
     }
 
@@ -251,7 +256,7 @@ impl<'a> AstLowering<'a> {
                     }
                     kw => panic!("Unknown keyword `{}`", kw),
                 },
-                DeclKind::ExternC { .. } => TypedDeclKind::Class,
+                DeclKind::ExternC { .. } => todo!(),
                 DeclKind::Enum { .. } => TypedDeclKind::Enum,
                 DeclKind::Extension(e) => TypedDeclKind::Extension(self.extension_syntax(e)),
                 DeclKind::Use(_) => unreachable!(),

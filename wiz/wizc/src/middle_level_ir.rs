@@ -14,7 +14,7 @@ use wiz_hir::typed_expr::{
     TypedIf, TypedInstanceMember, TypedLiteralKind, TypedName, TypedPrefixUnaryOperator,
     TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
-use wiz_hir::typed_file::{TypedFile, TypedSourceSet};
+use wiz_hir::typed_file::TypedFile;
 use wiz_hir::typed_stmt::{
     TypedAssignmentAndOperator, TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt,
 };
@@ -37,7 +37,7 @@ mod context;
 mod tests;
 
 pub fn hlir2mlir<'a, 'c>(
-    target: TypedSourceSet,
+    target: TypedFile,
     dependencies: &'a [MLFile],
     arena: &'a Arena,
     config: &'a Config<'c>,
@@ -45,7 +45,7 @@ pub fn hlir2mlir<'a, 'c>(
 ) -> Result<MLFile> {
     let mut converter = HLIR2MLIR::new(config, arena);
     converter.load_dependencies(dependencies)?;
-    Ok(converter.convert_from_source_set(target, generate_test_harness_if_needed))
+    Ok(converter.convert_from_file(target, generate_test_harness_if_needed))
 }
 
 #[derive(Debug)]
@@ -108,13 +108,13 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
         Ok(())
     }
 
-    pub fn convert_from_source_set(
+    pub fn convert_from_file(
         &mut self,
-        s: TypedSourceSet,
+        f: TypedFile,
         generate_test_harness_if_needed: bool,
     ) -> MLFile {
-        let name = s.name().to_string();
-        self.source_set(s).unwrap();
+        let name = f.name.clone();
+        self.file(f).unwrap();
         if generate_test_harness_if_needed && BuildType::Test == self.config.type_() {
             let test_harness = self.generate_test_harness();
             self.module._add_function(FunBuilder::from(test_harness));
@@ -195,15 +195,6 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
         }
     }
 
-    fn source_set(&mut self, s: TypedSourceSet) -> Result<()> {
-        match s {
-            TypedSourceSet::File(f) => self.file(f),
-            TypedSourceSet::Dir { items, .. } => {
-                items.into_iter().try_for_each(|i| self.source_set(i))
-            }
-        }
-    }
-
     fn file(&mut self, f: TypedFile) -> Result<()> {
         f.body.into_iter().try_for_each(|d| self.decl(d))
     }
@@ -217,12 +208,8 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
                 }
                 TypedDeclKind::Fun(_) => todo!("local function"),
                 TypedDeclKind::Struct(_) => todo!("local struct"),
-                TypedDeclKind::Class => {
-                    todo!()
-                }
-                TypedDeclKind::Enum => {
-                    todo!()
-                }
+                TypedDeclKind::Module(m) => todo!(),
+                TypedDeclKind::Enum => todo!(),
                 TypedDeclKind::Protocol(_) => todo!("local protocol"),
                 TypedDeclKind::Extension(_) => todo!("local extension"),
             },
@@ -303,7 +290,9 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
                     self.module._add_function(FunBuilder::from(f));
                 }
             }
-            TypedDeclKind::Class => todo!(),
+            TypedDeclKind::Module(m) => {
+                self.file(m)?;
+            }
             TypedDeclKind::Enum => todo!(),
             TypedDeclKind::Protocol(p) => {
                 let functions = self.protocol(p);

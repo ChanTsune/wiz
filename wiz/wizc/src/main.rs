@@ -1,6 +1,5 @@
 use crate::high_level_ir::node_id::TypedModuleId;
 use crate::high_level_ir::type_checker::TypeChecker;
-use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::wlib::WLib;
 use crate::high_level_ir::{ast2hlir, AstLowering};
 use crate::llvm_ir::codegen::CodeGen;
