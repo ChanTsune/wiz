@@ -7,7 +7,7 @@ use wiz_arena::{Arena, DeclarationId};
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDecl, TypedDeclKind, TypedExtension, TypedFun,
-    TypedFunBody, TypedProtocol, TypedStoredProperty, TypedStruct, TypedVar,
+    TypedFunBody, TypedModule, TypedProtocol, TypedStoredProperty, TypedStruct, TypedVar,
 };
 use wiz_hir::typed_expr::{
     TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedExprKind,
@@ -100,24 +100,29 @@ impl<'a> AstLowering<'a> {
         resolver.global_use(&["core", "builtin", "*"]);
         resolver.global_use(&["std", "builtin", "*"]);
 
-        resolver.preload_source_set(&ss)?;
+        resolver.preload_file(&ss)?;
 
-        let ss = resolver.source_set(ss)?;
-        Ok(ss)
+        let ss = resolver.file(ss)?;
+        Ok(TypedSourceSet::File(ss))
     }
 
-    fn source_set(&mut self, s: SourceSet, module_id: TypedModuleId) -> TypedSourceSet {
+    fn source_set(&mut self, s: SourceSet, module_id: TypedModuleId) -> TypedFile {
         match s {
-            SourceSet::File(f) => TypedSourceSet::File(self.file(f)),
-            SourceSet::Dir { name, items } => {
-                self.push_namespace(&name.clone(), |slf| TypedSourceSet::Dir {
-                    name,
-                    items: items
-                        .into_iter()
-                        .map(|i| slf.source_set(i, module_id))
-                        .collect(),
-                })
-            }
+            SourceSet::File(f) => self.file(f),
+            SourceSet::Dir { name, items } => self.push_namespace(&name.clone(), |slf| TypedFile {
+                name,
+                uses: vec![],
+                body: items
+                    .into_iter()
+                    .map(|i| slf.source_set(i, module_id))
+                    .map(|f| TypedDecl {
+                        annotations: Default::default(),
+                        package: Package::new(),
+                        modifiers: vec![],
+                        kind: TypedDeclKind::Module(f),
+                    })
+                    .collect(),
+            }),
         }
     }
 

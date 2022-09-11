@@ -101,7 +101,9 @@ impl<'s> TypeResolver<'s> {
             TypedDeclKind::Struct(s) => {
                 let _ = self.preload_struct(s)?;
             }
-            TypedDeclKind::Module(m) => todo!(),
+            TypedDeclKind::Module(m) => {
+                self.preload_file(m)?;
+            }
             TypedDeclKind::Enum => todo!(),
             TypedDeclKind::Protocol(p) => {
                 let _ = self.preload_protocol(p)?;
@@ -286,7 +288,7 @@ impl<'s> TypeResolver<'s> {
         })
     }
 
-    fn file(&mut self, f: TypedFile) -> Result<TypedFile> {
+    pub fn file(&mut self, f: TypedFile) -> Result<TypedFile> {
         self.context.push_name_space(&f.name);
         for u in f.uses.iter() {
             self.context.use_name_space(u.package.names.clone());
@@ -316,7 +318,7 @@ impl<'s> TypeResolver<'s> {
                 TypedDeclKind::Var(v) => TypedDeclKind::Var(self.typed_var(v)?),
                 TypedDeclKind::Fun(f) => TypedDeclKind::Fun(self.typed_fun(f)?),
                 TypedDeclKind::Struct(s) => TypedDeclKind::Struct(self.typed_struct(s)?),
-                TypedDeclKind::Module(m) => TypedDeclKind::Module(todo!()),
+                TypedDeclKind::Module(m) => TypedDeclKind::Module(self.file(m)?),
                 TypedDeclKind::Enum => TypedDeclKind::Enum,
                 TypedDeclKind::Protocol(p) => TypedDeclKind::Protocol(self.typed_protocol(p)?),
                 TypedDeclKind::Extension(e) => TypedDeclKind::Extension(self.typed_extension(e)?),

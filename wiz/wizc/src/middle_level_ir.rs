@@ -299,7 +299,9 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
                     self.module._add_function(FunBuilder::from(f));
                 }
             }
-            TypedDeclKind::Module(m) => todo!(),
+            TypedDeclKind::Module(m) => {
+                self.file(m)?;
+            }
             TypedDeclKind::Enum => todo!(),
             TypedDeclKind::Protocol(p) => {
                 let functions = self.protocol(p);
