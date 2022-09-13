@@ -16,7 +16,7 @@ use wiz_arena::Arena;
 use wiz_session::Session;
 use wiz_syntax::syntax::file::SourceSet;
 use wiz_syntax_parser::parser;
-use wiz_syntax_parser::parser::wiz::{parse_from_file_path, read_package_from_path};
+use wiz_syntax_parser::parser::wiz::read_package_from_path;
 use wizc_cli::{BuildType, Config, ConfigExt};
 
 mod high_level_ir;
@@ -59,12 +59,7 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<()> {
     let mlir_out_dir = out_dir.join("mlir");
 
     let input_source = session.timer::<Result<_>, _>("parse files", |_| {
-        let input_source = if input.is_dir() {
-            read_package_from_path(input, config.name())?
-        } else {
-            SourceSet::File(parse_from_file_path(input)?)
-        };
-        Ok(input_source)
+        Ok(read_package_from_path(input, config.name())?)
     })?;
 
     let mut arena = Arena::default();
