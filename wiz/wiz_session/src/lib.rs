@@ -61,7 +61,7 @@ mod tests {
 
     #[test]
     fn test_start_stop() {
-        let mut session = super::Session::new();
+        let mut session = super::Session::default();
         session.start("foo");
         session.stop("foo");
         session.get_duration("foo").unwrap();
@@ -69,7 +69,7 @@ mod tests {
 
     #[test]
     fn test_timer() {
-        let mut session = super::Session::new();
+        let mut session = super::Session::default();
         session.timer("foo", |_| {});
         session.get_duration("foo").unwrap();
     }
@@ -84,7 +84,7 @@ mod tests {
             }
         }
         impl Error for E {}
-        let mut session = super::Session::new();
+        let mut session = super::Session::default();
         session.emit_error(E {});
         assert_eq!(session.has_error(), true);
     }

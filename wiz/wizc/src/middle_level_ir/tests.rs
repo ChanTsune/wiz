@@ -17,7 +17,7 @@ use wizc_cli::Config;
 fn check(source: &str, except: MLFile) {
     let ast = parse_from_string(source, Some(&except.name)).unwrap();
 
-    let mut session = Session::new();
+    let mut session = Session::default();
 
     let mut arena = Arena::default();
 
