@@ -1,0 +1,27 @@
+fun gcd(_ m: Size, _ n: Size): Size {
+    if n == 0 {
+        return m
+    }
+    if m < n {
+        return gcd(n, m)
+    }
+    return gcd(n, m % n)
+}
+
+fun lcm(_ m: Size, _ n: Size): Size {
+    val t = gcd(m, n)
+    return m / t * n
+}
+
+#[test]
+fun test_gcd() {
+    assert(gcd(1071, 1029) == 21)
+    assert(gcd(1029, 1071) == 21)
+}
+
+#[test]
+fun test_lcm() {
+    assert(lcm(1, 2) == 2)
+    assert(lcm(3, 9) == 9)
+    assert(lcm(12, 15) == 60)
+}
