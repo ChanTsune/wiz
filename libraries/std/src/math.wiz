@@ -1,9 +1,17 @@
+fun abs(_ x: Size): Size {
+    if x < 0 {
+        return -x
+    }
+    return x
+}
+
 fun gcd(_ m: Size, _ n: Size): Size {
+    return _gcd(abs(m), abs(n))
+}
+
+fun _gcd(_ m: Size, _ n: Size): Size {
     if n == 0 {
         return m
-    }
-    if m < n {
-        return gcd(n, m)
     }
     return gcd(n, m % n)
 }
@@ -11,6 +19,12 @@ fun gcd(_ m: Size, _ n: Size): Size {
 fun lcm(_ m: Size, _ n: Size): Size {
     val t = gcd(m, n)
     return m / t * n
+}
+
+#[test]
+fun test_abs() {
+    assert(abs(1) == 1)
+    assert(abs(-1) == 1)
 }
 
 #[test]
