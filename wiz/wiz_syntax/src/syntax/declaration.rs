@@ -9,6 +9,7 @@ pub use crate::syntax::declaration::use_syntax::{
     AliasSyntax, PackageName, PackageNameElement, UseSyntax,
 };
 pub use crate::syntax::declaration::var_syntax::VarSyntax;
+use crate::syntax::file::FileSyntax;
 use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::type_name::TypeName;
@@ -58,6 +59,7 @@ pub enum DeclKind {
     Enum {
         // TODO
     },
+    Module(ModuleSyntax),
     Extension(ExtensionSyntax),
     Use(UseSyntax),
 }
@@ -76,6 +78,7 @@ impl Syntax for DeclKind {
             }
             DeclKind::Extension(e) => DeclKind::Extension(e.with_leading_trivia(trivia)),
             DeclKind::Use(u) => DeclKind::Use(u.with_leading_trivia(trivia)),
+            DeclKind::Module(m) => DeclKind::Module(m.with_leading_trivia(trivia)),
         }
     }
 
@@ -92,7 +95,20 @@ impl Syntax for DeclKind {
             }
             DeclKind::Extension(e) => DeclKind::Extension(e.with_trailing_trivia(trivia)),
             DeclKind::Use(u) => DeclKind::Use(u.with_trailing_trivia(trivia)),
+            DeclKind::Module(m) => DeclKind::Module(m.with_trailing_trivia(trivia)),
         }
+    }
+}
+
+pub type ModuleSyntax = (String, Option<FileSyntax>);
+
+impl Syntax for ModuleSyntax {
+    fn with_leading_trivia(self, trivia: Trivia) -> Self {
+        self
+    }
+
+    fn with_trailing_trivia(self, trivia: Trivia) -> Self {
+        self
     }
 }
 

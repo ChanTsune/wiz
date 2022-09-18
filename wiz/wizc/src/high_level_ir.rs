@@ -29,7 +29,7 @@ use wiz_syntax::syntax::annotation::AnnotationsSyntax;
 use wiz_syntax::syntax::block::BlockSyntax;
 use wiz_syntax::syntax::declaration::fun_syntax::{ArgDef, FunBody, FunSyntax};
 use wiz_syntax::syntax::declaration::{
-    DeclKind, StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax,
+    DeclKind, ModuleSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax,
 };
 use wiz_syntax::syntax::declaration::{ExtensionSyntax, VarSyntax};
 use wiz_syntax::syntax::expression::{
@@ -37,12 +37,13 @@ use wiz_syntax::syntax::expression::{
     MemberSyntax, NameExprSyntax, PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax,
     ReturnSyntax, SubscriptSyntax, TypeCastSyntax, UnaryOperationSyntax,
 };
-use wiz_syntax::syntax::file::{SourceSet, WizFile};
+use wiz_syntax::syntax::file::{FileSyntax, SourceSet, WizFile};
 use wiz_syntax::syntax::literal::LiteralSyntax;
 use wiz_syntax::syntax::statement::{
     AssignmentStmt, ForLoopSyntax, LoopStmt, Stmt, WhileLoopSyntax,
 };
 use wiz_syntax::syntax::type_name::{TypeName, TypeParam, UserTypeName};
+use wiz_syntax_parser::parser::wiz::{parse_from_file_path, parse_from_string};
 use wiz_utils::utils::path_string_to_page_name;
 use wizc_syntax_visitor::{collect_items, collect_type_and_namespace};
 
@@ -60,7 +61,7 @@ pub struct AstLowering<'a> {
 pub fn ast2hlir(
     session: &mut Session,
     arena: &mut Arena,
-    s: SourceSet,
+    s: WizFile,
     module_id: ModuleId,
 ) -> TypedSpellBook {
     let mut converter = AstLowering::new(session, arena);
@@ -94,11 +95,11 @@ impl<'a> AstLowering<'a> {
         result
     }
 
-    pub fn lowing(&mut self, s: SourceSet, module_id: ModuleId) -> Result<TypedSpellBook> {
+    pub fn lowing(&mut self, s: WizFile, module_id: ModuleId) -> Result<TypedSpellBook> {
         // collect_type_and_namespace(self.session, self.arena, &s);
         // collect_items(self.session, self.arena, &s);
 
-        let file = self.source_set(s, module_id);
+        let file = self.file(s);
 
         let mut resolver = TypeResolver::new(self.session, self.arena);
 
@@ -290,6 +291,23 @@ impl<'a> AstLowering<'a> {
                 DeclKind::Enum { .. } => TypedDeclKind::Enum,
                 DeclKind::Extension(e) => TypedDeclKind::Extension(self.extension_syntax(e)),
                 DeclKind::Use(_) => unreachable!(),
+                DeclKind::Module(m) => {
+                    let (name, file) = m;
+                    let file = match file {
+                        Some(file) => WizFile { name, syntax: file },
+                        None => {
+                            let mut s = self.session.local_spell_book_root().to_owned();
+                            let fqn = self.arena.resolve_fully_qualified_name(&self.namespace_id);
+                            for n in &fqn[1..] {
+                                s = s.join(n);
+                            }
+                            s.set_extension("wiz");
+                            println!("Module: {}", s.display());
+                            parse_from_file_path(&self.session.parse_session, s).unwrap()
+                        }
+                    };
+                    TypedDeclKind::Module(self.file(file))
+                }
             },
         }
     }

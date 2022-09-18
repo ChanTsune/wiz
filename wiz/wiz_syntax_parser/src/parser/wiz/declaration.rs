@@ -2,8 +2,9 @@ use crate::parser::wiz::annotation::annotations_syntax;
 use crate::parser::wiz::character::{ampersand, comma};
 use crate::parser::wiz::expression::expr;
 use crate::parser::wiz::keywords::{
-    as_keyword, deinit_keyword, extension_keyword, fun_keyword, protocol_keyword, self_keyword,
-    struct_keyword, use_keyword, val_keyword, var_keyword, where_keyword,
+    as_keyword, deinit_keyword, extension_keyword, fun_keyword, namespace_keyword,
+    protocol_keyword, self_keyword, struct_keyword, use_keyword, val_keyword, var_keyword,
+    where_keyword,
 };
 use crate::parser::wiz::lexical_structure::{identifier, token, whitespace0, whitespace1};
 use crate::parser::wiz::statement::stmt;
@@ -24,11 +25,12 @@ use wiz_syntax::syntax::declaration::fun_syntax::{
     SelfArgDefSyntax, ValueArgDef,
 };
 use wiz_syntax::syntax::declaration::{
-    AliasSyntax, DeclKind, DeclarationSyntax, DeinitializerSyntax, ExtensionSyntax, PackageName,
-    ProtocolConformSyntax, StoredPropertySyntax, StructBodySyntax, StructPropertySyntax,
-    StructSyntax, TypeAnnotationSyntax, UseSyntax,
+    AliasSyntax, DeclKind, DeclarationSyntax, DeinitializerSyntax, ExtensionSyntax, ModuleSyntax,
+    PackageName, ProtocolConformSyntax, StoredPropertySyntax, StructBodySyntax,
+    StructPropertySyntax, StructSyntax, TypeAnnotationSyntax, UseSyntax,
 };
 use wiz_syntax::syntax::declaration::{PackageNameElement, VarSyntax};
+use wiz_syntax::syntax::file::FileSyntax;
 use wiz_syntax::syntax::token::TokenSyntax;
 use wiz_syntax::syntax::type_name::{TypeConstraintElementSyntax, TypeConstraintsSyntax};
 use wiz_syntax::syntax::Syntax;
@@ -55,6 +57,7 @@ where
             opt(annotations_syntax),
             whitespace0,
             alt((
+                module_decl,
                 use_decl,
                 struct_decl,
                 function_decl,
@@ -734,6 +737,42 @@ where
                 }),
             },
         },
+    )(s)
+}
+
+pub fn module_decl<I>(s: I) -> IResult<I, DeclKind>
+where
+    I: InputTake
+        + Compare<&'static str>
+        + ToString
+        + FindSubstring<&'static str>
+        + Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + InputLength
+        + Clone,
+    <I as InputIter>::Item: AsChar + Copy,
+{
+    map(module_syntax, DeclKind::Module)(s)
+}
+
+// <namespace> ::= "namespace" <identifier>
+pub fn module_syntax<I>(s: I) -> IResult<I, ModuleSyntax>
+where
+    I: InputTake
+        + Compare<&'static str>
+        + ToString
+        + FindSubstring<&'static str>
+        + Slice<RangeFrom<usize>>
+        + Slice<Range<usize>>
+        + InputIter
+        + InputLength
+        + Clone,
+    <I as InputIter>::Item: AsChar + Copy,
+{
+    map(
+        tuple((namespace_keyword, whitespace1, identifier)),
+        |(kw, ws, id)| (id, None),
     )(s)
 }
 

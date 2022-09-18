@@ -30,9 +30,7 @@ fn check(source: &str, typed_file: TypedSpellBook) {
 
     let mut ast2hlir = AstLowering::new(&mut session, &mut arena);
 
-    let f = ast2hlir
-        .lowing(SourceSet::File(ast), ModuleId::DUMMY)
-        .unwrap();
+    let f = ast2hlir.lowing(ast, ModuleId::DUMMY).unwrap();
 
     assert_eq!(f, typed_file);
 }

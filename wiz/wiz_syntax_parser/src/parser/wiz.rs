@@ -7,7 +7,8 @@ use std::path::Path;
 use wiz_result::Result;
 use wiz_session::ParseSession;
 use wiz_span::{get_line_offset, Location};
-use wiz_syntax::syntax::file::{SourceSet, WizFile};
+use wiz_syntax::syntax::declaration::{DeclKind, DeclarationSyntax};
+use wiz_syntax::syntax::file::{FileSyntax, SourceSet, WizFile};
 
 pub mod annotation;
 pub mod character;
@@ -53,29 +54,32 @@ pub fn read_package_from_path(
     session: &ParseSession,
     path: &Path,
     name: Option<&str>,
-) -> Result<SourceSet> {
+) -> Result<WizFile> {
     Ok(if path.is_dir() {
         let dir = fs::read_dir(path)?;
-        SourceSet::Dir {
+        WizFile {
             name: name
                 .or_else(|| path.file_name().and_then(|p| p.to_str()))
                 .unwrap_or_default()
                 .to_string(),
-            items: {
-                let items = dir
+            syntax: FileSyntax {
+                leading_trivia: Default::default(),
+                body: dir
                     .into_iter()
-                    .collect::<std::io::Result<Vec<_>>>()
-                    .unwrap();
-                let mut items = items.into_iter().map(|i| i.path()).collect::<Vec<_>>();
-                items.sort_unstable_by_key(|x| x.is_dir());
-                items
-                    .iter()
-                    .map(|d| read_package_from_path(session, d, None))
-                    .collect::<Result<_>>()?
+                    .map(|d| read_package_from_path(session, &*d?.path(), None))
+                    .map(|i| {
+                        let WizFile { name, syntax } = i?;
+                        Ok(DeclarationSyntax {
+                            annotations: None,
+                            kind: DeclKind::Module((name, Some(syntax))),
+                        })
+                    })
+                    .collect::<Result<_>>()?,
+                trailing_trivia: Default::default(),
             },
         }
     } else {
-        SourceSet::File(parse_from_file_path(session, path)?)
+        parse_from_file_path(session, path)?
     })
 }
 

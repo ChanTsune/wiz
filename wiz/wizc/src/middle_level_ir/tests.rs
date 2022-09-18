@@ -23,9 +23,7 @@ fn check(source: &str, except: MLFile) {
 
     let mut ast2hlir = AstLowering::new(&mut session, &mut arena);
 
-    let hl_ss = ast2hlir
-        .lowing(SourceSet::File(ast), ModuleId::DUMMY)
-        .unwrap();
+    let hl_ss = ast2hlir.lowing(ast, ModuleId::DUMMY).unwrap();
 
     let mut hlir2mlir = HLIR2MLIR::new(&session, &mut arena);
 
