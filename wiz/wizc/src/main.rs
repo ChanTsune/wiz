@@ -59,7 +59,7 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<()> {
     let mlir_out_dir = out_dir.join("mlir");
 
     let input_source = session.timer::<Result<_>, _>("parse files", |_| {
-        Ok(read_package_from_path(input, config.name())?)
+        Ok(read_package_from_path(input, config.name().as_deref())?)
     })?;
 
     let mut arena = Arena::default();
@@ -151,7 +151,7 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<()> {
     println!("==== codegen ====");
     let module_name = &mlfile.name;
     let context = Context::create();
-    let mut codegen = CodeGen::new(&context, module_name, config.target_triple());
+    let mut codegen = CodeGen::new(&context, module_name, config.target_triple().as_deref());
 
     for m in std_mlir.into_iter() {
         codegen.file(m);
@@ -172,7 +172,7 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<()> {
 
         println!("Output Path -> {}", out_path.display());
 
-        match emit {
+        match emit.as_str() {
             "llvm-ir" => codegen.print_to_file(&out_path),
             "asm" => codegen.write_as_assembly(&out_path),
             _ => codegen.write_as_object(&out_path),

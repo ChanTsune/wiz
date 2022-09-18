@@ -36,11 +36,11 @@ mod context;
 #[cfg(test)]
 mod tests;
 
-pub fn hlir2mlir<'a, 'c>(
+pub fn hlir2mlir<'a>(
     target: TypedFile,
     dependencies: &'a [MLFile],
     arena: &'a Arena,
-    config: &'a Config<'c>,
+    config: &'a Config,
     generate_test_harness_if_needed: bool,
 ) -> Result<MLFile> {
     let mut converter = HLIR2MLIR::new(config, arena);
@@ -49,16 +49,16 @@ pub fn hlir2mlir<'a, 'c>(
 }
 
 #[derive(Debug)]
-pub struct HLIR2MLIR<'a, 'c> {
-    config: &'a Config<'c>,
+pub struct HLIR2MLIR<'a> {
+    config: &'a Config,
     arena: &'a Arena,
     context: HLIR2MLIRContext,
     module: MLIRModule,
     tests: Vec<MLFun>,
 }
 
-impl<'a, 'c> HLIR2MLIR<'a, 'c> {
-    pub fn new(config: &'a Config<'c>, arena: &'a Arena) -> Self {
+impl<'a> HLIR2MLIR<'a> {
+    pub fn new(config: &'a Config, arena: &'a Arena) -> Self {
         Self {
             config,
             arena,
