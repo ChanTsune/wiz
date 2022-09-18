@@ -1,16 +1,22 @@
 use std::collections::BTreeMap;
 use std::error::Error;
 use std::time::{Duration, Instant};
+use wizc_cli::Config;
 
 #[derive(Debug, Default)]
 pub struct Session {
+    pub config: Config,
     timers: BTreeMap<String, (Instant, Option<Duration>)>,
     errors: Vec<Box<dyn Error>>,
 }
 
 impl Session {
-    pub fn new() -> Self {
-        Session::default()
+    pub fn new(config: Config) -> Self {
+        Self {
+            config,
+            timers: Default::default(),
+            errors: Default::default(),
+        }
     }
 
     pub fn start(&mut self, id: &str) -> Instant {

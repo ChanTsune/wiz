@@ -43,11 +43,12 @@ fn main() -> Result<()> {
     let matches = app.get_matches();
     let config = Config::from(&matches);
 
-    let mut session = Session::new();
-    session.timer("compile", |s| run_compiler(s, config))
+    let mut session = Session::new(config);
+    session.timer("compile", |s| run_compiler(s))
 }
 
-fn run_compiler(session: &mut Session, config: Config) -> Result<()> {
+fn run_compiler(session: &mut Session) -> Result<()> {
+    let config = session.config.clone();
     let output = config.output();
     let out_dir = config.out_dir();
     let paths = config.paths();
@@ -216,11 +217,11 @@ mod tests {
         let lib_path = repository_root.join("libraries");
         let out_dir = repository_root.join("out");
 
-        let mut session = Session::new();
         let config = Config::default()
             .input(target_file_path.to_str().unwrap())
             .path(lib_path.to_str().unwrap())
             .out_dir(out_dir.to_str().unwrap());
-        run_compiler(&mut session, config).unwrap()
+        let mut session = Session::new(config);
+        run_compiler(&mut session).unwrap()
     }
 }
