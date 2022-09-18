@@ -1,0 +1,103 @@
+struct Fraction {
+    val numerator: Size
+    val denominator: Size
+
+    fun new(_ numerator: Size, _ denominator: Size): Self {
+        val g = std::math::gcd(numerator, denominator)
+        if denominator < 0 {
+            val zero: Size = 0
+            g = zero - g
+        }
+        return Self(numerator: numerator / g, denominator: denominator / g)
+    }
+}
+
+extension Fraction {
+    fun add(&self, _ rhs: &Fraction): Fraction {
+        if self.denominator == rhs.denominator {
+            return Fraction::new(self.numerator + rhs.numerator, self.denominator)
+        }
+        val t = std::math::lcm(self.denominator, rhs.denominator)
+        val r = t / self.denominator
+        val l = t / rhs.denominator
+        return Fraction::new(self.numerator * r + rhs.numerator * l, t)
+    }
+}
+
+extension Fraction {
+    fun sub(&self, _ rhs: &Fraction): Fraction {
+        if self.denominator == rhs.denominator {
+            return Fraction::new(self.numerator - rhs.numerator, self.denominator)
+        }
+        val t = std::math::lcm(self.denominator, rhs.denominator)
+        val r = t / self.denominator
+        val l = t / rhs.denominator
+        return Fraction::new(self.numerator * r - rhs.numerator * l, t)
+    }
+}
+
+extension Fraction {
+    fun mul(&self, _ rhs: &Fraction): Fraction {
+        return Fraction::new(self.numerator * rhs.numerator, self.denominator * rhs.denominator)
+    }
+}
+
+extension Fraction {
+    fun div(&self, _ rhs: &Fraction): Fraction {
+        return Fraction::new(self.numerator * rhs.denominator, self.denominator * self.numerator)
+    }
+}
+
+#[test]
+fun test_new() {
+    val a = Fraction::new(2, 4)
+    assert(a.numerator == 1)
+    assert(a.denominator == 2)
+}
+
+#[test]
+fun test_new_negative() {
+    val a = Fraction::new(-1, 3)
+    assert(a.numerator == -1)
+    assert(a.denominator == 3)
+
+    val b = Fraction::new(1, -3)
+    assert(b.numerator == -1)
+    assert(b.denominator == 3)
+}
+
+#[test]
+fun test_add() {
+    val a = Fraction::new(1, 2)
+    val b = Fraction::new(1, 4)
+    val x = a.add(b)
+    assert(x.numerator == 3)
+    assert(x.denominator == 4)
+}
+
+#[test]
+fun test_sub() {
+    val a = Fraction::new(1, 2)
+    val b = Fraction::new(1, 4)
+    val x = a.sub(b)
+    assert(x.numerator == 1)
+    assert(x.denominator == 4)
+}
+
+#[test]
+fun test_mul() {
+    val a = Fraction::new(1, 2)
+    val b = Fraction::new(1, 4)
+    val x = a.mul(b)
+    assert(x.numerator == 1)
+    assert(x.denominator == 8)
+}
+
+#[test]
+fun test_div() {
+    val a = Fraction::new(1, 2)
+    val b = Fraction::new(1, 4)
+    val x = a.div(b)
+    assert(x.numerator == 2)
+    assert(x.denominator == 1)
+}
