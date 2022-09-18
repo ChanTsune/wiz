@@ -21,7 +21,7 @@ use wiz_syntax::syntax::file::SourceSet;
 use wiz_syntax_parser::parser::wiz::parse_from_string;
 
 fn check(source: &str, typed_file: TypedFile) {
-    let ast = parse_from_string(source, Some(&typed_file.name)).unwrap();
+    let ast = parse_from_string::<&str>(None, source, Some(&typed_file.name)).unwrap();
 
     let mut session = Session::default();
 

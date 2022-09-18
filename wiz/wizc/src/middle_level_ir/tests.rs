@@ -15,7 +15,7 @@ use wiz_syntax_parser::parser::wiz::parse_from_string;
 use wizc_cli::Config;
 
 fn check(source: &str, except: MLFile) {
-    let ast = parse_from_string(source, Some(&except.name)).unwrap();
+    let ast = parse_from_string::<&str>(None, source, Some(&except.name)).unwrap();
 
     let mut session = Session::default();
 
