@@ -246,14 +246,8 @@ impl<'a> AstLowering<'a> {
                 DeclKind::Var(v) => TypedDeclKind::Var(self.var_syntax(v)),
                 DeclKind::Fun(f) => TypedDeclKind::Fun(self.fun_syntax(f)),
                 DeclKind::Struct(s) => match &*s.struct_keyword.token() {
-                    "struct" => {
-                        let struct_ = self.struct_syntax(s);
-                        TypedDeclKind::Struct(struct_)
-                    }
-                    "protocol" => {
-                        let protocol = self.protocol_syntax(s);
-                        TypedDeclKind::Protocol(protocol)
-                    }
+                    "struct" => TypedDeclKind::Struct(self.struct_syntax(s)),
+                    "protocol" => TypedDeclKind::Protocol(self.protocol_syntax(s)),
                     kw => panic!("Unknown keyword `{}`", kw),
                 },
                 DeclKind::ExternC { .. } => todo!(),
