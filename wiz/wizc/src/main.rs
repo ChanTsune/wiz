@@ -14,7 +14,6 @@ use std::process::Command;
 use std::{env, fs};
 use wiz_arena::Arena;
 use wiz_session::Session;
-use wiz_syntax::syntax::file::SourceSet;
 use wiz_syntax_parser::parser;
 use wiz_syntax_parser::parser::wiz::read_package_from_path;
 use wizc_cli::{BuildType, Config, ConfigExt};
@@ -131,7 +130,7 @@ fn run_compiler(session: &mut Session) -> Result<()> {
 
     let std_mlir = std_hlir
         .into_iter()
-        .map(|w| hlir2mlir(w, &[], &arena, &config, false))
+        .map(|w| hlir2mlir(w, &[], &arena, &session, false))
         .collect::<Result<Vec<_>>>()?;
 
     fs::create_dir_all(&mlir_out_dir)?;
@@ -142,7 +141,7 @@ fn run_compiler(session: &mut Session) -> Result<()> {
         })?;
     }
 
-    let mlfile = hlir2mlir(hlfiles, &std_mlir, &arena, &config, true)?;
+    let mlfile = hlir2mlir(hlfiles, &std_mlir, &arena, &session, true)?;
 
     session.timer(&format!("write mlir `{}`", mlfile.name), |_| {
         let mut f = fs::File::create(mlir_out_dir.join(&mlfile.name))?;
