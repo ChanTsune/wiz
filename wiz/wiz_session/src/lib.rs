@@ -61,7 +61,12 @@ impl Session {
     }
 
     pub fn local_spell_book_root(&self) -> &Path {
-        self.config.input()
+        let p = self.config.input();
+        if p.is_dir() {
+            p
+        } else {
+            p.parent().unwrap()
+        }
     }
 }
 
