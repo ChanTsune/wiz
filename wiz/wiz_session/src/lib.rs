@@ -1,7 +1,8 @@
 use std::collections::BTreeMap;
 use std::error::Error;
+use std::path::Path;
 use std::time::{Duration, Instant};
-use wizc_cli::Config;
+use wizc_cli::{Config, ConfigExt};
 
 #[derive(Debug, Default)]
 pub struct Session {
@@ -57,6 +58,10 @@ impl Session {
 
     pub fn has_error(&self) -> bool {
         !self.errors.is_empty()
+    }
+
+    pub fn local_spell_book_root(&self) -> &Path {
+        self.config.input()
     }
 }
 
