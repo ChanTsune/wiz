@@ -42,7 +42,7 @@ pub fn parse_from_string<P: AsRef<Path>>(
     }
 }
 
-fn parse_from_file_path<P: AsRef<Path>>(path: P) -> Result<WizFile> {
+pub fn parse_from_file_path<P: AsRef<Path>>(path: P) -> Result<WizFile> {
     let s = read_to_string(&path)?;
     parse_from_string(Some(&path), &*s, path.as_ref().to_str())
 }
