@@ -1,3 +1,6 @@
+mod parse;
+
+pub use crate::parse::ParseSession;
 use std::collections::BTreeMap;
 use std::error::Error;
 use std::path::Path;
@@ -7,6 +10,7 @@ use wizc_cli::{Config, ConfigExt};
 #[derive(Debug, Default)]
 pub struct Session {
     pub config: Config,
+    pub parse_session: ParseSession,
     timers: BTreeMap<String, (Instant, Option<Duration>)>,
     errors: Vec<Box<dyn Error>>,
 }
@@ -15,6 +19,7 @@ impl Session {
     pub fn new(config: Config) -> Self {
         Self {
             config,
+            parse_session: Default::default(),
             timers: Default::default(),
             errors: Default::default(),
         }
