@@ -19,12 +19,18 @@ pub mod operators;
 pub mod statement;
 pub mod type_;
 
-pub fn parse_from_string(src: &str, name: Option<&str>) -> Result<WizFile> {
+pub fn parse_from_string<P: AsRef<Path>>(
+    src_path: Option<P>,
+    src: &str,
+    name: Option<&str>,
+) -> Result<WizFile> {
     match file(Span::from(src)) {
         Ok((s, f)) => {
             if !s.is_empty() {
                 let location = Location::new(s.location_offset(), s.location_line());
-                Err(ParseError::from(get_error_location_src(src, &location)))
+                Err(ParseError::from(get_error_location_src(
+                    src_path, src, &location,
+                )))
             } else {
                 Ok(WizFile {
                     name: name.unwrap_or_default().to_string(),
@@ -38,7 +44,7 @@ pub fn parse_from_string(src: &str, name: Option<&str>) -> Result<WizFile> {
 
 pub fn parse_from_file_path<P: AsRef<Path>>(path: P) -> Result<WizFile> {
     let s = read_to_string(&path)?;
-    parse_from_string(&*s, path.as_ref().to_str())
+    parse_from_string(Some(&path), &*s, path.as_ref().to_str())
 }
 
 pub fn read_package_from_path(path: &Path, name: Option<&str>) -> Result<SourceSet> {
@@ -59,14 +65,21 @@ pub fn read_package_from_path(path: &Path, name: Option<&str>) -> Result<SourceS
     })
 }
 
-fn get_error_location_src(src: &str, location: &Location) -> String {
+fn get_error_location_src<P: AsRef<Path>>(
+    src_path: Option<P>,
+    src: &str,
+    location: &Location,
+) -> String {
     let line_offset = get_line_offset(src, location);
     let error_line = src
         .lines()
         .nth(location.line() as usize - 1)
         .unwrap_or_default();
     format!(
-        "{} | {}\n{}^",
+        "{}:L{} | {}\n{}^",
+        src_path
+            .map(|it| it.as_ref().display().to_string())
+            .unwrap_or(String::from("Unknown source")),
         location.line(),
         error_line,
         " ".repeat(location.line().to_string().len() + 3 + line_offset)
@@ -79,9 +92,9 @@ mod tests {
 
     #[test]
     fn test_parse_from_string() {
-        let result = parse_from_string("unknown_token", None);
+        let result = parse_from_string::<&str>(None, "unknown_token", None);
         if let Err(e) = result {
-            assert_eq!(e.to_string(), "1 | unknown_token\n    ^");
+            assert_eq!(e.to_string(), "Unknown source:L1 | unknown_token\n    ^");
         } else {
             unreachable!();
         }
