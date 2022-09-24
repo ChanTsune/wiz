@@ -6,7 +6,7 @@ use std::error::Error as StdError;
 pub struct Error(String);
 
 impl Error {
-    pub const fn new<T: ToString>(message: T) -> Self {
+    pub fn new<T: ToString>(message: T) -> Self {
         Self(message.to_string())
     }
 }
