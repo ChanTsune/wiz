@@ -13,6 +13,7 @@ ansi_term = "0.12"
 toml = "0.5.8"
 serde = { version = "1.0.136", features = ["derive"]}
 wizc_cli = { path = "../wizc_cli" }
+wiz_result = { path = "../wiz_result" }
 wiz_utils = { path = "../wiz_utils" }
 
 [dev-dependencies]

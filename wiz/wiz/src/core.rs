@@ -13,7 +13,7 @@ pub mod error;
 pub mod manifest;
 pub mod workspace;
 
-pub(crate) type Result<T> = std::result::Result<T, Box<dyn Error>>;
+pub(crate) type Result<T> = wiz_result::Result<T>;
 
 pub(crate) trait Cmd {
     const NAME: &'static str;
