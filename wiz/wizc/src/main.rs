@@ -4,7 +4,6 @@ use crate::high_level_ir::wlib::WLib;
 use crate::high_level_ir::{ast2hlir, AstLowering};
 use crate::llvm_ir::codegen::CodeGen;
 use crate::middle_level_ir::hlir2mlir;
-use crate::result::Result;
 use inkwell::context::Context;
 use std::io::Write;
 use std::iter::FromIterator;
@@ -13,6 +12,7 @@ use std::path::PathBuf;
 use std::process::Command;
 use std::{env, fs};
 use wiz_arena::Arena;
+use wiz_result::Result;
 use wiz_session::Session;
 use wiz_syntax_parser::parser;
 use wiz_syntax_parser::parser::wiz::read_package_from_path;
@@ -21,7 +21,6 @@ use wizc_cli::{BuildType, Config, ConfigExt};
 mod high_level_ir;
 mod llvm_ir;
 mod middle_level_ir;
-mod result;
 mod utils;
 
 fn get_builtin_find_path() -> PathBuf {
