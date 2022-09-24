@@ -1,5 +1,4 @@
 use crate::middle_level_ir::context::HLIR2MLIRContext;
-use crate::result::Result;
 use std::collections::HashMap;
 use wiz_arena::{Arena, DeclarationItem, DeclarationItemKind};
 use wiz_constants as constants;
@@ -30,6 +29,7 @@ use wiz_mir::ml_decl::{MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, ML
 use wiz_mir::ml_file::MLFile;
 use wiz_mir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
 use wiz_mir::statement::{MLAssignmentStmt, MLLoopStmt, MLReturn, MLStmt};
+use wiz_result::Result;
 use wiz_session::Session;
 use wizc_cli::{BuildType, ConfigExt};
 
