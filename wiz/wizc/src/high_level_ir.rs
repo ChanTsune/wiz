@@ -1,6 +1,5 @@
 use crate::high_level_ir::node_id::TypedModuleId;
 use crate::high_level_ir::type_resolver::TypeResolver;
-use crate::result::Result;
 use crate::utils::path_string_to_page_name;
 use std::collections::HashMap;
 use wiz_arena::{Arena, DeclarationId};
@@ -25,6 +24,7 @@ use wiz_hir::typed_type::{
 };
 use wiz_hir::typed_type_constraint::TypedTypeConstraint;
 use wiz_hir::typed_use::TypedUse;
+use wiz_result::Result;
 use wiz_session::Session;
 use wiz_syntax::syntax::annotation::AnnotationsSyntax;
 use wiz_syntax::syntax::block::BlockSyntax;

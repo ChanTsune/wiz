@@ -8,6 +8,7 @@ members = [
     "wiz_hir",
     "wiz_lexar",
     "wiz_mir",
+    "wiz_result",
     "wiz_session",
     "wiz_span",
     "wiz_syntax",
