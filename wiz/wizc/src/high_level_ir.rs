@@ -1,6 +1,5 @@
 use crate::high_level_ir::node_id::TypedModuleId;
 use crate::high_level_ir::type_resolver::TypeResolver;
-use crate::result::Result;
 use crate::utils::path_string_to_page_name;
 use std::collections::HashMap;
 use wiz_arena::{Arena, DeclarationId};
@@ -25,6 +24,7 @@ use wiz_hir::typed_type::{
 };
 use wiz_hir::typed_type_constraint::TypedTypeConstraint;
 use wiz_hir::typed_use::TypedUse;
+use wiz_result::Result;
 use wiz_session::Session;
 use wiz_syntax::syntax::annotation::AnnotationsSyntax;
 use wiz_syntax::syntax::block::BlockSyntax;
@@ -169,7 +169,7 @@ impl<'a> AstLowering<'a> {
         })
     }
 
-    fn annotations(&self, a: &Option<AnnotationsSyntax>) -> TypedAnnotations {
+    fn annotations(&mut self, a: &Option<AnnotationsSyntax>) -> TypedAnnotations {
         match a {
             None => TypedAnnotations::default(),
             Some(a) => TypedAnnotations::from(
@@ -181,7 +181,7 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    fn stmt(&self, s: Stmt) -> TypedStmt {
+    fn stmt(&mut self, s: Stmt) -> TypedStmt {
         match s {
             Stmt::Decl(decl) => TypedStmt::Decl(self.decl(decl.kind, decl.annotations)),
             Stmt::Expr(expr) => TypedStmt::Expr(self.expr(expr)),
@@ -190,7 +190,7 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    fn assignment(&self, a: AssignmentStmt) -> TypedAssignmentStmt {
+    fn assignment(&mut self, a: AssignmentStmt) -> TypedAssignmentStmt {
         match a {
             AssignmentStmt::Assignment(a) => TypedAssignmentStmt::Assignment(TypedAssignment {
                 target: self.expr(a.target),
@@ -213,7 +213,7 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    fn loop_stmt(&self, l: LoopStmt) -> TypedLoopStmt {
+    fn loop_stmt(&mut self, l: LoopStmt) -> TypedLoopStmt {
         match l {
             LoopStmt::While(WhileLoopSyntax {
                 while_keyword: _,
@@ -237,7 +237,7 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    fn decl(&self, d: DeclKind, annotation: Option<AnnotationsSyntax>) -> TypedDecl {
+    fn decl(&mut self, d: DeclKind, annotation: Option<AnnotationsSyntax>) -> TypedDecl {
         TypedDecl {
             annotations: self.annotations(&annotation),
             package: Package::from(&self.arena.resolve_fully_qualified_name(&self.namespace_id)),
@@ -246,14 +246,8 @@ impl<'a> AstLowering<'a> {
                 DeclKind::Var(v) => TypedDeclKind::Var(self.var_syntax(v)),
                 DeclKind::Fun(f) => TypedDeclKind::Fun(self.fun_syntax(f)),
                 DeclKind::Struct(s) => match &*s.struct_keyword.token() {
-                    "struct" => {
-                        let struct_ = self.struct_syntax(s);
-                        TypedDeclKind::Struct(struct_)
-                    }
-                    "protocol" => {
-                        let protocol = self.protocol_syntax(s);
-                        TypedDeclKind::Protocol(protocol)
-                    }
+                    "struct" => TypedDeclKind::Struct(self.struct_syntax(s)),
+                    "protocol" => TypedDeclKind::Protocol(self.protocol_syntax(s)),
                     kw => panic!("Unknown keyword `{}`", kw),
                 },
                 DeclKind::ExternC { .. } => todo!(),
@@ -264,7 +258,7 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    pub fn var_syntax(&self, v: VarSyntax) -> TypedVar {
+    pub fn var_syntax(&mut self, v: VarSyntax) -> TypedVar {
         let expr = self.expr(v.value);
         TypedVar {
             is_mut: v.mutability_keyword.token() == "var",
@@ -274,7 +268,7 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    pub fn arg_def(&self, a: ArgDef) -> TypedArgDef {
+    pub fn arg_def(&mut self, a: ArgDef) -> TypedArgDef {
         match a {
             ArgDef::Value(a) => TypedArgDef {
                 label: match a.label {
@@ -299,14 +293,14 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    pub fn fun_body(&self, body: FunBody) -> TypedFunBody {
+    pub fn fun_body(&mut self, body: FunBody) -> TypedFunBody {
         match body {
             FunBody::Block(block) => TypedFunBody::Block(self.block(block)),
             FunBody::Expr(expr) => TypedFunBody::Expr(self.expr(expr.expr)),
         }
     }
 
-    pub fn fun_syntax(&self, f: FunSyntax) -> TypedFun {
+    pub fn fun_syntax(&mut self, f: FunSyntax) -> TypedFun {
         let FunSyntax {
             fun_keyword: _,
             name,
@@ -393,7 +387,7 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    pub fn type_(&self, tn: TypeName) -> TypedType {
+    pub fn type_(&mut self, tn: TypeName) -> TypedType {
         match tn {
             TypeName::Simple(stn) => {
                 if stn.name.token() == "Self" {
@@ -448,13 +442,13 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    fn type_param(&self, tp: TypeParam) -> TypedTypeParam {
+    fn type_param(&mut self, tp: TypeParam) -> TypedTypeParam {
         TypedTypeParam {
             name: tp.name.token(),
         }
     }
 
-    pub fn struct_syntax(&self, s: StructSyntax) -> TypedStruct {
+    pub fn struct_syntax(&mut self, s: StructSyntax) -> TypedStruct {
         let mut stored_properties: Vec<TypedStoredProperty> = vec![];
         let mut computed_properties: Vec<TypedComputedProperty> = vec![];
         let mut member_functions: Vec<TypedFun> = vec![];
@@ -490,14 +484,14 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    pub fn stored_property_syntax(&self, p: StoredPropertySyntax) -> TypedStoredProperty {
+    pub fn stored_property_syntax(&mut self, p: StoredPropertySyntax) -> TypedStoredProperty {
         TypedStoredProperty {
             name: p.name.token(),
             type_: self.type_(p.type_.type_),
         }
     }
 
-    pub fn member_function(&self, member_function: FunSyntax) -> TypedFun {
+    pub fn member_function(&mut self, member_function: FunSyntax) -> TypedFun {
         let FunSyntax {
             fun_keyword: _,
             name,
@@ -531,7 +525,7 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    pub fn use_syntax(&self, u: UseSyntax, annotations: Option<AnnotationsSyntax>) -> TypedUse {
+    pub fn use_syntax(&mut self, u: UseSyntax, annotations: Option<AnnotationsSyntax>) -> TypedUse {
         let mut names: Vec<_> = u
             .package_name
             .map(|pn| pn.names.into_iter().map(|i| i.name.token()).collect())
@@ -544,7 +538,7 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    fn extension_syntax(&self, e: ExtensionSyntax) -> TypedExtension {
+    fn extension_syntax(&mut self, e: ExtensionSyntax) -> TypedExtension {
         let mut computed_properties = vec![];
         let mut member_functions = vec![];
         for prop in e.body.properties {
@@ -565,7 +559,7 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    fn protocol_syntax(&self, p: StructSyntax) -> TypedProtocol {
+    fn protocol_syntax(&mut self, p: StructSyntax) -> TypedProtocol {
         let mut computed_properties: Vec<TypedComputedProperty> = vec![];
         let mut member_functions: Vec<TypedFun> = vec![];
         for p in p.body.properties {
@@ -595,7 +589,7 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    pub fn expr(&self, e: Expr) -> TypedExpr {
+    pub fn expr(&mut self, e: Expr) -> TypedExpr {
         match e {
             Expr::Name(n) => TypedExpr::new(TypedExprKind::Name(self.name_syntax(n)), None),
             Expr::Literal(literal) => {
@@ -625,7 +619,7 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    pub fn literal_syntax(&self, literal: LiteralSyntax) -> TypedLiteralKind {
+    pub fn literal_syntax(&mut self, literal: LiteralSyntax) -> TypedLiteralKind {
         match literal {
             LiteralSyntax::Integer(value) => TypedLiteralKind::Integer(value.token()),
             LiteralSyntax::FloatingPoint(value) => TypedLiteralKind::FloatingPoint(value.token()),
@@ -639,7 +633,7 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    pub fn name_syntax(&self, n: NameExprSyntax) -> TypedName {
+    pub fn name_syntax(&mut self, n: NameExprSyntax) -> TypedName {
         let NameExprSyntax {
             name_space,
             name,
@@ -666,7 +660,7 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    pub fn binary_operation_syntax(&self, b: BinaryOperationSyntax) -> TypedBinOp {
+    pub fn binary_operation_syntax(&mut self, b: BinaryOperationSyntax) -> TypedBinOp {
         let BinaryOperationSyntax {
             left,
             operator: kind,
@@ -694,7 +688,7 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    pub fn unary_operation_syntax(&self, u: UnaryOperationSyntax) -> TypedUnaryOp {
+    pub fn unary_operation_syntax(&mut self, u: UnaryOperationSyntax) -> TypedUnaryOp {
         match u {
             UnaryOperationSyntax::Prefix(p) => {
                 TypedUnaryOp::Prefix(self.prefix_unary_operation_syntax(p))
@@ -706,7 +700,7 @@ impl<'a> AstLowering<'a> {
     }
 
     pub fn prefix_unary_operation_syntax(
-        &self,
+        &mut self,
         p: PrefixUnaryOperationSyntax,
     ) -> TypedPrefixUnaryOp {
         let PrefixUnaryOperationSyntax { operator, target } = p;
@@ -725,7 +719,7 @@ impl<'a> AstLowering<'a> {
     }
 
     pub fn postfix_unary_operation_syntax(
-        &self,
+        &mut self,
         p: PostfixUnaryOperationSyntax,
     ) -> TypedPostfixUnaryOp {
         let PostfixUnaryOperationSyntax { target, operator } = p;
@@ -739,7 +733,7 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    pub fn array_syntax(&self, a: ArraySyntax) -> TypedArray {
+    pub fn array_syntax(&mut self, a: ArraySyntax) -> TypedArray {
         TypedArray {
             elements: a
                 .elements
@@ -749,7 +743,7 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    pub fn subscript_syntax(&self, s: SubscriptSyntax) -> TypedSubscript {
+    pub fn subscript_syntax(&mut self, s: SubscriptSyntax) -> TypedSubscript {
         let target = Box::new(self.expr(*s.target));
         let indexes: Vec<_> = s
             .idx_or_keys
@@ -760,7 +754,7 @@ impl<'a> AstLowering<'a> {
         TypedSubscript { target, indexes }
     }
 
-    pub fn member_syntax(&self, m: MemberSyntax) -> TypedInstanceMember {
+    pub fn member_syntax(&mut self, m: MemberSyntax) -> TypedInstanceMember {
         let MemberSyntax {
             target,
             name,
@@ -774,7 +768,7 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    pub fn call_syntax(&self, c: CallExprSyntax) -> TypedCall {
+    pub fn call_syntax(&mut self, c: CallExprSyntax) -> TypedCall {
         let CallExprSyntax {
             target,
             args,
@@ -809,7 +803,7 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    pub fn if_syntax(&self, i: IfExprSyntax) -> TypedIf {
+    pub fn if_syntax(&mut self, i: IfExprSyntax) -> TypedIf {
         let IfExprSyntax {
             if_keyword: _,
             condition,
@@ -824,7 +818,7 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    pub fn lambda_syntax(&self, l: LambdaSyntax) -> TypedLambda {
+    pub fn lambda_syntax(&mut self, l: LambdaSyntax) -> TypedLambda {
         todo!("{:?}", l);
         let LambdaSyntax {
             open: _,
@@ -837,12 +831,12 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    pub fn return_syntax(&self, r: ReturnSyntax) -> TypedReturn {
+    pub fn return_syntax(&mut self, r: ReturnSyntax) -> TypedReturn {
         let value = r.value.map(|v| Box::new(self.expr(*v)));
         TypedReturn { value }
     }
 
-    pub fn type_cast(&self, t: TypeCastSyntax) -> TypedTypeCast {
+    pub fn type_cast(&mut self, t: TypeCastSyntax) -> TypedTypeCast {
         TypedTypeCast {
             target: Box::new(self.expr(*t.target)),
             is_safe: t.operator.token().ends_with('?'),
@@ -850,7 +844,7 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    pub fn block(&self, block: BlockSyntax) -> TypedBlock {
+    pub fn block(&mut self, block: BlockSyntax) -> TypedBlock {
         TypedBlock {
             body: block.body.into_iter().map(|s| self.stmt(s)).collect(),
         }

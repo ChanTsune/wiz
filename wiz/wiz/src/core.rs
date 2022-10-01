@@ -3,7 +3,6 @@ use crate::core::manifest::{Dependencies, Dependency, Manifest, PackageInfo};
 use crate::core::workspace::{construct_workspace_from, Workspace};
 use clap::ArgMatches;
 use std::env;
-use std::error::Error;
 use std::fs::{create_dir_all, File};
 use std::io::{BufWriter, Write};
 use std::path::{Path, PathBuf};
@@ -13,7 +12,7 @@ pub mod error;
 pub mod manifest;
 pub mod workspace;
 
-pub(crate) type Result<T> = std::result::Result<T, Box<dyn Error>>;
+pub(crate) type Result<T> = wiz_result::Result<T>;
 
 pub(crate) trait Cmd {
     const NAME: &'static str;

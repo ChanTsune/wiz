@@ -1,5 +1,4 @@
 use crate::middle_level_ir::context::HLIR2MLIRContext;
-use crate::result::Result;
 use std::collections::HashMap;
 use wiz_arena::{Arena, DeclarationItem, DeclarationItemKind};
 use wiz_constants as constants;
@@ -30,37 +29,39 @@ use wiz_mir::ml_decl::{MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, ML
 use wiz_mir::ml_file::MLFile;
 use wiz_mir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
 use wiz_mir::statement::{MLAssignmentStmt, MLLoopStmt, MLReturn, MLStmt};
-use wizc_cli::{BuildType, Config, ConfigExt};
+use wiz_result::Result;
+use wiz_session::Session;
+use wizc_cli::{BuildType, ConfigExt};
 
 mod context;
 #[cfg(test)]
 mod tests;
 
-pub fn hlir2mlir<'a, 'c>(
+pub fn hlir2mlir<'a>(
     target: TypedFile,
     dependencies: &'a [MLFile],
     arena: &'a Arena,
-    config: &'a Config<'c>,
+    session: &'a Session,
     generate_test_harness_if_needed: bool,
 ) -> Result<MLFile> {
-    let mut converter = HLIR2MLIR::new(config, arena);
+    let mut converter = HLIR2MLIR::new(session, arena);
     converter.load_dependencies(dependencies)?;
     Ok(converter.convert_from_file(target, generate_test_harness_if_needed))
 }
 
 #[derive(Debug)]
-pub struct HLIR2MLIR<'a, 'c> {
-    config: &'a Config<'c>,
+pub struct HLIR2MLIR<'a> {
+    session: &'a Session,
     arena: &'a Arena,
     context: HLIR2MLIRContext,
     module: MLIRModule,
     tests: Vec<MLFun>,
 }
 
-impl<'a, 'c> HLIR2MLIR<'a, 'c> {
-    pub fn new(config: &'a Config<'c>, arena: &'a Arena) -> Self {
+impl<'a> HLIR2MLIR<'a> {
+    pub fn new(session: &'a Session, arena: &'a Arena) -> Self {
         Self {
-            config,
+            session,
             arena,
             context: Default::default(),
             module: Default::default(),
@@ -115,7 +116,7 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
     ) -> MLFile {
         let name = f.name.clone();
         self.file(f).unwrap();
-        if generate_test_harness_if_needed && BuildType::Test == self.config.type_() {
+        if generate_test_harness_if_needed && BuildType::Test == self.session.config.type_() {
             let test_harness = self.generate_test_harness();
             self.module._add_function(FunBuilder::from(test_harness));
             for test in self.tests.clone() {
@@ -271,7 +272,8 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
                 self.module.add_global_var(v);
             }
             TypedDeclKind::Fun(f) => {
-                if BuildType::Test == self.config.type_() && annotations.has_annotate(TEST) {
+                if BuildType::Test == self.session.config.type_() && annotations.has_annotate(TEST)
+                {
                     if !f.is_generic() {
                         let f = self.fun(f, annotations, package, None);
                         self.tests.push(f);
@@ -347,7 +349,9 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
         } = f;
         let mangled_name = if annotations.has_annotate(NO_MANGLE) {
             name
-        } else if annotations.has_annotate(ENTRY) && self.config.type_() == BuildType::Binary {
+        } else if annotations.has_annotate(ENTRY)
+            && self.session.config.type_() == BuildType::Binary
+        {
             String::from("main")
         } else {
             let package_mangled_name = self.package_name_mangling_(&package, &name);
@@ -913,7 +917,9 @@ impl<'a, 'c> HLIR2MLIR<'a, 'c> {
     }
 
     fn package_name_mangling_(&self, package: &Package, name: &str) -> String {
-        if package.is_global() || (name == "main" && self.config.type_() == BuildType::Binary) {
+        if package.is_global()
+            || (name == "main" && self.session.config.type_() == BuildType::Binary)
+        {
             String::from(name)
         } else {
             package.to_string() + "::" + name
