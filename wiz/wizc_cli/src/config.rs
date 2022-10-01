@@ -167,24 +167,24 @@ impl ConfigBuilder for Config {
 impl<'ctx> From<&'ctx ArgMatches> for Config {
     fn from(matches: &'ctx ArgMatches) -> Self {
         Self {
-            input: matches.value_of("input").unwrap().to_owned(),
-            name: matches.value_of("name").map(ToOwned::to_owned),
-            type_: matches.value_of("type").map(BuildType::from),
-            output: matches.value_of("output").map(ToOwned::to_owned),
-            out_dir: matches.value_of("out-dir").map(ToOwned::to_owned),
+            input: matches.get_one::<&str>("input").unwrap().to_string(),
+            name: matches.get_one::<&str>("name").map(ToString::to_string),
+            type_: matches.get_one::<&str>("type").map(|i|BuildType::from(*i)),
+            output: matches.get_one::<&str>("output").map(ToString::to_string),
+            out_dir: matches.get_one::<&str>("out-dir").map(ToString::to_string),
             paths: matches
-                .values_of("path")
-                .unwrap_or_default()
+                .get_many::<&str>("path")
+                .unwrap()
                 .map(ToString::to_string)
                 .collect(),
             l: None,
-            target_triple: matches.value_of("target-triple").map(ToOwned::to_owned),
+            target_triple: matches.get_one::<&str>("target-triple").map(ToString::to_string),
             libraries: matches
-                .values_of("library")
-                .unwrap_or_default()
+                .get_many::<&str>("library")
+                .unwrap()
                 .map(ToString::to_string)
                 .collect(),
-            emit: matches.value_of("emit").map(ToOwned::to_owned),
+            emit: matches.get_one::<&str>("emit").map(ToString::to_string),
         }
     }
 }
