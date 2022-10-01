@@ -1,7 +1,7 @@
 mod config;
 
-use clap::{Arg, Command};
 use clap::builder::PossibleValuesParser;
+use clap::{Arg, Command};
 pub use config::build_type::BuildType;
 pub use config::{Config, ConfigBuilder, ConfigExt};
 
@@ -17,10 +17,7 @@ pub fn app(name: &'static str) -> Command {
         .arg(short("output", 'o').num_args(1))
         .arg(long("out-dir").num_args(1))
         .arg(long("target-triple").num_args(1))
-        .arg(
-            short("path", 'p')
-                .num_args(0..),
-        )
+        .arg(short("path", 'p').num_args(0..))
         .arg(short("L", 'L').num_args(0..))
         .arg(long("library").num_args(0..))
         .arg(
