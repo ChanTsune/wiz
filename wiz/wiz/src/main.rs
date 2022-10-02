@@ -15,24 +15,24 @@ use ansi_term::Color;
 use clap::{crate_version, Arg, Command};
 use std::process::exit;
 
-fn arg_target_triple() -> Arg<'static> {
+fn arg_target_triple() -> Arg {
     Arg::new("target-triple")
         .long("target-triple")
-        .takes_value(true)
+        .num_args(1)
         .help("Build target platform")
 }
 
-fn arg_manifest_path() -> Arg<'static> {
+fn arg_manifest_path() -> Arg {
     Arg::new("manifest-path")
         .long("manifest-path")
-        .takes_value(true)
+        .num_args(1)
         .help("Path to the manifest file")
 }
 
-fn arg_std() -> Arg<'static> {
+fn arg_std() -> Arg {
     Arg::new("std")
         .long("std")
-        .takes_value(true)
+        .num_args(1)
         .help("Use another std library")
 }
 

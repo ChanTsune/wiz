@@ -52,11 +52,11 @@ impl<'ops> Options<'ops> {
 impl<'ops> From<&'ops ArgMatches> for Options<'ops> {
     fn from(args: &'ops ArgMatches) -> Self {
         Self::new(
-            args.value_of("manifest-path"),
-            args.value_of("std"),
-            args.value_of("target-dir"),
-            args.value_of("target-triple"),
-            args.is_present("tests"),
+            args.get_one::<&str>("manifest-path").copied(),
+            args.get_one::<&str>("std").copied(),
+            args.get_one::<&str>("target-dir").copied(),
+            args.get_one::<&str>("target-triple").copied(),
+            args.get_flag("tests"),
         )
     }
 }

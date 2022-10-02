@@ -9,11 +9,11 @@ pub(crate) const COMMAND_NAME: &str = "new";
 
 pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<()> {
     let mut current = current_dir()?;
-    let project_dir = options.value_of("path").unwrap();
+    let project_dir = options.get_one::<&str>("path").copied().unwrap();
     current.push(project_dir);
     create_dir_all(&current)?;
     create_project(&current, project_dir)?;
-    if !options.is_present("quite") {
+    if !options.get_flag("quite") {
         println!(
             "{} project at {}",
             Color::Green.bold().paint("Created"),

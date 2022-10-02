@@ -6,13 +6,13 @@ use clap::ArgMatches;
 pub(crate) const COMMAND_NAME: &str = "check";
 
 pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<()> {
-    let manifest_path = options.value_of("manifest-path");
+    let manifest_path = options.get_one::<&str>("manifest-path").copied();
 
-    let another_std = options.value_of("std");
+    let another_std = options.get_one::<&str>("std").copied();
 
     let ws = load_project(manifest_path)?;
 
-    if options.is_present("manifest") {
+    if options.get_flag("manifest") {
         println!("{:?}", ws.get_manifest()?);
     };
     let resolved_dependencies =

@@ -6,9 +6,9 @@ pub(crate) const COMMAND_NAME: &str = "run";
 
 pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<()> {
     let build_options = build::Options::new(
-        options.value_of("manifest-path"),
-        options.value_of("std"),
-        options.value_of("target-dir"),
+        options.get_one::<&str>("manifest-path").copied(),
+        options.get_one::<&str>("std").copied(),
+        options.get_one::<&str>("target-dir").copied(),
         None,
         false,
     );
