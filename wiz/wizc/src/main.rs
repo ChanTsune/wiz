@@ -177,11 +177,7 @@ fn run_compiler(session: &mut Session) -> Result<()> {
             _ => codegen.write_as_object(&out_path),
         }?;
     } else {
-        let output = if let Some(output) = output {
-            String::from(output)
-        } else {
-            String::from(&mlfile.name)
-        };
+        let output = output.unwrap_or_else(|| String::from(&mlfile.name));
         let mut ir_file = out_dir.join(&output);
         ir_file.set_extension("ll");
         codegen.print_to_file(&ir_file)?;
