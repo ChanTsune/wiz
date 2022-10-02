@@ -26,7 +26,7 @@ pub fn parse_from_string<P: AsRef<Path>>(
     src: &str,
     name: Option<&str>,
 ) -> Result<WizFile> {
-    match file(Span::from(src)) {
+    match file(session, Span::from(src)) {
         Ok((s, f)) => {
             if !s.is_empty() {
                 let location = Location::new(s.location_offset(), s.location_line());
