@@ -9,12 +9,13 @@ use wiz_mir::ml_decl::{MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, ML
 use wiz_mir::ml_file::MLFile;
 use wiz_mir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
 use wiz_mir::statement::{MLReturn, MLStmt};
-use wiz_session::Session;
+use wiz_session::{ParseSession, Session};
 use wiz_syntax::syntax::file::SourceSet;
 use wiz_syntax_parser::parser::wiz::parse_from_string;
 
 fn check(source: &str, except: MLFile) {
-    let ast = parse_from_string::<&str>(None, source, Some(&except.name)).unwrap();
+    let session = ParseSession::default();
+    let ast = parse_from_string::<&str>(&session, None, source, Some(&except.name)).unwrap();
 
     let mut session = Session::default();
 

@@ -57,8 +57,12 @@ fn run_compiler(session: &mut Session) -> Result<()> {
 
     let mlir_out_dir = out_dir.join("mlir");
 
-    let input_source = session.timer::<Result<_>, _>("parse files", |_| {
-        Ok(read_package_from_path(input, config.name().as_deref())?)
+    let input_source = session.timer::<Result<_>, _>("parse files", |session| {
+        Ok(read_package_from_path(
+            &session.parse_session,
+            input,
+            config.name().as_deref(),
+        )?)
     })?;
 
     let mut arena = Arena::default();
@@ -85,7 +89,7 @@ fn run_compiler(session: &mut Session) -> Result<()> {
 
             let source_sets = lib_paths
                 .iter()
-                .map(|(p, name)| read_package_from_path(p, Some(**name)))
+                .map(|(p, name)| read_package_from_path(&session.parse_session, p, Some(**name)))
                 .collect::<parser::result::Result<Vec<_>>>()?;
             Ok(source_sets
                 .into_iter()

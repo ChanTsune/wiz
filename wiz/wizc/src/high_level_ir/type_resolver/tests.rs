@@ -16,12 +16,13 @@ use wiz_hir::typed_type::{
     Package, TypedArgType, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType,
     TypedValueType,
 };
-use wiz_session::Session;
+use wiz_session::{ParseSession, Session};
 use wiz_syntax::syntax::file::SourceSet;
 use wiz_syntax_parser::parser::wiz::parse_from_string;
 
 fn check(source: &str, typed_file: TypedSpellBook) {
-    let ast = parse_from_string::<&str>(None, source, Some(&typed_file.name)).unwrap();
+    let session = ParseSession::default();
+    let ast = parse_from_string::<&str>(&session, None, source, Some(&typed_file.name)).unwrap();
 
     let mut session = Session::default();
 

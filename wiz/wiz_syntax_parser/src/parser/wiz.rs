@@ -5,6 +5,7 @@ use crate::parser::Span;
 use std::fs;
 use std::fs::read_to_string;
 use std::path::Path;
+use wiz_session::ParseSession;
 use wiz_span::{get_line_offset, Location};
 use wiz_syntax::syntax::file::{SourceSet, WizFile};
 
@@ -20,6 +21,7 @@ pub mod statement;
 pub mod type_;
 
 pub fn parse_from_string<P: AsRef<Path>>(
+    session: &ParseSession,
     src_path: Option<P>,
     src: &str,
     name: Option<&str>,
@@ -42,12 +44,16 @@ pub fn parse_from_string<P: AsRef<Path>>(
     }
 }
 
-pub fn parse_from_file_path<P: AsRef<Path>>(path: P) -> Result<WizFile> {
+pub fn parse_from_file_path<P: AsRef<Path>>(session: &ParseSession, path: P) -> Result<WizFile> {
     let s = read_to_string(&path)?;
-    parse_from_string(Some(&path), &*s, path.as_ref().to_str())
+    parse_from_string(session, Some(&path), &*s, path.as_ref().to_str())
 }
 
-pub fn read_package_from_path(path: &Path, name: Option<&str>) -> Result<SourceSet> {
+pub fn read_package_from_path(
+    session: &ParseSession,
+    path: &Path,
+    name: Option<&str>,
+) -> Result<SourceSet> {
     Ok(if path.is_dir() {
         let dir = fs::read_dir(path)?;
         SourceSet::Dir {
@@ -57,11 +63,11 @@ pub fn read_package_from_path(path: &Path, name: Option<&str>) -> Result<SourceS
                 .to_string(),
             items: dir
                 .into_iter()
-                .map(|d| read_package_from_path(&*d.unwrap().path(), None))
+                .map(|d| read_package_from_path(session, &*d.unwrap().path(), None))
                 .collect::<Result<_>>()?,
         }
     } else {
-        SourceSet::File(parse_from_file_path(path)?)
+        SourceSet::File(parse_from_file_path(session, path)?)
     })
 }
 
@@ -93,7 +99,8 @@ mod tests {
 
     #[test]
     fn test_parse_from_string() {
-        let result = parse_from_string::<&str>(None, "unknown_token", None);
+        let session = ParseSession::default();
+        let result = parse_from_string::<&str>(&session, None, "unknown_token", None);
         if let Err(e) = result {
             assert_eq!(e.to_string(), "Unknown source:L1 | unknown_token\n    ^");
         } else {
