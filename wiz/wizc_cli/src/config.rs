@@ -169,7 +169,7 @@ impl<'ctx> From<&'ctx ArgMatches> for Config {
         Self {
             input: matches.get_one::<&str>("input").unwrap().to_string(),
             name: matches.get_one::<&str>("name").map(ToString::to_string),
-            type_: matches.get_one::<&str>("type").map(|i|BuildType::from(*i)),
+            type_: matches.get_one::<&str>("type").map(|i| BuildType::from(*i)),
             output: matches.get_one::<&str>("output").map(ToString::to_string),
             out_dir: matches.get_one::<&str>("out-dir").map(ToString::to_string),
             paths: matches
@@ -178,7 +178,9 @@ impl<'ctx> From<&'ctx ArgMatches> for Config {
                 .map(ToString::to_string)
                 .collect(),
             l: None,
-            target_triple: matches.get_one::<&str>("target-triple").map(ToString::to_string),
+            target_triple: matches
+                .get_one::<&str>("target-triple")
+                .map(ToString::to_string),
             libraries: matches
                 .get_many::<&str>("library")
                 .unwrap()
