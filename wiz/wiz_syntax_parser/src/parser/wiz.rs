@@ -77,9 +77,10 @@ fn get_error_location_src<P: AsRef<Path>>(
         .unwrap_or_default();
     format!(
         "{}:L{} | {}\n{}^",
-        src_path
-            .map(|it| it.as_ref().display().to_string())
-            .unwrap_or(String::from("Unknown source")),
+        src_path.map_or_else(
+            || String::from("Unknown source"),
+            |it| it.as_ref().display().to_string(),
+        ),
         location.line(),
         error_line,
         " ".repeat(location.line().to_string().len() + 3 + line_offset)
