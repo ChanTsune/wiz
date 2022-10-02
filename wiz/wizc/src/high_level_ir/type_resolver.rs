@@ -18,7 +18,7 @@ use wiz_hir::typed_expr::{
     TypedInstanceMember, TypedLiteralKind, TypedName, TypedPostfixUnaryOp, TypedPrefixUnaryOp,
     TypedPrefixUnaryOperator, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
-use wiz_hir::typed_file::TypedFile;
+use wiz_hir::typed_file::TypedSpellBook;
 use wiz_hir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedForStmt,
     TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
@@ -46,7 +46,7 @@ impl<'s> TypeResolver<'s> {
             .global_use_name_space(name_space.iter().map(T::to_string).collect())
     }
 
-    pub fn preload_file(&mut self, f: &TypedFile) -> Result<()> {
+    pub fn preload_file(&mut self, f: &TypedSpellBook) -> Result<()> {
         self.context.push_name_space(&f.name);
         for u in f.uses.iter() {
             self.context.use_name_space(u.package.names.clone());
@@ -261,12 +261,12 @@ impl<'s> TypeResolver<'s> {
         Ok(())
     }
 
-    pub fn file(&mut self, f: TypedFile) -> Result<TypedFile> {
+    pub fn file(&mut self, f: TypedSpellBook) -> Result<TypedSpellBook> {
         self.context.push_name_space(&f.name);
         for u in f.uses.iter() {
             self.context.use_name_space(u.package.names.clone());
         }
-        let result = Ok(TypedFile {
+        let result = Ok(TypedSpellBook {
             name: f.name,
             uses: vec![],
             body: f

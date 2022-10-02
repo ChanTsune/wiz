@@ -10,7 +10,7 @@ use wiz_hir::typed_expr::{
     TypedInstanceMember, TypedLiteralKind, TypedName, TypedPrefixUnaryOp, TypedPrefixUnaryOperator,
     TypedReturn, TypedSubscript, TypedUnaryOp,
 };
-use wiz_hir::typed_file::TypedFile;
+use wiz_hir::typed_file::TypedSpellBook;
 use wiz_hir::typed_stmt::{TypedBlock, TypedStmt};
 use wiz_hir::typed_type::{
     Package, TypedArgType, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType,
@@ -20,7 +20,7 @@ use wiz_session::Session;
 use wiz_syntax::syntax::file::SourceSet;
 use wiz_syntax_parser::parser::wiz::parse_from_string;
 
-fn check(source: &str, typed_file: TypedFile) {
+fn check(source: &str, typed_file: TypedSpellBook) {
     let ast = parse_from_string::<&str>(None, source, Some(&typed_file.name)).unwrap();
 
     let mut session = Session::default();
@@ -42,7 +42,7 @@ fn test_empty() {
 
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "test".to_string(),
             uses: vec![],
             body: vec![],
@@ -62,7 +62,7 @@ fn test_unsafe_pointer() {
         ";
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "test".to_string(),
             uses: vec![],
             body: vec![
@@ -160,7 +160,7 @@ fn test_struct_stored_property() {
 
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "test".to_string(),
             uses: vec![],
             body: vec![
@@ -258,7 +258,7 @@ fn test_struct_init() {
 
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "test".to_string(),
             uses: vec![],
             body: vec![
@@ -383,7 +383,7 @@ fn test_struct_member_function() {
 
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "test".to_string(),
             uses: vec![],
             body: vec![TypedDecl {
@@ -483,7 +483,7 @@ fn test_struct_member_function_call() {
 
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "test".to_string(),
             uses: vec![],
             body: vec![
@@ -644,7 +644,7 @@ fn test_expr_function_with_no_arg() {
 
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "test".to_string(),
             uses: vec![],
             body: vec![TypedDecl {
@@ -675,7 +675,7 @@ fn test_expr_function_with_arg() {
 
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "test".to_string(),
             uses: vec![],
             body: vec![TypedDecl {
@@ -717,7 +717,7 @@ fn test_function_call() {
 
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "test".to_string(),
             uses: vec![],
             body: vec![
@@ -785,7 +785,7 @@ fn test_return_integer_literal() {
 
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "test".to_string(),
             uses: vec![],
             body: vec![TypedDecl {
@@ -827,7 +827,7 @@ fn test_return_floating_point_literal() {
 
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "test".to_string(),
             uses: vec![],
             body: vec![TypedDecl {
@@ -869,7 +869,7 @@ fn test_binop() {
 
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "test".to_string(),
             uses: vec![],
             body: vec![TypedDecl {
@@ -916,7 +916,7 @@ fn test_subscript() {
 
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "test".to_string(),
             uses: vec![],
             body: vec![TypedDecl {
@@ -966,7 +966,7 @@ fn test_if_else() {
 
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "test".to_string(),
             uses: vec![],
             body: vec![TypedDecl {
@@ -1053,7 +1053,7 @@ fn test_if() {
 
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "test".to_string(),
             uses: vec![],
             body: vec![TypedDecl {
@@ -1133,7 +1133,7 @@ fn test_reference_dereference() {
     ";
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "test".to_string(),
             uses: vec![],
             body: vec![TypedDecl {
@@ -1243,7 +1243,7 @@ fn test_toplevel_var() {
     ";
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "tests".to_string(),
             uses: vec![],
             body: vec![TypedDecl {
@@ -1277,7 +1277,7 @@ fn test_function_overload_by_arguments() {
 
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "test".to_string(),
             uses: vec![],
             body: vec![
