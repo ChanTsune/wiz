@@ -390,7 +390,7 @@ impl<'a> HLIR2MLIR<'a> {
                 .collect(),
         };
         let value_type = MLValueType::Struct(struct_.name.clone());
-        self.context.add_struct(value_type.clone(), struct_.clone());
+        self.context.add_struct(value_type, struct_.clone());
 
         let members: Vec<MLFun> = member_functions
             .into_iter()
