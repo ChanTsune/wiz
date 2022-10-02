@@ -129,7 +129,7 @@ fn run_compiler(session: &mut Session) -> Result<()> {
 
     let std_mlir = std_hlir
         .into_iter()
-        .map(|w| hlir2mlir(w, &[], &arena, &session, false))
+        .map(|w| hlir2mlir(w, &[], &arena, session, false))
         .collect::<Result<Vec<_>>>()?;
 
     fs::create_dir_all(&mlir_out_dir)?;
@@ -140,7 +140,7 @@ fn run_compiler(session: &mut Session) -> Result<()> {
         })?;
     }
 
-    let mlfile = hlir2mlir(hlfiles, &std_mlir, &arena, &session, true)?;
+    let mlfile = hlir2mlir(hlfiles, &std_mlir, &arena, session, true)?;
 
     session.timer(&format!("write mlir `{}`", mlfile.name), |_| {
         let mut f = fs::File::create(mlir_out_dir.join(&mlfile.name))?;
@@ -177,11 +177,7 @@ fn run_compiler(session: &mut Session) -> Result<()> {
             _ => codegen.write_as_object(&out_path),
         }?;
     } else {
-        let output = if let Some(output) = output {
-            String::from(output)
-        } else {
-            String::from(&mlfile.name)
-        };
+        let output = output.unwrap_or_else(|| String::from(&mlfile.name));
         let mut ir_file = out_dir.join(&output);
         ir_file.set_extension("ll");
         codegen.print_to_file(&ir_file)?;
