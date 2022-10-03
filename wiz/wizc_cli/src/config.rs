@@ -167,26 +167,24 @@ impl ConfigBuilder for Config {
 impl<'ctx> From<&'ctx ArgMatches> for Config {
     fn from(matches: &'ctx ArgMatches) -> Self {
         Self {
-            input: matches.get_one::<&str>("input").unwrap().to_string(),
-            name: matches.get_one::<&str>("name").map(ToString::to_string),
-            type_: matches.get_one::<&str>("type").map(|i| BuildType::from(*i)),
-            output: matches.get_one::<&str>("output").map(ToString::to_string),
-            out_dir: matches.get_one::<&str>("out-dir").map(ToString::to_string),
+            input: matches.get_one::<String>("input").unwrap().to_string(),
+            name: matches.get_one::<String>("name").map(ToString::to_string),
+            type_: matches.get_one::<String>("type").map(|i| BuildType::from(i.as_str())),
+            output: matches.get_one::<String>("output").map(ToString::to_string),
+            out_dir: matches.get_one::<String>("out-dir").map(ToString::to_string),
             paths: matches
-                .get_many::<&str>("path")
-                .unwrap()
-                .map(ToString::to_string)
-                .collect(),
+                .get_many::<String>("path")
+                .map(|i|i.map(ToString::to_string).collect())
+                .unwrap_or_default(),
             l: None,
             target_triple: matches
-                .get_one::<&str>("target-triple")
+                .get_one::<String>("target-triple")
                 .map(ToString::to_string),
             libraries: matches
-                .get_many::<&str>("library")
-                .unwrap()
-                .map(ToString::to_string)
-                .collect(),
-            emit: matches.get_one::<&str>("emit").map(ToString::to_string),
+                .get_many::<String>("library")
+                .map(|i|i.map(ToString::to_string).collect())
+                .unwrap_or_default(),
+            emit: matches.get_one::<String>("emit").map(ToString::to_string),
         }
     }
 }
