@@ -47,10 +47,20 @@ mod tests {
     #[test]
     fn test_parse_arg() {
         let app = super::app("test");
-        let matches = app.get_matches_from(&["test", "main.wiz", "--library", "./std", "--library", "./libc"]);
+        let matches = app.get_matches_from(&[
+            "test",
+            "main.wiz",
+            "--library",
+            "./std",
+            "--library",
+            "./libc",
+        ]);
         let config = super::Config::from(&matches);
 
         assert_eq!(config.input().to_path_buf(), PathBuf::from("main.wiz"));
-        assert_eq!(config.libraries(), vec![PathBuf::from("./std"), PathBuf::from("./libc")])
+        assert_eq!(
+            config.libraries(),
+            vec![PathBuf::from("./std"), PathBuf::from("./libc")]
+        )
     }
 }
