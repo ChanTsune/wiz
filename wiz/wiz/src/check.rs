@@ -6,9 +6,9 @@ use clap::ArgMatches;
 pub(crate) const COMMAND_NAME: &str = "check";
 
 pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<()> {
-    let manifest_path = options.get_one::<&str>("manifest-path").copied();
+    let manifest_path = options.get_one::<String>("manifest-path").map(|i|i.as_str());
 
-    let another_std = options.get_one::<&str>("std").copied();
+    let another_std = options.get_one::<String>("std").map(|i|i.as_str());
 
     let ws = load_project(manifest_path)?;
 
