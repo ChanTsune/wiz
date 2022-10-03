@@ -1,10 +1,10 @@
 use crate::parser::error::ParseError;
-use crate::parser::result::Result;
 use crate::parser::wiz::statement::file;
 use crate::parser::Span;
 use std::fs;
 use std::fs::read_to_string;
 use std::path::Path;
+use wiz_result::Result;
 use wiz_session::ParseSession;
 use wiz_span::{get_line_offset, Location};
 use wiz_syntax::syntax::file::{SourceSet, WizFile};
@@ -30,9 +30,9 @@ pub fn parse_from_string<P: AsRef<Path>>(
         Ok((s, f)) => {
             if !s.is_empty() {
                 let location = Location::new(s.location_offset(), s.location_line());
-                Err(ParseError::from(get_error_location_src(
+                Err(Box::new(ParseError::from(get_error_location_src(
                     src_path, src, &location,
-                )))
+                ))))
             } else {
                 Ok(WizFile {
                     name: name.unwrap_or_default().to_string(),
@@ -40,7 +40,7 @@ pub fn parse_from_string<P: AsRef<Path>>(
                 })
             }
         }
-        Err(_) => Err(ParseError::from(String::new())),
+        Err(_) => Err(Box::new(ParseError::from(String::new()))),
     }
 }
 

@@ -70,7 +70,7 @@ fn run_compiler(session: &mut Session) -> Result<()> {
     let std_hlir = session.timer("load dependencies", |session| {
         let libraries = config.libraries();
 
-        let std_hlir: parser::result::Result<Vec<_>> = if libraries.is_empty() {
+        let std_hlir: Result<Vec<_>> = if libraries.is_empty() {
             let find_paths: Vec<_> = get_find_paths().into_iter().chain(paths).collect();
 
             let mut lib_paths = vec![];
@@ -90,7 +90,7 @@ fn run_compiler(session: &mut Session) -> Result<()> {
             let source_sets = lib_paths
                 .iter()
                 .map(|(p, name)| read_package_from_path(&session.parse_session, p, Some(**name)))
-                .collect::<parser::result::Result<Vec<_>>>()?;
+                .collect::<Result<Vec<_>>>()?;
             Ok(source_sets
                 .into_iter()
                 .enumerate()
