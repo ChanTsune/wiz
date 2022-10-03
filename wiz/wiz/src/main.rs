@@ -12,7 +12,7 @@ mod test;
 use crate::build::BuildCommand;
 use crate::core::{Cmd, Result};
 use ansi_term::Color;
-use clap::{crate_version, Arg, Command, ArgAction};
+use clap::{crate_version, Arg, ArgAction, Command};
 use std::process::exit;
 
 fn arg_target_triple() -> Arg {
