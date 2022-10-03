@@ -52,10 +52,10 @@ impl<'ops> Options<'ops> {
 impl<'ops> From<&'ops ArgMatches> for Options<'ops> {
     fn from(args: &'ops ArgMatches) -> Self {
         Self::new(
-            args.get_one::<String>("manifest-path").map(|i|i.as_str()),
-            args.get_one::<String>("std").map(|i|i.as_str()),
-            args.get_one::<String>("target-dir").map(|i|i.as_str()),
-            args.get_one::<String>("target-triple").map(|i|i.as_str()),
+            args.get_one::<String>("manifest-path").map(|i| i.as_str()),
+            args.get_one::<String>("std").map(|i| i.as_str()),
+            args.get_one::<String>("target-dir").map(|i| i.as_str()),
+            args.get_one::<String>("target-triple").map(|i| i.as_str()),
             args.get_flag("tests"),
         )
     }

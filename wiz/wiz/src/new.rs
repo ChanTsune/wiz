@@ -9,7 +9,10 @@ pub(crate) const COMMAND_NAME: &str = "new";
 
 pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<()> {
     let mut current = current_dir()?;
-    let project_dir = options.get_one::<String>("path").map(|i|i.as_str()).unwrap();
+    let project_dir = options
+        .get_one::<String>("path")
+        .map(|i| i.as_str())
+        .unwrap();
     current.push(project_dir);
     create_dir_all(&current)?;
     create_project(&current, project_dir)?;
