@@ -1,7 +1,7 @@
 mod config;
 
 use clap::builder::PossibleValuesParser;
-use clap::{Arg, Command};
+use clap::{Arg, ArgAction, Command};
 pub use config::build_type::BuildType;
 pub use config::{Config, ConfigBuilder, ConfigExt};
 
@@ -17,9 +17,9 @@ pub fn app(name: &'static str) -> Command {
         .arg(short("output", 'o').num_args(1))
         .arg(long("out-dir").num_args(1))
         .arg(long("target-triple").num_args(1))
-        .arg(short("path", 'p').num_args(0..))
-        .arg(short("L", 'L').num_args(0..))
-        .arg(long("library").num_args(0..))
+        .arg(short("path", 'p').action(ArgAction::Append).num_args(0..))
+        .arg(short("L", 'L').action(ArgAction::Append).num_args(0..))
+        .arg(long("library").action(ArgAction::Append).num_args(0..))
         .arg(
             long("emit")
                 .num_args(1)
@@ -47,8 +47,10 @@ mod tests {
     #[test]
     fn test_parse_arg() {
         let app = super::app("test");
-        let matches = app.get_matches_from(&["test", "main.wiz"]);
+        let matches = app.get_matches_from(&["test", "main.wiz", "--library", "./std", "--library", "./libc"]);
         let config = super::Config::from(&matches);
+
         assert_eq!(config.input().to_path_buf(), PathBuf::from("main.wiz"));
+        assert_eq!(config.libraries(), vec![PathBuf::from("./std"), PathBuf::from("./libc")])
     }
 }
