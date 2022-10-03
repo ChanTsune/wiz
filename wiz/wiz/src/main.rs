@@ -12,7 +12,7 @@ mod test;
 use crate::build::BuildCommand;
 use crate::core::{Cmd, Result};
 use ansi_term::Color;
-use clap::{crate_version, Arg, Command};
+use clap::{crate_version, Arg, Command, ArgAction};
 use std::process::exit;
 
 fn arg_target_triple() -> Arg {
@@ -52,6 +52,7 @@ fn cli() -> Result<()> {
                 .about("Create a new wiz package in an current directory")
                 .arg(
                     Arg::new("overwrite")
+                        .action(ArgAction::SetTrue)
                         .long("overwrite")
                         .help("Overwrite files for target Directory"),
                 ),
@@ -63,13 +64,14 @@ fn cli() -> Result<()> {
                 .arg(arg_target_triple())
                 .arg(arg_manifest_path())
                 .arg(arg_std())
-                .arg(Arg::new("tests").long("tests")),
+                .arg(Arg::new("tests").action(ArgAction::SetTrue).long("tests")),
         )
         .subcommand(
             Command::new(check::COMMAND_NAME)
                 .about("Check the current package")
                 .arg(
                     Arg::new("manifest")
+                        .action(ArgAction::SetTrue)
                         .long("manifest")
                         .help("Check manifest.toml"),
                 )
@@ -93,6 +95,7 @@ fn cli() -> Result<()> {
         )
         .arg(
             Arg::new("quite")
+                .action(ArgAction::SetTrue)
                 .short('q')
                 .long("quite")
                 .help("No output printed to stdout")
