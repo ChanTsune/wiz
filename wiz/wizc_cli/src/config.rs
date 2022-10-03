@@ -169,12 +169,16 @@ impl<'ctx> From<&'ctx ArgMatches> for Config {
         Self {
             input: matches.get_one::<String>("input").unwrap().to_string(),
             name: matches.get_one::<String>("name").map(ToString::to_string),
-            type_: matches.get_one::<String>("type").map(|i| BuildType::from(i.as_str())),
+            type_: matches
+                .get_one::<String>("type")
+                .map(|i| BuildType::from(i.as_str())),
             output: matches.get_one::<String>("output").map(ToString::to_string),
-            out_dir: matches.get_one::<String>("out-dir").map(ToString::to_string),
+            out_dir: matches
+                .get_one::<String>("out-dir")
+                .map(ToString::to_string),
             paths: matches
                 .get_many::<String>("path")
-                .map(|i|i.map(ToString::to_string).collect())
+                .map(|i| i.map(ToString::to_string).collect())
                 .unwrap_or_default(),
             l: None,
             target_triple: matches
@@ -182,7 +186,7 @@ impl<'ctx> From<&'ctx ArgMatches> for Config {
                 .map(ToString::to_string),
             libraries: matches
                 .get_many::<String>("library")
-                .map(|i|i.map(ToString::to_string).collect())
+                .map(|i| i.map(ToString::to_string).collect())
                 .unwrap_or_default(),
             emit: matches.get_one::<String>("emit").map(ToString::to_string),
         }
