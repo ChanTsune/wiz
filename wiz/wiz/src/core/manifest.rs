@@ -58,7 +58,7 @@ impl Display for Dependency {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Dependency::Simple(v) => write!(f, "v{}", v),
-            Dependency::Detailed(d) => Display::fmt(d, f)
+            Dependency::Detailed(d) => Display::fmt(d, f),
         }
     }
 }

@@ -20,7 +20,7 @@ impl Display for ResolvedDependencyTree {
         writeln!(f, "{} v{} ({})", self.name, self.version, self.src_path)?;
         for dependency in &self.dependencies {
             Display::fmt(dependency, f)?;
-        };
+        }
         Ok(())
     }
 }
