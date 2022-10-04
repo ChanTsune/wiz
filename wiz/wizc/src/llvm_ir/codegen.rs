@@ -516,6 +516,7 @@ impl<'ctx> CodeGen<'ctx> {
             AnyValueEnum::InstructionValue(_) => {
                 todo!()
             }
+            AnyValueEnum::MetadataValue(_) => todo!(),
         }
     }
 
