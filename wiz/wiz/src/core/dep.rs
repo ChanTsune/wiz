@@ -4,6 +4,7 @@ use crate::core::manifest;
 use crate::core::manifest::{Dependency, Manifest};
 use crate::core::Result;
 use std::env;
+use std::fmt::{Display, Formatter};
 use std::path::{Path, PathBuf};
 
 #[derive(Debug, Clone)]
@@ -12,6 +13,16 @@ pub struct ResolvedDependencyTree {
     pub version: String,
     pub src_path: String,
     pub dependencies: Vec<ResolvedDependencyTree>,
+}
+
+impl Display for ResolvedDependencyTree {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "{} v{} ({})", self.name, self.version, self.src_path)?;
+        for dependency in &self.dependencies {
+            Display::fmt(dependency, f)?;
+        };
+        Ok(())
+    }
 }
 
 pub fn resolve_manifest_dependencies(
@@ -82,7 +93,7 @@ fn manifest_find_in(
     match manifest_path {
         Some(manifest_path) => Ok(manifest_path),
         None => Err(Box::new(CliError::from(format!(
-            "Could not find dependency {} {:?}",
+            "Could not find dependency {} {}",
             name, version
         )))),
     }
