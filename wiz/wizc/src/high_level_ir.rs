@@ -44,6 +44,7 @@ use wiz_syntax::syntax::statement::{
     AssignmentStmt, ForLoopSyntax, LoopStmt, Stmt, WhileLoopSyntax,
 };
 use wiz_syntax::syntax::type_name::{TypeName, TypeParam, UserTypeName};
+use wizc_syntax_visitor::detect_type_and_namespace;
 
 pub mod node_id;
 pub mod type_checker;
@@ -94,6 +95,8 @@ impl<'a> AstLowering<'a> {
     }
 
     pub fn lowing(&mut self, s: SourceSet, module_id: TypedModuleId) -> Result<TypedSpellBook> {
+        detect_type_and_namespace(self.session, self.arena, &s);
+
         let file = self.source_set(s, module_id);
 
         let mut resolver = TypeResolver::new(self.session, self.arena);
