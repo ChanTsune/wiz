@@ -10,7 +10,11 @@ pub struct AstScanner<'a> {
 
 impl<'a> AstScanner<'a> {
     pub(crate) fn new(session: &'a Session, arena: &'a mut Arena) -> Self {
-        Self { session, arena , namespace_id: DeclarationId::ROOT}
+        Self {
+            session,
+            arena,
+            namespace_id: DeclarationId::ROOT,
+        }
     }
 }
 
@@ -32,7 +36,6 @@ impl<'a> AstScanner<'a> {
         self.namespace_id = parent;
         result
     }
-
 }
 
 impl<'a> AstScanner<'a> {
