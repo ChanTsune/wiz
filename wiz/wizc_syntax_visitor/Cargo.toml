@@ -1,0 +1,10 @@
+[package]
+name = "wizc_syntax_visitor"
+version = "0.0.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+wiz_arena = { path = "../wiz_arena" }
+wiz_syntax = { path = "../wiz_syntax" }
