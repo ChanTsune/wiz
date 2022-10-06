@@ -67,7 +67,7 @@ pub(crate) fn command(_: &str, options: Options) -> Result<()> {
     let resolved_dependencies =
         resolve_manifest_dependencies(&ws.cws, &ws.get_manifest()?, options.std)?;
 
-    println!("{:?}", resolved_dependencies);
+    println!("{}", resolved_dependencies);
 
     let target_dir = if let Some(target_dir) = options.target_dir {
         let d = PathBuf::from(target_dir);
