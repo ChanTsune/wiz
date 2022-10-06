@@ -6,6 +6,6 @@ use wiz_session::Session;
 use wiz_syntax::syntax::file::SourceSet;
 
 pub fn detect_type_and_namespace(session: &Session, arena: &mut Arena, source_set: &SourceSet) {
-    let scanner = AstScanner::new(session, arena);
+    let mut scanner = AstScanner::new(session, arena);
     scanner.start(source_set);
 }

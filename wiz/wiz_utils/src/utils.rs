@@ -1,6 +1,6 @@
 use std::path::Path;
 
-pub(crate) fn path_string_to_page_name(path: &str) -> &str {
+pub fn path_string_to_page_name(path: &str) -> &str {
     Path::new(path)
         .file_stem()
         .unwrap_or_default()

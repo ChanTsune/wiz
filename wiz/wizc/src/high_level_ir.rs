@@ -1,6 +1,5 @@
 use crate::high_level_ir::node_id::TypedModuleId;
 use crate::high_level_ir::type_resolver::TypeResolver;
-use crate::utils::path_string_to_page_name;
 use std::collections::HashMap;
 use wiz_arena::{Arena, DeclarationId};
 use wiz_hir::typed_annotation::TypedAnnotations;
@@ -44,6 +43,7 @@ use wiz_syntax::syntax::statement::{
     AssignmentStmt, ForLoopSyntax, LoopStmt, Stmt, WhileLoopSyntax,
 };
 use wiz_syntax::syntax::type_name::{TypeName, TypeParam, UserTypeName};
+use wiz_utils::utils::path_string_to_page_name;
 use wizc_syntax_visitor::detect_type_and_namespace;
 
 pub mod node_id;
@@ -95,7 +95,7 @@ impl<'a> AstLowering<'a> {
     }
 
     pub fn lowing(&mut self, s: SourceSet, module_id: TypedModuleId) -> Result<TypedSpellBook> {
-        detect_type_and_namespace(self.session, self.arena, &s);
+        // detect_type_and_namespace(self.session, self.arena, &s);
 
         let file = self.source_set(s, module_id);
 
@@ -103,6 +103,7 @@ impl<'a> AstLowering<'a> {
         resolver.global_use(&["core", "builtin", "*"]);
         resolver.global_use(&["std", "builtin", "*"]);
 
+        // NOTE: detect decl names
         resolver.preload_file(&file)?;
 
         let file = resolver.file(file)?;
