@@ -3,7 +3,7 @@ use crate::parser::result::Result;
 use crate::parser::wiz::statement::file;
 use crate::parser::Span;
 use std::fs;
-use std::fs::{read_to_string};
+use std::fs::read_to_string;
 use std::path::Path;
 use wiz_span::{get_line_offset, Location};
 use wiz_syntax::syntax::file::{SourceSet, WizFile};
@@ -56,7 +56,10 @@ pub fn read_package_from_path(path: &Path, name: Option<&str>) -> Result<SourceS
                 .unwrap_or_default()
                 .to_string(),
             items: {
-                let items = dir.into_iter().collect::<std::io::Result<Vec<_>>>().unwrap();
+                let items = dir
+                    .into_iter()
+                    .collect::<std::io::Result<Vec<_>>>()
+                    .unwrap();
                 let mut items = items.into_iter().map(|i| i.path()).collect::<Vec<_>>();
                 items.sort_unstable_by(|x, y| x.is_dir().cmp(&y.is_dir()));
                 items
