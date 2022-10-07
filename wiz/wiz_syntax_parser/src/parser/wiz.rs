@@ -61,10 +61,18 @@ pub fn read_package_from_path(
                 .or_else(|| path.file_name().and_then(|p| p.to_str()))
                 .unwrap_or_default()
                 .to_string(),
-            items: dir
-                .into_iter()
-                .map(|d| read_package_from_path(session, &*d.unwrap().path(), None))
-                .collect::<Result<_>>()?,
+            items: {
+                let items = dir
+                    .into_iter()
+                    .collect::<std::io::Result<Vec<_>>>()
+                    .unwrap();
+                let mut items = items.into_iter().map(|i| i.path()).collect::<Vec<_>>();
+                items.sort_unstable_by(|x, y| x.is_dir().cmp(&y.is_dir()));
+                items
+                    .iter()
+                    .map(|d| read_package_from_path(session, d, None))
+                    .collect::<Result<_>>()?
+            },
         }
     } else {
         SourceSet::File(parse_from_file_path(session, path)?)
