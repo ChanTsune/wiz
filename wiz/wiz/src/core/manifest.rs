@@ -1,6 +1,7 @@
 use crate::core::Result;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
+use std::fmt::{Display, Formatter};
 use std::path::Path;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize, Serialize)]
@@ -53,10 +54,31 @@ impl Dependency {
     }
 }
 
+impl Display for Dependency {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Dependency::Simple(v) => write!(f, "v{}", v),
+            Dependency::Detailed(d) => Display::fmt(d, f),
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize, Serialize)]
 pub struct DetailedDependency {
     pub version: Option<String>,
     pub path: Option<String>,
+}
+
+impl Display for DetailedDependency {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        if let Some(v) = &self.version {
+            write!(f, "v{}", v)?;
+        }
+        if let Some(p) = &self.path {
+            write!(f, "({})", p)?;
+        }
+        Ok(())
+    }
 }
 
 pub fn read(path: &Path) -> Result<Manifest> {
