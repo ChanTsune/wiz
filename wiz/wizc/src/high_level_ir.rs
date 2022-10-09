@@ -4,8 +4,8 @@ use std::collections::HashMap;
 use wiz_arena::{Arena, DeclarationId};
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_decl::{
-    TypedArgDef, TypedComputedProperty, TypedDecl, TypedDeclKind, TypedExtension, TypedFun,
-    TypedFunBody, TypedProtocol, TypedStoredProperty, TypedStruct, TypedVar,
+    TypedArgDef, TypedComputedProperty, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody,
+    TypedProtocol, TypedStoredProperty, TypedStruct, TypedTopLevelDecl, TypedVar,
 };
 use wiz_hir::typed_expr::{
     TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedExprKind,
@@ -120,7 +120,7 @@ impl<'a> AstLowering<'a> {
                     body: items
                         .into_iter()
                         .map(|i| slf.source_set(i, module_id))
-                        .map(|f| TypedDecl {
+                        .map(|f| TypedTopLevelDecl {
                             annotations: Default::default(),
                             package: Package::new(),
                             modifiers: vec![],
@@ -243,8 +243,8 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    fn decl(&mut self, d: DeclKind, annotation: Option<AnnotationsSyntax>) -> TypedDecl {
-        TypedDecl {
+    fn decl(&mut self, d: DeclKind, annotation: Option<AnnotationsSyntax>) -> TypedTopLevelDecl {
+        TypedTopLevelDecl {
             annotations: self.annotations(&annotation),
             package: Package::from(&self.arena.resolve_fully_qualified_name(&self.namespace_id)),
             modifiers: vec![],

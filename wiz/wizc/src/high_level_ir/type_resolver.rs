@@ -10,8 +10,8 @@ use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
 use wiz_arena::{Arena, DeclarationId, DeclarationItemKind};
 use wiz_hir::typed_decl::{
-    TypedArgDef, TypedDecl, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedProtocol,
-    TypedStoredProperty, TypedStruct, TypedVar,
+    TypedArgDef, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedProtocol,
+    TypedStoredProperty, TypedStruct, TypedTopLevelDecl, TypedVar,
 };
 use wiz_hir::typed_expr::{
     TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedExprKind, TypedIf,
@@ -61,7 +61,7 @@ impl<'s> TypeResolver<'s> {
         Ok(())
     }
 
-    fn preload_decl(&mut self, d: &TypedDecl) -> Result<()> {
+    fn preload_decl(&mut self, d: &TypedTopLevelDecl) -> Result<()> {
         match &d.kind {
             TypedDeclKind::Var(v) => {
                 let v = self.typed_var(v.clone())?;
@@ -282,8 +282,8 @@ impl<'s> TypeResolver<'s> {
         result
     }
 
-    pub fn decl(&mut self, d: TypedDecl) -> Result<TypedDecl> {
-        Ok(TypedDecl {
+    pub fn decl(&mut self, d: TypedTopLevelDecl) -> Result<TypedTopLevelDecl> {
+        Ok(TypedTopLevelDecl {
             annotations: d.annotations,
             package: d.package,
             modifiers: d.modifiers,

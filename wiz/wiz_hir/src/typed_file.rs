@@ -1,4 +1,4 @@
-use crate::typed_decl::TypedDecl;
+use crate::typed_decl::TypedTopLevelDecl;
 use crate::typed_use::TypedUse;
 use serde::{Deserialize, Serialize};
 
@@ -6,5 +6,5 @@ use serde::{Deserialize, Serialize};
 pub struct TypedSpellBook {
     pub name: String,
     pub uses: Vec<TypedUse>,
-    pub body: Vec<TypedDecl>,
+    pub body: Vec<TypedTopLevelDecl>,
 }

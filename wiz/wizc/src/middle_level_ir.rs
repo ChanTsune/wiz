@@ -5,8 +5,8 @@ use wiz_constants as constants;
 use wiz_constants::annotation::{BUILTIN, ENTRY, NO_MANGLE, TEST};
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_decl::{
-    TypedArgDef, TypedDecl, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedProtocol,
-    TypedStruct, TypedVar,
+    TypedArgDef, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedProtocol, TypedStruct,
+    TypedTopLevelDecl, TypedVar,
 };
 use wiz_hir::typed_expr::{
     TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedExprKind,
@@ -259,8 +259,8 @@ impl<'a> HLIR2MLIR<'a> {
         }
     }
 
-    fn decl(&mut self, d: TypedDecl) -> Result<()> {
-        let TypedDecl {
+    fn decl(&mut self, d: TypedTopLevelDecl) -> Result<()> {
+        let TypedTopLevelDecl {
             annotations,
             package,
             modifiers,

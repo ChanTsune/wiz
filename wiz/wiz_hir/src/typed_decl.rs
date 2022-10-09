@@ -7,7 +7,7 @@ use crate::typed_type_constraint::TypedTypeConstraint;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
-pub struct TypedDecl {
+pub struct TypedTopLevelDecl {
     pub annotations: TypedAnnotations,
     pub package: Package,
     pub modifiers: Vec<String>,
