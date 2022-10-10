@@ -10,7 +10,7 @@ use wiz_hir::typed_expr::{
     TypedInstanceMember, TypedLiteralKind, TypedName, TypedPrefixUnaryOp, TypedPrefixUnaryOperator,
     TypedReturn, TypedSubscript, TypedUnaryOp,
 };
-use wiz_hir::typed_file::{TypedFile, TypedSourceSet};
+use wiz_hir::typed_file::TypedFile;
 use wiz_hir::typed_stmt::{TypedBlock, TypedStmt};
 use wiz_hir::typed_type::{
     Package, TypedArgType, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType,
@@ -21,9 +21,9 @@ use wiz_syntax::syntax::file::SourceSet;
 use wiz_syntax_parser::parser::wiz::parse_from_string;
 
 fn check(source: &str, typed_file: TypedFile) {
-    let ast = parse_from_string(source, Some(&typed_file.name)).unwrap();
+    let ast = parse_from_string::<&str>(None, source, Some(&typed_file.name)).unwrap();
 
-    let mut session = Session::new();
+    let mut session = Session::default();
 
     let mut arena = Arena::default();
 
@@ -33,7 +33,7 @@ fn check(source: &str, typed_file: TypedFile) {
         .lowing(SourceSet::File(ast), TypedModuleId::DUMMY)
         .unwrap();
 
-    assert_eq!(f, TypedSourceSet::File(typed_file));
+    assert_eq!(f, typed_file);
 }
 
 #[test]

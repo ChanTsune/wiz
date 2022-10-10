@@ -19,12 +19,18 @@ pub mod operators;
 pub mod statement;
 pub mod type_;
 
-pub fn parse_from_string(src: &str, name: Option<&str>) -> Result<WizFile> {
+pub fn parse_from_string<P: AsRef<Path>>(
+    src_path: Option<P>,
+    src: &str,
+    name: Option<&str>,
+) -> Result<WizFile> {
     match file(Span::from(src)) {
         Ok((s, f)) => {
             if !s.is_empty() {
                 let location = Location::new(s.location_offset(), s.location_line());
-                Err(ParseError::from(get_error_location_src(src, &location)))
+                Err(ParseError::from(get_error_location_src(
+                    src_path, src, &location,
+                )))
             } else {
                 Ok(WizFile {
                     name: name.unwrap_or_default().to_string(),
@@ -36,56 +42,22 @@ pub fn parse_from_string(src: &str, name: Option<&str>) -> Result<WizFile> {
     }
 }
 
-pub fn parse_from_file_path_str(path: &str) -> Result<WizFile> {
-    let p = Path::new(path);
-    parse_from_file_path(p)
-}
-
-pub fn parse_from_file_path(path: &Path) -> Result<WizFile> {
-    let s = read_to_string(path)?;
-    parse_from_string(&*s, path.as_os_str().to_str())
+pub fn parse_from_file_path<P: AsRef<Path>>(path: P) -> Result<WizFile> {
+    let s = read_to_string(&path)?;
+    parse_from_string(Some(&path), &*s, path.as_ref().to_str())
 }
 
 pub fn read_package_from_path(path: &Path, name: Option<&str>) -> Result<SourceSet> {
-    let dir = fs::read_dir(path)?;
-    for item in dir {
-        let dir_entry = item.unwrap();
-        if let Some("src") = dir_entry.file_name().to_str() {
-            return Ok(SourceSet::Dir {
-                name: name
-                    .or_else(|| path.file_name().and_then(|p| p.to_str()))
-                    .unwrap_or_default()
-                    .to_string(),
-                items: match read_package_files(dir_entry.path().as_path())? {
-                    SourceSet::File(_) => unreachable!(),
-                    SourceSet::Dir { name: _, items } => items,
-                },
-            });
-        }
-        println!("{}", dir_entry.path().display());
-    }
-    Ok(SourceSet::Dir {
-        name: path
-            .file_name()
-            .and_then(|p| p.to_str())
-            .unwrap()
-            .to_string(),
-        items: vec![],
-    })
-}
-
-fn read_package_files(path: &Path) -> Result<SourceSet> {
     Ok(if path.is_dir() {
         let dir = fs::read_dir(path)?;
         SourceSet::Dir {
-            name: path
-                .file_name()
-                .and_then(|p| p.to_str())
-                .unwrap()
+            name: name
+                .or_else(|| path.file_name().and_then(|p| p.to_str()))
+                .unwrap_or_default()
                 .to_string(),
             items: dir
                 .into_iter()
-                .map(|d| read_package_files(&*d.unwrap().path()))
+                .map(|d| read_package_from_path(&*d.unwrap().path(), None))
                 .collect::<Result<_>>()?,
         }
     } else {
@@ -93,14 +65,22 @@ fn read_package_files(path: &Path) -> Result<SourceSet> {
     })
 }
 
-fn get_error_location_src(src: &str, location: &Location) -> String {
+fn get_error_location_src<P: AsRef<Path>>(
+    src_path: Option<P>,
+    src: &str,
+    location: &Location,
+) -> String {
     let line_offset = get_line_offset(src, location);
     let error_line = src
         .lines()
         .nth(location.line() as usize - 1)
         .unwrap_or_default();
     format!(
-        "{} | {}\n{}^",
+        "{}:L{} | {}\n{}^",
+        src_path.map_or_else(
+            || String::from("Unknown source"),
+            |it| it.as_ref().display().to_string(),
+        ),
         location.line(),
         error_line,
         " ".repeat(location.line().to_string().len() + 3 + line_offset)
@@ -113,9 +93,9 @@ mod tests {
 
     #[test]
     fn test_parse_from_string() {
-        let result = parse_from_string("unknown_token", None);
+        let result = parse_from_string::<&str>(None, "unknown_token", None);
         if let Err(e) = result {
-            assert_eq!(e.to_string(), "1 | unknown_token\n    ^");
+            assert_eq!(e.to_string(), "Unknown source:L1 | unknown_token\n    ^");
         } else {
             unreachable!();
         }

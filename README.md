@@ -22,7 +22,7 @@
 |**Tool**|**Version**|
 |:-:|:-:|
 |Rust|latest|
-|llvm|12|
+|llvm|13|
 
 ### Setup
 
@@ -41,24 +41,24 @@ cargo install llvmenv
 
 ```bash
 llvmenv init
-llvmenv build-entry 12.0
-llvmenv global 12.0.0
+llvmenv build-entry 13.0
+llvmenv global 13.0.0
 ```
 
 **Using Homebrew on Mac**
 
 ```bash
-brew install llvm@12
+brew install llvm@13
 ```
 
 ```bash
-export LLVM_SYS_120_PREFIX="$(brew --prefix llvm@12)"
+export LLVM_SYS_130_PREFIX="$(brew --prefix llvm@13)"
 ```
 
 **Using apt on Debian Linux**
 
 ```bash
-sudo apt install clang-12 llvm-12
+sudo apt install clang-13 llvm-13
 ```
 
 3. Build and install wiz

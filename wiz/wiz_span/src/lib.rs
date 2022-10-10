@@ -5,7 +5,9 @@ pub struct Location {
 }
 
 impl Location {
-    pub fn new(offset: usize, line: u32) -> Self {
+    pub const DUMMY: Self = Self::new(0, 0);
+
+    pub const fn new(offset: usize, line: u32) -> Self {
         Self { offset, line }
     }
 

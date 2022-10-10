@@ -6,13 +6,13 @@ RUN apt-get install -y git curl gcc lzma-dev
 
 RUN apt-get install -y llvm-13 clang-13
 
-RUN ln -s $(which clang-12) /usr/bin/clang
+RUN ln -s $(which clang-13) /usr/bin/clang
 
 FROM llvm as rust
 
 RUN apt-get install -y zsh
 
-ENV LLVM_SYS_120_PREFIX="/usr/lib/llvm-12"
+ENV LLVM_SYS_130_PREFIX="/usr/lib/llvm-13"
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rustup-init && \
     chmod +x rustup-init && \

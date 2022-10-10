@@ -18,7 +18,7 @@ use wiz_hir::typed_expr::{
     TypedInstanceMember, TypedLiteralKind, TypedName, TypedPostfixUnaryOp, TypedPrefixUnaryOp,
     TypedPrefixUnaryOperator, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
-use wiz_hir::typed_file::{TypedFile, TypedSourceSet};
+use wiz_hir::typed_file::TypedFile;
 use wiz_hir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedForStmt,
     TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
@@ -44,18 +44,6 @@ impl<'s> TypeResolver<'s> {
     pub(crate) fn global_use<T: ToString>(&mut self, name_space: &[T]) {
         self.context
             .global_use_name_space(name_space.iter().map(T::to_string).collect())
-    }
-
-    pub fn preload_source_set(&mut self, s: &TypedSourceSet) -> Result<()> {
-        match s {
-            TypedSourceSet::File(f) => self.preload_file(f),
-            TypedSourceSet::Dir { name, items } => {
-                self.context.push_name_space(name);
-                items.iter().try_for_each(|i| self.preload_source_set(i))?;
-                self.context.pop_name_space();
-                Ok(())
-            }
-        }
     }
 
     pub fn preload_file(&mut self, f: &TypedFile) -> Result<()> {
@@ -101,7 +89,9 @@ impl<'s> TypeResolver<'s> {
             TypedDeclKind::Struct(s) => {
                 let _ = self.preload_struct(s)?;
             }
-            TypedDeclKind::Class => todo!(),
+            TypedDeclKind::Module(m) => {
+                self.preload_file(m)?;
+            }
             TypedDeclKind::Enum => todo!(),
             TypedDeclKind::Protocol(p) => {
                 let _ = self.preload_protocol(p)?;
@@ -271,22 +261,7 @@ impl<'s> TypeResolver<'s> {
         Ok(())
     }
 
-    pub fn source_set(&mut self, s: TypedSourceSet) -> Result<TypedSourceSet> {
-        Ok(match s {
-            TypedSourceSet::File(f) => TypedSourceSet::File(self.file(f)?),
-            TypedSourceSet::Dir { name, items } => {
-                self.context.push_name_space(&name);
-                let items = items
-                    .into_iter()
-                    .map(|i| self.source_set(i))
-                    .collect::<Result<Vec<TypedSourceSet>>>()?;
-                self.context.pop_name_space();
-                TypedSourceSet::Dir { name, items }
-            }
-        })
-    }
-
-    fn file(&mut self, f: TypedFile) -> Result<TypedFile> {
+    pub fn file(&mut self, f: TypedFile) -> Result<TypedFile> {
         self.context.push_name_space(&f.name);
         for u in f.uses.iter() {
             self.context.use_name_space(u.package.names.clone());
@@ -316,7 +291,7 @@ impl<'s> TypeResolver<'s> {
                 TypedDeclKind::Var(v) => TypedDeclKind::Var(self.typed_var(v)?),
                 TypedDeclKind::Fun(f) => TypedDeclKind::Fun(self.typed_fun(f)?),
                 TypedDeclKind::Struct(s) => TypedDeclKind::Struct(self.typed_struct(s)?),
-                TypedDeclKind::Class => TypedDeclKind::Class,
+                TypedDeclKind::Module(m) => TypedDeclKind::Module(self.file(m)?),
                 TypedDeclKind::Enum => TypedDeclKind::Enum,
                 TypedDeclKind::Protocol(p) => TypedDeclKind::Protocol(self.typed_protocol(p)?),
                 TypedDeclKind::Extension(e) => TypedDeclKind::Extension(self.typed_extension(e)?),

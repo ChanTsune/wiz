@@ -52,11 +52,11 @@ impl<'ops> Options<'ops> {
 impl<'ops> From<&'ops ArgMatches> for Options<'ops> {
     fn from(args: &'ops ArgMatches) -> Self {
         Self::new(
-            args.value_of("manifest-path"),
-            args.value_of("std"),
-            args.value_of("target-dir"),
-            args.value_of("target-triple"),
-            args.is_present("tests"),
+            args.get_one::<String>("manifest-path").map(|i| i.as_str()),
+            args.get_one::<String>("std").map(|i| i.as_str()),
+            args.get_one::<String>("target-dir").map(|i| i.as_str()),
+            args.get_one::<String>("target-triple").map(|i| i.as_str()),
+            args.get_flag("tests"),
         )
     }
 }
@@ -67,7 +67,7 @@ pub(crate) fn command(_: &str, options: Options) -> Result<()> {
     let resolved_dependencies =
         resolve_manifest_dependencies(&ws.cws, &ws.get_manifest()?, options.std)?;
 
-    println!("{:?}", resolved_dependencies);
+    println!("{}", resolved_dependencies);
 
     let target_dir = if let Some(target_dir) = options.target_dir {
         let d = PathBuf::from(target_dir);
@@ -87,8 +87,9 @@ pub(crate) fn command(_: &str, options: Options) -> Result<()> {
     let wlib_paths =
         compile_dependencies(&ws, resolved_dependencies, target_dir.to_str().unwrap())?;
 
+    let input_path = ws.cws.join("src");
     let mut config = Config::default()
-        .input(ws.cws.to_str().unwrap())
+        .input(input_path.to_str().unwrap())
         .out_dir(target_dir.to_str().unwrap())
         .name(ws.cws.file_name().and_then(OsStr::to_str).unwrap())
         .type_(if options.test {

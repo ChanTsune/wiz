@@ -1,16 +1,28 @@
+mod parse;
+
+pub use crate::parse::ParseSession;
 use std::collections::BTreeMap;
 use std::error::Error;
+use std::path::Path;
 use std::time::{Duration, Instant};
+use wizc_cli::{Config, ConfigExt};
 
 #[derive(Debug, Default)]
 pub struct Session {
+    pub config: Config,
+    pub parse_session: ParseSession,
     timers: BTreeMap<String, (Instant, Option<Duration>)>,
     errors: Vec<Box<dyn Error>>,
 }
 
 impl Session {
-    pub fn new() -> Self {
-        Session::default()
+    pub fn new(config: Config) -> Self {
+        Self {
+            config,
+            parse_session: Default::default(),
+            timers: Default::default(),
+            errors: Default::default(),
+        }
     }
 
     pub fn start(&mut self, id: &str) -> Instant {
@@ -52,6 +64,15 @@ impl Session {
     pub fn has_error(&self) -> bool {
         !self.errors.is_empty()
     }
+
+    pub fn local_spell_book_root(&self) -> &Path {
+        let p = self.config.input();
+        if p.is_dir() {
+            p
+        } else {
+            p.parent().unwrap()
+        }
+    }
 }
 
 #[cfg(test)]
@@ -61,7 +82,7 @@ mod tests {
 
     #[test]
     fn test_start_stop() {
-        let mut session = super::Session::new();
+        let mut session = super::Session::default();
         session.start("foo");
         session.stop("foo");
         session.get_duration("foo").unwrap();
@@ -69,7 +90,7 @@ mod tests {
 
     #[test]
     fn test_timer() {
-        let mut session = super::Session::new();
+        let mut session = super::Session::default();
         session.timer("foo", |_| {});
         session.get_duration("foo").unwrap();
     }
@@ -84,7 +105,7 @@ mod tests {
             }
         }
         impl Error for E {}
-        let mut session = super::Session::new();
+        let mut session = super::Session::default();
         session.emit_error(E {});
         assert_eq!(session.has_error(), true);
     }

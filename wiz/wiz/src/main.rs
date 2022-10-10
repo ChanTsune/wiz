@@ -12,27 +12,27 @@ mod test;
 use crate::build::BuildCommand;
 use crate::core::{Cmd, Result};
 use ansi_term::Color;
-use clap::{crate_version, Arg, Command};
+use clap::{crate_version, Arg, ArgAction, Command};
 use std::process::exit;
 
-fn arg_target_triple() -> Arg<'static> {
+fn arg_target_triple() -> Arg {
     Arg::new("target-triple")
         .long("target-triple")
-        .takes_value(true)
+        .num_args(1)
         .help("Build target platform")
 }
 
-fn arg_manifest_path() -> Arg<'static> {
+fn arg_manifest_path() -> Arg {
     Arg::new("manifest-path")
         .long("manifest-path")
-        .takes_value(true)
+        .num_args(1)
         .help("Path to the manifest file")
 }
 
-fn arg_std() -> Arg<'static> {
+fn arg_std() -> Arg {
     Arg::new("std")
         .long("std")
-        .takes_value(true)
+        .num_args(1)
         .help("Use another std library")
 }
 
@@ -52,6 +52,7 @@ fn cli() -> Result<()> {
                 .about("Create a new wiz package in an current directory")
                 .arg(
                     Arg::new("overwrite")
+                        .action(ArgAction::SetTrue)
                         .long("overwrite")
                         .help("Overwrite files for target Directory"),
                 ),
@@ -63,13 +64,14 @@ fn cli() -> Result<()> {
                 .arg(arg_target_triple())
                 .arg(arg_manifest_path())
                 .arg(arg_std())
-                .arg(Arg::new("tests").long("tests")),
+                .arg(Arg::new("tests").action(ArgAction::SetTrue).long("tests")),
         )
         .subcommand(
             Command::new(check::COMMAND_NAME)
                 .about("Check the current package")
                 .arg(
                     Arg::new("manifest")
+                        .action(ArgAction::SetTrue)
                         .long("manifest")
                         .help("Check manifest.toml"),
                 )
@@ -93,6 +95,7 @@ fn cli() -> Result<()> {
         )
         .arg(
             Arg::new("quite")
+                .action(ArgAction::SetTrue)
                 .short('q')
                 .long("quite")
                 .help("No output printed to stdout")

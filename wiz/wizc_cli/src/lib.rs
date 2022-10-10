@@ -1,44 +1,41 @@
 mod config;
 
-use clap::{Arg, Command};
+use clap::builder::PossibleValuesParser;
+use clap::{Arg, ArgAction, Command};
 pub use config::build_type::BuildType;
 pub use config::{Config, ConfigBuilder, ConfigExt};
 
-pub fn app(name: &str) -> Command {
+pub fn app(name: &'static str) -> Command {
     Command::new(name)
         .arg(position("input").required(true))
-        .arg(long("name").takes_value(true))
+        .arg(long("name").num_args(1))
         .arg(
             long("type")
-                .takes_value(true)
-                .possible_values(BuildType::all_str()),
+                .num_args(1)
+                .value_parser(PossibleValuesParser::new(BuildType::all_str())),
         )
-        .arg(short("output", 'o').takes_value(true))
-        .arg(long("out-dir").takes_value(true))
-        .arg(long("target-triple").takes_value(true))
-        .arg(
-            short("path", 'p')
-                .takes_value(true)
-                .multiple_occurrences(true),
-        )
-        .arg(short("L", 'L').takes_value(true).multiple_occurrences(true))
-        .arg(long("library").takes_value(true).multiple_occurrences(true))
+        .arg(short("output", 'o').num_args(1))
+        .arg(long("out-dir").num_args(1))
+        .arg(long("target-triple").num_args(1))
+        .arg(short("path", 'p').action(ArgAction::Append).num_args(0..))
+        .arg(short("L", 'L').action(ArgAction::Append).num_args(0..))
+        .arg(long("library").action(ArgAction::Append).num_args(0..))
         .arg(
             long("emit")
-                .takes_value(true)
-                .possible_values(&["llvm-ir", "object", "asm"]),
+                .num_args(1)
+                .value_parser(["llvm-ir", "object", "asm"]),
         )
 }
 
-fn position(name: &str) -> Arg {
+fn position(name: &'static str) -> Arg {
     Arg::new(name)
 }
 
-fn long(name: &str) -> Arg {
+fn long(name: &'static str) -> Arg {
     Arg::new(name).long(name)
 }
 
-fn short(name: &str, s: char) -> Arg {
+fn short(name: &'static str, s: char) -> Arg {
     Arg::new(name).short(s)
 }
 
@@ -50,8 +47,20 @@ mod tests {
     #[test]
     fn test_parse_arg() {
         let app = super::app("test");
-        let matches = app.get_matches_from(&["test", "main.wiz"]);
+        let matches = app.get_matches_from(&[
+            "test",
+            "main.wiz",
+            "--library",
+            "./std",
+            "--library",
+            "./libc",
+        ]);
         let config = super::Config::from(&matches);
+
         assert_eq!(config.input().to_path_buf(), PathBuf::from("main.wiz"));
+        assert_eq!(
+            config.libraries(),
+            vec![PathBuf::from("./std"), PathBuf::from("./libc")]
+        )
     }
 }

@@ -1,11 +1,9 @@
 use crate::high_level_ir::node_id::TypedModuleId;
 use crate::high_level_ir::type_checker::TypeChecker;
-use crate::high_level_ir::type_resolver::TypeResolver;
 use crate::high_level_ir::wlib::WLib;
 use crate::high_level_ir::{ast2hlir, AstLowering};
 use crate::llvm_ir::codegen::CodeGen;
 use crate::middle_level_ir::hlir2mlir;
-use crate::result::Result;
 use inkwell::context::Context;
 use std::io::Write;
 use std::iter::FromIterator;
@@ -14,16 +12,15 @@ use std::path::PathBuf;
 use std::process::Command;
 use std::{env, fs};
 use wiz_arena::Arena;
+use wiz_result::Result;
 use wiz_session::Session;
-use wiz_syntax::syntax::file::SourceSet;
 use wiz_syntax_parser::parser;
-use wiz_syntax_parser::parser::wiz::{parse_from_file_path, read_package_from_path};
+use wiz_syntax_parser::parser::wiz::read_package_from_path;
 use wizc_cli::{BuildType, Config, ConfigExt};
 
 mod high_level_ir;
 mod llvm_ir;
 mod middle_level_ir;
-mod result;
 mod utils;
 
 fn get_builtin_find_path() -> PathBuf {
@@ -44,11 +41,12 @@ fn main() -> Result<()> {
     let matches = app.get_matches();
     let config = Config::from(&matches);
 
-    let mut session = Session::new();
-    session.timer("compile", |s| run_compiler(s, config))
+    let mut session = Session::new(config);
+    session.timer("compile", |s| run_compiler(s))
 }
 
-fn run_compiler(session: &mut Session, config: Config) -> Result<()> {
+fn run_compiler(session: &mut Session) -> Result<()> {
+    let config = session.config.clone();
     let output = config.output();
     let out_dir = config.out_dir();
     let paths = config.paths();
@@ -60,12 +58,7 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<()> {
     let mlir_out_dir = out_dir.join("mlir");
 
     let input_source = session.timer::<Result<_>, _>("parse files", |_| {
-        let input_source = if input.is_dir() {
-            read_package_from_path(input, config.name())?
-        } else {
-            SourceSet::File(parse_from_file_path(input)?)
-        };
-        Ok(input_source)
+        Ok(read_package_from_path(input, config.name().as_deref())?)
     })?;
 
     let mut arena = Arena::default();
@@ -84,7 +77,7 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<()> {
                     let package_manifest_path = lib_path.join("Package.wiz");
                     if package_manifest_path.exists() {
                         println!("`{}` found at {}", lib_name, lib_path.display());
-                        lib_paths.push(lib_path);
+                        lib_paths.push((lib_path.join("src"), lib_name));
                         break;
                     }
                 }
@@ -92,7 +85,7 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<()> {
 
             let source_sets = lib_paths
                 .iter()
-                .map(|p| read_package_from_path(p, None))
+                .map(|(p, name)| read_package_from_path(p, Some(**name)))
                 .collect::<parser::result::Result<Vec<_>>>()?;
             Ok(source_sets
                 .into_iter()
@@ -136,7 +129,7 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<()> {
 
     let std_mlir = std_hlir
         .into_iter()
-        .map(|w| hlir2mlir(w, &[], &arena, &config, false))
+        .map(|w| hlir2mlir(w, &[], &arena, session, false))
         .collect::<Result<Vec<_>>>()?;
 
     fs::create_dir_all(&mlir_out_dir)?;
@@ -147,7 +140,7 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<()> {
         })?;
     }
 
-    let mlfile = hlir2mlir(hlfiles, &std_mlir, &arena, &config, true)?;
+    let mlfile = hlir2mlir(hlfiles, &std_mlir, &arena, session, true)?;
 
     session.timer(&format!("write mlir `{}`", mlfile.name), |_| {
         let mut f = fs::File::create(mlir_out_dir.join(&mlfile.name))?;
@@ -157,7 +150,7 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<()> {
     println!("==== codegen ====");
     let module_name = &mlfile.name;
     let context = Context::create();
-    let mut codegen = CodeGen::new(&context, module_name, config.target_triple());
+    let mut codegen = CodeGen::new(&context, module_name, config.target_triple().as_deref());
 
     for m in std_mlir.into_iter() {
         codegen.file(m);
@@ -178,17 +171,13 @@ fn run_compiler(session: &mut Session, config: Config) -> Result<()> {
 
         println!("Output Path -> {}", out_path.display());
 
-        match emit {
+        match emit.as_str() {
             "llvm-ir" => codegen.print_to_file(&out_path),
             "asm" => codegen.write_as_assembly(&out_path),
             _ => codegen.write_as_object(&out_path),
         }?;
     } else {
-        let output = if let Some(output) = output {
-            String::from(output)
-        } else {
-            String::from(&mlfile.name)
-        };
+        let output = output.unwrap_or_else(|| String::from(&mlfile.name));
         let mut ir_file = out_dir.join(&output);
         ir_file.set_extension("ll");
         codegen.print_to_file(&ir_file)?;
@@ -222,11 +211,11 @@ mod tests {
         let lib_path = repository_root.join("libraries");
         let out_dir = repository_root.join("out");
 
-        let mut session = Session::new();
         let config = Config::default()
             .input(target_file_path.to_str().unwrap())
             .path(lib_path.to_str().unwrap())
             .out_dir(out_dir.to_str().unwrap());
-        run_compiler(&mut session, config).unwrap()
+        let mut session = Session::new(config);
+        run_compiler(&mut session).unwrap()
     }
 }
