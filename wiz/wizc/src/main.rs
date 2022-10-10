@@ -30,9 +30,7 @@ fn get_find_paths() -> Vec<PathBuf> {
     vec![get_builtin_find_path()]
 }
 
-fn get_builtin_lib() -> &'static [&'static str] {
-    &["core", "libc", "std"]
-}
+const BUILTIN_LIB: [&str; 3] = ["core", "libc", "std"];
 
 fn main() -> Result<()> {
     println!("{:?}", env::args());
@@ -73,7 +71,7 @@ fn run_compiler(session: &mut Session) -> Result<()> {
 
             let mut lib_paths = vec![];
 
-            for lib_name in get_builtin_lib() {
+            for lib_name in BUILTIN_LIB {
                 for p in find_paths.iter() {
                     let lib_path = p.join(lib_name);
                     let package_manifest_path = lib_path.join("Package.wiz");
@@ -87,7 +85,7 @@ fn run_compiler(session: &mut Session) -> Result<()> {
 
             let source_sets = lib_paths
                 .iter()
-                .map(|(p, name)| read_package_from_path(&session.parse_session, p, Some(**name)))
+                .map(|(p, name)| read_package_from_path(&session.parse_session, p, Some(*name)))
                 .collect::<Result<Vec<_>>>()?;
             Ok(source_sets
                 .into_iter()
