@@ -49,7 +49,6 @@ fn run_compiler(session: &mut Session) -> Result<()> {
     let output = config.output();
     let out_dir = config.out_dir();
     let paths = config.paths();
-    let input = config.input();
     let out_dir = out_dir
         .map(PathBuf::from)
         .unwrap_or_else(|| env::current_dir().unwrap());
@@ -59,8 +58,8 @@ fn run_compiler(session: &mut Session) -> Result<()> {
     let input_source = session.timer::<Result<_>, _>("parse files", |session| {
         Ok(read_package_from_path(
             &session.parse_session,
-            input,
-            config.name().as_deref(),
+            session.config.input(),
+            session.config.name().as_deref(),
         )?)
     })?;
 
