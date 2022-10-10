@@ -22,7 +22,6 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rustup-init && \
     cargo --version; \
     rustc --version;
 
-RUN $HOME/.cargo/bin/cargo install cargo-build-deps
 
 FROM rust as wiz
 
