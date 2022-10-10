@@ -1,5 +1,5 @@
 use crate::high_level_ir::AstLowering;
-use crate::TypedModuleId;
+use crate::ModuleId;
 use wiz_arena::Arena;
 use wiz_hir::typed_decl::{
     TypedArgDef, TypedDeclKind, TypedFun, TypedFunBody, TypedStoredProperty, TypedStruct,
@@ -31,7 +31,7 @@ fn check(source: &str, typed_file: TypedSpellBook) {
     let mut ast2hlir = AstLowering::new(&mut session, &mut arena);
 
     let f = ast2hlir
-        .lowing(SourceSet::File(ast), TypedModuleId::DUMMY)
+        .lowing(SourceSet::File(ast), ModuleId::DUMMY)
         .unwrap();
 
     assert_eq!(f, typed_file);

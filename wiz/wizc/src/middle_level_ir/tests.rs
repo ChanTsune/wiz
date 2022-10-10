@@ -1,6 +1,6 @@
 use crate::high_level_ir::AstLowering;
 use crate::middle_level_ir::HLIR2MLIR;
-use crate::TypedModuleId;
+use crate::ModuleId;
 use wiz_arena::Arena;
 use wiz_mir::expr::{
     MLCall, MLCallArg, MLExpr, MLLiteral, MLLiteralKind, MLName, MLUnaryOp, MLUnaryOpKind,
@@ -24,7 +24,7 @@ fn check(source: &str, except: MLFile) {
     let mut ast2hlir = AstLowering::new(&mut session, &mut arena);
 
     let hl_ss = ast2hlir
-        .lowing(SourceSet::File(ast), TypedModuleId::DUMMY)
+        .lowing(SourceSet::File(ast), ModuleId::DUMMY)
         .unwrap();
 
     let mut hlir2mlir = HLIR2MLIR::new(&session, &mut arena);

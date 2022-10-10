@@ -1,7 +1,7 @@
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash)]
-pub struct TypedModuleId(usize);
+pub struct ModuleId(usize);
 
-impl TypedModuleId {
+impl ModuleId {
     pub(crate) const DUMMY: Self = Self::new(usize::MAX);
     pub const fn new(id: usize) -> Self {
         Self(id)
@@ -9,13 +9,13 @@ impl TypedModuleId {
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash)]
-pub struct TypedNodeId {
-    module: TypedModuleId,
+pub struct NodeId {
+    module: ModuleId,
     id: usize,
 }
 
-impl TypedNodeId {
-    pub fn new(module: TypedModuleId, id: usize) -> Self {
+impl NodeId {
+    pub fn new(module: ModuleId, id: usize) -> Self {
         Self { module, id }
     }
 }

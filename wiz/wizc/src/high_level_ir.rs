@@ -1,4 +1,4 @@
-use crate::high_level_ir::node_id::TypedModuleId;
+use crate::high_level_ir::node_id::ModuleId;
 use crate::high_level_ir::type_resolver::TypeResolver;
 use std::collections::HashMap;
 use wiz_arena::{Arena, DeclarationId};
@@ -61,7 +61,7 @@ pub fn ast2hlir(
     session: &mut Session,
     arena: &mut Arena,
     s: SourceSet,
-    module_id: TypedModuleId,
+    module_id: ModuleId,
 ) -> TypedSpellBook {
     let mut converter = AstLowering::new(session, arena);
     converter.lowing(s, module_id).unwrap()
@@ -94,7 +94,7 @@ impl<'a> AstLowering<'a> {
         result
     }
 
-    pub fn lowing(&mut self, s: SourceSet, module_id: TypedModuleId) -> Result<TypedSpellBook> {
+    pub fn lowing(&mut self, s: SourceSet, module_id: ModuleId) -> Result<TypedSpellBook> {
         // detect_type_and_namespace(self.session, self.arena, &s);
 
         let file = self.source_set(s, module_id);
@@ -110,7 +110,7 @@ impl<'a> AstLowering<'a> {
         Ok(file)
     }
 
-    fn source_set(&mut self, s: SourceSet, module_id: TypedModuleId) -> TypedSpellBook {
+    fn source_set(&mut self, s: SourceSet, module_id: ModuleId) -> TypedSpellBook {
         match s {
             SourceSet::File(f) => self.file(f),
             SourceSet::Dir { name, items } => {

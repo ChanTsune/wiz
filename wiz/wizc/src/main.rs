@@ -1,4 +1,4 @@
-use crate::high_level_ir::node_id::TypedModuleId;
+use crate::high_level_ir::node_id::ModuleId;
 use crate::high_level_ir::type_checker::TypeChecker;
 use crate::high_level_ir::wlib::WLib;
 use crate::high_level_ir::{ast2hlir, AstLowering};
@@ -90,7 +90,7 @@ fn run_compiler(session: &mut Session) -> Result<()> {
             Ok(source_sets
                 .into_iter()
                 .enumerate()
-                .map(|(i, s)| ast2hlir(session, &mut arena, s, TypedModuleId::new(i)))
+                .map(|(i, s)| ast2hlir(session, &mut arena, s, ModuleId::new(i)))
                 .collect())
         } else {
             Ok(libraries
@@ -107,7 +107,7 @@ fn run_compiler(session: &mut Session) -> Result<()> {
 
     let hlfiles = session.timer("resolve type", |session| {
         let mut ast2hlir = AstLowering::new(session, &mut arena);
-        ast2hlir.lowing(input_source, TypedModuleId::new(std_hlir.len()))
+        ast2hlir.lowing(input_source, ModuleId::new(std_hlir.len()))
     })?;
 
     session.timer("type check", |session| {
