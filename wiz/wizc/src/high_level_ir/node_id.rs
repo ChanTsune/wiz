@@ -15,7 +15,19 @@ pub struct NodeId {
 }
 
 impl NodeId {
-    pub fn new(module: ModuleId, id: usize) -> Self {
+    pub const fn new(module: ModuleId, id: usize) -> Self {
         Self { module, id }
+    }
+}
+
+#[derive(Clone, Eq, PartialEq, Debug)]
+pub struct NodeIdGenerator {
+    module_id: ModuleId,
+    id: usize,
+}
+
+impl NodeIdGenerator {
+    pub const fn new(module_id: ModuleId) -> Self {
+        Self { module_id, id: 0 }
     }
 }
