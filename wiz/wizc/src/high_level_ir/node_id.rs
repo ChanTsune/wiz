@@ -30,4 +30,13 @@ impl NodeIdGenerator {
     pub const fn new(module_id: ModuleId) -> Self {
         Self { module_id, id: 0 }
     }
+
+    pub fn generate(&mut self) -> NodeId {
+        let node_id = NodeId {
+            module: self.module_id,
+            id: self.id,
+        };
+        self.id += 1;
+        node_id
+    }
 }
