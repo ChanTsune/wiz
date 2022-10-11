@@ -100,8 +100,6 @@ impl<'a> AstLowering<'a> {
         let file = self.source_set(s, module_id);
 
         let mut resolver = TypeResolver::new(self.session, self.arena);
-        resolver.global_use(&["core", "builtin", "*"]);
-        resolver.global_use(&["std", "builtin", "*"]);
 
         // NOTE: detect decl names
         resolver.preload_file(&file)?;
@@ -139,6 +137,10 @@ impl<'a> AstLowering<'a> {
 
         self.push_namespace(name, |slf| {
             let mut uses = vec![];
+            // NOTE: Inject default uses
+            uses.push(TypedUse::from(vec!["core", "builtin", "*"]));
+            uses.push(TypedUse::from(vec!["std", "builtin", "*"]));
+
             let mut others = vec![];
             for l in syntax.body.into_iter() {
                 if let DeclKind::Use(u) = l.kind {
