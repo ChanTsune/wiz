@@ -72,7 +72,7 @@ impl Arena {
         if !declaration.is_value() && d.get_child(name).is_some() {
             return None;
         }
-        let id = self.declaration_id_generator.next();
+        let id = self.declaration_id_generator.generate();
         d.add_child(name, id);
         self.declarations.insert(id, declaration);
         Some(id)
