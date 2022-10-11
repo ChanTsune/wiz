@@ -41,11 +41,6 @@ impl<'s> TypeResolver<'s> {
         }
     }
 
-    pub(crate) fn global_use<T: ToString>(&mut self, name_space: &[T]) {
-        self.context
-            .global_use_name_space(name_space.iter().map(T::to_string).collect())
-    }
-
     pub fn preload_file(&mut self, f: &TypedSpellBook) -> Result<()> {
         self.context.push_name_space(&f.name);
         for u in f.uses.iter() {

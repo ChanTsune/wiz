@@ -17,7 +17,6 @@ use wiz_utils::StackedHashMap;
 
 #[derive(Debug)]
 pub struct ResolverContext<'a> {
-    global_used_name_space: Vec<Vec<String>>,
     used_name_space: Vec<Vec<String>>,
     arena: &'a mut Arena,
     current_namespace_id: DeclarationId,
@@ -27,7 +26,6 @@ pub struct ResolverContext<'a> {
 impl<'a> ResolverContext<'a> {
     pub(crate) fn new(arena: &'a mut Arena) -> Self {
         Self {
-            global_used_name_space: Default::default(),
             used_name_space: Default::default(),
             current_namespace_id: DeclarationId::ROOT,
             local_stack: StackedHashMap::new(),
@@ -148,19 +146,10 @@ impl<'a> ResolverContext<'a> {
             .resolve_fully_qualified_name(&self.current_namespace_id);
         env.use_asterisk(&namespace_name);
 
-        let used_ns = self
-            .global_used_name_space
-            .iter()
-            .map(|ns| (true, ns))
-            .chain(self.used_name_space.iter().map(|ns| (false, ns)));
-        for (is_global, u) in used_ns {
+        for u in self.used_name_space.iter() {
             env.use_(u);
         }
         env
-    }
-
-    pub(crate) fn global_use_name_space(&mut self, ns: Vec<String>) {
-        self.global_used_name_space.push(ns);
     }
 
     pub(crate) fn use_name_space(&mut self, n: Vec<String>) {
