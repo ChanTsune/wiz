@@ -44,7 +44,7 @@ use wiz_syntax::syntax::statement::{
 };
 use wiz_syntax::syntax::type_name::{TypeName, TypeParam, UserTypeName};
 use wiz_utils::utils::path_string_to_page_name;
-use wizc_syntax_visitor::collect_type_and_namespace;
+use wizc_syntax_visitor::{collect_items, collect_type_and_namespace};
 
 pub mod node_id;
 pub mod type_checker;
@@ -96,6 +96,7 @@ impl<'a> AstLowering<'a> {
 
     pub fn lowing(&mut self, s: SourceSet, module_id: ModuleId) -> Result<TypedSpellBook> {
         // collect_type_and_namespace(self.session, self.arena, &s);
+        // collect_items(self.session, self.arena, &s);
 
         let file = self.source_set(s, module_id);
 

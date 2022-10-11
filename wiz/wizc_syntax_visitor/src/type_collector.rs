@@ -6,13 +6,13 @@ use wiz_syntax::syntax::declaration::DeclKind;
 use wiz_syntax::syntax::file::{SourceSet, WizFile};
 use wiz_utils::utils::path_string_to_page_name;
 
-pub struct AstScanner<'a> {
+pub struct AstTypeCollector<'a> {
     session: &'a Session,
     arena: &'a mut Arena,
     namespace_id: DeclarationId,
 }
 
-impl<'a> AstScanner<'a> {
+impl<'a> AstTypeCollector<'a> {
     pub(crate) fn new(session: &'a Session, arena: &'a mut Arena) -> Self {
         Self {
             session,
@@ -22,7 +22,7 @@ impl<'a> AstScanner<'a> {
     }
 }
 
-impl<'a> AstScanner<'a> {
+impl<'a> AstTypeCollector<'a> {
     fn push_namespace<T, F: FnOnce(&mut Self) -> T>(&mut self, name: &str, f: F) -> T {
         let parent = self.namespace_id;
 
@@ -42,7 +42,7 @@ impl<'a> AstScanner<'a> {
     }
 }
 
-impl<'a> AstScanner<'a> {
+impl<'a> AstTypeCollector<'a> {
     pub(crate) fn start(&mut self, source_set: &SourceSet) {
         self.source_set(source_set);
     }

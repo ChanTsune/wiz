@@ -43,9 +43,9 @@ fn main() -> Result<()> {
 
 fn run_compiler(session: &mut Session) -> Result<()> {
     let config = session.config.clone();
-    let output = config.output();
-    let out_dir = config.out_dir();
-    let paths = config.paths();
+    let output = session.config.output();
+    let out_dir = session.config.out_dir();
+    let paths = session.config.paths();
     let out_dir = out_dir
         .map(PathBuf::from)
         .unwrap_or_else(|| env::current_dir().unwrap());
