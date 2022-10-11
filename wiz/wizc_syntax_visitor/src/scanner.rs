@@ -61,7 +61,7 @@ impl<'a> AstScanner<'a> {
     fn file(&mut self, f: &WizFile) {
         let WizFile { name, syntax } = f;
 
-        let name = path_string_to_page_name(&name);
+        let name = path_string_to_page_name(name);
 
         self.push_namespace(name, |slf| {
             for l in syntax.body.iter() {
