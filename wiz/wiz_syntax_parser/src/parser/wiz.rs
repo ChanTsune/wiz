@@ -67,7 +67,7 @@ pub fn read_package_from_path(
                     .collect::<std::io::Result<Vec<_>>>()
                     .unwrap();
                 let mut items = items.into_iter().map(|i| i.path()).collect::<Vec<_>>();
-                items.sort_unstable_by(|x, y| x.is_dir().cmp(&y.is_dir()));
+                items.sort_unstable_by_key(|x| x.is_dir());
                 items
                     .iter()
                     .map(|d| read_package_from_path(session, d, None))
