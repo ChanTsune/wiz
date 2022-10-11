@@ -54,11 +54,11 @@ fn run_compiler(session: &mut Session) -> Result<()> {
     let mlir_out_dir = out_dir.join("mlir");
 
     let input_source = session.timer::<Result<_>, _>("parse files", |session| {
-        Ok(read_package_from_path(
+        read_package_from_path(
             &session.parse_session,
             session.config.input(),
             session.config.name().as_deref(),
-        )?)
+        )
     })?;
 
     let mut arena = Arena::default();
