@@ -82,17 +82,17 @@ impl<'s> TypeResolver<'s> {
                 self.context.update_function(&id, fun.type_()).unwrap();
             }
             TypedDeclKind::Struct(s) => {
-                let _ = self.preload_struct(s)?;
+                self.preload_struct(s)?;
             }
             TypedDeclKind::Module(m) => {
                 self.preload_file(m)?;
             }
             TypedDeclKind::Enum => todo!(),
             TypedDeclKind::Protocol(p) => {
-                let _ = self.preload_protocol(p)?;
+                self.preload_protocol(p)?;
             }
             TypedDeclKind::Extension(e) => {
-                let _ = self.preload_extension(e)?;
+                self.preload_extension(e)?;
             }
         }
         Ok(())
