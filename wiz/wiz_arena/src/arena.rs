@@ -1,6 +1,7 @@
 use crate::declaration::{DeclarationItem, DeclarationItemKind};
 use crate::declaration_id::{DeclarationId, DeclarationIdGenerator};
 pub use function::ArenaFunction;
+pub use namespace::ArenaNamespace;
 pub use r#struct::{ArenaStruct, StructKind};
 use std::collections::HashMap;
 use std::fmt::{Debug, Display, Formatter, Write};
@@ -11,6 +12,7 @@ use wiz_hir::typed_expr::TypedBinaryOperator;
 use wiz_hir::typed_type::{TypedType, TypedTypeParam, TypedValueType};
 
 mod function;
+mod namespace;
 mod r#struct;
 
 #[derive(Debug, Clone)]
@@ -28,7 +30,7 @@ impl Default for Arena {
             DeclarationItem::new(
                 TypedAnnotations::from(vec![BUILTIN]),
                 "",
-                DeclarationItemKind::Namespace,
+                DeclarationItemKind::Namespace(ArenaNamespace::new()),
                 None,
             ),
         );
@@ -90,7 +92,7 @@ impl Arena {
             DeclarationItem::new(
                 annotation,
                 name,
-                DeclarationItemKind::Namespace,
+                DeclarationItemKind::Namespace(ArenaNamespace::new()),
                 Some(*namespace),
             ),
         )
@@ -187,7 +189,7 @@ impl Arena {
     pub fn get_type_by_id(&self, id: &DeclarationId) -> Option<&ArenaStruct> {
         match &self.get_by_id(id)?.kind {
             DeclarationItemKind::Type(rs) => Some(rs),
-            DeclarationItemKind::Namespace
+            DeclarationItemKind::Namespace(_)
             | DeclarationItemKind::Variable(_)
             | DeclarationItemKind::Function(..) => None,
         }
@@ -243,7 +245,7 @@ impl Arena {
 
     pub fn get_type<T: ToString>(&self, name_space: &[T], name: &str) -> Option<&ArenaStruct> {
         match &self.get(name_space, name)?.kind {
-            DeclarationItemKind::Namespace => panic!("this is namespace"),
+            DeclarationItemKind::Namespace(_) => panic!("this is namespace"),
             DeclarationItemKind::Type(t) => Some(t),
             DeclarationItemKind::Variable(v) => panic!("V:{:?}", v),
             DeclarationItemKind::Function(v) => panic!("F:{:?}", v),
@@ -256,7 +258,7 @@ impl Arena {
         name: &str,
     ) -> Option<&mut ArenaStruct> {
         match &mut self.get_mut(name_space, name)?.kind {
-            DeclarationItemKind::Namespace => panic!("this is namespace"),
+            DeclarationItemKind::Namespace(_) => panic!("this is namespace"),
             DeclarationItemKind::Type(t) => Some(t),
             DeclarationItemKind::Variable(v) => panic!("V:{:?}", v),
             DeclarationItemKind::Function(v) => panic!("F:{:?}", v),
@@ -374,6 +376,7 @@ impl Arena {
 #[cfg(test)]
 mod tests {
     use super::Arena;
+    use crate::arena::ArenaNamespace;
     use crate::declaration::DeclarationItem;
     use crate::declaration::DeclarationItemKind;
     use crate::declaration_id::DeclarationId;
@@ -541,7 +544,7 @@ mod tests {
             DeclarationItem::new(
                 Default::default(),
                 std_namespace_name,
-                DeclarationItemKind::Namespace,
+                DeclarationItemKind::Namespace(ArenaNamespace::new()),
                 Some(DeclarationId::ROOT),
             ),
             *std_namespace.unwrap()

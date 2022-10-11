@@ -603,7 +603,7 @@ impl<'s> TypeResolver<'s> {
             .get_mut(&package.clone().into_resolved().names, &n.name);
         if let Some(item) = item {
             match &mut item.kind {
-                DeclarationItemKind::Namespace => {}
+                DeclarationItemKind::Namespace(_) => {}
                 DeclarationItemKind::Type(t) => {}
                 DeclarationItemKind::Variable(t) => {}
                 DeclarationItemKind::Function(rf) => {

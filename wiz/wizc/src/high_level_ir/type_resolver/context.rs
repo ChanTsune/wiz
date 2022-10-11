@@ -75,7 +75,7 @@ impl<'a> ResolverContext<'a> {
         let item = self.arena().get_by_id(&id)?;
         match &item.kind {
             DeclarationItemKind::Type(_) => Some(id),
-            DeclarationItemKind::Namespace
+            DeclarationItemKind::Namespace(_)
             | DeclarationItemKind::Variable(_)
             | DeclarationItemKind::Function(..) => self._current_type_id(item.parent()?),
         }
@@ -85,7 +85,7 @@ impl<'a> ResolverContext<'a> {
         let id = self.current_namespace_id;
         match &mut self.arena_mut().get_mut_by_id(&id)?.kind {
             DeclarationItemKind::Type(rs) => Some(rs),
-            DeclarationItemKind::Namespace
+            DeclarationItemKind::Namespace(_)
             | DeclarationItemKind::Variable(_)
             | DeclarationItemKind::Function(..) => None,
         }
@@ -98,7 +98,7 @@ impl<'a> ResolverContext<'a> {
     fn _current_module_id(&self, id: DeclarationId) -> Option<DeclarationId> {
         let item = self.arena().get_by_id(&id)?;
         match &item.kind {
-            DeclarationItemKind::Namespace => Some(id),
+            DeclarationItemKind::Namespace(_) => Some(id),
             DeclarationItemKind::Type(_) | DeclarationItemKind::Function(..) => {
                 self._current_module_id(item.parent().unwrap())
             }
