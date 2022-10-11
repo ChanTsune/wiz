@@ -14,7 +14,6 @@ use std::{env, fs};
 use wiz_arena::Arena;
 use wiz_result::Result;
 use wiz_session::Session;
-use wiz_syntax_parser::parser;
 use wiz_syntax_parser::parser::wiz::read_package_from_path;
 use wizc_cli::{BuildType, Config, ConfigExt};
 
