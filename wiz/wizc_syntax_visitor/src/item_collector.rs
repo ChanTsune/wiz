@@ -1,4 +1,5 @@
 use wiz_arena::Arena;
+use wiz_hir::typed_file::TypedSpellBook;
 use wiz_session::Session;
 use wiz_syntax::syntax::file::SourceSet;
 
@@ -11,5 +12,5 @@ impl AstItemCollector {
 }
 
 impl AstItemCollector {
-    pub(crate) fn start(&self, source_set: &SourceSet) {}
+    pub(crate) fn start(&self, module: &mut TypedSpellBook, source_set: &SourceSet) {}
 }
