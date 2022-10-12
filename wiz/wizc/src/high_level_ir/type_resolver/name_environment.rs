@@ -37,7 +37,7 @@ impl<'a> NameEnvironment<'a> {
                 let env_item = if let Some(i) = items.first() {
                     if let DeclarationItemKind::Type(_) = i.kind {
                         EnvValue::from(**ids.first().unwrap())
-                    } else if let DeclarationItemKind::Namespace(_) = i.kind {
+                    } else if let DeclarationItemKind::Namespace = i.kind {
                         EnvValue::Namespace(**ids.first().unwrap())
                     } else {
                         let mut values = HashSet::new();

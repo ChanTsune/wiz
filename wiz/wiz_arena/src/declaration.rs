@@ -1,4 +1,4 @@
-use crate::arena::{ArenaFunction, ArenaNamespace, ArenaStruct};
+use crate::arena::{ArenaFunction, ArenaStruct};
 use crate::declaration_id::DeclarationId;
 use std::borrow::Borrow;
 use std::collections::{HashMap, HashSet};
@@ -57,7 +57,7 @@ impl DeclarationItem {
     }
 
     pub fn is_namespace(&self) -> bool {
-        matches!(self.kind, DeclarationItemKind::Namespace(_))
+        matches!(self.kind, DeclarationItemKind::Namespace)
     }
 
     pub fn is_type(&self) -> bool {
@@ -79,7 +79,7 @@ impl DeclarationItem {
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum DeclarationItemKind {
-    Namespace(ArenaNamespace),
+    Namespace,
     Type(ArenaStruct),
     Variable(TypedType),
     Function(ArenaFunction),
