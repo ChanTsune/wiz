@@ -51,12 +51,6 @@ pub mod type_checker;
 pub mod type_resolver;
 pub mod wlib;
 
-pub struct AstLowering<'a> {
-    session: &'a mut Session,
-    arena: &'a mut Arena,
-    namespace_id: DeclarationId,
-}
-
 pub fn ast2hlir(
     session: &mut Session,
     arena: &mut Arena,
@@ -65,6 +59,12 @@ pub fn ast2hlir(
 ) -> TypedSpellBook {
     let mut converter = AstLowering::new(session, arena);
     converter.lowing(s, module_id).unwrap()
+}
+
+pub struct AstLowering<'a> {
+    session: &'a mut Session,
+    arena: &'a mut Arena,
+    namespace_id: DeclarationId,
 }
 
 impl<'a> AstLowering<'a> {
