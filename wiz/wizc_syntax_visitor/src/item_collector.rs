@@ -3,17 +3,14 @@ use wiz_hir::typed_file::TypedSpellBook;
 use wiz_session::Session;
 use wiz_syntax::syntax::file::SourceSet;
 
-pub(crate) struct AstItemCollector<'a> {
-    session: &'a Session,
-    arena: &'a Arena,
-}
+pub(crate) struct AstItemCollector {}
 
-impl<'a> AstItemCollector<'a> {
-    pub(crate) fn new(session: &'a Session, arena: &'a Arena) -> Self {
-        Self { session, arena }
+impl AstItemCollector {
+    pub(crate) fn new(session: &Session, arena: &Arena) -> Self {
+        Self {}
     }
 }
 
-impl<'a> AstItemCollector<'a> {
+impl AstItemCollector {
     pub(crate) fn start(&self, module: &mut TypedSpellBook, source_set: &SourceSet) {}
 }
