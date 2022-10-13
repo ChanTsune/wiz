@@ -96,12 +96,9 @@ impl<'a> AstLowering<'a> {
 
     pub fn lowing(&mut self, s: SourceSet, module_id: ModuleId) -> Result<TypedSpellBook> {
         // collect_type_and_namespace(self.session, self.arena, &s);
+        // collect_items(self.session, self.arena, &s);
 
-        let mut file = TypedSpellBook::empty();
-
-        collect_items(self.session, self.arena, &mut file, &s);
-
-        self.source_set(&mut file, s, module_id);
+        let file = self.source_set(s, module_id);
 
         let mut resolver = TypeResolver::new(self.session, self.arena);
 
@@ -112,32 +109,29 @@ impl<'a> AstLowering<'a> {
         Ok(file)
     }
 
-    fn source_set(&mut self, module: &mut TypedSpellBook, s: SourceSet, module_id: ModuleId) {
+    fn source_set(&mut self, s: SourceSet, module_id: ModuleId) -> TypedSpellBook {
         match s {
-            SourceSet::File(f) => self.file(module, f),
+            SourceSet::File(f) => self.file(f),
             SourceSet::Dir { name, items } => {
-                self.push_namespace(&name.clone(), |slf| {
-                    module.name = name;
-                    module.body = items
+                self.push_namespace(&name.clone(), |slf| TypedSpellBook {
+                    name,
+                    uses: vec![],
+                    body: items
                         .into_iter()
-                        .map(|i| {
-                            let mut module = TypedSpellBook::empty();
-                            slf.source_set(&mut module, i, module_id);
-                            module
-                        })
+                        .map(|i| slf.source_set(i, module_id))
                         .map(|f| TypedTopLevelDecl {
                             annotations: Default::default(),
                             package: Package::new(),
                             modifiers: vec![],
                             kind: TypedDeclKind::Module(f),
                         })
-                        .collect();
-                });
+                        .collect(),
+                })
             }
-        };
+        }
     }
 
-    fn file(&mut self, module: &mut TypedSpellBook, f: WizFile) {
+    fn file(&mut self, f: WizFile) -> TypedSpellBook {
         let WizFile { name, syntax } = f;
 
         let name = path_string_to_page_name(&name);
@@ -173,12 +167,14 @@ impl<'a> AstLowering<'a> {
                 }
             }
 
-            module.name = name.to_string();
-            module.uses = uses;
-            module.body = others
-                .into_iter()
-                .map(|d| slf.decl(d.kind, d.annotations))
-                .collect();
+            TypedSpellBook {
+                name: name.to_string(),
+                uses,
+                body: others
+                    .into_iter()
+                    .map(|d| slf.decl(d.kind, d.annotations))
+                    .collect(),
+            }
         })
     }
 

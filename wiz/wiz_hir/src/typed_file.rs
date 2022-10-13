@@ -8,13 +8,3 @@ pub struct TypedSpellBook {
     pub uses: Vec<TypedUse>,
     pub body: Vec<TypedTopLevelDecl>,
 }
-
-impl TypedSpellBook {
-    pub fn empty() -> Self {
-        Self {
-            name: Default::default(),
-            uses: Default::default(),
-            body: Default::default(),
-        }
-    }
-}
