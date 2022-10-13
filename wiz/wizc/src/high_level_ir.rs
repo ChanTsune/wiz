@@ -1,12 +1,11 @@
-use crate::high_level_ir::node_id::TypedModuleId;
+use crate::high_level_ir::node_id::ModuleId;
 use crate::high_level_ir::type_resolver::TypeResolver;
-use crate::utils::path_string_to_page_name;
 use std::collections::HashMap;
 use wiz_arena::{Arena, DeclarationId};
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_decl::{
-    TypedArgDef, TypedComputedProperty, TypedDecl, TypedDeclKind, TypedExtension, TypedFun,
-    TypedFunBody, TypedProtocol, TypedStoredProperty, TypedStruct, TypedVar,
+    TypedArgDef, TypedComputedProperty, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody,
+    TypedProtocol, TypedStoredProperty, TypedStruct, TypedTopLevelDecl, TypedVar,
 };
 use wiz_hir::typed_expr::{
     TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedExprKind,
@@ -14,7 +13,7 @@ use wiz_hir::typed_expr::{
     TypedPostfixUnaryOperator, TypedPrefixUnaryOp, TypedPrefixUnaryOperator, TypedReturn,
     TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
-use wiz_hir::typed_file::TypedFile;
+use wiz_hir::typed_file::TypedSpellBook;
 use wiz_hir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentAndOperator, TypedAssignmentStmt,
     TypedBlock, TypedForStmt, TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
@@ -44,6 +43,8 @@ use wiz_syntax::syntax::statement::{
     AssignmentStmt, ForLoopSyntax, LoopStmt, Stmt, WhileLoopSyntax,
 };
 use wiz_syntax::syntax::type_name::{TypeName, TypeParam, UserTypeName};
+use wiz_utils::utils::path_string_to_page_name;
+use wizc_syntax_visitor::{collect_items, collect_type_and_namespace};
 
 pub mod node_id;
 pub mod type_checker;
@@ -60,8 +61,8 @@ pub fn ast2hlir(
     session: &mut Session,
     arena: &mut Arena,
     s: SourceSet,
-    module_id: TypedModuleId,
-) -> TypedFile {
+    module_id: ModuleId,
+) -> TypedSpellBook {
     let mut converter = AstLowering::new(session, arena);
     converter.lowing(s, module_id).unwrap()
 }
@@ -93,46 +94,54 @@ impl<'a> AstLowering<'a> {
         result
     }
 
-    pub fn lowing(&mut self, s: SourceSet, module_id: TypedModuleId) -> Result<TypedFile> {
+    pub fn lowing(&mut self, s: SourceSet, module_id: ModuleId) -> Result<TypedSpellBook> {
+        // collect_type_and_namespace(self.session, self.arena, &s);
+        // collect_items(self.session, self.arena, &s);
+
         let file = self.source_set(s, module_id);
 
         let mut resolver = TypeResolver::new(self.session, self.arena);
-        resolver.global_use(&["core", "builtin", "*"]);
-        resolver.global_use(&["std", "builtin", "*"]);
 
+        // NOTE: detect decl names
         resolver.preload_file(&file)?;
 
         let file = resolver.file(file)?;
         Ok(file)
     }
 
-    fn source_set(&mut self, s: SourceSet, module_id: TypedModuleId) -> TypedFile {
+    fn source_set(&mut self, s: SourceSet, module_id: ModuleId) -> TypedSpellBook {
         match s {
             SourceSet::File(f) => self.file(f),
-            SourceSet::Dir { name, items } => self.push_namespace(&name.clone(), |slf| TypedFile {
-                name,
-                uses: vec![],
-                body: items
-                    .into_iter()
-                    .map(|i| slf.source_set(i, module_id))
-                    .map(|f| TypedDecl {
-                        annotations: Default::default(),
-                        package: Package::new(),
-                        modifiers: vec![],
-                        kind: TypedDeclKind::Module(f),
-                    })
-                    .collect(),
-            }),
+            SourceSet::Dir { name, items } => {
+                self.push_namespace(&name.clone(), |slf| TypedSpellBook {
+                    name,
+                    uses: vec![],
+                    body: items
+                        .into_iter()
+                        .map(|i| slf.source_set(i, module_id))
+                        .map(|f| TypedTopLevelDecl {
+                            annotations: Default::default(),
+                            package: Package::new(),
+                            modifiers: vec![],
+                            kind: TypedDeclKind::Module(f),
+                        })
+                        .collect(),
+                })
+            }
         }
     }
 
-    fn file(&mut self, f: WizFile) -> TypedFile {
+    fn file(&mut self, f: WizFile) -> TypedSpellBook {
         let WizFile { name, syntax } = f;
 
         let name = path_string_to_page_name(&name);
 
         self.push_namespace(name, |slf| {
             let mut uses = vec![];
+            // NOTE: Inject default uses
+            uses.push(TypedUse::from(vec!["core", "builtin", "*"]));
+            uses.push(TypedUse::from(vec!["std", "builtin", "*"]));
+
             let mut others = vec![];
             for l in syntax.body.into_iter() {
                 if let DeclKind::Use(u) = l.kind {
@@ -158,7 +167,7 @@ impl<'a> AstLowering<'a> {
                 }
             }
 
-            TypedFile {
+            TypedSpellBook {
                 name: name.to_string(),
                 uses,
                 body: others
@@ -237,8 +246,8 @@ impl<'a> AstLowering<'a> {
         }
     }
 
-    fn decl(&mut self, d: DeclKind, annotation: Option<AnnotationsSyntax>) -> TypedDecl {
-        TypedDecl {
+    fn decl(&mut self, d: DeclKind, annotation: Option<AnnotationsSyntax>) -> TypedTopLevelDecl {
+        TypedTopLevelDecl {
             annotations: self.annotations(&annotation),
             package: Package::from(&self.arena.resolve_fully_qualified_name(&self.namespace_id)),
             modifiers: vec![],

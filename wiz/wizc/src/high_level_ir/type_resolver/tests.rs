@@ -1,27 +1,28 @@
 use crate::high_level_ir::AstLowering;
-use crate::TypedModuleId;
+use crate::ModuleId;
 use wiz_arena::Arena;
 use wiz_hir::typed_decl::{
-    TypedArgDef, TypedDecl, TypedDeclKind, TypedFun, TypedFunBody, TypedStoredProperty,
-    TypedStruct, TypedVar,
+    TypedArgDef, TypedDeclKind, TypedFun, TypedFunBody, TypedStoredProperty, TypedStruct,
+    TypedTopLevelDecl, TypedVar,
 };
 use wiz_hir::typed_expr::{
     TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedExprKind, TypedIf,
     TypedInstanceMember, TypedLiteralKind, TypedName, TypedPrefixUnaryOp, TypedPrefixUnaryOperator,
     TypedReturn, TypedSubscript, TypedUnaryOp,
 };
-use wiz_hir::typed_file::TypedFile;
+use wiz_hir::typed_file::TypedSpellBook;
 use wiz_hir::typed_stmt::{TypedBlock, TypedStmt};
 use wiz_hir::typed_type::{
     Package, TypedArgType, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType,
     TypedValueType,
 };
-use wiz_session::Session;
+use wiz_session::{ParseSession, Session};
 use wiz_syntax::syntax::file::SourceSet;
 use wiz_syntax_parser::parser::wiz::parse_from_string;
 
-fn check(source: &str, typed_file: TypedFile) {
-    let ast = parse_from_string::<&str>(None, source, Some(&typed_file.name)).unwrap();
+fn check(source: &str, typed_file: TypedSpellBook) {
+    let session = ParseSession::default();
+    let ast = parse_from_string::<&str>(&session, None, source, Some(&typed_file.name)).unwrap();
 
     let mut session = Session::default();
 
@@ -30,7 +31,7 @@ fn check(source: &str, typed_file: TypedFile) {
     let mut ast2hlir = AstLowering::new(&mut session, &mut arena);
 
     let f = ast2hlir
-        .lowing(SourceSet::File(ast), TypedModuleId::DUMMY)
+        .lowing(SourceSet::File(ast), ModuleId::DUMMY)
         .unwrap();
 
     assert_eq!(f, typed_file);
@@ -42,7 +43,7 @@ fn test_empty() {
 
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "test".to_string(),
             uses: vec![],
             body: vec![],
@@ -62,11 +63,11 @@ fn test_unsafe_pointer() {
         ";
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "test".to_string(),
             uses: vec![],
             body: vec![
-                TypedDecl {
+                TypedTopLevelDecl {
                     annotations: Default::default(),
                     package: Package::from(&vec!["test"]),
                     modifiers: vec![],
@@ -87,7 +88,7 @@ fn test_unsafe_pointer() {
                         ))],
                     }),
                 },
-                TypedDecl {
+                TypedTopLevelDecl {
                     annotations: Default::default(),
                     package: Package::from(&vec!["test"]),
                     modifiers: vec![],
@@ -105,7 +106,7 @@ fn test_unsafe_pointer() {
                             })),
                         }],
                         body: Some(TypedFunBody::Block(TypedBlock {
-                            body: vec![TypedStmt::Decl(TypedDecl {
+                            body: vec![TypedStmt::Decl(TypedTopLevelDecl {
                                 annotations: Default::default(),
                                 package: Package::new(),
                                 modifiers: vec![],
@@ -160,11 +161,11 @@ fn test_struct_stored_property() {
 
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "test".to_string(),
             uses: vec![],
             body: vec![
-                TypedDecl {
+                TypedTopLevelDecl {
                     annotations: Default::default(),
                     package: Package::from(&vec!["test"]),
                     modifiers: vec![],
@@ -185,7 +186,7 @@ fn test_struct_stored_property() {
                         ))],
                     }),
                 },
-                TypedDecl {
+                TypedTopLevelDecl {
                     annotations: Default::default(),
                     package: Package::from(&vec!["test"]),
                     modifiers: vec![],
@@ -203,7 +204,7 @@ fn test_struct_stored_property() {
                             })),
                         }],
                         body: Some(TypedFunBody::Block(TypedBlock {
-                            body: vec![TypedStmt::Decl(TypedDecl {
+                            body: vec![TypedStmt::Decl(TypedTopLevelDecl {
                                 annotations: Default::default(),
                                 package: Package::new(),
                                 modifiers: vec![],
@@ -258,11 +259,11 @@ fn test_struct_init() {
 
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "test".to_string(),
             uses: vec![],
             body: vec![
-                TypedDecl {
+                TypedTopLevelDecl {
                     annotations: Default::default(),
                     package: Package::from(&vec!["test"]),
                     modifiers: vec![],
@@ -283,7 +284,7 @@ fn test_struct_init() {
                         ))],
                     }),
                 },
-                TypedDecl {
+                TypedTopLevelDecl {
                     annotations: Default::default(),
                     package: Package::from(&vec!["test"]),
                     modifiers: vec![],
@@ -301,7 +302,7 @@ fn test_struct_init() {
                             })),
                         }],
                         body: Some(TypedFunBody::Block(TypedBlock {
-                            body: vec![TypedStmt::Decl(TypedDecl {
+                            body: vec![TypedStmt::Decl(TypedTopLevelDecl {
                                 annotations: Default::default(),
                                 package: Package::new(),
                                 modifiers: vec![],
@@ -383,10 +384,10 @@ fn test_struct_member_function() {
 
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "test".to_string(),
             uses: vec![],
-            body: vec![TypedDecl {
+            body: vec![TypedTopLevelDecl {
                 annotations: Default::default(),
                 package: Package::from(&vec!["test"]),
                 modifiers: vec![],
@@ -483,11 +484,11 @@ fn test_struct_member_function_call() {
 
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "test".to_string(),
             uses: vec![],
             body: vec![
-                TypedDecl {
+                TypedTopLevelDecl {
                     annotations: Default::default(),
                     package: Package::from(&vec!["test"]),
                     modifiers: vec![],
@@ -566,7 +567,7 @@ fn test_struct_member_function_call() {
                         ],
                     }),
                 },
-                TypedDecl {
+                TypedTopLevelDecl {
                     annotations: Default::default(),
                     package: Package::from(&vec!["test"]),
                     modifiers: vec![],
@@ -644,10 +645,10 @@ fn test_expr_function_with_no_arg() {
 
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "test".to_string(),
             uses: vec![],
-            body: vec![TypedDecl {
+            body: vec![TypedTopLevelDecl {
                 annotations: Default::default(),
                 package: Package::from(&vec!["test"]),
                 modifiers: vec![],
@@ -675,10 +676,10 @@ fn test_expr_function_with_arg() {
 
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "test".to_string(),
             uses: vec![],
-            body: vec![TypedDecl {
+            body: vec![TypedTopLevelDecl {
                 annotations: Default::default(),
                 package: Package::from(&vec!["test"]),
                 modifiers: vec![],
@@ -717,11 +718,11 @@ fn test_function_call() {
 
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "test".to_string(),
             uses: vec![],
             body: vec![
-                TypedDecl {
+                TypedTopLevelDecl {
                     annotations: Default::default(),
                     package: Package::from(&vec!["test"]),
                     modifiers: vec![],
@@ -737,7 +738,7 @@ fn test_function_call() {
                         return_type: TypedType::int64(),
                     }),
                 },
-                TypedDecl {
+                TypedTopLevelDecl {
                     annotations: Default::default(),
                     package: Package::from(&vec!["test"]),
                     modifiers: vec![],
@@ -785,10 +786,10 @@ fn test_return_integer_literal() {
 
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "test".to_string(),
             uses: vec![],
-            body: vec![TypedDecl {
+            body: vec![TypedTopLevelDecl {
                 annotations: Default::default(),
                 package: Package::from(&vec!["test"]),
                 modifiers: vec![],
@@ -827,10 +828,10 @@ fn test_return_floating_point_literal() {
 
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "test".to_string(),
             uses: vec![],
-            body: vec![TypedDecl {
+            body: vec![TypedTopLevelDecl {
                 annotations: Default::default(),
                 package: Package::from(&vec!["test"]),
                 modifiers: vec![],
@@ -869,10 +870,10 @@ fn test_binop() {
 
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "test".to_string(),
             uses: vec![],
-            body: vec![TypedDecl {
+            body: vec![TypedTopLevelDecl {
                 annotations: Default::default(),
                 package: Package::from(&vec!["test"]),
                 modifiers: vec![],
@@ -916,10 +917,10 @@ fn test_subscript() {
 
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "test".to_string(),
             uses: vec![],
-            body: vec![TypedDecl {
+            body: vec![TypedTopLevelDecl {
                 annotations: Default::default(),
                 package: Package::from(&vec!["test"]),
                 modifiers: vec![],
@@ -966,10 +967,10 @@ fn test_if_else() {
 
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "test".to_string(),
             uses: vec![],
-            body: vec![TypedDecl {
+            body: vec![TypedTopLevelDecl {
                 annotations: Default::default(),
                 package: Package::from(&vec!["test"]),
                 modifiers: vec![],
@@ -1053,10 +1054,10 @@ fn test_if() {
 
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "test".to_string(),
             uses: vec![],
-            body: vec![TypedDecl {
+            body: vec![TypedTopLevelDecl {
                 annotations: Default::default(),
                 package: Package::from(&vec!["test"]),
                 modifiers: vec![],
@@ -1093,7 +1094,7 @@ fn test_if() {
                                     Some(TypedType::bool()),
                                 )),
                                 body: TypedBlock {
-                                    body: vec![TypedStmt::Decl(TypedDecl {
+                                    body: vec![TypedStmt::Decl(TypedTopLevelDecl {
                                         annotations: Default::default(),
                                         package: Package::new(),
                                         modifiers: vec![],
@@ -1133,10 +1134,10 @@ fn test_reference_dereference() {
     ";
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "test".to_string(),
             uses: vec![],
-            body: vec![TypedDecl {
+            body: vec![TypedTopLevelDecl {
                 annotations: Default::default(),
                 package: Package::from(&vec!["test"]),
                 modifiers: vec![],
@@ -1147,7 +1148,7 @@ fn test_reference_dereference() {
                     arg_defs: vec![],
                     body: Some(TypedFunBody::Block(TypedBlock {
                         body: vec![
-                            TypedStmt::Decl(TypedDecl {
+                            TypedStmt::Decl(TypedTopLevelDecl {
                                 annotations: Default::default(),
                                 package: Package::new(),
                                 modifiers: vec![],
@@ -1163,7 +1164,7 @@ fn test_reference_dereference() {
                                     ),
                                 }),
                             }),
-                            TypedStmt::Decl(TypedDecl {
+                            TypedStmt::Decl(TypedTopLevelDecl {
                                 annotations: Default::default(),
                                 package: Package::new(),
                                 modifiers: vec![],
@@ -1195,7 +1196,7 @@ fn test_reference_dereference() {
                                     ),
                                 }),
                             }),
-                            TypedStmt::Decl(TypedDecl {
+                            TypedStmt::Decl(TypedTopLevelDecl {
                                 annotations: Default::default(),
                                 package: Package::new(),
                                 modifiers: vec![],
@@ -1243,10 +1244,10 @@ fn test_toplevel_var() {
     ";
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "tests".to_string(),
             uses: vec![],
-            body: vec![TypedDecl {
+            body: vec![TypedTopLevelDecl {
                 annotations: Default::default(),
                 package: Package::from(&vec!["tests"]),
                 modifiers: vec![],
@@ -1277,11 +1278,11 @@ fn test_function_overload_by_arguments() {
 
     check(
         source,
-        TypedFile {
+        TypedSpellBook {
             name: "test".to_string(),
             uses: vec![],
             body: vec![
-                TypedDecl {
+                TypedTopLevelDecl {
                     annotations: Default::default(),
                     package: Package::from(&vec!["test"]),
                     modifiers: vec![],
@@ -1298,7 +1299,7 @@ fn test_function_overload_by_arguments() {
                         return_type: TypedType::unit(),
                     }),
                 },
-                TypedDecl {
+                TypedTopLevelDecl {
                     annotations: Default::default(),
                     package: Package::from(&vec!["test"]),
                     modifiers: vec![],
@@ -1315,7 +1316,7 @@ fn test_function_overload_by_arguments() {
                         return_type: TypedType::unit(),
                     }),
                 },
-                TypedDecl {
+                TypedTopLevelDecl {
                     annotations: Default::default(),
                     package: Package::from(&vec!["test"]),
                     modifiers: vec![],

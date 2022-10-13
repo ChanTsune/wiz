@@ -5,15 +5,15 @@ use wiz_constants as constants;
 use wiz_constants::annotation::{BUILTIN, ENTRY, NO_MANGLE, TEST};
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_decl::{
-    TypedArgDef, TypedDecl, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedProtocol,
-    TypedStruct, TypedVar,
+    TypedArgDef, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedProtocol, TypedStruct,
+    TypedTopLevelDecl, TypedVar,
 };
 use wiz_hir::typed_expr::{
     TypedArray, TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedExprKind,
     TypedIf, TypedInstanceMember, TypedLiteralKind, TypedName, TypedPrefixUnaryOperator,
     TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
-use wiz_hir::typed_file::TypedFile;
+use wiz_hir::typed_file::TypedSpellBook;
 use wiz_hir::typed_stmt::{
     TypedAssignmentAndOperator, TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt,
 };
@@ -38,7 +38,7 @@ mod context;
 mod tests;
 
 pub fn hlir2mlir<'a>(
-    target: TypedFile,
+    target: TypedSpellBook,
     dependencies: &'a [MLFile],
     arena: &'a Arena,
     session: &'a Session,
@@ -111,7 +111,7 @@ impl<'a> HLIR2MLIR<'a> {
 
     pub fn convert_from_file(
         &mut self,
-        f: TypedFile,
+        f: TypedSpellBook,
         generate_test_harness_if_needed: bool,
     ) -> MLFile {
         let name = f.name.clone();
@@ -196,7 +196,7 @@ impl<'a> HLIR2MLIR<'a> {
         }
     }
 
-    fn file(&mut self, f: TypedFile) -> Result<()> {
+    fn file(&mut self, f: TypedSpellBook) -> Result<()> {
         f.body.into_iter().try_for_each(|d| self.decl(d))
     }
 
@@ -259,8 +259,8 @@ impl<'a> HLIR2MLIR<'a> {
         }
     }
 
-    fn decl(&mut self, d: TypedDecl) -> Result<()> {
-        let TypedDecl {
+    fn decl(&mut self, d: TypedTopLevelDecl) -> Result<()> {
+        let TypedTopLevelDecl {
             annotations,
             package,
             modifiers,

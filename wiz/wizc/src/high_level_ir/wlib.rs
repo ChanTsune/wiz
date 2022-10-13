@@ -3,15 +3,15 @@ use std::fmt::Debug;
 use std::path::Path;
 use wiz_arena::{Arena, DeclarationId, DeclarationItemKind};
 use wiz_hir::typed_decl::TypedDeclKind;
-use wiz_hir::typed_file::TypedFile;
+use wiz_hir::typed_file::TypedSpellBook;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WLib {
-    pub typed_ir: TypedFile,
+    pub typed_ir: TypedSpellBook,
 }
 
 impl WLib {
-    pub fn new(typed_ir: TypedFile) -> WLib {
+    pub fn new(typed_ir: TypedSpellBook) -> WLib {
         WLib { typed_ir }
     }
 
@@ -34,7 +34,7 @@ impl WLib {
     fn _apply_to(
         &self,
         parent: &DeclarationId,
-        f: &TypedFile,
+        f: &TypedSpellBook,
         arena: &mut Arena,
     ) -> Result<(), String> {
         let id = arena

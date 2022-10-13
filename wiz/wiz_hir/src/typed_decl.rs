@@ -1,13 +1,13 @@
 use crate::typed_annotation::TypedAnnotations;
 use crate::typed_expr::{TypedExpr, TypedExprKind};
-use crate::typed_file::TypedFile;
+use crate::typed_file::TypedSpellBook;
 use crate::typed_stmt::TypedBlock;
 use crate::typed_type::{Package, TypedArgType, TypedFunctionType, TypedType, TypedTypeParam};
 use crate::typed_type_constraint::TypedTypeConstraint;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
-pub struct TypedDecl {
+pub struct TypedTopLevelDecl {
     pub annotations: TypedAnnotations,
     pub package: Package,
     pub modifiers: Vec<String>,
@@ -131,4 +131,4 @@ impl TypedFun {
     }
 }
 
-pub type TypedModule = TypedFile;
+pub type TypedModule = TypedSpellBook;

@@ -14,6 +14,7 @@ use nom::{
     InputTakeAtPosition, Offset, Slice,
 };
 use std::ops::{Range, RangeFrom};
+use wiz_session::ParseSession;
 use wiz_syntax::syntax::expression::{Expr, NameExprSyntax, ParenthesizedExprSyntax};
 use wiz_syntax::syntax::file::FileSyntax;
 use wiz_syntax::syntax::statement::{
@@ -381,10 +382,13 @@ where
     alt((decl_stmt, assignment_stmt, loop_stmt, expr_stmt))(s)
 }
 
-pub fn file(s: Span) -> IResult<Span, FileSyntax> {
-    map(
-        tuple((whitespace0, many0(tuple((whitespace0, decl))), whitespace0)),
-        |(leading_trivia, decls, trailing_trivia)| FileSyntax {
+pub fn file<'sess, 's>(session: &'sess ParseSession, s: Span<'s>) -> IResult<Span<'s>, FileSyntax> {
+    let (s, leading_trivia) = whitespace0(s)?;
+    let (s, decls): (Span, _) = many0(tuple((whitespace0, decl)))(s)?;
+    let (s, trailing_trivia) = whitespace0(s)?;
+    Ok((
+        s,
+        FileSyntax {
             leading_trivia,
             body: decls
                 .into_iter()
@@ -392,12 +396,12 @@ pub fn file(s: Span) -> IResult<Span, FileSyntax> {
                 .collect(),
             trailing_trivia,
         },
-    )(s)
+    ))
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::tests::check;
+    use crate::parser::tests::{check, check_with_session};
     use crate::parser::wiz::statement::{
         assignable_expr, assignment_stmt, directly_assignable_expr, file, stmt, while_stmt,
     };
@@ -649,7 +653,7 @@ mod tests {
 
     #[test]
     fn test_file_empty() {
-        check(
+        check_with_session(
             "",
             file,
             FileSyntax {
@@ -658,7 +662,7 @@ mod tests {
                 trailing_trivia: Default::default(),
             },
         );
-        check(
+        check_with_session(
             "\n",
             file,
             FileSyntax {
@@ -667,7 +671,7 @@ mod tests {
                 trailing_trivia: Default::default(),
             },
         );
-        check(
+        check_with_session(
             " ",
             file,
             FileSyntax {
