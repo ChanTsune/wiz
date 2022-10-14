@@ -1,9 +1,9 @@
 use crate::high_level_ir::type_resolver::context::EnvValue;
-use crate::high_level_ir::type_resolver::error::ResolverError;
-use crate::high_level_ir::type_resolver::result::Result;
 use std::collections::{HashMap, HashSet};
 use wiz_arena::{Arena, ArenaStruct, DeclarationId, DeclarationItemKind};
 use wiz_hir::typed_type::{Package, TypedPackage, TypedType, TypedValueType};
+use wiz_infer::error::InferError;
+use wiz_infer::result::Result;
 use wiz_utils::StackedHashMap;
 
 #[derive(Debug, Clone)]
@@ -183,11 +183,9 @@ impl<'a> NameEnvironment<'a> {
                 TypedValueType::Value(v) => {
                     let rs = self
                         .get_type(&v.package.clone().into_resolved().names, &v.name)
-                        .ok_or_else(|| {
-                            ResolverError::from(format!("Can not resolve type {:?}", v))
-                        })?;
+                        .ok_or_else(|| InferError::from(format!("Can not resolve type {:?}", v)))?;
                     rs.get_instance_member_type(name).cloned().ok_or_else(|| {
-                        ResolverError::from(format!("{:?} not has member named `{}`", v, name))
+                        InferError::from(format!("{:?} not has member named `{}`", v, name))
                     })
                 }
                 TypedValueType::Array(_, _) => todo!(),
@@ -195,10 +193,7 @@ impl<'a> NameEnvironment<'a> {
                 TypedValueType::Pointer(_) => todo!(),
                 TypedValueType::Reference(rt) => self.resolve_member_type(*rt, name),
             },
-            TypedType::Type(v) => Err(ResolverError::from(format!(
-                "{:?} has no member {}",
-                v, name
-            ))),
+            TypedType::Type(v) => Err(InferError::from(format!("{:?} has no member {}", v, name))),
             n => todo!("{} :=> {:?}", name, n),
         }
     }
@@ -206,7 +201,7 @@ impl<'a> NameEnvironment<'a> {
     pub fn resolve_current_type(&self) -> Result<TypedType> {
         self.get_type(&[], "Self")
             .map(|i| i.self_type())
-            .ok_or_else(|| ResolverError::from("can not resolve Self"))
+            .ok_or_else(|| InferError::from("can not resolve Self"))
     }
 
     pub fn infer_name_type(
@@ -216,7 +211,7 @@ impl<'a> NameEnvironment<'a> {
         type_annotation: Option<TypedType>,
     ) -> Result<(TypedType, TypedPackage)> {
         let env_value = self.get_env_item(&name_space, name).ok_or_else(|| {
-            ResolverError::from(format!("Cannot resolve name =>{:?} {:?}", name_space, name))
+            InferError::from(format!("Cannot resolve name =>{:?} {:?}", name_space, name))
         })?;
         match env_value {
             EnvValue::Value(t_set) => self
@@ -237,10 +232,7 @@ impl<'a> NameEnvironment<'a> {
                     )
                 })
                 .ok_or_else(|| {
-                    ResolverError::from(format!(
-                        "Dose not match any overloaded function `{}`",
-                        name
-                    ))
+                    InferError::from(format!("Dose not match any overloaded function `{}`", name))
                 }),
             EnvValue::Type(id) => {
                 let rs = self.arena.get_type_by_id(&id).unwrap();

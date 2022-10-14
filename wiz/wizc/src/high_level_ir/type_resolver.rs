@@ -1,13 +1,9 @@
 pub mod context;
-pub mod error;
 mod name_environment;
-pub mod result;
 #[cfg(test)]
 mod tests;
 
 use crate::high_level_ir::type_resolver::context::ResolverContext;
-use crate::high_level_ir::type_resolver::error::ResolverError;
-use crate::high_level_ir::type_resolver::result::Result;
 use wiz_arena::{Arena, DeclarationId, DeclarationItemKind};
 use wiz_hir::typed_decl::{
     TypedArgDef, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedProtocol,
@@ -25,6 +21,8 @@ use wiz_hir::typed_stmt::{
 };
 use wiz_hir::typed_type::{Package, TypedArgType, TypedFunctionType, TypedType, TypedValueType};
 use wiz_hir::typed_type_constraint::TypedTypeConstraint;
+use wiz_infer::error::InferError;
+use wiz_infer::result::Result;
 use wiz_session::Session;
 
 #[derive(Debug)]
@@ -63,7 +61,7 @@ impl<'s> TypeResolver<'s> {
                 self.context.register_value(
                     &v.name,
                     v.type_
-                        .ok_or_else(|| ResolverError::from("Cannot resolve variable type"))?,
+                        .ok_or_else(|| InferError::from("Cannot resolve variable type"))?,
                     d.annotations.clone(),
                 );
             }
@@ -138,7 +136,7 @@ impl<'s> TypeResolver<'s> {
         for stored_property in stored_properties.iter() {
             let type_ = self.context.full_type_name(&stored_property.type_)?;
             let rs = self.context.current_type_mut().ok_or_else(|| {
-                ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
+                InferError::from(format!("Struct {:?} not exist. Maybe before preload", name))
             })?;
             rs.stored_properties
                 .insert(stored_property.name.clone(), type_);
@@ -146,7 +144,7 @@ impl<'s> TypeResolver<'s> {
         for computed_property in computed_properties.iter() {
             let type_ = self.context.full_type_name(&computed_property.type_)?;
             let rs = self.context.current_type_mut().ok_or_else(|| {
-                ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
+                InferError::from(format!("Struct {:?} not exist. Maybe before preload", name))
             })?;
             rs.computed_properties
                 .insert(computed_property.name.clone(), type_);
@@ -162,7 +160,7 @@ impl<'s> TypeResolver<'s> {
                 Default::default(),
             );
             let rs = self.context.current_type_mut().ok_or_else(|| {
-                ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
+                InferError::from(format!("Struct {:?} not exist. Maybe before preload", name))
             })?;
             rs.member_functions
                 .insert(member_function.name.clone(), type_);
@@ -198,7 +196,7 @@ impl<'s> TypeResolver<'s> {
                     &this_type.name(),
                 )
                 .ok_or_else(|| {
-                    ResolverError::from(format!(
+                    InferError::from(format!(
                         "Struct {:?} not exist. Maybe before preload",
                         this_type
                     ))
@@ -216,7 +214,7 @@ impl<'s> TypeResolver<'s> {
                     &this_type.name(),
                 )
                 .ok_or_else(|| {
-                    ResolverError::from(format!(
+                    InferError::from(format!(
                         "Struct {:?} not exist. Maybe before preload",
                         this_type
                     ))
@@ -239,7 +237,7 @@ impl<'s> TypeResolver<'s> {
         for computed_property in computed_properties.iter() {
             let type_ = self.context.full_type_name(&computed_property.type_)?;
             let rs = self.context.current_type_mut().ok_or_else(|| {
-                ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
+                InferError::from(format!("Struct {:?} not exist. Maybe before preload", name))
             })?;
             rs.computed_properties
                 .insert(computed_property.name.clone(), type_);
@@ -247,7 +245,7 @@ impl<'s> TypeResolver<'s> {
         for member_function in member_functions.iter() {
             let type_ = self.context.full_type_name(&member_function.type_())?;
             let rs = self.context.current_type_mut().ok_or_else(|| {
-                ResolverError::from(format!("Struct {:?} not exist. Maybe before preload", name))
+                InferError::from(format!("Struct {:?} not exist. Maybe before preload", name))
             })?;
             rs.member_functions
                 .insert(member_function.name.clone(), type_);
@@ -912,7 +910,7 @@ impl<'s> TypeResolver<'s> {
                         .map(|e| TypedType::Value(TypedValueType::Array(Box::new(e), len)));
                 (TypedArray { elements }, ty)
             } else {
-                return Err(ResolverError::from("Array elements must be same type."));
+                return Err(InferError::from("Array elements must be same type."));
             }
         } else {
             // empty case
@@ -929,7 +927,7 @@ impl<'s> TypeResolver<'s> {
                 let target = TypedExpr::new(TypedExprKind::Name(n), ty);
                 if let Some(TypedType::Function(f)) = target.ty.clone() {
                     if c.args.len() != f.arguments.len() {
-                        Err(ResolverError::from(format!(
+                        Err(InferError::from(format!(
                             "{:?} required {} arguments, but {} were given.",
                             target,
                             f.arguments.len(),
@@ -952,7 +950,7 @@ impl<'s> TypeResolver<'s> {
                         .get_type(&t.package().into_resolved().names, &t.name())
                         .unwrap();
                     if rs.stored_properties.len() != c.args.len() {
-                        Err(ResolverError::from(format!(
+                        Err(InferError::from(format!(
                             "`{}` required {} arguments, but {} were given.",
                             t.name(),
                             rs.stored_properties.len(),
@@ -969,10 +967,7 @@ impl<'s> TypeResolver<'s> {
                         ))
                     }
                 } else {
-                    Err(ResolverError::from(format!(
-                        "{:?} is not callable.",
-                        target
-                    )))
+                    Err(InferError::from(format!("{:?} is not callable.", target)))
                 }
             }
             Ok(target) => {
@@ -1004,9 +999,9 @@ impl<'s> TypeResolver<'s> {
             }
         }?;
         let c_type = match target.ty.clone().unwrap() {
-            TypedType::Value(v) => Err(ResolverError::from(format!("{:?} is not callable.", v))),
+            TypedType::Value(v) => Err(InferError::from(format!("{:?} is not callable.", v))),
             TypedType::Type(t) => Ok(*t),
-            TypedType::Self_ => Err(ResolverError::from("Self is not callable.")),
+            TypedType::Self_ => Err(InferError::from("Self is not callable.")),
             TypedType::Function(f) => Ok(f.return_type),
         }?;
         Ok((
@@ -1084,9 +1079,9 @@ impl<'s> TypeResolver<'s> {
                         v.name.clone(),
                         (
                             DeclarationId::DUMMY,
-                            v.type_.clone().ok_or_else(|| {
-                                ResolverError::from("Cannot resolve variable type")
-                            })?,
+                            v.type_
+                                .clone()
+                                .ok_or_else(|| InferError::from("Cannot resolve variable type"))?,
                         ),
                     )
                 };
@@ -1137,7 +1132,7 @@ impl<'s> TypeResolver<'s> {
         let TypedWhileLoopStmt { condition, block } = w;
         let condition = self.expr(condition, None)?;
         if !condition.ty.clone().unwrap().is_boolean() {
-            return Err(ResolverError::from("while loop condition must be boolean"));
+            return Err(InferError::from("while loop condition must be boolean"));
         };
         Ok(TypedWhileLoopStmt {
             condition,

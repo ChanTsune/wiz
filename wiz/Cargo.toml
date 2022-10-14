@@ -6,6 +6,7 @@ members = [
     "wiz_constants",
     "wiz_dev_utils",
     "wiz_hir",
+    "wiz_infer",
     "wiz_lexar",
     "wiz_mir",
     "wiz_result",

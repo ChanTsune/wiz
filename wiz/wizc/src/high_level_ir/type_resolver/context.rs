@@ -1,9 +1,7 @@
 mod env_value;
 
 pub(crate) use crate::high_level_ir::type_resolver::context::env_value::EnvValue;
-use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::name_environment::NameEnvironment;
-use crate::high_level_ir::type_resolver::result::Result;
 use std::collections::HashMap;
 use wiz_arena::{Arena, ArenaStruct, DeclarationId, DeclarationItemKind};
 use wiz_hir::typed_annotation::TypedAnnotations;
@@ -13,6 +11,8 @@ use wiz_hir::typed_type::{
     Package, TypedArgType, TypedFunctionType, TypedNamedValueType, TypedPackage, TypedType,
     TypedTypeParam, TypedValueType,
 };
+use wiz_infer::error::InferError;
+use wiz_infer::result::Result;
 use wiz_utils::StackedHashMap;
 
 #[derive(Debug)]
@@ -191,7 +191,7 @@ impl<'a> ResolverContext<'a> {
                     self.arena()
                         .resolve_binary_operator(&key)
                         .cloned()
-                        .ok_or_else(|| ResolverError::from(format!("{:?} is not defined.", key)))
+                        .ok_or_else(|| InferError::from(format!("{:?} is not defined.", key)))
                 }
             }
         }
@@ -223,7 +223,7 @@ impl<'a> ResolverContext<'a> {
         Ok(match type_.package {
             TypedPackage::Raw(ref p) => {
                 let env_value = env.get_env_item(&p.names, &type_.name).ok_or_else(|| {
-                    ResolverError::from(format!(
+                    InferError::from(format!(
                         "Cannot resolve name => {:?}{}",
                         &p.names, &type_.name
                     ))
