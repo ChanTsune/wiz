@@ -1,8 +1,4 @@
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub struct Page {
-    uses: Vec<Use>,
-    items: Vec<TopLevel>,
-}
+use crate::ast::Page;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct TopLevel {
@@ -16,10 +12,4 @@ pub enum TopLevelKind {
     Var,
     Function,
     Type,
-}
-
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub struct Use {
-    names: Vec<String>,
-    alias: Option<String>,
 }
