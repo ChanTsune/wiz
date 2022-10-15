@@ -1,7 +1,7 @@
-mod ty;
 mod book;
 mod toplevel;
+mod ty;
 
-pub use ty::*;
 pub use book::*;
 pub use toplevel::*;
+pub use ty::*;
