@@ -23,5 +23,5 @@ pub enum TypingPrimitiveType {
     USize,
     Float(u8),
     Bool,
-    Str
+    Str,
 }
