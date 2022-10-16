@@ -8,6 +8,16 @@ pub enum SourceSet {
     Dir { name: String, items: Vec<SourceSet> },
 }
 
+impl SourceSet {
+    pub fn name(&self) -> String {
+        match self {
+            SourceSet::File(f) => &f.name,
+            SourceSet::Dir { name, .. } => name,
+        }
+        .clone()
+    }
+}
+
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct WizFile {
     pub name: String,
