@@ -1,6 +1,6 @@
 use crate::high_level_ir::node_id::ModuleId;
 use crate::high_level_ir::type_resolver::TypeResolver;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use wiz_arena::{Arena, DeclarationId};
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_decl::{
@@ -113,19 +113,46 @@ impl<'a> AstLowering<'a> {
         match s {
             SourceSet::File(f) => self.file(f),
             SourceSet::Dir { name, items } => {
-                self.push_namespace(&name.clone(), |slf| TypedSpellBook {
-                    name,
-                    uses: vec![],
-                    body: items
-                        .into_iter()
-                        .map(|i| slf.source_set(i, module_id))
-                        .map(|f| TypedTopLevelDecl {
-                            annotations: Default::default(),
-                            package: Package::new(),
-                            modifiers: vec![],
-                            kind: TypedDeclKind::Module(f),
-                        })
-                        .collect(),
+                self.push_namespace(&name.clone(), |slf| {
+                    TypedSpellBook {
+                        name,
+                        uses: vec![],
+                        body: items
+                            .into_iter()
+                            .map(|i| slf.source_set(i, module_id))
+                            // ディレクトリとファイルで同名のモジュールが存在する場合の統合処理
+                            .fold(BTreeMap::new(), |mut acc, value| {
+                                acc.entry(value.name.to_string())
+                                    .or_insert_with(Vec::new)
+                                    .push(value);
+                                acc
+                            })
+                            .into_iter()
+                            .map(|(k, mut v)| {
+                                if v.len() == 1 {
+                                    v.remove(0)
+                                } else {
+                                    let mut sb = TypedSpellBook {
+                                        name: k,
+                                        uses: vec![],
+                                        body: vec![],
+                                    };
+                                    for item in v.into_iter() {
+                                        sb.uses.extend(item.uses);
+                                        sb.body.extend(item.body);
+                                    }
+                                    sb
+                                }
+                            })
+                            // end
+                            .map(|f| TypedTopLevelDecl {
+                                annotations: Default::default(),
+                                package: Package::new(),
+                                modifiers: vec![],
+                                kind: TypedDeclKind::Module(f),
+                            })
+                            .collect(),
+                    }
                 })
             }
         }
