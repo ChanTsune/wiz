@@ -1,4 +1,4 @@
-use crate::high_level_ir::node_id::TypedModuleId;
+use crate::high_level_ir::node_id::ModuleId;
 use crate::high_level_ir::type_checker::TypeChecker;
 use crate::high_level_ir::wlib::WLib;
 use crate::high_level_ir::{ast2hlir, AstLowering};
@@ -14,14 +14,12 @@ use std::{env, fs};
 use wiz_arena::Arena;
 use wiz_result::Result;
 use wiz_session::Session;
-use wiz_syntax_parser::parser;
 use wiz_syntax_parser::parser::wiz::read_package_from_path;
 use wizc_cli::{BuildType, Config, ConfigExt};
 
 mod high_level_ir;
 mod llvm_ir;
 mod middle_level_ir;
-mod utils;
 
 fn get_builtin_find_path() -> PathBuf {
     PathBuf::from_iter([env!("HOME"), ".wiz", "lib", "src"])
@@ -31,9 +29,7 @@ fn get_find_paths() -> Vec<PathBuf> {
     vec![get_builtin_find_path()]
 }
 
-fn get_builtin_lib() -> &'static [&'static str] {
-    &["core", "libc", "std"]
-}
+const BUILTIN_LIB: [&str; 3] = ["core", "libc", "std"];
 
 fn main() -> Result<()> {
     println!("{:?}", env::args());
@@ -47,18 +43,21 @@ fn main() -> Result<()> {
 
 fn run_compiler(session: &mut Session) -> Result<()> {
     let config = session.config.clone();
-    let output = config.output();
-    let out_dir = config.out_dir();
-    let paths = config.paths();
-    let input = config.input();
+    let output = session.config.output();
+    let out_dir = session.config.out_dir();
+    let paths = session.config.paths();
     let out_dir = out_dir
         .map(PathBuf::from)
         .unwrap_or_else(|| env::current_dir().unwrap());
 
     let mlir_out_dir = out_dir.join("mlir");
 
-    let input_source = session.timer::<Result<_>, _>("parse files", |_| {
-        Ok(read_package_from_path(input, config.name().as_deref())?)
+    let input_source = session.timer::<Result<_>, _>("parse files", |session| {
+        read_package_from_path(
+            &session.parse_session,
+            session.config.input(),
+            session.config.name().as_deref(),
+        )
     })?;
 
     let mut arena = Arena::default();
@@ -66,12 +65,12 @@ fn run_compiler(session: &mut Session) -> Result<()> {
     let std_hlir = session.timer("load dependencies", |session| {
         let libraries = config.libraries();
 
-        let std_hlir: parser::result::Result<Vec<_>> = if libraries.is_empty() {
+        let std_hlir: Result<Vec<_>> = if libraries.is_empty() {
             let find_paths: Vec<_> = get_find_paths().into_iter().chain(paths).collect();
 
             let mut lib_paths = vec![];
 
-            for lib_name in get_builtin_lib() {
+            for lib_name in BUILTIN_LIB {
                 for p in find_paths.iter() {
                     let lib_path = p.join(lib_name);
                     let package_manifest_path = lib_path.join("Package.wiz");
@@ -85,12 +84,12 @@ fn run_compiler(session: &mut Session) -> Result<()> {
 
             let source_sets = lib_paths
                 .iter()
-                .map(|(p, name)| read_package_from_path(p, Some(**name)))
-                .collect::<parser::result::Result<Vec<_>>>()?;
+                .map(|(p, name)| read_package_from_path(&session.parse_session, p, Some(*name)))
+                .collect::<Result<Vec<_>>>()?;
             Ok(source_sets
                 .into_iter()
                 .enumerate()
-                .map(|(i, s)| ast2hlir(session, &mut arena, s, TypedModuleId::new(i)))
+                .map(|(i, s)| ast2hlir(session, &mut arena, s, ModuleId::new(i)))
                 .collect())
         } else {
             Ok(libraries
@@ -107,7 +106,7 @@ fn run_compiler(session: &mut Session) -> Result<()> {
 
     let hlfiles = session.timer("resolve type", |session| {
         let mut ast2hlir = AstLowering::new(session, &mut arena);
-        ast2hlir.lowing(input_source, TypedModuleId::new(std_hlir.len()))
+        ast2hlir.lowing(input_source, ModuleId::new(std_hlir.len()))
     })?;
 
     session.timer("type check", |session| {

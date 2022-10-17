@@ -10,15 +10,15 @@ use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
 use wiz_arena::{Arena, DeclarationId, DeclarationItemKind};
 use wiz_hir::typed_decl::{
-    TypedArgDef, TypedDecl, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedProtocol,
-    TypedStoredProperty, TypedStruct, TypedVar,
+    TypedArgDef, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedProtocol,
+    TypedStoredProperty, TypedStruct, TypedTopLevelDecl, TypedVar,
 };
 use wiz_hir::typed_expr::{
     TypedArray, TypedBinOp, TypedCall, TypedCallArg, TypedExpr, TypedExprKind, TypedIf,
     TypedInstanceMember, TypedLiteralKind, TypedName, TypedPostfixUnaryOp, TypedPrefixUnaryOp,
     TypedPrefixUnaryOperator, TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
-use wiz_hir::typed_file::TypedFile;
+use wiz_hir::typed_file::TypedSpellBook;
 use wiz_hir::typed_stmt::{
     TypedAssignment, TypedAssignmentAndOperation, TypedAssignmentStmt, TypedBlock, TypedForStmt,
     TypedLoopStmt, TypedStmt, TypedWhileLoopStmt,
@@ -41,12 +41,7 @@ impl<'s> TypeResolver<'s> {
         }
     }
 
-    pub(crate) fn global_use<T: ToString>(&mut self, name_space: &[T]) {
-        self.context
-            .global_use_name_space(name_space.iter().map(T::to_string).collect())
-    }
-
-    pub fn preload_file(&mut self, f: &TypedFile) -> Result<()> {
+    pub fn preload_file(&mut self, f: &TypedSpellBook) -> Result<()> {
         self.context.push_name_space(&f.name);
         for u in f.uses.iter() {
             self.context.use_name_space(u.package.names.clone());
@@ -61,7 +56,7 @@ impl<'s> TypeResolver<'s> {
         Ok(())
     }
 
-    fn preload_decl(&mut self, d: &TypedDecl) -> Result<()> {
+    fn preload_decl(&mut self, d: &TypedTopLevelDecl) -> Result<()> {
         match &d.kind {
             TypedDeclKind::Var(v) => {
                 let v = self.typed_var(v.clone())?;
@@ -87,17 +82,17 @@ impl<'s> TypeResolver<'s> {
                 self.context.update_function(&id, fun.type_()).unwrap();
             }
             TypedDeclKind::Struct(s) => {
-                let _ = self.preload_struct(s)?;
+                self.preload_struct(s)?;
             }
             TypedDeclKind::Module(m) => {
                 self.preload_file(m)?;
             }
             TypedDeclKind::Enum => todo!(),
             TypedDeclKind::Protocol(p) => {
-                let _ = self.preload_protocol(p)?;
+                self.preload_protocol(p)?;
             }
             TypedDeclKind::Extension(e) => {
-                let _ = self.preload_extension(e)?;
+                self.preload_extension(e)?;
             }
         }
         Ok(())
@@ -261,12 +256,12 @@ impl<'s> TypeResolver<'s> {
         Ok(())
     }
 
-    pub fn file(&mut self, f: TypedFile) -> Result<TypedFile> {
+    pub fn file(&mut self, f: TypedSpellBook) -> Result<TypedSpellBook> {
         self.context.push_name_space(&f.name);
         for u in f.uses.iter() {
             self.context.use_name_space(u.package.names.clone());
         }
-        let result = Ok(TypedFile {
+        let result = Ok(TypedSpellBook {
             name: f.name,
             uses: vec![],
             body: f
@@ -282,8 +277,8 @@ impl<'s> TypeResolver<'s> {
         result
     }
 
-    pub fn decl(&mut self, d: TypedDecl) -> Result<TypedDecl> {
-        Ok(TypedDecl {
+    pub fn decl(&mut self, d: TypedTopLevelDecl) -> Result<TypedTopLevelDecl> {
+        Ok(TypedTopLevelDecl {
             annotations: d.annotations,
             package: d.package,
             modifiers: d.modifiers,

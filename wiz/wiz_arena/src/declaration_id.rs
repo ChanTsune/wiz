@@ -19,7 +19,7 @@ impl DeclarationIdGenerator {
         Self { latest: initial }
     }
 
-    pub fn next(&mut self) -> DeclarationId {
+    pub fn generate(&mut self) -> DeclarationId {
         self.latest += 1;
         DeclarationId::new(self.latest)
     }

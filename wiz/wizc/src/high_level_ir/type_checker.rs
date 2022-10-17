@@ -10,7 +10,7 @@ use wiz_hir::typed_expr::{
     TypedLambda, TypedLiteralKind, TypedName, TypedReturn, TypedSubscript, TypedTypeCast,
     TypedUnaryOp,
 };
-use wiz_hir::typed_file::TypedFile;
+use wiz_hir::typed_file::TypedSpellBook;
 use wiz_hir::typed_stmt::{TypedAssignmentStmt, TypedBlock, TypedLoopStmt, TypedStmt};
 use wiz_hir::typed_type::{Package, TypedType};
 use wiz_session::Session;
@@ -26,7 +26,7 @@ impl<'s> TypeChecker<'s> {
         Self { session, arena }
     }
 
-    pub(crate) fn verify(&mut self, typed_file: &TypedFile) {
+    pub(crate) fn verify(&mut self, typed_file: &TypedSpellBook) {
         typed_file
             .body
             .iter()
