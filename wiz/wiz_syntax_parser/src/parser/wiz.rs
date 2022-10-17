@@ -1,6 +1,7 @@
 use crate::parser::error::ParseError;
 use crate::parser::wiz::statement::file;
 use crate::parser::Span;
+use std::collections::BTreeMap;
 use std::fs;
 use std::fs::read_to_string;
 use std::path::Path;
@@ -67,14 +68,41 @@ pub fn read_package_from_path(
                 body: dir
                     .into_iter()
                     .map(|d| read_package_from_path(session, &*d?.path(), None))
+                    .collect::<Result<Vec<_>>>()?
+                    .into_iter()
+                    .fold(BTreeMap::new(), |mut acc, value| {
+                        acc.entry(value.name.to_string())
+                            .or_insert_with(Vec::new)
+                            .push(value);
+                        acc
+                    })
+                    .into_iter()
+                    .map(|(k, mut v)| {
+                        if v.len() == 1 {
+                            v.remove(0)
+                        } else {
+                            let mut sb = WizFile {
+                                name: k,
+                                syntax: FileSyntax {
+                                    leading_trivia: Default::default(),
+                                    body: Default::default(),
+                                    trailing_trivia: Default::default(),
+                                },
+                            };
+                            for item in v.into_iter() {
+                                sb.syntax.body.extend(item.syntax.body);
+                            }
+                            sb
+                        }
+                    })
                     .map(|i| {
-                        let WizFile { name, syntax } = i?;
-                        Ok(DeclarationSyntax {
+                        let WizFile { name, syntax } = i;
+                        DeclarationSyntax {
                             annotations: None,
                             kind: DeclKind::Module((name, Some(syntax))),
-                        })
+                        }
                     })
-                    .collect::<Result<_>>()?,
+                    .collect(),
                 trailing_trivia: Default::default(),
             },
         }
