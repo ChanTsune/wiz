@@ -9,7 +9,7 @@ use wiz_result::Result;
 use wiz_session::ParseSession;
 use wiz_span::{get_line_offset, Location};
 use wiz_syntax::syntax::declaration::{DeclKind, DeclarationSyntax};
-use wiz_syntax::syntax::file::{FileSyntax, SourceSet, WizFile};
+use wiz_syntax::syntax::file::{FileSyntax, WizFile};
 
 pub mod annotation;
 pub mod character;
@@ -46,9 +46,18 @@ pub fn parse_from_string<P: AsRef<Path>>(
     }
 }
 
-pub fn parse_from_file_path<P: AsRef<Path>>(session: &ParseSession, path: P) -> Result<WizFile> {
+pub fn parse_from_file_path<P: AsRef<Path>>(
+    session: &ParseSession,
+    path: P,
+    name: Option<&str>,
+) -> Result<WizFile> {
     let s = read_to_string(&path)?;
-    parse_from_string(session, Some(&path), &*s, path.as_ref().to_str())
+    parse_from_string(
+        session,
+        Some(&path),
+        &*s,
+        name.or_else(|| path.as_ref().file_stem().and_then(|p| p.to_str())),
+    )
 }
 
 pub fn read_package_from_path(
@@ -60,7 +69,7 @@ pub fn read_package_from_path(
         let dir = fs::read_dir(path)?;
         WizFile {
             name: name
-                .or_else(|| path.file_name().and_then(|p| p.to_str()))
+                .or_else(|| path.file_stem().and_then(|p| p.to_str()))
                 .unwrap_or_default()
                 .to_string(),
             syntax: FileSyntax {
@@ -107,7 +116,7 @@ pub fn read_package_from_path(
             },
         }
     } else {
-        parse_from_file_path(session, path)?
+        parse_from_file_path(session, path, name)?
     })
 }
 

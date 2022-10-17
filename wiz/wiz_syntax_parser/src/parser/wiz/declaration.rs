@@ -30,7 +30,6 @@ use wiz_syntax::syntax::declaration::{
     StructPropertySyntax, StructSyntax, TypeAnnotationSyntax, UseSyntax,
 };
 use wiz_syntax::syntax::declaration::{PackageNameElement, VarSyntax};
-use wiz_syntax::syntax::file::FileSyntax;
 use wiz_syntax::syntax::token::TokenSyntax;
 use wiz_syntax::syntax::type_name::{TypeConstraintElementSyntax, TypeConstraintsSyntax};
 use wiz_syntax::syntax::Syntax;

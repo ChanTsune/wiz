@@ -29,7 +29,7 @@ use wiz_syntax::syntax::annotation::AnnotationsSyntax;
 use wiz_syntax::syntax::block::BlockSyntax;
 use wiz_syntax::syntax::declaration::fun_syntax::{ArgDef, FunBody, FunSyntax};
 use wiz_syntax::syntax::declaration::{
-    DeclKind, ModuleSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax,
+    DeclKind, StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax,
 };
 use wiz_syntax::syntax::declaration::{ExtensionSyntax, VarSyntax};
 use wiz_syntax::syntax::expression::{
@@ -37,7 +37,7 @@ use wiz_syntax::syntax::expression::{
     MemberSyntax, NameExprSyntax, PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax,
     ReturnSyntax, SubscriptSyntax, TypeCastSyntax, UnaryOperationSyntax,
 };
-use wiz_syntax::syntax::file::{FileSyntax, SourceSet, WizFile};
+use wiz_syntax::syntax::file::{SourceSet, WizFile};
 use wiz_syntax::syntax::literal::LiteralSyntax;
 use wiz_syntax::syntax::statement::{
     AssignmentStmt, ForLoopSyntax, LoopStmt, Stmt, WhileLoopSyntax,
@@ -303,7 +303,7 @@ impl<'a> AstLowering<'a> {
                             }
                             s.set_extension("wiz");
                             println!("Module: {}", s.display());
-                            parse_from_file_path(&self.session.parse_session, s).unwrap()
+                            parse_from_file_path(&self.session.parse_session, s, None).unwrap()
                         }
                     };
                     TypedDeclKind::Module(self.file(file))
