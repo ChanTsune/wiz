@@ -9,7 +9,7 @@ use wiz_result::Result;
 use wiz_session::ParseSession;
 use wiz_span::{get_line_offset, Location};
 use wiz_syntax::syntax::declaration::{DeclKind, DeclarationSyntax};
-use wiz_syntax::syntax::file::{FileSyntax, WizFile};
+use wiz_syntax::syntax::{FileSyntax, WizFile};
 
 pub mod annotation;
 pub mod character;

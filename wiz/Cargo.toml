@@ -16,5 +16,4 @@ members = [
     "wiz_utils",
     "wizc",
     "wizc_cli",
-    "wizc_syntax_visitor",
 ]

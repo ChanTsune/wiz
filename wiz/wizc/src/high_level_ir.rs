@@ -37,12 +37,12 @@ use wiz_syntax::syntax::expression::{
     MemberSyntax, NameExprSyntax, PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax,
     ReturnSyntax, SubscriptSyntax, TypeCastSyntax, UnaryOperationSyntax,
 };
-use wiz_syntax::syntax::file::WizFile;
 use wiz_syntax::syntax::literal::LiteralSyntax;
 use wiz_syntax::syntax::statement::{
     AssignmentStmt, ForLoopSyntax, LoopStmt, Stmt, WhileLoopSyntax,
 };
 use wiz_syntax::syntax::type_name::{TypeName, TypeParam, UserTypeName};
+use wiz_syntax::syntax::WizFile;
 use wiz_syntax_parser::parser::wiz::parse_from_file_path;
 use wiz_utils::utils::path_string_to_page_name;
 

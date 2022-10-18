@@ -10,7 +10,6 @@ use wiz_mir::ml_file::MLFile;
 use wiz_mir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
 use wiz_mir::statement::{MLReturn, MLStmt};
 use wiz_session::{ParseSession, Session};
-use wiz_syntax::syntax::file::SourceSet;
 use wiz_syntax_parser::parser::wiz::parse_from_string;
 
 fn check(source: &str, except: MLFile) {

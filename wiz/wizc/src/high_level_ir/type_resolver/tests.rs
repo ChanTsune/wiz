@@ -17,7 +17,6 @@ use wiz_hir::typed_type::{
     TypedValueType,
 };
 use wiz_session::{ParseSession, Session};
-use wiz_syntax::syntax::file::SourceSet;
 use wiz_syntax_parser::parser::wiz::parse_from_string;
 
 fn check(source: &str, typed_file: TypedSpellBook) {
