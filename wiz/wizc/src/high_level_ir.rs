@@ -95,9 +95,6 @@ impl<'a> AstLowering<'a> {
     }
 
     pub fn lowing(&mut self, s: WizFile, module_id: ModuleId) -> Result<TypedSpellBook> {
-        // collect_type_and_namespace(self.session, self.arena, &s);
-        // collect_items(self.session, self.arena, &s);
-
         let file = self.file(s);
 
         let mut resolver = TypeResolver::new(self.session, self.arena);
