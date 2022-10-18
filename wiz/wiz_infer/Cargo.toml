@@ -6,3 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+wiz_arena = { path = "../wiz_arena" }
+wiz_hir = { path = "../wiz_hir" }
+wiz_session = { path = "../wiz_session" }
+wiz_syntax = { path = "../wiz_syntax" }
