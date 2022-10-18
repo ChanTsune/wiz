@@ -1,6 +1,6 @@
 use crate::high_level_ir::node_id::ModuleId;
 use crate::high_level_ir::type_resolver::TypeResolver;
-use std::collections::{BTreeMap, HashMap};
+use std::collections::HashMap;
 use wiz_arena::{Arena, DeclarationId};
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_decl::{
@@ -37,14 +37,14 @@ use wiz_syntax::syntax::expression::{
     MemberSyntax, NameExprSyntax, PostfixUnaryOperationSyntax, PrefixUnaryOperationSyntax,
     ReturnSyntax, SubscriptSyntax, TypeCastSyntax, UnaryOperationSyntax,
 };
-use wiz_syntax::syntax::file::{SourceSet, WizFile};
 use wiz_syntax::syntax::literal::LiteralSyntax;
 use wiz_syntax::syntax::statement::{
     AssignmentStmt, ForLoopSyntax, LoopStmt, Stmt, WhileLoopSyntax,
 };
 use wiz_syntax::syntax::type_name::{TypeName, TypeParam, UserTypeName};
+use wiz_syntax::syntax::WizFile;
+use wiz_syntax_parser::parser::wiz::parse_from_file_path;
 use wiz_utils::utils::path_string_to_page_name;
-use wizc_syntax_visitor::{collect_items, collect_type_and_namespace};
 
 pub mod node_id;
 pub mod type_checker;
@@ -60,7 +60,7 @@ pub struct AstLowering<'a> {
 pub fn ast2hlir(
     session: &mut Session,
     arena: &mut Arena,
-    s: SourceSet,
+    s: WizFile,
     module_id: ModuleId,
 ) -> TypedSpellBook {
     let mut converter = AstLowering::new(session, arena);
@@ -94,11 +94,8 @@ impl<'a> AstLowering<'a> {
         result
     }
 
-    pub fn lowing(&mut self, s: SourceSet, module_id: ModuleId) -> Result<TypedSpellBook> {
-        // collect_type_and_namespace(self.session, self.arena, &s);
-        // collect_items(self.session, self.arena, &s);
-
-        let file = self.source_set(s, module_id);
+    pub fn lowing(&mut self, s: WizFile, module_id: ModuleId) -> Result<TypedSpellBook> {
+        let file = self.file(s);
 
         let mut resolver = TypeResolver::new(self.session, self.arena);
 
@@ -109,66 +106,17 @@ impl<'a> AstLowering<'a> {
         Ok(file)
     }
 
-    fn source_set(&mut self, s: SourceSet, module_id: ModuleId) -> TypedSpellBook {
-        match s {
-            SourceSet::File(f) => self.file(f),
-            SourceSet::Dir { name, items } => {
-                self.push_namespace(&name.clone(), |slf| {
-                    TypedSpellBook {
-                        name,
-                        uses: vec![],
-                        body: items
-                            .into_iter()
-                            .map(|i| slf.source_set(i, module_id))
-                            // ディレクトリとファイルで同名のモジュールが存在する場合の統合処理
-                            .fold(BTreeMap::new(), |mut acc, value| {
-                                acc.entry(value.name.to_string())
-                                    .or_insert_with(Vec::new)
-                                    .push(value);
-                                acc
-                            })
-                            .into_iter()
-                            .map(|(k, mut v)| {
-                                if v.len() == 1 {
-                                    v.remove(0)
-                                } else {
-                                    let mut sb = TypedSpellBook {
-                                        name: k,
-                                        uses: vec![],
-                                        body: vec![],
-                                    };
-                                    for item in v.into_iter() {
-                                        sb.uses.extend(item.uses);
-                                        sb.body.extend(item.body);
-                                    }
-                                    sb
-                                }
-                            })
-                            // end
-                            .map(|f| TypedTopLevelDecl {
-                                annotations: Default::default(),
-                                package: Package::new(),
-                                modifiers: vec![],
-                                kind: TypedDeclKind::Module(f),
-                            })
-                            .collect(),
-                    }
-                })
-            }
-        }
-    }
-
     fn file(&mut self, f: WizFile) -> TypedSpellBook {
         let WizFile { name, syntax } = f;
 
         let name = path_string_to_page_name(&name);
 
         self.push_namespace(name, |slf| {
-            let mut uses = vec![];
             // NOTE: Inject default uses
-            uses.push(TypedUse::from(vec!["core", "builtin", "*"]));
-            uses.push(TypedUse::from(vec!["std", "builtin", "*"]));
-
+            let mut uses = vec![
+                TypedUse::from(vec!["core", "builtin", "*"]),
+                TypedUse::from(vec!["std", "builtin", "*"]),
+            ];
             let mut others = vec![];
             for l in syntax.body.into_iter() {
                 if let DeclKind::Use(u) = l.kind {
@@ -290,6 +238,23 @@ impl<'a> AstLowering<'a> {
                 DeclKind::Enum { .. } => TypedDeclKind::Enum,
                 DeclKind::Extension(e) => TypedDeclKind::Extension(self.extension_syntax(e)),
                 DeclKind::Use(_) => unreachable!(),
+                DeclKind::Module(m) => {
+                    let (name, file) = m;
+                    let file = match file {
+                        Some(file) => WizFile { name, syntax: file },
+                        None => {
+                            let mut s = self.session.local_spell_book_root().to_owned();
+                            let fqn = self.arena.resolve_fully_qualified_name(&self.namespace_id);
+                            for n in &fqn[1..] {
+                                s = s.join(n);
+                            }
+                            s.set_extension("wiz");
+                            println!("Module: {}", s.display());
+                            parse_from_file_path(&self.session.parse_session, s, None).unwrap()
+                        }
+                    };
+                    TypedDeclKind::Module(self.file(file))
+                }
             },
         }
     }
