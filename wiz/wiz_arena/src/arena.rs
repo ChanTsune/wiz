@@ -7,7 +7,6 @@ use std::fmt::{Debug, Display, Formatter, Write};
 use wiz_constants::annotation::BUILTIN;
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_decl::TypedFunBody;
-use wiz_hir::typed_expr::TypedBinaryOperator;
 use wiz_hir::typed_type::{TypedType, TypedTypeParam, TypedValueType};
 
 mod function;
@@ -17,7 +16,6 @@ mod r#struct;
 pub struct Arena {
     declaration_id_generator: DeclarationIdGenerator,
     declarations: HashMap<DeclarationId, DeclarationItem>,
-    binary_operators: HashMap<(TypedBinaryOperator, TypedType, TypedType), TypedType>,
 }
 
 impl Default for Arena {
@@ -36,7 +34,6 @@ impl Default for Arena {
         let mut arena = Self {
             declaration_id_generator: DeclarationIdGenerator::new(0),
             declarations,
-            binary_operators: Default::default(),
         };
 
         for t in TypedType::builtin_types() {
@@ -301,13 +298,6 @@ impl Arena {
                 Some(*namespace),
             ),
         )
-    }
-
-    pub fn resolve_binary_operator(
-        &self,
-        key: &(TypedBinaryOperator, TypedType, TypedType),
-    ) -> Option<&TypedType> {
-        self.binary_operators.get(key)
     }
 }
 

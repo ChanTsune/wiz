@@ -188,10 +188,7 @@ impl<'a> ResolverContext<'a> {
                     Ok(left)
                 } else {
                     let key = (kind, left, right);
-                    self.arena()
-                        .resolve_binary_operator(&key)
-                        .cloned()
-                        .ok_or_else(|| InferError::from(format!("{:?} is not defined.", key)))
+                    Err(InferError::from(format!("{:?} is not defined.", key)))
                 }
             }
         }
