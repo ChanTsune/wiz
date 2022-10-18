@@ -16,12 +16,12 @@ use nom::{
 use std::ops::{Range, RangeFrom};
 use wiz_session::ParseSession;
 use wiz_syntax::syntax::expression::{Expr, NameExprSyntax, ParenthesizedExprSyntax};
-use wiz_syntax::syntax::file::FileSyntax;
 use wiz_syntax::syntax::statement::{
     AssignmentAndOperatorSyntax, AssignmentStmt, AssignmentSyntax, ForLoopSyntax, LoopStmt, Stmt,
     WhileLoopSyntax,
 };
 use wiz_syntax::syntax::token::TokenSyntax;
+use wiz_syntax::syntax::FileSyntax;
 use wiz_syntax::syntax::Syntax;
 
 pub fn decl_stmt<I>(s: I) -> IResult<I, Stmt>
@@ -410,7 +410,6 @@ mod tests {
         BinaryOperationSyntax, CallArgListSyntax, CallExprSyntax, Expr, MemberSyntax,
         NameExprSyntax, ParenthesizedExprSyntax,
     };
-    use wiz_syntax::syntax::file::FileSyntax;
     use wiz_syntax::syntax::literal::LiteralSyntax;
     use wiz_syntax::syntax::statement::{
         AssignmentAndOperatorSyntax, AssignmentStmt, AssignmentSyntax, LoopStmt, Stmt,
@@ -418,6 +417,7 @@ mod tests {
     };
     use wiz_syntax::syntax::token::TokenSyntax;
     use wiz_syntax::syntax::trivia::{Trivia, TriviaPiece};
+    use wiz_syntax::syntax::FileSyntax;
     use wiz_syntax::syntax::Syntax;
 
     #[test]

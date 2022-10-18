@@ -10,7 +10,6 @@ use wiz_mir::ml_file::MLFile;
 use wiz_mir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
 use wiz_mir::statement::{MLReturn, MLStmt};
 use wiz_session::{ParseSession, Session};
-use wiz_syntax::syntax::file::SourceSet;
 use wiz_syntax_parser::parser::wiz::parse_from_string;
 
 fn check(source: &str, except: MLFile) {
@@ -23,9 +22,7 @@ fn check(source: &str, except: MLFile) {
 
     let mut ast2hlir = AstLowering::new(&mut session, &mut arena);
 
-    let hl_ss = ast2hlir
-        .lowing(SourceSet::File(ast), ModuleId::DUMMY)
-        .unwrap();
+    let hl_ss = ast2hlir.lowing(ast, ModuleId::DUMMY).unwrap();
 
     let mut hlir2mlir = HLIR2MLIR::new(&session, &mut arena);
 

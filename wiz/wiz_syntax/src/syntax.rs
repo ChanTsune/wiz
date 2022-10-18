@@ -7,7 +7,7 @@ pub mod annotation;
 pub mod block;
 pub mod declaration;
 pub mod expression;
-pub mod file;
+mod file;
 mod list;
 pub mod literal;
 pub mod modifier;
@@ -16,6 +16,8 @@ pub mod statement;
 pub mod token;
 pub mod trivia;
 pub mod type_name;
+
+pub use file::*;
 
 pub trait Syntax: Debug + Eq + PartialEq + Clone {
     fn with_leading_trivia(self, trivia: Trivia) -> Self;

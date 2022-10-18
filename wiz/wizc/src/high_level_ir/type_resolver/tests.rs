@@ -17,7 +17,6 @@ use wiz_hir::typed_type::{
     TypedValueType,
 };
 use wiz_session::{ParseSession, Session};
-use wiz_syntax::syntax::file::SourceSet;
 use wiz_syntax_parser::parser::wiz::parse_from_string;
 
 fn check(source: &str, typed_file: TypedSpellBook) {
@@ -30,9 +29,7 @@ fn check(source: &str, typed_file: TypedSpellBook) {
 
     let mut ast2hlir = AstLowering::new(&mut session, &mut arena);
 
-    let f = ast2hlir
-        .lowing(SourceSet::File(ast), ModuleId::DUMMY)
-        .unwrap();
+    let f = ast2hlir.lowing(ast, ModuleId::DUMMY).unwrap();
 
     assert_eq!(f, typed_file);
 }

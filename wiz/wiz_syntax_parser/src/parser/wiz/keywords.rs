@@ -143,6 +143,13 @@ where
     token("extern")(s)
 }
 
+pub fn namespace_keyword<I>(s: I) -> IResult<I, TokenSyntax>
+where
+    I: InputTake + Compare<&'static str> + ToString,
+{
+    token("namespace")(s)
+}
+
 #[cfg(test)]
 mod tests {
     use crate::parser::tests::check;

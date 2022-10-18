@@ -23,4 +23,3 @@ wiz_syntax = { path = "../wiz_syntax" }
 wiz_syntax_parser = { path = "../wiz_syntax_parser" }
 wiz_utils = { path = "../wiz_utils" }
 wizc_cli = { path = "../wizc_cli" }
-wizc_syntax_visitor = { path = "../wizc_syntax_visitor" }
