@@ -44,7 +44,6 @@ use wiz_syntax::syntax::statement::{
 use wiz_syntax::syntax::type_name::{TypeName, TypeParam, UserTypeName};
 use wiz_syntax::syntax::WizFile;
 use wiz_syntax_parser::parser::wiz::parse_from_file_path;
-use wiz_utils::utils::path_string_to_page_name;
 
 pub mod node_id;
 pub mod type_checker;
