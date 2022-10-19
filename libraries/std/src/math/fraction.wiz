@@ -76,11 +76,29 @@ fun test_add() {
 }
 
 #[test]
+fun test_add_negative() {
+    val a = Fraction::new(1, 2)
+    val b = Fraction::new(-1, 4)
+    val x = a.add(b)
+    assert(x.numerator == 1)
+    assert(x.denominator == 4)
+}
+
+#[test]
 fun test_sub() {
     val a = Fraction::new(1, 2)
     val b = Fraction::new(1, 4)
     val x = a.sub(b)
     assert(x.numerator == 1)
+    assert(x.denominator == 4)
+}
+
+#[test]
+fun test_sub_negative() {
+    val a = Fraction::new(1, 2)
+    val b = Fraction::new(-1, 4)
+    val x = a.sub(b)
+    assert(x.numerator == 3)
     assert(x.denominator == 4)
 }
 
@@ -94,10 +112,28 @@ fun test_mul() {
 }
 
 #[test]
+fun test_mul_negative() {
+    val a = Fraction::new(1, 2)
+    val b = Fraction::new(-1, 4)
+    val x = a.mul(b)
+    assert(x.numerator == -1)
+    assert(x.denominator == 8)
+}
+
+#[test]
 fun test_div() {
     val a = Fraction::new(1, 2)
     val b = Fraction::new(1, 4)
     val x = a.div(b)
     assert(x.numerator == 2)
+    assert(x.denominator == 1)
+}
+
+#[test]
+fun test_div_negative() {
+    val a = Fraction::new(1, 2)
+    val b = Fraction::new(-1, 4)
+    val x = a.div(b)
+    assert(x.numerator == -2)
     assert(x.denominator == 1)
 }
