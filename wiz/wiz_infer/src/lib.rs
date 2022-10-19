@@ -22,7 +22,7 @@ pub fn run(
     session: &mut Session,
 ) -> Result<TypedSpellBook> {
     let mut sb = SpellBook::empty(source_set.name.clone());
-    collect_namespace_and_type(
+    expand_ast(
         &mut sb.page,
         &source_set.name,
         &source_set.syntax,
@@ -34,7 +34,7 @@ pub fn run(
 }
 
 /// collect `namespace`, `type` and `use`
-fn collect_namespace_and_type(
+fn expand_ast(
     page: &mut Page,
     name: &str,
     f: &FileSyntax,
@@ -63,14 +63,12 @@ fn collect_namespace_and_type(
             DeclKind::Enum { .. } => {}
             DeclKind::Module((name, body)) => {
                 let mut child_page = Page::empty();
-                collect_namespace_and_type(
-                    &mut child_page,
-                    name,
-                    body.as_ref().unwrap(),
-                    &parent,
-                    arena,
-                    session,
-                )?;
+                match body {
+                    None => todo!("expand namespace ast {}", name),
+                    Some(body) => {
+                        expand_ast(&mut child_page, name, body, &parent, arena, session)?;
+                    }
+                }
                 page.pages.insert(name.clone(), child_page);
             }
             DeclKind::Extension(_) => {}
