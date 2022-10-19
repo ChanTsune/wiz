@@ -343,7 +343,7 @@ impl<'s> TypeChecker<'s> {
     }
 
     fn return_(&mut self, typed_return: &TypedReturn) {
-        typed_return.value.as_ref().map(|v| self.expression(&*v));
+        typed_return.value.as_ref().map(|v| self.expression(v));
     }
 
     fn type_cast(&mut self, typed_type_cast: &TypedTypeCast) {
