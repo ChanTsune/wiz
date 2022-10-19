@@ -13,7 +13,7 @@ struct Fraction {
 }
 
 extension Fraction {
-    fun add(&self, _ rhs: &Fraction): Fraction {
+    fun add(self, _ rhs: Fraction): Fraction {
         if self.denominator == rhs.denominator {
             return Fraction::new(self.numerator + rhs.numerator, self.denominator)
         }
@@ -25,7 +25,7 @@ extension Fraction {
 }
 
 extension Fraction {
-    fun sub(&self, _ rhs: &Fraction): Fraction {
+    fun sub(self, _ rhs: Fraction): Fraction {
         if self.denominator == rhs.denominator {
             return Fraction::new(self.numerator - rhs.numerator, self.denominator)
         }
@@ -37,13 +37,13 @@ extension Fraction {
 }
 
 extension Fraction {
-    fun mul(&self, _ rhs: &Fraction): Fraction {
+    fun mul(self, _ rhs: Fraction): Fraction {
         return Fraction::new(self.numerator * rhs.numerator, self.denominator * rhs.denominator)
     }
 }
 
 extension Fraction {
-    fun div(&self, _ rhs: &Fraction): Fraction {
+    fun div(self, _ rhs: Fraction): Fraction {
         return Fraction::new(self.numerator * rhs.denominator, self.denominator * self.numerator)
     }
 }
