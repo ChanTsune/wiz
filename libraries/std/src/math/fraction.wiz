@@ -44,7 +44,7 @@ extension Fraction {
 
 extension Fraction {
     fun div(self, _ rhs: Fraction): Fraction {
-        return Fraction::new(self.numerator * rhs.denominator, self.denominator * self.numerator)
+        return Fraction::new(self.numerator * rhs.denominator, self.denominator * rhs.numerator)
     }
 }
 
