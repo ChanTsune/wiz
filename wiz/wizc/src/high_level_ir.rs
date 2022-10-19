@@ -109,9 +109,7 @@ impl<'a> AstLowering<'a> {
     fn file(&mut self, f: WizFile) -> TypedSpellBook {
         let WizFile { name, syntax } = f;
 
-        let name = path_string_to_page_name(&name);
-
-        self.push_namespace(name, |slf| {
+        let (uses, body) = self.push_namespace(&name, |slf| {
             // NOTE: Inject default uses
             let mut uses = vec![
                 TypedUse::from(vec!["core", "builtin", "*"]),
@@ -141,16 +139,15 @@ impl<'a> AstLowering<'a> {
                     others.push(l);
                 }
             }
-
-            TypedSpellBook {
-                name: name.to_string(),
+            (
                 uses,
-                body: others
+                others
                     .into_iter()
                     .map(|d| slf.decl(d.kind, d.annotations))
-                    .collect(),
-            }
-        })
+                    .collect::<Vec<_>>(),
+            )
+        });
+        TypedSpellBook { name, uses, body }
     }
 
     fn annotations(&mut self, a: &Option<AnnotationsSyntax>) -> TypedAnnotations {
