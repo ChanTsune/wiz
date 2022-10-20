@@ -21,23 +21,30 @@ pub fn run(
     arena: &mut Arena,
     session: &mut Session,
 ) -> Result<TypedSpellBook> {
-    let mut sb = SpellBook::empty(source_set.name.clone());
-    expand_ast(
-        &mut sb.page,
-        &source_set.name,
-        &source_set.syntax,
-        &DeclarationId::ROOT,
+    let sb = expand_ast(
+        source_set.clone(),
         arena,
         session,
     )?;
     infer_source_set(source_set, arena, &TypeEnvironment::root())
 }
 
-/// collect `namespace`, `type` and `use`
+/// expand ast and collect `namespace`, `type` and `use`
 fn expand_ast(
+    f: WizFile,
+    arena: &mut Arena,
+    session: &mut Session,
+) -> Result<SpellBook> {
+    let WizFile { name, syntax } = f;
+    let mut sb = SpellBook::empty(name);
+    _expand_ast(&mut sb.page, &sb.name, syntax, &DeclarationId::ROOT, arena, session)?;
+    Ok(sb)
+}
+
+fn _expand_ast(
     page: &mut Page,
     name: &str,
-    f: &FileSyntax,
+    f: FileSyntax,
     parent: &DeclarationId,
     arena: &mut Arena,
     session: &mut Session,
@@ -45,8 +52,8 @@ fn expand_ast(
     let parent = arena
         .register_namespace(parent, name, TypedAnnotations::default())
         .unwrap();
-    for item in f.body.iter() {
-        match &item.kind {
+    for item in f.body.into_iter() {
+        match item.kind {
             DeclKind::Var(_) => {}
             DeclKind::Fun(_) => {}
             DeclKind::Struct(s) => {
@@ -66,7 +73,7 @@ fn expand_ast(
                 match body {
                     None => todo!("expand namespace ast {}", name),
                     Some(body) => {
-                        expand_ast(&mut child_page, name, body, &parent, arena, session)?;
+                        _expand_ast(&mut child_page, &name, body, &parent, arena, session)?;
                     }
                 }
                 page.pages.insert(name.clone(), child_page);
