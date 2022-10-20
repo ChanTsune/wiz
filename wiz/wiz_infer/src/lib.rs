@@ -29,7 +29,7 @@ pub fn run(
 fn expand_ast(f: WizFile, arena: &mut Arena, session: &mut Session) -> Result<SpellBook> {
     let WizFile { name, syntax } = f;
     let mut sb = SpellBook::empty(name);
-    _expand_ast(
+    expand_ast_internal(
         &mut sb.page,
         &sb.name,
         syntax,
@@ -40,7 +40,7 @@ fn expand_ast(f: WizFile, arena: &mut Arena, session: &mut Session) -> Result<Sp
     Ok(sb)
 }
 
-fn _expand_ast(
+fn expand_ast_internal(
     page: &mut Page,
     name: &str,
     f: FileSyntax,
@@ -72,7 +72,7 @@ fn _expand_ast(
                 match body {
                     None => todo!("expand namespace ast {}", name),
                     Some(body) => {
-                        _expand_ast(&mut child_page, &name, body, &parent, arena, session)?;
+                        expand_ast_internal(&mut child_page, &name, body, &parent, arena, session)?;
                     }
                 }
                 page.pages.insert(name.clone(), child_page);
