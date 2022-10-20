@@ -250,7 +250,7 @@ impl<'a> AstLowering<'a> {
                             }
                             s.set_extension("wiz");
                             println!("Module: {}", s.display());
-                            parse_from_file_path(&self.session.parse_session, s, None).unwrap()
+                            parse_from_file_path(&self.session.parse_session, s, Some(&name)).unwrap()
                         }
                     };
                     TypedDeclKind::Module(self.file(file))
