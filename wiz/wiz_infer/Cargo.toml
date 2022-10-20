@@ -8,5 +8,7 @@ edition = "2021"
 [dependencies]
 wiz_arena = { path = "../wiz_arena" }
 wiz_hir = { path = "../wiz_hir" }
+wiz_result = { path = "../wiz_result" }
 wiz_session = { path = "../wiz_session" }
 wiz_syntax = { path = "../wiz_syntax" }
+wiz_syntax_parser = { path = "../wiz_syntax_parser" }
