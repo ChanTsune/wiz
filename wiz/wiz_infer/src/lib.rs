@@ -21,23 +21,22 @@ pub fn run(
     arena: &mut Arena,
     session: &mut Session,
 ) -> Result<TypedSpellBook> {
-    let sb = expand_ast(
-        source_set.clone(),
-        arena,
-        session,
-    )?;
+    let sb = expand_ast(source_set.clone(), arena, session)?;
     infer_source_set(source_set, arena, &TypeEnvironment::root())
 }
 
 /// expand ast and collect `namespace`, `type` and `use`
-fn expand_ast(
-    f: WizFile,
-    arena: &mut Arena,
-    session: &mut Session,
-) -> Result<SpellBook> {
+fn expand_ast(f: WizFile, arena: &mut Arena, session: &mut Session) -> Result<SpellBook> {
     let WizFile { name, syntax } = f;
     let mut sb = SpellBook::empty(name);
-    _expand_ast(&mut sb.page, &sb.name, syntax, &DeclarationId::ROOT, arena, session)?;
+    _expand_ast(
+        &mut sb.page,
+        &sb.name,
+        syntax,
+        &DeclarationId::ROOT,
+        arena,
+        session,
+    )?;
     Ok(sb)
 }
 
