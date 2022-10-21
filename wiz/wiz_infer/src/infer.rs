@@ -1,6 +1,7 @@
 use crate::result::Result;
 use crate::ty_env::TyEnv;
 // use crate::utils::full_type_name;
+use crate::SpellBook;
 use wiz_arena::Arena;
 use wiz_hir::typed_decl::{TypedDeclKind, TypedTopLevelDecl, TypedVar};
 use wiz_hir::typed_expr::{TypedExpr, TypedExprKind};
@@ -9,7 +10,7 @@ use wiz_hir::typed_type::TypedType;
 use wiz_syntax::syntax::WizFile;
 
 pub(crate) fn infer_source_set(
-    source_set: WizFile,
+    source_set: SpellBook,
     arena: &Arena,
     ty_env: &TyEnv,
 ) -> Result<TypedSpellBook> {
