@@ -1,6 +1,5 @@
 use crate::syntax::annotation::AnnotationsSyntax;
 pub use crate::syntax::declaration::extension_syntax::{ExtensionSyntax, ProtocolConformSyntax};
-use crate::syntax::declaration::fun_syntax::FunSyntax;
 pub use crate::syntax::declaration::properties_syntax::{
     DeinitializerSyntax, StoredPropertySyntax, StructBodySyntax, StructPropertySyntax,
 };
@@ -14,9 +13,10 @@ use crate::syntax::token::TokenSyntax;
 use crate::syntax::trivia::Trivia;
 use crate::syntax::type_name::TypeName;
 use crate::syntax::Syntax;
+pub use fun_syntax::*;
 
 mod extension_syntax;
-pub mod fun_syntax;
+mod fun_syntax;
 mod properties_syntax;
 mod struct_syntax;
 mod use_syntax;

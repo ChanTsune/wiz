@@ -27,9 +27,9 @@ use wiz_result::Result;
 use wiz_session::Session;
 use wiz_syntax::syntax::annotation::AnnotationsSyntax;
 use wiz_syntax::syntax::block::BlockSyntax;
-use wiz_syntax::syntax::declaration::fun_syntax::{ArgDef, FunBody, FunSyntax};
 use wiz_syntax::syntax::declaration::{
-    DeclKind, StoredPropertySyntax, StructPropertySyntax, StructSyntax, UseSyntax,
+    ArgDef, DeclKind, FunBody, FunSyntax, StoredPropertySyntax, StructPropertySyntax, StructSyntax,
+    UseSyntax,
 };
 use wiz_syntax::syntax::declaration::{ExtensionSyntax, VarSyntax};
 use wiz_syntax::syntax::expression::{

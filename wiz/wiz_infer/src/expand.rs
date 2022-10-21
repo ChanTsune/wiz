@@ -39,8 +39,12 @@ fn expand_ast_internal(
         .unwrap();
     for item in f.body.into_iter() {
         match item.kind {
-            DeclKind::Var(_) => {}
-            DeclKind::Fun(_) => {}
+            DeclKind::Var(var) => {
+                page.var_defs.push(var);
+            }
+            DeclKind::Fun(function) => {
+                page.function_defs.push(function);
+            }
             DeclKind::Struct(s) => {
                 let name = s.name.token();
                 match s.struct_keyword.token().as_str() {
@@ -50,9 +54,10 @@ fn expand_ast_internal(
                     }
                     token => unreachable!("{}", token),
                 };
+                page.struct_defs.push(s);
             }
-            DeclKind::ExternC(_) => {}
-            DeclKind::Enum { .. } => {}
+            DeclKind::ExternC(_) => todo!(),
+            DeclKind::Enum { .. } => todo!(),
             DeclKind::Module((name, body)) => {
                 let mut child_page = Page::empty();
 
@@ -74,7 +79,9 @@ fn expand_ast_internal(
 
                 page.pages.insert(name.clone(), child_page);
             }
-            DeclKind::Extension(_) => {}
+            DeclKind::Extension(extension) => {
+                page.extension_defs.push(extension);
+            }
             DeclKind::Use(u) => {
                 page.uses.push(Use::new(
                     u.package_name

@@ -20,14 +20,11 @@ use nom::{
 };
 use std::ops::{Range, RangeFrom};
 use wiz_syntax::syntax::block::BlockSyntax;
-use wiz_syntax::syntax::declaration::fun_syntax::{
-    ArgDef, ArgDefElementSyntax, ArgDefListSyntax, ExprFunBodySyntax, FunBody, FunSyntax,
-    SelfArgDefSyntax, ValueArgDef,
-};
 use wiz_syntax::syntax::declaration::{
-    AliasSyntax, DeclKind, DeclarationSyntax, DeinitializerSyntax, ExtensionSyntax, ModuleSyntax,
-    PackageName, ProtocolConformSyntax, StoredPropertySyntax, StructBodySyntax,
-    StructPropertySyntax, StructSyntax, TypeAnnotationSyntax, UseSyntax,
+    AliasSyntax, ArgDef, ArgDefElementSyntax, ArgDefListSyntax, DeclKind, DeclarationSyntax,
+    DeinitializerSyntax, ExprFunBodySyntax, ExtensionSyntax, FunBody, FunSyntax, ModuleSyntax,
+    PackageName, ProtocolConformSyntax, SelfArgDefSyntax, StoredPropertySyntax, StructBodySyntax,
+    StructPropertySyntax, StructSyntax, TypeAnnotationSyntax, UseSyntax, ValueArgDef,
 };
 use wiz_syntax::syntax::declaration::{PackageNameElement, VarSyntax};
 use wiz_syntax::syntax::token::TokenSyntax;
@@ -872,13 +869,10 @@ mod tests {
         struct_syntax, type_constraints, use_syntax, var_decl,
     };
     use wiz_syntax::syntax::block::BlockSyntax;
-    use wiz_syntax::syntax::declaration::fun_syntax::{
-        ArgDef, ArgDefElementSyntax, ArgDefListSyntax, ExprFunBodySyntax, FunBody, FunSyntax,
-        ValueArgDef,
-    };
     use wiz_syntax::syntax::declaration::{
-        AliasSyntax, DeclKind, PackageName, StoredPropertySyntax, StructBodySyntax,
-        StructPropertySyntax, StructSyntax, TypeAnnotationSyntax, UseSyntax,
+        AliasSyntax, ArgDef, ArgDefElementSyntax, ArgDefListSyntax, DeclKind, ExprFunBodySyntax,
+        FunBody, FunSyntax, PackageName, StoredPropertySyntax, StructBodySyntax,
+        StructPropertySyntax, StructSyntax, TypeAnnotationSyntax, UseSyntax, ValueArgDef,
     };
     use wiz_syntax::syntax::declaration::{PackageNameElement, VarSyntax};
     use wiz_syntax::syntax::expression::{BinaryOperationSyntax, Expr, NameExprSyntax};
