@@ -26,9 +26,9 @@ impl Page {
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Use {
-    namespace: Vec<String>,
-    name: String,
-    alias: Option<String>,
+    pub(crate) namespace: Vec<String>,
+    pub(crate) name: String,
+    pub(crate) alias: Option<String>,
 }
 
 impl Use {

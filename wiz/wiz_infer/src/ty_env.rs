@@ -1,7 +1,10 @@
+use crate::ast::TypingType;
 use std::collections::HashMap;
+use wiz_arena::DeclarationId;
 use wiz_hir::typed_type::TypedType;
 
 pub(crate) type TyEnv<'a> = TypeEnvironment<'a, TypedType>;
+pub(crate) type TyIEnv<'a> = TypeEnvironment<'a, TypingType<DeclarationId>>;
 
 pub struct TypeEnvironment<'a, Type>
 where
