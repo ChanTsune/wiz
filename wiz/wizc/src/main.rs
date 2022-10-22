@@ -14,7 +14,7 @@ use std::{env, fs};
 use wiz_arena::Arena;
 use wiz_result::Result;
 use wiz_session::Session;
-use wiz_syntax_parser::parser::wiz::read_package_from_path;
+use wiz_syntax_parser::parser::wiz::read_book_from_path;
 use wizc_cli::{BuildType, Config, ConfigExt};
 
 mod high_level_ir;
@@ -53,7 +53,7 @@ fn run_compiler(session: &mut Session) -> Result<()> {
     let mlir_out_dir = out_dir.join("mlir");
 
     let input_source = session.timer::<Result<_>, _>("parse files", |session| {
-        read_package_from_path(
+        read_book_from_path(
             &session.parse_session,
             session.config.input(),
             session.config.name().as_deref(),
@@ -84,7 +84,7 @@ fn run_compiler(session: &mut Session) -> Result<()> {
 
             let source_sets = lib_paths
                 .iter()
-                .map(|(p, name)| read_package_from_path(&session.parse_session, p, Some(*name)))
+                .map(|(p, name)| read_book_from_path(&session.parse_session, p, Some(*name)))
                 .collect::<Result<Vec<_>>>()?;
             Ok(source_sets
                 .into_iter()

@@ -60,7 +60,7 @@ pub fn parse_from_file_path<P: AsRef<Path>>(
     )
 }
 
-pub fn read_package_from_path(
+pub fn read_book_from_path(
     session: &ParseSession,
     path: &Path,
     name: Option<&str>,
@@ -76,7 +76,7 @@ pub fn read_package_from_path(
                 leading_trivia: Default::default(),
                 body: dir
                     .into_iter()
-                    .map(|d| read_package_from_path(session, &*d?.path(), None))
+                    .map(|d| read_book_from_path(session, &*d?.path(), None))
                     .collect::<Result<Vec<_>>>()?
                     .into_iter()
                     .fold(BTreeMap::new(), |mut acc, value| {
