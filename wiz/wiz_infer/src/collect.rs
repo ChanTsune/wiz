@@ -38,8 +38,8 @@ fn collect_item_internal(
         let ty = if let Some(name) = u.namespace.first() {
             let mut namespace_id = None;
             let ty = ty_env.lookup(name);
-            if let Some(TypingType::Namespace(id)) = &ty {
-                let item_id = arena.resolve_declaration_id(*id, &u.namespace[1..]);
+            if let Some(TypingType::Namespace(id)) = ty {
+                let item_id = arena.resolve_declaration_id(id, &u.namespace[1..]);
                 namespace_id = item_id;
             };
             if let Some(i) = namespace_id {
