@@ -22,3 +22,4 @@ wiz_hir = { path = "../wiz_hir" }
 wiz_mir = { path = "../wiz_mir" }
 wiz_utils = { path = "../wiz_utils" }
 wizc_cli = { path = "../wizc_cli" }
+wizc_message = { path = "../wizc_message" }
