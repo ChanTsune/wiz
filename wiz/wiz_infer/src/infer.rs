@@ -1,5 +1,5 @@
-use crate::result::Result;
 use crate::ty_env::TyEnv;
+use wiz_result::Result;
 // use crate::utils::full_type_name;
 use crate::SpellBook;
 use wiz_arena::Arena;
