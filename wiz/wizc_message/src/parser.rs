@@ -5,7 +5,7 @@ use anyhow::Context;
 pub struct MessageParser {}
 
 impl MessageParser {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {}
     }
 
