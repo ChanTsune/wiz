@@ -179,7 +179,12 @@ fn compile_dependencies(
             }
         }
         if !output.stderr.is_empty() {
-            eprintln!("{}", String::from_utf8_lossy(&output.stderr));
+            for line in String::from_utf8_lossy(&output.stderr).split_terminator('\n') {
+                match message_parser.parse(line) {
+                    Ok(message) => eprintln!("{}", message),
+                    Err(_) => eprintln!("{}", line),
+                }
+            }
         }
         if !output.status.success() {
             return Err(Box::new(CliError::from(format!(
