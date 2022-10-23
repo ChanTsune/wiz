@@ -69,7 +69,7 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
     let std_hlir = session.timer("load dependencies", |session| {
         let libraries = config.libraries();
 
-        let std_hlir: Result<Vec<_>> = if libraries.is_empty() {
+        let std_hlir: Result<Vec<_>> = if libraries.is_empty() && !no_std {
             let find_paths: Vec<_> = get_find_paths().into_iter().chain(paths).collect();
 
             let mut lib_paths = vec![];
@@ -200,25 +200,66 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::run_compiler;
+    use crate::run_compiler_internal;
     use std::path::PathBuf;
     use wiz_session::Session;
-    use wizc_cli::{Config, ConfigBuilder};
+    use wizc_cli::{BuildType, Config, ConfigBuilder, ConfigExt};
+
+    struct TestContext {
+        manifest_dir: PathBuf,
+    }
+
+    impl TestContext {
+        fn new() -> Self {
+            Self {
+                manifest_dir: PathBuf::from(env!("CARGO_MANIFEST_DIR")),
+            }
+        }
+
+        fn test_resource_dir(&self) -> PathBuf {
+            self.manifest_dir.join("resources/").join("test")
+        }
+
+        fn repository_root(&self) -> PathBuf {
+            self.manifest_dir
+                .join("..")
+                .join("..")
+                .canonicalize()
+                .unwrap()
+        }
+
+        fn lib_path(&self) -> PathBuf {
+            self.repository_root().join("libraries")
+        }
+
+        fn out_dir(&self) -> PathBuf {
+            self.repository_root().join("out")
+        }
+    }
 
     #[test]
     fn compile_file() {
-        let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        let test_resource_dir = manifest_dir.join("resources/").join("test");
-        let repository_root = manifest_dir.join("..").join("..").canonicalize().unwrap();
-
-        let target_file_path = test_resource_dir.join("helloworld.wiz");
-        let lib_path = repository_root.join("libraries");
-        let out_dir = repository_root.join("out");
+        let context = TestContext::new();
+        let target_file_path = context.test_resource_dir().join("helloworld.wiz");
 
         let config = Config::default()
             .input(target_file_path.to_str().unwrap())
-            .path(lib_path.to_str().unwrap())
-            .out_dir(out_dir);
+            .path(context.lib_path().to_str().unwrap())
+            .out_dir(context.out_dir());
         let mut session = Session::new(config);
         run_compiler(&mut session).unwrap()
+    }
+
+    #[test]
+    fn compile_ilb_core() {
+        let context = TestContext::new();
+        let target_lib_path = context.lib_path().join("core").join("src");
+        let config = Config::default()
+            .input(target_lib_path.to_str().unwrap())
+            .name("core")
+            .type_(BuildType::Library)
+            .out_dir(context.out_dir());
+        let mut session = Session::new(config);
+        run_compiler_internal(&mut session, true).unwrap();
     }
 }
