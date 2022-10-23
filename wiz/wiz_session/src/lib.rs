@@ -1,6 +1,6 @@
 mod parse;
 
-pub use crate::parse::ParseSession;
+pub use parse::ParseSession;
 use std::collections::BTreeMap;
 use std::error::Error;
 use std::path::Path;
