@@ -42,6 +42,10 @@ fn main() -> Result<()> {
 }
 
 fn run_compiler(session: &mut Session) -> Result<()> {
+    run_compiler_internal(session, false)
+}
+
+fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
     let config = session.config.clone();
     let output = session.config.output();
     let out_dir = session.config.out_dir();
