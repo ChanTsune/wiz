@@ -12,7 +12,7 @@ pub struct Config {
     name: Option<String>,
     type_: Option<BuildType>,
     output: Option<String>,
-    out_dir: Option<String>,
+    out_dir: Option<PathBuf>,
     paths: Vec<String>,
     l: Option<String>,
     target_triple: Option<String>,
@@ -26,7 +26,7 @@ pub trait ConfigExt {
     fn name(&self) -> Option<String>;
     fn type_(&self) -> BuildType;
     fn output(&self) -> Option<String>;
-    fn out_dir(&self) -> Option<String>;
+    fn out_dir(&self) -> Option<PathBuf>;
     fn paths(&self) -> Vec<PathBuf>;
     fn target_triple(&self) -> Option<String>;
     fn libraries(&self) -> Vec<PathBuf>;
@@ -51,7 +51,7 @@ impl ConfigExt for Config {
         self.output.clone()
     }
 
-    fn out_dir(&self) -> Option<String> {
+    fn out_dir(&self) -> Option<PathBuf> {
         self.out_dir.clone()
     }
 
@@ -81,7 +81,7 @@ pub trait ConfigBuilder {
     fn name(self, name: &str) -> Self;
     fn type_(self, build_type: BuildType) -> Self;
     fn output(self, output: &str) -> Self;
-    fn out_dir(self, out_dir: &str) -> Self;
+    fn out_dir<P: AsRef<Path>>(self, out_dir: P) -> Self;
     fn path(self, path: &str) -> Self;
     fn paths(self, paths: &[&str]) -> Self;
     fn target_triple(self, target_triple: &str) -> Self;
@@ -113,8 +113,8 @@ impl ConfigBuilder for Config {
         self
     }
 
-    fn out_dir(mut self, out_dir: &str) -> Self {
-        self.out_dir.replace(out_dir.to_owned());
+    fn out_dir<P: AsRef<Path>>(mut self, out_dir: P) -> Self {
+        self.out_dir.replace(out_dir.as_ref().to_owned());
         self
     }
 
@@ -160,7 +160,7 @@ impl ConfigBuilder for Config {
     fn as_args(&self) -> Vec<&str> {
         let mut args: Vec<&str> = vec![&self.input];
         if let Some(out_dir) = &self.out_dir {
-            args.extend(["--out-dir", out_dir]);
+            args.extend(["--out-dir", out_dir.as_os_str().to_str().unwrap()]);
         }
         if let Some(name) = &self.name {
             args.extend(["--name", name]);
@@ -187,9 +187,7 @@ impl<'ctx> From<&'ctx ArgMatches> for Config {
                 .get_one::<String>("type")
                 .map(|i| BuildType::from(i.as_str())),
             output: matches.get_one::<String>("output").map(ToString::to_string),
-            out_dir: matches
-                .get_one::<String>("out-dir")
-                .map(ToString::to_string),
+            out_dir: matches.get_one::<String>("out-dir").map(PathBuf::from),
             paths: matches
                 .get_many::<String>("path")
                 .map(|i| i.map(ToString::to_string).collect())
