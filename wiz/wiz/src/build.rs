@@ -9,7 +9,7 @@ use std::env;
 use std::ffi::OsStr;
 use std::fs::create_dir_all;
 use std::ops::Deref;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use wiz_utils::topological_sort::topological_sort;
 use wizc_cli::{BuildType, Config, ConfigBuilder};
 
@@ -84,13 +84,12 @@ pub(crate) fn command(_: &str, options: Options) -> Result<()> {
     };
     create_dir_all(&target_dir)?;
 
-    let wlib_paths =
-        compile_dependencies(&ws, resolved_dependencies, target_dir.to_str().unwrap())?;
+    let wlib_paths = compile_dependencies(&ws, resolved_dependencies, &target_dir)?;
 
     let input_path = ws.cws.join("src");
     let mut config = Config::default()
         .input(input_path.to_str().unwrap())
-        .out_dir(target_dir.to_str().unwrap())
+        .out_dir(target_dir)
         .name(ws.cws.file_name().and_then(OsStr::to_str).unwrap())
         .type_(if options.test {
             BuildType::Test
@@ -148,7 +147,7 @@ fn dependency_list(dependencies: ResolvedDependencyTree) -> HashMap<Task, HashSe
 fn compile_dependencies(
     ws: &Workspace,
     dependencies: ResolvedDependencyTree,
-    target_dir: &str,
+    target_dir: &Path,
 ) -> Result<BTreeSet<String>> {
     let mut wlib_paths = BTreeSet::new();
     let dependen_list = dependency_list(dependencies);
@@ -158,7 +157,7 @@ fn compile_dependencies(
             .get(&dep)
             .unwrap()
             .iter()
-            .map(|d| format!("{}/{}.wlib", target_dir, d.name))
+            .map(|d| format!("{}/{}.wlib", target_dir.display(), d.name))
             .collect::<Vec<_>>();
         let output = super::subcommand::output(
             "wizc",
@@ -181,7 +180,7 @@ fn compile_dependencies(
             ))));
         }
         wlib_paths.extend(dep_wlib_paths);
-        wlib_paths.insert(format!("{}/{}.wlib", target_dir, dep.name));
+        wlib_paths.insert(format!("{}/{}.wlib", target_dir.display(), dep.name));
     }
     Ok(wlib_paths)
 }
