@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
+use std::path::Path;
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Message {
@@ -9,6 +10,22 @@ pub struct Message {
 impl Message {
     pub fn new(kind: MessageKind) -> Self {
         Self { kind }
+    }
+
+    fn info(message: &str) -> Self {
+        Self::new(MessageKind::Info(message.to_string()))
+    }
+
+    fn warn(message: &str) -> Self {
+        Self::new(MessageKind::Warn(message.to_string()))
+    }
+
+    fn error(message: &str) -> Self {
+        Self::new(MessageKind::Error(message.to_string()))
+    }
+
+    fn output<P: AsRef<Path>>(&self, path: P) -> Self {
+        Self::new(MessageKind::Output(path.as_ref().display().to_string()))
     }
 }
 
