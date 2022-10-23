@@ -14,7 +14,7 @@ impl Message {
 
 impl Display for Message {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str(&serde_json::to_string(self).map_err(std::fmt::Error::default())?)
+        f.write_str(&serde_json::to_string(self).map_err(|e| std::fmt::Error::default())?)
     }
 }
 
