@@ -48,10 +48,10 @@ fn run_compiler(session: &mut Session) -> Result<()> {
 fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
     let config = session.config.clone();
     let output = session.config.output();
-    let out_dir = session.config.out_dir();
     let paths = session.config.paths();
-    let out_dir = out_dir
-        .map(PathBuf::from)
+    let out_dir = session
+        .config
+        .out_dir()
         .unwrap_or_else(|| env::current_dir().unwrap());
 
     let mlir_out_dir = out_dir.join("mlir");
@@ -217,7 +217,7 @@ mod tests {
         let config = Config::default()
             .input(target_file_path.to_str().unwrap())
             .path(lib_path.to_str().unwrap())
-            .out_dir(out_dir.to_str().unwrap());
+            .out_dir(out_dir);
         let mut session = Session::new(config);
         run_compiler(&mut session).unwrap()
     }
