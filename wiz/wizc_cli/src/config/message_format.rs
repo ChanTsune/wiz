@@ -8,7 +8,7 @@ impl MessageFormat {
     pub fn as_str(&self) -> &str {
         match self {
             Self::Normal => "normal",
-            Self::Json => "json"
+            Self::Json => "json",
         }
     }
 }
