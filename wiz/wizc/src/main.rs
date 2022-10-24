@@ -43,7 +43,6 @@ fn main() -> Result<()> {
 }
 
 fn run_compiler(session: &mut Session) -> Result<()> {
-    let config = session.config.clone();
     let output = session.config.output();
     let paths = session.config.paths();
     let out_dir = session
@@ -57,14 +56,14 @@ fn run_compiler(session: &mut Session) -> Result<()> {
         read_package_from_path(
             &session.parse_session,
             session.config.input(),
-            session.config.name().as_deref(),
+            session.config.name(),
         )
     })?;
 
     let mut arena = Arena::default();
 
     let std_hlir = session.timer("load dependencies", |session| {
-        let libraries = config.libraries();
+        let libraries = session.config.libraries();
 
         let std_hlir: Result<Vec<_>> = if libraries.is_empty() {
             let find_paths: Vec<_> = get_find_paths().into_iter().chain(paths).collect();
@@ -114,11 +113,11 @@ fn run_compiler(session: &mut Session) -> Result<()> {
         let mut type_checker = TypeChecker::new(session, &arena);
         type_checker.verify(&hlfiles);
     });
-    match config.type_() {
+    match session.config.type_() {
         BuildType::Library => {
             let wlib = WLib::new(hlfiles);
             let wlib_path = {
-                let mut path = out_dir.join(config.name().unwrap_or_default());
+                let mut path = out_dir.join(session.config.name().unwrap_or_default());
                 path.set_extension("wlib");
                 path
             };
@@ -154,7 +153,11 @@ fn run_compiler(session: &mut Session) -> Result<()> {
     println!("==== codegen ====");
     let module_name = &mlfile.name;
     let context = Context::create();
-    let mut codegen = CodeGen::new(&context, module_name, config.target_triple().as_deref());
+    let mut codegen = CodeGen::new(
+        &context,
+        module_name,
+        session.config.target_triple().as_deref(),
+    );
 
     for m in std_mlir.into_iter() {
         codegen.file(m);
@@ -162,7 +165,7 @@ fn run_compiler(session: &mut Session) -> Result<()> {
 
     codegen.file(mlfile.clone());
 
-    if let Some(emit) = config.emit() {
+    if let Some(emit) = session.config.emit() {
         let output = if let Some(output) = output {
             PathBuf::from(output)
         } else {
@@ -217,7 +220,7 @@ mod tests {
 
         let config = Config::default()
             .input(target_file_path.to_str().unwrap())
-            .path(lib_path.to_str().unwrap())
+            .path(lib_path)
             .out_dir(out_dir);
         let mut session = Session::new(config);
         run_compiler(&mut session).unwrap()
