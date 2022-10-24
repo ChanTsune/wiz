@@ -174,6 +174,9 @@ impl ConfigBuilder for Config {
         if let Some(target_triple) = &self.target_triple {
             args.extend(["--target-triple", target_triple]);
         }
+        if let Some(message_format) = &self.message_format{
+            args.extend(["--message-format", message_format.as_str()]);
+        };
         args
     }
 }

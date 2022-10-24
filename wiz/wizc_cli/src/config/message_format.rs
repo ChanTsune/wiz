@@ -4,6 +4,15 @@ pub enum MessageFormat {
     Json,
 }
 
+impl MessageFormat {
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::Normal => "normal",
+            Self::Json => "json"
+        }
+    }
+}
+
 impl Default for MessageFormat {
     fn default() -> Self {
         Self::Normal
