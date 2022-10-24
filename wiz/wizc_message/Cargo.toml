@@ -1,10 +1,11 @@
 [package]
-name = "wiz_session"
+name = "wizc_message"
 version = "0.0.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-wizc_cli = { path = "../wizc_cli" }
-wizc_message = { path = "../wizc_message" }
+serde = { version = "1.0.136", features = ["derive"]}
+serde_json = "1.0.78"
+anyhow = "1.0.66"

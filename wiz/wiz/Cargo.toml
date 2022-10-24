@@ -7,14 +7,15 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = "1.0.44"
+anyhow = "1.0.66"
 clap = { version = "4.0.4", features = ["cargo"]}
 ansi_term = "0.12"
 toml = "0.5.8"
 serde = { version = "1.0.136", features = ["derive"]}
-wizc_cli = { path = "../wizc_cli" }
 wiz_result = { path = "../wiz_result" }
 wiz_utils = { path = "../wiz_utils" }
+wizc_cli = { path = "../wizc_cli" }
+wizc_message = { path = "../wizc_message" }
 
 [dev-dependencies]
 wiz_dev_utils = { path = "../wiz_dev_utils" }

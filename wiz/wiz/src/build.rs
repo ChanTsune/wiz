@@ -8,10 +8,10 @@ use std::collections::{BTreeSet, HashMap, HashSet};
 use std::env;
 use std::ffi::OsStr;
 use std::fs::create_dir_all;
-use std::ops::Deref;
 use std::path::{Path, PathBuf};
 use wiz_utils::topological_sort::topological_sort;
 use wizc_cli::{BuildType, Config, ConfigBuilder};
+use wizc_message::MessageParser;
 
 pub(crate) struct BuildCommand;
 
@@ -149,6 +149,7 @@ fn compile_dependencies(
     dependencies: ResolvedDependencyTree,
     target_dir: &Path,
 ) -> Result<BTreeSet<PathBuf>> {
+    let message_parser = MessageParser::new();
     let mut wlib_paths = BTreeSet::new();
     let dependen_list = dependency_list(dependencies);
     let dep_list = topological_sort(dependen_list.clone())?;
@@ -173,9 +174,19 @@ fn compile_dependencies(
                 .libraries(&dep_wlib_paths)
                 .as_args(),
         )?;
-        println!("{}", String::from_utf8_lossy(&output.stdout));
+        for line in String::from_utf8_lossy(&output.stdout).split_terminator('\n') {
+            match message_parser.parse(line) {
+                Ok(message) => println!("{}", message),
+                Err(_) => println!("{}", line),
+            }
+        }
         if !output.stderr.is_empty() {
-            eprintln!("{}", String::from_utf8_lossy(&output.stderr));
+            for line in String::from_utf8_lossy(&output.stderr).split_terminator('\n') {
+                match message_parser.parse(line) {
+                    Ok(message) => eprintln!("{}", message),
+                    Err(_) => eprintln!("{}", line),
+                }
+            }
         }
         if !output.status.success() {
             return Err(Box::new(CliError::from(format!(

@@ -2,8 +2,7 @@ mod config;
 
 use clap::builder::PossibleValuesParser;
 use clap::{Arg, ArgAction, Command};
-pub use config::build_type::BuildType;
-pub use config::{Config, ConfigBuilder, ConfigExt};
+pub use config::{BuildType, Config, ConfigBuilder, ConfigExt, MessageFormat};
 
 pub fn app(name: &'static str) -> Command {
     Command::new(name)
@@ -25,6 +24,7 @@ pub fn app(name: &'static str) -> Command {
                 .num_args(1)
                 .value_parser(["llvm-ir", "object", "asm"]),
         )
+        .arg(long("message-format").num_args(1).value_parser(["json"]))
 }
 
 fn position(name: &'static str) -> Arg {

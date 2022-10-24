@@ -1,7 +1,9 @@
-pub(crate) mod build_type;
+mod build_type;
+mod message_format;
 
-use crate::config::build_type::BuildType;
+pub use build_type::BuildType;
 use clap::ArgMatches;
+pub use message_format::MessageFormat;
 use std::path::{Path, PathBuf};
 
 #[derive(Debug, Default, Clone)]
@@ -16,6 +18,7 @@ pub struct Config {
     target_triple: Option<String>,
     libraries: Vec<PathBuf>,
     emit: Option<String>,
+    message_format: Option<MessageFormat>,
 }
 
 pub trait ConfigExt {
@@ -28,6 +31,7 @@ pub trait ConfigExt {
     fn target_triple(&self) -> Option<String>;
     fn libraries(&self) -> Vec<PathBuf>;
     fn emit(&self) -> Option<String>;
+    fn message_format(&self) -> MessageFormat;
 }
 
 impl ConfigExt for Config {
@@ -66,6 +70,10 @@ impl ConfigExt for Config {
     fn emit(&self) -> Option<String> {
         self.emit.clone()
     }
+
+    fn message_format(&self) -> MessageFormat {
+        self.message_format.unwrap_or_default()
+    }
 }
 
 pub trait ConfigBuilder {
@@ -80,6 +88,7 @@ pub trait ConfigBuilder {
     fn library<P: AsRef<Path>>(self, library: P) -> Self;
     fn libraries<P: AsRef<Path>>(self, libraries: &[P]) -> Self;
     fn emit(self, emit: &str) -> Self;
+    fn message_format(self, message_format: MessageFormat) -> Self;
     fn as_args(&self) -> Vec<&str>;
 }
 
@@ -143,6 +152,11 @@ impl ConfigBuilder for Config {
         self
     }
 
+    fn message_format(mut self, message_format: MessageFormat) -> Self {
+        self.message_format.replace(message_format);
+        self
+    }
+
     fn as_args(&self) -> Vec<&str> {
         let mut args: Vec<&str> = vec![&self.input];
         if let Some(out_dir) = &self.out_dir {
@@ -160,6 +174,9 @@ impl ConfigBuilder for Config {
         if let Some(target_triple) = &self.target_triple {
             args.extend(["--target-triple", target_triple]);
         }
+        if let Some(message_format) = &self.message_format {
+            args.extend(["--message-format", message_format.as_str()]);
+        };
         args
     }
 }
@@ -187,6 +204,9 @@ impl<'ctx> From<&'ctx ArgMatches> for Config {
                 .map(|i| i.map(PathBuf::from).collect())
                 .unwrap_or_default(),
             emit: matches.get_one::<String>("emit").map(ToString::to_string),
+            message_format: matches
+                .get_one::<String>("message-format")
+                .map(|s| MessageFormat::from(s.as_str())),
         }
     }
 }
