@@ -164,7 +164,7 @@ fn compile_dependencies(
             &Config::default()
                 .input(dep.src_path.as_str())
                 .out_dir(target_dir)
-                .name(dep.name.as_str())
+                .name(&dep.name)
                 .type_(BuildType::Library)
                 .libraries(&dep_wlib_paths.iter().map(Deref::deref).collect::<Vec<_>>())
                 .as_args(),

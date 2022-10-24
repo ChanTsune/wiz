@@ -20,7 +20,7 @@ pub struct Config {
 
 pub trait ConfigExt {
     fn input(&self) -> &Path;
-    fn name(&self) -> Option<String>;
+    fn name(&self) -> Option<&str>;
     fn type_(&self) -> BuildType;
     fn output(&self) -> Option<String>;
     fn out_dir(&self) -> Option<PathBuf>;
@@ -35,8 +35,8 @@ impl ConfigExt for Config {
         Path::new(&self.input)
     }
 
-    fn name(&self) -> Option<String> {
-        self.name.clone()
+    fn name(&self) -> Option<&str> {
+        self.name.as_deref()
     }
 
     fn type_(&self) -> BuildType {

@@ -56,7 +56,7 @@ fn run_compiler(session: &mut Session) -> Result<()> {
         read_package_from_path(
             &session.parse_session,
             session.config.input(),
-            session.config.name().as_deref(),
+            session.config.name(),
         )
     })?;
 
