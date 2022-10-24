@@ -11,7 +11,7 @@ pub struct Config {
     type_: Option<BuildType>,
     output: Option<String>,
     out_dir: Option<PathBuf>,
-    paths: Vec<String>,
+    paths: Vec<PathBuf>,
     l: Option<String>,
     target_triple: Option<String>,
     libraries: Vec<String>,
@@ -52,7 +52,7 @@ impl ConfigExt for Config {
     }
 
     fn paths(&self) -> Vec<PathBuf> {
-        self.paths.iter().map(PathBuf::from).collect()
+        self.paths.clone()
     }
 
     fn target_triple(&self) -> Option<String> {
@@ -74,8 +74,8 @@ pub trait ConfigBuilder {
     fn type_(self, build_type: BuildType) -> Self;
     fn output(self, output: &str) -> Self;
     fn out_dir<P: AsRef<Path>>(self, out_dir: P) -> Self;
-    fn path(self, path: &str) -> Self;
-    fn paths(self, paths: &[&str]) -> Self;
+    fn path<P: AsRef<Path>>(self, path: P) -> Self;
+    fn paths<P: AsRef<Path>>(self, paths: &[P]) -> Self;
     fn target_triple(self, target_triple: &str) -> Self;
     fn library(self, library: &str) -> Self;
     fn libraries(self, libraries: &[&str]) -> Self;
@@ -109,14 +109,14 @@ impl ConfigBuilder for Config {
         self
     }
 
-    fn path(mut self, path: &str) -> Self {
-        self.paths.push(path.to_owned());
+    fn path<P: AsRef<Path>>(mut self, path: P) -> Self {
+        self.paths.push(path.as_ref().to_owned());
         self
     }
 
-    fn paths(mut self, paths: &[&str]) -> Self {
+    fn paths<P: AsRef<Path>>(mut self, paths: &[P]) -> Self {
         for path in paths {
-            self.paths.push(path.to_string())
+            self.paths.push(path.as_ref().to_owned())
         }
         self
     }
@@ -176,7 +176,7 @@ impl<'ctx> From<&'ctx ArgMatches> for Config {
             out_dir: matches.get_one::<String>("out-dir").map(PathBuf::from),
             paths: matches
                 .get_many::<String>("path")
-                .map(|i| i.map(ToString::to_string).collect())
+                .map(|i| i.map(PathBuf::from).collect())
                 .unwrap_or_default(),
             l: None,
             target_triple: matches

@@ -212,7 +212,7 @@ mod tests {
 
         let config = Config::default()
             .input(target_file_path.to_str().unwrap())
-            .path(lib_path.to_str().unwrap())
+            .path(lib_path)
             .out_dir(out_dir);
         let mut session = Session::new(config);
         run_compiler(&mut session).unwrap()
