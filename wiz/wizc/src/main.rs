@@ -115,7 +115,10 @@ fn run_compiler(session: &mut Session) -> Result<()> {
     match session.config.type_() {
         BuildType::Library => {
             let wlib = WLib::new(hlfiles);
-            let wlib_path = out_dir.join(format!("{}.wlib", session.config.name().unwrap_or_default()));
+            let wlib_path = out_dir.join(format!(
+                "{}.wlib",
+                session.config.name().unwrap_or_default()
+            ));
             wlib.write_to(&wlib_path);
             println!("library written to {}", wlib_path.display());
             return Ok(());
@@ -148,7 +151,11 @@ fn run_compiler(session: &mut Session) -> Result<()> {
     println!("==== codegen ====");
     let module_name = &mlfile.name;
     let context = Context::create();
-    let mut codegen = CodeGen::new(&context, module_name, session.config.target_triple().as_deref());
+    let mut codegen = CodeGen::new(
+        &context,
+        module_name,
+        session.config.target_triple().as_deref(),
+    );
 
     for m in std_mlir.into_iter() {
         codegen.file(m);
