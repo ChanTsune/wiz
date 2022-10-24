@@ -12,19 +12,19 @@ impl Message {
         Self { kind }
     }
 
-    fn info(message: &str) -> Self {
+    pub fn info(message: &str) -> Self {
         Self::new(MessageKind::Info(message.to_string()))
     }
 
-    fn warn(message: &str) -> Self {
+    pub fn warn(message: &str) -> Self {
         Self::new(MessageKind::Warn(message.to_string()))
     }
 
-    fn error(message: &str) -> Self {
+    pub fn error(message: &str) -> Self {
         Self::new(MessageKind::Error(message.to_string()))
     }
 
-    fn output<P: AsRef<Path>>(&self, path: P) -> Self {
+    pub fn output<P: AsRef<Path>>(path: P) -> Self {
         Self::new(MessageKind::Output(path.as_ref().display().to_string()))
     }
 }

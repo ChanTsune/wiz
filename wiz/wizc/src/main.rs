@@ -16,6 +16,7 @@ use wiz_result::Result;
 use wiz_session::Session;
 use wiz_syntax_parser::parser::wiz::read_package_from_path;
 use wizc_cli::{BuildType, Config, ConfigExt};
+use wizc_message::Message;
 
 mod high_level_ir;
 mod llvm_ir;
@@ -116,9 +117,13 @@ fn run_compiler(session: &mut Session) -> Result<()> {
     match config.type_() {
         BuildType::Library => {
             let wlib = WLib::new(hlfiles);
-            let wlib_path = out_dir.join(format!("{}.wlib", config.name().unwrap_or_default()));
+            let wlib_path = {
+                let mut path = out_dir.join(config.name().unwrap_or_default());
+                path.set_extension("wlib");
+                path
+            };
             wlib.write_to(&wlib_path);
-            println!("library written to {}", wlib_path.display());
+            println!("{}", Message::output(wlib_path));
             return Ok(());
         }
         _ => {}
