@@ -162,7 +162,7 @@ fn compile_dependencies(
         let output = super::subcommand::output(
             "wizc",
             &Config::default()
-                .input(dep.src_path.as_str())
+                .input(&dep.src_path)
                 .out_dir(target_dir)
                 .name(&dep.name)
                 .type_(BuildType::Library)
