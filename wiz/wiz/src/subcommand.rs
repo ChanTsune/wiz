@@ -18,7 +18,12 @@ fn get_executable_path<P: AsRef<Path>>(executable: P) -> Result<PathBuf> {
     Ok(path)
 }
 
-pub(crate) fn execute(executable: &str, args: &[&str]) -> Result<()> {
+pub(crate) fn execute<I, S, T>(executable: T, args: I) -> Result<()>
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<OsStr>,
+    T: AsRef<Path>,
+{
     let executable_path = get_executable_path(executable)?;
     let mut command = Command::new(executable_path);
     command.args(args);
