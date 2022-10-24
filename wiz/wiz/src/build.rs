@@ -8,7 +8,6 @@ use std::collections::{BTreeSet, HashMap, HashSet};
 use std::env;
 use std::ffi::OsStr;
 use std::fs::create_dir_all;
-use std::ops::Deref;
 use std::path::{Path, PathBuf};
 use wiz_utils::topological_sort::topological_sort;
 use wizc_cli::{BuildType, Config, ConfigBuilder};
