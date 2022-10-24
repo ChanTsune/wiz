@@ -96,7 +96,7 @@ pub(crate) fn command(_: &str, options: Options) -> Result<()> {
         } else {
             BuildType::Binary
         })
-        .libraries(&wlib_paths.iter().map(Deref::deref).collect::<Vec<_>>());
+        .libraries(&wlib_paths.iter().collect::<Vec<_>>());
 
     config = if let Some(target_triple) = options.target_triple {
         config.target_triple(target_triple)
@@ -148,7 +148,7 @@ fn compile_dependencies(
     ws: &Workspace,
     dependencies: ResolvedDependencyTree,
     target_dir: &Path,
-) -> Result<BTreeSet<String>> {
+) -> Result<BTreeSet<PathBuf>> {
     let mut wlib_paths = BTreeSet::new();
     let dependen_list = dependency_list(dependencies);
     let dep_list = topological_sort(dependen_list.clone())?;
@@ -157,7 +157,11 @@ fn compile_dependencies(
             .get(&dep)
             .unwrap()
             .iter()
-            .map(|d| format!("{}/{}.wlib", target_dir.display(), d.name))
+            .map(|d| {
+                let mut path = target_dir.join(&d.name);
+                path.set_extension("wlib");
+                path
+            })
             .collect::<Vec<_>>();
         let output = super::subcommand::output(
             "wizc",
@@ -180,7 +184,11 @@ fn compile_dependencies(
             ))));
         }
         wlib_paths.extend(dep_wlib_paths);
-        wlib_paths.insert(format!("{}/{}.wlib", target_dir.display(), dep.name));
+        wlib_paths.insert({
+            let mut path = target_dir.join(dep.name);
+            path.set_extension("wlib");
+            path
+        });
     }
     Ok(wlib_paths)
 }

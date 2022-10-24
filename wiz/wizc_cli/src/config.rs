@@ -14,7 +14,7 @@ pub struct Config {
     paths: Vec<PathBuf>,
     l: Option<String>,
     target_triple: Option<String>,
-    libraries: Vec<String>,
+    libraries: Vec<PathBuf>,
     emit: Option<String>,
 }
 
@@ -60,7 +60,7 @@ impl ConfigExt for Config {
     }
 
     fn libraries(&self) -> Vec<PathBuf> {
-        self.libraries.iter().map(PathBuf::from).collect()
+        self.libraries.clone()
     }
 
     fn emit(&self) -> Option<String> {
@@ -77,8 +77,8 @@ pub trait ConfigBuilder {
     fn path<P: AsRef<Path>>(self, path: P) -> Self;
     fn paths<P: AsRef<Path>>(self, paths: &[P]) -> Self;
     fn target_triple(self, target_triple: &str) -> Self;
-    fn library(self, library: &str) -> Self;
-    fn libraries(self, libraries: &[&str]) -> Self;
+    fn library<P: AsRef<Path>>(self, library: P) -> Self;
+    fn libraries<P: AsRef<Path>>(self, libraries: &[P]) -> Self;
     fn emit(self, emit: &str) -> Self;
     fn as_args(&self) -> Vec<&str>;
 }
@@ -126,14 +126,14 @@ impl ConfigBuilder for Config {
         self
     }
 
-    fn library(mut self, library: &str) -> Self {
-        self.libraries.push(library.to_owned());
+    fn library<P: AsRef<Path>>(mut self, library: P) -> Self {
+        self.libraries.push(library.as_ref().to_owned());
         self
     }
 
-    fn libraries(mut self, libraries: &[&str]) -> Self {
+    fn libraries<P: AsRef<Path>>(mut self, libraries: &[P]) -> Self {
         for library in libraries {
-            self.libraries.push(library.to_string())
+            self.libraries.push(library.as_ref().to_owned())
         }
         self
     }
@@ -155,7 +155,7 @@ impl ConfigBuilder for Config {
             args.extend(["--type", type_.as_str()]);
         }
         for library in self.libraries.iter() {
-            args.extend(["--library", library]);
+            args.extend(["--library", library.as_os_str().to_str().unwrap()]);
         }
         if let Some(target_triple) = &self.target_triple {
             args.extend(["--target-triple", target_triple]);
@@ -184,7 +184,7 @@ impl<'ctx> From<&'ctx ArgMatches> for Config {
                 .map(ToString::to_string),
             libraries: matches
                 .get_many::<String>("library")
-                .map(|i| i.map(ToString::to_string).collect())
+                .map(|i| i.map(PathBuf::from).collect())
                 .unwrap_or_default(),
             emit: matches.get_one::<String>("emit").map(ToString::to_string),
         }
