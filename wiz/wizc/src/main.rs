@@ -173,7 +173,7 @@ fn run_compiler(session: &mut Session) -> Result<()> {
 
         let out_path = out_dir.join(output);
 
-        println!("Output Path -> {}", out_path.display());
+        println!("{}", Message::output(&out_path));
 
         match emit.as_str() {
             "llvm-ir" => codegen.print_to_file(&out_path),
