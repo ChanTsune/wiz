@@ -170,7 +170,7 @@ fn compile_dependencies(
                 .out_dir(target_dir)
                 .name(&dep.name)
                 .type_(BuildType::Library)
-                .libraries(&dep_wlib_paths.iter().map(Deref::deref).collect::<Vec<_>>())
+                .libraries(&dep_wlib_paths)
                 .as_args(),
         )?;
         println!("{}", String::from_utf8_lossy(&output.stdout));
