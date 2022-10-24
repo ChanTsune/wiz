@@ -104,7 +104,7 @@ pub(crate) fn command(_: &str, options: Options) -> Result<()> {
         config
     };
 
-    super::subcommand::execute("wizc", &config.as_args())
+    super::subcommand::execute("wizc", config.as_args())
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
@@ -165,7 +165,7 @@ fn compile_dependencies(
             .collect::<Vec<_>>();
         let output = super::subcommand::output(
             "wizc",
-            &Config::default()
+            Config::default()
                 .input(&dep.src_path)
                 .out_dir(target_dir)
                 .name(&dep.name)
