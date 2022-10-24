@@ -63,7 +63,9 @@ jobs:
         run: cargo install cargo-quickinstall
 
       - name: Install required cargo
-        run: cargo quickinstall clippy-sarif sarif-fmt
+        run: |
+          cargo quickinstall clippy-sarif 
+          cargo quickinstall sarif-fmt
 
       - name: Run rust-clippy
         run:
