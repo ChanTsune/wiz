@@ -16,6 +16,7 @@ use wiz_result::Result;
 use wiz_session::Session;
 use wiz_syntax_parser::parser::wiz::read_book_from_path;
 use wizc_cli::{BuildType, Config, ConfigExt};
+use wizc_message::Message;
 
 mod high_level_ir;
 mod llvm_ir;
@@ -42,12 +43,15 @@ fn main() -> Result<()> {
 }
 
 fn run_compiler(session: &mut Session) -> Result<()> {
-    let config = session.config.clone();
+    run_compiler_internal(session, false)
+}
+
+fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
     let output = session.config.output();
-    let out_dir = session.config.out_dir();
     let paths = session.config.paths();
-    let out_dir = out_dir
-        .map(PathBuf::from)
+    let out_dir = session
+        .config
+        .out_dir()
         .unwrap_or_else(|| env::current_dir().unwrap());
 
     let mlir_out_dir = out_dir.join("mlir");
@@ -56,16 +60,16 @@ fn run_compiler(session: &mut Session) -> Result<()> {
         read_book_from_path(
             &session.parse_session,
             session.config.input(),
-            session.config.name().as_deref(),
+            session.config.name(),
         )
     })?;
 
     let mut arena = Arena::default();
 
     let std_hlir = session.timer("load dependencies", |session| {
-        let libraries = config.libraries();
+        let mut libraries = session.config.libraries();
 
-        let std_hlir: Result<Vec<_>> = if libraries.is_empty() {
+        if libraries.is_empty() && !no_std {
             let find_paths: Vec<_> = get_find_paths().into_iter().chain(paths).collect();
 
             let mut lib_paths = vec![];
@@ -81,26 +85,27 @@ fn run_compiler(session: &mut Session) -> Result<()> {
                     }
                 }
             }
-
-            let source_sets = lib_paths
-                .iter()
-                .map(|(p, name)| read_book_from_path(&session.parse_session, p, Some(*name)))
-                .collect::<Result<Vec<_>>>()?;
-            Ok(source_sets
-                .into_iter()
-                .enumerate()
-                .map(|(i, s)| ast2hlir(session, &mut arena, s, ModuleId::new(i)))
-                .collect())
-        } else {
-            Ok(libraries
-                .iter()
-                .map(|p| {
-                    let lib = WLib::read_from(p);
-                    lib.apply_to(&mut arena).unwrap();
-                    lib.typed_ir
-                })
-                .collect())
+            let mut libs = vec![];
+            for (lib_path, name) in lib_paths.iter() {
+                let out_dir = env::temp_dir().join(name);
+                fs::create_dir_all(&out_dir)?;
+                lib::run_compiler_for_std(lib_path, name, &out_dir, &libs)?;
+                libs.push({
+                    let mut path = out_dir.join(name);
+                    path.set_extension("wlib");
+                    path
+                });
+            }
+            libraries.extend(libs);
         };
+        let std_hlir: Result<Vec<_>> = libraries
+            .iter()
+            .map(|p| {
+                let lib = WLib::read_from(p);
+                lib.apply_to(&mut arena)?;
+                Ok(lib.typed_ir)
+            })
+            .collect::<Result<_>>();
         std_hlir
     })?;
 
@@ -113,12 +118,16 @@ fn run_compiler(session: &mut Session) -> Result<()> {
         let mut type_checker = TypeChecker::new(session, &arena);
         type_checker.verify(&hlfiles);
     });
-    match config.type_() {
+    match session.config.type_() {
         BuildType::Library => {
             let wlib = WLib::new(hlfiles);
-            let wlib_path = out_dir.join(format!("{}.wlib", config.name().unwrap_or_default()));
+            let wlib_path = {
+                let mut path = out_dir.join(session.config.name().unwrap_or_default());
+                path.set_extension("wlib");
+                path
+            };
             wlib.write_to(&wlib_path);
-            println!("library written to {}", wlib_path.display());
+            println!("{}", Message::output(wlib_path));
             return Ok(());
         }
         _ => {}
@@ -149,7 +158,11 @@ fn run_compiler(session: &mut Session) -> Result<()> {
     println!("==== codegen ====");
     let module_name = &mlfile.name;
     let context = Context::create();
-    let mut codegen = CodeGen::new(&context, module_name, config.target_triple().as_deref());
+    let mut codegen = CodeGen::new(
+        &context,
+        module_name,
+        session.config.target_triple().as_deref(),
+    );
 
     for m in std_mlir.into_iter() {
         codegen.file(m);
@@ -157,7 +170,7 @@ fn run_compiler(session: &mut Session) -> Result<()> {
 
     codegen.file(mlfile.clone());
 
-    if let Some(emit) = config.emit() {
+    if let Some(emit) = session.config.emit() {
         let output = if let Some(output) = output {
             PathBuf::from(output)
         } else {
@@ -168,7 +181,7 @@ fn run_compiler(session: &mut Session) -> Result<()> {
 
         let out_path = out_dir.join(output);
 
-        println!("Output Path -> {}", out_path.display());
+        println!("{}", Message::output(&out_path));
 
         match emit.as_str() {
             "llvm-ir" => codegen.print_to_file(&out_path),
@@ -193,28 +206,98 @@ fn run_compiler(session: &mut Session) -> Result<()> {
     Ok(())
 }
 
+mod lib {
+    use crate::run_compiler_internal;
+    use std::path::{Path, PathBuf};
+    use wiz_result::Result;
+    use wiz_session::Session;
+    use wizc_cli::{BuildType, Config, ConfigBuilder};
+
+    pub(crate) fn run_compiler_for_std(
+        input: &Path,
+        name: &str,
+        out_dir: &Path,
+        libraries: &[PathBuf],
+    ) -> Result<()> {
+        let config = Config::default()
+            .input(input.to_str().unwrap())
+            .name(name)
+            .type_(BuildType::Library)
+            .out_dir(out_dir)
+            .libraries(
+                &libraries
+                    .into_iter()
+                    .map(|i| i.to_str().unwrap())
+                    .collect::<Vec<_>>(),
+            );
+        let mut session = Session::new(config);
+        run_compiler_internal(&mut session, true)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::run_compiler;
+    use crate::run_compiler_internal;
     use std::path::PathBuf;
     use wiz_session::Session;
-    use wizc_cli::{Config, ConfigBuilder};
+    use wizc_cli::{BuildType, Config, ConfigBuilder, ConfigExt};
+
+    struct TestContext {
+        manifest_dir: PathBuf,
+    }
+
+    impl TestContext {
+        fn new() -> Self {
+            Self {
+                manifest_dir: PathBuf::from(env!("CARGO_MANIFEST_DIR")),
+            }
+        }
+
+        fn test_resource_dir(&self) -> PathBuf {
+            self.manifest_dir.join("resources/").join("test")
+        }
+
+        fn repository_root(&self) -> PathBuf {
+            self.manifest_dir
+                .join("..")
+                .join("..")
+                .canonicalize()
+                .unwrap()
+        }
+
+        fn lib_path(&self) -> PathBuf {
+            self.repository_root().join("libraries")
+        }
+
+        fn out_dir(&self) -> PathBuf {
+            self.repository_root().join("out")
+        }
+    }
 
     #[test]
     fn compile_file() {
-        let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        let test_resource_dir = manifest_dir.join("resources/").join("test");
-        let repository_root = manifest_dir.join("..").join("..").canonicalize().unwrap();
-
-        let target_file_path = test_resource_dir.join("helloworld.wiz");
-        let lib_path = repository_root.join("libraries");
-        let out_dir = repository_root.join("out");
+        let context = TestContext::new();
+        let target_file_path = context.test_resource_dir().join("helloworld.wiz");
 
         let config = Config::default()
             .input(target_file_path.to_str().unwrap())
-            .path(lib_path.to_str().unwrap())
-            .out_dir(out_dir.to_str().unwrap());
+            .path(context.lib_path())
+            .out_dir(context.out_dir());
         let mut session = Session::new(config);
         run_compiler(&mut session).unwrap()
+    }
+
+    #[test]
+    fn compile_ilb_core() {
+        let context = TestContext::new();
+        let target_lib_path = context.lib_path().join("core").join("src");
+        let config = Config::default()
+            .input(target_lib_path.to_str().unwrap())
+            .name("core")
+            .type_(BuildType::Library)
+            .out_dir(context.out_dir());
+        let mut session = Session::new(config);
+        run_compiler_internal(&mut session, true).unwrap();
     }
 }
