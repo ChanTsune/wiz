@@ -186,20 +186,23 @@ impl<'a> NameEnvironment<'a> {
                         .ok_or_else(|| {
                             ResolverError::from(format!("Can not resolve type {:?}", v))
                         })?;
-                    rs.get_instance_member_type(name).cloned().or_else(||{
-                        let mut fqn = rs.namespace.clone();
-                        fqn.push(v.name.clone());
-                        fqn.push(name.to_owned());
-                        let item_id = self.arena.resolve_declaration_id_from_root(&fqn)?;
-                        let item = self.arena.get_by_id(&item_id)?;
-                        if let DeclarationItemKind::Function(f) = &item.kind {
-                            Some(f.ty.clone())
-                        } else {
-                            None
-                        }
-                    }).ok_or_else(|| {
-                        ResolverError::from(format!("{:?} not has member named `{}`", v, name))
-                    })
+                    rs.get_instance_member_type(name)
+                        .cloned()
+                        .or_else(|| {
+                            let mut fqn = rs.namespace.clone();
+                            fqn.push(v.name.clone());
+                            fqn.push(name.to_owned());
+                            let item_id = self.arena.resolve_declaration_id_from_root(&fqn)?;
+                            let item = self.arena.get_by_id(&item_id)?;
+                            if let DeclarationItemKind::Function(f) = &item.kind {
+                                Some(f.ty.clone())
+                            } else {
+                                None
+                            }
+                        })
+                        .ok_or_else(|| {
+                            ResolverError::from(format!("{:?} not has member named `{}`", v, name))
+                        })
                 }
                 TypedValueType::Array(_, _) => todo!(),
                 TypedValueType::Tuple(_) => todo!(),
