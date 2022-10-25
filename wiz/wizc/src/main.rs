@@ -1,7 +1,7 @@
+use crate::high_level_ir::ast2hlir;
 use crate::high_level_ir::node_id::ModuleId;
 use crate::high_level_ir::type_checker::TypeChecker;
 use crate::high_level_ir::wlib::WLib;
-use crate::high_level_ir::{ast2hlir};
 use crate::llvm_ir::codegen::CodeGen;
 use crate::middle_level_ir::hlir2mlir;
 use inkwell::context::Context;
@@ -110,7 +110,12 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
     })?;
 
     let hlfiles = session.timer("resolve type", |session| {
-        ast2hlir(session, &mut arena, input_source, ModuleId::new(std_hlir.len()))
+        ast2hlir(
+            session,
+            &mut arena,
+            input_source,
+            ModuleId::new(std_hlir.len()),
+        )
     })?;
 
     session.timer("type check", |session| {
