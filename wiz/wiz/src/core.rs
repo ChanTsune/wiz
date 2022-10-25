@@ -1,5 +1,5 @@
 use crate::constant::MANIFEST_FILE_NAME;
-use crate::core::manifest::{Dependencies, Dependency, Manifest, PackageInfo};
+use crate::core::manifest::{Dependencies, Dependency, Manifest, Package};
 use crate::core::workspace::{construct_workspace_from, Workspace};
 use clap::ArgMatches;
 use std::env;
@@ -24,7 +24,7 @@ pub(crate) fn create_project(path: &Path, project_name: &str) -> Result<()> {
     manifest::write(
         &manifest_path,
         &Manifest {
-            package: PackageInfo::new(project_name, "0.1.0"),
+            package: Package::new(project_name, "0.1.0"),
             dependencies: Dependencies::from([
                 ("core".to_string(), Dependency::simple("0.0.0")),
                 ("std".to_string(), Dependency::simple("0.0.0")),
