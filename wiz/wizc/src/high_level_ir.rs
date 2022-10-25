@@ -62,9 +62,9 @@ pub fn ast2hlir(
     arena: &mut Arena,
     s: WizFile,
     module_id: ModuleId,
-) -> TypedSpellBook {
+) -> Result<TypedSpellBook> {
     let mut converter = AstLowering::new(session, arena);
-    converter.lowing(s, module_id).unwrap()
+    converter.lowing(s, module_id)
 }
 
 impl<'a> AstLowering<'a> {
