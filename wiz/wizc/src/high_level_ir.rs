@@ -251,7 +251,7 @@ impl<'a> AstLowering<'a> {
                             s.set_extension("wiz");
                             println!("Module: {}", s.display());
                             parse_from_file_path(&self.session.parse_session, s, Some(&name))
-                                .unwrap()
+                                .expect(&format!("try to parse {:?}{}, but failed", fqn, name))
                         }
                     };
                     TypedDeclKind::Module(self.file(file))
