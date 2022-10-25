@@ -90,7 +90,11 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
                 let out_dir = env::temp_dir().join(name);
                 fs::create_dir_all(&out_dir)?;
                 lib::run_compiler_for_std(lib_path, name, &out_dir, &libs)?;
-                libs.push(out_dir.join(format!("{}.wlib", name)));
+                libs.push({
+                    let mut path = out_dir.join(name);
+                    path.set_extension("wlib");
+                    path
+                });
             }
 
             libraries.extend(libs);
