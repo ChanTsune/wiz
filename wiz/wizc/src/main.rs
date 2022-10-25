@@ -69,7 +69,7 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
     let std_hlir = session.timer("load dependencies", |session| {
         let mut libraries = session.config.libraries();
 
-        let std_hlir: Result<Vec<_>> = if libraries.is_empty() && !no_std {
+        if libraries.is_empty() && !no_std {
             let find_paths: Vec<_> = get_find_paths().into_iter().chain(paths).collect();
 
             let mut lib_paths = vec![];
@@ -85,26 +85,24 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
                     }
                 }
             }
+            let mut libs = vec![];
+            for (lib_path, name) in lib_paths.iter() {
+                let out_dir = env::temp_dir().join(name);
+                fs::create_dir_all(&out_dir)?;
+                lib::run_compiler_for_std(lib_path, name, &out_dir, &libs)?;
+                libs.push(out_dir.join(format!("{}.wlib", name)));
+            }
 
-            let source_sets = lib_paths
-                .iter()
-                .map(|(p, name)| read_package_from_path(&session.parse_session, p, Some(*name)))
-                .collect::<Result<Vec<_>>>()?;
-            Ok(source_sets
-                .into_iter()
-                .enumerate()
-                .map(|(i, s)| ast2hlir(session, &mut arena, s, ModuleId::new(i)))
-                .collect())
-        } else {
-            Ok(libraries
-                .iter()
-                .map(|p| {
-                    let lib = WLib::read_from(p);
-                    lib.apply_to(&mut arena).unwrap();
-                    lib.typed_ir
-                })
-                .collect())
+            libraries.extend(libs);
         };
+        let std_hlir: Result<Vec<_>> = libraries
+            .iter()
+            .map(|p| {
+                let lib = WLib::read_from(p);
+                lib.apply_to(&mut arena)?;
+                Ok(lib.typed_ir)
+            })
+            .collect::<Result<_>>();
         std_hlir
     })?;
 
@@ -203,6 +201,35 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
             .exec();
     };
     Ok(())
+}
+
+mod lib {
+    use crate::run_compiler_internal;
+    use std::path::{Path, PathBuf};
+    use wiz_result::Result;
+    use wiz_session::Session;
+    use wizc_cli::{BuildType, Config, ConfigBuilder};
+
+    pub(crate) fn run_compiler_for_std(
+        input: &Path,
+        name: &str,
+        out_dir: &Path,
+        libraries: &[PathBuf],
+    ) -> Result<()> {
+        let config = Config::default()
+            .input(input.to_str().unwrap())
+            .name(name)
+            .type_(BuildType::Library)
+            .out_dir(out_dir)
+            .libraries(
+                &libraries
+                    .into_iter()
+                    .map(|i| i.to_str().unwrap())
+                    .collect::<Vec<_>>(),
+            );
+        let mut session = Session::new(config);
+        run_compiler_internal(&mut session, true)
+    }
 }
 
 #[cfg(test)]
