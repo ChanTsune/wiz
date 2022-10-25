@@ -27,7 +27,8 @@ pub(crate) fn construct_workspace_from(manifest_path: &Path) -> Result<Workspace
     let manifest_path = manifest_path.to_owned();
     if !manifest_path.exists() {
         return Err(Box::new(CliError::from(format!(
-            "could not find `{}`", manifest_path.display()
+            "could not find `{}`",
+            manifest_path.display()
         ))));
     }
     let cws = manifest_path.parent().expect("").to_owned();
