@@ -59,16 +59,8 @@ jobs:
       - name: echo rust version
         run: rustc --version
 
-      - name: Install cargo-quickinstall
-        run: cargo install cargo-quickinstall
-
-      - name: Install cargo-binstall
-        run: cargo quickinstall cargo-binstall
-
       - name: Install required cargo
-        run: |
-          cargo binstall clippy-sarif --no-confirm
-          cargo binstall sarif-fmt --no-confirm
+        run: cargo install clippy-sarif sarif-fmt
 
       - name: Run rust-clippy
         run:
