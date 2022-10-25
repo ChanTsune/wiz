@@ -49,9 +49,9 @@ fun main() {{
 
 pub(crate) fn load_project(path: Option<&str>) -> Result<Workspace> {
     let manifest_path = if let Some(manifest_path) = path {
-        PathBuf::from(manifest_path).parent().unwrap().to_path_buf()
+        PathBuf::from(manifest_path)
     } else {
-        env::current_dir()?
+        env::current_dir()?.join(MANIFEST_FILE_NAME)
     };
     construct_workspace_from(&manifest_path)
 }
