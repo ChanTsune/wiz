@@ -224,12 +224,7 @@ mod lib {
             .name(name)
             .type_(BuildType::Library)
             .out_dir(out_dir)
-            .libraries(
-                &libraries
-                    .into_iter()
-                    .map(|i| i.to_str().unwrap())
-                    .collect::<Vec<_>>(),
-            );
+            .libraries(libraries);
         let mut session = Session::new(config);
         run_compiler_internal(&mut session, true)
     }
