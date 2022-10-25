@@ -41,7 +41,7 @@ jobs:
         with:
           path: |
             wiz/target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
+          key: ${{ runner.os }}-rust-${{ hashFiles('**/Cargo.toml') }}
       - name: Install LLVM and Clang
         uses: KyleMayes/install-llvm-action@v1
         with:
