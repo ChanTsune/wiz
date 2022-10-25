@@ -67,7 +67,7 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
     let mut arena = Arena::default();
 
     let std_hlir = session.timer("load dependencies", |session| {
-        let libraries = session.config.libraries();
+        let mut libraries = session.config.libraries();
 
         let std_hlir: Result<Vec<_>> = if libraries.is_empty() && !no_std {
             let find_paths: Vec<_> = get_find_paths().into_iter().chain(paths).collect();
