@@ -43,6 +43,10 @@ fn main() -> Result<()> {
 }
 
 fn run_compiler(session: &mut Session) -> Result<()> {
+    run_compiler_internal(session, false)
+}
+
+fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
     let output = session.config.output();
     let paths = session.config.paths();
     let out_dir = session
@@ -63,9 +67,9 @@ fn run_compiler(session: &mut Session) -> Result<()> {
     let mut arena = Arena::default();
 
     let std_hlir = session.timer("load dependencies", |session| {
-        let libraries = session.config.libraries();
+        let mut libraries = session.config.libraries();
 
-        let std_hlir: Result<Vec<_>> = if libraries.is_empty() {
+        if libraries.is_empty() && !no_std {
             let find_paths: Vec<_> = get_find_paths().into_iter().chain(paths).collect();
 
             let mut lib_paths = vec![];
@@ -81,26 +85,28 @@ fn run_compiler(session: &mut Session) -> Result<()> {
                     }
                 }
             }
+            let mut libs = vec![];
+            for (lib_path, name) in lib_paths.iter() {
+                let out_dir = env::temp_dir().join(name);
+                fs::create_dir_all(&out_dir)?;
+                lib::run_compiler_for_std(lib_path, name, &out_dir, &libs)?;
+                libs.push({
+                    let mut path = out_dir.join(name);
+                    path.set_extension("wlib");
+                    path
+                });
+            }
 
-            let source_sets = lib_paths
-                .iter()
-                .map(|(p, name)| read_package_from_path(&session.parse_session, p, Some(*name)))
-                .collect::<Result<Vec<_>>>()?;
-            Ok(source_sets
-                .into_iter()
-                .enumerate()
-                .map(|(i, s)| ast2hlir(session, &mut arena, s, ModuleId::new(i)))
-                .collect())
-        } else {
-            Ok(libraries
-                .iter()
-                .map(|p| {
-                    let lib = WLib::read_from(p);
-                    lib.apply_to(&mut arena).unwrap();
-                    lib.typed_ir
-                })
-                .collect())
+            libraries.extend(libs);
         };
+        let std_hlir: Result<Vec<_>> = libraries
+            .iter()
+            .map(|p| {
+                let lib = WLib::read_from(p);
+                lib.apply_to(&mut arena)?;
+                Ok(lib.typed_ir)
+            })
+            .collect::<Result<_>>();
         std_hlir
     })?;
 
@@ -201,28 +207,98 @@ fn run_compiler(session: &mut Session) -> Result<()> {
     Ok(())
 }
 
+mod lib {
+    use crate::run_compiler_internal;
+    use std::path::{Path, PathBuf};
+    use wiz_result::Result;
+    use wiz_session::Session;
+    use wizc_cli::{BuildType, Config, ConfigBuilder};
+
+    pub(crate) fn run_compiler_for_std(
+        input: &Path,
+        name: &str,
+        out_dir: &Path,
+        libraries: &[PathBuf],
+    ) -> Result<()> {
+        let config = Config::default()
+            .input(input.to_str().unwrap())
+            .name(name)
+            .type_(BuildType::Library)
+            .out_dir(out_dir)
+            .libraries(
+                &libraries
+                    .into_iter()
+                    .map(|i| i.to_str().unwrap())
+                    .collect::<Vec<_>>(),
+            );
+        let mut session = Session::new(config);
+        run_compiler_internal(&mut session, true)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::run_compiler;
+    use crate::run_compiler_internal;
     use std::path::PathBuf;
     use wiz_session::Session;
-    use wizc_cli::{Config, ConfigBuilder};
+    use wizc_cli::{BuildType, Config, ConfigBuilder, ConfigExt};
+
+    struct TestContext {
+        manifest_dir: PathBuf,
+    }
+
+    impl TestContext {
+        fn new() -> Self {
+            Self {
+                manifest_dir: PathBuf::from(env!("CARGO_MANIFEST_DIR")),
+            }
+        }
+
+        fn test_resource_dir(&self) -> PathBuf {
+            self.manifest_dir.join("resources/").join("test")
+        }
+
+        fn repository_root(&self) -> PathBuf {
+            self.manifest_dir
+                .join("..")
+                .join("..")
+                .canonicalize()
+                .unwrap()
+        }
+
+        fn lib_path(&self) -> PathBuf {
+            self.repository_root().join("libraries")
+        }
+
+        fn out_dir(&self) -> PathBuf {
+            self.repository_root().join("out")
+        }
+    }
 
     #[test]
     fn compile_file() {
-        let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        let test_resource_dir = manifest_dir.join("resources/").join("test");
-        let repository_root = manifest_dir.join("..").join("..").canonicalize().unwrap();
-
-        let target_file_path = test_resource_dir.join("helloworld.wiz");
-        let lib_path = repository_root.join("libraries");
-        let out_dir = repository_root.join("out");
+        let context = TestContext::new();
+        let target_file_path = context.test_resource_dir().join("helloworld.wiz");
 
         let config = Config::default()
             .input(target_file_path.to_str().unwrap())
-            .path(lib_path)
-            .out_dir(out_dir);
+            .path(context.lib_path())
+            .out_dir(context.out_dir());
         let mut session = Session::new(config);
         run_compiler(&mut session).unwrap()
+    }
+
+    #[test]
+    fn compile_ilb_core() {
+        let context = TestContext::new();
+        let target_lib_path = context.lib_path().join("core").join("src");
+        let config = Config::default()
+            .input(target_lib_path.to_str().unwrap())
+            .name("core")
+            .type_(BuildType::Library)
+            .out_dir(context.out_dir());
+        let mut session = Session::new(config);
+        run_compiler_internal(&mut session, true).unwrap();
     }
 }
