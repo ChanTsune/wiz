@@ -76,11 +76,7 @@ pub fn read_book_from_path(
 }
 
 #[deprecated]
-fn read_page_from_path(
-    session: &ParseSession,
-    path: &Path,
-    name: Option<&str>,
-) -> Result<WizFile> {
+fn read_page_from_path(session: &ParseSession, path: &Path, name: Option<&str>) -> Result<WizFile> {
     Ok(if path.is_dir() {
         let dir = fs::read_dir(path)?;
         WizFile {
