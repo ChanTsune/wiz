@@ -164,10 +164,18 @@ fn compile_dependencies(
                 path
             })
             .collect::<Vec<_>>();
+        let input = {
+            let lib_wiz_path = PathBuf::from(&dep.src_path).join("lib.wiz");
+            if lib_wiz_path.exists() {
+                lib_wiz_path.to_string_lossy().to_string()
+            } else {
+                dep.src_path
+            }
+        };
         let output = super::subcommand::output(
             "wizc",
             Config::default()
-                .input(&dep.src_path)
+                .input(&input)
                 .out_dir(target_dir)
                 .name(&dep.name)
                 .type_(BuildType::Library)

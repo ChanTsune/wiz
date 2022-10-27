@@ -65,6 +65,22 @@ pub fn read_book_from_path(
     path: &Path,
     name: Option<&str>,
 ) -> Result<WizFile> {
+    if path.file_name().unwrap().to_str().unwrap() == "lib.wiz" {
+        println!("session root: {}", path.display());
+        println!("name: {:?}, path: {}", name, path.display());
+        parse_from_file_path(session, path, name)
+    } else {
+        println!("name: {:?}, path: {}", name, path.display());
+        read_page_from_path(session, &path, name)
+    }
+}
+
+#[deprecated]
+fn read_page_from_path(
+    session: &ParseSession,
+    path: &Path,
+    name: Option<&str>,
+) -> Result<WizFile> {
     Ok(if path.is_dir() {
         let dir = fs::read_dir(path)?;
         WizFile {
@@ -76,7 +92,7 @@ pub fn read_book_from_path(
                 leading_trivia: Default::default(),
                 body: dir
                     .into_iter()
-                    .map(|d| read_book_from_path(session, &*d?.path(), None))
+                    .map(|d| read_page_from_path(session, &*d?.path(), None))
                     .collect::<Result<Vec<_>>>()?
                     .into_iter()
                     .fold(BTreeMap::new(), |mut acc, value| {
