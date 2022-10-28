@@ -17,7 +17,13 @@ pub struct ResolvedDependencyTree {
 
 impl Display for ResolvedDependencyTree {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        writeln!(f, "{} v{} ({})", self.name, self.version, self.src_path.display())?;
+        writeln!(
+            f,
+            "{} v{} ({})",
+            self.name,
+            self.version,
+            self.src_path.display()
+        )?;
         for dependency in &self.dependencies {
             Display::fmt(dependency, f)?;
         }
