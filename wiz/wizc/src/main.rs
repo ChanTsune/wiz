@@ -171,7 +171,7 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
         codegen.file(m);
     }
 
-    codegen.file(mlfile.clone());
+    codegen.file(mlfile);
 
     let output =
         session.config.name().map(PathBuf::from).unwrap_or_else(|| {
