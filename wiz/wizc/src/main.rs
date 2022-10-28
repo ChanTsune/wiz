@@ -200,13 +200,10 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
         ir_file.set_extension("ll");
         codegen.print_to_file(&ir_file)?;
 
-        let output = out_dir
-            .join(&output)
-            .as_os_str()
-            .to_string_lossy()
-            .to_string();
         Command::new("clang")
-            .args(&[ir_file.to_str().unwrap_or_default(), "-o", &output])
+            .args(&[ir_file.as_os_str(), "-o".as_ref(), out_dir
+                .join(&output)
+                .as_os_str()])
             .exec();
     };
     Ok(())
