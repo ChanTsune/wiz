@@ -1,6 +1,6 @@
 mod build_type;
-mod message_format;
 mod emit;
+mod message_format;
 
 pub use build_type::BuildType;
 use clap::ArgMatches;
@@ -208,7 +208,9 @@ impl<'ctx> From<&'ctx ArgMatches> for Config {
                 .get_many::<String>("library")
                 .map(|i| i.map(PathBuf::from).collect())
                 .unwrap_or_default(),
-            emit: matches.get_one::<String>("emit").map(|s|Emit::from(s.as_str())),
+            emit: matches
+                .get_one::<String>("emit")
+                .map(|s| Emit::from(s.as_str())),
             message_format: matches
                 .get_one::<String>("message-format")
                 .map(|s| MessageFormat::from(s.as_str())),
