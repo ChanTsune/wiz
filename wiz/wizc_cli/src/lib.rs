@@ -22,7 +22,7 @@ pub fn app(name: &'static str) -> Command {
         .arg(
             long("emit")
                 .num_args(1)
-                .value_parser(["llvm-ir", "object", "asm"]),
+                .value_parser(PossibleValuesParser::new(Emit::all_str())),
         )
         .arg(long("message-format").num_args(1).value_parser(["json"]))
 }
