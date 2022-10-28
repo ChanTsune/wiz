@@ -1,3 +1,5 @@
+namespace fraction
+
 fun abs(_ x: Size): Size {
     if x < 0 {
         return -x
