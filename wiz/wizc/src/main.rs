@@ -173,9 +173,10 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
 
     codegen.file(mlfile.clone());
 
-    let output = session.config.name().map(PathBuf::from).unwrap_or_else(||{
-        PathBuf::from(session.config.input().file_stem().unwrap_or_default())
-    });
+    let output =
+        session.config.name().map(PathBuf::from).unwrap_or_else(|| {
+            PathBuf::from(session.config.input().file_stem().unwrap_or_default())
+        });
     if let Some(emit) = session.config.emit() {
         let mut out_path = out_dir.join(output);
         out_path.set_extension("ll");
