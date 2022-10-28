@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 
 #[derive(Debug, Default, Clone)]
 pub struct Config {
-    input: String,
+    input: PathBuf,
     name: Option<String>,
     type_: Option<BuildType>,
     output: Option<PathBuf>,
@@ -38,7 +38,7 @@ pub trait ConfigExt {
 
 impl ConfigExt for Config {
     fn input(&self) -> &Path {
-        Path::new(&self.input)
+        &self.input
     }
 
     fn name(&self) -> Option<&str> {
@@ -79,7 +79,7 @@ impl ConfigExt for Config {
 }
 
 pub trait ConfigBuilder {
-    fn input(self, input: &str) -> Self;
+    fn input<P: AsRef<Path>>(self, input: P) -> Self;
     fn name(self, name: &str) -> Self;
     fn type_(self, build_type: BuildType) -> Self;
     fn output<P: AsRef<Path>>(self, output: P) -> Self;
@@ -95,8 +95,8 @@ pub trait ConfigBuilder {
 }
 
 impl ConfigBuilder for Config {
-    fn input(mut self, input: &str) -> Self {
-        self.input = input.to_owned();
+    fn input<P: AsRef<Path>>(mut self, input: P) -> Self {
+        self.input = input.as_ref().to_owned();
         self
     }
 
@@ -160,7 +160,7 @@ impl ConfigBuilder for Config {
     }
 
     fn as_args(&self) -> Vec<&str> {
-        let mut args: Vec<&str> = vec![&self.input];
+        let mut args: Vec<&str> = vec![self.input.as_os_str().to_str().unwrap()];
         if let Some(out_dir) = &self.out_dir {
             args.extend(["--out-dir", out_dir.as_os_str().to_str().unwrap()]);
         }
@@ -188,8 +188,8 @@ impl<'ctx> From<&'ctx ArgMatches> for Config {
         Self {
             input: matches
                 .get_one::<String>("input")
-                .expect("input is required")
-                .to_string(),
+                .map(PathBuf::from)
+                .expect("input is required"),
             name: matches.get_one::<String>("name").map(ToString::to_string),
             type_: matches
                 .get_one::<String>("type")

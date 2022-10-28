@@ -226,7 +226,7 @@ mod lib {
         libraries: &[PathBuf],
     ) -> Result<()> {
         let config = Config::default()
-            .input(input.to_str().unwrap())
+            .input(input)
             .name(name)
             .type_(BuildType::Library)
             .out_dir(out_dir)
@@ -281,7 +281,7 @@ mod tests {
         let target_file_path = context.test_resource_dir().join("helloworld.wiz");
 
         let config = Config::default()
-            .input(target_file_path.to_str().unwrap())
+            .input(target_file_path)
             .path(context.lib_path())
             .out_dir(context.out_dir());
         let mut session = Session::new(config);
