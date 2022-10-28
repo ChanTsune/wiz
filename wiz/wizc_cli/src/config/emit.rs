@@ -7,7 +7,6 @@ pub enum Emit {
 }
 
 impl Emit {
-
     pub fn all_str() -> &'static [&'static str] {
         &["llvm-ir", "object", "asm", "bin"]
     }
