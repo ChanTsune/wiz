@@ -86,7 +86,15 @@ pub(crate) fn command(_: &str, options: Options) -> Result<()> {
 
     let wlib_paths = compile_dependencies(&ws, resolved_dependencies, &target_dir)?;
 
-    let input_path = ws.cws.join("src");
+    let input_path = {
+        let src_dir = ws.cws.join("src");
+        let main_file = src_dir.join("main.wiz");
+        if main_file.exists() {
+            main_file
+        } else {
+            src_dir.join("lib.wiz")
+        }
+    };
     let mut config = Config::default()
         .input(input_path.to_str().unwrap())
         .out_dir(target_dir)
