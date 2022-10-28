@@ -173,17 +173,12 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
 
     codegen.file(mlfile.clone());
 
-    let output = session.config.output();
+    let output = session.config.name().map(PathBuf::from).unwrap_or_else(||{
+        PathBuf::from(session.config.input().file_stem().unwrap_or_default())
+    });
     if let Some(emit) = session.config.emit() {
-        let output = if let Some(output) = output {
-            PathBuf::from(output)
-        } else {
-            let mut output_path = PathBuf::from(&mlfile.name);
-            output_path.set_extension("ll");
-            output_path
-        };
-
-        let out_path = out_dir.join(output);
+        let mut out_path = out_dir.join(output);
+        out_path.set_extension("ll");
 
         println!("{}", Message::output(&out_path));
 
@@ -193,9 +188,6 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
             _ => codegen.write_as_object(&out_path),
         }?;
     } else {
-        let output = output
-            .map(PathBuf::from)
-            .unwrap_or_else(|| PathBuf::from(&mlfile.name));
         let mut ir_file = out_dir.join(&output);
         ir_file.set_extension("ll");
         codegen.print_to_file(&ir_file)?;

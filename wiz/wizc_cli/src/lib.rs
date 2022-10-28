@@ -13,7 +13,6 @@ pub fn app(name: &'static str) -> Command {
                 .num_args(1)
                 .value_parser(PossibleValuesParser::new(BuildType::all_str())),
         )
-        .arg(short("output", 'o').num_args(1))
         .arg(long("out-dir").num_args(1))
         .arg(long("target-triple").num_args(1))
         .arg(short("path", 'p').action(ArgAction::Append).num_args(0..))
