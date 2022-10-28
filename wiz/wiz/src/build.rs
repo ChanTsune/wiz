@@ -111,7 +111,7 @@ pub(crate) fn command(_: &str, options: Options) -> Result<()> {
 struct Task {
     name: String,
     version: String,
-    src_path: String,
+    src_path: PathBuf,
 }
 
 fn dependency_list(dependencies: ResolvedDependencyTree) -> HashMap<Task, HashSet<Task>> {
@@ -164,14 +164,7 @@ fn compile_dependencies(
                 path
             })
             .collect::<Vec<_>>();
-        let input = {
-            let lib_wiz_path = PathBuf::from(&dep.src_path).join("lib.wiz");
-            if lib_wiz_path.exists() {
-                lib_wiz_path.to_string_lossy().to_string()
-            } else {
-                dep.src_path
-            }
-        };
+        let input = dep.src_path.to_string_lossy().to_string();
         let output = super::subcommand::output(
             "wizc",
             Config::default()
