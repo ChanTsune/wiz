@@ -223,6 +223,16 @@ mod lib {
         out_dir: &Path,
         libraries: &[PathBuf],
     ) -> Result<()> {
+        let input = if input.is_dir() {
+            let lib_wiz = input.join("lib.wiz");
+            if lib_wiz.exists() {
+                lib_wiz
+            } else {
+                input.to_path_buf()
+            }
+        } else {
+            input.to_path_buf()
+        };
         let config = Config::default()
             .input(input.to_str().unwrap())
             .name(name)
@@ -285,18 +295,5 @@ mod tests {
             .out_dir(context.out_dir());
         let mut session = Session::new(config);
         run_compiler(&mut session).unwrap()
-    }
-
-    #[test]
-    fn compile_ilb_core() {
-        let context = TestContext::new();
-        let target_lib_path = context.lib_path().join("core").join("src");
-        let config = Config::default()
-            .input(target_lib_path.to_str().unwrap())
-            .name("core")
-            .type_(BuildType::Library)
-            .out_dir(context.out_dir());
-        let mut session = Session::new(config);
-        run_compiler_internal(&mut session, true).unwrap();
     }
 }
