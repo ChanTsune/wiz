@@ -2,7 +2,7 @@ mod config;
 
 use clap::builder::PossibleValuesParser;
 use clap::{Arg, ArgAction, Command};
-pub use config::{BuildType, Config, ConfigBuilder, ConfigExt, MessageFormat};
+pub use config::{BuildType, Config, ConfigBuilder, ConfigExt, Emit, MessageFormat};
 
 pub fn app(name: &'static str) -> Command {
     Command::new(name)

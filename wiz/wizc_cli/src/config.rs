@@ -1,8 +1,10 @@
 mod build_type;
 mod message_format;
+mod emit;
 
 pub use build_type::BuildType;
 use clap::ArgMatches;
+pub use emit::Emit;
 pub use message_format::MessageFormat;
 use std::path::{Path, PathBuf};
 
@@ -17,7 +19,7 @@ pub struct Config {
     l: Option<String>,
     target_triple: Option<String>,
     libraries: Vec<PathBuf>,
-    emit: Option<String>,
+    emit: Option<Emit>,
     message_format: Option<MessageFormat>,
 }
 
@@ -30,7 +32,7 @@ pub trait ConfigExt {
     fn paths(&self) -> Vec<PathBuf>;
     fn target_triple(&self) -> Option<String>;
     fn libraries(&self) -> Vec<PathBuf>;
-    fn emit(&self) -> Option<String>;
+    fn emit(&self) -> Option<Emit>;
     fn message_format(&self) -> MessageFormat;
 }
 
@@ -67,8 +69,8 @@ impl ConfigExt for Config {
         self.libraries.clone()
     }
 
-    fn emit(&self) -> Option<String> {
-        self.emit.clone()
+    fn emit(&self) -> Option<Emit> {
+        self.emit
     }
 
     fn message_format(&self) -> MessageFormat {
@@ -87,7 +89,7 @@ pub trait ConfigBuilder {
     fn target_triple(self, target_triple: &str) -> Self;
     fn library<P: AsRef<Path>>(self, library: P) -> Self;
     fn libraries<P: AsRef<Path>>(self, libraries: &[P]) -> Self;
-    fn emit(self, emit: &str) -> Self;
+    fn emit(self, emit: Emit) -> Self;
     fn message_format(self, message_format: MessageFormat) -> Self;
     fn as_args(&self) -> Vec<&str>;
 }
@@ -147,8 +149,8 @@ impl ConfigBuilder for Config {
         self
     }
 
-    fn emit(mut self, emit: &str) -> Self {
-        self.emit.replace(emit.to_owned());
+    fn emit(mut self, emit: Emit) -> Self {
+        self.emit.replace(emit);
         self
     }
 
@@ -206,7 +208,7 @@ impl<'ctx> From<&'ctx ArgMatches> for Config {
                 .get_many::<String>("library")
                 .map(|i| i.map(PathBuf::from).collect())
                 .unwrap_or_default(),
-            emit: matches.get_one::<String>("emit").map(ToString::to_string),
+            emit: matches.get_one::<String>("emit").map(|s|Emit::from(s.as_str())),
             message_format: matches
                 .get_one::<String>("message-format")
                 .map(|s| MessageFormat::from(s.as_str())),

@@ -237,10 +237,9 @@ mod lib {
 #[cfg(test)]
 mod tests {
     use super::run_compiler;
-    use crate::run_compiler_internal;
     use std::path::PathBuf;
     use wiz_session::Session;
-    use wizc_cli::{BuildType, Config, ConfigBuilder, ConfigExt};
+    use wizc_cli::{Config, ConfigBuilder};
 
     struct TestContext {
         manifest_dir: PathBuf,
