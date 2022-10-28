@@ -6,6 +6,7 @@ pub use build_type::BuildType;
 use clap::ArgMatches;
 pub use emit::Emit;
 pub use message_format::MessageFormat;
+use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 
 #[derive(Debug, Default, Clone)]
@@ -91,7 +92,7 @@ pub trait ConfigBuilder {
     fn libraries<P: AsRef<Path>>(self, libraries: &[P]) -> Self;
     fn emit(self, emit: Emit) -> Self;
     fn message_format(self, message_format: MessageFormat) -> Self;
-    fn as_args(&self) -> Vec<&str>;
+    fn as_args(&self) -> Vec<&OsStr>;
 }
 
 impl ConfigBuilder for Config {
@@ -159,25 +160,28 @@ impl ConfigBuilder for Config {
         self
     }
 
-    fn as_args(&self) -> Vec<&str> {
-        let mut args: Vec<&str> = vec![self.input.as_os_str().to_str().unwrap()];
+    fn as_args(&self) -> Vec<&OsStr> {
+        let mut args: Vec<&OsStr> = vec![self.input.as_os_str()];
         if let Some(out_dir) = &self.out_dir {
-            args.extend(["--out-dir", out_dir.as_os_str().to_str().unwrap()]);
+            args.extend::<&[&OsStr]>(&["--out-dir".as_ref(), out_dir.as_os_str()]);
         }
         if let Some(name) = &self.name {
-            args.extend(["--name", name]);
+            args.extend::<&[&OsStr]>(&["--name".as_ref(), name.as_ref()]);
         }
         if let Some(type_) = self.type_ {
-            args.extend(["--type", type_.as_str()]);
+            args.extend::<&[&OsStr]>(&["--type".as_ref(), type_.as_str().as_ref()]);
         }
         for library in self.libraries.iter() {
-            args.extend(["--library", library.as_os_str().to_str().unwrap()]);
+            args.extend::<&[&OsStr]>(&["--library".as_ref(), library.as_os_str()]);
         }
         if let Some(target_triple) = &self.target_triple {
-            args.extend(["--target-triple", target_triple]);
+            args.extend::<&[&OsStr]>(&["--target-triple".as_ref(), target_triple.as_ref()]);
         }
         if let Some(message_format) = &self.message_format {
-            args.extend(["--message-format", message_format.as_str()]);
+            args.extend::<&[&OsStr]>(&[
+                "--message-format".as_ref(),
+                message_format.as_str().as_ref(),
+            ]);
         };
         args
     }
