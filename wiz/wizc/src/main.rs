@@ -201,9 +201,11 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
         codegen.print_to_file(&ir_file)?;
 
         Command::new("clang")
-            .args(&[ir_file.as_os_str(), "-o".as_ref(), out_dir
-                .join(&output)
-                .as_os_str()])
+            .args(&[
+                ir_file.as_os_str(),
+                "-o".as_ref(),
+                out_dir.join(&output).as_os_str(),
+            ])
             .exec();
     };
     Ok(())
