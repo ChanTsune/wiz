@@ -13,7 +13,7 @@ pub struct Config {
     input: String,
     name: Option<String>,
     type_: Option<BuildType>,
-    output: Option<String>,
+    output: Option<PathBuf>,
     out_dir: Option<PathBuf>,
     paths: Vec<PathBuf>,
     l: Option<String>,
@@ -27,7 +27,7 @@ pub trait ConfigExt {
     fn input(&self) -> &Path;
     fn name(&self) -> Option<&str>;
     fn type_(&self) -> BuildType;
-    fn output(&self) -> Option<String>;
+    fn output(&self) -> Option<&Path>;
     fn out_dir(&self) -> Option<PathBuf>;
     fn paths(&self) -> Vec<PathBuf>;
     fn target_triple(&self) -> Option<String>;
@@ -49,8 +49,8 @@ impl ConfigExt for Config {
         self.type_.unwrap_or(BuildType::Binary)
     }
 
-    fn output(&self) -> Option<String> {
-        self.output.clone()
+    fn output(&self) -> Option<&Path> {
+        self.output.as_deref()
     }
 
     fn out_dir(&self) -> Option<PathBuf> {
@@ -82,7 +82,7 @@ pub trait ConfigBuilder {
     fn input(self, input: &str) -> Self;
     fn name(self, name: &str) -> Self;
     fn type_(self, build_type: BuildType) -> Self;
-    fn output(self, output: &str) -> Self;
+    fn output<P: AsRef<Path>>(self, output: P) -> Self;
     fn out_dir<P: AsRef<Path>>(self, out_dir: P) -> Self;
     fn path<P: AsRef<Path>>(self, path: P) -> Self;
     fn paths<P: AsRef<Path>>(self, paths: &[P]) -> Self;
@@ -110,8 +110,8 @@ impl ConfigBuilder for Config {
         self
     }
 
-    fn output(mut self, output: &str) -> Self {
-        self.output.replace(output.to_owned());
+    fn output<P: AsRef<Path>>(mut self, output: P) -> Self {
+        self.output.replace(output.as_ref().to_owned());
         self
     }
 
@@ -194,7 +194,7 @@ impl<'ctx> From<&'ctx ArgMatches> for Config {
             type_: matches
                 .get_one::<String>("type")
                 .map(|i| BuildType::from(i.as_str())),
-            output: matches.get_one::<String>("output").map(ToString::to_string),
+            output: matches.get_one::<String>("output").map(PathBuf::from),
             out_dir: matches.get_one::<String>("out-dir").map(PathBuf::from),
             paths: matches
                 .get_many::<String>("path")

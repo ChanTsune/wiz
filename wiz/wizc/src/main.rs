@@ -47,7 +47,6 @@ fn run_compiler(session: &mut Session) -> Result<()> {
 }
 
 fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
-    let output = session.config.output();
     let paths = session.config.paths();
     let out_dir = session
         .config
@@ -174,6 +173,7 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
 
     codegen.file(mlfile.clone());
 
+    let output = session.config.output();
     if let Some(emit) = session.config.emit() {
         let output = if let Some(output) = output {
             PathBuf::from(output)
@@ -193,7 +193,7 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
             _ => codegen.write_as_object(&out_path),
         }?;
     } else {
-        let output = output.unwrap_or_else(|| String::from(&mlfile.name));
+        let output = output.map(PathBuf::from).unwrap_or_else(|| PathBuf::from(&mlfile.name));
         let mut ir_file = out_dir.join(&output);
         ir_file.set_extension("ll");
         codegen.print_to_file(&ir_file)?;
