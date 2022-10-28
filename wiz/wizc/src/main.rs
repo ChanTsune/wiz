@@ -80,7 +80,7 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
                     let package_manifest_path = lib_path.join("Package.wiz");
                     if package_manifest_path.exists() {
                         println!("`{}` found at {}", lib_name, lib_path.display());
-                        lib_paths.push((lib_path.join("src"), lib_name));
+                        lib_paths.push((lib_path.join("src").join("lib.wiz"), lib_name));
                         break;
                     }
                 }
@@ -223,16 +223,6 @@ mod lib {
         out_dir: &Path,
         libraries: &[PathBuf],
     ) -> Result<()> {
-        let input = if input.is_dir() {
-            let lib_wiz = input.join("lib.wiz");
-            if lib_wiz.exists() {
-                lib_wiz
-            } else {
-                input.to_path_buf()
-            }
-        } else {
-            input.to_path_buf()
-        };
         let config = Config::default()
             .input(input.to_str().unwrap())
             .name(name)
