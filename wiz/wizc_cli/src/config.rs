@@ -184,7 +184,10 @@ impl ConfigBuilder for Config {
 impl<'ctx> From<&'ctx ArgMatches> for Config {
     fn from(matches: &'ctx ArgMatches) -> Self {
         Self {
-            input: matches.get_one::<String>("input").unwrap().to_string(),
+            input: matches
+                .get_one::<String>("input")
+                .expect("input is required")
+                .to_string(),
             name: matches.get_one::<String>("name").map(ToString::to_string),
             type_: matches
                 .get_one::<String>("type")
