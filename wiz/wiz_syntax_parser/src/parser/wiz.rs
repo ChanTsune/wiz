@@ -6,7 +6,7 @@ use std::path::Path;
 use wiz_result::Result;
 use wiz_session::ParseSession;
 use wiz_span::{get_line_offset, Location};
-use wiz_syntax::syntax::{WizFile};
+use wiz_syntax::syntax::WizFile;
 
 pub mod annotation;
 pub mod character;
