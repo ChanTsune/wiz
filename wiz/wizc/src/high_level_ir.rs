@@ -62,9 +62,9 @@ pub fn ast2hlir(
     arena: &mut Arena,
     s: WizFile,
     module_id: ModuleId,
-) -> TypedSpellBook {
+) -> Result<TypedSpellBook> {
     let mut converter = AstLowering::new(session, arena);
-    converter.lowing(s, module_id).unwrap()
+    converter.lowing(s, module_id)
 }
 
 impl<'a> AstLowering<'a> {
@@ -246,12 +246,13 @@ impl<'a> AstLowering<'a> {
                             let mut s = self.session.local_spell_book_root().to_owned();
                             let fqn = self.arena.resolve_fully_qualified_name(&self.namespace_id);
                             for n in &fqn[1..] {
-                                s = s.join(n);
+                                s.push(n);
                             }
+                            s.push(&name);
                             s.set_extension("wiz");
                             println!("Module: {}", s.display());
                             parse_from_file_path(&self.session.parse_session, s, Some(&name))
-                                .unwrap()
+                                .expect(&format!("try to parse {:?}{}, but failed", fqn, name))
                         }
                     };
                     TypedDeclKind::Module(self.file(file))

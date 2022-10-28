@@ -1,0 +1,7 @@
+namespace arpa
+namespace ctype
+namespace stdio
+namespace stdlib
+namespace string
+namespace sys
+namespace unistd

@@ -1,7 +1,7 @@
+use crate::high_level_ir::ast2hlir;
 use crate::high_level_ir::node_id::ModuleId;
 use crate::high_level_ir::type_checker::TypeChecker;
 use crate::high_level_ir::wlib::WLib;
-use crate::high_level_ir::{ast2hlir, AstLowering};
 use crate::llvm_ir::codegen::CodeGen;
 use crate::middle_level_ir::hlir2mlir;
 use inkwell::context::Context;
@@ -14,7 +14,7 @@ use std::{env, fs};
 use wiz_arena::Arena;
 use wiz_result::Result;
 use wiz_session::Session;
-use wiz_syntax_parser::parser::wiz::read_package_from_path;
+use wiz_syntax_parser::parser::wiz::read_book_from_path;
 use wizc_cli::{BuildType, Config, ConfigExt};
 use wizc_message::Message;
 
@@ -57,7 +57,7 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
     let mlir_out_dir = out_dir.join("mlir");
 
     let input_source = session.timer::<Result<_>, _>("parse files", |session| {
-        read_package_from_path(
+        read_book_from_path(
             &session.parse_session,
             session.config.input(),
             session.config.name(),
@@ -80,7 +80,7 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
                     let package_manifest_path = lib_path.join("Package.wiz");
                     if package_manifest_path.exists() {
                         println!("`{}` found at {}", lib_name, lib_path.display());
-                        lib_paths.push((lib_path.join("src"), lib_name));
+                        lib_paths.push((lib_path.join("src").join("lib.wiz"), lib_name));
                         break;
                     }
                 }
@@ -96,7 +96,6 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
                     path
                 });
             }
-
             libraries.extend(libs);
         };
         let std_hlir: Result<Vec<_>> = libraries
@@ -111,8 +110,12 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
     })?;
 
     let hlfiles = session.timer("resolve type", |session| {
-        let mut ast2hlir = AstLowering::new(session, &mut arena);
-        ast2hlir.lowing(input_source, ModuleId::new(std_hlir.len()))
+        ast2hlir(
+            session,
+            &mut arena,
+            input_source,
+            ModuleId::new(std_hlir.len()),
+        )
     })?;
 
     session.timer("type check", |session| {
@@ -225,12 +228,7 @@ mod lib {
             .name(name)
             .type_(BuildType::Library)
             .out_dir(out_dir)
-            .libraries(
-                &libraries
-                    .into_iter()
-                    .map(|i| i.to_str().unwrap())
-                    .collect::<Vec<_>>(),
-            );
+            .libraries(libraries);
         let mut session = Session::new(config);
         run_compiler_internal(&mut session, true)
     }
@@ -287,18 +285,5 @@ mod tests {
             .out_dir(context.out_dir());
         let mut session = Session::new(config);
         run_compiler(&mut session).unwrap()
-    }
-
-    #[test]
-    fn compile_ilb_core() {
-        let context = TestContext::new();
-        let target_lib_path = context.lib_path().join("core").join("src");
-        let config = Config::default()
-            .input(target_lib_path.to_str().unwrap())
-            .name("core")
-            .type_(BuildType::Library)
-            .out_dir(context.out_dir());
-        let mut session = Session::new(config);
-        run_compiler_internal(&mut session, true).unwrap();
     }
 }

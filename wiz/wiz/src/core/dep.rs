@@ -11,13 +11,19 @@ use std::path::{Path, PathBuf};
 pub struct ResolvedDependencyTree {
     pub name: String,
     pub version: String,
-    pub src_path: String,
+    pub src_path: PathBuf,
     pub dependencies: Vec<ResolvedDependencyTree>,
 }
 
 impl Display for ResolvedDependencyTree {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        writeln!(f, "{} v{} ({})", self.name, self.version, self.src_path)?;
+        writeln!(
+            f,
+            "{} v{} ({})",
+            self.name,
+            self.version,
+            self.src_path.display()
+        )?;
         for dependency in &self.dependencies {
             Display::fmt(dependency, f)?;
         }
@@ -58,8 +64,7 @@ pub fn resolve_manifest_dependencies(
         version: manifest.package.version.clone(),
         src_path: manifest_path
             .parent()
-            .map(|p| p.join("src"))
-            .map(|p| p.to_string_lossy().to_string())
+            .map(|p| p.join("src").join("lib.wiz"))
             .unwrap(),
         dependencies: result,
     })

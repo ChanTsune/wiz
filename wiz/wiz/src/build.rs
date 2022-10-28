@@ -86,7 +86,15 @@ pub(crate) fn command(_: &str, options: Options) -> Result<()> {
 
     let wlib_paths = compile_dependencies(&ws, resolved_dependencies, &target_dir)?;
 
-    let input_path = ws.cws.join("src");
+    let input_path = {
+        let src_dir = ws.cws.join("src");
+        let main_file = src_dir.join("main.wiz");
+        if main_file.exists() {
+            main_file
+        } else {
+            src_dir.join("lib.wiz")
+        }
+    };
     let mut config = Config::default()
         .input(input_path.to_str().unwrap())
         .out_dir(target_dir)
@@ -111,7 +119,7 @@ pub(crate) fn command(_: &str, options: Options) -> Result<()> {
 struct Task {
     name: String,
     version: String,
-    src_path: String,
+    src_path: PathBuf,
 }
 
 fn dependency_list(dependencies: ResolvedDependencyTree) -> HashMap<Task, HashSet<Task>> {
@@ -164,10 +172,11 @@ fn compile_dependencies(
                 path
             })
             .collect::<Vec<_>>();
+        let input = dep.src_path.to_string_lossy().to_string();
         let output = super::subcommand::output(
             "wizc",
             Config::default()
-                .input(&dep.src_path)
+                .input(&input)
                 .out_dir(target_dir)
                 .name(&dep.name)
                 .type_(BuildType::Library)
