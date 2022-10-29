@@ -237,7 +237,7 @@ mod tests {
     use super::run_compiler;
     use std::path::PathBuf;
     use wiz_session::Session;
-    use wizc_cli::{Config, ConfigBuilder};
+    use wizc_cli::{Config, ConfigBuilder, Emit};
 
     struct TestContext {
         manifest_dir: PathBuf,
@@ -281,6 +281,40 @@ mod tests {
             .path(context.lib_path())
             .out_dir(context.out_dir());
         let mut session = Session::new(config);
-        run_compiler(&mut session).unwrap()
+        run_compiler(&mut session).unwrap();
+
+        assert!(context.out_dir().join("helloworld").exists())
+    }
+
+    #[test]
+    fn compile_file_to_ir() {
+        let context = TestContext::new();
+        let target_file_path = context.test_resource_dir().join("helloworld.wiz");
+
+        let config = Config::default()
+            .input(target_file_path)
+            .path(context.lib_path())
+            .out_dir(context.out_dir())
+            .emit(Emit::LlvmIr);
+        let mut session = Session::new(config);
+        run_compiler(&mut session).unwrap();
+
+        assert!(context.out_dir().join("helloworld.ll").exists())
+    }
+
+    #[test]
+    fn compile_file_to_obj() {
+        let context = TestContext::new();
+        let target_file_path = context.test_resource_dir().join("helloworld.wiz");
+
+        let config = Config::default()
+            .input(target_file_path)
+            .path(context.lib_path())
+            .out_dir(context.out_dir())
+            .emit(Emit::Object);
+        let mut session = Session::new(config);
+        run_compiler(&mut session).unwrap();
+
+        assert!(context.out_dir().join("helloworld.o").exists())
     }
 }
