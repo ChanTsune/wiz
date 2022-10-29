@@ -179,8 +179,7 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
         });
 
     let mut out_path = out_dir.join(output);
-    let emit = session.config.emit();
-    match emit {
+    match session.config.emit() {
         Emit::LlvmIr => {
             out_path.set_extension("ll");
             codegen.print_to_file(&out_path)
