@@ -121,20 +121,17 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
         let mut type_checker = TypeChecker::new(session, &arena);
         type_checker.verify(&hlfiles);
     });
-    match session.config.type_() {
-        BuildType::Library => {
-            let wlib = WLib::new(hlfiles);
-            let wlib_path = {
-                let mut path = out_dir.join(session.config.name().unwrap_or_default());
-                path.set_extension("wlib");
-                path
-            };
-            wlib.write_to(&wlib_path);
-            println!("{}", Message::output(wlib_path));
-            return Ok(());
-        }
-        _ => {}
-    };
+    if let BuildType::Library = session.config.type_() {
+        let wlib = WLib::new(hlfiles);
+        let wlib_path = {
+            let mut path = out_dir.join(session.config.name().unwrap_or_default());
+            path.set_extension("wlib");
+            path
+        };
+        wlib.write_to(&wlib_path);
+        println!("{}", Message::output(wlib_path));
+        return Ok(());
+    }
 
     println!("===== convert to mlir =====");
 
