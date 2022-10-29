@@ -15,7 +15,7 @@ use wiz_arena::Arena;
 use wiz_result::Result;
 use wiz_session::Session;
 use wiz_syntax_parser::parser::wiz::read_book_from_path;
-use wizc_cli::{BuildType, Config, ConfigExt};
+use wizc_cli::{BuildType, Config, ConfigExt, Emit};
 use wizc_message::Message;
 
 mod high_level_ir;
@@ -47,7 +47,6 @@ fn run_compiler(session: &mut Session) -> Result<()> {
 }
 
 fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
-    let output = session.config.output();
     let paths = session.config.paths();
     let out_dir = session
         .config
@@ -122,20 +121,17 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
         let mut type_checker = TypeChecker::new(session, &arena);
         type_checker.verify(&hlfiles);
     });
-    match session.config.type_() {
-        BuildType::Library => {
-            let wlib = WLib::new(hlfiles);
-            let wlib_path = {
-                let mut path = out_dir.join(session.config.name().unwrap_or_default());
-                path.set_extension("wlib");
-                path
-            };
-            wlib.write_to(&wlib_path);
-            println!("{}", Message::output(wlib_path));
-            return Ok(());
-        }
-        _ => {}
-    };
+    if let BuildType::Library = session.config.type_() {
+        let wlib = WLib::new(hlfiles);
+        let wlib_path = {
+            let mut path = out_dir.join(session.config.name().unwrap_or_default());
+            path.set_extension("wlib");
+            path
+        };
+        wlib.write_to(&wlib_path);
+        println!("{}", Message::output(wlib_path));
+        return Ok(());
+    }
 
     println!("===== convert to mlir =====");
 
@@ -172,41 +168,39 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
         codegen.file(m);
     }
 
-    codegen.file(mlfile.clone());
+    codegen.file(mlfile);
 
-    if let Some(emit) = session.config.emit() {
-        let output = if let Some(output) = output {
-            PathBuf::from(output)
-        } else {
-            let mut output_path = PathBuf::from(&mlfile.name);
-            output_path.set_extension("ll");
-            output_path
-        };
+    let output =
+        session.config.name().map(PathBuf::from).unwrap_or_else(|| {
+            PathBuf::from(session.config.input().file_stem().unwrap_or_default())
+        });
 
-        let out_path = out_dir.join(output);
+    let mut out_path = out_dir.join(output);
+    match session.config.emit() {
+        Emit::LlvmIr => {
+            out_path.set_extension("ll");
+            codegen.print_to_file(&out_path)
+        }
+        Emit::Assembly => {
+            out_path.set_extension("asm");
+            codegen.write_as_assembly(&out_path)
+        }
+        Emit::Object => {
+            out_path.set_extension("o");
+            codegen.write_as_object(&out_path)
+        }
+        Emit::Binary => {
+            let mut ir_file = out_path.clone();
+            ir_file.set_extension("ll");
+            codegen.print_to_file(&ir_file)?;
 
-        println!("{}", Message::output(&out_path));
-
-        match emit.as_str() {
-            "llvm-ir" => codegen.print_to_file(&out_path),
-            "asm" => codegen.write_as_assembly(&out_path),
-            _ => codegen.write_as_object(&out_path),
-        }?;
-    } else {
-        let output = output.unwrap_or_else(|| String::from(&mlfile.name));
-        let mut ir_file = out_dir.join(&output);
-        ir_file.set_extension("ll");
-        codegen.print_to_file(&ir_file)?;
-
-        let output = out_dir
-            .join(&output)
-            .as_os_str()
-            .to_string_lossy()
-            .to_string();
-        Command::new("clang")
-            .args(&[ir_file.to_str().unwrap_or_default(), "-o", &output])
-            .exec();
-    };
+            Command::new("clang")
+                .args(&[ir_file.as_os_str(), "-o".as_ref(), out_path.as_os_str()])
+                .exec();
+            Ok(())
+        }
+    }?;
+    println!("{}", Message::output(&out_path));
     Ok(())
 }
 
@@ -224,7 +218,7 @@ mod lib {
         libraries: &[PathBuf],
     ) -> Result<()> {
         let config = Config::default()
-            .input(input.to_str().unwrap())
+            .input(input)
             .name(name)
             .type_(BuildType::Library)
             .out_dir(out_dir)
@@ -237,10 +231,9 @@ mod lib {
 #[cfg(test)]
 mod tests {
     use super::run_compiler;
-    use crate::run_compiler_internal;
     use std::path::PathBuf;
     use wiz_session::Session;
-    use wizc_cli::{BuildType, Config, ConfigBuilder, ConfigExt};
+    use wizc_cli::{Config, ConfigBuilder, Emit};
 
     struct TestContext {
         manifest_dir: PathBuf,
@@ -280,10 +273,44 @@ mod tests {
         let target_file_path = context.test_resource_dir().join("helloworld.wiz");
 
         let config = Config::default()
-            .input(target_file_path.to_str().unwrap())
+            .input(target_file_path)
             .path(context.lib_path())
             .out_dir(context.out_dir());
         let mut session = Session::new(config);
-        run_compiler(&mut session).unwrap()
+        run_compiler(&mut session).unwrap();
+
+        assert!(context.out_dir().join("helloworld").exists())
+    }
+
+    #[test]
+    fn compile_file_to_ir() {
+        let context = TestContext::new();
+        let target_file_path = context.test_resource_dir().join("helloworld.wiz");
+
+        let config = Config::default()
+            .input(target_file_path)
+            .path(context.lib_path())
+            .out_dir(context.out_dir())
+            .emit(Emit::LlvmIr);
+        let mut session = Session::new(config);
+        run_compiler(&mut session).unwrap();
+
+        assert!(context.out_dir().join("helloworld.ll").exists())
+    }
+
+    #[test]
+    fn compile_file_to_obj() {
+        let context = TestContext::new();
+        let target_file_path = context.test_resource_dir().join("helloworld.wiz");
+
+        let config = Config::default()
+            .input(target_file_path)
+            .path(context.lib_path())
+            .out_dir(context.out_dir())
+            .emit(Emit::Object);
+        let mut session = Session::new(config);
+        run_compiler(&mut session).unwrap();
+
+        assert!(context.out_dir().join("helloworld.o").exists())
     }
 }
