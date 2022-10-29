@@ -15,7 +15,7 @@ use wiz_arena::Arena;
 use wiz_result::Result;
 use wiz_session::Session;
 use wiz_syntax_parser::parser::wiz::read_book_from_path;
-use wizc_cli::{BuildType, Config, ConfigExt};
+use wizc_cli::{BuildType, Config, ConfigExt, Emit};
 use wizc_message::Message;
 
 mod high_level_ir;
@@ -177,30 +177,34 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
         session.config.name().map(PathBuf::from).unwrap_or_else(|| {
             PathBuf::from(session.config.input().file_stem().unwrap_or_default())
         });
-    if let Some(emit) = session.config.emit() {
-        let mut out_path = out_dir.join(output);
-        out_path.set_extension("ll");
 
-        println!("{}", Message::output(&out_path));
+    let mut out_path = out_dir.join(output);
+    let emit = session.config.emit();
+    match emit {
+        Emit::LlvmIr => {
+            out_path.set_extension("ll");
+            codegen.print_to_file(&out_path)
+        }
+        Emit::Assembly => {
+            out_path.set_extension("asm");
+            codegen.write_as_assembly(&out_path)
+        }
+        Emit::Object => {
+            out_path.set_extension("o");
+            codegen.write_as_object(&out_path)
+        }
+        Emit::Binary => {
+            let mut ir_file = out_path.clone();
+            ir_file.set_extension("ll");
+            codegen.print_to_file(&ir_file)?;
 
-        match emit.as_str() {
-            "llvm-ir" => codegen.print_to_file(&out_path),
-            "asm" => codegen.write_as_assembly(&out_path),
-            _ => codegen.write_as_object(&out_path),
-        }?;
-    } else {
-        let mut ir_file = out_dir.join(&output);
-        ir_file.set_extension("ll");
-        codegen.print_to_file(&ir_file)?;
-
-        Command::new("clang")
-            .args(&[
-                ir_file.as_os_str(),
-                "-o".as_ref(),
-                out_dir.join(&output).as_os_str(),
-            ])
-            .exec();
-    };
+            Command::new("clang")
+                .args(&[ir_file.as_os_str(), "-o".as_ref(), out_path.as_os_str()])
+                .exec();
+            Ok(())
+        }
+    }?;
+    println!("{}", Message::output(&out_path));
     Ok(())
 }
 

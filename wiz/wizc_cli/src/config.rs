@@ -31,7 +31,7 @@ pub trait ConfigExt {
     fn paths(&self) -> Vec<PathBuf>;
     fn target_triple(&self) -> Option<String>;
     fn libraries(&self) -> Vec<PathBuf>;
-    fn emit(&self) -> Option<Emit>;
+    fn emit(&self) -> Emit;
     fn message_format(&self) -> MessageFormat;
 }
 
@@ -64,8 +64,8 @@ impl ConfigExt for Config {
         self.libraries.clone()
     }
 
-    fn emit(&self) -> Option<Emit> {
-        self.emit
+    fn emit(&self) -> Emit {
+        self.emit.unwrap_or(Emit::Binary)
     }
 
     fn message_format(&self) -> MessageFormat {
