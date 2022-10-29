@@ -96,7 +96,7 @@ pub(crate) fn command(_: &str, options: Options) -> Result<()> {
         }
     };
     let mut config = Config::default()
-        .input(input_path.to_str().unwrap())
+        .input(input_path)
         .out_dir(target_dir)
         .name(ws.cws.file_name().and_then(OsStr::to_str).unwrap())
         .type_(if options.test {
