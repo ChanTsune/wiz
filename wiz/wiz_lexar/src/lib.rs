@@ -227,6 +227,7 @@ impl Cursor<'_> {
                 let kind = LiteralKind::Str { terminated };
                 TokenKind::Literal { kind, suffix_start }
             }
+            // Raw identifier.
             '`' => {
                 let first = self.first();
                 let terminated = self.raw_ident();
