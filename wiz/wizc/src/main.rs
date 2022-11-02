@@ -4,6 +4,7 @@ use crate::high_level_ir::type_checker::TypeChecker;
 use crate::high_level_ir::wlib::WLib;
 use crate::llvm_ir::codegen::CodeGen;
 use crate::middle_level_ir::hlir2mlir;
+use dirs::home_dir;
 use inkwell::context::Context;
 use std::io::Write;
 use std::iter::FromIterator;
@@ -22,7 +23,9 @@ mod llvm_ir;
 mod middle_level_ir;
 
 fn get_builtin_find_path() -> PathBuf {
-    PathBuf::from_iter([env!("HOME"), ".wiz", "lib", "src"])
+    let mut home = home_dir().unwrap();
+    home.extend([".wiz", "lib", "src"]);
+    home
 }
 
 fn get_find_paths() -> Vec<PathBuf> {

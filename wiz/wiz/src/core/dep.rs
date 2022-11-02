@@ -3,6 +3,7 @@ use crate::core::error::CliError;
 use crate::core::manifest;
 use crate::core::manifest::{Dependency, Manifest};
 use crate::core::Result;
+use dirs::home_dir;
 use std::env;
 use std::fmt::{Display, Formatter};
 use std::path::{Path, PathBuf};
@@ -36,7 +37,7 @@ pub fn resolve_manifest_dependencies(
     manifest: &Manifest,
     another_std: Option<&str>,
 ) -> Result<ResolvedDependencyTree> {
-    let home_dir = PathBuf::from(env!("HOME"));
+    let home_dir = home_dir().unwrap();
     let builtin_package_dir = home_dir.join(".wiz/lib/src/");
     let package_index_cache_dir = home_dir.join(".wiz/repository/");
     let package_dirs = vec![builtin_package_dir, package_index_cache_dir];
