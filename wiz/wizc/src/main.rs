@@ -7,7 +7,6 @@ use crate::middle_level_ir::hlir2mlir;
 use inkwell::context::Context;
 use std::io::Write;
 use std::iter::FromIterator;
-use std::os::unix::process::CommandExt;
 use std::path::PathBuf;
 use std::process::Command;
 use std::{env, fs};
@@ -196,7 +195,7 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
 
             Command::new("clang")
                 .args(&[ir_file.as_os_str(), "-o".as_ref(), out_path.as_os_str()])
-                .exec();
+                .output()?;
             Ok(())
         }
     }?;
