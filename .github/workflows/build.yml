@@ -46,6 +46,13 @@ jobs:
           path: |
             wiz/target
           key: ${{ runner.os }}-rust-${{ hashFiles('**/Cargo.toml') }}
+      - name: Install llvmenv
+        run: cargo install llvmenv
+      - name: install llvm
+        run: |
+          llvmenv init
+          llvmenv build-entry 13.0
+          llvmenv local 13.0
       # - name: Install LLVM and Clang
       #   uses: KyleMayes/install-llvm-action@v1
       #   with:
@@ -61,7 +68,10 @@ jobs:
       # - name: set llvm-sys-prefix
       #   run: echo "LLVM_SYS_130_PREFIX=${env:LLVM_PATH}" >> $env:GITHUB_ENV
       #   if: ${{ matrix.os == 'windows-latest' }}
-      # - name: run build
-      #   run: cargo build --manifest-path wiz/Cargo.toml --release
-      #   env:
-      #     RUST_BACKTRACE: 1
+      - name: run build
+        run: |
+          source <(llvmenv zsh)
+          cargo build --manifest-path wiz/Cargo.toml --release
+        env:
+          RUST_BACKTRACE: 1
+          LLVMENV_RUST_BINDING: 1
