@@ -233,19 +233,26 @@ mod lib {
 #[cfg(test)]
 mod tests {
     use super::run_compiler;
-    use std::path::PathBuf;
+    use std::path::{Path, PathBuf};
     use wiz_session::Session;
     use wizc_cli::{Config, ConfigBuilder, Emit};
 
     struct TestContext {
         manifest_dir: PathBuf,
+        extra_out: PathBuf,
     }
 
     impl TestContext {
         fn new() -> Self {
             Self {
                 manifest_dir: PathBuf::from(env!("CARGO_MANIFEST_DIR")),
+                extra_out: PathBuf::new(),
             }
+        }
+
+        fn extra_out<P: AsRef<Path>>(mut self, extra_out: P) -> Self {
+            self.extra_out = PathBuf::from(extra_out.as_ref());
+            self
         }
 
         fn test_resource_dir(&self) -> PathBuf {
@@ -271,7 +278,7 @@ mod tests {
 
     #[test]
     fn compile_file() {
-        let context = TestContext::new();
+        let context = TestContext::new().extra_out("binary");
         let target_file_path = context.test_resource_dir().join("helloworld.wiz");
 
         let config = Config::default()
@@ -286,7 +293,7 @@ mod tests {
 
     #[test]
     fn compile_file_to_ir() {
-        let context = TestContext::new();
+        let context = TestContext::new().extra_out("llvmir");
         let target_file_path = context.test_resource_dir().join("helloworld.wiz");
 
         let config = Config::default()
@@ -302,7 +309,7 @@ mod tests {
 
     #[test]
     fn compile_file_to_obj() {
-        let context = TestContext::new();
+        let context = TestContext::new().extra_out("object");
         let target_file_path = context.test_resource_dir().join("helloworld.wiz");
 
         let config = Config::default()
