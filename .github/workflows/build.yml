@@ -46,22 +46,22 @@ jobs:
           path: |
             wiz/target
           key: ${{ runner.os }}-rust-${{ hashFiles('**/Cargo.toml') }}
-      - name: Install LLVM and Clang
-        uses: KyleMayes/install-llvm-action@v1
-        with:
-          version: "13.0"
-          directory: ./llvm
-          cached: ${{ steps.cache-llvm.outputs.cache-hit }}
-      - name: echo llvm prefix
-        run: echo $env:LLVM_PATH
-        if: ${{ matrix.os == 'windows-latest' }}
-      - name: list llvm prefix
-        run: Get-ChildItem $env:LLVM_PATH
-        if: ${{ matrix.os == 'windows-latest' }}
-      - name: set llvm-sys-prefix
-        run: echo "LLVM_SYS_130_PREFIX=${env:LLVM_PATH}" >> $env:GITHUB_ENV
-        if: ${{ matrix.os == 'windows-latest' }}
-      - name: run build
-        run: cargo build --manifest-path wiz/Cargo.toml --release
-        env:
-          RUST_BACKTRACE: 1
+      # - name: Install LLVM and Clang
+      #   uses: KyleMayes/install-llvm-action@v1
+      #   with:
+      #     version: "13.0"
+      #     directory: ./llvm
+      #     cached: ${{ steps.cache-llvm.outputs.cache-hit }}
+      # - name: echo llvm prefix
+      #   run: echo $env:LLVM_PATH
+      #   if: ${{ matrix.os == 'windows-latest' }}
+      # - name: list llvm prefix
+      #   run: Get-ChildItem $env:LLVM_PATH
+      #   if: ${{ matrix.os == 'windows-latest' }}
+      # - name: set llvm-sys-prefix
+      #   run: echo "LLVM_SYS_130_PREFIX=${env:LLVM_PATH}" >> $env:GITHUB_ENV
+      #   if: ${{ matrix.os == 'windows-latest' }}
+      # - name: run build
+      #   run: cargo build --manifest-path wiz/Cargo.toml --release
+      #   env:
+      #     RUST_BACKTRACE: 1
