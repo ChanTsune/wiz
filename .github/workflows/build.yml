@@ -13,8 +13,6 @@ jobs:
           - os: ubuntu-latest
           - os: macos-latest
           - os: windows-latest
-            env:
-              LLVM_SYS_130_PREFIX: C:/Program Files/LLVM
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
