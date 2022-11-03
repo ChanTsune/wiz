@@ -7,7 +7,6 @@ use crate::middle_level_ir::hlir2mlir;
 use dirs::home_dir;
 use inkwell::context::Context;
 use std::io::Write;
-use std::iter::FromIterator;
 use std::path::PathBuf;
 use std::process::Command;
 use std::{env, fs};

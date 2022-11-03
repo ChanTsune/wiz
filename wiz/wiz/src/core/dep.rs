@@ -4,7 +4,6 @@ use crate::core::manifest;
 use crate::core::manifest::{Dependency, Manifest};
 use crate::core::Result;
 use dirs::home_dir;
-use std::env;
 use std::fmt::{Display, Formatter};
 use std::path::{Path, PathBuf};
 
