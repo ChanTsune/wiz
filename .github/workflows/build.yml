@@ -54,6 +54,12 @@ jobs:
         run: cargo build --manifest-path wiz/Cargo.toml --release
         env:
           RUST_BACKTRACE: 1
+      - uses: actions/upload-artifact@v3
+        with:
+          name: wiz-${{ runner.os }}
+          path: |
+            ./wiz/target/release/wiz
+            ./wiz/target/release/wizc
 
   where:
     strategy:
