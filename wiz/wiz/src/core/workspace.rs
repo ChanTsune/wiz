@@ -1,4 +1,3 @@
-use crate::constant::MANIFEST_FILE_NAME;
 use crate::core::error::CliError;
 use crate::core::manifest::{self, Manifest};
 use crate::core::Result;

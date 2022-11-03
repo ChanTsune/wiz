@@ -4,10 +4,9 @@ use crate::high_level_ir::type_checker::TypeChecker;
 use crate::high_level_ir::wlib::WLib;
 use crate::llvm_ir::codegen::CodeGen;
 use crate::middle_level_ir::hlir2mlir;
+use dirs::home_dir;
 use inkwell::context::Context;
 use std::io::Write;
-use std::iter::FromIterator;
-use std::os::unix::process::CommandExt;
 use std::path::PathBuf;
 use std::process::Command;
 use std::{env, fs};
@@ -23,7 +22,9 @@ mod llvm_ir;
 mod middle_level_ir;
 
 fn get_builtin_find_path() -> PathBuf {
-    PathBuf::from_iter([env!("HOME"), ".wiz", "lib", "src"])
+    let mut home = home_dir().unwrap();
+    home.extend([".wiz", "lib", "src"]);
+    home
 }
 
 fn get_find_paths() -> Vec<PathBuf> {
@@ -196,7 +197,7 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
 
             Command::new("clang")
                 .args(&[ir_file.as_os_str(), "-o".as_ref(), out_path.as_os_str()])
-                .exec();
+                .output()?;
             Ok(())
         }
     }?;
@@ -231,19 +232,26 @@ mod lib {
 #[cfg(test)]
 mod tests {
     use super::run_compiler;
-    use std::path::PathBuf;
+    use std::path::{Path, PathBuf};
     use wiz_session::Session;
     use wizc_cli::{Config, ConfigBuilder, Emit};
 
     struct TestContext {
         manifest_dir: PathBuf,
+        extra_out: PathBuf,
     }
 
     impl TestContext {
         fn new() -> Self {
             Self {
                 manifest_dir: PathBuf::from(env!("CARGO_MANIFEST_DIR")),
+                extra_out: PathBuf::new(),
             }
+        }
+
+        fn extra_out<P: AsRef<Path>>(mut self, extra_out: P) -> Self {
+            self.extra_out = PathBuf::from(extra_out.as_ref());
+            self
         }
 
         fn test_resource_dir(&self) -> PathBuf {
@@ -269,7 +277,7 @@ mod tests {
 
     #[test]
     fn compile_file() {
-        let context = TestContext::new();
+        let context = TestContext::new().extra_out("binary");
         let target_file_path = context.test_resource_dir().join("helloworld.wiz");
 
         let config = Config::default()
@@ -284,7 +292,7 @@ mod tests {
 
     #[test]
     fn compile_file_to_ir() {
-        let context = TestContext::new();
+        let context = TestContext::new().extra_out("llvmir");
         let target_file_path = context.test_resource_dir().join("helloworld.wiz");
 
         let config = Config::default()
@@ -300,7 +308,7 @@ mod tests {
 
     #[test]
     fn compile_file_to_obj() {
-        let context = TestContext::new();
+        let context = TestContext::new().extra_out("object");
         let target_file_path = context.test_resource_dir().join("helloworld.wiz");
 
         let config = Config::default()
