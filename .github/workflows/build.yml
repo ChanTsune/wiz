@@ -51,8 +51,8 @@ jobs:
       - name: install llvm
         run: |
           llvmenv init
-          llvmenv build-entry 13.0
-          llvmenv local 13.0
+          llvmenv build-entry 13.0.0
+          llvmenv local 13.0.0
       # - name: Install LLVM and Clang
       #   uses: KyleMayes/install-llvm-action@v1
       #   with:
