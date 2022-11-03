@@ -54,12 +54,14 @@ jobs:
         run: cargo build --manifest-path wiz/Cargo.toml --release
         env:
           RUST_BACKTRACE: 1
+      - name: create archive
+        run: |
+          tar cvzf archive.tar.gz ./wiz/target/release/wiz ./wiz/target/release/wizc ./libraries
       - uses: actions/upload-artifact@v3
         with:
           name: wiz-${{ runner.os }}
           path: |
-            ./wiz/target/release/wiz
-            ./wiz/target/release/wizc
+            archive.tar.gz
 
   where:
     strategy:
