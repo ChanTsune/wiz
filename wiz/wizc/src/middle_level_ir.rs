@@ -1,7 +1,5 @@
-use crate::middle_level_ir::context::HLIR2MLIRContext;
 use std::collections::HashMap;
 use wiz_arena::{Arena, DeclarationItem, DeclarationItemKind};
-use wiz_constants as constants;
 use wiz_constants::annotation::{BUILTIN, ENTRY, NO_MANGLE, TEST};
 use wiz_hir::typed_annotation::TypedAnnotations;
 use wiz_hir::typed_decl::{
@@ -33,7 +31,6 @@ use wiz_result::Result;
 use wiz_session::Session;
 use wizc_cli::{BuildType, ConfigExt};
 
-mod context;
 #[cfg(test)]
 mod tests;
 
@@ -53,7 +50,6 @@ pub fn hlir2mlir<'a>(
 pub struct HLIR2MLIR<'a> {
     session: &'a Session,
     arena: &'a Arena,
-    context: HLIR2MLIRContext,
     module: MLIRModule,
     tests: Vec<MLFun>,
 }
@@ -63,7 +59,6 @@ impl<'a> HLIR2MLIR<'a> {
         Self {
             session,
             arena,
-            context: Default::default(),
             module: Default::default(),
             tests: Default::default(),
         }
@@ -97,8 +92,6 @@ impl<'a> HLIR2MLIR<'a> {
 
     fn load_dependencies_struct(&mut self, s: &MLStruct) -> Result<()> {
         self.module.add_struct(s.clone());
-        self.context
-            .add_struct(MLValueType::Struct(s.name.clone()), s.clone());
         Ok(())
     }
 
@@ -139,27 +132,10 @@ impl<'a> HLIR2MLIR<'a> {
             TypedValueType::Value(t) => {
                 let mut pkg = t.package.clone().into_resolved().names;
                 if pkg.is_empty() {
-                    match &*t.name {
-                        constants::NOTING => MLValueType::Primitive(MLPrimitiveType::Noting),
-                        constants::UNIT => MLValueType::Primitive(MLPrimitiveType::Unit),
-                        constants::INT8 => MLValueType::Primitive(MLPrimitiveType::Int8),
-                        constants::UINT8 => MLValueType::Primitive(MLPrimitiveType::UInt8),
-                        constants::INT16 => MLValueType::Primitive(MLPrimitiveType::Int16),
-                        constants::UINT16 => MLValueType::Primitive(MLPrimitiveType::UInt16),
-                        constants::INT32 => MLValueType::Primitive(MLPrimitiveType::Int32),
-                        constants::UINT32 => MLValueType::Primitive(MLPrimitiveType::UInt32),
-                        constants::INT64 => MLValueType::Primitive(MLPrimitiveType::Int64),
-                        constants::UINT64 => MLValueType::Primitive(MLPrimitiveType::UInt64),
-                        constants::INT128 => MLValueType::Primitive(MLPrimitiveType::Int128),
-                        constants::UINT128 => MLValueType::Primitive(MLPrimitiveType::UInt128),
-                        constants::SIZE => MLValueType::Primitive(MLPrimitiveType::Size),
-                        constants::USIZE => MLValueType::Primitive(MLPrimitiveType::USize),
-                        constants::BOOL => MLValueType::Primitive(MLPrimitiveType::Bool),
-                        constants::F32 => MLValueType::Primitive(MLPrimitiveType::Float),
-                        constants::F64 => MLValueType::Primitive(MLPrimitiveType::Double),
-                        constants::STRING => MLValueType::Primitive(MLPrimitiveType::String),
-                        other => {
-                            pkg.push(String::from(other));
+                    match MLPrimitiveType::try_from(t.name.as_str()) {
+                        Ok(primitive) => MLValueType::Primitive(primitive),
+                        Err(_) => {
+                            pkg.push(t.name);
                             MLValueType::Struct(pkg.join("::"))
                         }
                     }
@@ -389,8 +365,6 @@ impl<'a> HLIR2MLIR<'a> {
                 })
                 .collect(),
         };
-        let value_type = MLValueType::Struct(struct_.name.clone());
-        self.context.add_struct(value_type, struct_.clone());
 
         let members: Vec<MLFun> = member_functions
             .into_iter()
@@ -751,7 +725,7 @@ impl<'a> HLIR2MLIR<'a> {
                 match target.ty.clone().unwrap() {
                     TypedType::Self_ => unreachable!(),
                     TypedType::Value(v) => {
-                        let target_type = self.value_type(v);
+                        let target_type = self.value_type(v.clone());
                         let type_ = ty.unwrap();
                         if let TypedType::Function(fun_type) = &type_ {
                             args.insert(
@@ -782,7 +756,11 @@ impl<'a> HLIR2MLIR<'a> {
                                 type_: self.type_(type_),
                             })
                         } else {
-                            let is_stored = self.context.struct_has_field(&target_type, &name);
+                            let tty = self
+                                .arena
+                                .get_type(&v.package().into_resolved().names, &v.name())
+                                .unwrap();
+                            let is_stored = tty.stored_properties.get(&name).is_some();
                             if is_stored {
                                 let target = self.expr(*target);
                                 let type_ = self.type_(type_);
