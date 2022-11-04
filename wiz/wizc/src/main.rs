@@ -3,7 +3,6 @@ use crate::high_level_ir::node_id::ModuleId;
 use crate::high_level_ir::type_checker::TypeChecker;
 use crate::high_level_ir::wlib::WLib;
 use crate::llvm_ir::codegen::CodeGen;
-use crate::middle_level_ir::hlir2mlir;
 use dirs::home_dir;
 use inkwell::context::Context;
 use std::io::Write;
@@ -15,11 +14,13 @@ use wiz_result::Result;
 use wiz_session::Session;
 use wiz_syntax_parser::parser::wiz::read_book_from_path;
 use wizc_cli::{BuildType, Config, ConfigExt, Emit};
+use wizc_hir_lowing::hlir2mlir;
 use wizc_message::Message;
 
 mod high_level_ir;
+#[cfg(test)]
+mod hir_lowing;
 mod llvm_ir;
-mod middle_level_ir;
 
 fn get_builtin_find_path() -> PathBuf {
     let mut home = home_dir().unwrap();

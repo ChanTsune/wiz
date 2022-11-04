@@ -31,9 +31,6 @@ use wiz_result::Result;
 use wiz_session::Session;
 use wizc_cli::{BuildType, ConfigExt};
 
-#[cfg(test)]
-mod tests;
-
 pub fn hlir2mlir<'a>(
     target: TypedSpellBook,
     dependencies: &'a [MLFile],
@@ -47,7 +44,7 @@ pub fn hlir2mlir<'a>(
 }
 
 #[derive(Debug)]
-pub struct HLIR2MLIR<'a> {
+struct HLIR2MLIR<'a> {
     session: &'a Session,
     arena: &'a Arena,
     module: MLIRModule,
