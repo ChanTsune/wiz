@@ -764,7 +764,10 @@ impl<'a> HLIR2MLIR<'a> {
                                 type_: self.type_(type_),
                             })
                         } else {
-                            let tty = self.arena.get_type(&v.package().into_resolved().names, &v.name()).unwrap();
+                            let tty = self
+                                .arena
+                                .get_type(&v.package().into_resolved().names, &v.name())
+                                .unwrap();
                             let is_stored = tty.stored_properties.get(&name).is_some();
                             if is_stored {
                                 let target = self.expr(*target);
