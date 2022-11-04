@@ -2,6 +2,8 @@ use crate::format::Formatter;
 use crate::ml_node::MLNode;
 use std::fmt;
 use std::fmt::Write;
+use wiz_constants as constants;
+
 
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub enum MLType {
@@ -114,6 +116,34 @@ impl ToString for MLPrimitiveType {
             MLPrimitiveType::String => "str",
             MLPrimitiveType::Unit => "unit",
             MLPrimitiveType::Noting => "noting",
+        })
+    }
+}
+
+impl TryFrom<&str> for MLPrimitiveType {
+    type Error = ();
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        Ok(match value {
+            constants::NOTING => MLPrimitiveType::Noting,
+            constants::UNIT => MLPrimitiveType::Unit,
+            constants::INT8 => MLPrimitiveType::Int8,
+            constants::UINT8 => MLPrimitiveType::UInt8,
+            constants::INT16 => MLPrimitiveType::Int16,
+            constants::UINT16 => MLPrimitiveType::UInt16,
+            constants::INT32 => MLPrimitiveType::Int32,
+            constants::UINT32 => MLPrimitiveType::UInt32,
+            constants::INT64 => MLPrimitiveType::Int64,
+            constants::UINT64 => MLPrimitiveType::UInt64,
+            constants::INT128 => MLPrimitiveType::Int128,
+            constants::UINT128 => MLPrimitiveType::UInt128,
+            constants::SIZE => MLPrimitiveType::Size,
+            constants::USIZE => MLPrimitiveType::USize,
+            constants::BOOL => MLPrimitiveType::Bool,
+            constants::F32 => MLPrimitiveType::Float,
+            constants::F64 => MLPrimitiveType::Double,
+            constants::STRING => MLPrimitiveType::String,
+            _ => return Err(())
         })
     }
 }
