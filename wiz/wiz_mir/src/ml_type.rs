@@ -4,7 +4,6 @@ use std::fmt;
 use std::fmt::Write;
 use wiz_constants as constants;
 
-
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub enum MLType {
     Value(MLValueType),
@@ -143,7 +142,7 @@ impl TryFrom<&str> for MLPrimitiveType {
             constants::F32 => MLPrimitiveType::Float,
             constants::F64 => MLPrimitiveType::Double,
             constants::STRING => MLPrimitiveType::String,
-            _ => return Err(())
+            _ => return Err(()),
         })
     }
 }
