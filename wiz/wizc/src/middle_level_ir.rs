@@ -733,7 +733,7 @@ impl<'a> HLIR2MLIR<'a> {
                 match target.ty.clone().unwrap() {
                     TypedType::Self_ => unreachable!(),
                     TypedType::Value(v) => {
-                        let target_type = self.value_type(v);
+                        let target_type = self.value_type(v.clone());
                         let type_ = ty.unwrap();
                         if let TypedType::Function(fun_type) = &type_ {
                             args.insert(
@@ -764,7 +764,8 @@ impl<'a> HLIR2MLIR<'a> {
                                 type_: self.type_(type_),
                             })
                         } else {
-                            let is_stored = self.context.struct_has_field(&target_type, &name);
+                            let tty = self.arena.get_type(&v.package().into_resolved().names, &v.name()).unwrap();
+                            let is_stored = tty.stored_properties.get(&name).is_some();
                             if is_stored {
                                 let target = self.expr(*target);
                                 let type_ = self.type_(type_);
