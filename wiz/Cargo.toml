@@ -16,5 +16,6 @@ members = [
     "wiz_utils",
     "wizc",
     "wizc_cli",
+    "wizc_hir_lowing",
     "wizc_message"
 ]
