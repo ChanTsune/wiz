@@ -62,13 +62,3 @@ jobs:
           name: wiz-${{ runner.os }}
           path: |
             archive.tar.gz
-
-  where:
-    strategy:
-      matrix:
-        os:
-        - windows-latest
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: where llvm
-        run: where llvm-*
