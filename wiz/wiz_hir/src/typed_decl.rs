@@ -1,14 +1,14 @@
-use crate::typed_annotation::TypedAnnotations;
 use crate::typed_expr::{TypedExpr, TypedExprKind};
 use crate::typed_file::TypedSpellBook;
 use crate::typed_stmt::TypedBlock;
 use crate::typed_type::{Package, TypedArgType, TypedFunctionType, TypedType, TypedTypeParam};
 use crate::typed_type_constraint::TypedTypeConstraint;
 use serde::{Deserialize, Serialize};
+use wiz_data_structure::annotation::Annotations;
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedTopLevelDecl {
-    pub annotations: TypedAnnotations,
+    pub annotations: Annotations,
     pub package: Package,
     pub modifiers: Vec<String>,
     pub kind: TypedDeclKind,

@@ -13,6 +13,7 @@ serde = { version = "1.0.136", features = ["derive"] }
 serde_json = "1.0.78"
 wiz_arena = { path = "../wiz_arena" }
 wiz_constants = { path = "../wiz_constants" }
+wiz_data_structure = { path = "../wiz_data_structure" }
 wiz_hir = { path = "../wiz_hir" }
 wiz_mir = { path = "../wiz_mir" }
 wiz_result = { path = "../wiz_result" }

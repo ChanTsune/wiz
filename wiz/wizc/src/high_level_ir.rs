@@ -2,7 +2,7 @@ use crate::high_level_ir::node_id::ModuleId;
 use crate::high_level_ir::type_resolver::TypeResolver;
 use std::collections::HashMap;
 use wiz_arena::{Arena, DeclarationId};
-use wiz_hir::typed_annotation::TypedAnnotations;
+use wiz_data_structure::annotation::Annotations;
 use wiz_hir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody,
     TypedProtocol, TypedStoredProperty, TypedStruct, TypedTopLevelDecl, TypedVar,
@@ -153,10 +153,10 @@ impl<'a> AstLowering<'a> {
         })
     }
 
-    fn annotations(&mut self, a: &Option<AnnotationsSyntax>) -> TypedAnnotations {
+    fn annotations(&mut self, a: &Option<AnnotationsSyntax>) -> Annotations {
         match a {
-            None => TypedAnnotations::default(),
-            Some(a) => TypedAnnotations::from(
+            None => Annotations::default(),
+            Some(a) => Annotations::from(
                 a.elements
                     .iter()
                     .map(|a| a.element.token())

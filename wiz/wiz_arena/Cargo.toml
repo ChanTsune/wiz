@@ -2,9 +2,9 @@
 name = "wiz_arena"
 version = "0.0.0"
 edition = "2021"
-
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 wiz_constants = { path = "../wiz_constants" }
+wiz_data_structure = { path = "../wiz_data_structure" }
 wiz_hir = { path = "../wiz_hir" }

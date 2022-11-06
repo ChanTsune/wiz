@@ -5,7 +5,7 @@ pub use r#struct::{ArenaStruct, StructKind};
 use std::collections::HashMap;
 use std::fmt::{Debug, Display, Formatter, Write};
 use wiz_constants::annotation::BUILTIN;
-use wiz_hir::typed_annotation::TypedAnnotations;
+use wiz_data_structure::annotation::Annotations;
 use wiz_hir::typed_decl::TypedFunBody;
 use wiz_hir::typed_expr::TypedBinaryOperator;
 use wiz_hir::typed_type::{TypedType, TypedTypeParam, TypedValueType};
@@ -26,7 +26,7 @@ impl Default for Arena {
         declarations.insert(
             DeclarationId::ROOT,
             DeclarationItem::new(
-                TypedAnnotations::from(vec![BUILTIN]),
+                Annotations::from(&[BUILTIN]),
                 "",
                 DeclarationItemKind::Namespace,
                 None,
@@ -46,7 +46,7 @@ impl Default for Arena {
                         arena.register_struct(
                             &DeclarationId::ROOT,
                             &v.name,
-                            TypedAnnotations::from(vec![BUILTIN]),
+                            Annotations::from(&[BUILTIN]),
                         );
                     }
                     TypedValueType::Array(_, _) => {}
@@ -82,7 +82,7 @@ impl Arena {
         &mut self,
         namespace: &DeclarationId,
         name: &str,
-        annotation: TypedAnnotations,
+        annotation: Annotations,
     ) -> Option<DeclarationId> {
         self.register(
             namespace,
@@ -197,7 +197,7 @@ impl Arena {
         &mut self,
         namespace: &DeclarationId,
         name: &str, /* type_parameters */
-        annotation: TypedAnnotations,
+        annotation: Annotations,
     ) -> Option<DeclarationId> {
         self.register_type(namespace, name, annotation, StructKind::Struct)
     }
@@ -206,7 +206,7 @@ impl Arena {
         &mut self,
         namespace: &DeclarationId,
         name: &str, /* type_parameters */
-        annotation: TypedAnnotations,
+        annotation: Annotations,
     ) -> Option<DeclarationId> {
         self.register_type(namespace, name, annotation, StructKind::TypeParameter)
     }
@@ -215,7 +215,7 @@ impl Arena {
         &mut self,
         namespace: &DeclarationId,
         name: &str, /* type_parameters */
-        annotation: TypedAnnotations,
+        annotation: Annotations,
     ) -> Option<DeclarationId> {
         self.register_type(namespace, name, annotation, StructKind::Protocol)
     }
@@ -224,7 +224,7 @@ impl Arena {
         &mut self,
         namespace: &DeclarationId,
         name: &str,
-        annotation: TypedAnnotations,
+        annotation: Annotations,
         kind: StructKind, /* type_parameters */
     ) -> Option<DeclarationId> {
         let vec_namespace = self.resolve_fully_qualified_name(namespace);
@@ -270,7 +270,7 @@ impl Arena {
         ty: TypedType,
         type_parameters: Option<Vec<TypedTypeParam>>,
         body: Option<TypedFunBody>,
-        annotation: TypedAnnotations,
+        annotation: Annotations,
     ) -> Option<DeclarationId> {
         self.register(
             namespace,
@@ -289,7 +289,7 @@ impl Arena {
         namespace: &DeclarationId,
         name: &str,
         ty: TypedType,
-        annotation: TypedAnnotations,
+        annotation: Annotations,
     ) -> Option<DeclarationId> {
         self.register(
             namespace,
