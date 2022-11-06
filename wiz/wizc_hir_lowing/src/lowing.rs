@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use wiz_arena::{Arena, DeclarationItem, DeclarationItemKind};
 use wiz_constants::annotation::{BUILTIN, ENTRY, NO_MANGLE, TEST};
-use wiz_data_structure::annotation::TypedAnnotations;
+use wiz_data_structure::annotation::Annotations;
 use wiz_hir::typed_decl::{
     TypedArgDef, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedProtocol, TypedStruct,
     TypedTopLevelDecl, TypedVar,
@@ -308,7 +308,7 @@ impl<'a> HLIR2MLIR<'a> {
     fn fun(
         &mut self,
         f: TypedFun,
-        annotations: TypedAnnotations,
+        annotations: Annotations,
         package: Package,
         type_arguments: Option<HashMap<TypedTypeParam, TypedType>>,
     ) -> MLFun {

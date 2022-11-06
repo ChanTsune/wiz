@@ -3,12 +3,12 @@ use crate::declaration_id::DeclarationId;
 use std::borrow::Borrow;
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
-use wiz_data_structure::annotation::TypedAnnotations;
+use wiz_data_structure::annotation::Annotations;
 use wiz_hir::typed_type::TypedType;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct DeclarationItem {
-    pub annotations: TypedAnnotations,
+    pub annotations: Annotations,
     pub name: String,
     pub kind: DeclarationItemKind,
     parent: Option<DeclarationId>,
@@ -17,7 +17,7 @@ pub struct DeclarationItem {
 
 impl DeclarationItem {
     pub fn new(
-        annotations: TypedAnnotations,
+        annotations: Annotations,
         name: &str,
         kind: DeclarationItemKind,
         parent: Option<DeclarationId>,

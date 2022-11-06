@@ -1,10 +1,10 @@
 use crate::typed_type::Package;
 use serde::{Deserialize, Serialize};
-use wiz_data_structure::annotation::TypedAnnotations;
+use wiz_data_structure::annotation::Annotations;
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedUse {
-    pub annotations: TypedAnnotations,
+    pub annotations: Annotations,
     pub package: Package,
     pub alias: Option<String>,
 }
