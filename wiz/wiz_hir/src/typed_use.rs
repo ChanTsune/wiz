@@ -1,6 +1,6 @@
-use wiz_data_structure::annotation::TypedAnnotations;
 use crate::typed_type::Package;
 use serde::{Deserialize, Serialize};
+use wiz_data_structure::annotation::TypedAnnotations;
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedUse {

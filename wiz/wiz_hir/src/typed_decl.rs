@@ -1,10 +1,10 @@
-use wiz_data_structure::annotation::TypedAnnotations;
 use crate::typed_expr::{TypedExpr, TypedExprKind};
 use crate::typed_file::TypedSpellBook;
 use crate::typed_stmt::TypedBlock;
 use crate::typed_type::{Package, TypedArgType, TypedFunctionType, TypedType, TypedTypeParam};
 use crate::typed_type_constraint::TypedTypeConstraint;
 use serde::{Deserialize, Serialize};
+use wiz_data_structure::annotation::TypedAnnotations;
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypedTopLevelDecl {
