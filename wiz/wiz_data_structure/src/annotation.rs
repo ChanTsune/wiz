@@ -18,3 +18,19 @@ impl<T: ToString> From<Vec<T>> for Annotations {
         }
     }
 }
+
+impl<T: ToString> From<&[T]> for Annotations {
+    fn from(annotations: &[T]) -> Self {
+        Self {
+            annotations: annotations.iter().map(T::to_string).collect(),
+        }
+    }
+}
+
+impl<T: ToString, const N: usize> From<&[T; N]> for Annotations {
+    fn from(annotations: &[T; N]) -> Self {
+        Self {
+            annotations: annotations.iter().map(T::to_string).collect(),
+        }
+    }
+}

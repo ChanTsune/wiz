@@ -26,7 +26,7 @@ impl Default for Arena {
         declarations.insert(
             DeclarationId::ROOT,
             DeclarationItem::new(
-                Annotations::from(vec![BUILTIN]),
+                Annotations::from(&[BUILTIN]),
                 "",
                 DeclarationItemKind::Namespace,
                 None,
@@ -46,7 +46,7 @@ impl Default for Arena {
                         arena.register_struct(
                             &DeclarationId::ROOT,
                             &v.name,
-                            Annotations::from(vec![BUILTIN]),
+                            Annotations::from(&[BUILTIN]),
                         );
                     }
                     TypedValueType::Array(_, _) => {}
