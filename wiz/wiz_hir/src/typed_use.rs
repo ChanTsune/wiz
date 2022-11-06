@@ -1,4 +1,4 @@
-use crate::typed_annotation::TypedAnnotations;
+use wiz_data_structure::annotation::TypedAnnotations;
 use crate::typed_type::Package;
 use serde::{Deserialize, Serialize};
 

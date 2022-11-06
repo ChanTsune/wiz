@@ -5,7 +5,7 @@ pub use r#struct::{ArenaStruct, StructKind};
 use std::collections::HashMap;
 use std::fmt::{Debug, Display, Formatter, Write};
 use wiz_constants::annotation::BUILTIN;
-use wiz_hir::typed_annotation::TypedAnnotations;
+use wiz_data_structure::annotation::TypedAnnotations;
 use wiz_hir::typed_decl::TypedFunBody;
 use wiz_hir::typed_expr::TypedBinaryOperator;
 use wiz_hir::typed_type::{TypedType, TypedTypeParam, TypedValueType};

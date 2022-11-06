@@ -6,7 +6,7 @@ use crate::high_level_ir::type_resolver::name_environment::NameEnvironment;
 use crate::high_level_ir::type_resolver::result::Result;
 use std::collections::HashMap;
 use wiz_arena::{Arena, ArenaStruct, DeclarationId, DeclarationItemKind};
-use wiz_hir::typed_annotation::TypedAnnotations;
+use wiz_data_structure::annotation::TypedAnnotations;
 use wiz_hir::typed_decl::TypedFunBody;
 use wiz_hir::typed_expr::TypedBinaryOperator;
 use wiz_hir::typed_type::{

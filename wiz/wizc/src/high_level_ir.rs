@@ -2,7 +2,7 @@ use crate::high_level_ir::node_id::ModuleId;
 use crate::high_level_ir::type_resolver::TypeResolver;
 use std::collections::HashMap;
 use wiz_arena::{Arena, DeclarationId};
-use wiz_hir::typed_annotation::TypedAnnotations;
+use wiz_data_structure::annotation::TypedAnnotations;
 use wiz_hir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody,
     TypedProtocol, TypedStoredProperty, TypedStruct, TypedTopLevelDecl, TypedVar,

@@ -3,7 +3,7 @@ use crate::declaration_id::DeclarationId;
 use std::borrow::Borrow;
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
-use wiz_hir::typed_annotation::TypedAnnotations;
+use wiz_data_structure::annotation::TypedAnnotations;
 use wiz_hir::typed_type::TypedType;
 
 #[derive(Debug, Clone, Eq, PartialEq)]

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use wiz_arena::{Arena, DeclarationItem, DeclarationItemKind};
 use wiz_constants::annotation::{BUILTIN, ENTRY, NO_MANGLE, TEST};
-use wiz_hir::typed_annotation::TypedAnnotations;
+use wiz_data_structure::annotation::TypedAnnotations;
 use wiz_hir::typed_decl::{
     TypedArgDef, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedProtocol, TypedStruct,
     TypedTopLevelDecl, TypedVar,
@@ -332,7 +332,7 @@ impl<'a> HLIR2MLIR<'a> {
             if fun_arg_label_type_mangled_name.is_empty() {
                 package_mangled_name
             } else {
-                package_mangled_name + "##" + &*fun_arg_label_type_mangled_name
+                package_mangled_name + "##" + &fun_arg_label_type_mangled_name
             }
         };
         let args = arg_defs.into_iter().map(|a| self.arg_def(a)).collect();
@@ -380,10 +380,10 @@ impl<'a> HLIR2MLIR<'a> {
                     name: self.package_name_mangling_(&package, &name)
                         + "::"
                         + &fname
-                        + &*if fun_arg_label_type_mangled_name.is_empty() {
+                        + &if fun_arg_label_type_mangled_name.is_empty() {
                             String::new()
                         } else {
-                            String::from("##") + &*fun_arg_label_type_mangled_name
+                            String::from("##") + &fun_arg_label_type_mangled_name
                         },
                     arg_defs: args,
                     return_type: self.type_(return_type).into_value_type(),
@@ -418,10 +418,10 @@ impl<'a> HLIR2MLIR<'a> {
                     name: self.package_name_mangling(&name.package(), &name.name())
                         + "::"
                         + &fname
-                        + &*if fun_arg_label_type_mangled_name.is_empty() {
+                        + &if fun_arg_label_type_mangled_name.is_empty() {
                             String::new()
                         } else {
-                            String::from("##") + &*fun_arg_label_type_mangled_name
+                            String::from("##") + &fun_arg_label_type_mangled_name
                         },
                     arg_defs: args,
                     return_type: self.type_(return_type).into_value_type(),
@@ -497,7 +497,7 @@ impl<'a> HLIR2MLIR<'a> {
             let mut mangled_name = if has_no_mangle {
                 n.name
             } else {
-                self.package_name_mangling_(&package, &*n.name)
+                self.package_name_mangling_(&package, &n.name)
             };
             if let Some(type_arguments) = n.type_arguments {
                 mangled_name += format!(
@@ -514,7 +514,7 @@ impl<'a> HLIR2MLIR<'a> {
                 if let Some(TypedType::Function(fun_type)) = &ty {
                     if !fun_type.arguments.is_empty() {
                         mangled_name += "##";
-                        mangled_name += &*self.fun_arg_label_type_name_mangling(
+                        mangled_name += &self.fun_arg_label_type_name_mangling(
                             &fun_type
                                 .arguments
                                 .iter()
@@ -733,10 +733,10 @@ impl<'a> HLIR2MLIR<'a> {
                                     is_vararg: false,
                                 },
                             );
-                            let mut mangled_name = target_type.name() + "::" + &*name;
+                            let mut mangled_name = target_type.name() + "::" + &name;
                             if !fun_type.arguments.is_empty() {
                                 mangled_name += "##";
-                                mangled_name += &*self.fun_arg_label_type_name_mangling(
+                                mangled_name += &self.fun_arg_label_type_name_mangling(
                                     &fun_type
                                         .arguments
                                         .iter()
@@ -780,9 +780,9 @@ impl<'a> HLIR2MLIR<'a> {
                             TypedValueType::Value(t) => {
                                 let type_ = self.type_(ty.unwrap());
                                 MLExpr::Name(MLName {
-                                    name: self.package_name_mangling(&t.package, &*t.name)
+                                    name: self.package_name_mangling(&t.package, &t.name)
                                         + "::"
-                                        + &*name,
+                                        + &name,
                                     type_,
                                 })
                             }

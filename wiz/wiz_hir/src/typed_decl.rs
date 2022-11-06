@@ -1,4 +1,4 @@
-use crate::typed_annotation::TypedAnnotations;
+use wiz_data_structure::annotation::TypedAnnotations;
 use crate::typed_expr::{TypedExpr, TypedExprKind};
 use crate::typed_file::TypedSpellBook;
 use crate::typed_stmt::TypedBlock;

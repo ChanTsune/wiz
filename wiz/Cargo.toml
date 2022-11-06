@@ -4,6 +4,7 @@ members = [
     "wiz",
     "wiz_arena",
     "wiz_constants",
+    "wiz_data_structure",
     "wiz_dev_utils",
     "wiz_hir",
     "wiz_lexar",
