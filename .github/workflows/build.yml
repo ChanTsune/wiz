@@ -12,6 +12,7 @@ jobs:
         os:
         - ubuntu-latest
         - macos-latest
+        - windows-latest
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
@@ -35,7 +36,6 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
-            C:/Program Files/LLVM
             ./llvm
           key: ${{ runner.os }}-llvm-13
       - name: Cache build
@@ -50,8 +50,19 @@ jobs:
         with:
           version: "13.0"
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
+        if: runner.os != 'Windows'
+      - name: Install LLVM and Clang
+        run: |
+          curl --url $LLVM_DOWNLOAD_URL --output ./llvm.zip
+          unzip -o ./llvm.zip
+          echo LLVM_SYS_130_PREFIX="$(dirname "$(find $PWD | grep -i llvm-config)")" >> $GITHUB_ENV
+        shell: bash
+        env:
+          LLVM_DOWNLOAD_URL: "https://github.com/wiz-language/llvm-project/releases/download/llvmorg-13.0.1/llvm-project-13.0.1-windows-binary.zip"
+        if: runner.os == 'Windows'
       - name: run build
         run: cargo build --manifest-path wiz/Cargo.toml --release
+        shell: bash
         env:
           RUST_BACKTRACE: 1
       - name: create archive
