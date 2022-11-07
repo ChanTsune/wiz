@@ -53,7 +53,7 @@ jobs:
         if: runner.os != 'Windows'
       - name: Install LLVM and Clang
         run: |
-          curl --url $LLVM_DOWNLOAD_URL --output ./llvm.zip
+          curl $LLVM_DOWNLOAD_URL --output ./llvm.zip
           unzip -o ./llvm.zip
           echo LLVM_SYS_130_PREFIX="$(dirname "$(find $PWD | grep -i llvm-config)")" >> $GITHUB_ENV
         shell: bash
