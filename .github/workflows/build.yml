@@ -56,8 +56,8 @@ jobs:
           echo "$LLVM_DOWNLOAD_URL"
           curl -L "$LLVM_DOWNLOAD_URL" --output ./llvm.zip
           unzip -o ./llvm.zip
-          echo LLVM_SYS_130_PREFIX="$(dirname $(dirname "$(find $PWD | grep -i llvm-config.exe)"))"
-          echo LLVM_SYS_130_PREFIX="$(dirname $(dirname "$(find $PWD | grep -i llvm-config.exe)"))" >> $GITHUB_ENV
+          echo LLVM_SYS_130_PREFIX="$(dirname $(dirname "$(find $PWD | grep -i bin/llvm-config.exe)"))"
+          echo LLVM_SYS_130_PREFIX="$(dirname $(dirname "$(find $PWD | grep -i bin/llvm-config.exe)"))" >> $GITHUB_ENV
         shell: bash
         env:
           LLVM_DOWNLOAD_URL: "https://github.com/wiz-language/llvm-project/releases/download/llvmorg-13.0.1/llvm-project-13.0.1-windows-binary.zip"
