@@ -17,6 +17,12 @@ struct Fraction {
     }
 }
 
+extension Fraction: Equals {
+    fun equals(&self, _ rhs: Fraction): Fraction {
+        return self.denominator == rhs.denominator && self.numerator == rhs.numerator
+    }
+}
+
 extension Fraction: Add {
     fun add(self, _ rhs: Fraction): Fraction {
         if self.denominator == rhs.denominator {
@@ -69,6 +75,16 @@ fun test_new_negative() {
     val b = Fraction::new(1, -3)
     assert(b.numerator == -1)
     assert(b.denominator == 3)
+}
+
+#[test]
+fun test_equals() {
+    val a = Fraction::new(1, 8)
+    val b = Fraction::new(1, 8)
+
+    assert(a.equals(a))
+    assert(a.equals(b))
+    assert(b.equals(a))
 }
 
 #[test]
