@@ -1,3 +1,8 @@
+use core::operator::add::Add
+use core::operator::sub::Sub
+use core::operator::mul::Mul
+use core::operator::div::Div
+
 struct Fraction {
     val numerator: Size
     val denominator: Size
@@ -12,7 +17,7 @@ struct Fraction {
     }
 }
 
-extension Fraction {
+extension Fraction: Add {
     fun add(self, _ rhs: Fraction): Fraction {
         if self.denominator == rhs.denominator {
             return Fraction::new(self.numerator + rhs.numerator, self.denominator)
@@ -24,7 +29,7 @@ extension Fraction {
     }
 }
 
-extension Fraction {
+extension Fraction: Sub {
     fun sub(self, _ rhs: Fraction): Fraction {
         if self.denominator == rhs.denominator {
             return Fraction::new(self.numerator - rhs.numerator, self.denominator)
@@ -36,13 +41,13 @@ extension Fraction {
     }
 }
 
-extension Fraction {
+extension Fraction: Mul {
     fun mul(self, _ rhs: Fraction): Fraction {
         return Fraction::new(self.numerator * rhs.numerator, self.denominator * rhs.denominator)
     }
 }
 
-extension Fraction {
+extension Fraction: Div {
     fun div(self, _ rhs: Fraction): Fraction {
         return Fraction::new(self.numerator * rhs.denominator, self.denominator * rhs.numerator)
     }
