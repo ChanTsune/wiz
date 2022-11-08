@@ -15,7 +15,7 @@ pub(crate) fn infer_source_set(
     ty_env: &TyEnv,
 ) -> Result<TypedSpellBook> {
     Ok(TypedSpellBook {
-        name: "".to_string(),
+        name: source_set.name,
         uses: vec![],
         body: vec![],
     })
