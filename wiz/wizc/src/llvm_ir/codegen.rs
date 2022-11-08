@@ -415,7 +415,7 @@ impl<'ctx> CodeGen<'ctx> {
                             .build_float_compare(FloatPredicate::ONE, left, right, "neq");
                     v.as_any_value_enum()
                 }
-                _ => todo!()
+                _ => todo!(),
             },
             (AnyValueEnum::PointerValue(p), AnyValueEnum::IntValue(i)) => match b.kind {
                 MLBinOpKind::Plus => {
@@ -454,7 +454,7 @@ impl<'ctx> CodeGen<'ctx> {
                 MLBinOpKind::NotEqual => {
                     todo!()
                 }
-                _ => todo!()
+                _ => todo!(),
             },
             (r, l) => {
                 panic!(

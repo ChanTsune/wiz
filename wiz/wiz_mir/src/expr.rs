@@ -62,7 +62,7 @@ pub enum MLBinOpKind {
     LessThan,
     NotEqual,
     And,
-    Or
+    Or,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
