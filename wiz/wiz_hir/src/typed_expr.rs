@@ -82,6 +82,8 @@ pub enum TypedBinaryOperator {
     LessThanEqual,
     LessThan,
     NotEqual,
+    And,
+    Or,
     InfixFunctionCall(String),
 }
 

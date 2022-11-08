@@ -186,6 +186,8 @@ impl<'a> ResolverContext<'a> {
                 let is_pointer_op = left.is_pointer_type() && right.is_integer();
                 if (is_both_same && (is_both_integer || is_both_float)) || is_pointer_op {
                     Ok(left)
+                } else if left.is_boolean() && right.is_boolean() {
+                    Ok(left)
                 } else {
                     let key = (kind, left, right);
                     self.arena()
