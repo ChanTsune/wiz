@@ -1,0 +1,3 @@
+protocol Div {
+    fun div(self, _ rhs: Self): Self
+}
