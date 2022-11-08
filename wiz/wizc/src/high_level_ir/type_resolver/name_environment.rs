@@ -183,9 +183,7 @@ impl<'a> NameEnvironment<'a> {
                 TypedValueType::Value(v) => {
                     let rs = self
                         .get_type(&v.package.clone().into_resolved().names, &v.name)
-                        .ok_or_else(|| {
-                            InferError::from(format!("Can not resolve type {:?}", v))
-                        })?;
+                        .ok_or_else(|| InferError::from(format!("Can not resolve type {:?}", v)))?;
                     rs.get_instance_member_type(name)
                         .cloned()
                         .or_else(|| {
