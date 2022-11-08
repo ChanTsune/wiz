@@ -349,6 +349,14 @@ impl<'ctx> CodeGen<'ctx> {
                         .build_int_compare(IntPredicate::NE, left, right, "neq");
                     v.as_any_value_enum()
                 }
+                MLBinOpKind::And => {
+                    let v = self.builder.build_and(left, right, "and");
+                    v.as_any_value_enum()
+                }
+                MLBinOpKind::Or => {
+                    let v = self.builder.build_or(left, right, "or");
+                    v.as_any_value_enum()
+                }
             },
             (AnyValueEnum::FloatValue(left), AnyValueEnum::FloatValue(right)) => match b.kind {
                 MLBinOpKind::Plus => {
@@ -407,6 +415,7 @@ impl<'ctx> CodeGen<'ctx> {
                             .build_float_compare(FloatPredicate::ONE, left, right, "neq");
                     v.as_any_value_enum()
                 }
+                _ => todo!(),
             },
             (AnyValueEnum::PointerValue(p), AnyValueEnum::IntValue(i)) => match b.kind {
                 MLBinOpKind::Plus => {
@@ -445,6 +454,7 @@ impl<'ctx> CodeGen<'ctx> {
                 MLBinOpKind::NotEqual => {
                     todo!()
                 }
+                _ => todo!(),
             },
             (r, l) => {
                 panic!(
