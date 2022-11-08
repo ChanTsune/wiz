@@ -53,7 +53,7 @@ jobs:
         if: runner.os != 'Windows'
       - name: Install LLVM and Clang
         run: |
-          if test -f "$FILE"; then
+          if [ ! -d "$FILE" ]; then
             echo "$LLVM_DOWNLOAD_URL"
             curl -L "$LLVM_DOWNLOAD_URL" --output ./llvm.zip
             unzip -o ./llvm.zip -d ./llvm
@@ -61,7 +61,7 @@ jobs:
         shell: bash
         env:
           LLVM_DOWNLOAD_URL: "https://github.com/wiz-language/llvm-project/releases/download/llvmorg-13.0.1/llvm-project-13.0.1-windows-binary.zip"
-          FILE: ${{ steps.cache-llvm.outputs.cache-hit }}
+          FILE: ./llvm
         if: runner.os == 'Windows'
       - name: Set Path of LLVM and Clang
         run: |
