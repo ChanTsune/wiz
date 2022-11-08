@@ -4,7 +4,7 @@ pub(crate) use crate::high_level_ir::type_resolver::context::env_value::EnvValue
 use crate::high_level_ir::type_resolver::name_environment::NameEnvironment;
 use std::collections::HashMap;
 use wiz_arena::{Arena, ArenaStruct, DeclarationId, DeclarationItemKind};
-use wiz_hir::typed_annotation::TypedAnnotations;
+use wiz_data_structure::annotation::Annotations;
 use wiz_hir::typed_decl::TypedFunBody;
 use wiz_hir::typed_expr::TypedBinaryOperator;
 use wiz_hir::typed_type::{
@@ -273,7 +273,7 @@ impl<'a> ResolverContext<'a> {
     pub(crate) fn register_type_parameter(
         &mut self,
         name: &str,
-        annotation: TypedAnnotations,
+        annotation: Annotations,
     ) -> Option<DeclarationId> {
         let id = self.current_namespace_id;
         self.arena_mut()
@@ -286,7 +286,7 @@ impl<'a> ResolverContext<'a> {
         ty: TypedType,
         type_parameters: Option<Vec<TypedTypeParam>>,
         body: Option<TypedFunBody>,
-        annotation: TypedAnnotations,
+        annotation: Annotations,
     ) -> Option<DeclarationId> {
         let id = self.current_namespace_id;
         self.arena_mut()
@@ -296,7 +296,7 @@ impl<'a> ResolverContext<'a> {
         &mut self,
         name: &str,
         ty: TypedType,
-        annotation: TypedAnnotations,
+        annotation: Annotations,
     ) -> Option<DeclarationId> {
         let id = self.current_namespace_id;
         self.arena_mut().register_value(&id, name, ty, annotation)

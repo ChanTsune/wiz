@@ -1,6 +1,5 @@
+use crate::high_level_ir::node_id::ModuleId;
 use crate::high_level_ir::AstLowering;
-use crate::middle_level_ir::HLIR2MLIR;
-use crate::ModuleId;
 use wiz_arena::Arena;
 use wiz_mir::expr::{
     MLCall, MLCallArg, MLExpr, MLLiteral, MLLiteralKind, MLName, MLUnaryOp, MLUnaryOpKind,
@@ -11,6 +10,7 @@ use wiz_mir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
 use wiz_mir::statement::{MLReturn, MLStmt};
 use wiz_session::{ParseSession, Session};
 use wiz_syntax_parser::parser::wiz::parse_from_string;
+use wizc_hir_lowing::hlir2mlir;
 
 fn check(source: &str, except: MLFile) {
     let session = ParseSession::default();
@@ -24,9 +24,7 @@ fn check(source: &str, except: MLFile) {
 
     let hl_ss = ast2hlir.lowing(ast, ModuleId::DUMMY).unwrap();
 
-    let mut hlir2mlir = HLIR2MLIR::new(&session, &mut arena);
-
-    let f = hlir2mlir.convert_from_file(hl_ss, false);
+    let f = hlir2mlir(hl_ss, &[], &mut arena, &session, false).unwrap();
 
     assert_eq!(f, except);
 }

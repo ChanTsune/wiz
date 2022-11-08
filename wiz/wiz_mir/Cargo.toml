@@ -3,8 +3,8 @@ name = "wiz_mir"
 version = "0.0.0"
 authors = ["ChanTsune <41658782+ChanTsune@users.noreply.github.com>"]
 edition = "2021"
-
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 linked-hash-map = "0.5.4"
+wiz_constants = { path = "../wiz_constants" }

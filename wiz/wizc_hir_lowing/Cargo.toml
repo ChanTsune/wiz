@@ -1,10 +1,15 @@
 [package]
-name = "wiz_arena"
+name = "wizc_hir_lowing"
 version = "0.0.0"
 edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+wiz_arena = { path = "../wiz_arena" }
 wiz_constants = { path = "../wiz_constants" }
 wiz_data_structure = { path = "../wiz_data_structure" }
 wiz_hir = { path = "../wiz_hir" }
+wiz_mir = { path = "../wiz_mir" }
+wiz_result = { path = "../wiz_result" }
+wiz_session = { path = "../wiz_session" }
+wizc_cli = { path = "../wizc_cli" }

@@ -2,8 +2,7 @@ mod config;
 
 use clap::builder::PossibleValuesParser;
 use clap::{Arg, ArgAction, Command};
-pub use config::build_type::BuildType;
-pub use config::{Config, ConfigBuilder, ConfigExt};
+pub use config::{BuildType, Config, ConfigBuilder, ConfigExt, Emit, MessageFormat};
 
 pub fn app(name: &'static str) -> Command {
     Command::new(name)
@@ -14,7 +13,6 @@ pub fn app(name: &'static str) -> Command {
                 .num_args(1)
                 .value_parser(PossibleValuesParser::new(BuildType::all_str())),
         )
-        .arg(short("output", 'o').num_args(1))
         .arg(long("out-dir").num_args(1))
         .arg(long("target-triple").num_args(1))
         .arg(short("path", 'p').action(ArgAction::Append).num_args(0..))
@@ -23,8 +21,9 @@ pub fn app(name: &'static str) -> Command {
         .arg(
             long("emit")
                 .num_args(1)
-                .value_parser(["llvm-ir", "object", "asm"]),
+                .value_parser(PossibleValuesParser::new(Emit::all_str())),
         )
+        .arg(long("message-format").num_args(1).value_parser(["json"]))
 }
 
 fn position(name: &'static str) -> Arg {
