@@ -49,9 +49,7 @@ fn expand_ast_internal(
                 let name = s.name.token();
                 match s.struct_keyword.token().as_str() {
                     "struct" => arena.register_struct(&parent, &name, Annotations::default()),
-                    "protocol" => {
-                        arena.register_protocol(&parent, &name, Annotations::default())
-                    }
+                    "protocol" => arena.register_protocol(&parent, &name, Annotations::default()),
                     token => unreachable!("{}", token),
                 };
                 page.struct_defs.push(s);
