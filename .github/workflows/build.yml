@@ -1,0 +1,89 @@
+name: Build
+on:
+  push:
+    branchies:
+      - main
+      - ci/*
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os:
+        - ubuntu-latest
+        - macos-latest
+        - windows-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - name: echo rust version
+        run: rustc --version
+      - name: Cache cargo
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Cache LLVM and Clang
+        id: cache-llvm
+        uses: actions/cache@v3
+        with:
+          path: |
+            ./llvm
+          key: ${{ runner.os }}-llvm-13
+      - name: Cache build
+        id: cache-build
+        uses: actions/cache@v3
+        with:
+          path: |
+            wiz/target
+          key: ${{ runner.os }}-rust-${{ hashFiles('**/Cargo.toml') }}
+      - name: Install LLVM and Clang
+        uses: KyleMayes/install-llvm-action@v1
+        with:
+          version: "13.0"
+          cached: ${{ steps.cache-llvm.outputs.cache-hit }}
+        if: runner.os != 'Windows'
+      - name: Install LLVM and Clang
+        run: |
+          if test -f "$FILE"; then
+            echo "$LLVM_DOWNLOAD_URL"
+            curl -L "$LLVM_DOWNLOAD_URL" --output ./llvm.zip
+            unzip -o ./llvm.zip -d ./llvm
+          fi
+        shell: bash
+        env:
+          LLVM_DOWNLOAD_URL: "https://github.com/wiz-language/llvm-project/releases/download/llvmorg-13.0.1/llvm-project-13.0.1-windows-binary.zip"
+          FILE: ${{ steps.cache-llvm.outputs.cache-hit }}
+        if: runner.os == 'Windows'
+      - name: Set Path of LLVM and Clang
+        run: |
+          echo LLVM_SYS_130_PREFIX="$(dirname $(dirname "$(find $PWD | grep -i bin/llvm-config.exe)"))"
+          echo LLVM_SYS_130_PREFIX="$(dirname $(dirname "$(find $PWD | grep -i bin/llvm-config.exe)"))" >> $GITHUB_ENV
+        shell: bash
+        if: runner.os == 'Windows'
+      - name: run build
+        run: cargo build --manifest-path wiz/Cargo.toml --release
+        shell: bash
+        env:
+          RUST_BACKTRACE: 1
+      - name: create archive
+        run: |
+          tar cvzf archive.tar.gz ./wiz/target/release/wiz ./wiz/target/release/wizc ./libraries
+        if: runner.os != 'Windows'
+      - name: create archive
+        run: |
+          tar cvzf archive.tar.gz ./wiz/target/release/wiz.exe ./wiz/target/release/wizc.exe ./libraries
+        if: runner.os == 'Windows'
+      - uses: actions/upload-artifact@v3
+        with:
+          name: wiz-${{ runner.os }}
+          path: |
+            archive.tar.gz
