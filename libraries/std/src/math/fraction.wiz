@@ -88,6 +88,15 @@ fun test_equals() {
 }
 
 #[test]
+fun test_not_equals() {
+    val a = Fraction::new(1, 4)
+    val b = Fraction::new(1, 8)
+
+    assert(!a.equals(b))
+    assert(!b.equals(a))
+}
+
+#[test]
 fun test_add() {
     val a = Fraction::new(1, 2)
     val b = Fraction::new(1, 4)
