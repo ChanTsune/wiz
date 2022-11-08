@@ -18,7 +18,7 @@ struct Fraction {
 }
 
 extension Fraction: Equals {
-    fun equals(&self, _ rhs: Fraction): Fraction {
+    fun equals(&self, _ rhs: Fraction): Bool {
         return self.denominator == rhs.denominator && self.numerator == rhs.numerator
     }
 }
