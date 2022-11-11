@@ -61,7 +61,7 @@ install_builtin_lib() {
 }
 
 install_shell_env() {
-    cp env "$WIZ_HOME"
+    cp "$SCRIPT_DIR/env" "$WIZ_HOME"
 }
 
 copy_lib_src() {
