@@ -7,6 +7,8 @@ BIN_DIR="$WIZ_HOME/bin"
 LIB_DIR="$WIZ_HOME/lib"
 VERSION="0.0.0"
 
+SCRIPT_DIR="$(dirname $0)"
+
 echo "WIZ_HOME=$WIZ_HOME"
 echo "BIN_DIR=$BIN_DIR"
 echo "LIB_DIR=$LIB_DIR"
@@ -44,7 +46,7 @@ main() {
 }
 
 build_install() {
-    FROM="wiz/target/release/$1"
+    FROM="$SCRIPT_DIR/wiz/target/release/$1"
     if [ ! -e "$FROM" ]; then
         cargo build --bin "$1" --release --manifest-path wiz/Cargo.toml
     fi
@@ -63,8 +65,8 @@ install_shell_env() {
 }
 
 copy_lib_src() {
-    cp -r "libraries/$1" "$LIB_DIR/src/$1"
-    cp -r "libraries/$1" "$LIB_DIR/src/$1/$2"
+    cp -r "$SCRIPT_DIR/libraries/$1" "$LIB_DIR/src/$1"
+    cp -r "$SCRIPT_DIR/libraries/$1" "$LIB_DIR/src/$1/$2"
 }
 
 err() {
