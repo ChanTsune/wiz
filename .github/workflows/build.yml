@@ -95,15 +95,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: download linux archive
-        uses: actions/download-artifact@3
+        uses: actions/download-artifact@v3
         with:
           name: wiz-Linux
       - name: download mac archive
-        uses: actions/download-artifact@3
+        uses: actions/download-artifact@v3
         with:
           name: wiz-macOs
       - name: download windows archive
-        uses: actions/download-artifact@3
+        uses: actions/download-artifact@v3
         with:
           name: wiz-Windows
       - uses: ncipollo/release-action@v1
