@@ -44,11 +44,11 @@ main() {
 }
 
 build_install() {
-    TMP="$(pwd)"
-    cd "wiz"
-    cargo build --bin "$1" --release
-    cp "target/release/$1" "$BIN_DIR/$1"
-    cd "$TMP"
+    FROM="wiz/target/release/$1"
+    if [ ! -e "$FROM" ]; then
+        cargo build --bin "$1" --release --manifest-file wiz/Cargo.toml
+    fi
+    cp "$FROM" "$BIN_DIR/$1"
 }
 
 install_builtin_lib() {
