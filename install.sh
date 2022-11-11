@@ -11,7 +11,7 @@ echo "WIZ_HOME=$WIZ_HOME"
 echo "BIN_DIR=$BIN_DIR"
 echo "LIB_DIR=$LIB_DIR"
 
-main() {
+check_commands() {
     need_cmd mkdir
     need_cmd touch
     need_cmd cat
@@ -19,6 +19,10 @@ main() {
     need_cmd echo
     need_cmd cargo
     need_cmd clang
+}
+
+main() {
+    check_commands
 
     mkdir -p "$BIN_DIR"
     build_install "wiz"
