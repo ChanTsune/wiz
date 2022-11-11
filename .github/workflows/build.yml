@@ -87,3 +87,29 @@ jobs:
           name: wiz-${{ runner.os }}
           path: |
             archive.tar.gz
+
+  pre_release:
+    needs:
+      - build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: download linux archive
+        uses: actions/download-artifact@3
+        with:
+          name: wiz-Linux
+      - name: download mac archive
+        uses: actions/download-artifact@3
+        with:
+          name: wiz-macOs
+      - name: download windows archive
+        uses: actions/download-artifact@3
+        with:
+          name: wiz-Windows
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: "*.zip"
+          tag: dev-latest
+          replacesArtifacts: true
+          prerelease: true
+          token: '${{ secrets.GITHUB_TOKEN }}'
