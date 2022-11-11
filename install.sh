@@ -46,7 +46,7 @@ main() {
 build_install() {
     FROM="wiz/target/release/$1"
     if [ ! -e "$FROM" ]; then
-        cargo build --bin "$1" --release --manifest-file wiz/Cargo.toml
+        cargo build --bin "$1" --release --manifest-path wiz/Cargo.toml
     fi
     cp "$FROM" "$BIN_DIR/$1"
 }
