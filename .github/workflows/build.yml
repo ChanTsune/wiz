@@ -97,18 +97,13 @@ jobs:
       - name: download linux archive
         uses: actions/download-artifact@v3
         with:
-          name: wiz-Linux
-      - name: download mac archive
-        uses: actions/download-artifact@v3
-        with:
-          name: wiz-macOS
-      - name: download windows archive
-        uses: actions/download-artifact@v3
-        with:
-          name: wiz-Windows
+          path: ~/artifact/
+      - name: ls
+        run: |
+          ls ~/artifact/
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: "*.zip"
+          artifacts: "~/artifact/*"
           tag: dev-latest
           replacesArtifacts: true
           prerelease: true
