@@ -101,9 +101,15 @@ jobs:
       - name: ls
         run: |
           ls ~/artifact/
+      - uses: dev-drprasad/delete-tag-and-release@v0.2.0
+        with:
+          delete_release: true
+          tag_name: dev-latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: "~/artifact/*"
+          artifacts: "~/artifact/**/*"
           tag: dev-latest
           replacesArtifacts: true
           prerelease: true
