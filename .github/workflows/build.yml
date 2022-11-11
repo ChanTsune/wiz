@@ -76,11 +76,11 @@ jobs:
           RUST_BACKTRACE: 1
       - name: create archive
         run: |
-          tar cvzf archive.tar.gz ./wiz/target/release/wiz ./wiz/target/release/wizc ./libraries
+          tar cvzf archive.tar.gz ./install.sh ./wiz/target/release/wiz ./wiz/target/release/wizc ./libraries
         if: runner.os != 'Windows'
       - name: create archive
         run: |
-          tar cvzf archive.tar.gz ./wiz/target/release/wiz.exe ./wiz/target/release/wizc.exe ./libraries
+          tar cvzf archive.tar.gz ./install.sh ./wiz/target/release/wiz.exe ./wiz/target/release/wizc.exe ./libraries
         if: runner.os == 'Windows'
       - uses: actions/upload-artifact@v3
         with:

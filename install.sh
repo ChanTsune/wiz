@@ -11,7 +11,7 @@ echo "WIZ_HOME=$WIZ_HOME"
 echo "BIN_DIR=$BIN_DIR"
 echo "LIB_DIR=$LIB_DIR"
 
-main() {
+check_commands() {
     need_cmd mkdir
     need_cmd touch
     need_cmd cat
@@ -19,6 +19,10 @@ main() {
     need_cmd echo
     need_cmd cargo
     need_cmd clang
+}
+
+main() {
+    check_commands
 
     mkdir -p "$BIN_DIR"
     build_install "wiz"
@@ -40,11 +44,11 @@ main() {
 }
 
 build_install() {
-    TMP="$(pwd)"
-    cd "wiz"
-    cargo build --bin "$1" --release
-    cp "target/release/$1" "$BIN_DIR/$1"
-    cd "$TMP"
+    FROM="wiz/target/release/$1"
+    if [ ! -e "$FROM" ]; then
+        cargo build --bin "$1" --release --manifest-path wiz/Cargo.toml
+    fi
+    cp "$FROM" "$BIN_DIR/$1"
 }
 
 install_builtin_lib() {
@@ -78,4 +82,4 @@ check_cmd() {
     command -v "$1" > /dev/null 2>&1
 }
 
-main
+main "$@"
