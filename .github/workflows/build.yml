@@ -101,7 +101,7 @@ jobs:
       - name: download mac archive
         uses: actions/download-artifact@v3
         with:
-          name: wiz-macOs
+          name: wiz-macOS
       - name: download windows archive
         uses: actions/download-artifact@v3
         with:
