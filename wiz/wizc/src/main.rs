@@ -36,7 +36,7 @@ const BUILTIN_LIB: [&str; 3] = ["core", "libc", "std"];
 
 fn main() -> Result<()> {
     println!("{:?}", env::args());
-    let app = wizc_cli::app("wizc");
+    let app = wizc_cli::app("wizc").version(env!("CARGO_PKG_VERSION"));
     let matches = app.get_matches();
     let config = Config::from(&matches);
 
