@@ -5,7 +5,7 @@ use out_stream::OutStream;
 pub use parse::ParseSession;
 use std::collections::BTreeMap;
 use std::error::Error;
-use std::fmt::Debug;
+use std::fmt::{Debug, Write};
 use std::path::Path;
 use std::time::{Duration, Instant};
 use wizc_cli::{Config, ConfigExt};
