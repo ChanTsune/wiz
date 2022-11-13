@@ -6,7 +6,6 @@ pub use parse::ParseSession;
 use std::collections::BTreeMap;
 use std::error::Error;
 use std::fmt::Debug;
-use std::io::Write;
 use std::path::Path;
 use std::time::{Duration, Instant};
 use wizc_cli::{Config, ConfigExt};
@@ -23,11 +22,15 @@ pub struct Session {
 impl Session {
     pub fn new(config: Config) -> Self {
         Self {
-            config,
             parse_session: Default::default(),
             timers: Default::default(),
             errors: Default::default(),
-            out_stream: Default::default(),
+            out_stream: if config.quiet() {
+                OutStream::void()
+            } else {
+                Default::default()
+            },
+            config,
         }
     }
 

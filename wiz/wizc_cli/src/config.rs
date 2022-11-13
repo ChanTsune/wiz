@@ -21,6 +21,7 @@ pub struct Config {
     libraries: Vec<PathBuf>,
     emit: Option<Emit>,
     message_format: Option<MessageFormat>,
+    quiet: bool,
 }
 
 pub trait ConfigExt {
@@ -33,6 +34,7 @@ pub trait ConfigExt {
     fn libraries(&self) -> Vec<PathBuf>;
     fn emit(&self) -> Emit;
     fn message_format(&self) -> MessageFormat;
+    fn quiet(&self) -> bool;
 }
 
 impl ConfigExt for Config {
@@ -71,6 +73,10 @@ impl ConfigExt for Config {
     fn message_format(&self) -> MessageFormat {
         self.message_format.unwrap_or_default()
     }
+
+    fn quiet(&self) -> bool {
+        self.quiet
+    }
 }
 
 pub trait ConfigBuilder {
@@ -85,6 +91,7 @@ pub trait ConfigBuilder {
     fn libraries<P: AsRef<Path>>(self, libraries: &[P]) -> Self;
     fn emit(self, emit: Emit) -> Self;
     fn message_format(self, message_format: MessageFormat) -> Self;
+    fn quiet(self, quiet: bool) -> Self;
     fn as_args(&self) -> Vec<&OsStr>;
 }
 
@@ -148,6 +155,11 @@ impl ConfigBuilder for Config {
         self
     }
 
+    fn quiet(mut self, quiet: bool) -> Self {
+        self.quiet = quiet;
+        self
+    }
+
     fn as_args(&self) -> Vec<&OsStr> {
         let mut args: Vec<&OsStr> = vec![self.input.as_os_str()];
         if let Some(out_dir) = &self.out_dir {
@@ -171,6 +183,9 @@ impl ConfigBuilder for Config {
                 message_format.as_str().as_ref(),
             ]);
         };
+        if self.quiet {
+            args.push("-q".as_ref());
+        }
         args
     }
 }
@@ -205,6 +220,7 @@ impl<'ctx> From<&'ctx ArgMatches> for Config {
             message_format: matches
                 .get_one::<String>("message-format")
                 .map(|s| MessageFormat::from(s.as_str())),
+            quiet: matches.get_flag("quite"),
         }
     }
 }

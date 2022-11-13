@@ -1,11 +1,20 @@
+mod void_stream;
+
 use std::fmt;
-use std::fmt::{Arguments, Debug, Formatter, Pointer};
+use std::fmt::{Debug, Formatter, Pointer};
 use std::io::{stdout, Write};
+use void_stream::VoidStream;
 
 pub struct OutStream(Box<dyn Write>);
 
+impl OutStream {
+    pub fn void() -> Self {
+        Self::from(VoidStream)
+    }
+}
+
 impl Debug for OutStream {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         self.0.fmt(f)
     }
 }
