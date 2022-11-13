@@ -5,6 +5,7 @@ use crate::high_level_ir::wlib::WLib;
 use crate::llvm_ir::codegen::CodeGen;
 use dirs::home_dir;
 use inkwell::context::Context;
+use std::fmt::Write as FWrite;
 use std::io::Write;
 use std::path::PathBuf;
 use std::process::Command;
@@ -80,7 +81,13 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
                     let lib_path = p.join(lib_name);
                     let package_manifest_path = lib_path.join("Package.wiz");
                     if package_manifest_path.exists() {
-                        println!("`{}` found at {}", lib_name, lib_path.display());
+                        writeln!(
+                            session.out_stream,
+                            "`{}` found at {}",
+                            lib_name,
+                            lib_path.display()
+                        )
+                        .unwrap();
                         lib_paths.push((lib_path.join("src").join("lib.wiz"), lib_name));
                         break;
                     }
@@ -131,11 +138,11 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
             path
         };
         wlib.write_to(&wlib_path);
-        println!("{}", Message::output(wlib_path));
+        writeln!(session.out_stream, "{}", Message::output(wlib_path))?;
         return Ok(());
     }
 
-    println!("===== convert to mlir =====");
+    writeln!(session.out_stream, "===== convert to mlir =====")?;
 
     let std_mlir = std_hlir
         .into_iter()
@@ -157,7 +164,7 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
         write!(f, "{}", mlfile.to_string())
     })?;
 
-    println!("==== codegen ====");
+    writeln!(session.out_stream, "==== codegen ====")?;
     let module_name = &mlfile.name;
     let context = Context::create();
     let mut codegen = CodeGen::new(
@@ -202,7 +209,7 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
             Ok(())
         }
     }?;
-    println!("{}", Message::output(&out_path));
+    writeln!(session.out_stream, "{}", Message::output(&out_path))?;
     Ok(())
 }
 

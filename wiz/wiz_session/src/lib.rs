@@ -62,7 +62,7 @@ impl Session {
         self.start(name);
         let r = f(self);
         let stop = self.stop(name);
-        println!("{}: {}ms", name, stop.as_millis());
+        writeln!(self.out_stream, "{}: {}ms", name, stop.as_millis()).unwrap();
         r
     }
 
