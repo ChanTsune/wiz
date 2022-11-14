@@ -608,7 +608,7 @@ impl<'s> TypeResolver<'s> {
                 DeclarationItemKind::Variable(t) => {}
                 DeclarationItemKind::Function(rf) => {
                     if rf.is_generic() {
-                        println!("name => {}", n.name);
+                        writeln!(self.session.out_stream, "name => {}", n.name);
                     }
                 }
             }
