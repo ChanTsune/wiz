@@ -26,6 +26,7 @@ use wiz_hir::typed_stmt::{
 use wiz_hir::typed_type::{Package, TypedArgType, TypedFunctionType, TypedType, TypedValueType};
 use wiz_hir::typed_type_constraint::TypedTypeConstraint;
 use wiz_session::Session;
+use std::fmt::Write;
 
 #[derive(Debug)]
 pub(crate) struct TypeResolver<'s> {
