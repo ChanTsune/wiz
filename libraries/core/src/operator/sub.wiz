@@ -1,0 +1,3 @@
+protocol Sub {
+    fun sub(self, _ rhs: Self): Self
+}

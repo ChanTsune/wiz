@@ -581,6 +581,8 @@ impl<'a> HLIR2MLIR<'a> {
                 TypedBinaryOperator::LessThanEqual => MLBinOpKind::LessThanEqual,
                 TypedBinaryOperator::LessThan => MLBinOpKind::LessThan,
                 TypedBinaryOperator::NotEqual => MLBinOpKind::NotEqual,
+                TypedBinaryOperator::And => MLBinOpKind::And,
+                TypedBinaryOperator::Or => MLBinOpKind::Or,
                 TypedBinaryOperator::InfixFunctionCall(call) => {
                     todo!("infix function call {:?}", call)
                 }

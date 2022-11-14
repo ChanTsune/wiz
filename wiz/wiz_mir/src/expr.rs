@@ -61,6 +61,8 @@ pub enum MLBinOpKind {
     LessThanEqual,
     LessThan,
     NotEqual,
+    And,
+    Or,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -173,6 +175,8 @@ impl MLNode for MLBinOp {
             MLBinOpKind::LessThanEqual => ">=",
             MLBinOpKind::LessThan => ">",
             MLBinOpKind::NotEqual => "!=",
+            MLBinOpKind::And => "&&",
+            MLBinOpKind::Or => "||",
         })?;
         f.write_char(' ')?;
         self.right.fmt(f)

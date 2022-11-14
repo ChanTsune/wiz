@@ -182,9 +182,12 @@ impl<'a> ResolverContext<'a> {
             kind => {
                 let is_both_integer = left.is_integer() && right.is_integer();
                 let is_both_float = left.is_floating_point() && right.is_floating_point();
+                let is_both_boolean = left.is_boolean() && right.is_boolean();
                 let is_both_same = left == right;
                 let is_pointer_op = left.is_pointer_type() && right.is_integer();
-                if (is_both_same && (is_both_integer || is_both_float)) || is_pointer_op {
+                if (is_both_same && (is_both_integer || is_both_float || is_both_boolean))
+                    || is_pointer_op
+                {
                     Ok(left)
                 } else {
                     let key = (kind, left, right);

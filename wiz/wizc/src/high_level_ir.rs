@@ -681,6 +681,8 @@ impl<'a> AstLowering<'a> {
                 "<=" => TypedBinaryOperator::LessThanEqual,
                 "<" => TypedBinaryOperator::LessThan,
                 "!=" => TypedBinaryOperator::NotEqual,
+                "&&" => TypedBinaryOperator::And,
+                "||" => TypedBinaryOperator::Or,
                 _ => TypedBinaryOperator::InfixFunctionCall(kind.token()),
             },
             right,
