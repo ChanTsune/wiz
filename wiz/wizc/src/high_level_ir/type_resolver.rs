@@ -8,6 +8,7 @@ mod tests;
 use crate::high_level_ir::type_resolver::context::ResolverContext;
 use crate::high_level_ir::type_resolver::error::ResolverError;
 use crate::high_level_ir::type_resolver::result::Result;
+use std::fmt::Write;
 use wiz_arena::{Arena, DeclarationId, DeclarationItemKind};
 use wiz_hir::typed_decl::{
     TypedArgDef, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedProtocol,
@@ -608,7 +609,7 @@ impl<'s> TypeResolver<'s> {
                 DeclarationItemKind::Variable(t) => {}
                 DeclarationItemKind::Function(rf) => {
                     if rf.is_generic() {
-                        println!("name => {}", n.name);
+                        writeln!(self.session.out_stream, "name => {}", n.name);
                     }
                 }
             }

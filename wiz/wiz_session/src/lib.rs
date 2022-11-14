@@ -1,8 +1,11 @@
+mod out_stream;
 mod parse;
 
+use out_stream::OutStream;
 pub use parse::ParseSession;
 use std::collections::BTreeMap;
 use std::error::Error;
+use std::fmt::{Debug, Write};
 use std::path::Path;
 use std::time::{Duration, Instant};
 use wizc_cli::{Config, ConfigExt};
@@ -13,15 +16,21 @@ pub struct Session {
     pub parse_session: ParseSession,
     timers: BTreeMap<String, (Instant, Option<Duration>)>,
     errors: Vec<Box<dyn Error>>,
+    pub out_stream: OutStream,
 }
 
 impl Session {
     pub fn new(config: Config) -> Self {
         Self {
-            config,
             parse_session: Default::default(),
             timers: Default::default(),
             errors: Default::default(),
+            out_stream: if config.quiet() {
+                OutStream::void()
+            } else {
+                Default::default()
+            },
+            config,
         }
     }
 
@@ -53,7 +62,7 @@ impl Session {
         self.start(name);
         let r = f(self);
         let stop = self.stop(name);
-        println!("{}: {}ms", name, stop.as_millis());
+        writeln!(self.out_stream, "{}: {}ms", name, stop.as_millis()).unwrap();
         r
     }
 
