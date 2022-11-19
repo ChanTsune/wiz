@@ -1,6 +1,6 @@
 use libc::stdlib::*
 use libc::string::*
-use libc::unistd::*
+use libc::unistd
 
 val FD_STDIN: Size = 0
 val FD_STDOUT: Size = 1
@@ -53,12 +53,12 @@ struct FileDescriptor {
     }
 
     fun write(&self, item: &str): Unit {
-        std::io::write(self.rawFd, item as *UInt8, strlen(item as *UInt8))
+        unistd::write(self.rawFd, item as *UInt8, strlen(item as *UInt8))
     }
 
     fun read(&self, _ bufferLength: Size): *UInt8 {
         val buf = malloc(bufferLength + 1) as *UInt8
-        val readLength = std::io::read(self.rawFd, buf, bufferLength)
+        val readLength = unistd::read(self.rawFd, buf, bufferLength)
         buf[readLength] = 0 as UInt8
         return buf
     }
