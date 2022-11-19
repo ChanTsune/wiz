@@ -1,15 +1,10 @@
 use libc::stdlib::*
 use libc::string::*
+use libc::unistd::*
 
 val FD_STDIN: Size = 0
 val FD_STDOUT: Size = 1
 val FD_STDERR: Size = 2
-
-#[no_mangle]
-fun write(_ fd: Size, _ buf: *UInt8, _ nbyte: Size): Size
-
-#[no_mangle]
-fun read(_ fd: Size, _ buf: *UInt8, _ nbyte: Size): Size
 
 #[no_mangle]
 fun creat(_ fileName: *UInt8, _ mode: UInt16): Size
