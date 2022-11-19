@@ -9,3 +9,11 @@ fun dup2(_ fd: Int32, _ fd2: Int32): Int32
 #[no_mangle]
 fun pipe(_ pipefd: *Int32): Int32
 // fun pipe(pipefd: *c_int): c_int
+
+// pid_t fork();
+#[builtin, no_mangle]
+fun fork(): Size
+
+// int execvp(const char *file, char *const argv[]);
+#[builtin, no_mangle]
+fun execvp(_ file: UInt8, _ argv: *(*UInt8)): Size
