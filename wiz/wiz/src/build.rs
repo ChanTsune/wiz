@@ -1,8 +1,8 @@
 use crate::core::dep::{resolve_manifest_dependencies, ResolvedDependencyTree};
 use crate::core::error::CliError;
 use crate::core::workspace::Workspace;
-use crate::core::{Error, Result};
 use crate::core::{load_project, Cmd};
+use crate::core::{Error, Result};
 use clap::ArgMatches;
 use std::collections::{BTreeSet, HashMap, HashSet};
 use std::env;
