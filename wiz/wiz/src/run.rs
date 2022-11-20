@@ -14,6 +14,6 @@ pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<()> {
         None,
         false,
     );
-    build::command("", build_options)?;
-    Ok(())
+    let output = build::command("", build_options)?;
+    super::subcommand::execute(output, options.get_many::<String>("").unwrap_or_default())
 }
