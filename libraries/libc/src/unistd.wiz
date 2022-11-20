@@ -9,3 +9,23 @@ fun dup2(_ fd: Int32, _ fd2: Int32): Int32
 #[no_mangle]
 fun pipe(_ pipefd: *Int32): Int32
 // fun pipe(pipefd: *c_int): c_int
+
+// pid_t fork();
+#[builtin, no_mangle]
+fun fork(): Size
+
+// int execvp(const char *file, char *const argv[]);
+#[builtin, no_mangle]
+fun execvp(_ file: UInt8, _ argv: *(*UInt8)): Size
+
+// ssize_t write(int fd, const void *buf, size_t count);
+#[no_mangle]
+fun write(_ fd: Size, _ buf: *UInt8, _ nbyte: Size): Size
+
+// ssize_t read(int fd, void *buf, size_t count);
+#[no_mangle]
+fun read(_ fd: Size, _ buf: *UInt8, _ nbyte: Size): Size
+
+// int close(int fildes);
+#[no_mangle]
+fun close(_ socket: Size): Size
