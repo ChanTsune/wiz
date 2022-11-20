@@ -11,7 +11,7 @@ use std::fs::create_dir_all;
 use std::path::{Path, PathBuf};
 use wiz_utils::topological_sort::topological_sort;
 use wizc_cli::{BuildType, Config, ConfigBuilder};
-use wizc_message::MessageParser;
+use wizc_message::{Message, MessageKind, MessageParser};
 
 pub(crate) struct BuildCommand;
 
@@ -62,7 +62,7 @@ impl<'ops> From<&'ops ArgMatches> for Options<'ops> {
     }
 }
 
-pub(crate) fn command(_: &str, options: Options) -> Result<()> {
+pub(crate) fn command(_: &str, options: Options) -> Result<PathBuf> {
     let ws = load_project(options.manifest_path)?;
 
     let resolved_dependencies =
@@ -113,7 +113,27 @@ pub(crate) fn command(_: &str, options: Options) -> Result<()> {
         config
     };
 
-    super::subcommand::execute("wizc", config.as_args())
+    let output = super::subcommand::output("wizc", config.as_args())?;
+    let exit_code = output.status.code();
+    if let Some(0) = exit_code {
+        let message_parser = MessageParser::new();
+        for line in String::from_utf8_lossy(&output.stdout).split_terminator('\n') {
+            match message_parser.parse(line) {
+                Ok(Message { kind}) => {match kind {
+                    MessageKind::Output(output) => {
+                        return Ok(PathBuf::from(output));
+                    }
+                    _ => continue,
+                }},
+                Err(_) => continue,
+            }
+        }
+        Err(Box::new(Error::new("")))
+    } else if let Some(exit_code) = exit_code {
+        Err(Box::new(Error::new(format!("non zero exit status: {}", exit_code))))
+    } else {
+        Err(Box::new(Error::new("")))
+    }
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
