@@ -142,7 +142,11 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
             path
         };
         wlib.write_to(&wlib_path);
-        writeln!(session.out_stream, "{}", message_formatter.format(Message::output(wlib_path)))?;
+        writeln!(
+            session.out_stream,
+            "{}",
+            message_formatter.format(Message::output(wlib_path))
+        )?;
         return Ok(());
     }
 
@@ -213,7 +217,11 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
             Ok(())
         }
     }?;
-    writeln!(session.out_stream, "{}", message_formatter.format(Message::output(&out_path)))?;
+    writeln!(
+        session.out_stream,
+        "{}",
+        message_formatter.format(Message::output(&out_path))
+    )?;
     Ok(())
 }
 
