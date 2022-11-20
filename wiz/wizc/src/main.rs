@@ -14,9 +14,9 @@ use wiz_arena::Arena;
 use wiz_result::Result;
 use wiz_session::Session;
 use wiz_syntax_parser::parser::wiz::read_book_from_path;
-use wizc_cli::{BuildType, Config, ConfigExt, Emit};
+use wizc_cli::{BuildType, Config, ConfigExt, Emit, MessageFormat};
 use wizc_hir_lowing::hlir2mlir;
-use wizc_message::Message;
+use wizc_message::{Message, MessageFormatter};
 
 mod high_level_ir;
 #[cfg(test)]
@@ -50,6 +50,10 @@ fn run_compiler(session: &mut Session) -> Result<()> {
 }
 
 fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
+    let message_formatter = match session.config.message_format() {
+        MessageFormat::Normal => MessageFormatter::DEFAULT,
+        MessageFormat::Json => MessageFormatter::JSON,
+    };
     let paths = session.config.paths();
     let out_dir = session
         .config
@@ -138,7 +142,7 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
             path
         };
         wlib.write_to(&wlib_path);
-        writeln!(session.out_stream, "{}", Message::output(wlib_path))?;
+        writeln!(session.out_stream, "{}", message_formatter.format(Message::output(wlib_path)))?;
         return Ok(());
     }
 
@@ -209,7 +213,7 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
             Ok(())
         }
     }?;
-    writeln!(session.out_stream, "{}", Message::output(&out_path))?;
+    writeln!(session.out_stream, "{}", message_formatter.format(Message::output(&out_path)))?;
     Ok(())
 }
 
