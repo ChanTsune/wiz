@@ -119,18 +119,21 @@ pub(crate) fn command(_: &str, options: Options) -> Result<PathBuf> {
         let message_parser = MessageParser::new();
         for line in String::from_utf8_lossy(&output.stdout).split_terminator('\n') {
             match message_parser.parse(line) {
-                Ok(Message { kind}) => {match kind {
+                Ok(Message { kind }) => match kind {
                     MessageKind::Output(output) => {
                         return Ok(PathBuf::from(output));
                     }
                     _ => continue,
-                }},
+                },
                 Err(_) => continue,
             }
         }
         Err(Box::new(Error::new("")))
     } else if let Some(exit_code) = exit_code {
-        Err(Box::new(Error::new(format!("non zero exit status: {}", exit_code))))
+        Err(Box::new(Error::new(format!(
+            "non zero exit status: {}",
+            exit_code
+        ))))
     } else {
         Err(Box::new(Error::new("")))
     }
