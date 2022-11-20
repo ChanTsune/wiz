@@ -25,3 +25,7 @@ fun write(_ fd: Size, _ buf: *UInt8, _ nbyte: Size): Size
 // ssize_t read(int fd, void *buf, size_t count);
 #[no_mangle]
 fun read(_ fd: Size, _ buf: *UInt8, _ nbyte: Size): Size
+
+// int close(int fildes);
+#[no_mangle]
+fun close(_ socket: Size): Size
