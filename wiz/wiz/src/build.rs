@@ -1,7 +1,7 @@
 use crate::core::dep::{resolve_manifest_dependencies, ResolvedDependencyTree};
 use crate::core::error::CliError;
 use crate::core::workspace::Workspace;
-use crate::core::Result;
+use crate::core::{Error, Result};
 use crate::core::{load_project, Cmd};
 use clap::ArgMatches;
 use std::collections::{BTreeSet, HashMap, HashSet};
@@ -19,7 +19,8 @@ impl Cmd for BuildCommand {
     const NAME: &'static str = "build";
 
     fn execute(args: &ArgMatches) -> Result<()> {
-        command(Self::NAME, Options::from(args))
+        command(Self::NAME, Options::from(args))?;
+        Ok(())
     }
 }
 
