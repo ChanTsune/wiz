@@ -11,6 +11,7 @@ mod test;
 
 use crate::build::BuildCommand;
 use crate::core::{Cmd, Result};
+use crate::run::RunCommand;
 use ansi_term::Color;
 use clap::{crate_version, Arg, ArgAction, Command};
 use std::process::exit;
@@ -79,7 +80,7 @@ fn cli() -> Result<()> {
                 .arg(arg_std()),
         )
         .subcommand(
-            Command::new(run::COMMAND_NAME)
+            Command::new(RunCommand::NAME)
                 .about("Run a binary or example of the local package")
                 .arg(Arg::new("target-dir").help("Directory for all generated artifacts"))
                 .arg(arg_target_triple())
@@ -108,7 +109,7 @@ fn cli() -> Result<()> {
         Some((BuildCommand::NAME, option)) => BuildCommand::execute(option),
         Some((check::COMMAND_NAME, option)) => check::command(check::COMMAND_NAME, option),
         Some((test::COMMAND_NAME, option)) => test::command(test::COMMAND_NAME, option),
-        Some((run::COMMAND_NAME, option)) => run::command(run::COMMAND_NAME, option),
+        Some((RunCommand::NAME, option)) => RunCommand::execute(option),
         Some((cmd, option)) => external_subcommand::try_execute(cmd, option),
         _ => panic!(),
     }?;
