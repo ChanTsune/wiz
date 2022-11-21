@@ -291,7 +291,7 @@ mod tests {
         }
 
         fn out_dir(&self) -> PathBuf {
-            self.repository_root().join(&self.extra_out).join("out")
+            self.repository_root().join("out").join(&self.extra_out)
         }
     }
 
