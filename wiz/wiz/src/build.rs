@@ -10,7 +10,7 @@ use std::ffi::OsStr;
 use std::fs::create_dir_all;
 use std::path::{Path, PathBuf};
 use wiz_utils::topological_sort::topological_sort;
-use wizc_cli::{BuildType, Config, ConfigBuilder};
+use wizc_cli::{BuildType, Config, ConfigBuilder, MessageFormat};
 use wizc_message::{Message, MessageKind, MessageParser};
 
 pub(crate) struct BuildCommand;
@@ -105,7 +105,8 @@ pub(crate) fn command(_: &str, options: Options) -> Result<PathBuf> {
         } else {
             BuildType::Binary
         })
-        .libraries(&wlib_paths.iter().collect::<Vec<_>>());
+        .libraries(&wlib_paths.iter().collect::<Vec<_>>())
+        .message_format(MessageFormat::Json);
 
     config = if let Some(target_triple) = options.target_triple {
         config.target_triple(target_triple)
@@ -115,7 +116,7 @@ pub(crate) fn command(_: &str, options: Options) -> Result<PathBuf> {
 
     let output = super::subcommand::output("wizc", config.as_args())?;
     let exit_code = output.status.code();
-    if let Some(0) = exit_code {
+    let error = if let Some(0) = exit_code {
         let message_parser = MessageParser::new();
         for line in String::from_utf8_lossy(&output.stdout).split_terminator('\n') {
             match message_parser.parse(line) {
@@ -128,15 +129,17 @@ pub(crate) fn command(_: &str, options: Options) -> Result<PathBuf> {
                 Err(_) => continue,
             }
         }
-        Err(Box::new(Error::new("")))
+        Error::new("no output detected")
     } else if let Some(exit_code) = exit_code {
-        Err(Box::new(Error::new(format!(
+        Error::new(format!(
             "non zero exit status: {}",
             exit_code
-        ))))
+        ))
     } else {
-        Err(Box::new(Error::new("")))
-    }
+        Error::new("process execution failed")
+    };
+    eprintln!("{}", String::from_utf8_lossy(&output.stderr));
+    Err(Box::new(error))
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
@@ -205,6 +208,7 @@ fn compile_dependencies(
                 .name(&dep.name)
                 .type_(BuildType::Library)
                 .libraries(&dep_wlib_paths)
+                .message_format(MessageFormat::Json)
                 .as_args(),
         )?;
         for line in String::from_utf8_lossy(&output.stdout).split_terminator('\n') {
