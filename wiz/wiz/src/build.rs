@@ -131,10 +131,7 @@ pub(crate) fn command(_: &str, options: Options) -> Result<PathBuf> {
         }
         Error::new("no output detected")
     } else if let Some(exit_code) = exit_code {
-        Error::new(format!(
-            "non zero exit status: {}",
-            exit_code
-        ))
+        Error::new(format!("non zero exit status: {}", exit_code))
     } else {
         Error::new("process execution failed")
     };
