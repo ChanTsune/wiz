@@ -1,4 +1,4 @@
-use crate::result::Result;
+use wiz_result::Result;
 use crate::ty_env::TyEnv;
 // use crate::utils::full_type_name;
 use crate::SpellBook;
