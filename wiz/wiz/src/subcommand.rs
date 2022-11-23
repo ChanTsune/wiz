@@ -2,7 +2,6 @@ use crate::core::error::{CliError, ProcessError};
 use crate::core::Result;
 use std::env;
 use std::ffi::OsStr;
-use std::os::unix::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
@@ -18,7 +17,14 @@ fn get_executable_path<P: AsRef<Path>>(executable: P) -> Result<PathBuf> {
     Ok(path)
 }
 
-pub(crate) fn execute(executable: &str, args: &[&str]) -> Result<()> {
+#[cfg(all(not(target_os = "hermit"), any(unix, doc)))]
+pub(crate) fn execute<I, S, P>(executable: P, args: I) -> Result<()>
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<OsStr>,
+    P: AsRef<Path>,
+{
+    use std::os::unix::process::CommandExt;
     let executable_path = get_executable_path(executable)?;
     let mut command = Command::new(executable_path);
     command.args(args);
@@ -29,6 +35,17 @@ pub(crate) fn execute(executable: &str, args: &[&str]) -> Result<()> {
             return Err(Box::new(ProcessError::code(code)));
         }
     }
+    Ok(())
+}
+
+#[cfg(any(windows, doc))]
+pub(crate) fn execute<I, S, P>(executable: P, args: I) -> Result<()>
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<OsStr>,
+    P: AsRef<Path>,
+{
+    output(executable, args)?;
     Ok(())
 }
 

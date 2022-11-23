@@ -3,7 +3,7 @@ use crate::core::error::CliError;
 use crate::core::manifest;
 use crate::core::manifest::{Dependency, Manifest};
 use crate::core::Result;
-use std::env;
+use dirs::home_dir;
 use std::fmt::{Display, Formatter};
 use std::path::{Path, PathBuf};
 
@@ -11,13 +11,19 @@ use std::path::{Path, PathBuf};
 pub struct ResolvedDependencyTree {
     pub name: String,
     pub version: String,
-    pub src_path: String,
+    pub src_path: PathBuf,
     pub dependencies: Vec<ResolvedDependencyTree>,
 }
 
 impl Display for ResolvedDependencyTree {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        writeln!(f, "{} v{} ({})", self.name, self.version, self.src_path)?;
+        writeln!(
+            f,
+            "{} v{} ({})",
+            self.name,
+            self.version,
+            self.src_path.display()
+        )?;
         for dependency in &self.dependencies {
             Display::fmt(dependency, f)?;
         }
@@ -30,7 +36,7 @@ pub fn resolve_manifest_dependencies(
     manifest: &Manifest,
     another_std: Option<&str>,
 ) -> Result<ResolvedDependencyTree> {
-    let home_dir = PathBuf::from(env!("HOME"));
+    let home_dir = home_dir().unwrap();
     let builtin_package_dir = home_dir.join(".wiz/lib/src/");
     let package_index_cache_dir = home_dir.join(".wiz/repository/");
     let package_dirs = vec![builtin_package_dir, package_index_cache_dir];
@@ -58,8 +64,7 @@ pub fn resolve_manifest_dependencies(
         version: manifest.package.version.clone(),
         src_path: manifest_path
             .parent()
-            .map(|p| p.join("src"))
-            .map(|p| p.to_string_lossy().to_string())
+            .map(|p| p.join("src").join("lib.wiz"))
             .unwrap(),
         dependencies: result,
     })

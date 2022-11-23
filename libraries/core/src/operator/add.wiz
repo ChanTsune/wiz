@@ -1,0 +1,3 @@
+protocol Add {
+    fun add(self, _ rhs: Self): Self
+}

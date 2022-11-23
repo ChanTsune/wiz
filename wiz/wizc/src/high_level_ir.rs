@@ -2,7 +2,7 @@ use crate::high_level_ir::node_id::ModuleId;
 use crate::high_level_ir::type_resolver::TypeResolver;
 use std::collections::HashMap;
 use wiz_arena::{Arena, DeclarationId};
-use wiz_hir::typed_annotation::TypedAnnotations;
+use wiz_data_structure::annotation::Annotations;
 use wiz_hir::typed_decl::{
     TypedArgDef, TypedComputedProperty, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody,
     TypedProtocol, TypedStoredProperty, TypedStruct, TypedTopLevelDecl, TypedVar,
@@ -55,9 +55,9 @@ pub fn ast2hlir(
     arena: &mut Arena,
     s: WizFile,
     module_id: ModuleId,
-) -> TypedSpellBook {
+) -> Result<TypedSpellBook> {
     let mut converter = AstLowering::new(session, arena);
-    converter.lowing(s, module_id).unwrap()
+    converter.lowing(s, module_id)
 }
 
 pub struct AstLowering<'a> {
@@ -149,10 +149,10 @@ impl<'a> AstLowering<'a> {
         TypedSpellBook { name, uses, body }
     }
 
-    fn annotations(&mut self, a: &Option<AnnotationsSyntax>) -> TypedAnnotations {
+    fn annotations(&mut self, a: &Option<AnnotationsSyntax>) -> Annotations {
         match a {
-            None => TypedAnnotations::default(),
-            Some(a) => TypedAnnotations::from(
+            None => Annotations::default(),
+            Some(a) => Annotations::from(
                 a.elements
                     .iter()
                     .map(|a| a.element.token())
@@ -242,12 +242,13 @@ impl<'a> AstLowering<'a> {
                             let mut s = self.session.local_spell_book_root().to_owned();
                             let fqn = self.arena.resolve_fully_qualified_name(&self.namespace_id);
                             for n in &fqn[1..] {
-                                s = s.join(n);
+                                s.push(n);
                             }
+                            s.push(&name);
                             s.set_extension("wiz");
                             println!("Module: {}", s.display());
                             parse_from_file_path(&self.session.parse_session, s, Some(&name))
-                                .unwrap()
+                                .expect(&format!("try to parse {:?}{}, but failed", fqn, name))
                         }
                     };
                     TypedDeclKind::Module(self.file(file))
@@ -680,6 +681,8 @@ impl<'a> AstLowering<'a> {
                 "<=" => TypedBinaryOperator::LessThanEqual,
                 "<" => TypedBinaryOperator::LessThan,
                 "!=" => TypedBinaryOperator::NotEqual,
+                "&&" => TypedBinaryOperator::And,
+                "||" => TypedBinaryOperator::Or,
                 _ => TypedBinaryOperator::InfixFunctionCall(kind.token()),
             },
             right,

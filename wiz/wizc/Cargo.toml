@@ -3,17 +3,17 @@ name = "wizc"
 version = "0.0.0"
 authors = ["ChanTsune <41658782+ChanTsune@users.noreply.github.com>"]
 edition = "2021"
-
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-inkwell = { git = "https://github.com/TheDan64/inkwell", rev = "4b67a7f", features = ["llvm13-0"] }
+dirs = "4.0.0"
 either = "1.6.1"
-linked-hash-map = "0.5.4"
-serde = { version = "1.0.136", features = ["derive"]}
+inkwell = { git = "https://github.com/TheDan64/inkwell", rev = "4b67a7f", features = ["llvm13-0"] }
+serde = { version = "1.0.136", features = ["derive"] }
 serde_json = "1.0.78"
 wiz_arena = { path = "../wiz_arena" }
 wiz_constants = { path = "../wiz_constants" }
+wiz_data_structure = { path = "../wiz_data_structure" }
 wiz_hir = { path = "../wiz_hir" }
 wiz_infer = { path = "../wiz_infer" }
 wiz_mir = { path = "../wiz_mir" }
@@ -23,3 +23,5 @@ wiz_syntax = { path = "../wiz_syntax" }
 wiz_syntax_parser = { path = "../wiz_syntax_parser" }
 wiz_utils = { path = "../wiz_utils" }
 wizc_cli = { path = "../wizc_cli" }
+wizc_hir_lowing = { path = "../wizc_hir_lowing" }
+wizc_message = { path = "../wizc_message" }

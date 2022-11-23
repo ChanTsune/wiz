@@ -6,7 +6,7 @@ use std::path::Path;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize, Serialize)]
 pub struct Manifest {
-    pub package: PackageInfo,
+    pub package: Package,
     pub dependencies: Dependencies,
 }
 
@@ -20,12 +20,12 @@ impl<const N: usize> From<[(String, Dependency); N]> for Dependencies {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize, Serialize)]
-pub struct PackageInfo {
+pub struct Package {
     pub name: String,
     pub version: String,
 }
 
-impl PackageInfo {
+impl Package {
     pub fn new<N: ToString, V: ToString>(name: N, version: V) -> Self {
         Self {
             name: name.to_string(),
@@ -97,7 +97,7 @@ pub fn write(path: &Path, manifest: &Manifest) -> Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use super::PackageInfo;
+    use super::Package;
     use crate::core::manifest::{Dependencies, Dependency, Manifest};
     use wiz_dev_utils::StringExt;
 
@@ -120,7 +120,7 @@ mod tests {
         assert_eq!(
             manifest,
             Manifest {
-                package: PackageInfo::new("test", "0.0.0"),
+                package: Package::new("test", "0.0.0"),
                 dependencies: Dependencies::from([
                     ("std".to_string(), Dependency::simple("0.0.0")),
                     ("local".to_string(), Dependency::path("../local"))
@@ -132,7 +132,7 @@ mod tests {
     #[test]
     fn to_string() {
         let manifest = Manifest {
-            package: PackageInfo::new("test", "0.0.0"),
+            package: Package::new("test", "0.0.0"),
             dependencies: Dependencies::from([("std".to_string(), Dependency::simple("0.0.0"))]),
         };
         assert_eq!(

@@ -1,4 +1,3 @@
-use crate::constant::MANIFEST_FILE_NAME;
 use crate::core::error::CliError;
 use crate::core::manifest::{self, Manifest};
 use crate::core::Result;
@@ -23,19 +22,18 @@ impl Workspace {
     }
 }
 
-pub(crate) fn construct_workspace_from(cws: &Path) -> Result<Workspace> {
-    let cws = cws.to_path_buf();
+pub(crate) fn construct_workspace_from(manifest_path: &Path) -> Result<Workspace> {
+    let manifest_path = manifest_path.to_owned();
+    if !manifest_path.exists() {
+        return Err(Box::new(CliError::from(format!(
+            "could not find `{}`",
+            manifest_path.display()
+        ))));
+    }
+    let cws = manifest_path.parent().expect("").to_owned();
     if !cws.is_dir() {
         return Err(Box::new(CliError::from(format!(
             "{} is not directory",
-            cws.display()
-        ))));
-    }
-    let manifest_path = cws.join(MANIFEST_FILE_NAME);
-    if !manifest_path.exists() {
-        return Err(Box::new(CliError::from(format!(
-            "could not find `{}` in `{}`",
-            MANIFEST_FILE_NAME,
             cws.display()
         ))));
     }

@@ -1,5 +1,5 @@
-use wiz_result::Result;
 use crate::ty_env::TyEnv;
+use wiz_result::Result;
 // use crate::utils::full_type_name;
 use crate::SpellBook;
 use wiz_arena::Arena;
@@ -15,7 +15,7 @@ pub(crate) fn infer_source_set(
     ty_env: &TyEnv,
 ) -> Result<TypedSpellBook> {
     Ok(TypedSpellBook {
-        name: "".to_string(),
+        name: source_set.name,
         uses: vec![],
         body: vec![],
     })

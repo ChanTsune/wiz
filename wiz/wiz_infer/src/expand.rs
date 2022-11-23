@@ -1,6 +1,6 @@
 use crate::{Page, SpellBook, Use};
 use wiz_arena::{Arena, DeclarationId};
-use wiz_hir::typed_annotation::TypedAnnotations;
+use wiz_data_structure::annotation::Annotations;
 use wiz_result::Result;
 use wiz_session::Session;
 use wiz_syntax::syntax::declaration::DeclKind;
@@ -35,7 +35,7 @@ fn expand_ast_internal(
     session: &mut Session,
 ) -> Result<()> {
     let parent = arena
-        .register_namespace(parent, name, TypedAnnotations::default())
+        .register_namespace(parent, name, Annotations::default())
         .unwrap();
     for item in f.body.into_iter() {
         match item.kind {
@@ -48,10 +48,8 @@ fn expand_ast_internal(
             DeclKind::Struct(s) => {
                 let name = s.name.token();
                 match s.struct_keyword.token().as_str() {
-                    "struct" => arena.register_struct(&parent, &name, TypedAnnotations::default()),
-                    "protocol" => {
-                        arena.register_protocol(&parent, &name, TypedAnnotations::default())
-                    }
+                    "struct" => arena.register_struct(&parent, &name, Annotations::default()),
+                    "protocol" => arena.register_protocol(&parent, &name, Annotations::default()),
                     token => unreachable!("{}", token),
                 };
                 page.struct_defs.push(s);

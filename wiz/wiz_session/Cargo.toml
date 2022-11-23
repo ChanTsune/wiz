@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 wizc_cli = { path = "../wizc_cli" }
+wizc_message = { path = "../wizc_message" }

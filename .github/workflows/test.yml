@@ -34,7 +34,14 @@ jobs:
           path: |
             C:/Program Files/LLVM
             ./llvm
-          key: llvm-13
+          key: ${{ runner.os }}-llvm-13
+      - name: Cache build
+        id: cache-build
+        uses: actions/cache@v3
+        with:
+          path: |
+            wiz/target
+          key: ${{ runner.os }}-rust-${{ hashFiles('**/Cargo.toml') }}
       - name: Install LLVM and Clang
         uses: KyleMayes/install-llvm-action@v1
         with:
@@ -75,7 +82,7 @@ jobs:
           path: |
             C:/Program Files/LLVM
             ./llvm
-          key: llvm-13
+          key: ${{ runner.os }}-llvm-13
       - name: Install LLVM and Clang
         uses: KyleMayes/install-llvm-action@v1
         with:

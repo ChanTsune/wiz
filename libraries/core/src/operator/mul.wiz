@@ -1,0 +1,3 @@
+protocol Mul {
+    fun mul(self, _ rhs: Self): Self
+}
