@@ -338,7 +338,7 @@ impl<'s> TypeResolver<'s> {
                         for c in con.constraints.iter() {
                             let c = self.context.full_type_name(c)?;
                             let ne = self.context.get_current_name_environment();
-                            let crs = ne.get_type_by_typed_type(c).unwrap();
+                            let crs = ne.get_type_by_typed_type(&c).unwrap();
                             let members = crs.member_functions.clone();
                             let rs = self
                                 .context

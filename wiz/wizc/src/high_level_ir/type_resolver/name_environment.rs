@@ -110,7 +110,7 @@ impl<'a> NameEnvironment<'a> {
         }
     }
 
-    pub(crate) fn get_type_by_typed_type(&self, typ: TypedType) -> Option<&ArenaStruct> {
+    pub(crate) fn get_type_by_typed_type(&self, typ: &TypedType) -> Option<&ArenaStruct> {
         self.get_type(&typ.package().into_resolved().names, &typ.name())
     }
 
