@@ -118,16 +118,16 @@ fun test_read_from_stdin() {
     var fds = [0 as Int32, 0 as Int32]
     pipe(&fds as *Int32)
 
+    val writeFd = FileDescriptor::from(fds[1] as Size)
+    writeFd.write("Hello, world!")
+    writeFd.close()
+
     val rfd: Int32 = fds[0]
-    val wfd: Int32 = fds[1]
 
     val stdInBackUp = dup(FD_STDIN as Int32)
 
     dup2(rfd, FD_STDIN as Int32)
     close(rfd as Int64)
-
-    val wittenBytes = write(wfd as Int64, "Hello, world!", 13)
-    close(wfd as Int64)
 
     val stdin = StdIn::new()
     val buffer = stdin.read(13)
