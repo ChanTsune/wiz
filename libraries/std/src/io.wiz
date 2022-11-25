@@ -1,4 +1,5 @@
 use libc::stdlib::*
+use libc::stdio::*
 use libc::string::*
 use libc::unistd
 
@@ -60,6 +61,10 @@ struct FileDescriptor {
     fun read(&self, _ bufferLength: Size): *UInt8 {
         val buf = malloc(bufferLength + 1) as *UInt8
         val readLength = unistd::read(self.rawFd, buf, bufferLength)
+        if readLength < 0 {
+            perror("unistd::read")
+            abort()
+        }
         buf[readLength] = 0 as UInt8
         return buf
     }
