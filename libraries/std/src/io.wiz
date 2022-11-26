@@ -1,5 +1,6 @@
 namespace buffered
 
+use std::io::buffered::*
 use libc::stdlib::*
 use libc::stdio::*
 use libc::string::*
@@ -75,10 +76,12 @@ struct FileDescriptor {
 }
 
 struct StdIn {
-    val fd: FileDescriptor
+    val fd: BufferedFileDescriptor
 
     fun new(): Self {
-        return Self(fd: FileDescriptor::from(rawFd: FD_STDIN))
+        val fd = FileDescriptor::from(rawFd: FD_STDIN)
+        val bfd = BufferedFileDescriptor::new(fd)
+        return Self(fd: bfd)
     }
 
     fun read(&self, _ length: Size): *UInt8 {
