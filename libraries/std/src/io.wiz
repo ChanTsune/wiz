@@ -1,7 +1,7 @@
 use libc::stdlib::*
 use libc::stdio::*
 use libc::string::*
-use libc::unistd
+use libc::*
 
 val FD_STDIN: Size = 0
 val FD_STDOUT: Size = 1
@@ -37,8 +37,9 @@ val O_EXCL: Size = 2048
 val O_NOCTTY: Size = 131072
 // 0x00020000      /* don't assign controlling terminal */
 
-#[no_mangle]
-fun open(_ fileName: *UInt8, _ options: Size): Size
+fun open(_ fileName: *UInt8, _ options: Size): Size {
+    return fcntl::open(fileName, options)
+}
 
 fun close(_ socket: Size): Size {
     return unistd::close(socket)
