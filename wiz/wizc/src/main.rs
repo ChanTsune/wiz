@@ -218,8 +218,9 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
                 Err(Box::new(Error::new(String::from_utf8_lossy(
                     &output.stderr,
                 ))))
+            } else {
+                Ok(())
             }
-            Ok(())
         }
     }?;
     writeln!(
