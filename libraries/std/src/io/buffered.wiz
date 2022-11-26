@@ -1,0 +1,21 @@
+use std::collection::vector::*
+use std::io::FileDescriptor
+
+val DEFAULT_BUFFER_CAPACITY: USize = 1024
+
+struct BufferedFileDescriptor {
+    var fd: FileDescriptor
+    var buffer: UInt8Vector
+
+    fun with(capacity: USize, _ fd: FileDescriptor): Self {
+        return Self(fd: fd, buffer: UInt8Vector::with(capacity: capacity))
+    }
+
+    fun new(_ fd: FileDescriptor): Self {
+        return BufferedFileDescriptor::with(capacity: DEFAULT_BUFFER_CAPACITY, fd)
+    }
+
+    fun read(&self, _ length: Size): *UInt8 {
+        return self.fd.read(length)
+    }
+}

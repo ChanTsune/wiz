@@ -1,3 +1,5 @@
+namespace buffered
+
 use libc::stdlib::*
 use libc::stdio::*
 use libc::string::*
