@@ -8,6 +8,6 @@ struct File {
     }
 
     fun close(&self): Unit {
-        std::io::close(self.fd.rawFd)
+        self.fd.close()
     }
 }
