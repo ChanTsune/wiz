@@ -1,10 +1,11 @@
+use std::io
 use std::io::*
 
 struct File {
     val fd: FileDescriptor
 
     fun open(_ path: &str): Self {
-        return Self(fd: FileDescriptor::from(rawFd: std::io::open(path, O_RDWR)))
+        return Self(fd: io::open(path, O_RDWR))
     }
 
     fun close(&self): Unit {

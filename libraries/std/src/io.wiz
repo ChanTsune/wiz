@@ -37,8 +37,8 @@ val O_EXCL: Size = 2048
 val O_NOCTTY: Size = 131072
 // 0x00020000      /* don't assign controlling terminal */
 
-fun open(_ fileName: *UInt8, _ options: Size): Size {
-    return fcntl::open(fileName, options)
+fun open(_ fileName: *UInt8, _ options: Size): FileDescriptor {
+    return FileDescriptor::from(rawFd: fcntl::open(fileName, options))
 }
 
 fun close(_ socket: Size): Size {
