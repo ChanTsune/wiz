@@ -8,11 +8,14 @@ struct UInt8Vector {
     val allocator: DefaultAllocator
 
     fun new(): Self {
+        return UInt8Vector::with(capacity: 0)
+    }
+
+    fun with(capacity: USize): Self {
         val allocator = DefaultAllocator::new()
-        val ptr = allocator.allocate(0)
-        val capacity: UInt64 = 0
+        val ptr = allocator.allocate(capacity)
         val length: UInt64 = 0
-        return Self(ptr: ptr, length: length, capacity: capacity, allocator: allocator)
+        return Self(ptr: ptr, length: length, capacity: capacity as UInt64, allocator: allocator)
     }
 
     fun isEmpty(&self): Bool {
