@@ -217,7 +217,7 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
             if !output.status.success() {
                 return Err(Box::new(Error::new(String::from_utf8_lossy(
                     &output.stderr,
-                ))))
+                ))));
             }
             Ok(())
         }
