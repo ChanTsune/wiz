@@ -68,7 +68,7 @@ struct FileDescriptor {
     }
 
     fun close(&self): Unit {
-        std::io::close(self.rawFd)
+        unistd::close(self.rawFd)
     }
 }
 
