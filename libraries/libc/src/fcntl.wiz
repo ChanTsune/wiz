@@ -6,6 +6,8 @@ fun creat(_ fileName: *UInt8, _ mode: UInt16): Size
 #[builtin, no_mangle]
 fun open(_ fileName: *UInt8, _ options: Size): Size
 
+/*
 // int open(const car *filepath, int flag, mode_t mode);
 #[builtin, no_mangle]
 fun open(_ fileName: *UInt8, _ options: Size, _ mode: UInt16): Size
+*/
