@@ -215,12 +215,11 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
                 .args(&[ir_file.as_os_str(), "-o".as_ref(), out_path.as_os_str()])
                 .output()?;
             if !output.status.success() {
-                Err(Box::new(Error::new(String::from_utf8_lossy(
+                return Err(Box::new(Error::new(String::from_utf8_lossy(
                     &output.stderr,
                 ))))
-            } else {
-                Ok(())
             }
+            Ok(())
         }
     }?;
     writeln!(
