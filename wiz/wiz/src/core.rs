@@ -13,6 +13,7 @@ pub mod manifest;
 pub mod workspace;
 
 pub(crate) type Result<T> = wiz_result::Result<T>;
+pub(crate) type Error = wiz_result::Error;
 
 pub(crate) trait Cmd {
     const NAME: &'static str;

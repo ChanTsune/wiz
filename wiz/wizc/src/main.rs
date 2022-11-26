@@ -11,12 +11,12 @@ use std::path::PathBuf;
 use std::process::Command;
 use std::{env, fs};
 use wiz_arena::Arena;
-use wiz_result::Result;
+use wiz_result::{Error, Result};
 use wiz_session::Session;
 use wiz_syntax_parser::parser::wiz::read_book_from_path;
-use wizc_cli::{BuildType, Config, ConfigExt, Emit};
+use wizc_cli::{BuildType, Config, ConfigExt, Emit, MessageFormat};
 use wizc_hir_lowing::hlir2mlir;
-use wizc_message::Message;
+use wizc_message::{Message, MessageFormatter};
 
 mod high_level_ir;
 #[cfg(test)]
@@ -50,6 +50,10 @@ fn run_compiler(session: &mut Session) -> Result<()> {
 }
 
 fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
+    let message_formatter = match session.config.message_format() {
+        MessageFormat::Normal => MessageFormatter::DEFAULT,
+        MessageFormat::Json => MessageFormatter::JSON,
+    };
     let paths = session.config.paths();
     let out_dir = session
         .config
@@ -138,7 +142,11 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
             path
         };
         wlib.write_to(&wlib_path);
-        writeln!(session.out_stream, "{}", Message::output(wlib_path))?;
+        writeln!(
+            session.out_stream,
+            "{}",
+            message_formatter.format(Message::output(wlib_path))
+        )?;
         return Ok(());
     }
 
@@ -203,13 +211,22 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
             ir_file.set_extension("ll");
             codegen.print_to_file(&ir_file)?;
 
-            Command::new("clang")
+            let output = Command::new("clang")
                 .args(&[ir_file.as_os_str(), "-o".as_ref(), out_path.as_os_str()])
                 .output()?;
+            if !output.status.success() {
+                return Err(Box::new(Error::new(String::from_utf8_lossy(
+                    &output.stderr,
+                ))));
+            }
             Ok(())
         }
     }?;
-    writeln!(session.out_stream, "{}", Message::output(&out_path))?;
+    writeln!(
+        session.out_stream,
+        "{}",
+        message_formatter.format(Message::output(&out_path))
+    )?;
     Ok(())
 }
 
@@ -279,7 +296,7 @@ mod tests {
         }
 
         fn out_dir(&self) -> PathBuf {
-            self.repository_root().join("out")
+            self.repository_root().join("out").join(&self.extra_out)
         }
     }
 

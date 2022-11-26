@@ -4,7 +4,7 @@ use std::path::Path;
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Message {
-    kind: MessageKind,
+    pub kind: MessageKind,
 }
 
 impl Message {
