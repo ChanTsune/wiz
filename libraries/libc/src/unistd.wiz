@@ -29,3 +29,7 @@ fun read(_ fd: Size, _ buf: *UInt8, _ nbyte: Size): Size
 // int close(int fildes);
 #[no_mangle]
 fun close(_ socket: Size): Size
+
+// int unlink(const char *pathname);
+#[builtin, no_mangle]
+fun unlink(_ pathname: *UInt8): Size
