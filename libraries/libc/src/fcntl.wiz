@@ -1,0 +1,3 @@
+// int creat(const char *pathname, mode_t mode);
+#[builtin, no_mangle]
+fun creat(_ fileName: *UInt8, _ mode: UInt16): Size

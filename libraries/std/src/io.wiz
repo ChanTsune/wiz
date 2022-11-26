@@ -7,9 +7,6 @@ val FD_STDIN: Size = 0
 val FD_STDOUT: Size = 1
 val FD_STDERR: Size = 2
 
-#[no_mangle]
-fun creat(_ fileName: *UInt8, _ mode: UInt16): Size
-
 val O_RDONLY: Size = 0
 // 0x0000          /* open for reading only */
 
