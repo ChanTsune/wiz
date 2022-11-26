@@ -1,6 +1,7 @@
 use std::io
 use std::io::*
 use libc::fcntl::*
+use libc::unistd::*
 
 struct File {
     val fd: FileDescriptor
@@ -16,5 +17,9 @@ struct File {
 
     fun close(&self): Unit {
         self.fd.close()
+    }
+
+    fun remove(_ path: &str): Self {
+        unlink(path)
     }
 }
