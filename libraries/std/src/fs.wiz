@@ -19,7 +19,7 @@ struct File {
         self.fd.close()
     }
 
-    fun remove(_ path: &str): Self {
+    fun remove(_ path: &str): Unit {
         unlink(path)
     }
 }
