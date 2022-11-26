@@ -11,7 +11,7 @@ use std::path::PathBuf;
 use std::process::Command;
 use std::{env, fs};
 use wiz_arena::Arena;
-use wiz_result::Result;
+use wiz_result::{Error, Result};
 use wiz_session::Session;
 use wiz_syntax_parser::parser::wiz::read_book_from_path;
 use wizc_cli::{BuildType, Config, ConfigExt, Emit, MessageFormat};
@@ -211,9 +211,12 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
             ir_file.set_extension("ll");
             codegen.print_to_file(&ir_file)?;
 
-            Command::new("clang")
+            let output = Command::new("clang")
                 .args(&[ir_file.as_os_str(), "-o".as_ref(), out_path.as_os_str()])
                 .output()?;
+            if !output.status.success() {
+                Err(Box::new(Error::new(String::from_utf8_lossy(&output.stderr))))
+            }
             Ok(())
         }
     }?;
