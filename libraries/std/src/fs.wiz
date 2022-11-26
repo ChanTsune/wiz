@@ -23,3 +23,9 @@ struct File {
         unlink(path)
     }
 }
+
+#[test]
+fun test_file_create() {
+    val file = File::create("./sample.txt")
+    File::remove("./sample.txt")
+}
