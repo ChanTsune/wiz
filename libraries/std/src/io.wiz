@@ -115,18 +115,16 @@ struct StdErr {
 
 use libc::unistd::*
 
-// FIXME: segmentation fault
-// #[test]
+#[test]
 fun test_read_from_stdin() {
 
-    var fds = [0 as Int32, 0 as Int32]
-    pipe(&fds as *Int32)
+    val fds = std::process::pipe()
 
-    val writeFd = FileDescriptor::from(fds[1] as Size)
+    val writeFd = FileDescriptor::from(fds.write as Size)
     writeFd.write("Hello, world!")
     writeFd.close()
 
-    val rfd: Int32 = fds[0]
+    val rfd: Int32 = fds.read
 
     val stdInBackUp = dup(FD_STDIN as Int32)
 
