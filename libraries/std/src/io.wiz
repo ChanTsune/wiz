@@ -138,3 +138,23 @@ fun test_read_from_stdin() {
 
     dup2(stdInBackUp, FD_STDIN as Int32)
 }
+
+#[test]
+fun test_write_to_stdout() {
+    val fds = std::process::pipe()
+
+    val wfd = fds.write
+    val outBackUp = dup(FD_STDOUT as Int32)
+    dup2(wfd, FD_STDOUT as Int32)
+    close(wfd as Int64)
+
+    val stdout = StdOut::new()
+    stdout.write("Hello Wiz!")
+
+    val readFd = FileDescriptor::from(rawFd: fds.read as Size)
+    val r = readFd.read(13)
+
+    assert(strncmp(r, "Hello Wiz!", 10) == 0)
+
+    dup2(outBackUp, FD_STDOUT as Int32)
+}
