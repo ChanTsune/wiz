@@ -7,12 +7,12 @@ struct Vector<T> {
 
 extension Vector<T> {
 
-    func append(element: T) {
+    fun append(element: T) {
         self.reserve(itemCount + 1)
         self.buffer.set(itemCount, element)
     }
 
-    func reserve(capacity: Int) {
+    fun reserve(capacity: Int) {
         if self.bufferLength < capacity {
             let newBuffer = Array<T>(capacity)
             var index = 0
