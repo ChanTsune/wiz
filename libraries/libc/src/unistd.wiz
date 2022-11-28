@@ -16,7 +16,7 @@ fun fork(): Size
 
 // int execvp(const char *file, char *const argv[]);
 #[builtin, no_mangle]
-fun execvp(_ file: UInt8, _ argv: *(*UInt8)): Size
+fun execvp(_ file: *UInt8, _ argv: *(*UInt8)): Size
 
 // ssize_t write(int fd, const void *buf, size_t count);
 #[no_mangle]
