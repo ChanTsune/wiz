@@ -1,0 +1,21 @@
+use libc::stdlib::malloc
+use libc::stdlib::free
+use libc::stdlib::abort
+use libc::unistd
+
+struct Pipe {
+    val read: Int32
+    val write: Int32
+}
+
+fun pipe(): Pipe {
+    val fds = malloc(8) as *Int32
+    val result = unistd::pipe(fds)
+    if result < 0 {
+        println("pipe failed.")
+        abort()
+    }
+    val p = Pipe(read: fds[0], write: fds[1])
+    free(fds as *UInt8)
+    return p
+}
