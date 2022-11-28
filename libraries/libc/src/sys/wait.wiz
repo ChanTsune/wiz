@@ -1,0 +1,4 @@
+
+// pid_t waitpid(pid_t pid, int *status_ptr, int options);
+#[builtin, no_mangle]
+fun waitpid(_ pid: Size, _ status_ptr: *Size, _ options: Size): Size
