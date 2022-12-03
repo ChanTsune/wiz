@@ -12,6 +12,7 @@ mod test;
 use crate::build::BuildCommand;
 use crate::core::{Cmd, Result};
 use crate::run::RunCommand;
+use crate::subcommand::CleanCommand;
 use crate::test::TestCommand;
 use ansi_term::Color;
 use clap::{crate_version, Arg, ArgAction, Command};
@@ -95,6 +96,7 @@ fn cli() -> Result<()> {
                 .arg(arg_manifest_path())
                 .arg(arg_std()),
         )
+        .subcommand(CleanCommand::command())
         .arg(
             Arg::new("quite")
                 .action(ArgAction::SetTrue)
@@ -111,6 +113,7 @@ fn cli() -> Result<()> {
         Some((check::COMMAND_NAME, option)) => check::command(check::COMMAND_NAME, option),
         Some((TestCommand::NAME, option)) => TestCommand::execute(option),
         Some((RunCommand::NAME, option)) => RunCommand::execute(option),
+        Some((CleanCommand::NAME, option)) => CleanCommand::execute(option),
         Some((cmd, option)) => external_subcommand::try_execute(cmd, option),
         _ => panic!(),
     }?;
