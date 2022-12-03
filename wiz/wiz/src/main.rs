@@ -14,7 +14,7 @@ use crate::core::{Cmd, Result};
 use crate::run::RunCommand;
 use crate::test::TestCommand;
 use ansi_term::Color;
-use clap::{Arg, ArgAction, Command, crate_version, value_parser};
+use clap::{crate_version, value_parser, Arg, ArgAction, Command};
 use std::process::exit;
 
 fn arg_target_triple() -> Arg {
