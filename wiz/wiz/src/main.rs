@@ -14,7 +14,7 @@ use crate::core::{Cmd, Result};
 use crate::run::RunCommand;
 use crate::test::TestCommand;
 use ansi_term::Color;
-use clap::{crate_version, Arg, ArgAction, Command};
+use clap::{Arg, ArgAction, Command, crate_version, value_parser};
 use std::process::exit;
 
 fn arg_target_triple() -> Arg {
@@ -44,6 +44,7 @@ fn cli() -> Result<()> {
         .about("Wiz's package manager")
         .arg_required_else_help(true)
         .allow_external_subcommands(true)
+        .external_subcommand_value_parser(value_parser!(String))
         .subcommand(
             Command::new(new::COMMAND_NAME)
                 .about("Create a new wiz package at <path>")
