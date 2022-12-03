@@ -1,7 +1,7 @@
 use crate::constant::MANIFEST_FILE_NAME;
 use crate::core::manifest::{Dependencies, Dependency, Manifest, Package};
 use crate::core::workspace::{construct_workspace_from, Workspace};
-use clap::ArgMatches;
+use clap::{ArgMatches, Command};
 use std::env;
 use std::fs::{create_dir_all, File};
 use std::io::{BufWriter, Write};
@@ -17,6 +17,9 @@ pub(crate) type Error = wiz_result::Error;
 
 pub(crate) trait Cmd {
     const NAME: &'static str;
+    fn command() -> Command {
+        Command::new(Self::NAME)
+    }
     fn execute(args: &ArgMatches) -> Result<()>;
 }
 
