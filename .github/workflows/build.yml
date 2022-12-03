@@ -37,7 +37,7 @@ jobs:
         with:
           path: |
             ./llvm
-          key: ${{ runner.os }}-llvm-13
+          key: ${{ runner.os }}-llvm-14
       - name: Cache build
         id: cache-build
         uses: actions/cache@v3
@@ -48,7 +48,7 @@ jobs:
       - name: Install LLVM and Clang
         uses: KyleMayes/install-llvm-action@v1
         with:
-          version: "13.0"
+          version: "14.0"
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
         if: runner.os != 'Windows'
       - name: Install LLVM and Clang
@@ -60,13 +60,13 @@ jobs:
           fi
         shell: bash
         env:
-          LLVM_DOWNLOAD_URL: "https://github.com/wiz-language/llvm-project/releases/download/llvmorg-13.0.1/llvm-project-13.0.1-windows-binary.zip"
+          LLVM_DOWNLOAD_URL: "https://github.com/wiz-language/llvm-project/releases/download/llvmorg-14.0.6/llvm-project-14.0.6-windows-binary.zip"
           FILE: ./llvm
         if: runner.os == 'Windows'
       - name: Set Path of LLVM and Clang
         run: |
-          echo LLVM_SYS_130_PREFIX="$(dirname $(dirname "$(find $PWD | grep -i bin/llvm-config.exe)"))"
-          echo LLVM_SYS_130_PREFIX="$(dirname $(dirname "$(find $PWD | grep -i bin/llvm-config.exe)"))" >> $GITHUB_ENV
+          echo LLVM_SYS_140_PREFIX="$(dirname $(dirname "$(find $PWD | grep -i bin/llvm-config.exe)"))"
+          echo LLVM_SYS_140_PREFIX="$(dirname $(dirname "$(find $PWD | grep -i bin/llvm-config.exe)"))" >> $GITHUB_ENV
         shell: bash
         if: runner.os == 'Windows'
       - name: run build

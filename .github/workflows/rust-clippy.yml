@@ -41,11 +41,11 @@ jobs:
           path: |
             C:/Program Files/LLVM
             ./llvm
-          key: ${{ runner.os }}-llvm-13
+          key: ${{ runner.os }}-llvm-14
       - name: Install LLVM and Clang
         uses: KyleMayes/install-llvm-action@v1
         with:
-          version: "13.0"
+          version: "14.0"
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
 
       - name: Install Rust toolchain
