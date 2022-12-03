@@ -12,11 +12,11 @@ mod test;
 use crate::build::BuildCommand;
 use crate::core::{Cmd, Result};
 use crate::run::RunCommand;
+use crate::subcommand::CleanCommand;
 use crate::test::TestCommand;
 use ansi_term::Color;
 use clap::{crate_version, Arg, ArgAction, Command};
 use std::process::exit;
-use crate::subcommand::CleanCommand;
 
 fn arg_target_triple() -> Arg {
     Arg::new("target-triple")

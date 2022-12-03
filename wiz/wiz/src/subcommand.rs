@@ -1,10 +1,10 @@
 use crate::core::error::{CliError, ProcessError};
 use crate::core::Result;
+pub(crate) use clean::CleanCommand;
 use std::env;
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
-pub(crate) use clean::CleanCommand;
 
 mod clean;
 
