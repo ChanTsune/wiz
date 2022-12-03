@@ -4,6 +4,9 @@ use std::env;
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
+pub(crate) use clean::CleanCommand;
+
+mod clean;
 
 fn get_executable_path<P: AsRef<Path>>(executable: P) -> Result<PathBuf> {
     let path = env::current_exe()?;
