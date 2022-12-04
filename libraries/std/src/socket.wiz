@@ -1,2 +1,15 @@
+use libc::sys::socket::*
+use std::io::FileDescriptor
 struct Socket {
+    val fd: FileDescriptor
+
+    fun new(_ domain: Size, _ type: Size, _ protocol: Size): Self {
+        val sfd = socket(domain, type, protocol)
+        val fd = FileDescriptor::from(rawFd: sfd)
+        return Socket::from(fd)
+    }
+
+    fun from(_ fd: FileDescriptor): Self {
+        return Self(fd: fd)
+    }
 }
