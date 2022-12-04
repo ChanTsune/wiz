@@ -6,6 +6,7 @@ namespace io
 namespace math
 namespace memory
 namespace process
+namespace socket
 namespace string
 namespace test
 namespace text
