@@ -30,7 +30,7 @@ fun socket(_ domain: Size, _ type: Size, _ protocol: Size): Size
 // fun socket(_ domain: c_int, type: c_int, _ protocol: c_int): c_int
 
 #[no_mangle]
-fun send(_ socket: Size, _ buf: *UInt8, _ len: USize, _ flags: Size): Int64
+fun send(_ socket: Size, _ buf: *UInt8, _ len: USize, _ flags: Size): Size
 // ssize_t send(int, const void *, size_t, int)
 
 #[no_mangle]
