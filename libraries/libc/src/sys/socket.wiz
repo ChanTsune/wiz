@@ -34,5 +34,5 @@ fun send(_ socket: Size, _ buf: *UInt8, _ len: USize, _ flags: Size): Size
 // ssize_t send(int, const void *, size_t, int)
 
 #[no_mangle]
-fun recv(_ socket: Size, _ buf: *UInt8, _ len: USize, _ flags: Size): Int64
+fun recv(_ socket: Size, _ buf: *UInt8, _ len: USize, _ flags: Size): Size
 // ssize_t recv(int, void *, size_t, int)
