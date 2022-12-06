@@ -1,6 +1,6 @@
+use dirs::home_dir;
 use std::env;
 use std::path::PathBuf;
-use dirs::home_dir;
 
 pub struct WizContext;
 

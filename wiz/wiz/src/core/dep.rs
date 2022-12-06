@@ -1,8 +1,8 @@
 use crate::constant::MANIFEST_FILE_NAME;
 use crate::core::error::CliError;
-use crate::core::{manifest, WizContext};
 use crate::core::manifest::{Dependency, Manifest};
 use crate::core::Result;
+use crate::core::{manifest, WizContext};
 use dirs::home_dir;
 use std::fmt::{Display, Formatter};
 use std::path::{Path, PathBuf};

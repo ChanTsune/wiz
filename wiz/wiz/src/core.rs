@@ -7,11 +7,11 @@ use std::fs::{create_dir_all, File};
 use std::io::{BufWriter, Write};
 use std::path::{Path, PathBuf};
 
+mod context;
 pub mod dep;
 pub mod error;
 pub mod manifest;
 pub mod workspace;
-mod context;
 
 pub use context::WizContext;
 
