@@ -1,6 +1,6 @@
 use crate::constant::MANIFEST_FILE_NAME;
 use crate::core::error::CliError;
-use crate::core::manifest;
+use crate::core::{manifest, WizContext};
 use crate::core::manifest::{Dependency, Manifest};
 use crate::core::Result;
 use dirs::home_dir;
@@ -36,9 +36,9 @@ pub fn resolve_manifest_dependencies(
     manifest: &Manifest,
     another_std: Option<&str>,
 ) -> Result<ResolvedDependencyTree> {
-    let home_dir = home_dir().unwrap();
-    let builtin_package_dir = home_dir.join(".wiz/lib/src/");
-    let package_index_cache_dir = home_dir.join(".wiz/repository/");
+    let home_dir = WizContext::home();
+    let builtin_package_dir = home_dir.join("lib/src/");
+    let package_index_cache_dir = WizContext::git_dir();
     let package_dirs = vec![builtin_package_dir, package_index_cache_dir];
     let mut result = Vec::with_capacity(manifest.dependencies.0.len());
     for (name, version) in manifest.dependencies.0.iter() {

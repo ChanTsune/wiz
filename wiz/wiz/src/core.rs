@@ -11,6 +11,9 @@ pub mod dep;
 pub mod error;
 pub mod manifest;
 pub mod workspace;
+mod context;
+
+pub use context::WizContext;
 
 pub(crate) type Result<T> = wiz_result::Result<T>;
 pub(crate) type Error = wiz_result::Error;
