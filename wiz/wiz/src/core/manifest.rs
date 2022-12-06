@@ -50,6 +50,7 @@ impl Dependency {
         Dependency::Detailed(DetailedDependency {
             version: None,
             path: Some(path.to_string()),
+            git: None,
         })
     }
 }
@@ -67,6 +68,17 @@ impl Display for Dependency {
 pub struct DetailedDependency {
     pub version: Option<String>,
     pub path: Option<String>,
+    pub git: Option<String>,
+}
+
+impl DetailedDependency {
+    pub(crate) fn is_path(&self) -> bool {
+        self.path.is_some()
+    }
+
+    pub(crate) fn is_git(&self) -> bool {
+        self.git.is_some()
+    }
 }
 
 impl Display for DetailedDependency {

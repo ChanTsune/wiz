@@ -6,6 +6,7 @@ use std::env;
 use std::fs::{create_dir_all, File};
 use std::io::{BufWriter, Write};
 use std::path::{Path, PathBuf};
+pub(crate) use context::WizContext;
 
 mod context;
 pub mod dep;
@@ -13,7 +14,6 @@ pub mod error;
 pub mod manifest;
 pub mod workspace;
 
-pub use context::WizContext;
 
 pub(crate) type Result<T> = wiz_result::Result<T>;
 pub(crate) type Error = wiz_result::Error;

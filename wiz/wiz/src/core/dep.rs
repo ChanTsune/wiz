@@ -3,7 +3,6 @@ use crate::core::error::CliError;
 use crate::core::manifest::{Dependency, Manifest};
 use crate::core::Result;
 use crate::core::{manifest, WizContext};
-use dirs::home_dir;
 use std::fmt::{Display, Formatter};
 use std::path::{Path, PathBuf};
 
@@ -80,18 +79,27 @@ fn manifest_find_in(
         .map(|dir| match version {
             Dependency::Simple(version) => dir.join(name).join(version).join(MANIFEST_FILE_NAME),
             Dependency::Detailed(detail) => {
-                let p = PathBuf::from(detail.path.as_ref().unwrap());
-
-                let p = if p.is_absolute() {
-                    p.join(MANIFEST_FILE_NAME)
-                } else {
-                    parent_manifest_path
-                        .join(detail.path.as_ref().unwrap())
-                        .join(MANIFEST_FILE_NAME)
+                if detail.is_path() && detail.is_git() {
+                    panic!("`path` and `git` both are specified.");
+                } else if let Some(path) = &detail.path {
+                    let p = PathBuf::from(path);
+                    let p = if p.is_absolute() {
+                        p.join(MANIFEST_FILE_NAME)
+                    } else {
+                        parent_manifest_path
+                            .join(detail.path.as_ref().unwrap())
+                            .join(MANIFEST_FILE_NAME)
+                    }
+                        .canonicalize()
+                        .unwrap();
+                    p
+                } else if let Some(git) = &detail.git {
+                    let repo = git2::Repository::clone(git, WizContext::git_dir()).unwrap();
+                    PathBuf::from(repo.path())
                 }
-                .canonicalize()
-                .unwrap();
-                p
+                else {
+                    unreachable!()
+                }
             }
         })
         .find(|manifest_path| manifest_path.exists());
