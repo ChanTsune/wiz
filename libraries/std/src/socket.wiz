@@ -12,6 +12,7 @@ struct Socket {
     fun from(_ fd: FileDescriptor): Self {
         return Self(fd: fd)
     }
+
     fun close(&self): Unit {
         self.fd.close()
     }
