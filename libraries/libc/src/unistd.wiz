@@ -16,7 +16,7 @@ fun fork(): Size
 
 // int execvp(const char *file, char *const argv[]);
 #[builtin, no_mangle]
-fun execvp(_ file: UInt8, _ argv: *(*UInt8)): Size
+fun execvp(_ file: *UInt8, _ argv: *(*UInt8)): Size
 
 // ssize_t write(int fd, const void *buf, size_t count);
 #[no_mangle]
@@ -29,3 +29,7 @@ fun read(_ fd: Size, _ buf: *UInt8, _ nbyte: Size): Size
 // int close(int fildes);
 #[no_mangle]
 fun close(_ socket: Size): Size
+
+// int unlink(const char *pathname);
+#[builtin, no_mangle]
+fun unlink(_ pathname: *UInt8): Size

@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 dirs = "4.0.0"
 either = "1.6.1"
-inkwell = { git = "https://github.com/TheDan64/inkwell", rev = "4b67a7f", features = ["llvm13-0"] }
+inkwell = { git = "https://github.com/TheDan64/inkwell", rev = "4b67a7f", features = ["llvm14-0"] }
 serde = { version = "1.0.136", features = ["derive"] }
 serde_json = "1.0.78"
 wiz_arena = { path = "../wiz_arena" }

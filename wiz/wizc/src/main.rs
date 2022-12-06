@@ -11,9 +11,10 @@ use std::path::PathBuf;
 use std::process::Command;
 use std::{env, fs};
 use wiz_arena::Arena;
-use wiz_result::Result;
+use wiz_result::{Error, Result};
 use wiz_session::Session;
 use wiz_syntax_parser::parser::wiz::read_book_from_path;
+use wiz_utils::temp::temp_dir;
 use wizc_cli::{BuildType, Config, ConfigExt, Emit, MessageFormat};
 use wizc_hir_lowing::hlir2mlir;
 use wizc_message::{Message, MessageFormatter};
@@ -97,9 +98,9 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
                     }
                 }
             }
-            let mut libs = vec![];
+            let mut libs = Vec::with_capacity(lib_paths.len());
             for (lib_path, name) in lib_paths.iter() {
-                let out_dir = env::temp_dir().join(name);
+                let out_dir = temp_dir().join(name);
                 fs::create_dir_all(&out_dir)?;
                 lib::run_compiler_for_std(lib_path, name, &out_dir, &libs)?;
                 libs.push({
@@ -211,9 +212,14 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
             ir_file.set_extension("ll");
             codegen.print_to_file(&ir_file)?;
 
-            Command::new("clang")
+            let output = Command::new("clang")
                 .args(&[ir_file.as_os_str(), "-o".as_ref(), out_path.as_os_str()])
                 .output()?;
+            if !output.status.success() {
+                return Err(Box::new(Error::new(String::from_utf8_lossy(
+                    &output.stderr,
+                ))));
+            }
             Ok(())
         }
     }?;

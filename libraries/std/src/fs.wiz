@@ -1,13 +1,31 @@
+use std::io
 use std::io::*
+use libc::fcntl::*
+use libc::unistd::*
 
 struct File {
     val fd: FileDescriptor
 
+    fun create(_ path: &str): Self {
+        val fd = creat(path, 666)
+        return Self(fd: FileDescriptor::from(raeFd: fd))
+    }
+
     fun open(_ path: &str): Self {
-        return Self(fd: FileDescriptor::from(rawFd: std::io::open(path, O_RDWR)))
+        return Self(fd: io::open(path, O_RDWR))
     }
 
     fun close(&self): Unit {
-        std::io::close(self.fd.rawFd)
+        self.fd.close()
     }
+
+    fun remove(_ path: &str): Unit {
+        unlink(path)
+    }
+}
+
+#[test]
+fun test_file_create() {
+    val file = File::create("./sample.txt")
+    File::remove("./sample.txt")
 }

@@ -34,7 +34,7 @@ jobs:
           path: |
             C:/Program Files/LLVM
             ./llvm
-          key: ${{ runner.os }}-llvm-13
+          key: ${{ runner.os }}-llvm-14
       - name: Cache build
         id: cache-build
         uses: actions/cache@v3
@@ -45,7 +45,7 @@ jobs:
       - name: Install LLVM and Clang
         uses: KyleMayes/install-llvm-action@v1
         with:
-          version: "13.0"
+          version: "14.0"
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
       - name: run test
         run: cargo test --manifest-path wiz/Cargo.toml --release
@@ -82,11 +82,11 @@ jobs:
           path: |
             C:/Program Files/LLVM
             ./llvm
-          key: ${{ runner.os }}-llvm-13
+          key: ${{ runner.os }}-llvm-14
       - name: Install LLVM and Clang
         uses: KyleMayes/install-llvm-action@v1
         with:
-          version: "13.0"
+          version: "14.0"
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
       - name: install wiz
         run: sh install.sh
