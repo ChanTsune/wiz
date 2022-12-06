@@ -90,14 +90,13 @@ fn manifest_find_in(
                             .join(detail.path.as_ref().unwrap())
                             .join(MANIFEST_FILE_NAME)
                     }
-                        .canonicalize()
-                        .unwrap();
+                    .canonicalize()
+                    .unwrap();
                     p
                 } else if let Some(git) = &detail.git {
                     let repo = git2::Repository::clone(git, WizContext::git_dir()).unwrap();
                     PathBuf::from(repo.path())
-                }
-                else {
+                } else {
                     unreachable!()
                 }
             }

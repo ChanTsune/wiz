@@ -2,18 +2,17 @@ use crate::constant::MANIFEST_FILE_NAME;
 use crate::core::manifest::{Dependencies, Dependency, Manifest, Package};
 use crate::core::workspace::{construct_workspace_from, Workspace};
 use clap::{ArgMatches, Command};
+pub(crate) use context::WizContext;
 use std::env;
 use std::fs::{create_dir_all, File};
 use std::io::{BufWriter, Write};
 use std::path::{Path, PathBuf};
-pub(crate) use context::WizContext;
 
 mod context;
 pub mod dep;
 pub mod error;
 pub mod manifest;
 pub mod workspace;
-
 
 pub(crate) type Result<T> = wiz_result::Result<T>;
 pub(crate) type Error = wiz_result::Error;
