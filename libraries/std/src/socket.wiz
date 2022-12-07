@@ -153,15 +153,14 @@ fun test_server() {
 
 // #[test]
 fun test_client() {
-//    val tcpStream = TcpStream::connect("127.0.0.1", 8888 as UInt16)
+    val tcpStream = TcpStream::connect("127.0.0.1", 45621 as UInt16)
 
-    val socket = Socket::new(PF_INET, SOCK_STREAM, IPPROTO_TCP)
-    socket.connect("127.0.0.1", 45621 as UInt16)
+    val socket = tcpStream.socket
 
-    socket.send("GET / HTTP/1.1", 14, 0)
+    socket.send("GET / HTTP/1.1\n", 15, 0)
 
     var totalBytesRecieved = 0
-    val allocLength = 5
+    val allocLength = 16
     var messageSize = allocLength - 1
     var buf = libc::stdlib::malloc(allocLength) as *UInt8
     while (totalBytesRecieved < 1024) {
@@ -170,7 +169,6 @@ fun test_client() {
             println("Recieve failed")
             return
         } else if (byteRecieved == 0) {
-            println("EMPTY")
             return
         } else {
             println(byteRecieved)
