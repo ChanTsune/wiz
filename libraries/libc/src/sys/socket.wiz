@@ -19,15 +19,15 @@ val SOCK_RAW: Size = 3
 
 
 #[no_mangle]
-fun accept(_ socket: Size, _ sockadder: *UInt8, _ socklen: *USize): Size
-// fun accept(_ socket: c_int, _sockaddr :*sockaddr , socklen_t * __restrict): c_int
+fun accept(_ socket: Size, _ sockadder: *sockaddr, _ socklen: *USize): Size
+// fun accept(_ socket: c_int, _ sockaddr :*sockaddr, socklen_t * __restrict): c_int
 
 #[no_mangle]
-fun bind(_ socket: Size, _ sockaddr: *UInt8, _ socklen: USize): Size
+fun bind(_ socket: Size, _ sockaddr: *sockaddr, _ socklen: USize): Size
 // fun bind(_ socket: c_int, _ sockaddr: *sockaddr, socklen_t): c_int
 
 #[no_mangle]
-fun connect(_ socket: Size, _ addr: *UInt8, _ len: USize): Size
+fun connect(_ socket: Size, _ addr: *sockaddr, _ len: USize): Size
 // fun connect(_ socket: c_int, _ addr: *sockaddr, socklen_t): c_int;
 
 #[no_mangle]
