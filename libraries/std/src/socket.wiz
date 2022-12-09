@@ -34,7 +34,7 @@ struct Socket {
         inet_aton(adder, &servSockAddr.sin_addr)
         servSockAddr.sin_port = htons(port)
 
-        val connectResult = libc::sys::socket::connect(self.fd.rawFd, &servSockAddr as *UInt8, 16)
+        val connectResult = libc::sys::socket::connect(self.fd.rawFd, &servSockAddr as *sockaddr, 16)
         assert(connectResult >= 0)
     }
 
@@ -69,7 +69,7 @@ struct TcpListener {
 
         val socket = Socket::new(PF_INET, SOCK_STREAM, IPPROTO_TCP)
 
-        val bindResult = libc::sys::socket::bind(socket.fd.rawFd, &serverSocketAdder as *UInt8, 16)
+        val bindResult = libc::sys::socket::bind(socket.fd.rawFd, &serverSocketAdder as *sockaddr, 16)
         assert(bindResult >= 0)
 
         return TcpListener::from(socket)
@@ -85,7 +85,7 @@ struct TcpListener {
         val clientSocketAdder = sockaddr_in(sin_len: 0 as UInt8, sin_family: 0 as UInt8, sin_port: 0 as UInt16, sin_addr: inAdder, sin_zero: 0 as UInt64)
 
         val clientLen = 16
-        val clientSocket = libc::sys::socket::accept(self.socket.fd.rawFd, &clientSocketAdder as *UInt8, &clientLen)
+        val clientSocket = libc::sys::socket::accept(self.socket.fd.rawFd, &clientSocketAdder as *sockaddr, &clientLen)
         val fd = FileDescriptor::from(rawFd: clientSocket)
         return TcpStream::from(fd)
     }
