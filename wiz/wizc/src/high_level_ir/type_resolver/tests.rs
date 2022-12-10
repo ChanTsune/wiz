@@ -8,7 +8,7 @@ use wiz_hir::typed_decl::{
 use wiz_hir::typed_expr::{
     TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedExprKind, TypedIf,
     TypedInstanceMember, TypedLiteralKind, TypedName, TypedPrefixUnaryOp, TypedPrefixUnaryOperator,
-    TypedReturn, TypedSubscript, TypedUnaryOp,
+    TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
 use wiz_hir::typed_file::TypedSpellBook;
 use wiz_hir::typed_stmt::{TypedBlock, TypedStmt};
@@ -1256,6 +1256,55 @@ fn test_toplevel_var() {
             }],
         },
     )
+}
+
+#[test]
+fn test_type_cast() {
+    let source = r"
+    fun null(): *UInt8 {
+        return 0 as *UInt8
+    }
+    ";
+
+    check(
+        source,
+        TypedSpellBook {
+            name: "test".to_string(),
+            uses: vec![],
+            body: vec![TypedTopLevelDecl {
+                annotations: Default::default(),
+                package: Package::from(&["test"]),
+                modifiers: vec![],
+                kind: TypedDeclKind::Fun(TypedFun {
+                    name: "null".to_string(),
+                    type_params: None,
+                    type_constraints: None,
+                    arg_defs: vec![],
+                    body: Some(TypedFunBody::Block(TypedBlock {
+                        body: vec![TypedStmt::Expr(TypedExpr {
+                            kind: TypedExprKind::Return(TypedReturn {
+                                value: Some(Box::new(TypedExpr {
+                                    kind: TypedExprKind::TypeCast(TypedTypeCast {
+                                        target: Box::new(TypedExpr {
+                                            kind: TypedExprKind::Literal(
+                                                TypedLiteralKind::Integer("0".to_string()),
+                                            ),
+                                            ty: Some(TypedType::int64()),
+                                        }),
+                                        is_safe: false,
+                                        type_: TypedType::unsafe_pointer(TypedType::uint8()),
+                                    }),
+                                    ty: Some(TypedType::unsafe_pointer(TypedType::uint8())),
+                                })),
+                            }),
+                            ty: Some(TypedType::noting()),
+                        })],
+                    })),
+                    return_type: TypedType::unsafe_pointer(TypedType::uint8()),
+                }),
+            }],
+        },
+    );
 }
 
 #[test]
