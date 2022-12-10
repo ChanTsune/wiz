@@ -19,9 +19,9 @@ use wiz_hir::typed_type::{
 use wiz_session::{ParseSession, Session};
 use wiz_syntax_parser::parser::wiz::parse_from_string;
 
-fn check(source: &str, typed_file: Vec<TypedTopLevelDecl>) {
+fn check(source: &str, typed_file: TypedSpellBook) {
     let session = ParseSession::default();
-    let ast = parse_from_string::<&str>(&session, None, source, None).unwrap();
+    let ast = parse_from_string::<&str>(&session, None, source, Some(&typed_file.name)).unwrap();
 
     let mut session = Session::default();
 
@@ -31,14 +31,21 @@ fn check(source: &str, typed_file: Vec<TypedTopLevelDecl>) {
 
     let f = ast2hlir.lowing(ast, ModuleId::DUMMY).unwrap();
 
-    assert_eq!(f.body, typed_file);
+    assert_eq!(f, typed_file);
 }
 
 #[test]
 fn test_empty() {
     let source = "";
 
-    check(source, vec![]);
+    check(
+        source,
+        TypedSpellBook {
+            name: "test".to_string(),
+            uses: vec![],
+            body: vec![],
+        },
+    );
 }
 
 #[test]
@@ -53,84 +60,88 @@ fn test_unsafe_pointer() {
         ";
     check(
         source,
-        vec![
-            TypedTopLevelDecl {
-                annotations: Default::default(),
-                package: Package::from(&vec!["test"]),
-                modifiers: vec![],
-                kind: TypedDeclKind::Struct(TypedStruct {
-                    name: "A".to_string(),
-                    type_params: None,
-                    stored_properties: vec![TypedStoredProperty {
-                        name: "a".to_string(),
-                        type_: TypedType::unsafe_pointer(TypedType::uint8()),
-                    }],
-                    computed_properties: vec![],
-                    member_functions: vec![TypedFun::size(TypedType::Value(
-                        TypedValueType::Value(TypedNamedValueType {
-                            package: TypedPackage::Resolved(Package::from(&vec!["test"])),
-                            name: "A".to_string(),
-                            type_args: None,
-                        }),
-                    ))],
-                }),
-            },
-            TypedTopLevelDecl {
-                annotations: Default::default(),
-                package: Package::from(&vec!["test"]),
-                modifiers: vec![],
-                kind: TypedDeclKind::Fun(TypedFun {
-                    name: "function".to_string(),
-                    type_params: None,
-                    type_constraints: None,
-                    arg_defs: vec![TypedArgDef {
-                        label: "_".to_string(),
-                        name: "a".to_string(),
-                        type_: TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-                            package: TypedPackage::Resolved(Package::from(&vec!["test"])),
-                            name: "A".to_string(),
-                            type_args: None,
-                        })),
-                    }],
-                    body: Some(TypedFunBody::Block(TypedBlock {
-                        body: vec![TypedStmt::Decl(TypedTopLevelDecl {
-                            annotations: Default::default(),
-                            package: Package::new(),
-                            modifiers: vec![],
-                            kind: TypedDeclKind::Var(TypedVar {
-                                is_mut: false,
-                                name: "a".to_string(),
-                                type_: Some(TypedType::unsafe_pointer(TypedType::uint8())),
-                                value: TypedExpr::new(
-                                    TypedExprKind::Member(TypedInstanceMember {
-                                        target: Box::new(TypedExpr::new(
-                                            TypedExprKind::Name(TypedName {
-                                                package: TypedPackage::Resolved(Package::new()),
-                                                name: "a".to_string(),
-                                                type_arguments: None,
-                                            }),
-                                            Some(TypedType::Value(TypedValueType::Value(
-                                                TypedNamedValueType {
-                                                    package: TypedPackage::Resolved(Package::from(
-                                                        &vec!["test"],
-                                                    )),
-                                                    name: "A".to_string(),
-                                                    type_args: None,
-                                                },
-                                            ))),
-                                        )),
-                                        name: "a".to_string(),
-                                        is_safe: false,
-                                    }),
-                                    Some(TypedType::unsafe_pointer(TypedType::uint8())),
-                                ),
+        TypedSpellBook {
+            name: "test".to_string(),
+            uses: vec![],
+            body: vec![
+                TypedTopLevelDecl {
+                    annotations: Default::default(),
+                    package: Package::from(&vec!["test"]),
+                    modifiers: vec![],
+                    kind: TypedDeclKind::Struct(TypedStruct {
+                        name: "A".to_string(),
+                        type_params: None,
+                        stored_properties: vec![TypedStoredProperty {
+                            name: "a".to_string(),
+                            type_: TypedType::unsafe_pointer(TypedType::uint8()),
+                        }],
+                        computed_properties: vec![],
+                        member_functions: vec![TypedFun::size(TypedType::Value(
+                            TypedValueType::Value(TypedNamedValueType {
+                                package: TypedPackage::Resolved(Package::from(&vec!["test"])),
+                                name: "A".to_string(),
+                                type_args: None,
                             }),
-                        })],
-                    })),
-                    return_type: TypedType::unit(),
-                }),
-            },
-        ],
+                        ))],
+                    }),
+                },
+                TypedTopLevelDecl {
+                    annotations: Default::default(),
+                    package: Package::from(&vec!["test"]),
+                    modifiers: vec![],
+                    kind: TypedDeclKind::Fun(TypedFun {
+                        name: "function".to_string(),
+                        type_params: None,
+                        type_constraints: None,
+                        arg_defs: vec![TypedArgDef {
+                            label: "_".to_string(),
+                            name: "a".to_string(),
+                            type_: TypedType::Value(TypedValueType::Value(TypedNamedValueType {
+                                package: TypedPackage::Resolved(Package::from(&vec!["test"])),
+                                name: "A".to_string(),
+                                type_args: None,
+                            })),
+                        }],
+                        body: Some(TypedFunBody::Block(TypedBlock {
+                            body: vec![TypedStmt::Decl(TypedTopLevelDecl {
+                                annotations: Default::default(),
+                                package: Package::new(),
+                                modifiers: vec![],
+                                kind: TypedDeclKind::Var(TypedVar {
+                                    is_mut: false,
+                                    name: "a".to_string(),
+                                    type_: Some(TypedType::unsafe_pointer(TypedType::uint8())),
+                                    value: TypedExpr::new(
+                                        TypedExprKind::Member(TypedInstanceMember {
+                                            target: Box::new(TypedExpr::new(
+                                                TypedExprKind::Name(TypedName {
+                                                    package: TypedPackage::Resolved(Package::new()),
+                                                    name: "a".to_string(),
+                                                    type_arguments: None,
+                                                }),
+                                                Some(TypedType::Value(TypedValueType::Value(
+                                                    TypedNamedValueType {
+                                                        package: TypedPackage::Resolved(
+                                                            Package::from(&vec!["test"]),
+                                                        ),
+                                                        name: "A".to_string(),
+                                                        type_args: None,
+                                                    },
+                                                ))),
+                                            )),
+                                            name: "a".to_string(),
+                                            is_safe: false,
+                                        }),
+                                        Some(TypedType::unsafe_pointer(TypedType::uint8())),
+                                    ),
+                                }),
+                            })],
+                        })),
+                        return_type: TypedType::unit(),
+                    }),
+                },
+            ],
+        },
     );
 }
 
@@ -147,84 +158,88 @@ fn test_struct_stored_property() {
 
     check(
         source,
-        vec![
-            TypedTopLevelDecl {
-                annotations: Default::default(),
-                package: Package::from(&vec!["test"]),
-                modifiers: vec![],
-                kind: TypedDeclKind::Struct(TypedStruct {
-                    name: "A".to_string(),
-                    type_params: None,
-                    stored_properties: vec![TypedStoredProperty {
-                        name: "a".to_string(),
-                        type_: TypedType::int64(),
-                    }],
-                    computed_properties: vec![],
-                    member_functions: vec![TypedFun::size(TypedType::Value(
-                        TypedValueType::Value(TypedNamedValueType {
-                            package: TypedPackage::Resolved(Package::from(&vec!["test"])),
-                            name: "A".to_string(),
-                            type_args: None,
-                        }),
-                    ))],
-                }),
-            },
-            TypedTopLevelDecl {
-                annotations: Default::default(),
-                package: Package::from(&vec!["test"]),
-                modifiers: vec![],
-                kind: TypedDeclKind::Fun(TypedFun {
-                    name: "function".to_string(),
-                    type_params: None,
-                    type_constraints: None,
-                    arg_defs: vec![TypedArgDef {
-                        label: "_".to_string(),
-                        name: "a".to_string(),
-                        type_: TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-                            package: TypedPackage::Resolved(Package::from(&vec!["test"])),
-                            name: "A".to_string(),
-                            type_args: None,
-                        })),
-                    }],
-                    body: Some(TypedFunBody::Block(TypedBlock {
-                        body: vec![TypedStmt::Decl(TypedTopLevelDecl {
-                            annotations: Default::default(),
-                            package: Package::new(),
-                            modifiers: vec![],
-                            kind: TypedDeclKind::Var(TypedVar {
-                                is_mut: false,
-                                name: "a".to_string(),
-                                type_: Some(TypedType::int64()),
-                                value: TypedExpr::new(
-                                    TypedExprKind::Member(TypedInstanceMember {
-                                        target: Box::new(TypedExpr::new(
-                                            TypedExprKind::Name(TypedName {
-                                                package: TypedPackage::Resolved(Package::new()),
-                                                name: "a".to_string(),
-                                                type_arguments: None,
-                                            }),
-                                            Some(TypedType::Value(TypedValueType::Value(
-                                                TypedNamedValueType {
-                                                    package: TypedPackage::Resolved(Package::from(
-                                                        &vec!["test"],
-                                                    )),
-                                                    name: "A".to_string(),
-                                                    type_args: None,
-                                                },
-                                            ))),
-                                        )),
-                                        name: "a".to_string(),
-                                        is_safe: false,
-                                    }),
-                                    Some(TypedType::int64()),
-                                ),
+        TypedSpellBook {
+            name: "test".to_string(),
+            uses: vec![],
+            body: vec![
+                TypedTopLevelDecl {
+                    annotations: Default::default(),
+                    package: Package::from(&vec!["test"]),
+                    modifiers: vec![],
+                    kind: TypedDeclKind::Struct(TypedStruct {
+                        name: "A".to_string(),
+                        type_params: None,
+                        stored_properties: vec![TypedStoredProperty {
+                            name: "a".to_string(),
+                            type_: TypedType::int64(),
+                        }],
+                        computed_properties: vec![],
+                        member_functions: vec![TypedFun::size(TypedType::Value(
+                            TypedValueType::Value(TypedNamedValueType {
+                                package: TypedPackage::Resolved(Package::from(&vec!["test"])),
+                                name: "A".to_string(),
+                                type_args: None,
                             }),
-                        })],
-                    })),
-                    return_type: TypedType::unit(),
-                }),
-            },
-        ],
+                        ))],
+                    }),
+                },
+                TypedTopLevelDecl {
+                    annotations: Default::default(),
+                    package: Package::from(&vec!["test"]),
+                    modifiers: vec![],
+                    kind: TypedDeclKind::Fun(TypedFun {
+                        name: "function".to_string(),
+                        type_params: None,
+                        type_constraints: None,
+                        arg_defs: vec![TypedArgDef {
+                            label: "_".to_string(),
+                            name: "a".to_string(),
+                            type_: TypedType::Value(TypedValueType::Value(TypedNamedValueType {
+                                package: TypedPackage::Resolved(Package::from(&vec!["test"])),
+                                name: "A".to_string(),
+                                type_args: None,
+                            })),
+                        }],
+                        body: Some(TypedFunBody::Block(TypedBlock {
+                            body: vec![TypedStmt::Decl(TypedTopLevelDecl {
+                                annotations: Default::default(),
+                                package: Package::new(),
+                                modifiers: vec![],
+                                kind: TypedDeclKind::Var(TypedVar {
+                                    is_mut: false,
+                                    name: "a".to_string(),
+                                    type_: Some(TypedType::int64()),
+                                    value: TypedExpr::new(
+                                        TypedExprKind::Member(TypedInstanceMember {
+                                            target: Box::new(TypedExpr::new(
+                                                TypedExprKind::Name(TypedName {
+                                                    package: TypedPackage::Resolved(Package::new()),
+                                                    name: "a".to_string(),
+                                                    type_arguments: None,
+                                                }),
+                                                Some(TypedType::Value(TypedValueType::Value(
+                                                    TypedNamedValueType {
+                                                        package: TypedPackage::Resolved(
+                                                            Package::from(&vec!["test"]),
+                                                        ),
+                                                        name: "A".to_string(),
+                                                        type_args: None,
+                                                    },
+                                                ))),
+                                            )),
+                                            name: "a".to_string(),
+                                            is_safe: false,
+                                        }),
+                                        Some(TypedType::int64()),
+                                    ),
+                                }),
+                            })],
+                        })),
+                        return_type: TypedType::unit(),
+                    }),
+                },
+            ],
+        },
     );
 }
 
@@ -241,94 +256,57 @@ fn test_struct_init() {
 
     check(
         source,
-        vec![
-            TypedTopLevelDecl {
-                annotations: Default::default(),
-                package: Package::from(&vec!["test"]),
-                modifiers: vec![],
-                kind: TypedDeclKind::Struct(TypedStruct {
-                    name: "A".to_string(),
-                    type_params: None,
-                    stored_properties: vec![TypedStoredProperty {
-                        name: "a".to_string(),
-                        type_: TypedType::int64(),
-                    }],
-                    computed_properties: vec![],
-                    member_functions: vec![TypedFun::size(TypedType::Value(
-                        TypedValueType::Value(TypedNamedValueType {
-                            package: TypedPackage::Resolved(Package::from(&vec!["test"])),
-                            name: "A".to_string(),
-                            type_args: None,
-                        }),
-                    ))],
-                }),
-            },
-            TypedTopLevelDecl {
-                annotations: Default::default(),
-                package: Package::from(&vec!["test"]),
-                modifiers: vec![],
-                kind: TypedDeclKind::Fun(TypedFun {
-                    name: "function".to_string(),
-                    type_params: None,
-                    type_constraints: None,
-                    arg_defs: vec![TypedArgDef {
-                        label: "_".to_string(),
-                        name: "a".to_string(),
-                        type_: TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-                            package: TypedPackage::Resolved(Package::from(&vec!["test"])),
-                            name: "A".to_string(),
-                            type_args: None,
-                        })),
-                    }],
-                    body: Some(TypedFunBody::Block(TypedBlock {
-                        body: vec![TypedStmt::Decl(TypedTopLevelDecl {
-                            annotations: Default::default(),
-                            package: Package::new(),
-                            modifiers: vec![],
-                            kind: TypedDeclKind::Var(TypedVar {
-                                is_mut: false,
-                                name: "a".to_string(),
-                                type_: Some(TypedType::Value(TypedValueType::Value(
-                                    TypedNamedValueType {
-                                        package: TypedPackage::Resolved(Package::from(&vec![
-                                            "test",
-                                        ])),
-                                        name: "A".to_string(),
-                                        type_args: None,
-                                    },
-                                ))),
-                                value: TypedExpr::new(
-                                    TypedExprKind::Call(TypedCall {
-                                        target: Box::new(TypedExpr::new(
-                                            TypedExprKind::Name(TypedName {
-                                                package: TypedPackage::Resolved(Package::from(
-                                                    &vec!["test"],
-                                                )),
-                                                name: "A".to_string(),
-                                                type_arguments: None,
-                                            }),
-                                            Some(TypedType::Type(Box::new(TypedType::Value(
-                                                TypedValueType::Value(TypedNamedValueType {
-                                                    package: TypedPackage::Resolved(Package::from(
-                                                        &vec!["test"],
-                                                    )),
-                                                    name: "A".to_string(),
-                                                    type_args: None,
-                                                }),
-                                            )))),
-                                        )),
-                                        args: vec![TypedCallArg {
-                                            label: Some(String::from("a")),
-                                            arg: Box::new(TypedExpr::new(
-                                                TypedExprKind::Literal(TypedLiteralKind::Integer(
-                                                    "1".to_string(),
-                                                )),
-                                                Some(TypedType::int64()),
-                                            )),
-                                            is_vararg: false,
-                                        }],
-                                    }),
-                                    Some(TypedType::Value(TypedValueType::Value(
+        TypedSpellBook {
+            name: "test".to_string(),
+            uses: vec![],
+            body: vec![
+                TypedTopLevelDecl {
+                    annotations: Default::default(),
+                    package: Package::from(&vec!["test"]),
+                    modifiers: vec![],
+                    kind: TypedDeclKind::Struct(TypedStruct {
+                        name: "A".to_string(),
+                        type_params: None,
+                        stored_properties: vec![TypedStoredProperty {
+                            name: "a".to_string(),
+                            type_: TypedType::int64(),
+                        }],
+                        computed_properties: vec![],
+                        member_functions: vec![TypedFun::size(TypedType::Value(
+                            TypedValueType::Value(TypedNamedValueType {
+                                package: TypedPackage::Resolved(Package::from(&vec!["test"])),
+                                name: "A".to_string(),
+                                type_args: None,
+                            }),
+                        ))],
+                    }),
+                },
+                TypedTopLevelDecl {
+                    annotations: Default::default(),
+                    package: Package::from(&vec!["test"]),
+                    modifiers: vec![],
+                    kind: TypedDeclKind::Fun(TypedFun {
+                        name: "function".to_string(),
+                        type_params: None,
+                        type_constraints: None,
+                        arg_defs: vec![TypedArgDef {
+                            label: "_".to_string(),
+                            name: "a".to_string(),
+                            type_: TypedType::Value(TypedValueType::Value(TypedNamedValueType {
+                                package: TypedPackage::Resolved(Package::from(&vec!["test"])),
+                                name: "A".to_string(),
+                                type_args: None,
+                            })),
+                        }],
+                        body: Some(TypedFunBody::Block(TypedBlock {
+                            body: vec![TypedStmt::Decl(TypedTopLevelDecl {
+                                annotations: Default::default(),
+                                package: Package::new(),
+                                modifiers: vec![],
+                                kind: TypedDeclKind::Var(TypedVar {
+                                    is_mut: false,
+                                    name: "a".to_string(),
+                                    type_: Some(TypedType::Value(TypedValueType::Value(
                                         TypedNamedValueType {
                                             package: TypedPackage::Resolved(Package::from(&vec![
                                                 "test",
@@ -337,14 +315,55 @@ fn test_struct_init() {
                                             type_args: None,
                                         },
                                     ))),
-                                ),
-                            }),
-                        })],
-                    })),
-                    return_type: TypedType::unit(),
-                }),
-            },
-        ],
+                                    value: TypedExpr::new(
+                                        TypedExprKind::Call(TypedCall {
+                                            target: Box::new(TypedExpr::new(
+                                                TypedExprKind::Name(TypedName {
+                                                    package: TypedPackage::Resolved(Package::from(
+                                                        &vec!["test"],
+                                                    )),
+                                                    name: "A".to_string(),
+                                                    type_arguments: None,
+                                                }),
+                                                Some(TypedType::Type(Box::new(TypedType::Value(
+                                                    TypedValueType::Value(TypedNamedValueType {
+                                                        package: TypedPackage::Resolved(
+                                                            Package::from(&vec!["test"]),
+                                                        ),
+                                                        name: "A".to_string(),
+                                                        type_args: None,
+                                                    }),
+                                                )))),
+                                            )),
+                                            args: vec![TypedCallArg {
+                                                label: Some(String::from("a")),
+                                                arg: Box::new(TypedExpr::new(
+                                                    TypedExprKind::Literal(
+                                                        TypedLiteralKind::Integer("1".to_string()),
+                                                    ),
+                                                    Some(TypedType::int64()),
+                                                )),
+                                                is_vararg: false,
+                                            }],
+                                        }),
+                                        Some(TypedType::Value(TypedValueType::Value(
+                                            TypedNamedValueType {
+                                                package: TypedPackage::Resolved(Package::from(
+                                                    &vec!["test"],
+                                                )),
+                                                name: "A".to_string(),
+                                                type_args: None,
+                                            },
+                                        ))),
+                                    ),
+                                }),
+                            })],
+                        })),
+                        return_type: TypedType::unit(),
+                    }),
+                },
+            ],
+        },
     );
 }
 
@@ -362,100 +381,10 @@ fn test_struct_member_function() {
 
     check(
         source,
-        vec![TypedTopLevelDecl {
-            annotations: Default::default(),
-            package: Package::from(&vec!["test"]),
-            modifiers: vec![],
-            kind: TypedDeclKind::Struct(TypedStruct {
-                name: "A".to_string(),
-                type_params: None,
-                stored_properties: vec![TypedStoredProperty {
-                    name: "a".to_string(),
-                    type_: TypedType::int64(),
-                }],
-                computed_properties: vec![],
-                member_functions: vec![
-                    TypedFun {
-                        name: "getA".to_string(),
-                        arg_defs: vec![TypedArgDef {
-                            label: "_".to_string(),
-                            name: "self".to_string(),
-                            type_: TypedType::Value(
-                                // TODO: Reference
-                                TypedValueType::Value(TypedNamedValueType {
-                                    package: TypedPackage::Resolved(Package::from(&vec!["test"])),
-                                    name: "A".to_string(),
-                                    type_args: None,
-                                }),
-                            ),
-                        }],
-                        type_params: None,
-                        body: Some(TypedFunBody::Block(TypedBlock {
-                            body: vec![TypedStmt::Expr(TypedExpr::new(
-                                TypedExprKind::Return(TypedReturn {
-                                    value: Some(Box::new(TypedExpr::new(
-                                        TypedExprKind::Member(TypedInstanceMember {
-                                            target: Box::new(TypedExpr::new(
-                                                TypedExprKind::Name(TypedName {
-                                                    package: TypedPackage::Resolved(Package::new()),
-                                                    name: "self".to_string(),
-                                                    type_arguments: None,
-                                                }),
-                                                Some(TypedType::Value(TypedValueType::Value(
-                                                    TypedNamedValueType {
-                                                        package: TypedPackage::Resolved(
-                                                            Package::from(&vec!["test"]),
-                                                        ),
-                                                        name: "A".to_string(),
-                                                        type_args: None,
-                                                    },
-                                                ))),
-                                            )),
-                                            name: "a".to_string(),
-                                            is_safe: false,
-                                        }),
-                                        Some(TypedType::int64()),
-                                    ))),
-                                }),
-                                Some(TypedType::noting()),
-                            ))],
-                        })),
-                        return_type: TypedType::int64(),
-                        type_constraints: None,
-                    },
-                    TypedFun::size(TypedType::Value(TypedValueType::Value(
-                        TypedNamedValueType {
-                            package: TypedPackage::Resolved(Package::from(&vec!["test"])),
-                            name: "A".to_string(),
-                            type_args: None,
-                        },
-                    ))),
-                ],
-            }),
-        }],
-    );
-}
-
-#[test]
-fn test_struct_member_function_call() {
-    let source = r"
-        struct A {
-            val a: Int64
-
-            fun getA(&self): Int64 {
-                return self.a
-            }
-        }
-
-        fun function(_ a: A) {
-            a.getA()
-        }
-        ";
-
-    check(
-        source,
-        vec![
-            TypedTopLevelDecl {
+        TypedSpellBook {
+            name: "test".to_string(),
+            uses: vec![],
+            body: vec![TypedTopLevelDecl {
                 annotations: Default::default(),
                 package: Package::from(&vec!["test"]),
                 modifiers: vec![],
@@ -529,73 +458,179 @@ fn test_struct_member_function_call() {
                         ))),
                     ],
                 }),
-            },
-            TypedTopLevelDecl {
-                annotations: Default::default(),
-                package: Package::from(&vec!["test"]),
-                modifiers: vec![],
-                kind: TypedDeclKind::Fun(TypedFun {
-                    name: "function".to_string(),
-                    type_params: None,
-                    type_constraints: None,
-                    arg_defs: vec![TypedArgDef {
-                        label: "_".to_string(),
-                        name: "a".to_string(),
-                        type_: TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-                            package: TypedPackage::Resolved(Package::from(&vec!["test"])),
-                            name: "A".to_string(),
-                            type_args: None,
-                        })),
-                    }],
-                    body: Some(TypedFunBody::Block(TypedBlock {
-                        body: vec![TypedStmt::Expr(TypedExpr::new(
-                            TypedExprKind::Call(TypedCall {
-                                target: Box::new(TypedExpr::new(
-                                    TypedExprKind::Member(TypedInstanceMember {
-                                        target: Box::new(TypedExpr::new(
-                                            TypedExprKind::Name(TypedName {
-                                                package: TypedPackage::Resolved(Package::new()),
-                                                name: "a".to_string(),
-                                                type_arguments: None,
-                                            }),
-                                            Some(TypedType::Value(TypedValueType::Value(
-                                                TypedNamedValueType {
-                                                    package: TypedPackage::Resolved(Package::from(
-                                                        &vec!["test"],
+            }],
+        },
+    );
+}
+
+#[test]
+fn test_struct_member_function_call() {
+    let source = r"
+        struct A {
+            val a: Int64
+
+            fun getA(&self): Int64 {
+                return self.a
+            }
+        }
+
+        fun function(_ a: A) {
+            a.getA()
+        }
+        ";
+
+    check(
+        source,
+        TypedSpellBook {
+            name: "test".to_string(),
+            uses: vec![],
+            body: vec![
+                TypedTopLevelDecl {
+                    annotations: Default::default(),
+                    package: Package::from(&vec!["test"]),
+                    modifiers: vec![],
+                    kind: TypedDeclKind::Struct(TypedStruct {
+                        name: "A".to_string(),
+                        type_params: None,
+                        stored_properties: vec![TypedStoredProperty {
+                            name: "a".to_string(),
+                            type_: TypedType::int64(),
+                        }],
+                        computed_properties: vec![],
+                        member_functions: vec![
+                            TypedFun {
+                                name: "getA".to_string(),
+                                arg_defs: vec![TypedArgDef {
+                                    label: "_".to_string(),
+                                    name: "self".to_string(),
+                                    type_: TypedType::Value(
+                                        // TODO: Reference
+                                        TypedValueType::Value(TypedNamedValueType {
+                                            package: TypedPackage::Resolved(Package::from(&vec![
+                                                "test",
+                                            ])),
+                                            name: "A".to_string(),
+                                            type_args: None,
+                                        }),
+                                    ),
+                                }],
+                                type_params: None,
+                                body: Some(TypedFunBody::Block(TypedBlock {
+                                    body: vec![TypedStmt::Expr(TypedExpr::new(
+                                        TypedExprKind::Return(TypedReturn {
+                                            value: Some(Box::new(TypedExpr::new(
+                                                TypedExprKind::Member(TypedInstanceMember {
+                                                    target: Box::new(TypedExpr::new(
+                                                        TypedExprKind::Name(TypedName {
+                                                            package: TypedPackage::Resolved(
+                                                                Package::new(),
+                                                            ),
+                                                            name: "self".to_string(),
+                                                            type_arguments: None,
+                                                        }),
+                                                        Some(TypedType::Value(
+                                                            TypedValueType::Value(
+                                                                TypedNamedValueType {
+                                                                    package: TypedPackage::Resolved(
+                                                                        Package::from(&vec![
+                                                                            "test",
+                                                                        ]),
+                                                                    ),
+                                                                    name: "A".to_string(),
+                                                                    type_args: None,
+                                                                },
+                                                            ),
+                                                        )),
                                                     )),
-                                                    name: "A".to_string(),
-                                                    type_args: None,
-                                                },
+                                                    name: "a".to_string(),
+                                                    is_safe: false,
+                                                }),
+                                                Some(TypedType::int64()),
                                             ))),
-                                        )),
-                                        name: "getA".to_string(),
-                                        is_safe: false,
-                                    }),
-                                    Some(TypedType::Function(Box::new(TypedFunctionType {
-                                        arguments: vec![TypedArgType {
-                                            label: "_".to_string(),
-                                            typ: TypedType::Value(TypedValueType::Value(
-                                                TypedNamedValueType {
-                                                    package: TypedPackage::Resolved(Package::from(
-                                                        &vec!["test"],
-                                                    )),
-                                                    name: "A".to_string(),
-                                                    type_args: None,
-                                                },
+                                        }),
+                                        Some(TypedType::noting()),
+                                    ))],
+                                })),
+                                return_type: TypedType::int64(),
+                                type_constraints: None,
+                            },
+                            TypedFun::size(TypedType::Value(TypedValueType::Value(
+                                TypedNamedValueType {
+                                    package: TypedPackage::Resolved(Package::from(&vec!["test"])),
+                                    name: "A".to_string(),
+                                    type_args: None,
+                                },
+                            ))),
+                        ],
+                    }),
+                },
+                TypedTopLevelDecl {
+                    annotations: Default::default(),
+                    package: Package::from(&vec!["test"]),
+                    modifiers: vec![],
+                    kind: TypedDeclKind::Fun(TypedFun {
+                        name: "function".to_string(),
+                        type_params: None,
+                        type_constraints: None,
+                        arg_defs: vec![TypedArgDef {
+                            label: "_".to_string(),
+                            name: "a".to_string(),
+                            type_: TypedType::Value(TypedValueType::Value(TypedNamedValueType {
+                                package: TypedPackage::Resolved(Package::from(&vec!["test"])),
+                                name: "A".to_string(),
+                                type_args: None,
+                            })),
+                        }],
+                        body: Some(TypedFunBody::Block(TypedBlock {
+                            body: vec![TypedStmt::Expr(TypedExpr::new(
+                                TypedExprKind::Call(TypedCall {
+                                    target: Box::new(TypedExpr::new(
+                                        TypedExprKind::Member(TypedInstanceMember {
+                                            target: Box::new(TypedExpr::new(
+                                                TypedExprKind::Name(TypedName {
+                                                    package: TypedPackage::Resolved(Package::new()),
+                                                    name: "a".to_string(),
+                                                    type_arguments: None,
+                                                }),
+                                                Some(TypedType::Value(TypedValueType::Value(
+                                                    TypedNamedValueType {
+                                                        package: TypedPackage::Resolved(
+                                                            Package::from(&vec!["test"]),
+                                                        ),
+                                                        name: "A".to_string(),
+                                                        type_args: None,
+                                                    },
+                                                ))),
                                             )),
-                                        }],
-                                        return_type: TypedType::int64(),
-                                    }))),
-                                )),
-                                args: vec![],
-                            }),
-                            Some(TypedType::int64()),
-                        ))],
-                    })),
-                    return_type: TypedType::unit(),
-                }),
-            },
-        ],
+                                            name: "getA".to_string(),
+                                            is_safe: false,
+                                        }),
+                                        Some(TypedType::Function(Box::new(TypedFunctionType {
+                                            arguments: vec![TypedArgType {
+                                                label: "_".to_string(),
+                                                typ: TypedType::Value(TypedValueType::Value(
+                                                    TypedNamedValueType {
+                                                        package: TypedPackage::Resolved(
+                                                            Package::from(&vec!["test"]),
+                                                        ),
+                                                        name: "A".to_string(),
+                                                        type_args: None,
+                                                    },
+                                                )),
+                                            }],
+                                            return_type: TypedType::int64(),
+                                        }))),
+                                    )),
+                                    args: vec![],
+                                }),
+                                Some(TypedType::int64()),
+                            ))],
+                        })),
+                        return_type: TypedType::unit(),
+                    }),
+                },
+            ],
+        },
     );
 }
 
@@ -607,22 +642,26 @@ fn test_expr_function_with_no_arg() {
 
     check(
         source,
-        vec![TypedTopLevelDecl {
-            annotations: Default::default(),
-            package: Package::from(&vec!["test"]),
-            modifiers: vec![],
-            kind: TypedDeclKind::Fun(TypedFun {
-                name: "function".to_string(),
-                type_params: None,
-                type_constraints: None,
-                arg_defs: vec![],
-                body: Some(TypedFunBody::Expr(TypedExpr::new(
-                    TypedExprKind::Literal(TypedLiteralKind::Integer("1".to_string())),
-                    Some(TypedType::int64()),
-                ))),
-                return_type: TypedType::int64(),
-            }),
-        }],
+        TypedSpellBook {
+            name: "test".to_string(),
+            uses: vec![],
+            body: vec![TypedTopLevelDecl {
+                annotations: Default::default(),
+                package: Package::from(&vec!["test"]),
+                modifiers: vec![],
+                kind: TypedDeclKind::Fun(TypedFun {
+                    name: "function".to_string(),
+                    type_params: None,
+                    type_constraints: None,
+                    arg_defs: vec![],
+                    body: Some(TypedFunBody::Expr(TypedExpr::new(
+                        TypedExprKind::Literal(TypedLiteralKind::Integer("1".to_string())),
+                        Some(TypedType::int64()),
+                    ))),
+                    return_type: TypedType::int64(),
+                }),
+            }],
+        },
     );
 }
 
@@ -634,30 +673,34 @@ fn test_expr_function_with_arg() {
 
     check(
         source,
-        vec![TypedTopLevelDecl {
-            annotations: Default::default(),
-            package: Package::from(&vec!["test"]),
-            modifiers: vec![],
-            kind: TypedDeclKind::Fun(TypedFun {
-                name: "function".to_string(),
-                type_params: None,
-                type_constraints: None,
-                arg_defs: vec![TypedArgDef {
-                    label: "_".to_string(),
-                    name: "i".to_string(),
-                    type_: TypedType::int32(),
-                }],
-                body: Some(TypedFunBody::Expr(TypedExpr::new(
-                    TypedExprKind::Name(TypedName {
-                        package: TypedPackage::Resolved(Package::new()),
+        TypedSpellBook {
+            name: "test".to_string(),
+            uses: vec![],
+            body: vec![TypedTopLevelDecl {
+                annotations: Default::default(),
+                package: Package::from(&vec!["test"]),
+                modifiers: vec![],
+                kind: TypedDeclKind::Fun(TypedFun {
+                    name: "function".to_string(),
+                    type_params: None,
+                    type_constraints: None,
+                    arg_defs: vec![TypedArgDef {
+                        label: "_".to_string(),
                         name: "i".to_string(),
-                        type_arguments: None,
-                    }),
-                    Some(TypedType::int32()),
-                ))),
-                return_type: TypedType::int32(),
-            }),
-        }],
+                        type_: TypedType::int32(),
+                    }],
+                    body: Some(TypedFunBody::Expr(TypedExpr::new(
+                        TypedExprKind::Name(TypedName {
+                            package: TypedPackage::Resolved(Package::new()),
+                            name: "i".to_string(),
+                            type_arguments: None,
+                        }),
+                        Some(TypedType::int32()),
+                    ))),
+                    return_type: TypedType::int32(),
+                }),
+            }],
+        },
     );
 }
 
@@ -672,57 +715,61 @@ fn test_function_call() {
 
     check(
         source,
-        vec![
-            TypedTopLevelDecl {
-                annotations: Default::default(),
-                package: Package::from(&vec!["test"]),
-                modifiers: vec![],
-                kind: TypedDeclKind::Fun(TypedFun {
-                    name: "target_function".to_string(),
-                    type_params: None,
-                    type_constraints: None,
-                    arg_defs: vec![],
-                    body: Some(TypedFunBody::Expr(TypedExpr::new(
-                        TypedExprKind::Literal(TypedLiteralKind::Integer("1".to_string())),
-                        Some(TypedType::int64()),
-                    ))),
-                    return_type: TypedType::int64(),
-                }),
-            },
-            TypedTopLevelDecl {
-                annotations: Default::default(),
-                package: Package::from(&vec!["test"]),
-                modifiers: vec![],
-                kind: TypedDeclKind::Fun(TypedFun {
-                    name: "main".to_string(),
-                    type_params: None,
-                    type_constraints: None,
-                    arg_defs: vec![],
-                    body: Some(TypedFunBody::Block(TypedBlock {
-                        body: vec![TypedStmt::Expr(TypedExpr::new(
-                            TypedExprKind::Call(TypedCall {
-                                target: Box::new(TypedExpr::new(
-                                    TypedExprKind::Name(TypedName {
-                                        package: TypedPackage::Resolved(Package::from(&vec![
-                                            "test",
-                                        ])),
-                                        name: "target_function".to_string(),
-                                        type_arguments: None,
-                                    }),
-                                    Some(TypedType::Function(Box::new(TypedFunctionType {
-                                        arguments: vec![],
-                                        return_type: TypedType::int64(),
-                                    }))),
-                                )),
-                                args: vec![],
-                            }),
+        TypedSpellBook {
+            name: "test".to_string(),
+            uses: vec![],
+            body: vec![
+                TypedTopLevelDecl {
+                    annotations: Default::default(),
+                    package: Package::from(&vec!["test"]),
+                    modifiers: vec![],
+                    kind: TypedDeclKind::Fun(TypedFun {
+                        name: "target_function".to_string(),
+                        type_params: None,
+                        type_constraints: None,
+                        arg_defs: vec![],
+                        body: Some(TypedFunBody::Expr(TypedExpr::new(
+                            TypedExprKind::Literal(TypedLiteralKind::Integer("1".to_string())),
                             Some(TypedType::int64()),
-                        ))],
-                    })),
-                    return_type: TypedType::unit(),
-                }),
-            },
-        ],
+                        ))),
+                        return_type: TypedType::int64(),
+                    }),
+                },
+                TypedTopLevelDecl {
+                    annotations: Default::default(),
+                    package: Package::from(&vec!["test"]),
+                    modifiers: vec![],
+                    kind: TypedDeclKind::Fun(TypedFun {
+                        name: "main".to_string(),
+                        type_params: None,
+                        type_constraints: None,
+                        arg_defs: vec![],
+                        body: Some(TypedFunBody::Block(TypedBlock {
+                            body: vec![TypedStmt::Expr(TypedExpr::new(
+                                TypedExprKind::Call(TypedCall {
+                                    target: Box::new(TypedExpr::new(
+                                        TypedExprKind::Name(TypedName {
+                                            package: TypedPackage::Resolved(Package::from(&vec![
+                                                "test",
+                                            ])),
+                                            name: "target_function".to_string(),
+                                            type_arguments: None,
+                                        }),
+                                        Some(TypedType::Function(Box::new(TypedFunctionType {
+                                            arguments: vec![],
+                                            return_type: TypedType::int64(),
+                                        }))),
+                                    )),
+                                    args: vec![],
+                                }),
+                                Some(TypedType::int64()),
+                            ))],
+                        })),
+                        return_type: TypedType::unit(),
+                    }),
+                },
+            ],
+        },
     );
 }
 
@@ -736,29 +783,35 @@ fn test_return_integer_literal() {
 
     check(
         source,
-        vec![TypedTopLevelDecl {
-            annotations: Default::default(),
-            package: Package::from(&vec!["test"]),
-            modifiers: vec![],
-            kind: TypedDeclKind::Fun(TypedFun {
-                name: "sample".to_string(),
-                type_params: None,
-                type_constraints: None,
-                arg_defs: vec![],
-                body: Option::from(TypedFunBody::Block(TypedBlock {
-                    body: vec![TypedStmt::Expr(TypedExpr::new(
-                        TypedExprKind::Return(TypedReturn {
-                            value: Some(Box::new(TypedExpr::new(
-                                TypedExprKind::Literal(TypedLiteralKind::Integer("1".to_string())),
-                                Some(TypedType::int64()),
-                            ))),
-                        }),
-                        Some(TypedType::noting()),
-                    ))],
-                })),
-                return_type: TypedType::int64(),
-            }),
-        }],
+        TypedSpellBook {
+            name: "test".to_string(),
+            uses: vec![],
+            body: vec![TypedTopLevelDecl {
+                annotations: Default::default(),
+                package: Package::from(&vec!["test"]),
+                modifiers: vec![],
+                kind: TypedDeclKind::Fun(TypedFun {
+                    name: "sample".to_string(),
+                    type_params: None,
+                    type_constraints: None,
+                    arg_defs: vec![],
+                    body: Option::from(TypedFunBody::Block(TypedBlock {
+                        body: vec![TypedStmt::Expr(TypedExpr::new(
+                            TypedExprKind::Return(TypedReturn {
+                                value: Some(Box::new(TypedExpr::new(
+                                    TypedExprKind::Literal(TypedLiteralKind::Integer(
+                                        "1".to_string(),
+                                    )),
+                                    Some(TypedType::int64()),
+                                ))),
+                            }),
+                            Some(TypedType::noting()),
+                        ))],
+                    })),
+                    return_type: TypedType::int64(),
+                }),
+            }],
+        },
     );
 }
 
@@ -772,31 +825,35 @@ fn test_return_floating_point_literal() {
 
     check(
         source,
-        vec![TypedTopLevelDecl {
-            annotations: Default::default(),
-            package: Package::from(&vec!["test"]),
-            modifiers: vec![],
-            kind: TypedDeclKind::Fun(TypedFun {
-                name: "sample".to_string(),
-                type_params: None,
-                type_constraints: None,
-                arg_defs: vec![],
-                body: Option::from(TypedFunBody::Block(TypedBlock {
-                    body: vec![TypedStmt::Expr(TypedExpr::new(
-                        TypedExprKind::Return(TypedReturn {
-                            value: Some(Box::new(TypedExpr::new(
-                                TypedExprKind::Literal(TypedLiteralKind::FloatingPoint(
-                                    "0.5".to_string(),
-                                )),
-                                Some(TypedType::double()),
-                            ))),
-                        }),
-                        Some(TypedType::noting()),
-                    ))],
-                })),
-                return_type: TypedType::double(),
-            }),
-        }],
+        TypedSpellBook {
+            name: "test".to_string(),
+            uses: vec![],
+            body: vec![TypedTopLevelDecl {
+                annotations: Default::default(),
+                package: Package::from(&vec!["test"]),
+                modifiers: vec![],
+                kind: TypedDeclKind::Fun(TypedFun {
+                    name: "sample".to_string(),
+                    type_params: None,
+                    type_constraints: None,
+                    arg_defs: vec![],
+                    body: Option::from(TypedFunBody::Block(TypedBlock {
+                        body: vec![TypedStmt::Expr(TypedExpr::new(
+                            TypedExprKind::Return(TypedReturn {
+                                value: Some(Box::new(TypedExpr::new(
+                                    TypedExprKind::Literal(TypedLiteralKind::FloatingPoint(
+                                        "0.5".to_string(),
+                                    )),
+                                    Some(TypedType::double()),
+                                ))),
+                            }),
+                            Some(TypedType::noting()),
+                        ))],
+                    })),
+                    return_type: TypedType::double(),
+                }),
+            }],
+        },
     );
 }
 
@@ -810,34 +867,42 @@ fn test_binop() {
 
     check(
         source,
-        vec![TypedTopLevelDecl {
-            annotations: Default::default(),
-            package: Package::from(&vec!["test"]),
-            modifiers: vec![],
-            kind: TypedDeclKind::Fun(TypedFun {
-                name: "sample".to_string(),
-                type_params: None,
-                type_constraints: None,
-                arg_defs: vec![],
-                body: Option::from(TypedFunBody::Block(TypedBlock {
-                    body: vec![TypedStmt::Expr(TypedExpr::new(
-                        TypedExprKind::BinOp(TypedBinOp {
-                            left: Box::new(TypedExpr::new(
-                                TypedExprKind::Literal(TypedLiteralKind::Integer("1".to_string())),
-                                Some(TypedType::int64()),
-                            )),
-                            operator: TypedBinaryOperator::Add,
-                            right: Box::new(TypedExpr::new(
-                                TypedExprKind::Literal(TypedLiteralKind::Integer("2".to_string())),
-                                Some(TypedType::int64()),
-                            )),
-                        }),
-                        Some(TypedType::int64()),
-                    ))],
-                })),
-                return_type: TypedType::unit(),
-            }),
-        }],
+        TypedSpellBook {
+            name: "test".to_string(),
+            uses: vec![],
+            body: vec![TypedTopLevelDecl {
+                annotations: Default::default(),
+                package: Package::from(&vec!["test"]),
+                modifiers: vec![],
+                kind: TypedDeclKind::Fun(TypedFun {
+                    name: "sample".to_string(),
+                    type_params: None,
+                    type_constraints: None,
+                    arg_defs: vec![],
+                    body: Option::from(TypedFunBody::Block(TypedBlock {
+                        body: vec![TypedStmt::Expr(TypedExpr::new(
+                            TypedExprKind::BinOp(TypedBinOp {
+                                left: Box::new(TypedExpr::new(
+                                    TypedExprKind::Literal(TypedLiteralKind::Integer(
+                                        "1".to_string(),
+                                    )),
+                                    Some(TypedType::int64()),
+                                )),
+                                operator: TypedBinaryOperator::Add,
+                                right: Box::new(TypedExpr::new(
+                                    TypedExprKind::Literal(TypedLiteralKind::Integer(
+                                        "2".to_string(),
+                                    )),
+                                    Some(TypedType::int64()),
+                                )),
+                            }),
+                            Some(TypedType::int64()),
+                        ))],
+                    })),
+                    return_type: TypedType::unit(),
+                }),
+            }],
+        },
     );
 }
 
@@ -849,39 +914,43 @@ fn test_subscript() {
 
     check(
         source,
-        vec![TypedTopLevelDecl {
-            annotations: Default::default(),
-            package: Package::from(&vec!["test"]),
-            modifiers: vec![],
-            kind: TypedDeclKind::Fun(TypedFun {
-                name: "get_first".to_string(),
-                type_params: None,
-                type_constraints: None,
-                arg_defs: vec![TypedArgDef {
-                    label: "_".to_string(),
-                    name: "p".to_string(),
-                    type_: TypedType::unsafe_pointer(TypedType::uint8()),
-                }],
-                body: Option::from(TypedFunBody::Expr(TypedExpr::new(
-                    TypedExprKind::Subscript(TypedSubscript {
-                        target: Box::new(TypedExpr::new(
-                            TypedExprKind::Name(TypedName {
-                                package: TypedPackage::Resolved(Package::new()),
-                                name: "p".to_string(),
-                                type_arguments: None,
-                            }),
-                            Some(TypedType::unsafe_pointer(TypedType::uint8())),
-                        )),
-                        indexes: vec![TypedExpr::new(
-                            TypedExprKind::Literal(TypedLiteralKind::Integer("0".to_string())),
-                            Some(TypedType::int64()),
-                        )],
-                    }),
-                    Some(TypedType::uint8()),
-                ))),
-                return_type: TypedType::uint8(),
-            }),
-        }],
+        TypedSpellBook {
+            name: "test".to_string(),
+            uses: vec![],
+            body: vec![TypedTopLevelDecl {
+                annotations: Default::default(),
+                package: Package::from(&vec!["test"]),
+                modifiers: vec![],
+                kind: TypedDeclKind::Fun(TypedFun {
+                    name: "get_first".to_string(),
+                    type_params: None,
+                    type_constraints: None,
+                    arg_defs: vec![TypedArgDef {
+                        label: "_".to_string(),
+                        name: "p".to_string(),
+                        type_: TypedType::unsafe_pointer(TypedType::uint8()),
+                    }],
+                    body: Option::from(TypedFunBody::Expr(TypedExpr::new(
+                        TypedExprKind::Subscript(TypedSubscript {
+                            target: Box::new(TypedExpr::new(
+                                TypedExprKind::Name(TypedName {
+                                    package: TypedPackage::Resolved(Package::new()),
+                                    name: "p".to_string(),
+                                    type_arguments: None,
+                                }),
+                                Some(TypedType::unsafe_pointer(TypedType::uint8())),
+                            )),
+                            indexes: vec![TypedExpr::new(
+                                TypedExprKind::Literal(TypedLiteralKind::Integer("0".to_string())),
+                                Some(TypedType::int64()),
+                            )],
+                        }),
+                        Some(TypedType::uint8()),
+                    ))),
+                    return_type: TypedType::uint8(),
+                }),
+            }],
+        },
     );
 }
 
@@ -895,72 +964,78 @@ fn test_if_else() {
 
     check(
         source,
-        vec![TypedTopLevelDecl {
-            annotations: Default::default(),
-            package: Package::from(&vec!["test"]),
-            modifiers: vec![],
-            kind: TypedDeclKind::Fun(TypedFun {
-                name: "test_if".to_string(),
-                type_params: None,
-                type_constraints: None,
-                arg_defs: vec![TypedArgDef {
-                    label: "i".to_string(),
-                    name: "i".to_string(),
-                    type_: TypedType::int64(),
-                }],
-                body: Some(TypedFunBody::Block(TypedBlock {
-                    body: vec![TypedStmt::Expr(TypedExpr::new(
-                        TypedExprKind::Return(TypedReturn {
-                            value: Some(Box::new(TypedExpr::new(
-                                TypedExprKind::If(TypedIf {
-                                    condition: Box::new(TypedExpr::new(
-                                        TypedExprKind::BinOp(TypedBinOp {
-                                            left: Box::new(TypedExpr::new(
+        TypedSpellBook {
+            name: "test".to_string(),
+            uses: vec![],
+            body: vec![TypedTopLevelDecl {
+                annotations: Default::default(),
+                package: Package::from(&vec!["test"]),
+                modifiers: vec![],
+                kind: TypedDeclKind::Fun(TypedFun {
+                    name: "test_if".to_string(),
+                    type_params: None,
+                    type_constraints: None,
+                    arg_defs: vec![TypedArgDef {
+                        label: "i".to_string(),
+                        name: "i".to_string(),
+                        type_: TypedType::int64(),
+                    }],
+                    body: Some(TypedFunBody::Block(TypedBlock {
+                        body: vec![TypedStmt::Expr(TypedExpr::new(
+                            TypedExprKind::Return(TypedReturn {
+                                value: Some(Box::new(TypedExpr::new(
+                                    TypedExprKind::If(TypedIf {
+                                        condition: Box::new(TypedExpr::new(
+                                            TypedExprKind::BinOp(TypedBinOp {
+                                                left: Box::new(TypedExpr::new(
+                                                    TypedExprKind::Name(TypedName {
+                                                        package: TypedPackage::Resolved(
+                                                            Package::new(),
+                                                        ),
+                                                        name: "i".to_string(),
+                                                        type_arguments: None,
+                                                    }),
+                                                    Some(TypedType::int64()),
+                                                )),
+                                                operator: TypedBinaryOperator::LessThanEqual,
+                                                right: Box::new(TypedExpr::new(
+                                                    TypedExprKind::Literal(
+                                                        TypedLiteralKind::Integer("0".to_string()),
+                                                    ),
+                                                    Some(TypedType::int64()),
+                                                )),
+                                            }),
+                                            Some(TypedType::bool()),
+                                        )),
+                                        body: TypedBlock {
+                                            body: vec![TypedStmt::Expr(TypedExpr::new(
+                                                TypedExprKind::Literal(TypedLiteralKind::Integer(
+                                                    "0".to_string(),
+                                                )),
+                                                Some(TypedType::int64()),
+                                            ))],
+                                        },
+                                        else_body: Some(TypedBlock {
+                                            body: vec![TypedStmt::Expr(TypedExpr::new(
                                                 TypedExprKind::Name(TypedName {
                                                     package: TypedPackage::Resolved(Package::new()),
                                                     name: "i".to_string(),
                                                     type_arguments: None,
                                                 }),
                                                 Some(TypedType::int64()),
-                                            )),
-                                            operator: TypedBinaryOperator::LessThanEqual,
-                                            right: Box::new(TypedExpr::new(
-                                                TypedExprKind::Literal(TypedLiteralKind::Integer(
-                                                    "0".to_string(),
-                                                )),
-                                                Some(TypedType::int64()),
-                                            )),
+                                            ))],
                                         }),
-                                        Some(TypedType::bool()),
-                                    )),
-                                    body: TypedBlock {
-                                        body: vec![TypedStmt::Expr(TypedExpr::new(
-                                            TypedExprKind::Literal(TypedLiteralKind::Integer(
-                                                "0".to_string(),
-                                            )),
-                                            Some(TypedType::int64()),
-                                        ))],
-                                    },
-                                    else_body: Some(TypedBlock {
-                                        body: vec![TypedStmt::Expr(TypedExpr::new(
-                                            TypedExprKind::Name(TypedName {
-                                                package: TypedPackage::Resolved(Package::new()),
-                                                name: "i".to_string(),
-                                                type_arguments: None,
-                                            }),
-                                            Some(TypedType::int64()),
-                                        ))],
                                     }),
-                                }),
-                                Some(TypedType::int64()),
-                            ))),
-                        }),
-                        Some(TypedType::noting()),
-                    ))],
-                })),
-                return_type: TypedType::int64(),
-            }),
-        }],
+                                    Some(TypedType::int64()),
+                                ))),
+                            }),
+                            Some(TypedType::noting()),
+                        ))],
+                    })),
+                    return_type: TypedType::int64(),
+                }),
+            }],
+        },
     );
 }
 
@@ -976,68 +1051,72 @@ fn test_if() {
 
     check(
         source,
-        vec![TypedTopLevelDecl {
-            annotations: Default::default(),
-            package: Package::from(&vec!["test"]),
-            modifiers: vec![],
-            kind: TypedDeclKind::Fun(TypedFun {
-                name: "test_if".to_string(),
-                type_params: None,
-                type_constraints: None,
-                arg_defs: vec![TypedArgDef {
-                    label: "i".to_string(),
-                    name: "i".to_string(),
-                    type_: TypedType::int64(),
-                }],
-                body: Some(TypedFunBody::Block(TypedBlock {
-                    body: vec![TypedStmt::Expr(TypedExpr::new(
-                        TypedExprKind::If(TypedIf {
-                            condition: Box::new(TypedExpr::new(
-                                TypedExprKind::BinOp(TypedBinOp {
-                                    left: Box::new(TypedExpr::new(
-                                        TypedExprKind::Name(TypedName {
-                                            package: TypedPackage::Resolved(Package::new()),
-                                            name: "i".to_string(),
-                                            type_arguments: None,
-                                        }),
-                                        Some(TypedType::int64()),
-                                    )),
-                                    operator: TypedBinaryOperator::LessThanEqual,
-                                    right: Box::new(TypedExpr::new(
-                                        TypedExprKind::Literal(TypedLiteralKind::Integer(
-                                            "0".to_string(),
+        TypedSpellBook {
+            name: "test".to_string(),
+            uses: vec![],
+            body: vec![TypedTopLevelDecl {
+                annotations: Default::default(),
+                package: Package::from(&vec!["test"]),
+                modifiers: vec![],
+                kind: TypedDeclKind::Fun(TypedFun {
+                    name: "test_if".to_string(),
+                    type_params: None,
+                    type_constraints: None,
+                    arg_defs: vec![TypedArgDef {
+                        label: "i".to_string(),
+                        name: "i".to_string(),
+                        type_: TypedType::int64(),
+                    }],
+                    body: Some(TypedFunBody::Block(TypedBlock {
+                        body: vec![TypedStmt::Expr(TypedExpr::new(
+                            TypedExprKind::If(TypedIf {
+                                condition: Box::new(TypedExpr::new(
+                                    TypedExprKind::BinOp(TypedBinOp {
+                                        left: Box::new(TypedExpr::new(
+                                            TypedExprKind::Name(TypedName {
+                                                package: TypedPackage::Resolved(Package::new()),
+                                                name: "i".to_string(),
+                                                type_arguments: None,
+                                            }),
+                                            Some(TypedType::int64()),
                                         )),
-                                        Some(TypedType::int64()),
-                                    )),
-                                }),
-                                Some(TypedType::bool()),
-                            )),
-                            body: TypedBlock {
-                                body: vec![TypedStmt::Decl(TypedTopLevelDecl {
-                                    annotations: Default::default(),
-                                    package: Package::new(),
-                                    modifiers: vec![],
-                                    kind: TypedDeclKind::Var(TypedVar {
-                                        is_mut: false,
-                                        name: "p".to_string(),
-                                        type_: Some(TypedType::int64()),
-                                        value: TypedExpr::new(
+                                        operator: TypedBinaryOperator::LessThanEqual,
+                                        right: Box::new(TypedExpr::new(
                                             TypedExprKind::Literal(TypedLiteralKind::Integer(
-                                                "1".to_string(),
+                                                "0".to_string(),
                                             )),
                                             Some(TypedType::int64()),
-                                        ),
+                                        )),
                                     }),
-                                })],
-                            },
-                            else_body: None,
-                        }),
-                        Some(TypedType::noting()),
-                    ))],
-                })),
-                return_type: TypedType::unit(),
-            }),
-        }],
+                                    Some(TypedType::bool()),
+                                )),
+                                body: TypedBlock {
+                                    body: vec![TypedStmt::Decl(TypedTopLevelDecl {
+                                        annotations: Default::default(),
+                                        package: Package::new(),
+                                        modifiers: vec![],
+                                        kind: TypedDeclKind::Var(TypedVar {
+                                            is_mut: false,
+                                            name: "p".to_string(),
+                                            type_: Some(TypedType::int64()),
+                                            value: TypedExpr::new(
+                                                TypedExprKind::Literal(TypedLiteralKind::Integer(
+                                                    "1".to_string(),
+                                                )),
+                                                Some(TypedType::int64()),
+                                            ),
+                                        }),
+                                    })],
+                                },
+                                else_body: None,
+                            }),
+                            Some(TypedType::noting()),
+                        ))],
+                    })),
+                    return_type: TypedType::unit(),
+                }),
+            }],
+        },
     );
 }
 
@@ -1052,96 +1131,106 @@ fn test_reference_dereference() {
     ";
     check(
         source,
-        vec![TypedTopLevelDecl {
-            annotations: Default::default(),
-            package: Package::from(&vec!["test"]),
-            modifiers: vec![],
-            kind: TypedDeclKind::Fun(TypedFun {
-                name: "test_reference_dereference".to_string(),
-                type_params: None,
-                type_constraints: None,
-                arg_defs: vec![],
-                body: Some(TypedFunBody::Block(TypedBlock {
-                    body: vec![
-                        TypedStmt::Decl(TypedTopLevelDecl {
-                            annotations: Default::default(),
-                            package: Package::new(),
-                            modifiers: vec![],
-                            kind: TypedDeclKind::Var(TypedVar {
-                                is_mut: false,
-                                name: "a".to_string(),
-                                type_: Some(TypedType::int64()),
-                                value: TypedExpr::new(
-                                    TypedExprKind::Literal(TypedLiteralKind::Integer(
-                                        "1".to_string(),
-                                    )),
-                                    Some(TypedType::int64()),
-                                ),
+        TypedSpellBook {
+            name: "test".to_string(),
+            uses: vec![],
+            body: vec![TypedTopLevelDecl {
+                annotations: Default::default(),
+                package: Package::from(&vec!["test"]),
+                modifiers: vec![],
+                kind: TypedDeclKind::Fun(TypedFun {
+                    name: "test_reference_dereference".to_string(),
+                    type_params: None,
+                    type_constraints: None,
+                    arg_defs: vec![],
+                    body: Some(TypedFunBody::Block(TypedBlock {
+                        body: vec![
+                            TypedStmt::Decl(TypedTopLevelDecl {
+                                annotations: Default::default(),
+                                package: Package::new(),
+                                modifiers: vec![],
+                                kind: TypedDeclKind::Var(TypedVar {
+                                    is_mut: false,
+                                    name: "a".to_string(),
+                                    type_: Some(TypedType::int64()),
+                                    value: TypedExpr::new(
+                                        TypedExprKind::Literal(TypedLiteralKind::Integer(
+                                            "1".to_string(),
+                                        )),
+                                        Some(TypedType::int64()),
+                                    ),
+                                }),
                             }),
-                        }),
-                        TypedStmt::Decl(TypedTopLevelDecl {
-                            annotations: Default::default(),
-                            package: Package::new(),
-                            modifiers: vec![],
-                            kind: TypedDeclKind::Var(TypedVar {
-                                is_mut: false,
-                                name: "b".to_string(),
-                                type_: Some(TypedType::Value(TypedValueType::Reference(Box::new(
-                                    TypedType::int64(),
-                                )))),
-                                value: TypedExpr::new(
-                                    TypedExprKind::UnaryOp(TypedUnaryOp::Prefix(
-                                        TypedPrefixUnaryOp {
-                                            target: Box::new(TypedExpr::new(
-                                                TypedExprKind::Name(TypedName {
-                                                    package: TypedPackage::Resolved(Package::new()),
-                                                    name: "a".to_string(),
-                                                    type_arguments: None,
-                                                }),
-                                                Some(TypedType::int64()),
-                                            )),
-                                            operator: TypedPrefixUnaryOperator::Reference,
-                                        },
-                                    )),
-                                    Some(TypedType::Value(TypedValueType::Reference(Box::new(
-                                        TypedType::int64(),
-                                    )))),
-                                ),
+                            TypedStmt::Decl(TypedTopLevelDecl {
+                                annotations: Default::default(),
+                                package: Package::new(),
+                                modifiers: vec![],
+                                kind: TypedDeclKind::Var(TypedVar {
+                                    is_mut: false,
+                                    name: "b".to_string(),
+                                    type_: Some(TypedType::Value(TypedValueType::Reference(
+                                        Box::new(TypedType::int64()),
+                                    ))),
+                                    value: TypedExpr::new(
+                                        TypedExprKind::UnaryOp(TypedUnaryOp::Prefix(
+                                            TypedPrefixUnaryOp {
+                                                target: Box::new(TypedExpr::new(
+                                                    TypedExprKind::Name(TypedName {
+                                                        package: TypedPackage::Resolved(
+                                                            Package::new(),
+                                                        ),
+                                                        name: "a".to_string(),
+                                                        type_arguments: None,
+                                                    }),
+                                                    Some(TypedType::int64()),
+                                                )),
+                                                operator: TypedPrefixUnaryOperator::Reference,
+                                            },
+                                        )),
+                                        Some(TypedType::Value(TypedValueType::Reference(
+                                            Box::new(TypedType::int64()),
+                                        ))),
+                                    ),
+                                }),
                             }),
-                        }),
-                        TypedStmt::Decl(TypedTopLevelDecl {
-                            annotations: Default::default(),
-                            package: Package::new(),
-                            modifiers: vec![],
-                            kind: TypedDeclKind::Var(TypedVar {
-                                is_mut: false,
-                                name: "c".to_string(),
-                                type_: Some(TypedType::int64()),
-                                value: TypedExpr::new(
-                                    TypedExprKind::UnaryOp(TypedUnaryOp::Prefix(
-                                        TypedPrefixUnaryOp {
-                                            target: Box::new(TypedExpr::new(
-                                                TypedExprKind::Name(TypedName {
-                                                    package: TypedPackage::Resolved(Package::new()),
-                                                    name: "b".to_string(),
-                                                    type_arguments: None,
-                                                }),
-                                                Some(TypedType::Value(TypedValueType::Reference(
-                                                    Box::new(TypedType::int64()),
-                                                ))),
-                                            )),
-                                            operator: TypedPrefixUnaryOperator::Dereference,
-                                        },
-                                    )),
-                                    Some(TypedType::int64()),
-                                ),
+                            TypedStmt::Decl(TypedTopLevelDecl {
+                                annotations: Default::default(),
+                                package: Package::new(),
+                                modifiers: vec![],
+                                kind: TypedDeclKind::Var(TypedVar {
+                                    is_mut: false,
+                                    name: "c".to_string(),
+                                    type_: Some(TypedType::int64()),
+                                    value: TypedExpr::new(
+                                        TypedExprKind::UnaryOp(TypedUnaryOp::Prefix(
+                                            TypedPrefixUnaryOp {
+                                                target: Box::new(TypedExpr::new(
+                                                    TypedExprKind::Name(TypedName {
+                                                        package: TypedPackage::Resolved(
+                                                            Package::new(),
+                                                        ),
+                                                        name: "b".to_string(),
+                                                        type_arguments: None,
+                                                    }),
+                                                    Some(TypedType::Value(
+                                                        TypedValueType::Reference(Box::new(
+                                                            TypedType::int64(),
+                                                        )),
+                                                    )),
+                                                )),
+                                                operator: TypedPrefixUnaryOperator::Dereference,
+                                            },
+                                        )),
+                                        Some(TypedType::int64()),
+                                    ),
+                                }),
                             }),
-                        }),
-                    ],
-                })),
-                return_type: TypedType::unit(),
-            }),
-        }],
+                        ],
+                    })),
+                    return_type: TypedType::unit(),
+                }),
+            }],
+        },
     )
 }
 
@@ -1152,20 +1241,24 @@ fn test_toplevel_var() {
     ";
     check(
         source,
-        vec![TypedTopLevelDecl {
-            annotations: Default::default(),
-            package: Package::from(&vec!["tests"]),
-            modifiers: vec![],
-            kind: TypedDeclKind::Var(TypedVar {
-                is_mut: false,
-                name: "i".to_string(),
-                type_: Some(TypedType::int32()),
-                value: TypedExpr::new(
-                    TypedExprKind::Literal(TypedLiteralKind::Integer("1".to_string())),
-                    Some(TypedType::int32()),
-                ),
-            }),
-        }],
+        TypedSpellBook {
+            name: "tests".to_string(),
+            uses: vec![],
+            body: vec![TypedTopLevelDecl {
+                annotations: Default::default(),
+                package: Package::from(&vec!["tests"]),
+                modifiers: vec![],
+                kind: TypedDeclKind::Var(TypedVar {
+                    is_mut: false,
+                    name: "i".to_string(),
+                    type_: Some(TypedType::int32()),
+                    value: TypedExpr::new(
+                        TypedExprKind::Literal(TypedLiteralKind::Integer("1".to_string())),
+                        Some(TypedType::int32()),
+                    ),
+                }),
+            }],
+        },
     )
 }
 
@@ -1182,119 +1275,129 @@ fn test_function_overload_by_arguments() {
 
     check(
         source,
-        vec![
-            TypedTopLevelDecl {
-                annotations: Default::default(),
-                package: Package::from(&vec!["test"]),
-                modifiers: vec![],
-                kind: TypedDeclKind::Fun(TypedFun {
-                    name: "sample".to_string(),
-                    type_params: None,
-                    type_constraints: None,
-                    arg_defs: vec![TypedArgDef {
-                        label: "_".to_string(),
-                        name: "d".to_string(),
-                        type_: TypedType::double(),
-                    }],
-                    body: Option::from(TypedFunBody::Block(TypedBlock { body: vec![] })),
-                    return_type: TypedType::unit(),
-                }),
-            },
-            TypedTopLevelDecl {
-                annotations: Default::default(),
-                package: Package::from(&vec!["test"]),
-                modifiers: vec![],
-                kind: TypedDeclKind::Fun(TypedFun {
-                    name: "sample".to_string(),
-                    type_params: None,
-                    type_constraints: None,
-                    arg_defs: vec![TypedArgDef {
-                        label: "_".to_string(),
-                        name: "i".to_string(),
-                        type_: TypedType::int64(),
-                    }],
-                    body: Option::from(TypedFunBody::Block(TypedBlock { body: vec![] })),
-                    return_type: TypedType::unit(),
-                }),
-            },
-            TypedTopLevelDecl {
-                annotations: Default::default(),
-                package: Package::from(&vec!["test"]),
-                modifiers: vec![],
-                kind: TypedDeclKind::Fun(TypedFun {
-                    name: "call".to_string(),
-                    type_params: None,
-                    type_constraints: None,
-                    arg_defs: vec![],
-                    body: Option::from(TypedFunBody::Block(TypedBlock {
-                        body: vec![
-                            TypedStmt::Expr(TypedExpr::new(
-                                TypedExprKind::Call(TypedCall {
-                                    target: Box::new(TypedExpr::new(
-                                        TypedExprKind::Name(TypedName {
-                                            package: TypedPackage::Resolved(Package::from(&vec![
-                                                "test",
-                                            ])),
-                                            name: "sample".to_string(),
-                                            type_arguments: None,
-                                        }),
-                                        Some(TypedType::Function(Box::new(TypedFunctionType {
-                                            arguments: vec![TypedArgType {
-                                                label: "_".to_string(),
-                                                typ: TypedType::double(),
-                                            }],
-                                            return_type: TypedType::unit(),
-                                        }))),
-                                    )),
-                                    args: vec![TypedCallArg {
-                                        label: None,
-                                        arg: Box::new(TypedExpr::new(
-                                            TypedExprKind::Literal(
-                                                TypedLiteralKind::FloatingPoint("0.5".to_string()),
-                                            ),
-                                            Some(TypedType::double()),
+        TypedSpellBook {
+            name: "test".to_string(),
+            uses: vec![],
+            body: vec![
+                TypedTopLevelDecl {
+                    annotations: Default::default(),
+                    package: Package::from(&vec!["test"]),
+                    modifiers: vec![],
+                    kind: TypedDeclKind::Fun(TypedFun {
+                        name: "sample".to_string(),
+                        type_params: None,
+                        type_constraints: None,
+                        arg_defs: vec![TypedArgDef {
+                            label: "_".to_string(),
+                            name: "d".to_string(),
+                            type_: TypedType::double(),
+                        }],
+                        body: Option::from(TypedFunBody::Block(TypedBlock { body: vec![] })),
+                        return_type: TypedType::unit(),
+                    }),
+                },
+                TypedTopLevelDecl {
+                    annotations: Default::default(),
+                    package: Package::from(&vec!["test"]),
+                    modifiers: vec![],
+                    kind: TypedDeclKind::Fun(TypedFun {
+                        name: "sample".to_string(),
+                        type_params: None,
+                        type_constraints: None,
+                        arg_defs: vec![TypedArgDef {
+                            label: "_".to_string(),
+                            name: "i".to_string(),
+                            type_: TypedType::int64(),
+                        }],
+                        body: Option::from(TypedFunBody::Block(TypedBlock { body: vec![] })),
+                        return_type: TypedType::unit(),
+                    }),
+                },
+                TypedTopLevelDecl {
+                    annotations: Default::default(),
+                    package: Package::from(&vec!["test"]),
+                    modifiers: vec![],
+                    kind: TypedDeclKind::Fun(TypedFun {
+                        name: "call".to_string(),
+                        type_params: None,
+                        type_constraints: None,
+                        arg_defs: vec![],
+                        body: Option::from(TypedFunBody::Block(TypedBlock {
+                            body: vec![
+                                TypedStmt::Expr(TypedExpr::new(
+                                    TypedExprKind::Call(TypedCall {
+                                        target: Box::new(TypedExpr::new(
+                                            TypedExprKind::Name(TypedName {
+                                                package: TypedPackage::Resolved(Package::from(
+                                                    &vec!["test"],
+                                                )),
+                                                name: "sample".to_string(),
+                                                type_arguments: None,
+                                            }),
+                                            Some(TypedType::Function(Box::new(
+                                                TypedFunctionType {
+                                                    arguments: vec![TypedArgType {
+                                                        label: "_".to_string(),
+                                                        typ: TypedType::double(),
+                                                    }],
+                                                    return_type: TypedType::unit(),
+                                                },
+                                            ))),
                                         )),
-                                        is_vararg: false,
-                                    }],
-                                }),
-                                Some(TypedType::unit()),
-                            )),
-                            TypedStmt::Expr(TypedExpr::new(
-                                TypedExprKind::Call(TypedCall {
-                                    target: Box::new(TypedExpr::new(
-                                        TypedExprKind::Name(TypedName {
-                                            package: TypedPackage::Resolved(Package::from(&vec![
-                                                "test",
-                                            ])),
-                                            name: "sample".to_string(),
-                                            type_arguments: None,
-                                        }),
-                                        Some(TypedType::Function(Box::new(TypedFunctionType {
-                                            arguments: vec![TypedArgType {
-                                                label: "_".to_string(),
-                                                typ: TypedType::int64(),
-                                            }],
-                                            return_type: TypedType::unit(),
-                                        }))),
-                                    )),
-                                    args: vec![TypedCallArg {
-                                        label: None,
-                                        arg: Box::new(TypedExpr::new(
-                                            TypedExprKind::Literal(TypedLiteralKind::Integer(
-                                                "1".to_string(),
+                                        args: vec![TypedCallArg {
+                                            label: None,
+                                            arg: Box::new(TypedExpr::new(
+                                                TypedExprKind::Literal(
+                                                    TypedLiteralKind::FloatingPoint(
+                                                        "0.5".to_string(),
+                                                    ),
+                                                ),
+                                                Some(TypedType::double()),
                                             )),
-                                            Some(TypedType::int64()),
+                                            is_vararg: false,
+                                        }],
+                                    }),
+                                    Some(TypedType::unit()),
+                                )),
+                                TypedStmt::Expr(TypedExpr::new(
+                                    TypedExprKind::Call(TypedCall {
+                                        target: Box::new(TypedExpr::new(
+                                            TypedExprKind::Name(TypedName {
+                                                package: TypedPackage::Resolved(Package::from(
+                                                    &vec!["test"],
+                                                )),
+                                                name: "sample".to_string(),
+                                                type_arguments: None,
+                                            }),
+                                            Some(TypedType::Function(Box::new(
+                                                TypedFunctionType {
+                                                    arguments: vec![TypedArgType {
+                                                        label: "_".to_string(),
+                                                        typ: TypedType::int64(),
+                                                    }],
+                                                    return_type: TypedType::unit(),
+                                                },
+                                            ))),
                                         )),
-                                        is_vararg: false,
-                                    }],
-                                }),
-                                Some(TypedType::unit()),
-                            )),
-                        ],
-                    })),
-                    return_type: TypedType::unit(),
-                }),
-            },
-        ],
+                                        args: vec![TypedCallArg {
+                                            label: None,
+                                            arg: Box::new(TypedExpr::new(
+                                                TypedExprKind::Literal(TypedLiteralKind::Integer(
+                                                    "1".to_string(),
+                                                )),
+                                                Some(TypedType::int64()),
+                                            )),
+                                            is_vararg: false,
+                                        }],
+                                    }),
+                                    Some(TypedType::unit()),
+                                )),
+                            ],
+                        })),
+                        return_type: TypedType::unit(),
+                    }),
+                },
+            ],
+        },
     );
 }
