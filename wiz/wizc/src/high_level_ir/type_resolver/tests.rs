@@ -8,7 +8,7 @@ use wiz_hir::typed_decl::{
 use wiz_hir::typed_expr::{
     TypedBinOp, TypedBinaryOperator, TypedCall, TypedCallArg, TypedExpr, TypedExprKind, TypedIf,
     TypedInstanceMember, TypedLiteralKind, TypedName, TypedPrefixUnaryOp, TypedPrefixUnaryOperator,
-    TypedReturn, TypedSubscript, TypedUnaryOp,
+    TypedReturn, TypedSubscript, TypedTypeCast, TypedUnaryOp,
 };
 use wiz_hir::typed_file::TypedSpellBook;
 use wiz_hir::typed_stmt::{TypedBlock, TypedStmt};
@@ -66,7 +66,7 @@ fn test_unsafe_pointer() {
             body: vec![
                 TypedTopLevelDecl {
                     annotations: Default::default(),
-                    package: Package::from(&vec!["test"]),
+                    package: Package::from(&["test"]),
                     modifiers: vec![],
                     kind: TypedDeclKind::Struct(TypedStruct {
                         name: "A".to_string(),
@@ -78,7 +78,7 @@ fn test_unsafe_pointer() {
                         computed_properties: vec![],
                         member_functions: vec![TypedFun::size(TypedType::Value(
                             TypedValueType::Value(TypedNamedValueType {
-                                package: TypedPackage::Resolved(Package::from(&vec!["test"])),
+                                package: TypedPackage::Resolved(Package::from(&["test"])),
                                 name: "A".to_string(),
                                 type_args: None,
                             }),
@@ -87,7 +87,7 @@ fn test_unsafe_pointer() {
                 },
                 TypedTopLevelDecl {
                     annotations: Default::default(),
-                    package: Package::from(&vec!["test"]),
+                    package: Package::from(&["test"]),
                     modifiers: vec![],
                     kind: TypedDeclKind::Fun(TypedFun {
                         name: "function".to_string(),
@@ -97,7 +97,7 @@ fn test_unsafe_pointer() {
                             label: "_".to_string(),
                             name: "a".to_string(),
                             type_: TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-                                package: TypedPackage::Resolved(Package::from(&vec!["test"])),
+                                package: TypedPackage::Resolved(Package::from(&["test"])),
                                 name: "A".to_string(),
                                 type_args: None,
                             })),
@@ -122,7 +122,7 @@ fn test_unsafe_pointer() {
                                                 Some(TypedType::Value(TypedValueType::Value(
                                                     TypedNamedValueType {
                                                         package: TypedPackage::Resolved(
-                                                            Package::from(&vec!["test"]),
+                                                            Package::from(&["test"]),
                                                         ),
                                                         name: "A".to_string(),
                                                         type_args: None,
@@ -164,7 +164,7 @@ fn test_struct_stored_property() {
             body: vec![
                 TypedTopLevelDecl {
                     annotations: Default::default(),
-                    package: Package::from(&vec!["test"]),
+                    package: Package::from(&["test"]),
                     modifiers: vec![],
                     kind: TypedDeclKind::Struct(TypedStruct {
                         name: "A".to_string(),
@@ -176,7 +176,7 @@ fn test_struct_stored_property() {
                         computed_properties: vec![],
                         member_functions: vec![TypedFun::size(TypedType::Value(
                             TypedValueType::Value(TypedNamedValueType {
-                                package: TypedPackage::Resolved(Package::from(&vec!["test"])),
+                                package: TypedPackage::Resolved(Package::from(&["test"])),
                                 name: "A".to_string(),
                                 type_args: None,
                             }),
@@ -185,7 +185,7 @@ fn test_struct_stored_property() {
                 },
                 TypedTopLevelDecl {
                     annotations: Default::default(),
-                    package: Package::from(&vec!["test"]),
+                    package: Package::from(&["test"]),
                     modifiers: vec![],
                     kind: TypedDeclKind::Fun(TypedFun {
                         name: "function".to_string(),
@@ -195,7 +195,7 @@ fn test_struct_stored_property() {
                             label: "_".to_string(),
                             name: "a".to_string(),
                             type_: TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-                                package: TypedPackage::Resolved(Package::from(&vec!["test"])),
+                                package: TypedPackage::Resolved(Package::from(&["test"])),
                                 name: "A".to_string(),
                                 type_args: None,
                             })),
@@ -220,7 +220,7 @@ fn test_struct_stored_property() {
                                                 Some(TypedType::Value(TypedValueType::Value(
                                                     TypedNamedValueType {
                                                         package: TypedPackage::Resolved(
-                                                            Package::from(&vec!["test"]),
+                                                            Package::from(&["test"]),
                                                         ),
                                                         name: "A".to_string(),
                                                         type_args: None,
@@ -262,7 +262,7 @@ fn test_struct_init() {
             body: vec![
                 TypedTopLevelDecl {
                     annotations: Default::default(),
-                    package: Package::from(&vec!["test"]),
+                    package: Package::from(&["test"]),
                     modifiers: vec![],
                     kind: TypedDeclKind::Struct(TypedStruct {
                         name: "A".to_string(),
@@ -274,7 +274,7 @@ fn test_struct_init() {
                         computed_properties: vec![],
                         member_functions: vec![TypedFun::size(TypedType::Value(
                             TypedValueType::Value(TypedNamedValueType {
-                                package: TypedPackage::Resolved(Package::from(&vec!["test"])),
+                                package: TypedPackage::Resolved(Package::from(&["test"])),
                                 name: "A".to_string(),
                                 type_args: None,
                             }),
@@ -283,7 +283,7 @@ fn test_struct_init() {
                 },
                 TypedTopLevelDecl {
                     annotations: Default::default(),
-                    package: Package::from(&vec!["test"]),
+                    package: Package::from(&["test"]),
                     modifiers: vec![],
                     kind: TypedDeclKind::Fun(TypedFun {
                         name: "function".to_string(),
@@ -293,7 +293,7 @@ fn test_struct_init() {
                             label: "_".to_string(),
                             name: "a".to_string(),
                             type_: TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-                                package: TypedPackage::Resolved(Package::from(&vec!["test"])),
+                                package: TypedPackage::Resolved(Package::from(&["test"])),
                                 name: "A".to_string(),
                                 type_args: None,
                             })),
@@ -308,7 +308,7 @@ fn test_struct_init() {
                                     name: "a".to_string(),
                                     type_: Some(TypedType::Value(TypedValueType::Value(
                                         TypedNamedValueType {
-                                            package: TypedPackage::Resolved(Package::from(&vec![
+                                            package: TypedPackage::Resolved(Package::from(&[
                                                 "test",
                                             ])),
                                             name: "A".to_string(),
@@ -320,7 +320,7 @@ fn test_struct_init() {
                                             target: Box::new(TypedExpr::new(
                                                 TypedExprKind::Name(TypedName {
                                                     package: TypedPackage::Resolved(Package::from(
-                                                        &vec!["test"],
+                                                        &["test"],
                                                     )),
                                                     name: "A".to_string(),
                                                     type_arguments: None,
@@ -328,7 +328,7 @@ fn test_struct_init() {
                                                 Some(TypedType::Type(Box::new(TypedType::Value(
                                                     TypedValueType::Value(TypedNamedValueType {
                                                         package: TypedPackage::Resolved(
-                                                            Package::from(&vec!["test"]),
+                                                            Package::from(&["test"]),
                                                         ),
                                                         name: "A".to_string(),
                                                         type_args: None,
@@ -348,9 +348,9 @@ fn test_struct_init() {
                                         }),
                                         Some(TypedType::Value(TypedValueType::Value(
                                             TypedNamedValueType {
-                                                package: TypedPackage::Resolved(Package::from(
-                                                    &vec!["test"],
-                                                )),
+                                                package: TypedPackage::Resolved(Package::from(&[
+                                                    "test",
+                                                ])),
                                                 name: "A".to_string(),
                                                 type_args: None,
                                             },
@@ -386,7 +386,7 @@ fn test_struct_member_function() {
             uses: vec![],
             body: vec![TypedTopLevelDecl {
                 annotations: Default::default(),
-                package: Package::from(&vec!["test"]),
+                package: Package::from(&["test"]),
                 modifiers: vec![],
                 kind: TypedDeclKind::Struct(TypedStruct {
                     name: "A".to_string(),
@@ -405,9 +405,7 @@ fn test_struct_member_function() {
                                 type_: TypedType::Value(
                                     // TODO: Reference
                                     TypedValueType::Value(TypedNamedValueType {
-                                        package: TypedPackage::Resolved(Package::from(&vec![
-                                            "test",
-                                        ])),
+                                        package: TypedPackage::Resolved(Package::from(&["test"])),
                                         name: "A".to_string(),
                                         type_args: None,
                                     }),
@@ -430,7 +428,7 @@ fn test_struct_member_function() {
                                                     Some(TypedType::Value(TypedValueType::Value(
                                                         TypedNamedValueType {
                                                             package: TypedPackage::Resolved(
-                                                                Package::from(&vec!["test"]),
+                                                                Package::from(&["test"]),
                                                             ),
                                                             name: "A".to_string(),
                                                             type_args: None,
@@ -451,7 +449,7 @@ fn test_struct_member_function() {
                         },
                         TypedFun::size(TypedType::Value(TypedValueType::Value(
                             TypedNamedValueType {
-                                package: TypedPackage::Resolved(Package::from(&vec!["test"])),
+                                package: TypedPackage::Resolved(Package::from(&["test"])),
                                 name: "A".to_string(),
                                 type_args: None,
                             },
@@ -487,7 +485,7 @@ fn test_struct_member_function_call() {
             body: vec![
                 TypedTopLevelDecl {
                     annotations: Default::default(),
-                    package: Package::from(&vec!["test"]),
+                    package: Package::from(&["test"]),
                     modifiers: vec![],
                     kind: TypedDeclKind::Struct(TypedStruct {
                         name: "A".to_string(),
@@ -506,7 +504,7 @@ fn test_struct_member_function_call() {
                                     type_: TypedType::Value(
                                         // TODO: Reference
                                         TypedValueType::Value(TypedNamedValueType {
-                                            package: TypedPackage::Resolved(Package::from(&vec![
+                                            package: TypedPackage::Resolved(Package::from(&[
                                                 "test",
                                             ])),
                                             name: "A".to_string(),
@@ -532,9 +530,7 @@ fn test_struct_member_function_call() {
                                                             TypedValueType::Value(
                                                                 TypedNamedValueType {
                                                                     package: TypedPackage::Resolved(
-                                                                        Package::from(&vec![
-                                                                            "test",
-                                                                        ]),
+                                                                        Package::from(&["test"]),
                                                                     ),
                                                                     name: "A".to_string(),
                                                                     type_args: None,
@@ -556,7 +552,7 @@ fn test_struct_member_function_call() {
                             },
                             TypedFun::size(TypedType::Value(TypedValueType::Value(
                                 TypedNamedValueType {
-                                    package: TypedPackage::Resolved(Package::from(&vec!["test"])),
+                                    package: TypedPackage::Resolved(Package::from(&["test"])),
                                     name: "A".to_string(),
                                     type_args: None,
                                 },
@@ -566,7 +562,7 @@ fn test_struct_member_function_call() {
                 },
                 TypedTopLevelDecl {
                     annotations: Default::default(),
-                    package: Package::from(&vec!["test"]),
+                    package: Package::from(&["test"]),
                     modifiers: vec![],
                     kind: TypedDeclKind::Fun(TypedFun {
                         name: "function".to_string(),
@@ -576,7 +572,7 @@ fn test_struct_member_function_call() {
                             label: "_".to_string(),
                             name: "a".to_string(),
                             type_: TypedType::Value(TypedValueType::Value(TypedNamedValueType {
-                                package: TypedPackage::Resolved(Package::from(&vec!["test"])),
+                                package: TypedPackage::Resolved(Package::from(&["test"])),
                                 name: "A".to_string(),
                                 type_args: None,
                             })),
@@ -595,7 +591,7 @@ fn test_struct_member_function_call() {
                                                 Some(TypedType::Value(TypedValueType::Value(
                                                     TypedNamedValueType {
                                                         package: TypedPackage::Resolved(
-                                                            Package::from(&vec!["test"]),
+                                                            Package::from(&["test"]),
                                                         ),
                                                         name: "A".to_string(),
                                                         type_args: None,
@@ -611,7 +607,7 @@ fn test_struct_member_function_call() {
                                                 typ: TypedType::Value(TypedValueType::Value(
                                                     TypedNamedValueType {
                                                         package: TypedPackage::Resolved(
-                                                            Package::from(&vec!["test"]),
+                                                            Package::from(&["test"]),
                                                         ),
                                                         name: "A".to_string(),
                                                         type_args: None,
@@ -647,7 +643,7 @@ fn test_expr_function_with_no_arg() {
             uses: vec![],
             body: vec![TypedTopLevelDecl {
                 annotations: Default::default(),
-                package: Package::from(&vec!["test"]),
+                package: Package::from(&["test"]),
                 modifiers: vec![],
                 kind: TypedDeclKind::Fun(TypedFun {
                     name: "function".to_string(),
@@ -678,7 +674,7 @@ fn test_expr_function_with_arg() {
             uses: vec![],
             body: vec![TypedTopLevelDecl {
                 annotations: Default::default(),
-                package: Package::from(&vec!["test"]),
+                package: Package::from(&["test"]),
                 modifiers: vec![],
                 kind: TypedDeclKind::Fun(TypedFun {
                     name: "function".to_string(),
@@ -721,7 +717,7 @@ fn test_function_call() {
             body: vec![
                 TypedTopLevelDecl {
                     annotations: Default::default(),
-                    package: Package::from(&vec!["test"]),
+                    package: Package::from(&["test"]),
                     modifiers: vec![],
                     kind: TypedDeclKind::Fun(TypedFun {
                         name: "target_function".to_string(),
@@ -737,7 +733,7 @@ fn test_function_call() {
                 },
                 TypedTopLevelDecl {
                     annotations: Default::default(),
-                    package: Package::from(&vec!["test"]),
+                    package: Package::from(&["test"]),
                     modifiers: vec![],
                     kind: TypedDeclKind::Fun(TypedFun {
                         name: "main".to_string(),
@@ -749,7 +745,7 @@ fn test_function_call() {
                                 TypedExprKind::Call(TypedCall {
                                     target: Box::new(TypedExpr::new(
                                         TypedExprKind::Name(TypedName {
-                                            package: TypedPackage::Resolved(Package::from(&vec![
+                                            package: TypedPackage::Resolved(Package::from(&[
                                                 "test",
                                             ])),
                                             name: "target_function".to_string(),
@@ -788,7 +784,7 @@ fn test_return_integer_literal() {
             uses: vec![],
             body: vec![TypedTopLevelDecl {
                 annotations: Default::default(),
-                package: Package::from(&vec!["test"]),
+                package: Package::from(&["test"]),
                 modifiers: vec![],
                 kind: TypedDeclKind::Fun(TypedFun {
                     name: "sample".to_string(),
@@ -830,7 +826,7 @@ fn test_return_floating_point_literal() {
             uses: vec![],
             body: vec![TypedTopLevelDecl {
                 annotations: Default::default(),
-                package: Package::from(&vec!["test"]),
+                package: Package::from(&["test"]),
                 modifiers: vec![],
                 kind: TypedDeclKind::Fun(TypedFun {
                     name: "sample".to_string(),
@@ -872,7 +868,7 @@ fn test_binop() {
             uses: vec![],
             body: vec![TypedTopLevelDecl {
                 annotations: Default::default(),
-                package: Package::from(&vec!["test"]),
+                package: Package::from(&["test"]),
                 modifiers: vec![],
                 kind: TypedDeclKind::Fun(TypedFun {
                     name: "sample".to_string(),
@@ -919,7 +915,7 @@ fn test_subscript() {
             uses: vec![],
             body: vec![TypedTopLevelDecl {
                 annotations: Default::default(),
-                package: Package::from(&vec!["test"]),
+                package: Package::from(&["test"]),
                 modifiers: vec![],
                 kind: TypedDeclKind::Fun(TypedFun {
                     name: "get_first".to_string(),
@@ -969,7 +965,7 @@ fn test_if_else() {
             uses: vec![],
             body: vec![TypedTopLevelDecl {
                 annotations: Default::default(),
-                package: Package::from(&vec!["test"]),
+                package: Package::from(&["test"]),
                 modifiers: vec![],
                 kind: TypedDeclKind::Fun(TypedFun {
                     name: "test_if".to_string(),
@@ -1056,7 +1052,7 @@ fn test_if() {
             uses: vec![],
             body: vec![TypedTopLevelDecl {
                 annotations: Default::default(),
-                package: Package::from(&vec!["test"]),
+                package: Package::from(&["test"]),
                 modifiers: vec![],
                 kind: TypedDeclKind::Fun(TypedFun {
                     name: "test_if".to_string(),
@@ -1136,7 +1132,7 @@ fn test_reference_dereference() {
             uses: vec![],
             body: vec![TypedTopLevelDecl {
                 annotations: Default::default(),
-                package: Package::from(&vec!["test"]),
+                package: Package::from(&["test"]),
                 modifiers: vec![],
                 kind: TypedDeclKind::Fun(TypedFun {
                     name: "test_reference_dereference".to_string(),
@@ -1246,7 +1242,7 @@ fn test_toplevel_var() {
             uses: vec![],
             body: vec![TypedTopLevelDecl {
                 annotations: Default::default(),
-                package: Package::from(&vec!["tests"]),
+                package: Package::from(&["tests"]),
                 modifiers: vec![],
                 kind: TypedDeclKind::Var(TypedVar {
                     is_mut: false,
@@ -1260,6 +1256,55 @@ fn test_toplevel_var() {
             }],
         },
     )
+}
+
+#[test]
+fn test_type_cast() {
+    let source = r"
+    fun null(): *UInt8 {
+        return 0 as *UInt8
+    }
+    ";
+
+    check(
+        source,
+        TypedSpellBook {
+            name: "test".to_string(),
+            uses: vec![],
+            body: vec![TypedTopLevelDecl {
+                annotations: Default::default(),
+                package: Package::from(&["test"]),
+                modifiers: vec![],
+                kind: TypedDeclKind::Fun(TypedFun {
+                    name: "null".to_string(),
+                    type_params: None,
+                    type_constraints: None,
+                    arg_defs: vec![],
+                    body: Some(TypedFunBody::Block(TypedBlock {
+                        body: vec![TypedStmt::Expr(TypedExpr {
+                            kind: TypedExprKind::Return(TypedReturn {
+                                value: Some(Box::new(TypedExpr {
+                                    kind: TypedExprKind::TypeCast(TypedTypeCast {
+                                        target: Box::new(TypedExpr {
+                                            kind: TypedExprKind::Literal(
+                                                TypedLiteralKind::Integer("0".to_string()),
+                                            ),
+                                            ty: Some(TypedType::int64()),
+                                        }),
+                                        is_safe: false,
+                                        type_: TypedType::unsafe_pointer(TypedType::uint8()),
+                                    }),
+                                    ty: Some(TypedType::unsafe_pointer(TypedType::uint8())),
+                                })),
+                            }),
+                            ty: Some(TypedType::noting()),
+                        })],
+                    })),
+                    return_type: TypedType::unsafe_pointer(TypedType::uint8()),
+                }),
+            }],
+        },
+    );
 }
 
 #[test]
@@ -1281,7 +1326,7 @@ fn test_function_overload_by_arguments() {
             body: vec![
                 TypedTopLevelDecl {
                     annotations: Default::default(),
-                    package: Package::from(&vec!["test"]),
+                    package: Package::from(&["test"]),
                     modifiers: vec![],
                     kind: TypedDeclKind::Fun(TypedFun {
                         name: "sample".to_string(),
@@ -1298,7 +1343,7 @@ fn test_function_overload_by_arguments() {
                 },
                 TypedTopLevelDecl {
                     annotations: Default::default(),
-                    package: Package::from(&vec!["test"]),
+                    package: Package::from(&["test"]),
                     modifiers: vec![],
                     kind: TypedDeclKind::Fun(TypedFun {
                         name: "sample".to_string(),
@@ -1315,7 +1360,7 @@ fn test_function_overload_by_arguments() {
                 },
                 TypedTopLevelDecl {
                     annotations: Default::default(),
-                    package: Package::from(&vec!["test"]),
+                    package: Package::from(&["test"]),
                     modifiers: vec![],
                     kind: TypedDeclKind::Fun(TypedFun {
                         name: "call".to_string(),
@@ -1328,9 +1373,9 @@ fn test_function_overload_by_arguments() {
                                     TypedExprKind::Call(TypedCall {
                                         target: Box::new(TypedExpr::new(
                                             TypedExprKind::Name(TypedName {
-                                                package: TypedPackage::Resolved(Package::from(
-                                                    &vec!["test"],
-                                                )),
+                                                package: TypedPackage::Resolved(Package::from(&[
+                                                    "test",
+                                                ])),
                                                 name: "sample".to_string(),
                                                 type_arguments: None,
                                             }),
@@ -1363,9 +1408,9 @@ fn test_function_overload_by_arguments() {
                                     TypedExprKind::Call(TypedCall {
                                         target: Box::new(TypedExpr::new(
                                             TypedExprKind::Name(TypedName {
-                                                package: TypedPackage::Resolved(Package::from(
-                                                    &vec!["test"],
-                                                )),
+                                                package: TypedPackage::Resolved(Package::from(&[
+                                                    "test",
+                                                ])),
                                                 name: "sample".to_string(),
                                                 type_arguments: None,
                                             }),

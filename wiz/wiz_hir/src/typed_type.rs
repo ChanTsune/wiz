@@ -226,8 +226,8 @@ impl Package {
     }
 }
 
-impl<T: ToString> From<&[T]> for Package {
-    fn from(names: &[T]) -> Self {
+impl<T: ToString, const N: usize> From<&[T; N]> for Package {
+    fn from(names: &[T; N]) -> Self {
         Self {
             names: names.iter().map(T::to_string).collect(),
         }
