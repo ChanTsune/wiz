@@ -34,7 +34,7 @@ pub fn parse_from_string<P: AsRef<Path>>(
                 ))))
             } else {
                 Ok(WizFile {
-                    name: name.unwrap_or_default().to_string(),
+                    name: name.unwrap_or("<unknown source>").to_string(),
                     syntax: f,
                 })
             }
