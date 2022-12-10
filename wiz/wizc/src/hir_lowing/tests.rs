@@ -2,7 +2,8 @@ use crate::high_level_ir::node_id::ModuleId;
 use crate::high_level_ir::AstLowering;
 use wiz_arena::Arena;
 use wiz_mir::expr::{
-    MLCall, MLCallArg, MLExpr, MLLiteral, MLLiteralKind, MLName, MLUnaryOp, MLUnaryOpKind,
+    MLCall, MLCallArg, MLExpr, MLLiteral, MLLiteralKind, MLName, MLTypeCast, MLUnaryOp,
+    MLUnaryOpKind,
 };
 use wiz_mir::ml_decl::{MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar};
 use wiz_mir::ml_file::MLFile;
@@ -463,6 +464,51 @@ fn test_reference_dereference() {
                                 type_: MLValueType::Primitive(MLPrimitiveType::Int64),
                             })),
                         ],
+                    }),
+                }),
+            ],
+        },
+    )
+}
+
+#[test]
+fn test_type_cask() {
+    let source = r"
+    fun null(): *UInt8 {
+        return 0 as *UInt8
+    }
+    ";
+    check(
+        source,
+        MLFile {
+            name: "test".to_string(),
+            body: vec![
+                MLDecl::Fun(MLFun {
+                    name: "test::null".to_string(),
+                    arg_defs: vec![],
+                    return_type: MLValueType::Pointer(Box::new(MLType::Value(
+                        MLValueType::Primitive(MLPrimitiveType::UInt8),
+                    ))),
+                    body: None,
+                }),
+                MLDecl::Fun(MLFun {
+                    name: "test::null".to_string(),
+                    arg_defs: vec![],
+                    return_type: MLValueType::Pointer(Box::new(MLType::Value(
+                        MLValueType::Primitive(MLPrimitiveType::UInt8),
+                    ))),
+                    body: Some(MLFunBody {
+                        body: vec![MLStmt::Expr(MLExpr::Return(MLReturn {
+                            value: Some(Box::new(MLExpr::PrimitiveTypeCast(MLTypeCast {
+                                target: Box::new(MLExpr::Literal(MLLiteral {
+                                    kind: MLLiteralKind::Integer("0".to_string()),
+                                    type_: MLValueType::Primitive(MLPrimitiveType::Int64),
+                                })),
+                                type_: MLValueType::Pointer(Box::new(MLType::Value(
+                                    MLValueType::Primitive(MLPrimitiveType::UInt8),
+                                ))),
+                            }))),
+                        }))],
                     }),
                 }),
             ],
