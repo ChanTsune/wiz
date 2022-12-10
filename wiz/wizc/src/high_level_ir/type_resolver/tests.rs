@@ -348,9 +348,9 @@ fn test_struct_init() {
                                         }),
                                         Some(TypedType::Value(TypedValueType::Value(
                                             TypedNamedValueType {
-                                                package: TypedPackage::Resolved(Package::from(
-                                                    &["test"],
-                                                )),
+                                                package: TypedPackage::Resolved(Package::from(&[
+                                                    "test",
+                                                ])),
                                                 name: "A".to_string(),
                                                 type_args: None,
                                             },
@@ -405,9 +405,7 @@ fn test_struct_member_function() {
                                 type_: TypedType::Value(
                                     // TODO: Reference
                                     TypedValueType::Value(TypedNamedValueType {
-                                        package: TypedPackage::Resolved(Package::from(&[
-                                            "test",
-                                        ])),
+                                        package: TypedPackage::Resolved(Package::from(&["test"])),
                                         name: "A".to_string(),
                                         type_args: None,
                                     }),
@@ -532,9 +530,7 @@ fn test_struct_member_function_call() {
                                                             TypedValueType::Value(
                                                                 TypedNamedValueType {
                                                                     package: TypedPackage::Resolved(
-                                                                        Package::from(&[
-                                                                            "test",
-                                                                        ]),
+                                                                        Package::from(&["test"]),
                                                                     ),
                                                                     name: "A".to_string(),
                                                                     type_args: None,
@@ -1328,9 +1324,9 @@ fn test_function_overload_by_arguments() {
                                     TypedExprKind::Call(TypedCall {
                                         target: Box::new(TypedExpr::new(
                                             TypedExprKind::Name(TypedName {
-                                                package: TypedPackage::Resolved(Package::from(
-                                                    &["test"],
-                                                )),
+                                                package: TypedPackage::Resolved(Package::from(&[
+                                                    "test",
+                                                ])),
                                                 name: "sample".to_string(),
                                                 type_arguments: None,
                                             }),
@@ -1363,9 +1359,9 @@ fn test_function_overload_by_arguments() {
                                     TypedExprKind::Call(TypedCall {
                                         target: Box::new(TypedExpr::new(
                                             TypedExprKind::Name(TypedName {
-                                                package: TypedPackage::Resolved(Package::from(
-                                                    &["test"],
-                                                )),
+                                                package: TypedPackage::Resolved(Package::from(&[
+                                                    "test",
+                                                ])),
                                                 name: "sample".to_string(),
                                                 type_arguments: None,
                                             }),
