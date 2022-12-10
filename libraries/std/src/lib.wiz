@@ -5,6 +5,7 @@ namespace fs
 namespace io
 namespace math
 namespace memory
+namespace pointer
 namespace process
 namespace socket
 namespace string
