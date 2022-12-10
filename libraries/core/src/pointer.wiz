@@ -1,0 +1,3 @@
+fun null(): *UInt8 {
+    return 0 as *UInt8
+}
