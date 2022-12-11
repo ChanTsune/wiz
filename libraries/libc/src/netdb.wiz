@@ -1,0 +1,32 @@
+use libc::sys::socket::sockaddr
+
+struct addrinfo {
+    var ai_flags: Int32
+//    int              ai_flags;
+    var ai_family: Int32
+//    int              ai_family;
+    var ai_socktype: Int32
+//    int              ai_socktype;
+    var ai_protocol: Int32
+//    int              ai_protocol;
+    var ai_addrlen: UInt32
+//    socklen_t        ai_addrlen;
+    var ai_addr: *sockaddr
+//    struct sockaddr *ai_addr;
+    var ai_canonname: *Int8
+//    char            *ai_canonname;
+    var ai_next: *addrinfo
+//    struct addrinfo *ai_next;
+}
+
+#[no_mangle]
+fun getaddrinfo(_ node: *UInt8, _ service: *UInt8, _ hints: *addrinfo, _ res: *(*addrinfo)): Int32
+// int getaddrinfo(const char * __restrict, const char * __restrict, const struct addrinfo * __restrict, struct addrinfo ** __restrict);
+
+#[no_mangle]
+fun freeaddrinfo(_ res: *addrinfo): Unit
+// void freeaddrinfo(struct addrinfo *res);
+
+#[no_mangle]
+fun gai_strerror(_ errcode: Int32): *Int8
+// const char *gai_strerror(int errcode);
