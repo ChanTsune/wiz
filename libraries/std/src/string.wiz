@@ -26,7 +26,7 @@ struct String {
         }
     }
 
-    fun push(&self, _ s: String): Unit {
+    fun join(&self, _ s: String): Unit {
         self.buffer.extends(s.buffer)
     }
 
@@ -105,10 +105,10 @@ fun test_string_push_str() {
 }
 
 #[test]
-fun test_string_push_String() {
+fun test_string_join_String() {
     val world = String::new("World!")
     var s = String::new("Hello, ")
-    s.push(world)
+    s.join(world)
     assert(s.length() == 13)
 }
 
