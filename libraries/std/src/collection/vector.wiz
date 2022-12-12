@@ -104,6 +104,14 @@ struct UInt8Vector {
         self.ptr = self.allocator.reallocate(self.ptr, newCapacity)
         self.capacity = newCapacity
     }
+
+    fun extends(&self, _ other: Self): Unit {
+        var i = 0
+        while i < other.length {
+            self.push(element: other.get(i))
+            i += 1
+        }
+    }
 }
 
 extension UInt8Vector: Clone {
@@ -284,4 +292,25 @@ fun test_vector_equals_empty() {
     val vec = UInt8Vector::new()
     val vec2 = UInt8Vector::new()
     assert(vec.equals(vec2))
+}
+
+#[test]
+fun test_vector_extends() {
+    val vec = UInt8Vector::new()
+    vec.push(element: 1 as UInt8)
+    vec.push(element: 2 as UInt8)
+
+    val vec2 = UInt8Vector::new()
+    vec2.push(element: 3 as UInt8)
+    vec2.push(element: 4 as UInt8)
+
+    vec.extends(vec2)
+
+    val vec3 = UInt8Vector::new()
+    vec3.push(element: 1 as UInt8)
+    vec3.push(element: 2 as UInt8)
+    vec3.push(element: 3 as UInt8)
+    vec3.push(element: 4 as UInt8)
+
+    assert(vec.equals(vec3))
 }
