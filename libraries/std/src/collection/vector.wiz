@@ -112,6 +112,23 @@ struct UInt8Vector {
             i += 1
         }
     }
+
+    fun sort(&self): Unit {
+        var i = 0
+        while i < self.length {
+            var j = 0
+            while j < self.length {
+                val I = self.get(index: i)
+                val J = self.get(index: j)
+                if I < J {
+                    self.set(i, J)
+                    self.set(j, I)
+                }
+                j += 1
+            }
+            i += 1
+        }
+    }
 }
 
 extension UInt8Vector: Clone {
@@ -313,4 +330,21 @@ fun test_vector_extends() {
     vec3.push(element: 4 as UInt8)
 
     assert(vec.equals(vec3))
+}
+
+
+#[test]
+fun test_vector_sort() {
+    val vec = UInt8Vector::new()
+    vec.push(element: 3 as UInt8)
+    vec.push(element: 1 as UInt8)
+    vec.push(element: 5 as UInt8)
+    vec.sort()
+
+    val vec2 = UInt8Vector::new()
+    vec2.push(element: 1 as UInt8)
+    vec2.push(element: 3 as UInt8)
+    vec2.push(element: 5 as UInt8)
+
+    assert(vec.equals(vec2))
 }
