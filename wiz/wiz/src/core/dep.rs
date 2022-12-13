@@ -94,9 +94,15 @@ fn manifest_find_in(
                     .unwrap();
                     p
                 } else if let Some(git) = &detail.git {
-                    let repo =
-                        git2::Repository::clone(git, WizContext::git_dir().join(name)).unwrap();
-                    repo.path().join(MANIFEST_FILE_NAME)
+                    let clone_dir = WizContext::git_dir().join(name);
+                    let repo = if clone_dir.exists() {
+                        git2::Repository::open(clone_dir).unwrap()
+                    } else {
+                        git2::Repository::clone(git, clone_dir).unwrap()
+                    };
+                    let mut remote = repo.find_remote("origin").unwrap();
+                    remote.fetch(&["master"], None, None).unwrap();
+                    repo.path().parent().unwrap().join(MANIFEST_FILE_NAME)
                 } else {
                     unreachable!()
                 }
