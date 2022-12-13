@@ -87,6 +87,18 @@ struct UInt8Vector {
         return t
     }
 
+    fun index(&self, of element: UInt8): UInt64 {
+        var i = 0
+        while i < self.length {
+            val I = self.get(i)
+            if I == element {
+                return i
+            }
+            i += 1
+        }
+        return -1 as UInt64
+    }
+
     fun clear(&self): Unit {
         self.length = 0
     }
@@ -247,6 +259,17 @@ fun test_vector_set() {
     assert(vec.get(index: 0) == 9)
     assert(vec.get(index: 1) == 7)
     assert(vec.get(index: 2) == 8)
+}
+
+#[test]
+fun test_vector_index() {
+    val vec = UInt8Vector::new()
+    vec.push(element: 1 as UInt8)
+    vec.push(element: 4 as UInt8)
+    vec.push(element: 9 as UInt8)
+
+    assert(0 == vec.index(of: 1 as UInt8))
+    assert(2 == vec.index(of: 9 as UInt8))
 }
 
 #[test]
