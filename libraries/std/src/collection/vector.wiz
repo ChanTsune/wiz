@@ -154,6 +154,20 @@ struct UInt8Vector {
             i += 1
         }
     }
+
+    fun reverse(&self): Unit {
+        if self.length < 2 {
+            return
+        }
+        var i: UInt64 = 0
+        val l = self.length / 2
+        val lastIndex = self.length - 1
+        while i < l {
+            var tmp = self.swap(i, self.get(lastIndex - i))
+            self.set(lastIndex - i, tmp)
+            i += 1
+        }
+    }
 }
 
 extension UInt8Vector: Clone {
@@ -391,6 +405,22 @@ fun test_vector_sort() {
     vec2.push(element: 1 as UInt8)
     vec2.push(element: 3 as UInt8)
     vec2.push(element: 5 as UInt8)
+
+    assert(vec.equals(vec2))
+}
+
+#[test]
+fun test_vector_reverse() {
+    val vec = UInt8Vector::new()
+    vec.push(element: 3 as UInt8)
+    vec.push(element: 1 as UInt8)
+    vec.push(element: 5 as UInt8)
+    vec.reverse()
+
+    val vec2 = UInt8Vector::new()
+    vec2.push(element: 5 as UInt8)
+    vec2.push(element: 1 as UInt8)
+    vec2.push(element: 3 as UInt8)
 
     assert(vec.equals(vec2))
 }
