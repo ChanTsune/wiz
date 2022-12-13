@@ -99,6 +99,19 @@ struct UInt8Vector {
         return -1 as UInt64
     }
 
+    fun count(&self, _ element: UInt8): USize {
+        var i = 0
+        var c = 0
+        while i < self.length {
+            val I = self.get(i)
+            if I == element {
+                c += 1
+            }
+            i += 1
+        }
+        return c
+    }
+
     fun clear(&self): Unit {
         self.length = 0
     }
@@ -270,6 +283,16 @@ fun test_vector_index() {
 
     assert(0 == vec.index(of: 1 as UInt8))
     assert(2 == vec.index(of: 9 as UInt8))
+}
+
+#[test]
+fun test_vector_count() {
+    val vec = UInt8Vector::new()
+    vec.push(element: 3 as UInt8)
+    vec.push(element: 4 as UInt8)
+    vec.push(element: 3 as UInt8)
+
+    assert(2 == vec.count(3 as UInt8))
 }
 
 #[test]
