@@ -867,12 +867,7 @@ impl<'ctx> CodeGen<'ctx> {
     fn need_load(may_be_pointer: AnyTypeEnum<'ctx>, request_type: &MLValueType) -> bool {
         match may_be_pointer {
             AnyTypeEnum::PointerType(p) => match request_type {
-                MLValueType::Primitive(pv) => match pv {
-                    MLPrimitiveType::String | MLPrimitiveType::Noting | MLPrimitiveType::Unit => {
-                        false
-                    }
-                    _ => true,
-                },
+                MLValueType::Primitive(pv) => matches!(pv, MLPrimitiveType::String | MLPrimitiveType::Noting | MLPrimitiveType::Unit),
                 MLValueType::Struct(_) => true,
                 MLValueType::Pointer(r) | MLValueType::Reference(r) => match &**r {
                     MLType::Value(r) => Self::need_load(p.get_element_type(), r),
