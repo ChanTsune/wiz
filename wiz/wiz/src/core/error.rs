@@ -1,5 +1,5 @@
 use std::error::Error;
-use std::fmt::{Display, Formatter};
+use std::fmt::{Display, Formatter, Result};
 
 #[derive(Debug)]
 pub(crate) struct CliError(String);
@@ -17,7 +17,7 @@ impl From<&str> for CliError {
 }
 
 impl Display for CliError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         f.write_str(&self.0)
     }
 }
@@ -41,7 +41,7 @@ impl ProcessError {
 impl Error for ProcessError {}
 
 impl Display for ProcessError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         f.write_str(&format!("{:?}", self))
     }
 }

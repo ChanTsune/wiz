@@ -1,9 +1,8 @@
 use crate::constant::MANIFEST_FILE_NAME;
 use crate::core::error::CliError;
-use crate::core::manifest;
 use crate::core::manifest::{Dependency, Manifest};
 use crate::core::Result;
-use dirs::home_dir;
+use crate::core::{manifest, WizContext};
 use std::fmt::{Display, Formatter};
 use std::path::{Path, PathBuf};
 
@@ -36,9 +35,9 @@ pub fn resolve_manifest_dependencies(
     manifest: &Manifest,
     another_std: Option<&str>,
 ) -> Result<ResolvedDependencyTree> {
-    let home_dir = home_dir().unwrap();
-    let builtin_package_dir = home_dir.join(".wiz/lib/src/");
-    let package_index_cache_dir = home_dir.join(".wiz/repository/");
+    let home_dir = WizContext::home();
+    let builtin_package_dir = home_dir.join("lib/src/");
+    let package_index_cache_dir = WizContext::git_dir();
     let package_dirs = vec![builtin_package_dir, package_index_cache_dir];
     let mut result = Vec::with_capacity(manifest.dependencies.0.len());
     for (name, version) in manifest.dependencies.0.iter() {
@@ -80,18 +79,33 @@ fn manifest_find_in(
         .map(|dir| match version {
             Dependency::Simple(version) => dir.join(name).join(version).join(MANIFEST_FILE_NAME),
             Dependency::Detailed(detail) => {
-                let p = PathBuf::from(detail.path.as_ref().unwrap());
-
-                let p = if p.is_absolute() {
-                    p.join(MANIFEST_FILE_NAME)
+                if detail.is_path() && detail.is_git() {
+                    panic!("`path` and `git` both are specified.");
+                } else if let Some(path) = &detail.path {
+                    let p = PathBuf::from(path);
+                    let p = if p.is_absolute() {
+                        p.join(MANIFEST_FILE_NAME)
+                    } else {
+                        parent_manifest_path
+                            .join(detail.path.as_ref().unwrap())
+                            .join(MANIFEST_FILE_NAME)
+                    }
+                    .canonicalize()
+                    .unwrap();
+                    p
+                } else if let Some(git) = &detail.git {
+                    let clone_dir = WizContext::git_dir().join(name);
+                    let repo = if clone_dir.exists() {
+                        git2::Repository::open(clone_dir).unwrap()
+                    } else {
+                        git2::Repository::clone(git, clone_dir).unwrap()
+                    };
+                    let mut remote = repo.find_remote("origin").unwrap();
+                    remote.fetch(&["master"], None, None).unwrap();
+                    repo.path().parent().unwrap().join(MANIFEST_FILE_NAME)
                 } else {
-                    parent_manifest_path
-                        .join(detail.path.as_ref().unwrap())
-                        .join(MANIFEST_FILE_NAME)
+                    unreachable!()
                 }
-                .canonicalize()
-                .unwrap();
-                p
             }
         })
         .find(|manifest_path| manifest_path.exists());
