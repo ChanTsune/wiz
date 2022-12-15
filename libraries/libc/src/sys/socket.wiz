@@ -35,7 +35,7 @@ fun listen(_ socket: Size, _ backlog: Size): Size
 // fun listen(_ socket: c_int, _ backlog: c_int): c_int
 
 #[no_mangle]
-fun socket(_ domain: Size, _ type: Size, _ protocol: Size): Size
+fun socket(_ domain: Int32, _ type: Int32, _ protocol: Int32): Size
 // fun socket(_ domain: c_int, type: c_int, _ protocol: c_int): c_int
 
 #[no_mangle]

@@ -14,7 +14,7 @@ struct Socket {
     val fd: FileDescriptor
 
     fun new(_ domain: Size, _ type: Size, _ protocol: Size): Self {
-        val sfd = socket(domain, type, protocol)
+        val sfd = socket(domain as Int32, type as Int32, protocol as Int32)
         val fd = FileDescriptor::from(rawFd: sfd)
         return Socket::from(fd)
     }
