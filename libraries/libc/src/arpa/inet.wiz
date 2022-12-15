@@ -23,3 +23,7 @@ fun inet_ntoa(_ x: in_addr): *UInt8
 #[no_mangle]
 fun inet_aton(_ addr: *UInt8, _ inp: *in_addr): Size
 // int inet_aton(const char *, struct in_addr *);
+
+#[no_mangle]
+fun inet_ntop(_ af: Int32, _ src: *UInt8, _ dst: *UInt8, _ size: USize): *Int8
+// const char *inet_ntop(int, const void *, char *, socklen_t);
