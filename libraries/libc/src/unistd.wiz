@@ -33,3 +33,7 @@ fun close(_ socket: Size): Size
 // int unlink(const char *pathname);
 #[builtin, no_mangle]
 fun unlink(_ pathname: *UInt8): Size
+
+// char *getcwd(char *buf, size_t length)
+#[builtin, no_mangle]
+fun getcwd(_ buf: *UInt8, length: Size): *UInt8
