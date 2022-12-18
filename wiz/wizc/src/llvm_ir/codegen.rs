@@ -456,6 +456,41 @@ impl<'ctx> CodeGen<'ctx> {
                 }
                 _ => todo!(),
             },
+            (AnyValueEnum::PointerValue(left), AnyValueEnum::PointerValue(right)) => match b.kind {
+                MLBinOpKind::Plus => todo!(),
+                MLBinOpKind::Minus => todo!(),
+                MLBinOpKind::Mul => todo!(),
+                MLBinOpKind::Div => todo!(),
+                MLBinOpKind::Mod => todo!(),
+                MLBinOpKind::Equal => {
+                    let pint = self
+                        .context
+                        .ptr_sized_int_type(self.execution_engine.get_target_data(), None);
+                    let left = self.builder.build_ptr_to_int(left, pint, "");
+                    let right = self.builder.build_ptr_to_int(right, pint, "");
+                    let v = self
+                        .builder
+                        .build_int_compare(IntPredicate::EQ, left, right, "peq");
+                    v.as_any_value_enum()
+                }
+                MLBinOpKind::GrateThanEqual => todo!(),
+                MLBinOpKind::GrateThan => todo!(),
+                MLBinOpKind::LessThanEqual => todo!(),
+                MLBinOpKind::LessThan => todo!(),
+                MLBinOpKind::NotEqual => {
+                    let pint = self
+                        .context
+                        .ptr_sized_int_type(self.execution_engine.get_target_data(), None);
+                    let left = self.builder.build_ptr_to_int(left, pint, "");
+                    let right = self.builder.build_ptr_to_int(right, pint, "");
+                    let v = self
+                        .builder
+                        .build_int_compare(IntPredicate::NE, left, right, "pnq");
+                    v.as_any_value_enum()
+                }
+                MLBinOpKind::And => todo!(),
+                MLBinOpKind::Or => todo!(),
+            },
             (r, l) => {
                 panic!(
                     "Unsupported binary operation.\n{:?},{:?},{:?}",
