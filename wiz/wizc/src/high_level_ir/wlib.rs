@@ -95,7 +95,7 @@ impl WLib {
                     let mut fqn = Vec::new();
                     for name in e.name.package().into_resolved().names {
                         fqn.push(name);
-                    };
+                    }
                     fqn.push(e.name.name());
                     let id = arena.resolve_declaration_id_from_root(&fqn).unwrap();
                     for member_function in e.member_functions.iter() {
