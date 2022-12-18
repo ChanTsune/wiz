@@ -91,7 +91,24 @@ impl WLib {
                 TypedDeclKind::Protocol(p) => {
                     arena.register_struct(&id, &p.name, decl.annotations.clone());
                 }
-                TypedDeclKind::Extension(_) => {}
+                TypedDeclKind::Extension(e) => {
+                    let mut fqn = Vec::new();
+                    for name in e.name.package().into_resolved().names {
+                        fqn.push(name);
+                    };
+                    fqn.push(e.name.name());
+                    let id = arena.resolve_declaration_id_from_root(&fqn).unwrap();
+                    for member_function in e.member_functions.iter() {
+                        arena.register_function(
+                            &id,
+                            &member_function.name,
+                            member_function.type_(),
+                            member_function.type_params.clone(),
+                            member_function.body.clone(),
+                            Default::default(),
+                        );
+                    }
+                }
             };
         }
         Ok(())
