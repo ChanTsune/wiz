@@ -26,6 +26,10 @@ struct String {
         }
     }
 
+    fun join(&self, _ s: String): Unit {
+        self.buffer.extends(s.buffer)
+    }
+
     fun length(&self): UInt64 {
         return self.buffer.length
     }
@@ -94,9 +98,17 @@ fun test_string_isEmpty() {
 }
 
 #[test]
-fun test_string_push() {
+fun test_string_push_str() {
     var s = String::empty()
     s.push("Hello, World!")
+    assert(s.length() == 13)
+}
+
+#[test]
+fun test_string_join_String() {
+    val world = String::new("World!")
+    var s = String::new("Hello, ")
+    s.join(world)
     assert(s.length() == 13)
 }
 
