@@ -17,6 +17,10 @@ struct sockaddr_in {
 }
 
 #[no_mangle]
+fun inet_addr(_ cp: *UInt8): UInt32
+// unsigned long inet_addr(char *cp);
+
+#[no_mangle]
 fun inet_ntoa(_ x: in_addr): *UInt8
 // fun inet_ntoa(_ x: in_addr): *c_char
 
