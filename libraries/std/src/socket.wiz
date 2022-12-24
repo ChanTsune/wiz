@@ -128,10 +128,6 @@ fun htonl(_ x: UInt32): UInt32
 #[no_mangle]
 fun htons(_ x: UInt16): UInt16
 
-fun inet_ntoa(_ x: in_addr): &str {
-    return libc::arpa::inet::inet_ntoa(x) as &str
-}
-
 // #[test]
 fun test_server() {
 
