@@ -21,7 +21,7 @@ fun inet_ntoa(_ x: in_addr): *UInt8
 // fun inet_ntoa(_ x: in_addr): *c_char
 
 #[no_mangle]
-fun inet_aton(_ addr: *UInt8, _ inp: *in_addr): Size
+fun inet_aton(_ addr: *UInt8, _ inp: *in_addr): Int32
 // int inet_aton(const char *, struct in_addr *);
 
 #[no_mangle]
