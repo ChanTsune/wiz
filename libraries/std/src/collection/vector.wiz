@@ -87,6 +87,31 @@ struct UInt8Vector {
         return t
     }
 
+    fun index(&self, of element: UInt8): UInt64 {
+        var i = 0
+        while i < self.length {
+            val I = self.get(i)
+            if I == element {
+                return i
+            }
+            i += 1
+        }
+        return -1 as UInt64
+    }
+
+    fun count(&self, _ element: UInt8): USize {
+        var i = 0
+        var c = 0
+        while i < self.length {
+            val I = self.get(i)
+            if I == element {
+                c += 1
+            }
+            i += 1
+        }
+        return c
+    }
+
     fun clear(&self): Unit {
         self.length = 0
     }
@@ -103,6 +128,45 @@ struct UInt8Vector {
     fun reserve(&self, newCapacity: UInt64): Unit {
         self.ptr = self.allocator.reallocate(self.ptr, newCapacity)
         self.capacity = newCapacity
+    }
+
+    fun extends(&self, _ other: Self): Unit {
+        var i = 0
+        while i < other.length {
+            self.push(element: other.get(i))
+            i += 1
+        }
+    }
+
+    fun sort(&self): Unit {
+        var i = 0
+        while i < self.length {
+            var j = 0
+            while j < self.length {
+                val I = self.get(index: i)
+                val J = self.get(index: j)
+                if I < J {
+                    self.set(i, J)
+                    self.set(j, I)
+                }
+                j += 1
+            }
+            i += 1
+        }
+    }
+
+    fun reverse(&self): Unit {
+        if self.length < 2 {
+            return
+        }
+        var i: UInt64 = 0
+        val l = self.length / 2
+        val lastIndex = self.length - 1
+        while i < l {
+            var tmp = self.swap(i, self.get(lastIndex - i))
+            self.set(lastIndex - i, tmp)
+            i += 1
+        }
     }
 }
 
@@ -225,6 +289,27 @@ fun test_vector_set() {
 }
 
 #[test]
+fun test_vector_index() {
+    val vec = UInt8Vector::new()
+    vec.push(element: 1 as UInt8)
+    vec.push(element: 4 as UInt8)
+    vec.push(element: 9 as UInt8)
+
+    assert(0 == vec.index(of: 1 as UInt8))
+    assert(2 == vec.index(of: 9 as UInt8))
+}
+
+#[test]
+fun test_vector_count() {
+    val vec = UInt8Vector::new()
+    vec.push(element: 3 as UInt8)
+    vec.push(element: 4 as UInt8)
+    vec.push(element: 3 as UInt8)
+
+    assert(2 == vec.count(3 as UInt8))
+}
+
+#[test]
 fun test_vector_clear() {
     val vec = UInt8Vector::new()
     vec.push(element: 1 as UInt8)
@@ -283,5 +368,59 @@ fun test_vector_equals_same() {
 fun test_vector_equals_empty() {
     val vec = UInt8Vector::new()
     val vec2 = UInt8Vector::new()
+    assert(vec.equals(vec2))
+}
+
+#[test]
+fun test_vector_extends() {
+    val vec = UInt8Vector::new()
+    vec.push(element: 1 as UInt8)
+    vec.push(element: 2 as UInt8)
+
+    val vec2 = UInt8Vector::new()
+    vec2.push(element: 3 as UInt8)
+    vec2.push(element: 4 as UInt8)
+
+    vec.extends(vec2)
+
+    val vec3 = UInt8Vector::new()
+    vec3.push(element: 1 as UInt8)
+    vec3.push(element: 2 as UInt8)
+    vec3.push(element: 3 as UInt8)
+    vec3.push(element: 4 as UInt8)
+
+    assert(vec.equals(vec3))
+}
+
+
+#[test]
+fun test_vector_sort() {
+    val vec = UInt8Vector::new()
+    vec.push(element: 3 as UInt8)
+    vec.push(element: 1 as UInt8)
+    vec.push(element: 5 as UInt8)
+    vec.sort()
+
+    val vec2 = UInt8Vector::new()
+    vec2.push(element: 1 as UInt8)
+    vec2.push(element: 3 as UInt8)
+    vec2.push(element: 5 as UInt8)
+
+    assert(vec.equals(vec2))
+}
+
+#[test]
+fun test_vector_reverse() {
+    val vec = UInt8Vector::new()
+    vec.push(element: 3 as UInt8)
+    vec.push(element: 1 as UInt8)
+    vec.push(element: 5 as UInt8)
+    vec.reverse()
+
+    val vec2 = UInt8Vector::new()
+    vec2.push(element: 5 as UInt8)
+    vec2.push(element: 1 as UInt8)
+    vec2.push(element: 3 as UInt8)
+
     assert(vec.equals(vec2))
 }
