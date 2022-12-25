@@ -1,6 +1,7 @@
 use libc::string::*
 use libc::arpa::inet::*
 use libc::sys::socket::*
+use libc::netdb::*
 use std::io::FileDescriptor
 
 val PF_INET = 2
@@ -145,6 +146,14 @@ fun test_server() {
     }
     tcpStream.write("HTTP/1.1 200 OK\n")
     tcpStream.close()
+}
+
+#[test]
+fun test_address() {
+    val hosts = gethostbyname("localhost")
+    val i = (*hosts).h_addr_list
+    val i = *(*(i as *(*UInt32)))
+    assert(i == inet_addr("127.0.0.1"))
 }
 
 // #[test]
