@@ -1,0 +1,10 @@
+use std::net::address::ip::IpAddressV4
+
+struct SocketAddressV4 {
+    val ipAddress: IpAddressV4
+    val port: UInt16
+}
+
+struct SocketAddress {
+    val v4: SocketAddressV4
+}
