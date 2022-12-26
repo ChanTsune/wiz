@@ -2,11 +2,11 @@ use crate::Message;
 use anyhow::Context;
 
 /// json format message parser
-pub struct MessageParser {}
+pub struct MessageParser;
 
 impl MessageParser {
     pub fn new() -> Self {
-        Self {}
+        Self
     }
 
     pub fn parse(&self, message: &str) -> anyhow::Result<Message> {
