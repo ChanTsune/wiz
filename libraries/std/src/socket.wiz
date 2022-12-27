@@ -123,12 +123,6 @@ struct TcpStream {
     }
 }
 
-#[no_mangle]
-fun htonl(_ x: UInt32): UInt32
-
-#[no_mangle]
-fun htons(_ x: UInt16): UInt16
-
 // #[test]
 fun test_server() {
 

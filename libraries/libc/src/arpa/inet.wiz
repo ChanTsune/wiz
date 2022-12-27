@@ -31,3 +31,9 @@ fun inet_aton(_ addr: *UInt8, _ inp: *in_addr): Int32
 #[no_mangle]
 fun inet_ntop(_ af: Int32, _ src: *UInt8, _ dst: *UInt8, _ size: USize): *Int8
 // const char *inet_ntop(int, const void *, char *, socklen_t);
+
+#[no_mangle]
+fun htonl(_ x: UInt32): UInt32
+
+#[no_mangle]
+fun htons(_ x: UInt16): UInt16
