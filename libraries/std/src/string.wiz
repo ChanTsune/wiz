@@ -38,6 +38,22 @@ struct String {
         return self.buffer.isEmpty()
     }
 
+    fun index(&self, of pattern: String): USize {
+        if self.length() < pattern.length() {
+            return -1 as USize
+        }
+        var n: USize = 0
+        val end: USize = self.length() - pattern.length()
+        while n <= end {
+            val result = memcmp(self.buffer.ptr + n, pattern.buffer.ptr, pattern.buffer.length as USize)
+            if result == 0 {
+                return n
+            }
+            n += 1
+        }
+        return -1 as USize
+    }
+
     fun startsWith(&self, _ s: &str): Bool {
         val sLength = strlen(s)
         if self.length() < sLength {
@@ -117,6 +133,28 @@ fun test_string_equals() {
     var s = String::new("Hello, World!")
     var s2 = String::new("Hello, World!")
     assert(s.equals(s2))
+}
+
+#[test]
+fun test_string_index() {
+    val s = String::new("0123456789")
+
+    val ptn = String::new("6")
+    assert(s.index(of: ptn) == 6)
+
+    val ptn = String::new("45")
+    assert(s.index(of: ptn) == 4)
+
+    val ptn = String::new("9")
+    assert(s.index(of: ptn) == 9)
+
+    val ptn = String::new("a")
+    assert(s.index(of: ptn) == (-1 as USize))
+
+    val s = String::empty()
+
+    val ptn = String::new("a")
+    assert(s.index(of: ptn) == -1)
 }
 
 #[test]
