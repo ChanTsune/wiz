@@ -650,7 +650,9 @@ impl<'ctx> CodeGen<'ctx> {
                 .into_pointer_value();
             let etype = element.type_();
             let e = self.expr(element);
-            let v = BasicValueEnum::try_from(self.load_if_pointer_value(e, &etype.into_value_type())).unwrap();
+            let v =
+                BasicValueEnum::try_from(self.load_if_pointer_value(e, &etype.into_value_type()))
+                    .unwrap();
             self.builder.build_store(eidx, v);
         }
         self.builder.build_load(ptr, "").as_any_value_enum()
