@@ -69,6 +69,16 @@ struct String {
         }
         return memcmp(self.buffer.ptr + self.length() - sLength, s, sLength) == 0
     }
+
+    fun subString(&self, start: USize, end: USize): String {
+        if start >= end {
+            return String::empty()
+        }
+        val vec = UInt8Vector::with(capacity: end - start)
+        memcpy(vec.ptr, self.buffer.ptr + start, end - start)
+        vec.length = end - start
+        return Self(buffer: vec)
+    }
 }
 
 extension String: Printable {
@@ -189,4 +199,20 @@ fun test_string_endsWith_empty() {
 
     var s = String::new("Hello, World!")
     assert(s.endsWith(""))
+}
+
+#[test]
+fun test_string_subString() {
+    val s = String::new("0123456789")
+    val sub = s.subString(start: 0, end: 3)
+    val expected = String::new("012")
+    assert(sub.equals(expected))
+
+    val sub = s.subString(start: 1, end: 8)
+    val expected = String::new("1234567")
+    assert(sub.equals(expected))
+
+    val sub = s.subString(start: 2, end: 0)
+    val expected = String::empty()
+    assert(sub.equals(expected))
 }
