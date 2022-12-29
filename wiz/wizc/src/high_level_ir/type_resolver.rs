@@ -209,6 +209,13 @@ impl<'s> TypeResolver<'s> {
         }
         for member_function in member_functions {
             let type_ = self.context.full_type_name(&member_function.type_())?;
+            self.context.register_function(
+                &member_function.name,
+                type_.clone(),
+                member_function.type_params.clone(),
+                member_function.body.clone(),
+                Default::default(),
+            );
             let rs = self
                 .context
                 .arena_mut()
