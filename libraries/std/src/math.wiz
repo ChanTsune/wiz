@@ -23,6 +23,15 @@ fun lcm(_ m: Size, _ n: Size): Size {
     return m / t * n
 }
 
+fun pow(_ x: Size, n: USize): Size {
+    if n == 0 {
+        return 1
+    } else if n % 2 == 0 {
+        return pow(x * x, n / 2)
+    }
+    return x * pow(x, n - 1)
+}
+
 #[test]
 fun test_abs() {
     assert(abs(1) == 1)
@@ -40,4 +49,13 @@ fun test_lcm() {
     assert(lcm(1, 2) == 2)
     assert(lcm(3, 9) == 9)
     assert(lcm(12, 15) == 60)
+}
+
+#[test]
+fun test_pow() {
+    assert(pow(0, 0) == 1)
+    assert(pow(1, 1) == 1)
+    assert(pow(1, 10) == 1)
+    assert(pow(3, 3) == 27)
+    assert(pow(-3, 3) == -27)
 }
