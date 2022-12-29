@@ -724,7 +724,6 @@ impl<'a> HLIR2MLIR<'a> {
                 match target.ty.clone().unwrap() {
                     TypedType::Self_ => unreachable!(),
                     TypedType::Value(v) => {
-                        let target_type = self.value_type(v.clone());
                         let type_ = ty.unwrap();
                         if let TypedType::Function(fun_type) = &type_ {
                             args.insert(
@@ -735,7 +734,7 @@ impl<'a> HLIR2MLIR<'a> {
                                     is_vararg: false,
                                 },
                             );
-                            let mut mangled_name = target_type.name() + "::" + &name;
+                            let mut mangled_name = v.to_string() + "::" + &name;
                             if !fun_type.arguments.is_empty() {
                                 mangled_name += "##";
                                 mangled_name += &self.fun_arg_label_type_name_mangling(
