@@ -1,0 +1,29 @@
+use core::str::FromStr
+use libc::string::strlen
+
+fun fromStrInternal(_ s: &str): UInt64 {
+    var len = strlen(s)
+    var result = 0
+    var i: Size = 1
+    while 0 < len {
+        len -= 1
+        val t = s[len]
+        if 48 as UInt8 <= t && t <= 57 {
+            val tmp = (t - 48) as Size
+            result += tmp * i
+        }
+        i *= 10
+    }
+    return result
+}
+
+extension Int64: FromStr {
+    fun fromStr(_ s: &str): Int64 {
+        return std::integer::fromStrInternal(s) as Int64
+    }
+}
+#[test]
+fun test_integer_fromStr() {
+    val n = Int64::fromStr("123")
+    assert(n == 123)
+}

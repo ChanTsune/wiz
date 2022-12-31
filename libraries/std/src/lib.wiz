@@ -2,6 +2,7 @@ namespace builtin
 namespace collection
 namespace format
 namespace fs
+namespace integer
 namespace io
 namespace math
 namespace memory
