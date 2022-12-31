@@ -51,4 +51,17 @@ extension Size: FromStr {
 fun test_integer_fromStr() {
     val n = Int64::fromStr("123")
     assert(n == 123)
+    val n = Int32::fromStr("456")
+    assert(n == 456)
+    val n = Int16::fromStr("789")
+    assert(n == 789)
+    val n = Int8::fromStr("012")
+    assert(n == 12)
+    val n = Size::fromStr("345")
+    assert(n == 345)
+    /*
+    val n = Int64::fromStr("-980")
+    println(n)
+    assert(n == -980)
+    */
 }
