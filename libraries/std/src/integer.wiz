@@ -47,6 +47,36 @@ extension Size: FromStr {
     }
 }
 
+extension UInt64: FromStr {
+    fun fromStr(_ s: &str): Self {
+        return std::integer::fromStrInternal(s) as Self
+    }
+}
+
+extension UInt32: FromStr {
+    fun fromStr(_ s: &str): Self {
+        return std::integer::fromStrInternal(s) as Self
+    }
+}
+
+extension UInt16: FromStr {
+    fun fromStr(_ s: &str): Self {
+        return std::integer::fromStrInternal(s) as Self
+    }
+}
+
+extension UInt8: FromStr {
+    fun fromStr(_ s: &str): Self {
+        return std::integer::fromStrInternal(s) as Self
+    }
+}
+
+extension USize: FromStr {
+    fun fromStr(_ s: &str): Self {
+        return std::integer::fromStrInternal(s) as Self
+    }
+}
+
 #[test]
 fun test_integer_fromStr() {
     val n = Int64::fromStr("123")
@@ -59,6 +89,18 @@ fun test_integer_fromStr() {
     assert(n == 12)
     val n = Size::fromStr("345")
     assert(n == 345)
+
+    val n = UInt64::fromStr("123")
+    assert(n == 123)
+    val n = UInt32::fromStr("456")
+    assert(n == 456)
+    val n = UInt16::fromStr("789")
+    assert(n == 789)
+    val n = UInt8::fromStr("012")
+    assert(n == 12)
+    val n = USize::fromStr("345")
+    assert(n == 345)
+
     /*
     val n = Int64::fromStr("-980")
     println(n)
