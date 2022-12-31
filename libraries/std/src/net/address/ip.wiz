@@ -1,7 +1,14 @@
+use libc::arpa::inet::*
+
 struct IpAddressV4 {
     val adder: UInt32
 
     fun new(_ adder: UInt32): Self {
         return Self(adder: adder)
+    }
+
+    fun from(_ adder: &str): Self {
+        val s_addr = inet_addr(adder)
+        return IpAddressV4::new(adder: s_addr)
     }
 }
