@@ -22,6 +22,31 @@ extension Int64: FromStr {
         return std::integer::fromStrInternal(s) as Self
     }
 }
+
+extension Int32: FromStr {
+    fun fromStr(_ s: &str): Self {
+        return std::integer::fromStrInternal(s) as Self
+    }
+}
+
+extension Int16: FromStr {
+    fun fromStr(_ s: &str): Self {
+        return std::integer::fromStrInternal(s) as Self
+    }
+}
+
+extension Int8: FromStr {
+    fun fromStr(_ s: &str): Self {
+        return std::integer::fromStrInternal(s) as Self
+    }
+}
+
+extension Size: FromStr {
+    fun fromStr(_ s: &str): Self {
+        return std::integer::fromStrInternal(s) as Self
+    }
+}
+
 #[test]
 fun test_integer_fromStr() {
     val n = Int64::fromStr("123")
