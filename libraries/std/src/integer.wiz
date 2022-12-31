@@ -18,8 +18,8 @@ fun fromStrInternal(_ s: &str): UInt64 {
 }
 
 extension Int64: FromStr {
-    fun fromStr(_ s: &str): Int64 {
-        return std::integer::fromStrInternal(s) as Int64
+    fun fromStr(_ s: &str): Self {
+        return std::integer::fromStrInternal(s) as Self
     }
 }
 #[test]
