@@ -20,6 +20,27 @@ fun fromStrInternal(_ s: &str): UInt64 {
 extension Int64: FromStr {
     fun fromStr(_ s: &str): Self {
         return std::integer::fromStrInternal(s) as Self
+        /*
+        var s = s
+        val len = strlen(s)
+        if len != 0 {
+            val mayBeSign = s[0]
+            var negative = false
+            if mayBeSign == 43 { // '+'
+                negative = false
+                s += 1
+            } else if mayBeSign == 45 { // '-'
+                negative = true
+                s += 1
+            }
+            val result = std::integer::fromStrInternal(s) as Self
+            if negative {
+                return -result
+            }
+            return result
+        }
+        return 0
+        */
     }
 }
 
