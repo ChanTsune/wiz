@@ -1,7 +1,7 @@
 struct IpAddressV4 {
-    val adder: [UInt8; 4]
+    val adder: UInt32
 
-    fun new(_ adder: [UInt8; 4]): Self {
+    fun new(_ adder: UInt32): Self {
         return Self(adder: adder)
     }
 }
