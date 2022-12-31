@@ -1,0 +1,3 @@
+protocol FromStr {
+    fun fromStr(_ s: &str)
+}
