@@ -1,0 +1,9 @@
+use libc::netdb::gethostbyname
+use std::net::address::ip::*
+
+fun resolveHostByName(_ hostName: &str): IpAddressV4 {
+    val hosts = gethostbyname(hostName)
+    val i = (*hosts).h_addr_list
+    val i = *(*(i as *(*UInt32)))
+    return IpAddressV4::new(i)
+}
