@@ -12,3 +12,9 @@ struct IpAddressV4 {
         return IpAddressV4::new(adder: s_addr)
     }
 }
+
+#[test]
+fun test_invalid_address() {
+    val ipv4 = IpAddressV4::from("a")
+    assert(ipv4.adder == -1 as UInt32)
+}
