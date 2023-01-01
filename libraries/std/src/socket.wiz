@@ -173,10 +173,7 @@ fun test_client() {
             println(byteRecieved)
             buf[byteRecieved] = 0 as UInt8
             val s = 0
-            while (s < byteRecieved) {
-                libc::stdio::putchar(buf[s] as Size)
-                s += 1
-            }
+            print(buf as &str)
             totalBytesRecieved += byteRecieved
         }
     }
