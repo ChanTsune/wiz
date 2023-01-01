@@ -17,6 +17,10 @@ val SOCK_STREAM: Size = 1
 val SOCK_DGRAM: Size = 2
 val SOCK_RAW: Size = 3
 
+// shutdown
+val SHUT_RD: Int32 = 0
+val SHUT_WR: Int32 = 1
+val SHUT_RDWR: Int32 = 2
 
 #[no_mangle]
 fun accept(_ socket: Size, _ sockadder: *sockaddr, _ socklen: *USize): Size
@@ -33,6 +37,10 @@ fun connect(_ socket: Size, _ addr: *sockaddr, _ len: USize): Size
 #[no_mangle]
 fun listen(_ socket: Size, _ backlog: Size): Size
 // fun listen(_ socket: c_int, _ backlog: c_int): c_int
+
+#[no_mangle]
+fun shutdown(_ socket: Size, _ how: Int32): Size
+// int shutdown(int socket, int how);
 
 #[no_mangle]
 fun socket(_ domain: Int32, _ type: Int32, _ protocol: Int32): Size
