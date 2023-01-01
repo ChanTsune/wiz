@@ -1,3 +1,4 @@
 namespace dns
 namespace ip
+namespace parser
 namespace socket
