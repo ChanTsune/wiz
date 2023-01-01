@@ -153,7 +153,7 @@ fun test_address() {
 
 // #[test]
 fun test_client() {
-    val tcpStream = TcpStream::connect("127.0.0.1:45621")
+    val tcpStream = TcpStream::connect("localhost:45621")
     val socket = tcpStream.socket
 
     socket.send("GET / HTTP/1.1\n", 15, 0)
