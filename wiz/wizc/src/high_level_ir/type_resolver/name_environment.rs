@@ -201,7 +201,7 @@ impl<'a> NameEnvironment<'a> {
                             }
                         })
                         .ok_or_else(|| {
-                            ResolverError::from(format!("{:?} not has member named `{}`", v, name))
+                            ResolverError::from(format!("`{}` not has member named `{}`", v.to_string(), name))
                         })
                 }
                 TypedValueType::Array(_, _) => todo!(),
