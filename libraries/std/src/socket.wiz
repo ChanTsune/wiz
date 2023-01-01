@@ -172,7 +172,6 @@ fun test_client() {
         } else {
             println(byteRecieved)
             buf[byteRecieved] = 0 as UInt8
-            val s = 0
             print(buf as &str)
             totalBytesRecieved += byteRecieved
         }
