@@ -165,10 +165,10 @@ fun test_client() {
     socket.shutdown(SHUT_WR)
 
     var totalBytesRecieved = 0
-    val allocLength = 16
+    val allocLength = 256
     var messageSize = allocLength - 1
     var buf = libc::stdlib::malloc(allocLength) as *UInt8
-    while (totalBytesRecieved < 1024) {
+    while (true) {
         var byteRecieved = recv(socket.fd.rawFd, buf, messageSize, 0)
         if byteRecieved < 0 {
             println("Recieve failed")
@@ -176,7 +176,6 @@ fun test_client() {
         } else if (byteRecieved == 0) {
             return
         } else {
-            println(byteRecieved)
             buf[byteRecieved] = 0 as UInt8
             print(buf as &str)
             totalBytesRecieved += byteRecieved
