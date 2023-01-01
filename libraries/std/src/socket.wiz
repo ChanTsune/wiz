@@ -28,8 +28,6 @@ struct Socket {
         val inAdder = in_addr(s_addr: 0 as UInt32)
         val servSockAddr = sockaddr_in(sin_len: 0 as UInt8, sin_family: 0 as UInt8, sin_port: 0 as UInt16, sin_addr: inAdder, sin_zero: 0 as UInt64)
 
-        memset(&servSockAddr as *UInt8, 0, 16)
-
         servSockAddr.sin_family = AF_INET as UInt8
 
         inet_aton(adder, &servSockAddr.sin_addr)
