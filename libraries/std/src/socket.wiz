@@ -33,7 +33,8 @@ struct Socket {
         inet_aton(adder, &servSockAddr.sin_addr)
         servSockAddr.sin_port = htons(port)
 
-        val connectResult = libc::sys::socket::connect(self.fd.rawFd, &servSockAddr as *sockaddr, 16)
+        val sockaddrSize = sockaddr::size()
+        val connectResult = libc::sys::socket::connect(self.fd.rawFd, &servSockAddr as *sockaddr, sockaddrSize)
         assert(connectResult >= 0)
     }
 
