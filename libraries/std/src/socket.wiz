@@ -44,6 +44,10 @@ struct Socket {
         return libc::sys::socket::send(self.fd.rawFd, buf, len, flags)
     }
 
+    fun shutdown(&self, _ how: Int32): Size {
+        return libc::sys::socket::shutdown(self.fd.rawFd, how)
+    }
+
     fun close(&self): Unit {
         self.fd.close()
     }
@@ -157,6 +161,8 @@ fun test_client() {
     val socket = tcpStream.socket
 
     socket.send("GET / HTTP/1.1\n", 15, 0)
+
+    socket.shutdown(SHUT_WR)
 
     var totalBytesRecieved = 0
     val allocLength = 16
