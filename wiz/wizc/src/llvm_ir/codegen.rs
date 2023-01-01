@@ -627,7 +627,7 @@ impl<'ctx> CodeGen<'ctx> {
         let ep = self
             .builder
             .build_struct_gep(target, field_index, "struct_gep")
-            .unwrap();
+            .unwrap_or_else(|_| panic!("Target: {target:?}, Index: {field_index}"));
         ep.as_any_value_enum()
     }
 
