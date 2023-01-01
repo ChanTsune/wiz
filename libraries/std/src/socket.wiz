@@ -3,6 +3,7 @@ use libc::arpa::inet::*
 use libc::sys::socket::*
 use libc::netdb::*
 use std::io::FileDescriptor
+use std::net::address::parser::parse
 
 val PF_INET = 2
 
@@ -24,14 +25,15 @@ struct Socket {
         return Self(fd: fd)
     }
 
-    fun connect(&self, _ adder: &str, _ port: UInt16): Unit {
-        val inAdder = in_addr(s_addr: 0 as UInt32)
+    fun connect(&self, _ adder: &str): Unit {
+        val socketAddress = parse(adder)
+
+        val inAdder = in_addr(s_addr: socketAddress.v4.ipAddress.adder)
         val servSockAddr = sockaddr_in(sin_len: 0 as UInt8, sin_family: 0 as UInt8, sin_port: 0 as UInt16, sin_addr: inAdder, sin_zero: 0 as UInt64)
 
         servSockAddr.sin_family = AF_INET as UInt8
 
-        inet_aton(adder, &servSockAddr.sin_addr)
-        servSockAddr.sin_port = htons(port)
+        servSockAddr.sin_port = htons(socketAddress.v4.port)
 
         val sockaddrSize = sockaddr::size()
         val connectResult = libc::sys::socket::connect(self.fd.rawFd, &servSockAddr as *sockaddr, sockaddrSize)
@@ -103,9 +105,9 @@ struct TcpStream {
         return Self(socket: socket)
     }
 
-    fun connect(_ addr: &str, _ port: UInt16): Self {
+    fun connect(_ addr: &str): Self {
         val socket = Socket::new(PF_INET, SOCK_STREAM, IPPROTO_TCP)
-        socket.connect(addr, port)
+        socket.connect(addr)
         return TcpStream::from(socket)
     }
 
@@ -151,8 +153,7 @@ fun test_address() {
 
 // #[test]
 fun test_client() {
-    val tcpStream = TcpStream::connect("127.0.0.1", 45621 as UInt16)
-
+    val tcpStream = TcpStream::connect("127.0.0.1:45621")
     val socket = tcpStream.socket
 
     socket.send("GET / HTTP/1.1\n", 15, 0)
