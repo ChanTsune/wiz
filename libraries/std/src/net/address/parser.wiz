@@ -20,8 +20,6 @@ fun parse(_ adder: &str): SocketAddress {
     if ipv4.adder == -1 as UInt32 {
         ipv4 = resolveHostByName(addr.buffer.ptr as &str)
     }
-    println(port)
-    println(ipv4.adder)
     val socketV4 = SocketAddressV4::from(ipv4, port)
     return SocketAddress::from(socketV4)
 }
