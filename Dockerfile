@@ -2,7 +2,7 @@ FROM ubuntu:22.04 as llvm
 
 RUN apt-get update && apt-get upgrade -y
 
-RUN apt-get install -y git curl gcc lzma-dev
+RUN apt-get install -y git curl gcc lzma-dev libssl-dev pkg-config
 
 RUN apt-get install -y llvm-14 clang-14
 
