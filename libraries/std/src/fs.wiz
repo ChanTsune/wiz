@@ -16,8 +16,12 @@ struct File {
         return File::create(path, mode: S_IROTH + S_IRGRP + S_IWUSR + S_IRUSR)
     }
 
+    fun open(_ path: &str, mode: Size): Self {
+        return Self(fd: io::open(path, mode))
+    }
+
     fun open(_ path: &str): Self {
-        return Self(fd: io::open(path, O_RDWR))
+        return File::open(path, mode: O_RDWR)
     }
 
     fun close(&self): Unit {
@@ -54,4 +58,17 @@ fun test_file_read_write() {
     val result = file.read(20)
     file.close()
     File::remove("./test_file_read_write.txt")
+}
+
+#[test]
+fun test_file_write_append() {
+    var file = File::create("./test_file_write_append.txt")
+    file.write("first text")
+    file.close()
+    var file = File::open("./test_file_write_append.txt", mode: O_WRONLY + O_APPEND)
+    file.write("append text")
+    file.close()
+    val file = File::open("./test_file_write_append.txt")
+    val result = file.read(50)
+    File::remove("./test_file_write_append.txt")
 }
