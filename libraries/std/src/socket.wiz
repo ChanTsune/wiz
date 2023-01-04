@@ -133,18 +133,22 @@ fun test_server() {
 
     val listener = TcpListener::bind("8080")
 
-    listener.listen()
+    while true {
+        listener.listen()
 
-    val tcpStream = listener.accept()
+        val tcpStream = listener.accept()
 
-    var readLength = 100
-    while readLength == 100 {
-        readLength = 100
-        val request = tcpStream.read(readLength)
-        readLength = strlen(request)
+        var readLength = 100
+        while readLength == 100 {
+            readLength = 100
+            val request = tcpStream.read(readLength)
+            readLength = strlen(request)
+            println(request as &str)
+        }
+        tcpStream.write("HTTP/1.1 200 OK\n")
+        tcpStream.close()
     }
-    tcpStream.write("HTTP/1.1 200 OK\n")
-    tcpStream.close()
+
 }
 
 #[test]
