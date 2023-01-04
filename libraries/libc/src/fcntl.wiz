@@ -1,3 +1,32 @@
+/* File mode */
+/* Read, write, execute/search by owner */
+val S_IRWXU: UInt16 = 448
+    // 0o00700         /* [XSI] RWX mask for owner */
+val S_IRUSR: UInt16 = 256
+    // 0o00400         /* [XSI] R for owner */
+val S_IWUSR: UInt16 = 128
+    // 0o00200         /* [XSI] W for owner */
+val S_IXUSR: UInt16 = 64
+     // 0o00100         /* [XSI] X for owner */
+/* Read, write, execute/search by group */
+val S_IRWXG: UInt16 = 56
+     // 0o00070         /* [XSI] RWX mask for group */
+val S_IRGRP: UInt16 = 32
+     // 0o00040         /* [XSI] R for group */
+val S_IWGRP: UInt16 = 16
+     // 0o00020         /* [XSI] W for group */
+val S_IXGRP: UInt16 = 8
+      // 0o00010         /* [XSI] X for group */
+/* Read, write, execute/search by others */
+val S_IRWXO: UInt16 = 7
+      // 0o00007         /* [XSI] RWX mask for other */
+val S_IROTH: UInt16 = 4
+      // 0o00004         /* [XSI] R for other */
+val S_IWOTH: UInt16 = 2
+      // 0o00002         /* [XSI] W for other */
+val S_IXOTH: UInt16 = 1
+      // 0o00001         /* [XSI] X for other */
+
 // int creat(const char *pathname, mode_t mode);
 #[builtin, no_mangle]
 fun creat(_ fileName: *UInt8, _ mode: UInt16): Size
