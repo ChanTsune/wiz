@@ -6,9 +6,14 @@ use libc::unistd::*
 struct File {
     val fd: FileDescriptor
 
-    fun create(_ path: &str): Self {
-        val fd = creat(path, S_IROTH + S_IRGRP + S_IWUSR + S_IRUSR)
+    fun create(_ path: &str, mode: UInt16): Self {
+        val fd = creat(path, mode)
         return Self(fd: FileDescriptor::from(raeFd: fd))
+    }
+
+    /** create file with permission 644 */
+    fun create(_ path: &str): Self {
+        return File::create(path, mode: S_IROTH + S_IRGRP + S_IWUSR + S_IRUSR)
     }
 
     fun open(_ path: &str): Self {
@@ -36,4 +41,17 @@ struct File {
 fun test_file_create() {
     val file = File::create("./sample.txt")
     File::remove("./sample.txt")
+}
+
+#[test]
+fun test_file_read_write() {
+    val file = File::create("./test_file_read_write.txt")
+    file.close()
+    var file = File::open("./test_file_read_write.txt")
+    file.write("text write from wiz")
+    file.close()
+    var file = File::open("./test_file_read_write.txt")
+    val result = file.read(20)
+    file.close()
+    File::remove("./test_file_read_write.txt")
 }
