@@ -19,6 +19,14 @@ struct File {
         self.fd.close()
     }
 
+    fun write(&self, _ data: &str): Unit {
+        self.fd.write(data)
+    }
+
+    fun read(&self, _ size: Size): *UInt8 {
+        return self.fd.read(size)
+    }
+
     fun remove(_ path: &str): Unit {
         unlink(path)
     }
