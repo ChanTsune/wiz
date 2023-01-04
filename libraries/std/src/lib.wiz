@@ -2,11 +2,14 @@ namespace builtin
 namespace collection
 namespace format
 namespace fs
+namespace integer
 namespace io
 namespace math
 namespace memory
+namespace net
 namespace pointer
 namespace process
+namespace socket
 namespace string
 namespace test
 namespace text

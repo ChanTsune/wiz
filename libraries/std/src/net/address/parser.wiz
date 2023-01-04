@@ -1,0 +1,31 @@
+use std::net::address::dns::resolveHostByName
+use std::net::address::ip::IpAddressV4
+use std::net::address::socket::SocketAddress
+use std::net::address::socket::SocketAddressV4
+use std::string::String
+use std::process::*
+
+fun parse(_ adder: &str): SocketAddress {
+    val adder = String::new(adder)
+    val sep = String::new(":")
+    val sepIdx = adder.index(of: sep)
+    if sepIdx == -1 {
+        abort("address parse failed.")
+    }
+    val addr = adder.subString(start: 0, end: sepIdx)
+    val end = adder.length()
+    val port = adder.subString(start: sepIdx + sep.length() as USize, end: end)
+    val port = UInt16::fromStr(port.buffer.ptr as &str)
+    var ipv4 = IpAddressV4::from(addr.buffer.ptr as &str)
+    if ipv4.adder == -1 as UInt32 {
+        ipv4 = resolveHostByName(addr.buffer.ptr as &str)
+    }
+    val socketV4 = SocketAddressV4::from(ipv4, port)
+    return SocketAddress::from(socketV4)
+}
+
+#[test]
+fun test_address_parse() {
+    val fromIp = parse("127.0.0.1:80")
+    val fromHostName = parse("localhost:80")
+}

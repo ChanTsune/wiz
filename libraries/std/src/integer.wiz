@@ -1,0 +1,130 @@
+use core::str::FromStr
+use libc::string::strlen
+
+fun fromStrInternal(_ s: &str): UInt64 {
+    var len = strlen(s)
+    var result = 0
+    var i: Size = 1
+    while 0 < len {
+        len -= 1
+        val t = s[len]
+        if 48 as UInt8 <= t && t <= 57 {
+            val tmp = (t - 48) as Size
+            result += tmp * i
+        }
+        i *= 10
+    }
+    return result
+}
+
+extension Int64: FromStr {
+    fun fromStr(_ s: &str): Self {
+        return std::integer::fromStrInternal(s) as Self
+        /*
+        var s = s
+        val len = strlen(s)
+        if len != 0 {
+            val mayBeSign = s[0]
+            var negative = false
+            if mayBeSign == 43 { // '+'
+                negative = false
+                s += 1
+            } else if mayBeSign == 45 { // '-'
+                negative = true
+                s += 1
+            }
+            val result = std::integer::fromStrInternal(s) as Self
+            if negative {
+                return -result
+            }
+            return result
+        }
+        return 0
+        */
+    }
+}
+
+extension Int32: FromStr {
+    fun fromStr(_ s: &str): Self {
+        return std::integer::fromStrInternal(s) as Self
+    }
+}
+
+extension Int16: FromStr {
+    fun fromStr(_ s: &str): Self {
+        return std::integer::fromStrInternal(s) as Self
+    }
+}
+
+extension Int8: FromStr {
+    fun fromStr(_ s: &str): Self {
+        return std::integer::fromStrInternal(s) as Self
+    }
+}
+
+extension Size: FromStr {
+    fun fromStr(_ s: &str): Self {
+        return std::integer::fromStrInternal(s) as Self
+    }
+}
+
+extension UInt64: FromStr {
+    fun fromStr(_ s: &str): Self {
+        return std::integer::fromStrInternal(s) as Self
+    }
+}
+
+extension UInt32: FromStr {
+    fun fromStr(_ s: &str): Self {
+        return std::integer::fromStrInternal(s) as Self
+    }
+}
+
+extension UInt16: FromStr {
+    fun fromStr(_ s: &str): Self {
+        return std::integer::fromStrInternal(s) as Self
+    }
+}
+
+extension UInt8: FromStr {
+    fun fromStr(_ s: &str): Self {
+        return std::integer::fromStrInternal(s) as Self
+    }
+}
+
+extension USize: FromStr {
+    fun fromStr(_ s: &str): Self {
+        return std::integer::fromStrInternal(s) as Self
+    }
+}
+
+#[test]
+fun test_integer_fromStr() {
+    val n = Int64::fromStr("123")
+    assert(n == 123)
+    val n = Int32::fromStr("456")
+    assert(n == 456)
+    val n = Int16::fromStr("789")
+    assert(n == 789)
+    val n = Int8::fromStr("012")
+    assert(n == 12)
+    val n = Size::fromStr("345")
+    assert(n == 345)
+
+    val n = UInt64::fromStr("123")
+    assert(n == 123)
+    val n = UInt32::fromStr("456")
+    assert(n == 456)
+    val n = UInt16::fromStr("789")
+    assert(n == 789)
+    val n = UInt8::fromStr("012")
+    assert(n == 12)
+    val n = USize::fromStr("345")
+    assert(n == 345)
+
+    /*
+    val n = Int64::fromStr("-980")
+    println(n)
+    assert(n == -980)
+    */
+}

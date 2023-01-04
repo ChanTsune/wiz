@@ -1,0 +1,20 @@
+use libc::arpa::inet::*
+
+struct IpAddressV4 {
+    val adder: UInt32
+
+    fun new(_ adder: UInt32): Self {
+        return Self(adder: adder)
+    }
+
+    fun from(_ adder: &str): Self {
+        val s_addr = inet_addr(adder)
+        return IpAddressV4::new(adder: s_addr)
+    }
+}
+
+#[test]
+fun test_invalid_address() {
+    val ipv4 = IpAddressV4::from("a")
+    assert(ipv4.adder == -1 as UInt32)
+}

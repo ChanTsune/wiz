@@ -1,3 +1,4 @@
 namespace builtin
 namespace operator
 namespace pointer
+namespace str

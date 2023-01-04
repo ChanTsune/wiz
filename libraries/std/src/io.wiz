@@ -5,6 +5,7 @@ use libc::stdlib::*
 use libc::stdio::*
 use libc::string::*
 use libc::*
+use std::process::*
 
 val FD_STDIN: Size = 0
 val FD_STDOUT: Size = 1
@@ -44,10 +45,6 @@ fun open(_ fileName: *UInt8, _ options: Size): FileDescriptor {
     return FileDescriptor::from(rawFd: fcntl::open(fileName, options))
 }
 
-fun close(_ socket: Size): Size {
-    return unistd::close(socket)
-}
-
 struct FileDescriptor {
     val rawFd: Size
 
@@ -63,8 +60,7 @@ struct FileDescriptor {
         val buf = malloc(bufferLength + 1) as *UInt8
         val readLength = unistd::read(self.rawFd, buf, bufferLength)
         if readLength < 0 {
-            perror("unistd::read")
-            abort()
+            abort("unistd::read")
         }
         buf[readLength] = 0 as UInt8
         return buf

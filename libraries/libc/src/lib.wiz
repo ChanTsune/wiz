@@ -1,6 +1,7 @@
 namespace arpa
 namespace ctype
 namespace fcntl
+namespace netdb
 namespace stdio
 namespace stdlib
 namespace string

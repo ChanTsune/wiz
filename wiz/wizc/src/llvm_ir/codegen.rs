@@ -627,7 +627,7 @@ impl<'ctx> CodeGen<'ctx> {
         let ep = self
             .builder
             .build_struct_gep(target, field_index, "struct_gep")
-            .unwrap();
+            .unwrap_or_else(|_| panic!("Target: {target:?}, Index: {field_index}"));
         ep.as_any_value_enum()
     }
 
@@ -648,7 +648,11 @@ impl<'ctx> CodeGen<'ctx> {
                 .builder
                 .build_bitcast(eidx, ptr_type, "")
                 .into_pointer_value();
-            let v = BasicValueEnum::try_from(self.expr(element)).unwrap();
+            let etype = element.type_();
+            let e = self.expr(element);
+            let v =
+                BasicValueEnum::try_from(self.load_if_pointer_value(e, &etype.into_value_type()))
+                    .unwrap();
             self.builder.build_store(eidx, v);
         }
         self.builder.build_load(ptr, "").as_any_value_enum()
