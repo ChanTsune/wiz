@@ -25,9 +25,14 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rustup-init && \
 
 FROM rust as wiz
 
-COPY ./wiz ./wiz
-COPY ./libraries ./libraries
-COPY ./install.sh ./install.sh
-COPY ./env ./env
+ENV WIZ_HOME="/wiz/"
+ENV WIZ_VERSION="0.0.0"
 
-RUN zsh ./install.sh
+COPY ./wiz/ ${WIZ_HOME}source/
+COPY ./libraries/core ${WIZ_HOME}lib/src/core/${WIZ_VERSION}
+COPY ./libraries/libc ${WIZ_HOME}lib/src/libc/${WIZ_VERSION}
+COPY ./libraries/std ${WIZ_HOME}lib/src/std/${WIZ_VERSION}
+
+RUN . $HOME/.cargo/env; cargo install --path ${WIZ_HOME}source/wiz --root ${WIZ_HOME}
+RUN . $HOME/.cargo/env; cargo install --path ${WIZ_HOME}source/wizc --root ${WIZ_HOME}
+ENV PATH="$PATH:/wiz/bin"
