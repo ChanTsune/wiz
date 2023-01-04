@@ -45,10 +45,6 @@ fun open(_ fileName: *UInt8, _ options: Size): FileDescriptor {
     return FileDescriptor::from(rawFd: fcntl::open(fileName, options))
 }
 
-fun close(_ socket: Size): Size {
-    return unistd::close(socket)
-}
-
 struct FileDescriptor {
     val rawFd: Size
 
