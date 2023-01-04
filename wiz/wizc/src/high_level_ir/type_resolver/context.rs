@@ -194,7 +194,14 @@ impl<'a> ResolverContext<'a> {
                     self.arena()
                         .resolve_binary_operator(&key)
                         .cloned()
-                        .ok_or_else(|| ResolverError::from(format!("{:?} is not defined.", key)))
+                        .ok_or_else(|| {
+                            ResolverError::from(format!(
+                                "Operation `{:?}` for `{}` and `{}` is not defined.",
+                                key.0,
+                                key.1.to_string(),
+                                key.2.to_string()
+                            ))
+                        })
                 }
             }
         }
@@ -247,7 +254,7 @@ impl<'a> ResolverContext<'a> {
                             },
                         }
                     }
-                    _ => panic!(),
+                    a => panic!("{:?}", a),
                 }
             }
             TypedPackage::Resolved(_) => type_.clone(),
