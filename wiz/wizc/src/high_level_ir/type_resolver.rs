@@ -929,9 +929,7 @@ impl<'s> TypeResolver<'s> {
     }
 
     pub fn typed_call(&mut self, c: TypedCall) -> Result<(TypedCall, Option<TypedType>)> {
-        let TypedCall {
-            target, args
-        } = c;
+        let TypedCall { target, args } = c;
         let (target, args) = match self.expr(*target.clone(), None) {
             Ok(TypedExpr {
                 kind: TypedExprKind::Name(n),
@@ -949,8 +947,7 @@ impl<'s> TypeResolver<'s> {
                     } else {
                         Ok((
                             target,
-                            args
-                                .into_iter()
+                            args.into_iter()
                                 .zip(f.arguments)
                                 .map(|(c, annotation)| self.typed_call_arg(c, Some(annotation.typ)))
                                 .collect::<Result<Vec<_>>>()?,
@@ -972,8 +969,7 @@ impl<'s> TypeResolver<'s> {
                     } else {
                         Ok((
                             target,
-                            args
-                                .into_iter()
+                            args.into_iter()
                                 .zip(rs.stored_properties.clone().into_iter().map(|(_, t)| t))
                                 .map(|(c, annotation)| self.typed_call_arg(c, Some(annotation)))
                                 .collect::<Result<Vec<_>>>()?,
