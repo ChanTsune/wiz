@@ -929,24 +929,27 @@ impl<'s> TypeResolver<'s> {
     }
 
     pub fn typed_call(&mut self, c: TypedCall) -> Result<(TypedCall, Option<TypedType>)> {
-        let (target, args) = match self.expr((*c.target).clone(), None) {
+        let TypedCall {
+            target, args
+        } = c;
+        let (target, args) = match self.expr(*target.clone(), None) {
             Ok(TypedExpr {
                 kind: TypedExprKind::Name(n),
                 ty,
             }) => {
                 let target = TypedExpr::new(TypedExprKind::Name(n), ty);
                 if let Some(TypedType::Function(f)) = target.ty.clone() {
-                    if c.args.len() != f.arguments.len() {
+                    if args.len() != f.arguments.len() {
                         Err(ResolverError::from(format!(
                             "{:?} required {} arguments, but {} were given.",
                             target,
                             f.arguments.len(),
-                            c.args.len()
+                            args.len()
                         )))
                     } else {
                         Ok((
                             target,
-                            c.args
+                            args
                                 .into_iter()
                                 .zip(f.arguments)
                                 .map(|(c, annotation)| self.typed_call_arg(c, Some(annotation.typ)))
@@ -959,17 +962,17 @@ impl<'s> TypeResolver<'s> {
                         .arena_mut()
                         .get_type(&t.package().into_resolved().names, &t.name())
                         .unwrap();
-                    if rs.stored_properties.len() != c.args.len() {
+                    if rs.stored_properties.len() != args.len() {
                         Err(ResolverError::from(format!(
                             "`{}` required {} arguments, but {} were given.",
                             t.name(),
                             rs.stored_properties.len(),
-                            c.args.len()
+                            args.len()
                         )))
                     } else {
                         Ok((
                             target,
-                            c.args
+                            args
                                 .into_iter()
                                 .zip(rs.stored_properties.clone().into_iter().map(|(_, t)| t))
                                 .map(|(c, annotation)| self.typed_call_arg(c, Some(annotation)))
@@ -984,16 +987,14 @@ impl<'s> TypeResolver<'s> {
                 }
             }
             Ok(target) => {
-                let args = c
-                    .args
+                let args = args
                     .into_iter()
                     .map(|c| self.typed_call_arg(c, None))
                     .collect::<Result<Vec<_>>>()?;
                 Ok((target, args))
             }
             Err(_) => {
-                let args = c
-                    .args
+                let args = args
                     .into_iter()
                     .map(|c| self.typed_call_arg(c, None))
                     .collect::<Result<Vec<_>>>()?;
@@ -1007,7 +1008,7 @@ impl<'s> TypeResolver<'s> {
                         .collect(),
                     return_type: TypedType::noting(),
                 }));
-                let target = self.expr(*c.target, Some(arg_annotation))?;
+                let target = self.expr(*target, Some(arg_annotation))?;
                 Ok((target, args))
             }
         }?;
