@@ -114,8 +114,8 @@ impl<'a> AstLowering<'a> {
         self.push_namespace(name, |slf| {
             // NOTE: Inject default uses
             let mut uses = vec![
-                TypedUse::from(vec!["core", "builtin", "*"]),
-                TypedUse::from(vec!["std", "builtin", "*"]),
+                TypedUse::from(&["core", "builtin", "*"]),
+                TypedUse::from(&["std", "builtin", "*"]),
             ];
             let mut others = vec![];
             for l in syntax.body.into_iter() {
