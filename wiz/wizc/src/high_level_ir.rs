@@ -246,7 +246,6 @@ impl<'a> AstLowering<'a> {
                             }
                             s.push(&name);
                             s.set_extension("wiz");
-                            println!("Module: {}", s.display());
                             parse_from_file_path(&self.session.parse_session, s, Some(&name))
                                 .expect(&format!("try to parse {:?}{}, but failed", fqn, name))
                         }

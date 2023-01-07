@@ -9,7 +9,7 @@ pub(crate) const COMMAND_NAME: &str = "init";
 
 pub(crate) fn command(_: &str, options: &ArgMatches) -> Result<()> {
     let current = current_dir()?;
-    let project_name = current.iter().last();
+    let project_name = current.file_name();
     if !options.get_flag("overwrite") && current.read_dir()?.next().is_some() {
         return Err(Box::new(CliError::from(format!(
             "`{}` is not empty",

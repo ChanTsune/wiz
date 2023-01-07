@@ -1,8 +1,8 @@
 use crate::core::dep::{resolve_manifest_dependencies, ResolvedDependencyTree};
 use crate::core::error::CliError;
 use crate::core::workspace::Workspace;
-use crate::core::Result;
 use crate::core::{load_project, Cmd};
+use crate::core::{Error, Result};
 use clap::ArgMatches;
 use std::collections::{BTreeSet, HashMap, HashSet};
 use std::env;
@@ -10,8 +10,8 @@ use std::ffi::OsStr;
 use std::fs::create_dir_all;
 use std::path::{Path, PathBuf};
 use wiz_utils::topological_sort::topological_sort;
-use wizc_cli::{BuildType, Config, ConfigBuilder};
-use wizc_message::MessageParser;
+use wizc_cli::{BuildType, Config, ConfigBuilder, MessageFormat};
+use wizc_message::{Message, MessageKind, MessageParser};
 
 pub(crate) struct BuildCommand;
 
@@ -19,7 +19,8 @@ impl Cmd for BuildCommand {
     const NAME: &'static str = "build";
 
     fn execute(args: &ArgMatches) -> Result<()> {
-        command(Self::NAME, Options::from(args))
+        command(Self::NAME, Options::from(args))?;
+        Ok(())
     }
 }
 
@@ -61,7 +62,7 @@ impl<'ops> From<&'ops ArgMatches> for Options<'ops> {
     }
 }
 
-pub(crate) fn command(_: &str, options: Options) -> Result<()> {
+pub(crate) fn command(_: &str, options: Options) -> Result<PathBuf> {
     let ws = load_project(options.manifest_path)?;
 
     let resolved_dependencies =
@@ -104,7 +105,8 @@ pub(crate) fn command(_: &str, options: Options) -> Result<()> {
         } else {
             BuildType::Binary
         })
-        .libraries(&wlib_paths.iter().collect::<Vec<_>>());
+        .libraries(&wlib_paths.iter().collect::<Vec<_>>())
+        .message_format(MessageFormat::Json);
 
     config = if let Some(target_triple) = options.target_triple {
         config.target_triple(target_triple)
@@ -112,7 +114,29 @@ pub(crate) fn command(_: &str, options: Options) -> Result<()> {
         config
     };
 
-    super::subcommand::execute("wizc", config.as_args())
+    let output = super::subcommand::output("wizc", config.as_args())?;
+    let exit_code = output.status.code();
+    let error = if let Some(0) = exit_code {
+        let message_parser = MessageParser::new();
+        for line in String::from_utf8_lossy(&output.stdout).split_terminator('\n') {
+            match message_parser.parse(line) {
+                Ok(Message { kind }) => match kind {
+                    MessageKind::Output(output) => {
+                        return Ok(PathBuf::from(output));
+                    }
+                    _ => continue,
+                },
+                Err(_) => continue,
+            }
+        }
+        Error::new("no output detected")
+    } else if let Some(exit_code) = exit_code {
+        Error::new(format!("non zero exit status: {}", exit_code))
+    } else {
+        Error::new("process execution failed")
+    };
+    eprintln!("{}", String::from_utf8_lossy(&output.stderr));
+    Err(Box::new(error))
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
@@ -181,6 +205,7 @@ fn compile_dependencies(
                 .name(&dep.name)
                 .type_(BuildType::Library)
                 .libraries(&dep_wlib_paths)
+                .message_format(MessageFormat::Json)
                 .as_args(),
         )?;
         for line in String::from_utf8_lossy(&output.stdout).split_terminator('\n') {

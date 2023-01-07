@@ -1,9 +1,12 @@
 use crate::core::error::{CliError, ProcessError};
 use crate::core::Result;
+pub(crate) use clean::CleanCommand;
 use std::env;
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
+
+mod clean;
 
 fn get_executable_path<P: AsRef<Path>>(executable: P) -> Result<PathBuf> {
     let path = env::current_exe()?;

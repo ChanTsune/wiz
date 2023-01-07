@@ -1,0 +1,4 @@
+/// return a value pointing to an invalid address.
+fun null(): *UInt8 {
+    return core::pointer::null()
+}

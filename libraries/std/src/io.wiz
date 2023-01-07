@@ -1,18 +1,15 @@
+namespace buffered
+
+use std::io::buffered::*
 use libc::stdlib::*
+use libc::stdio::*
 use libc::string::*
+use libc::*
+use std::process::*
 
 val FD_STDIN: Size = 0
 val FD_STDOUT: Size = 1
 val FD_STDERR: Size = 2
-
-#[no_mangle]
-fun write(_ fd: Size, _ buf: *UInt8, _ nbyte: Size): Size
-
-#[no_mangle]
-fun read(_ fd: Size, _ buf: *UInt8, _ nbyte: Size): Size
-
-#[no_mangle]
-fun creat(_ fileName: *UInt8, _ mode: UInt16): Size
 
 val O_RDONLY: Size = 0
 // 0x0000          /* open for reading only */
@@ -44,11 +41,9 @@ val O_EXCL: Size = 2048
 val O_NOCTTY: Size = 131072
 // 0x00020000      /* don't assign controlling terminal */
 
-#[no_mangle]
-fun open(_ fileName: *UInt8, _ options: Size): Size
-
-#[no_mangle]
-fun close(_ socket: Size): Size
+fun open(_ fileName: *UInt8, _ options: Size): FileDescriptor {
+    return FileDescriptor::from(rawFd: fcntl::open(fileName, options))
+}
 
 struct FileDescriptor {
     val rawFd: Size
@@ -58,26 +53,31 @@ struct FileDescriptor {
     }
 
     fun write(&self, item: &str): Unit {
-        std::io::write(self.rawFd, item as *UInt8, strlen(item as *UInt8))
+        unistd::write(self.rawFd, item as *UInt8, strlen(item as *UInt8))
     }
 
     fun read(&self, _ bufferLength: Size): *UInt8 {
         val buf = malloc(bufferLength + 1) as *UInt8
-        val readLength = std::io::read(self.rawFd, buf, bufferLength)
+        val readLength = unistd::read(self.rawFd, buf, bufferLength)
+        if readLength < 0 {
+            abort("unistd::read")
+        }
         buf[readLength] = 0 as UInt8
         return buf
     }
 
     fun close(&self): Unit {
-        std::io::close(self.rawFd)
+        unistd::close(self.rawFd)
     }
 }
 
 struct StdIn {
-    val fd: FileDescriptor
+    val fd: BufferedFileDescriptor
 
     fun new(): Self {
-        return Self(fd: FileDescriptor::from(rawFd: FD_STDIN))
+        val fd = FileDescriptor::from(rawFd: FD_STDIN)
+        val bfd = BufferedFileDescriptor::new(fd)
+        return Self(fd: bfd)
     }
 
     fun read(&self, _ length: Size): *UInt8 {
@@ -107,4 +107,50 @@ struct StdErr {
     fun write(&self, _ item: &str): Unit {
         self.fd.write(item)
     }
+}
+
+use libc::unistd::*
+
+#[test]
+fun test_read_from_stdin() {
+
+    val fds = std::process::pipe()
+
+    val writeFd = FileDescriptor::from(fds.write as Size)
+    writeFd.write("Hello, world!")
+    writeFd.close()
+
+    val rfd: Int32 = fds.read
+
+    val stdInBackUp = dup(FD_STDIN as Int32)
+
+    dup2(rfd, FD_STDIN as Int32)
+    close(rfd as Int64)
+
+    val stdin = StdIn::new()
+    val buffer = stdin.read(13)
+
+    assert(strncmp(buffer, "Hello, world!", 13) == 0)
+
+    dup2(stdInBackUp, FD_STDIN as Int32)
+}
+
+#[test]
+fun test_write_to_stdout() {
+    val fds = std::process::pipe()
+
+    val wfd = fds.write
+    val outBackUp = dup(FD_STDOUT as Int32)
+    dup2(wfd, FD_STDOUT as Int32)
+    close(wfd as Int64)
+
+    val stdout = StdOut::new()
+    stdout.write("Hello Wiz!")
+
+    val readFd = FileDescriptor::from(rawFd: fds.read as Size)
+    val r = readFd.read(13)
+
+    assert(strncmp(r, "Hello Wiz!", 10) == 0)
+
+    dup2(outBackUp, FD_STDOUT as Int32)
 }

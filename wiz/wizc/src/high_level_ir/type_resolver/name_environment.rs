@@ -199,7 +199,11 @@ impl<'a> NameEnvironment<'a> {
                             }
                         })
                         .ok_or_else(|| {
-                            InferError::from(format!("{:?} not has member named `{}`", v, name))
+                            InferError::from(format!(
+                                "`{}` not has member named `{}`",
+                                v.to_string(),
+                                name
+                            ))
                         })
                 }
                 TypedValueType::Array(_, _) => todo!(),

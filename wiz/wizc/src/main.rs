@@ -5,17 +5,19 @@ use crate::high_level_ir::wlib::WLib;
 use crate::llvm_ir::codegen::CodeGen;
 use dirs::home_dir;
 use inkwell::context::Context;
+use std::fmt::Write as FWrite;
 use std::io::Write;
 use std::path::PathBuf;
 use std::process::Command;
 use std::{env, fs};
 use wiz_arena::Arena;
-use wiz_result::Result;
+use wiz_result::{Error, Result};
 use wiz_session::Session;
 use wiz_syntax_parser::parser::wiz::read_book_from_path;
-use wizc_cli::{BuildType, Config, ConfigExt, Emit};
+use wiz_utils::temp::temp_dir;
+use wizc_cli::{BuildType, Config, ConfigExt, Emit, MessageFormat};
 use wizc_hir_lowing::hlir2mlir;
-use wizc_message::Message;
+use wizc_message::{Message, MessageFormatter};
 
 mod high_level_ir;
 #[cfg(test)]
@@ -49,6 +51,10 @@ fn run_compiler(session: &mut Session) -> Result<()> {
 }
 
 fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
+    let message_formatter = match session.config.message_format() {
+        MessageFormat::Normal => MessageFormatter::DEFAULT,
+        MessageFormat::Json => MessageFormatter::JSON,
+    };
     let paths = session.config.paths();
     let out_dir = session
         .config
@@ -80,15 +86,21 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
                     let lib_path = p.join(lib_name);
                     let package_manifest_path = lib_path.join("Package.wiz");
                     if package_manifest_path.exists() {
-                        println!("`{}` found at {}", lib_name, lib_path.display());
+                        writeln!(
+                            session.out_stream,
+                            "`{}` found at {}",
+                            lib_name,
+                            lib_path.display()
+                        )
+                        .unwrap();
                         lib_paths.push((lib_path.join("src").join("lib.wiz"), lib_name));
                         break;
                     }
                 }
             }
-            let mut libs = vec![];
+            let mut libs = Vec::with_capacity(lib_paths.len());
             for (lib_path, name) in lib_paths.iter() {
-                let out_dir = env::temp_dir().join(name);
+                let out_dir = temp_dir().join(name);
                 fs::create_dir_all(&out_dir)?;
                 lib::run_compiler_for_std(lib_path, name, &out_dir, &libs)?;
                 libs.push({
@@ -131,11 +143,15 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
             path
         };
         wlib.write_to(&wlib_path);
-        println!("{}", Message::output(wlib_path));
+        writeln!(
+            session.out_stream,
+            "{}",
+            message_formatter.format(Message::output(wlib_path))
+        )?;
         return Ok(());
     }
 
-    println!("===== convert to mlir =====");
+    writeln!(session.out_stream, "===== convert to mlir =====")?;
 
     let std_mlir = std_hlir
         .into_iter()
@@ -157,7 +173,7 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
         write!(f, "{}", mlfile.to_string())
     })?;
 
-    println!("==== codegen ====");
+    writeln!(session.out_stream, "==== codegen ====")?;
     let module_name = &mlfile.name;
     let context = Context::create();
     let mut codegen = CodeGen::new(
@@ -196,13 +212,22 @@ fn run_compiler_internal(session: &mut Session, no_std: bool) -> Result<()> {
             ir_file.set_extension("ll");
             codegen.print_to_file(&ir_file)?;
 
-            Command::new("clang")
+            let output = Command::new("clang")
                 .args(&[ir_file.as_os_str(), "-o".as_ref(), out_path.as_os_str()])
                 .output()?;
+            if !output.status.success() {
+                return Err(Box::new(Error::new(String::from_utf8_lossy(
+                    &output.stderr,
+                ))));
+            }
             Ok(())
         }
     }?;
-    println!("{}", Message::output(&out_path));
+    writeln!(
+        session.out_stream,
+        "{}",
+        message_formatter.format(Message::output(&out_path))
+    )?;
     Ok(())
 }
 
@@ -272,7 +297,7 @@ mod tests {
         }
 
         fn out_dir(&self) -> PathBuf {
-            self.repository_root().join("out")
+            self.repository_root().join("out").join(&self.extra_out)
         }
     }
 

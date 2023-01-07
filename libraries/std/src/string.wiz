@@ -26,12 +26,32 @@ struct String {
         }
     }
 
+    fun join(&self, _ s: String): Unit {
+        self.buffer.extends(s.buffer)
+    }
+
     fun length(&self): UInt64 {
         return self.buffer.length
     }
 
     fun isEmpty(&self): Bool {
         return self.buffer.isEmpty()
+    }
+
+    fun index(&self, of pattern: String): USize {
+        if self.length() < pattern.length() {
+            return -1 as USize
+        }
+        var n: USize = 0
+        val end: USize = self.length() - pattern.length()
+        while n <= end {
+            val result = memcmp(self.buffer.ptr + n, pattern.buffer.ptr, pattern.buffer.length as USize)
+            if result == 0 {
+                return n
+            }
+            n += 1
+        }
+        return -1 as USize
     }
 
     fun startsWith(&self, _ s: &str): Bool {
@@ -48,6 +68,16 @@ struct String {
             return false
         }
         return memcmp(self.buffer.ptr + self.length() - sLength, s, sLength) == 0
+    }
+
+    fun subString(&self, start: USize, end: USize): String {
+        if start >= end {
+            return String::empty()
+        }
+        val vec = UInt8Vector::with(capacity: end - start)
+        memcpy(vec.ptr, self.buffer.ptr + start, end - start)
+        vec.length = end - start
+        return Self(buffer: vec)
     }
 }
 
@@ -94,9 +124,17 @@ fun test_string_isEmpty() {
 }
 
 #[test]
-fun test_string_push() {
+fun test_string_push_str() {
     var s = String::empty()
     s.push("Hello, World!")
+    assert(s.length() == 13)
+}
+
+#[test]
+fun test_string_join_String() {
+    val world = String::new("World!")
+    var s = String::new("Hello, ")
+    s.join(world)
     assert(s.length() == 13)
 }
 
@@ -105,6 +143,28 @@ fun test_string_equals() {
     var s = String::new("Hello, World!")
     var s2 = String::new("Hello, World!")
     assert(s.equals(s2))
+}
+
+#[test]
+fun test_string_index() {
+    val s = String::new("0123456789")
+
+    val ptn = String::new("6")
+    assert(s.index(of: ptn) == 6)
+
+    val ptn = String::new("45")
+    assert(s.index(of: ptn) == 4)
+
+    val ptn = String::new("9")
+    assert(s.index(of: ptn) == 9)
+
+    val ptn = String::new("a")
+    assert(s.index(of: ptn) == (-1 as USize))
+
+    val s = String::empty()
+
+    val ptn = String::new("a")
+    assert(s.index(of: ptn) == -1)
 }
 
 #[test]
@@ -139,4 +199,20 @@ fun test_string_endsWith_empty() {
 
     var s = String::new("Hello, World!")
     assert(s.endsWith(""))
+}
+
+#[test]
+fun test_string_subString() {
+    val s = String::new("0123456789")
+    val sub = s.subString(start: 0, end: 3)
+    val expected = String::new("012")
+    assert(sub.equals(expected))
+
+    val sub = s.subString(start: 1, end: 8)
+    val expected = String::new("1234567")
+    assert(sub.equals(expected))
+
+    val sub = s.subString(start: 2, end: 0)
+    val expected = String::empty()
+    assert(sub.equals(expected))
 }

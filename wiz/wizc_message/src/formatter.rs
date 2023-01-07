@@ -8,8 +8,8 @@ pub enum MessageFormat {
 pub struct MessageFormatter(MessageFormat);
 
 impl MessageFormatter {
-    const DEFAULT: Self = Self::new(MessageFormat::Normal);
-    const JSON: Self = Self::new(MessageFormat::Json);
+    pub const DEFAULT: Self = Self::new(MessageFormat::Normal);
+    pub const JSON: Self = Self::new(MessageFormat::Json);
 
     const fn new(format: MessageFormat) -> Self {
         Self(format)

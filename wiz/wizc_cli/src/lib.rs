@@ -24,6 +24,12 @@ pub fn app(name: &'static str) -> Command {
                 .value_parser(PossibleValuesParser::new(Emit::all_str())),
         )
         .arg(long("message-format").num_args(1).value_parser(["json"]))
+        .arg(
+            long("quite")
+                .short('q')
+                .action(ArgAction::SetTrue)
+                .help("No output printed to stdout"),
+        )
 }
 
 fn position(name: &'static str) -> Arg {

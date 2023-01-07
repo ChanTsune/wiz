@@ -1,13 +1,74 @@
+use std::io
 use std::io::*
+use libc::fcntl::*
+use libc::unistd::*
 
 struct File {
     val fd: FileDescriptor
 
+    fun create(_ path: &str, mode: UInt16): Self {
+        val fd = creat(path, mode)
+        return Self(fd: FileDescriptor::from(raeFd: fd))
+    }
+
+    /** create file with permission 644 */
+    fun create(_ path: &str): Self {
+        return File::create(path, mode: S_IROTH + S_IRGRP + S_IWUSR + S_IRUSR)
+    }
+
+    fun open(_ path: &str, mode: Size): Self {
+        return Self(fd: io::open(path, mode))
+    }
+
     fun open(_ path: &str): Self {
-        return Self(fd: FileDescriptor::from(rawFd: std::io::open(path, O_RDWR)))
+        return File::open(path, mode: O_RDWR)
     }
 
     fun close(&self): Unit {
-        std::io::close(self.fd.rawFd)
+        self.fd.close()
     }
+
+    fun write(&self, _ data: &str): Unit {
+        self.fd.write(data)
+    }
+
+    fun read(&self, _ size: Size): *UInt8 {
+        return self.fd.read(size)
+    }
+
+    fun remove(_ path: &str): Unit {
+        unlink(path)
+    }
+}
+
+#[test]
+fun test_file_create() {
+    val file = File::create("./sample.txt")
+    File::remove("./sample.txt")
+}
+
+#[test]
+fun test_file_read_write() {
+    val file = File::create("./test_file_read_write.txt")
+    file.close()
+    var file = File::open("./test_file_read_write.txt")
+    file.write("text write from wiz")
+    file.close()
+    var file = File::open("./test_file_read_write.txt")
+    val result = file.read(20)
+    file.close()
+    File::remove("./test_file_read_write.txt")
+}
+
+#[test]
+fun test_file_write_append() {
+    var file = File::create("./test_file_write_append.txt")
+    file.write("first text")
+    file.close()
+    var file = File::open("./test_file_write_append.txt", mode: O_WRONLY + O_APPEND)
+    file.write("append text")
+    file.close()
+    val file = File::open("./test_file_write_append.txt")
+    val result = file.read(50)
+    File::remove("./test_file_write_append.txt")
 }

@@ -11,8 +11,11 @@ mod test;
 
 use crate::build::BuildCommand;
 use crate::core::{Cmd, Result};
+use crate::run::RunCommand;
+use crate::subcommand::CleanCommand;
+use crate::test::TestCommand;
 use ansi_term::Color;
-use clap::{crate_version, Arg, ArgAction, Command};
+use clap::{crate_version, value_parser, Arg, ArgAction, Command};
 use std::process::exit;
 
 fn arg_target_triple() -> Arg {
@@ -42,6 +45,7 @@ fn cli() -> Result<()> {
         .about("Wiz's package manager")
         .arg_required_else_help(true)
         .allow_external_subcommands(true)
+        .external_subcommand_value_parser(value_parser!(String))
         .subcommand(
             Command::new(new::COMMAND_NAME)
                 .about("Create a new wiz package at <path>")
@@ -79,7 +83,7 @@ fn cli() -> Result<()> {
                 .arg(arg_std()),
         )
         .subcommand(
-            Command::new(run::COMMAND_NAME)
+            Command::new(RunCommand::NAME)
                 .about("Run a binary or example of the local package")
                 .arg(Arg::new("target-dir").help("Directory for all generated artifacts"))
                 .arg(arg_target_triple())
@@ -87,12 +91,13 @@ fn cli() -> Result<()> {
                 .arg(arg_std()),
         )
         .subcommand(
-            Command::new(test::COMMAND_NAME)
+            Command::new(TestCommand::NAME)
                 .about("Run the tests")
                 .arg(Arg::new("target-dir").help("Directory for all generated artifacts"))
                 .arg(arg_manifest_path())
                 .arg(arg_std()),
         )
+        .subcommand(CleanCommand::command())
         .arg(
             Arg::new("quite")
                 .action(ArgAction::SetTrue)
@@ -107,8 +112,9 @@ fn cli() -> Result<()> {
         Some((init::COMMAND_NAME, option)) => init::command(init::COMMAND_NAME, option),
         Some((BuildCommand::NAME, option)) => BuildCommand::execute(option),
         Some((check::COMMAND_NAME, option)) => check::command(check::COMMAND_NAME, option),
-        Some((test::COMMAND_NAME, option)) => test::command(test::COMMAND_NAME, option),
-        Some((run::COMMAND_NAME, option)) => run::command(run::COMMAND_NAME, option),
+        Some((TestCommand::NAME, option)) => TestCommand::execute(option),
+        Some((RunCommand::NAME, option)) => RunCommand::execute(option),
+        Some((CleanCommand::NAME, option)) => CleanCommand::execute(option),
         Some((cmd, option)) => external_subcommand::try_execute(cmd, option),
         _ => panic!(),
     }?;

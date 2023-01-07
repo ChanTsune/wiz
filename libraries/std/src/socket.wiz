@@ -1,0 +1,190 @@
+use libc::string::*
+use libc::arpa::inet::*
+use libc::sys::socket::*
+use libc::netdb::*
+use std::io::FileDescriptor
+use std::net::address::parser::parse
+
+val PF_INET = 2
+
+val IPPROTO_TCP = 6
+
+val INADDR_ANY = 0
+
+
+struct Socket {
+    val fd: FileDescriptor
+
+    fun new(_ domain: Size, _ type: Size, _ protocol: Size): Self {
+        val sfd = socket(domain as Int32, type as Int32, protocol as Int32)
+        val fd = FileDescriptor::from(rawFd: sfd)
+        return Socket::from(fd)
+    }
+
+    fun from(_ fd: FileDescriptor): Self {
+        return Self(fd: fd)
+    }
+
+    fun connect(&self, _ adder: &str): Unit {
+        val socketAddress = parse(adder)
+
+        val inAdder = in_addr(s_addr: socketAddress.v4.ipAddress.adder)
+        val servSockAddr = sockaddr_in(sin_len: 0 as UInt8, sin_family: 0 as UInt8, sin_port: 0 as UInt16, sin_addr: inAdder, sin_zero: 0 as UInt64)
+
+        servSockAddr.sin_family = AF_INET as UInt8
+
+        servSockAddr.sin_port = htons(socketAddress.v4.port)
+
+        val sockaddrSize = sockaddr::size()
+        val connectResult = libc::sys::socket::connect(self.fd.rawFd, &servSockAddr as *sockaddr, sockaddrSize)
+        assert(connectResult >= 0)
+    }
+
+    fun send(&self, _ buf: *UInt8, _ len: USize, _ flags: Size): Size {
+        return libc::sys::socket::send(self.fd.rawFd, buf, len, flags)
+    }
+
+    fun shutdown(&self, _ how: Int32): Size {
+        return libc::sys::socket::shutdown(self.fd.rawFd, how)
+    }
+
+    fun close(&self): Unit {
+        self.fd.close()
+    }
+
+}
+
+struct TcpListener {
+    val socket: Socket
+
+    fun from(_ socket: Socket): Self {
+        return Self(socket: socket)
+    }
+
+    fun bind(_ adder: &str): Self {
+        val serverPort = libc::stdlib::atoi(adder)
+
+        val inAdder = in_addr(s_addr: 0 as UInt32)
+        val serverSocketAdder = sockaddr_in(sin_len: 0 as UInt8, sin_family: 0 as UInt8, sin_port: 0 as UInt16, sin_addr: inAdder, sin_zero: 0 as UInt64)
+
+        memset(&serverSocketAdder as *UInt8, 0, 16)
+
+        serverSocketAdder.sin_family = AF_INET as UInt8
+        serverSocketAdder.sin_addr.s_addr = htonl(INADDR_ANY as UInt32) as UInt32
+        serverSocketAdder.sin_port = htons(serverPort as UInt16)
+
+        val socket = Socket::new(PF_INET, SOCK_STREAM, IPPROTO_TCP)
+
+        val bindResult = libc::sys::socket::bind(socket.fd.rawFd, &serverSocketAdder as *sockaddr, 16)
+        assert(bindResult >= 0)
+
+        return TcpListener::from(socket)
+    }
+
+    fun listen(&self): Unit {
+        val queueLimit = 10
+        libc::sys::socket::listen(self.socket.fd.rawFd, queueLimit)
+    }
+
+    fun accept(&self): TcpStream {
+        val inAdder = in_addr(s_addr: 0 as UInt32)
+        val clientSocketAdder = sockaddr_in(sin_len: 0 as UInt8, sin_family: 0 as UInt8, sin_port: 0 as UInt16, sin_addr: inAdder, sin_zero: 0 as UInt64)
+
+        val clientLen = 16
+        val clientSocket = libc::sys::socket::accept(self.socket.fd.rawFd, &clientSocketAdder as *sockaddr, &clientLen)
+        val fd = FileDescriptor::from(rawFd: clientSocket)
+        return TcpStream::from(fd)
+    }
+}
+
+struct TcpStream {
+    val socket: Socket
+
+    fun from(_ socket: Socket): Self {
+        return Self(socket: socket)
+    }
+
+    fun from(_ fd: FileDescriptor): Self {
+        val socket = Socket::from(fd)
+        return Self(socket: socket)
+    }
+
+    fun connect(_ addr: &str): Self {
+        val socket = Socket::new(PF_INET, SOCK_STREAM, IPPROTO_TCP)
+        socket.connect(addr)
+        return TcpStream::from(socket)
+    }
+
+    fun read(&self, _ size: Size): *UInt8 {
+        return self.socket.fd.read(size)
+    }
+
+    fun write(&self, _ data: *UInt8): Unit {
+        self.socket.fd.write(data)
+    }
+
+    fun close(&self): Unit {
+        self.socket.close()
+    }
+}
+
+// #[test]
+fun test_server() {
+
+    val listener = TcpListener::bind("8080")
+
+    while true {
+        listener.listen()
+
+        val tcpStream = listener.accept()
+
+        var readLength = 100
+        while readLength == 100 {
+            readLength = 100
+            val request = tcpStream.read(readLength)
+            readLength = strlen(request)
+            println(request as &str)
+        }
+        tcpStream.write("HTTP/1.1 200 OK\n")
+        tcpStream.close()
+    }
+
+}
+
+#[test]
+fun test_address() {
+    val hosts = gethostbyname("localhost")
+    val i = (*hosts).h_addr_list
+    val i = *(*(i as *(*UInt32)))
+    assert(i == inet_addr("127.0.0.1"))
+}
+
+// #[test]
+fun test_client() {
+    val tcpStream = TcpStream::connect("localhost:45621")
+    val socket = tcpStream.socket
+
+    socket.send("GET / HTTP/1.1\n", 15, 0)
+
+    socket.shutdown(SHUT_WR)
+
+    var totalBytesRecieved = 0
+    val allocLength = 256
+    var messageSize = allocLength - 1
+    var buf = libc::stdlib::malloc(allocLength) as *UInt8
+    while (true) {
+        var byteRecieved = recv(socket.fd.rawFd, buf, messageSize, 0)
+        if byteRecieved < 0 {
+            println("Recieve failed")
+            return
+        } else if (byteRecieved == 0) {
+            return
+        } else {
+            buf[byteRecieved] = 0 as UInt8
+            print(buf as &str)
+            totalBytesRecieved += byteRecieved
+        }
+    }
+
+    socket.close()
+}

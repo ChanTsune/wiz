@@ -4,6 +4,7 @@ mod name_environment;
 mod tests;
 
 use crate::high_level_ir::type_resolver::context::ResolverContext;
+use std::fmt::Write;
 use wiz_arena::{Arena, DeclarationId, DeclarationItemKind};
 use wiz_hir::typed_decl::{
     TypedArgDef, TypedDeclKind, TypedExtension, TypedFun, TypedFunBody, TypedProtocol,
@@ -206,6 +207,13 @@ impl<'s> TypeResolver<'s> {
         }
         for member_function in member_functions {
             let type_ = self.context.full_type_name(&member_function.type_())?;
+            self.context.register_function(
+                &member_function.name,
+                type_.clone(),
+                member_function.type_params.clone(),
+                member_function.body.clone(),
+                Default::default(),
+            );
             let rs = self
                 .context
                 .arena_mut()
@@ -606,7 +614,7 @@ impl<'s> TypeResolver<'s> {
                 DeclarationItemKind::Variable(t) => {}
                 DeclarationItemKind::Function(rf) => {
                     if rf.is_generic() {
-                        println!("name => {}", n.name);
+                        writeln!(self.session.out_stream, "name => {}", n.name).unwrap();
                     }
                 }
             }

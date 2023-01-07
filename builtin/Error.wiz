@@ -3,7 +3,7 @@ protocol Error {
 }
 
 extension Error: Printable {
-    fun toString() -> String {
+    fun description() -> String {
         return message
     }
 }
