@@ -9,8 +9,8 @@ pub struct TypedUse {
     pub alias: Option<String>,
 }
 
-impl<T: ToString, const N: usize> From<&[T;N]> for TypedUse {
-    fn from(vec: &[T;N]) -> Self {
+impl<T: ToString, const N: usize> From<&[T; N]> for TypedUse {
+    fn from(vec: &[T; N]) -> Self {
         Self {
             annotations: Default::default(),
             package: Package::from(vec),
