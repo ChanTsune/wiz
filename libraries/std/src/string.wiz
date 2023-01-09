@@ -89,6 +89,14 @@ struct String {
         vec.length = end - start
         return Self(buffer: vec)
     }
+
+    fun removed(&self, suffix: &str): String {
+        if self.endsWith(suffix) {
+            val end = (self.length() as USize) - strlen(suffix)
+            return self.subString(start: 0, end: end)
+        }
+        return self.clone()
+    }
 }
 
 extension String: Printable {
@@ -225,4 +233,16 @@ fun test_string_subString() {
     val sub = s.subString(start: 2, end: 0)
     val expected = String::empty()
     assert(sub.equals(expected))
+}
+
+#[test]
+fun test_string_removed_suffix() {
+    val s = String::from("0123456789")
+    val removed = s.removed(suffix: "89")
+    val expected = String::from("01234567")
+    assert(removed.equals(expected))
+
+    val removed = s.removed(suffix: "0123")
+    val expected = String::from("0123456789")
+    assert(removed.equals(expected))
 }
