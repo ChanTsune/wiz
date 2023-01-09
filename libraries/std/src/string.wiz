@@ -16,6 +16,10 @@ struct String {
         return Self(buffer: UInt8Vector::new())
     }
 
+    fun with(capacity: USize): Self {
+        return Self(buffer: UInt8Vector::with(capacity))
+    }
+
     fun push(&self, _ s: &str): Unit {
         val sLength = strlen(s)
         var i = 0
