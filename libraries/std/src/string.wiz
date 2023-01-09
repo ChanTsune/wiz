@@ -12,6 +12,12 @@ struct String {
         return s
     }
 
+    fun from(_ literal: &str): Self {
+        var s = String::with(capacity: strlen(literal))
+        s.push(literal)
+        return s
+    }
+
     fun empty(): Self {
         return Self(buffer: UInt8Vector::new())
     }
