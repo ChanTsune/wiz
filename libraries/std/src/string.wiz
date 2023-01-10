@@ -97,6 +97,10 @@ struct String {
         }
         return self.clone()
     }
+
+    fun asStr(&self): &str {
+        return self.buffer.ptr as &str
+    }
 }
 
 extension String: Printable {
@@ -245,4 +249,11 @@ fun test_string_removed_suffix() {
     val removed = s.removed(suffix: "0123")
     val expected = String::from("0123456789")
     assert(removed.equals(expected))
+}
+
+#[test]
+fun test_string_asStr() {
+    val s = String::from("wiz")
+    val expected = String::from(s.asStr())
+    assert(s.equals(expected))
 }
