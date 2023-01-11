@@ -14,7 +14,7 @@ struct QueueUInt8 {
 
     fun new(): Self {
         var capacity: USize = 0
-        var buf = malloc(capacity as Size)
+        var buf = malloc(capacity)
         var size: USize = 0
         var head: USize = 0
         var tail: USize = 0

@@ -47,7 +47,7 @@ fun srand(_ seed: UInt32): Unit
 // fun srand(_ seed: c_uint): c_void
 
 #[no_mangle]
-fun calloc(_ nmemb: Size, _ size: Size): *UInt8
+fun calloc(_ nmemb: USize, _ size: USize): *UInt8
 // fun calloc(_ nmemb: c_size_t, _ size: c_size_t): *c_void
 
 #[no_mangle]
@@ -55,11 +55,11 @@ fun free(_ ptr: *UInt8): Unit
 // fun free(_ ptr: *c_void): c_void
 
 #[no_mangle]
-fun malloc(_ size: Size): *UInt8
+fun malloc(_ size: USize): *UInt8
 // fun malloc(_ size: c_size_t): *c_void
 
 #[no_mangle]
-fun realloc(_ ptr: *UInt8, _ size: Size): *UInt8
+fun realloc(_ ptr: *UInt8, _ size: USize): *UInt8
 // fun realloc(_ ptr: *c_void, _ size: c_size_t): *c_void
 
 #[no_mangle]

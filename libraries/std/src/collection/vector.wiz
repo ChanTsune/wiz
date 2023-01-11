@@ -117,7 +117,7 @@ struct UInt8Vector {
     }
 
     fun shinkTo(&self, minSize: UInt64): Unit {
-        self.ptr = self.allocator.reallocate(self.ptr, minSize)
+        self.ptr = self.allocator.reallocate(self.ptr, self.length, minSize)
         self.capacity = minSize
     }
 
@@ -126,7 +126,7 @@ struct UInt8Vector {
     }
 
     fun reserve(&self, newCapacity: UInt64): Unit {
-        self.ptr = self.allocator.reallocate(self.ptr, newCapacity)
+        self.ptr = self.allocator.reallocate(self.ptr, self.length, newCapacity)
         self.capacity = newCapacity
     }
 
