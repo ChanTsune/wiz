@@ -12,8 +12,18 @@ struct String {
         return s
     }
 
+    fun from(_ literal: &str): Self {
+        var s = String::with(capacity: strlen(literal))
+        s.push(literal)
+        return s
+    }
+
     fun empty(): Self {
         return Self(buffer: UInt8Vector::new())
+    }
+
+    fun with(capacity: USize): Self {
+        return Self(buffer: UInt8Vector::with(capacity))
     }
 
     fun push(&self, _ s: &str): Unit {
@@ -78,6 +88,18 @@ struct String {
         memcpy(vec.ptr, self.buffer.ptr + start, end - start)
         vec.length = end - start
         return Self(buffer: vec)
+    }
+
+    fun removed(&self, suffix: &str): String {
+        if self.endsWith(suffix) {
+            val end = (self.length() as USize) - strlen(suffix)
+            return self.subString(start: 0, end: end)
+        }
+        return self.clone()
+    }
+
+    fun asStr(&self): &str {
+        return self.buffer.ptr as &str
     }
 }
 
@@ -215,4 +237,23 @@ fun test_string_subString() {
     val sub = s.subString(start: 2, end: 0)
     val expected = String::empty()
     assert(sub.equals(expected))
+}
+
+#[test]
+fun test_string_removed_suffix() {
+    val s = String::from("0123456789")
+    val removed = s.removed(suffix: "89")
+    val expected = String::from("01234567")
+    assert(removed.equals(expected))
+
+    val removed = s.removed(suffix: "0123")
+    val expected = String::from("0123456789")
+    assert(removed.equals(expected))
+}
+
+#[test]
+fun test_string_asStr() {
+    val s = String::from("wiz")
+    val expected = String::from(s.asStr())
+    assert(s.equals(expected))
 }
