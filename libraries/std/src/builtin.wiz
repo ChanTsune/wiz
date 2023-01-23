@@ -142,7 +142,7 @@ fun println(_ item: Bool) {
 }
 
 fun println(_ item: String) {
-    println(item.buffer.ptr as &str)
+    println(item.asStr())
 }
 
 fun assert(_ result: Bool): Unit {

@@ -16,7 +16,8 @@ services:
       context: .
       dockerfile: ./Dockerfile
       target: wiz
+    volumes:
+      - ./out/:/out/
     environment:
       RUST_BACKTRACE: full
-    working_dir: /root/
-
+    working_dir: /out/

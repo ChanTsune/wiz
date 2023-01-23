@@ -2,6 +2,7 @@ use libc::stdlib::malloc
 use libc::stdlib::calloc
 use libc::stdlib::realloc
 use libc::stdlib::free
+use libc::string::memset
 
 protocol Allocator {
     fun allocate(&self, _ size: USize): *UInt8
@@ -17,14 +18,37 @@ struct DefaultAllocator {
 
 extension DefaultAllocator: Allocator {
     fun allocate(&self, _ size: USize): *UInt8 {
-        return malloc(size as Size)
+        return calloc(size, 1)
     }
 
-    fun reallocate(&self, _ ptr: *UInt8, _ size: USize): *UInt8 {
-        return realloc(ptr, size as Size)
+    fun reallocate(&self, _ ptr: *UInt8, oldSize: USize, _ newSize: USize): *UInt8 {
+        val realloced = realloc(ptr, newSize)
+        if oldSize < newSize {
+            val initSize = (newSize - oldSize) as UInt64
+            memset(realloced + oldSize, 0, initSize)
+        }
+        return realloced
     }
 
     fun deallocate(&self, _ ptr: *UInt8): Unit {
         free(ptr)
     }
+}
+
+// test zero clear
+#[test]
+fun test_default_allocator() {
+    val allocator = DefaultAllocator()
+    val ptr = allocator.allocate(2)
+
+    assert(ptr[0] == 0)
+    assert(ptr[1] == 0)
+
+    val ptr = allocator.reallocate(ptr, 2, 5)
+
+    assert(ptr[2] == 0)
+    assert(ptr[3] == 0)
+    assert(ptr[4] == 0)
+
+    allocator.deallocate(ptr)
 }
