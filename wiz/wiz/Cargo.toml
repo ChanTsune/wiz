@@ -12,7 +12,7 @@ clap = { version = "4.0.4", features = ["cargo"] }
 dirs = "5.0.0"
 git2 = "0.18.0"
 serde = { version = "1.0.136", features = ["derive"] }
-toml = "0.7.1"
+toml = "0.8.0"
 wiz_result = { path = "../wiz_result" }
 wiz_utils = { path = "../wiz_utils" }
 wizc_cli = { path = "../wizc_cli" }
