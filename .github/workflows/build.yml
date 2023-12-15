@@ -82,7 +82,7 @@ jobs:
         run: |
           tar cvzf wiz-${{ runner.os }}.tar.gz ./install.sh ./env ./wiz/target/release/wiz.exe ./wiz/target/release/wizc.exe ./libraries
         if: runner.os == 'Windows'
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: wiz-${{ runner.os }}
           path: |
