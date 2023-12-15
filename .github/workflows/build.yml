@@ -95,7 +95,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: download linux archive
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: ~/artifact/
       - name: ls
