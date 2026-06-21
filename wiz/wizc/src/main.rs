@@ -347,4 +347,20 @@ mod tests {
 
         assert!(context.out_dir().join("helloworld.o").exists())
     }
+
+    #[test]
+    fn compile_issue_219_array_reference_cast_to_ir() {
+        let context = TestContext::new().extra_out("issue_219");
+        let target_file_path = context.test_resource_dir().join("issue_219.wiz");
+
+        let config = Config::default()
+            .input(target_file_path)
+            .path(context.lib_path())
+            .out_dir(context.out_dir())
+            .emit(Emit::LlvmIr);
+        let mut session = Session::new(config);
+        run_compiler(&mut session).unwrap();
+
+        assert!(context.out_dir().join("issue_219.ll").exists())
+    }
 }
