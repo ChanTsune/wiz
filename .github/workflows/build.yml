@@ -15,17 +15,15 @@ jobs:
         - windows-latest
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
       - name: echo rust version
         run: rustc --version
       - name: Cache cargo
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.cargo/registry
@@ -33,14 +31,14 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: Cache LLVM and Clang
         id: cache-llvm
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ./llvm
           key: ${{ runner.os }}-llvm-14
       - name: Cache build
         id: cache-build
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             wiz/target
@@ -65,8 +63,10 @@ jobs:
         if: runner.os == 'Windows'
       - name: Set Path of LLVM and Clang
         run: |
-          echo LLVM_SYS_140_PREFIX="$(dirname $(dirname "$(find $PWD | grep -i bin/llvm-config.exe)"))"
-          echo LLVM_SYS_140_PREFIX="$(dirname $(dirname "$(find $PWD | grep -i bin/llvm-config.exe)"))" >> $GITHUB_ENV
+          llvm_config="$(find "$PWD" -path '*bin/llvm-config.exe' -print -quit)"
+          llvm_prefix="$(dirname "$(dirname "$llvm_config")")"
+          echo "LLVM_SYS_140_PREFIX=$llvm_prefix"
+          echo "LLVM_SYS_140_PREFIX=$llvm_prefix" >> "$GITHUB_ENV"
         shell: bash
         if: runner.os == 'Windows'
       - name: run build
@@ -82,7 +82,7 @@ jobs:
         run: |
           tar cvzf wiz-${{ runner.os }}.tar.gz ./install.sh ./env ./wiz/target/release/wiz.exe ./wiz/target/release/wizc.exe ./libraries
         if: runner.os == 'Windows'
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: wiz-${{ runner.os }}
           path: |
@@ -91,26 +91,32 @@ jobs:
   pre_release:
     needs:
       - build
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+    concurrency:
+      group: dev-latest-release
+      cancel-in-progress: false
     steps:
-      - uses: actions/checkout@v4
-      - name: download linux archive
-        uses: actions/download-artifact@v4
+      - uses: actions/checkout@v5
+      - name: download archives
+        uses: actions/download-artifact@v5
         with:
           path: ~/artifact/
       - name: ls
         run: |
           ls ~/artifact/
-      - uses: dev-drprasad/delete-tag-and-release@v1.1
-        with:
-          delete_release: true
-          tag_name: dev-latest
+      - name: recreate dev-latest release
+        run: |
+          gh release delete dev-latest --cleanup-tag --yes || true
+          git push --delete origin dev-latest || true
+          gh release create dev-latest ~/artifact/*/*.tar.gz \
+            --target "$GITHUB_SHA" \
+            --title "dev-latest" \
+            --prerelease \
+            --latest=false \
+            --notes "Automated development build for $GITHUB_SHA"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: ncipollo/release-action@v1
-        with:
-          artifacts: "~/artifact/**/*"
-          tag: dev-latest
-          replacesArtifacts: true
-          prerelease: true
-          token: '${{ secrets.GITHUB_TOKEN }}'
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
