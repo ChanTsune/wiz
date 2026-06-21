@@ -402,14 +402,13 @@ fn test_struct_member_function() {
                             arg_defs: vec![TypedArgDef {
                                 label: "_".to_string(),
                                 name: "self".to_string(),
-                                type_: TypedType::Value(
-                                    // TODO: Reference
-                                    TypedValueType::Value(TypedNamedValueType {
+                                type_: TypedType::Value(TypedValueType::Reference(Box::new(
+                                    TypedType::Value(TypedValueType::Value(TypedNamedValueType {
                                         package: TypedPackage::Resolved(Package::from(&["test"])),
                                         name: "A".to_string(),
                                         type_args: None,
-                                    }),
-                                ),
+                                    })),
+                                ))),
                             }],
                             type_params: None,
                             body: Some(TypedFunBody::Block(TypedBlock {
@@ -425,15 +424,24 @@ fn test_struct_member_function() {
                                                         name: "self".to_string(),
                                                         type_arguments: None,
                                                     }),
-                                                    Some(TypedType::Value(TypedValueType::Value(
-                                                        TypedNamedValueType {
-                                                            package: TypedPackage::Resolved(
-                                                                Package::from(&["test"]),
+                                                    Some(TypedType::Value(
+                                                        TypedValueType::Reference(Box::new(
+                                                            TypedType::Value(
+                                                                TypedValueType::Value(
+                                                                    TypedNamedValueType {
+                                                                        package:
+                                                                            TypedPackage::Resolved(
+                                                                                Package::from(&[
+                                                                                    "test",
+                                                                                ]),
+                                                                            ),
+                                                                        name: "A".to_string(),
+                                                                        type_args: None,
+                                                                    },
+                                                                ),
                                                             ),
-                                                            name: "A".to_string(),
-                                                            type_args: None,
-                                                        },
-                                                    ))),
+                                                        )),
+                                                    )),
                                                 )),
                                                 name: "a".to_string(),
                                                 is_safe: false,
@@ -501,16 +509,17 @@ fn test_struct_member_function_call() {
                                 arg_defs: vec![TypedArgDef {
                                     label: "_".to_string(),
                                     name: "self".to_string(),
-                                    type_: TypedType::Value(
-                                        // TODO: Reference
-                                        TypedValueType::Value(TypedNamedValueType {
+                                    type_: TypedType::Value(TypedValueType::Reference(Box::new(
+                                        TypedType::Value(TypedValueType::Value(
+                                            TypedNamedValueType {
                                             package: TypedPackage::Resolved(Package::from(&[
                                                 "test",
                                             ])),
                                             name: "A".to_string(),
                                             type_args: None,
-                                        }),
-                                    ),
+                                            },
+                                        )),
+                                    ))),
                                 }],
                                 type_params: None,
                                 body: Some(TypedFunBody::Block(TypedBlock {
@@ -527,15 +536,22 @@ fn test_struct_member_function_call() {
                                                             type_arguments: None,
                                                         }),
                                                         Some(TypedType::Value(
-                                                            TypedValueType::Value(
-                                                                TypedNamedValueType {
-                                                                    package: TypedPackage::Resolved(
-                                                                        Package::from(&["test"]),
+                                                            TypedValueType::Reference(Box::new(
+                                                                TypedType::Value(
+                                                                    TypedValueType::Value(
+                                                                        TypedNamedValueType {
+                                                                            package:
+                                                                                TypedPackage::Resolved(
+                                                                                    Package::from(&[
+                                                                                        "test",
+                                                                                    ]),
+                                                                                ),
+                                                                            name: "A".to_string(),
+                                                                            type_args: None,
+                                                                        },
                                                                     ),
-                                                                    name: "A".to_string(),
-                                                                    type_args: None,
-                                                                },
-                                                            ),
+                                                                ),
+                                                            )),
                                                         )),
                                                     )),
                                                     name: "a".to_string(),
@@ -604,14 +620,16 @@ fn test_struct_member_function_call() {
                                         Some(TypedType::Function(Box::new(TypedFunctionType {
                                             arguments: vec![TypedArgType {
                                                 label: "_".to_string(),
-                                                typ: TypedType::Value(TypedValueType::Value(
-                                                    TypedNamedValueType {
-                                                        package: TypedPackage::Resolved(
-                                                            Package::from(&["test"]),
-                                                        ),
-                                                        name: "A".to_string(),
-                                                        type_args: None,
-                                                    },
+                                                typ: TypedType::Value(TypedValueType::Reference(
+                                                    Box::new(TypedType::Value(
+                                                        TypedValueType::Value(TypedNamedValueType {
+                                                            package: TypedPackage::Resolved(
+                                                                Package::from(&["test"]),
+                                                            ),
+                                                            name: "A".to_string(),
+                                                            type_args: None,
+                                                        }),
+                                                    )),
                                                 )),
                                             }],
                                             return_type: TypedType::int64(),

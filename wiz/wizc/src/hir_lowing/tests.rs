@@ -188,19 +188,23 @@ fn test_method_call() {
                     }],
                 }),
                 MLDecl::Fun(MLFun {
-                    name: "test::A::b##_#test::A".to_string(),
+                    name: "test::A::b##_#&test::A".to_string(),
                     arg_defs: vec![MLArgDef {
                         name: "self".to_string(),
-                        type_: MLValueType::Struct("test::A".to_string()),
+                        type_: MLValueType::Reference(Box::new(MLType::Value(
+                            MLValueType::Struct("test::A".to_string()),
+                        ))),
                     }],
                     return_type: MLValueType::Primitive(MLPrimitiveType::Int64),
                     body: None,
                 }),
                 MLDecl::Fun(MLFun {
-                    name: "test::A::c##_#test::A".to_string(),
+                    name: "test::A::c##_#&test::A".to_string(),
                     arg_defs: vec![MLArgDef {
                         name: "self".to_string(),
-                        type_: MLValueType::Struct("test::A".to_string()),
+                        type_: MLValueType::Reference(Box::new(MLType::Value(
+                            MLValueType::Struct("test::A".to_string()),
+                        ))),
                     }],
                     return_type: MLValueType::Primitive(MLPrimitiveType::Int64),
                     body: None,
@@ -218,10 +222,12 @@ fn test_method_call() {
                     body: None,
                 }),
                 MLDecl::Fun(MLFun {
-                    name: "test::A::b##_#test::A".to_string(),
+                    name: "test::A::b##_#&test::A".to_string(),
                     arg_defs: vec![MLArgDef {
                         name: "self".to_string(),
-                        type_: MLValueType::Struct("test::A".to_string()),
+                        type_: MLValueType::Reference(Box::new(MLType::Value(
+                            MLValueType::Struct("test::A".to_string()),
+                        ))),
                     }],
                     return_type: MLValueType::Primitive(MLPrimitiveType::Int64),
                     body: Some(MLFunBody {
@@ -234,28 +240,36 @@ fn test_method_call() {
                     }),
                 }),
                 MLDecl::Fun(MLFun {
-                    name: "test::A::c##_#test::A".to_string(),
+                    name: "test::A::c##_#&test::A".to_string(),
                     arg_defs: vec![MLArgDef {
                         name: "self".to_string(),
-                        type_: MLValueType::Struct("test::A".to_string()),
+                        type_: MLValueType::Reference(Box::new(MLType::Value(
+                            MLValueType::Struct("test::A".to_string()),
+                        ))),
                     }],
                     return_type: MLValueType::Primitive(MLPrimitiveType::Int64),
                     body: Some(MLFunBody {
                         body: vec![MLStmt::Expr(MLExpr::Return(MLReturn {
                             value: Some(Box::new(MLExpr::Call(MLCall {
                                 target: MLName {
-                                    name: "test::A::b##_#test::A".to_string(),
+                                    name: "test::A::b##_#&test::A".to_string(),
                                     type_: MLType::Function(MLFunctionType {
-                                        arguments: vec![MLValueType::Struct("test::A".to_string())],
+                                        arguments: vec![MLValueType::Reference(Box::new(
+                                            MLType::Value(MLValueType::Struct(
+                                                "test::A".to_string(),
+                                            )),
+                                        ))],
                                         return_type: MLValueType::Primitive(MLPrimitiveType::Int64),
                                     }),
                                 },
                                 args: vec![MLCallArg {
                                     arg: MLExpr::Name(MLName {
                                         name: "self".to_string(),
-                                        type_: MLType::Value(MLValueType::Struct(
-                                            "test::A".to_string(),
-                                        )),
+                                        type_: MLType::Value(MLValueType::Reference(Box::new(
+                                            MLType::Value(MLValueType::Struct(
+                                                "test::A".to_string(),
+                                            )),
+                                        ))),
                                     }),
                                 }],
                                 type_: MLValueType::Primitive(MLPrimitiveType::Int64),
@@ -298,9 +312,13 @@ fn test_method_call() {
                             }),
                             MLStmt::Expr(MLExpr::Call(MLCall {
                                 target: MLName {
-                                    name: "test::A::c##_#test::A".to_string(),
+                                    name: "test::A::c##_#&test::A".to_string(),
                                     type_: MLType::Function(MLFunctionType {
-                                        arguments: vec![MLValueType::Struct("test::A".to_string())],
+                                        arguments: vec![MLValueType::Reference(Box::new(
+                                            MLType::Value(MLValueType::Struct(
+                                                "test::A".to_string(),
+                                            )),
+                                        ))],
                                         return_type: MLValueType::Primitive(MLPrimitiveType::Int64),
                                     }),
                                 },
