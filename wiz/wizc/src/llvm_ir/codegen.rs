@@ -704,9 +704,11 @@ impl<'ctx> CodeGen<'ctx> {
                     .build_conditional_branch(cond.into_int_value(), if_block, else_block);
                 self.builder.position_at_end(if_block);
                 let stmt_last_expr = self.block(body);
+                let if_end_block = self.builder.get_insert_block().unwrap();
                 self.builder.build_unconditional_branch(after_if_block);
                 self.builder.position_at_end(else_block);
                 let else_stmt_last_expr = self.block(else_body);
+                let else_end_block = self.builder.get_insert_block().unwrap();
                 self.builder.build_unconditional_branch(after_if_block);
                 self.builder.position_at_end(after_if_block);
                 match (
@@ -715,7 +717,7 @@ impl<'ctx> CodeGen<'ctx> {
                 ) {
                     (Ok(if_), Ok(else_)) => {
                         let if_value = self.builder.build_phi(i64_type, "if_value");
-                        if_value.add_incoming(&[(&if_, if_block), (&else_, else_block)]);
+                        if_value.add_incoming(&[(&if_, if_end_block), (&else_, else_end_block)]);
                         if_value.as_any_value_enum()
                     }
                     _ => i64_type.const_int(0, false).as_any_value_enum(),

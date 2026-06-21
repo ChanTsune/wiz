@@ -289,7 +289,7 @@ impl<'a> AstLowering<'a> {
                 Some(_) => TypedArgDef {
                     label: "_".to_string(),
                     name: "self".to_string(),
-                    type_: TypedType::Self_, // TODO: Reference
+                    type_: TypedType::reference(TypedType::Self_),
                 },
             },
         }

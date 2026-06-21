@@ -734,7 +734,8 @@ impl<'a> HLIR2MLIR<'a> {
                                     is_vararg: false,
                                 },
                             );
-                            let mut mangled_name = v.to_string() + "::" + &name;
+                            let mut mangled_name =
+                                self.package_name_mangling(&v.package(), &v.name()) + "::" + &name;
                             if !fun_type.arguments.is_empty() {
                                 mangled_name += "##";
                                 mangled_name += &self.fun_arg_label_type_name_mangling(
