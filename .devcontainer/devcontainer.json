@@ -1,0 +1,32 @@
+{
+  "name": "Wiz",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "builder",
+  "workspaceFolder": "/wiz",
+  "shutdownAction": "stopCompose",
+  "remoteEnv": {
+    "PATH": "${containerEnv:PATH}:/root/.cargo/bin",
+    "LLVM_SYS_140_PREFIX": "/usr/lib/llvm-14",
+    "RUST_BACKTRACE": "full"
+  },
+  "postCreateCommand": ". $HOME/.cargo/env && rustup component add rustfmt clippy && cargo fetch --manifest-path wiz/Cargo.toml",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "rust-lang.rust-analyzer",
+        "vadimcn.vscode-lldb",
+        "tamasfe.even-better-toml",
+        "serayuzgur.crates"
+      ],
+      "settings": {
+        "rust-analyzer.linkedProjects": [
+          "/wiz/wiz/Cargo.toml"
+        ],
+        "rust-analyzer.cargo.extraEnv": {
+          "LLVM_SYS_140_PREFIX": "/usr/lib/llvm-14"
+        },
+        "rust-analyzer.check.command": "clippy"
+      }
+    }
+  }
+}
