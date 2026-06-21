@@ -259,6 +259,7 @@ mod lib {
 mod tests {
     use super::run_compiler;
     use std::path::{Path, PathBuf};
+    use std::process::Command;
     use wiz_session::Session;
     use wizc_cli::{Config, ConfigBuilder, Emit};
 
@@ -349,18 +350,24 @@ mod tests {
     }
 
     #[test]
-    fn compile_issue_219_array_reference_cast_to_ir() {
+    fn compile_and_run_issue_219_array_reference_cast() {
         let context = TestContext::new().extra_out("issue_219");
         let target_file_path = context.test_resource_dir().join("issue_219.wiz");
 
         let config = Config::default()
             .input(target_file_path)
             .path(context.lib_path())
-            .out_dir(context.out_dir())
-            .emit(Emit::LlvmIr);
+            .out_dir(context.out_dir());
         let mut session = Session::new(config);
         run_compiler(&mut session).unwrap();
 
-        assert!(context.out_dir().join("issue_219.ll").exists())
+        let output = Command::new(context.out_dir().join("issue_219"))
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        )
     }
 }

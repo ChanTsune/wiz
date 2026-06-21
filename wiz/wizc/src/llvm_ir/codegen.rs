@@ -7,7 +7,7 @@ use inkwell::support::LLVMString;
 use inkwell::targets::{CodeModel, FileType, RelocMode, Target, TargetMachine, TargetTriple};
 use inkwell::types::{AnyType, AnyTypeEnum, BasicMetadataTypeEnum, BasicType, BasicTypeEnum};
 use inkwell::values::{
-    AnyValue, AnyValueEnum, BasicMetadataValueEnum, BasicValueEnum, FunctionValue,
+    AnyValue, AnyValueEnum, BasicMetadataValueEnum, BasicValueEnum, FunctionValue, PointerValue,
 };
 use inkwell::{AddressSpace, FloatPredicate, IntPredicate, OptimizationLevel};
 use std::collections::HashMap;
@@ -636,18 +636,9 @@ impl<'ctx> CodeGen<'ctx> {
         let ptr = self.builder.build_alloca(array_type, "");
         for (i, element) in a.elements.into_iter().enumerate() {
             let i64_type = self.context.i64_type();
+            let zero = i64_type.const_zero();
             let idx = i64_type.const_int(i as u64, false);
-            let eidx = unsafe { self.builder.build_in_bounds_gep(ptr, &[idx], "") };
-            let ptr_type = eidx
-                .get_type()
-                .get_element_type()
-                .into_array_type()
-                .get_element_type()
-                .ptr_type(AddressSpace::Generic);
-            let eidx = self
-                .builder
-                .build_bitcast(eidx, ptr_type, "")
-                .into_pointer_value();
+            let eidx = unsafe { self.builder.build_in_bounds_gep(ptr, &[zero, idx], "") };
             let etype = element.type_();
             let e = self.expr(element);
             let v =
@@ -844,6 +835,7 @@ impl<'ctx> CodeGen<'ctx> {
                         t.as_any_value_enum()
                     }
                     AnyTypeEnum::PointerType(ty) => {
+                        let ptr = self.array_pointer_to_first_element(ptr);
                         let t = self.builder.build_pointer_cast(ptr, ty, "ptr_cast");
                         t.as_any_value_enum()
                     }
@@ -864,6 +856,17 @@ impl<'ctx> CodeGen<'ctx> {
             a => {
                 panic!("never execution branch executed!! {:?}", a)
             }
+        }
+    }
+
+    fn array_pointer_to_first_element(&self, ptr: PointerValue<'ctx>) -> PointerValue<'ctx> {
+        match ptr.get_type().get_element_type() {
+            AnyTypeEnum::ArrayType(_) => unsafe {
+                let zero = self.context.i32_type().const_zero();
+                self.builder
+                    .build_in_bounds_gep(ptr, &[zero, zero], "array_to_ptr")
+            },
+            _ => ptr,
         }
     }
 
