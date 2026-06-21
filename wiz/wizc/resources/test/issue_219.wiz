@@ -1,0 +1,6 @@
+use libc::unistd::pipe
+
+fun main() {
+    var fds = [0 as Int32, 0 as Int32]
+    pipe(&fds as *Int32)
+}
