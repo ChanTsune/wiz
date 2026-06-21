@@ -1,6 +1,14 @@
 use libc::unistd::pipe
+use libc::unistd::close
 
 fun main() {
     var fds = [0 as Int32, 0 as Int32]
-    pipe(&fds as *Int32)
+    val result = pipe(&fds as *Int32)
+
+    assert(result == 0)
+    assert(fds[0] > 0)
+    assert(fds[1] > 0)
+
+    close(fds[0] as Size)
+    close(fds[1] as Size)
 }

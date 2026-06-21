@@ -1,7 +1,9 @@
 use crate::llvm_ir::codegen::CodeGen;
 use inkwell::context::Context;
 use inkwell::execution_engine::JitFunction;
-use wiz_mir::expr::{MLCall, MLCallArg, MLExpr, MLLiteral, MLLiteralKind, MLMember, MLName};
+use wiz_mir::expr::{
+    MLArray, MLCall, MLCallArg, MLExpr, MLLiteral, MLLiteralKind, MLMember, MLName, MLSubscript,
+};
 use wiz_mir::ml_decl::{MLArgDef, MLDecl, MLField, MLFun, MLFunBody, MLStruct, MLVar};
 use wiz_mir::ml_file::MLFile;
 use wiz_mir::ml_type::{MLFunctionType, MLPrimitiveType, MLType, MLValueType};
@@ -296,6 +298,68 @@ fn test_reference_self_argument_member_access() {
                 }),
             }),
         ],
+    };
+    let module_name = &mlfile.name;
+    let context = Context::create();
+    let mut codegen = CodeGen::new(&context, module_name, None);
+
+    codegen.file(mlfile);
+
+    let result = unsafe {
+        let main: JitFunction<MainFunc> = codegen.execution_engine.get_function("test").unwrap();
+        main.call()
+    };
+
+    assert_eq!(result, 7);
+}
+
+#[test]
+fn test_array_literal_stores_elements_in_bounds() {
+    type MainFunc = unsafe extern "C" fn() -> i32;
+    let int32_type = MLValueType::Primitive(MLPrimitiveType::Int32);
+    let array_type = MLValueType::Array(Box::new(int32_type.clone()), 2);
+    let mlfile = MLFile {
+        name: "name".to_string(),
+        body: vec![MLDecl::Fun(MLFun {
+            name: "test".to_string(),
+            arg_defs: vec![],
+            return_type: int32_type.clone(),
+            body: Some(MLFunBody {
+                body: vec![
+                    MLStmt::Var(MLVar {
+                        is_mute: false,
+                        name: "a".to_string(),
+                        type_: MLType::Value(array_type.clone()),
+                        value: MLExpr::Array(MLArray {
+                            elements: vec![
+                                MLExpr::Literal(MLLiteral {
+                                    kind: MLLiteralKind::Integer("1".to_string()),
+                                    type_: int32_type.clone(),
+                                }),
+                                MLExpr::Literal(MLLiteral {
+                                    kind: MLLiteralKind::Integer("7".to_string()),
+                                    type_: int32_type.clone(),
+                                }),
+                            ],
+                            type_: array_type.clone(),
+                        }),
+                    }),
+                    MLStmt::Expr(MLExpr::Return(MLReturn {
+                        value: Some(Box::new(MLExpr::PrimitiveSubscript(MLSubscript {
+                            target: Box::new(MLExpr::Name(MLName {
+                                name: "a".to_string(),
+                                type_: MLType::Value(array_type),
+                            })),
+                            index: Box::new(MLExpr::Literal(MLLiteral {
+                                kind: MLLiteralKind::Integer("1".to_string()),
+                                type_: MLValueType::Primitive(MLPrimitiveType::Int64),
+                            })),
+                            type_: int32_type,
+                        }))),
+                    })),
+                ],
+            }),
+        })],
     };
     let module_name = &mlfile.name;
     let context = Context::create();
