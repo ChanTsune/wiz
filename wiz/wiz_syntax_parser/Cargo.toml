@@ -6,7 +6,7 @@ edition = "2021"
 
 [dependencies]
 nom = "7.0.0"
-nom_locate = "4.0.0"
+nom_locate = "5.0.0"
 wiz_result = { path = "../wiz_result" }
 wiz_session = { path = "../wiz_session" }
 wiz_span = { path = "../wiz_span" }
